@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------
+# Position operations of the C position-wrapper generator (templates/posops.c.tmpl).
+# One entry per operation: the axis a box type needs to carry it (x, y, z or t), its
+# SQL operator and the relation its wrappers state. A box type lists its axes in
+# manifest.d/boxtypes.yaml (`posaxes:`) and carries the operations of those axes over
+# the three directions of the boxops generator: box first, temporal value first, two
+# temporal values. The kernel an operation calls is <op>_<prim>_<prim>
+# (left_tpcbox_tpcbox), and its SQL name is <sqlclass><Op> (tpcboxLeft).
+boxposops:
+  - {op: Left,       axis: x, sqlop: "<<",  rel: is to the left of}
+  - {op: Overleft,   axis: x, sqlop: "&<",  rel: does not extend to the right of}
+  - {op: Right,      axis: x, sqlop: ">>",  rel: is to the right of}
+  - {op: Overright,  axis: x, sqlop: "&>",  rel: does not extend to the left of}
+  - {op: Below,      axis: y, sqlop: "<<|", rel: is below}
+  - {op: Overbelow,  axis: y, sqlop: "&<|", rel: does not extend above}
+  - {op: Above,      axis: y, sqlop: "|>>", rel: is above}
+  - {op: Overabove,  axis: y, sqlop: "|&>", rel: does not extend below}
+  - {op: Front,      axis: z, sqlop: "<</", rel: is in front of}
+  - {op: Overfront,  axis: z, sqlop: "&</", rel: does not extend to the back of}
+  - {op: Back,       axis: z, sqlop: "/>>", rel: is at the back of}
+  - {op: Overback,   axis: z, sqlop: "/&>", rel: does not extend to the front of}
+  - {op: Before,     axis: t, sqlop: "<<#", rel: is before}
+  - {op: Overbefore, axis: t, sqlop: "&<#", rel: is not after}
+  - {op: After,      axis: t, sqlop: "#>>", rel: is after}
+  - {op: Overafter,  axis: t, sqlop: "#&>", rel: is not before}

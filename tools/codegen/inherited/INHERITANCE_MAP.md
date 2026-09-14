@@ -170,7 +170,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
 - **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.d/positions.yaml`):
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
 - **region-in-file** for C: emits the block between
-  `GENERATED-BOXOPS-BEGIN/END` and `GENERATED-SPATIALRELS-BEGIN/END` markers.
+  `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END` and
+  `GENERATED-SPATIALRELS-BEGIN/END` markers. A box type's position wrappers
+  (`templates/posops.c.tmpl`) carry the operations of the axes it lists in
+  `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its axis).
 
 **A `positions:` entry only means a slot is reserved** (`manifest.d/positions.yaml`:
 compops, spatialfuncs, topops, posops, distance, aggfuncs, spatialrels, indexes,

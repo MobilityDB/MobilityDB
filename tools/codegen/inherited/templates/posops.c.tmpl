@@ -1,0 +1,56 @@
+/*****************************************************************************
+ * Position operators
+ *****************************************************************************/
+
+/*****************************************************************************/
+/* {BOXDESC} op {VALDESC} */
+
+PGDLLEXPORT Datum {OP}_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({OP}_{BOX}_{TSIDE});
+/**
+ * @ingroup {POSGROUP}
+ * @brief Return true if a {BOXDESC} {REL} a {VALDESC}
+ * @sqlfn {SQLCLASS}{OP}()
+ * @sqlop @p {SQLOP}
+ */
+inline Datum
+{OP}_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &{OPLC}_{PRIM}_{PRIM});
+}
+
+/*****************************************************************************/
+/* {VALDESC} op {BOXDESC} */
+
+PGDLLEXPORT Datum {OP}_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({OP}_{TSIDE}_{BOX});
+/**
+ * @ingroup {POSGROUP}
+ * @brief Return true if a {VALDESC} {REL} a {BOXDESC}
+ * @sqlfn {SQLCLASS}{OP}()
+ * @sqlop @p {SQLOP}
+ */
+inline Datum
+{OP}_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &{OPLC}_{PRIM}_{PRIM});
+}
+
+/*****************************************************************************/
+/* {VALDESC} op {VALDESC} */
+
+PGDLLEXPORT Datum {OP}_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({OP}_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {POSGROUP}
+ * @brief Return true if the first {VALDESC} {REL} the second one
+ * @sqlfn {SQLCLASS}{OP}()
+ * @sqlop @p {SQLOP}
+ */
+inline Datum
+{OP}_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &{OPLC}_{PRIM}_{PRIM});
+}
+
+/*****************************************************************************/

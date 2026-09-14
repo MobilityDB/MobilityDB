@@ -32,6 +32,10 @@ boxtypes:
     valdesc:   temporal pointcloud value
     file:      mobilitydb/src/pointcloud/tpc_boxops.c
     reference: true
+    # position wrappers (templates/posops.c.tmpl, operations in boxposops.yaml)
+    posaxes:   [x, y, z, t]
+    posgroup:  mobilitydb_pointcloud_box_pos
+    posreference: true
 
   # tstzspan: the box IS a span<timestamptz>, so the primitives are the generic
   # span operators (overlaps_span_span, ...) via prim: span. Serves every

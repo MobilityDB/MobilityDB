@@ -33,8 +33,10 @@
  *   pgPointCloud temporal types. Mirrors the stbox / tspatial bbox
  *   surface in @c mobilitydb/src/geo/tgeo_boxops.c.
  *
- * The five families exposed are overlaps (&&), contains (\@>),
- * contained (<\@), same (~=), and adjacent (-|-). Each is wired to:
+ * The five topological families exposed are overlaps (&&), contains
+ * (\@>), contained (<\@), same (~=) and adjacent (-|-), and the sixteen
+ * position operators: strictly left, right, below, above, front, back,
+ * before and after, and their overlapping variants. Each is wired to:
  *   * tpcbox vs (tpcpoint | tpcpatch)        via @c Boxop_tpcbox_tpointcloud
  *   * (tpcpoint | tpcpatch) vs tpcbox        via @c Boxop_tpointcloud_tpcbox
  *   * tpointcloud vs tpointcloud             via @c Boxop_tpointcloud_tpointcloud
@@ -364,53 +366,723 @@ Adjacent_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* GENERATED-BOXOPS-END tpcbox */
 
-#define DEFINE_BOXOP3(opname, primitive)                                       \
-PGDLLEXPORT Datum opname##_tpcbox_tpointcloud(PG_FUNCTION_ARGS);               \
-PG_FUNCTION_INFO_V1(opname##_tpcbox_tpointcloud);                              \
-Datum                                                                          \
-opname##_tpcbox_tpointcloud(PG_FUNCTION_ARGS)                                  \
-{                                                                              \
-  return Boxop_tpcbox_tpointcloud(fcinfo, &primitive);                         \
-}                                                                              \
-PGDLLEXPORT Datum opname##_tpointcloud_tpcbox(PG_FUNCTION_ARGS);               \
-PG_FUNCTION_INFO_V1(opname##_tpointcloud_tpcbox);                              \
-Datum                                                                          \
-opname##_tpointcloud_tpcbox(PG_FUNCTION_ARGS)                                  \
-{                                                                              \
-  return Boxop_tpointcloud_tpcbox(fcinfo, &primitive);                         \
-}                                                                              \
-PGDLLEXPORT Datum opname##_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);          \
-PG_FUNCTION_INFO_V1(opname##_tpointcloud_tpointcloud);                         \
-Datum                                                                          \
-opname##_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)                             \
-{                                                                              \
-  return Boxop_tpointcloud_tpointcloud(fcinfo, &primitive);                    \
-}
-
-
+/* GENERATED-POSOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/posops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 /*****************************************************************************
- * Position operators — strictly left / right / below / above / front /
- * back / before / after, plus their "overlaps-or-X" variants.
+ * Position operators
  *****************************************************************************/
 
-DEFINE_BOXOP3(Left,        left_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overleft,    overleft_tpcbox_tpcbox)
-DEFINE_BOXOP3(Right,       right_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overright,   overright_tpcbox_tpcbox)
-DEFINE_BOXOP3(Below,       below_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overbelow,   overbelow_tpcbox_tpcbox)
-DEFINE_BOXOP3(Above,       above_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overabove,   overabove_tpcbox_tpcbox)
-DEFINE_BOXOP3(Front,       front_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overfront,   overfront_tpcbox_tpcbox)
-DEFINE_BOXOP3(Back,        back_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overback,    overback_tpcbox_tpcbox)
-DEFINE_BOXOP3(Before,      before_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overbefore,  overbefore_tpcbox_tpcbox)
-DEFINE_BOXOP3(After,       after_tpcbox_tpcbox)
-DEFINE_BOXOP3(Overafter,   overafter_tpcbox_tpcbox)
+/*****************************************************************************/
+/* tpcbox op temporal pointcloud value */
 
-#undef DEFINE_BOXOP3
+PGDLLEXPORT Datum Left_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is to the left of a temporal pointcloud value
+ * @sqlfn tpcboxLeft()
+ * @sqlop @p <<
+ */
+inline Datum
+Left_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &left_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overleft_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend to the right of a temporal
+ * pointcloud value
+ * @sqlfn tpcboxOverleft()
+ * @sqlop @p &<
+ */
+inline Datum
+Overleft_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overleft_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Right_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is to the right of a temporal pointcloud value
+ * @sqlfn tpcboxRight()
+ * @sqlop @p >>
+ */
+inline Datum
+Right_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &right_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overright_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend to the left of a temporal
+ * pointcloud value
+ * @sqlfn tpcboxOverright()
+ * @sqlop @p &>
+ */
+inline Datum
+Overright_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overright_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Below_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Below_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is below a temporal pointcloud value
+ * @sqlfn tpcboxBelow()
+ * @sqlop @p <<|
+ */
+inline Datum
+Below_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &below_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbelow_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbelow_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend above a temporal pointcloud
+ * value
+ * @sqlfn tpcboxOverbelow()
+ * @sqlop @p &<|
+ */
+inline Datum
+Overbelow_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overbelow_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Above_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Above_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is above a temporal pointcloud value
+ * @sqlfn tpcboxAbove()
+ * @sqlop @p |>>
+ */
+inline Datum
+Above_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &above_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overabove_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overabove_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend below a temporal pointcloud
+ * value
+ * @sqlfn tpcboxOverabove()
+ * @sqlop @p |&>
+ */
+inline Datum
+Overabove_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overabove_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Front_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Front_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is in front of a temporal pointcloud value
+ * @sqlfn tpcboxFront()
+ * @sqlop @p <</
+ */
+inline Datum
+Front_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &front_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overfront_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overfront_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend to the back of a temporal
+ * pointcloud value
+ * @sqlfn tpcboxOverfront()
+ * @sqlop @p &</
+ */
+inline Datum
+Overfront_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overfront_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Back_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Back_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is at the back of a temporal pointcloud value
+ * @sqlfn tpcboxBack()
+ * @sqlop @p />>
+ */
+inline Datum
+Back_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &back_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overback_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overback_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox does not extend to the front of a temporal
+ * pointcloud value
+ * @sqlfn tpcboxOverback()
+ * @sqlop @p /&>
+ */
+inline Datum
+Overback_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overback_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Before_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is before a temporal pointcloud value
+ * @sqlfn tpcboxBefore()
+ * @sqlop @p <<#
+ */
+inline Datum
+Before_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &before_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbefore_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is not after a temporal pointcloud value
+ * @sqlfn tpcboxOverbefore()
+ * @sqlop @p &<#
+ */
+inline Datum
+Overbefore_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overbefore_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum After_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is after a temporal pointcloud value
+ * @sqlfn tpcboxAfter()
+ * @sqlop @p #>>
+ */
+inline Datum
+After_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &after_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overafter_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a tpcbox is not before a temporal pointcloud value
+ * @sqlfn tpcboxOverafter()
+ * @sqlop @p #&>
+ */
+inline Datum
+Overafter_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overafter_tpcbox_tpcbox);
+}
+
+/*****************************************************************************/
+/* temporal pointcloud value op tpcbox */
+
+PGDLLEXPORT Datum Left_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is to the left of a tpcbox
+ * @sqlfn tpcboxLeft()
+ * @sqlop @p <<
+ */
+inline Datum
+Left_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &left_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overleft_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend to the
+ * right of a tpcbox
+ * @sqlfn tpcboxOverleft()
+ * @sqlop @p &<
+ */
+inline Datum
+Overleft_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overleft_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Right_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is to the right of a tpcbox
+ * @sqlfn tpcboxRight()
+ * @sqlop @p >>
+ */
+inline Datum
+Right_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &right_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overright_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend to the left
+ * of a tpcbox
+ * @sqlfn tpcboxOverright()
+ * @sqlop @p &>
+ */
+inline Datum
+Overright_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overright_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Below_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Below_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is below a tpcbox
+ * @sqlfn tpcboxBelow()
+ * @sqlop @p <<|
+ */
+inline Datum
+Below_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &below_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbelow_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbelow_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend above a
+ * tpcbox
+ * @sqlfn tpcboxOverbelow()
+ * @sqlop @p &<|
+ */
+inline Datum
+Overbelow_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overbelow_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Above_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Above_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is above a tpcbox
+ * @sqlfn tpcboxAbove()
+ * @sqlop @p |>>
+ */
+inline Datum
+Above_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &above_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overabove_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overabove_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend below a
+ * tpcbox
+ * @sqlfn tpcboxOverabove()
+ * @sqlop @p |&>
+ */
+inline Datum
+Overabove_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overabove_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Front_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Front_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is in front of a tpcbox
+ * @sqlfn tpcboxFront()
+ * @sqlop @p <</
+ */
+inline Datum
+Front_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &front_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overfront_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overfront_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend to the back
+ * of a tpcbox
+ * @sqlfn tpcboxOverfront()
+ * @sqlop @p &</
+ */
+inline Datum
+Overfront_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overfront_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Back_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Back_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is at the back of a tpcbox
+ * @sqlfn tpcboxBack()
+ * @sqlop @p />>
+ */
+inline Datum
+Back_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &back_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overback_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overback_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value does not extend to the
+ * front of a tpcbox
+ * @sqlfn tpcboxOverback()
+ * @sqlop @p /&>
+ */
+inline Datum
+Overback_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overback_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Before_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is before a tpcbox
+ * @sqlfn tpcboxBefore()
+ * @sqlop @p <<#
+ */
+inline Datum
+Before_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &before_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbefore_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is not after a tpcbox
+ * @sqlfn tpcboxOverbefore()
+ * @sqlop @p &<#
+ */
+inline Datum
+Overbefore_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overbefore_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum After_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is after a tpcbox
+ * @sqlfn tpcboxAfter()
+ * @sqlop @p #>>
+ */
+inline Datum
+After_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &after_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overafter_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if a temporal pointcloud value is not before a tpcbox
+ * @sqlfn tpcboxOverafter()
+ * @sqlop @p #&>
+ */
+inline Datum
+Overafter_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overafter_tpcbox_tpcbox);
+}
+
+/*****************************************************************************/
+/* temporal pointcloud value op temporal pointcloud value */
+
+PGDLLEXPORT Datum Left_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is to the left of
+ * the second one
+ * @sqlfn tpcboxLeft()
+ * @sqlop @p <<
+ */
+inline Datum
+Left_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &left_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overleft_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend to
+ * the right of the second one
+ * @sqlfn tpcboxOverleft()
+ * @sqlop @p &<
+ */
+inline Datum
+Overleft_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overleft_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Right_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is to the right of
+ * the second one
+ * @sqlfn tpcboxRight()
+ * @sqlop @p >>
+ */
+inline Datum
+Right_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &right_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overright_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend to
+ * the left of the second one
+ * @sqlfn tpcboxOverright()
+ * @sqlop @p &>
+ */
+inline Datum
+Overright_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overright_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Below_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Below_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is below the second
+ * one
+ * @sqlfn tpcboxBelow()
+ * @sqlop @p <<|
+ */
+inline Datum
+Below_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &below_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbelow_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbelow_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend
+ * above the second one
+ * @sqlfn tpcboxOverbelow()
+ * @sqlop @p &<|
+ */
+inline Datum
+Overbelow_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overbelow_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Above_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Above_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is above the second
+ * one
+ * @sqlfn tpcboxAbove()
+ * @sqlop @p |>>
+ */
+inline Datum
+Above_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &above_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overabove_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overabove_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend
+ * below the second one
+ * @sqlfn tpcboxOverabove()
+ * @sqlop @p |&>
+ */
+inline Datum
+Overabove_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overabove_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Front_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Front_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is in front of the
+ * second one
+ * @sqlfn tpcboxFront()
+ * @sqlop @p <</
+ */
+inline Datum
+Front_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &front_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overfront_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overfront_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend to
+ * the back of the second one
+ * @sqlfn tpcboxOverfront()
+ * @sqlop @p &</
+ */
+inline Datum
+Overfront_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overfront_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Back_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Back_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is at the back of
+ * the second one
+ * @sqlfn tpcboxBack()
+ * @sqlop @p />>
+ */
+inline Datum
+Back_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &back_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overback_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overback_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value does not extend to
+ * the front of the second one
+ * @sqlfn tpcboxOverback()
+ * @sqlop @p /&>
+ */
+inline Datum
+Overback_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overback_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Before_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is before the
+ * second one
+ * @sqlfn tpcboxBefore()
+ * @sqlop @p <<#
+ */
+inline Datum
+Before_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &before_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overbefore_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is not after the
+ * second one
+ * @sqlfn tpcboxOverbefore()
+ * @sqlop @p &<#
+ */
+inline Datum
+Overbefore_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overbefore_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum After_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is after the second
+ * one
+ * @sqlfn tpcboxAfter()
+ * @sqlop @p #>>
+ */
+inline Datum
+After_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &after_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overafter_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief Return true if the first temporal pointcloud value is not before the
+ * second one
+ * @sqlfn tpcboxOverafter()
+ * @sqlop @p #&>
+ */
+inline Datum
+Overafter_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overafter_tpcbox_tpcbox);
+}
+
+/*****************************************************************************/
+/* GENERATED-POSOPS-END tpcbox */
 
 /*****************************************************************************
  * Nearest-approach distance (|=|)
