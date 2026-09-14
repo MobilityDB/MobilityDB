@@ -135,6 +135,31 @@ h3indexset_out(const Set *s)
 }
 
 /*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_constructor
+ * @brief Return an H3 cell set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
+ * @csqlfn #Set_constructor()
+ */
+Set *
+h3indexset_make(const H3Index *values, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+
+  Datum *datums = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; ++i)
+    datums[i] = H3IndexGetDatum(values[i]);
+  return set_make_free(datums, count, T_H3INDEX, ORDER);
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 

@@ -271,6 +271,10 @@ extern Set    *h3index_to_set(H3Index cell);
 extern Set    *h3indexset_in(const char *str);
 extern char   *h3indexset_out(const Set *s);
 
+/* Constructor functions of `h3indexset` */
+
+extern Set    *h3indexset_make(const H3Index *values, int count);
+
 /* Accessor functions of `h3indexset` */
 
 extern H3Index *h3indexset_values(const Set *s, int *count);

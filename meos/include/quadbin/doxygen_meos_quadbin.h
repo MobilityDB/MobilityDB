@@ -102,6 +102,10 @@
  * @ingroup meos_quadbin_set
  * @brief Input and output functions for QUADBIN cell index sets
  *
+ * @defgroup meos_quadbin_set_constructor Constructor functions
+ * @ingroup meos_quadbin_set
+ * @brief Constructor functions for QUADBIN cell index sets
+ *
  * @defgroup meos_quadbin_set_conversion Conversion functions
  * @ingroup meos_quadbin_set
  * @brief Conversion functions for QUADBIN cell index sets
