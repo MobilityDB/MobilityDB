@@ -129,6 +129,10 @@ SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' ->> 'speed';
 SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}' ->> 'speed';
 SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]' ->> 'speed';
 SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' ->> 'speed';
+-- An element read as text is a temporal text, whether the operator or the function reads it
+SELECT pg_typeof(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01' ->> 1);
+SELECT pg_typeof(tjsonbArrayElementText(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01', 1));
+SELECT startValue(tjsonbArrayElementText(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01', 1));
 
 -------------------------------------------------------------------------------
 
