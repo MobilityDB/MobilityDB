@@ -40,22 +40,22 @@
 
 /* tstzspan op trgeometry */
 
-CREATE FUNCTION before(tstzspan, trgeometry)
+CREATE FUNCTION stboxBefore(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tstzspan, trgeometry)
+CREATE FUNCTION stboxOverbefore(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tstzspan, trgeometry)
+CREATE FUNCTION stboxAfter(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tstzspan, trgeometry)
+CREATE FUNCTION stboxOverafter(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tspatial_supportfn
@@ -63,24 +63,24 @@ CREATE FUNCTION overafter(tstzspan, trgeometry)
 
 CREATE OPERATOR <<# (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = #>>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = <<#,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -88,82 +88,82 @@ CREATE OPERATOR #&> (
  * stbox
  *****************************************************************************/
 
-CREATE FUNCTION left(stbox, trgeometry)
+CREATE FUNCTION stboxLeft(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(stbox, trgeometry)
+CREATE FUNCTION stboxOverleft(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(stbox, trgeometry)
+CREATE FUNCTION stboxRight(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(stbox, trgeometry)
+CREATE FUNCTION stboxOverright(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(stbox, trgeometry)
+CREATE FUNCTION stboxBelow(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(stbox, trgeometry)
+CREATE FUNCTION stboxOverbelow(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(stbox, trgeometry)
+CREATE FUNCTION stboxAbove(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(stbox, trgeometry)
+CREATE FUNCTION stboxOverabove(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION front(stbox, trgeometry)
+CREATE FUNCTION stboxFront(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overfront(stbox, trgeometry)
+CREATE FUNCTION stboxOverfront(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION back(stbox, trgeometry)
+CREATE FUNCTION stboxBack(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overback(stbox, trgeometry)
+CREATE FUNCTION stboxOverback(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(stbox, trgeometry)
+CREATE FUNCTION stboxBefore(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(stbox, trgeometry)
+CREATE FUNCTION stboxOverbefore(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(stbox, trgeometry)
+CREATE FUNCTION stboxAfter(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(stbox, trgeometry)
+CREATE FUNCTION stboxOverafter(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
   SUPPORT tspatial_supportfn
@@ -171,90 +171,90 @@ CREATE FUNCTION overafter(stbox, trgeometry)
 
 CREATE OPERATOR << (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <</ (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = front,
+  PROCEDURE = stboxFront,
   COMMUTATOR = '/>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &</ (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overfront,
+  PROCEDURE = stboxOverfront,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR />> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = back,
+  PROCEDURE = stboxBack,
   COMMUTATOR = '<</',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR /&> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overback,
+  PROCEDURE = stboxOverback,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = stbox, RIGHTARG = trgeometry,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -264,22 +264,22 @@ CREATE OPERATOR #&> (
 
 /* trgeometry op tstzspan */
 
-CREATE FUNCTION before(trgeometry, tstzspan)
+CREATE FUNCTION stboxBefore(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(trgeometry, tstzspan)
+CREATE FUNCTION stboxOverbefore(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(trgeometry, tstzspan)
+CREATE FUNCTION stboxAfter(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(trgeometry, tstzspan)
+CREATE FUNCTION stboxOverafter(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tspatial_supportfn
@@ -287,24 +287,24 @@ CREATE FUNCTION overafter(trgeometry, tstzspan)
 
 CREATE OPERATOR <<# (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = #>>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = <<#,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -312,82 +312,82 @@ CREATE OPERATOR #&> (
 
 /* trgeometry op stbox */
 
-CREATE FUNCTION left(trgeometry, stbox)
+CREATE FUNCTION stboxLeft(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(trgeometry, stbox)
+CREATE FUNCTION stboxOverleft(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(trgeometry, stbox)
+CREATE FUNCTION stboxRight(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(trgeometry, stbox)
+CREATE FUNCTION stboxOverright(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(trgeometry, stbox)
+CREATE FUNCTION stboxBelow(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(trgeometry, stbox)
+CREATE FUNCTION stboxOverbelow(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(trgeometry, stbox)
+CREATE FUNCTION stboxAbove(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(trgeometry, stbox)
+CREATE FUNCTION stboxOverabove(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION front(trgeometry, stbox)
+CREATE FUNCTION stboxFront(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overfront(trgeometry, stbox)
+CREATE FUNCTION stboxOverfront(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION back(trgeometry, stbox)
+CREATE FUNCTION stboxBack(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overback(trgeometry, stbox)
+CREATE FUNCTION stboxOverback(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(trgeometry, stbox)
+CREATE FUNCTION stboxBefore(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(trgeometry, stbox)
+CREATE FUNCTION stboxOverbefore(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(trgeometry, stbox)
+CREATE FUNCTION stboxAfter(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(trgeometry, stbox)
+CREATE FUNCTION stboxOverafter(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
   SUPPORT tspatial_supportfn
@@ -395,90 +395,90 @@ CREATE FUNCTION overafter(trgeometry, stbox)
 
 CREATE OPERATOR << (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <</ (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = front,
+  PROCEDURE = stboxFront,
   COMMUTATOR = '/>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &</ (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overfront,
+  PROCEDURE = stboxOverfront,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR />> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = back,
+  PROCEDURE = stboxBack,
   COMMUTATOR = '<</',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR /&> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overback,
+  PROCEDURE = stboxOverback,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = trgeometry, RIGHTARG = stbox,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -486,82 +486,82 @@ CREATE OPERATOR #&> (
 
 /* trgeometry op trgeometry */
 
-CREATE FUNCTION left(trgeometry, trgeometry)
+CREATE FUNCTION stboxLeft(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverleft(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(trgeometry, trgeometry)
+CREATE FUNCTION stboxRight(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverright(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(trgeometry, trgeometry)
+CREATE FUNCTION stboxBelow(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverbelow(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(trgeometry, trgeometry)
+CREATE FUNCTION stboxAbove(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverabove(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION front(trgeometry, trgeometry)
+CREATE FUNCTION stboxFront(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overfront(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverfront(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION back(trgeometry, trgeometry)
+CREATE FUNCTION stboxBack(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overback(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverback(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(trgeometry, trgeometry)
+CREATE FUNCTION stboxBefore(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverbefore(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(trgeometry, trgeometry)
+CREATE FUNCTION stboxAfter(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(trgeometry, trgeometry)
+CREATE FUNCTION stboxOverafter(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
   SUPPORT tspatial_supportfn
@@ -569,90 +569,90 @@ CREATE FUNCTION overafter(trgeometry, trgeometry)
 
 CREATE OPERATOR << (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <</ (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = front,
+  PROCEDURE = stboxFront,
   COMMUTATOR = '/>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &</ (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overfront,
+  PROCEDURE = stboxOverfront,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR />> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = back,
+  PROCEDURE = stboxBack,
   COMMUTATOR = '<</',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR /&> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overback,
+  PROCEDURE = stboxOverback,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 

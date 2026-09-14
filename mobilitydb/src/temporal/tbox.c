@@ -882,7 +882,7 @@ PG_FUNCTION_INFO_V1(Left_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is to the left of the second
  * one
- * @sqlfn left()
+ * @sqlfn tboxLeft()
  * @sqlop @p <<
  */
 Datum
@@ -899,7 +899,7 @@ PG_FUNCTION_INFO_V1(Overleft_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box does not extend to the right of
  * the second one
- * @sqlfn overleft()
+ * @sqlfn tboxOverleft()
  * @sqlop @p &<
  */
 Datum
@@ -916,7 +916,7 @@ PG_FUNCTION_INFO_V1(Right_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is to the right of the second
  * one
- * @sqlfn right()
+ * @sqlfn tboxRight()
  * @sqlop @p >>
  */
 Datum
@@ -933,7 +933,7 @@ PG_FUNCTION_INFO_V1(Overright_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one
- * @sqlfn overright()
+ * @sqlfn tboxOverright()
  * @sqlop @p &>
  */
 Datum
@@ -949,7 +949,7 @@ PG_FUNCTION_INFO_V1(Before_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is before the second one
- * @sqlfn before()
+ * @sqlfn tboxBefore()
  * @sqlop @p <<#
  */
 Datum
@@ -965,7 +965,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not after the second one
- * @sqlfn overbefore()
+ * @sqlfn tboxOverbefore()
  * @sqlop @p &<#
  */
 Datum
@@ -981,7 +981,7 @@ PG_FUNCTION_INFO_V1(After_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is after the second one
- * @sqlfn after()
+ * @sqlfn tboxAfter()
  * @sqlop @p #>>
  */
 Datum
@@ -997,7 +997,7 @@ PG_FUNCTION_INFO_V1(Overafter_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not before the second one
- * @sqlfn overafter()
+ * @sqlfn tboxOverafter()
  * @sqlop @p #&>
  */
 Datum

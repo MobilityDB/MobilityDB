@@ -2303,9 +2303,10 @@ def _posops_markers(family: str):
     return begin, f"-- GENERATED-POSOPS-END {family}\n"
 
 
-# position -> (value name, time name, value op, time op, value COMMUTATOR or
-# None, time COMMUTATOR or None). The C symbol is the capitalized function name
-# + _value_set/_set_value/_set_set.
+# position -> (value position, time position, value op, time op, value
+# COMMUTATOR or None, time COMMUTATOR or None). The SQL name is the family's
+# class prefix and the capitalized position (setLeft, setBefore); the C symbol
+# is the capitalized position + _value_set/_set_value/_set_set.
 _POSOP_TABLE = {
     "left": ("left", "before", "<<", "<<#", ">>", "#>>"),
     "right": ("right", "after", ">>", "#>>", "<<", "<<#"),
@@ -2316,19 +2317,27 @@ _POSOP_DIRS = (("{v}", "{s}", "value_set"), ("{s}", "{v}", "set_value"),
                ("{s}", "{s}", "set_set"))
 
 
+def _posop_name(fam: dict, pos: str) -> str:
+    """The SQL name of a position over the family: its class prefix (the family
+    of a posop_families entry names its Set<T> class) and the capitalized
+    position, so `left` over `set` is setLeft."""
+    return fam["family"] + pos[0].upper() + pos[1:]
+
+
 def _posop_fns(pos: str, fam: dict) -> str:
     """The position's CREATE FUNCTIONs: the value-spelling name over the value
     pairs then the time-spelling name over the time pairs, all packed."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
-    vname, tname = _POSOP_TABLE[pos][0], _POSOP_TABLE[pos][1]
+    vpos, tpos = _POSOP_TABLE[pos][0], _POSOP_TABLE[pos][1]
     out = []
-    for name, pairs in ((vname, fam["pairs"]), (tname, fam["time_pairs"])):
+    for p, pairs in ((vpos, fam["pairs"]), (tpos, fam["time_pairs"])):
+        name = _posop_name(fam, p)
         for v, s in pairs:
             for l, r, dsym in _POSOP_DIRS:
                 out.append(tmpl.replace("{SIG}", f"{name}({l.format(v=v, s=s)}, "
                                                  f"{r.format(v=v, s=s)})")
                                .replace("{RET}", "boolean")
-                               .replace("{SYM}", f"{name.capitalize()}_{dsym}"))
+                               .replace("{SYM}", f"{p.capitalize()}_{dsym}"))
     return _with_span_support("\n".join(out) + "\n")
 
 
@@ -2336,11 +2345,12 @@ def _posop_ops(pos: str, fam: dict) -> str:
     """The position's operators: the value symbol over the value pairs then the
     time symbol over the time pairs, all packed, each closed by the pair's
     selectivity token (the topop token set)."""
-    vname, tname, vop, top, vcomm, tcomm = _POSOP_TABLE[pos]
+    vpos, tpos, vop, top, vcomm, tcomm = _POSOP_TABLE[pos]
     out = []
-    for name, op, comm, pairs, selkey in (
-            (vname, vop, vcomm, fam["pairs"], "value_selectivity"),
-            (tname, top, tcomm, fam["time_pairs"], "time_selectivity")):
+    for p, op, comm, pairs, selkey in (
+            (vpos, vop, vcomm, fam["pairs"], "value_selectivity"),
+            (tpos, top, tcomm, fam["time_pairs"], "time_selectivity")):
+        name = _posop_name(fam, p)
         sel = fam.get(selkey, "none")
         if isinstance(sel, dict):
             sel = sel[pos]
@@ -3051,10 +3061,13 @@ def _spanfile_sub(text: str, tok: dict) -> str:
 # its own opclass declares, so it carries the support function that rewrites it
 # into that operator. The clause is inserted into the shared four-line skeleton
 # here rather than added to the skeleton itself, which a dozen other surfaces
-# render and which carries no support function.
-_SPAN_PORTABLE = {"overlaps", "contains", "contained", "adjacent", "same",
-                  "before", "after", "overbefore", "overafter",
-                  "left", "right", "overleft", "overright"}
+# render and which carries no support function. A position predicate carries
+# the prefix of its class (setLeft, spanBefore, spansetOverright), the names
+# compared in lower case as the declarations fold them.
+_SPAN_POSITIONS = ("before", "after", "overbefore", "overafter",
+                   "left", "right", "overleft", "overright")
+_SPAN_PORTABLE = {"overlaps", "contains", "contained", "adjacent", "same"} | {
+    cls + pos for cls in ("set", "span", "spanset") for pos in _SPAN_POSITIONS}
 
 
 def _with_span_support(text: str) -> str:

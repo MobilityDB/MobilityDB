@@ -2,7 +2,7 @@ posop_families:
 - family: set
   file: mobilitydb/sql/temporal/002_set_ops.in.sql
   reference: true
-  begin: "CREATE FUNCTION left(integer"
+  begin: "CREATE FUNCTION setLeft(integer"
   end: "CREATE FUNCTION setUnion(integer"
   value_selectivity: [span, span, span, none]
   time_selectivity: {left: [none, span], right: [none, span], overleft: [span, span], overright: [none, span]}
