@@ -31,27 +31,27 @@
 -- Extent aggregate function
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(extent(inst), 6) FROM tbl_tgeometry_inst;
-SELECT stboxRound(extent(inst), 6) FROM tbl_tgeography_inst;
-SELECT stboxRound(extent(ti), 6) FROM tbl_tgeometry_discseq;
-SELECT stboxRound(extent(ti), 6) FROM tbl_tgeography_discseq;
-SELECT stboxRound(extent(seq), 6) FROM tbl_tgeometry_seq;
-SELECT stboxRound(extent(seq), 6) FROM tbl_tgeography_seq;
-SELECT stboxRound(extent(ss), 6) FROM tbl_tgeometry_seqset;
-SELECT stboxRound(extent(ss), 6) FROM tbl_tgeography_seqset;
-SELECT stboxRound(extent(temp), 6) FROM tbl_tgeometry;
-SELECT stboxRound(extent(temp), 6) FROM tbl_tgeography;
+SELECT round(extent(inst), 6) FROM tbl_tgeometry_inst;
+SELECT round(extent(inst), 6) FROM tbl_tgeography_inst;
+SELECT round(extent(ti), 6) FROM tbl_tgeometry_discseq;
+SELECT round(extent(ti), 6) FROM tbl_tgeography_discseq;
+SELECT round(extent(seq), 6) FROM tbl_tgeometry_seq;
+SELECT round(extent(seq), 6) FROM tbl_tgeography_seq;
+SELECT round(extent(ss), 6) FROM tbl_tgeometry_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeography_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tgeometry;
+SELECT round(extent(temp), 6) FROM tbl_tgeography;
 
-SELECT stboxRound(extent(inst), 6) FROM tbl_tgeometry3D_inst;
-SELECT stboxRound(extent(inst), 6) FROM tbl_tgeography3D_inst;
-SELECT stboxRound(extent(ti), 6) FROM tbl_tgeometry3D_discseq;
-SELECT stboxRound(extent(ti), 6) FROM tbl_tgeography3D_discseq;
-SELECT stboxRound(extent(seq), 6) FROM tbl_tgeometry3D_seq;
-SELECT stboxRound(extent(seq), 6) FROM tbl_tgeography3D_seq;
-SELECT stboxRound(extent(ss), 6) FROM tbl_tgeometry3D_seqset;
-SELECT stboxRound(extent(ss), 6) FROM tbl_tgeography3D_seqset;
-SELECT stboxRound(extent(temp), 6) FROM tbl_tgeometry3D;
-SELECT stboxRound(extent(temp), 6) FROM tbl_tgeography3D;
+SELECT round(extent(inst), 6) FROM tbl_tgeometry3D_inst;
+SELECT round(extent(inst), 6) FROM tbl_tgeography3D_inst;
+SELECT round(extent(ti), 6) FROM tbl_tgeometry3D_discseq;
+SELECT round(extent(ti), 6) FROM tbl_tgeography3D_discseq;
+SELECT round(extent(seq), 6) FROM tbl_tgeometry3D_seq;
+SELECT round(extent(seq), 6) FROM tbl_tgeography3D_seq;
+SELECT round(extent(ss), 6) FROM tbl_tgeometry3D_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeography3D_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tgeometry3D;
+SELECT round(extent(temp), 6) FROM tbl_tgeography3D;
 
 -------------------------------------------------------------------------------
 

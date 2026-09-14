@@ -1625,7 +1625,7 @@ PG_FUNCTION_INFO_V1(Temporal_round);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value with the component values set to a number of
  * decimal places
- * @sqlfn tRound()
+ * @sqlfn round()
  */
 Datum
 Temporal_round(PG_FUNCTION_ARGS)
@@ -1648,7 +1648,7 @@ PG_FUNCTION_INFO_V1(Temporalarr_round);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return an array of temporal floats with the precision of the values
  * set to a number of decimal places
- * @sqlfn tRound()
+ * @sqlfn round()
  */
 Datum
 Temporalarr_round(PG_FUNCTION_ARGS)

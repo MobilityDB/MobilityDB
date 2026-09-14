@@ -29,16 +29,16 @@
 
 -------------------------------------------------------------------------------
 
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (NULL::tnpoint),
   ('Npoint(1, 0.5)@2001-01-01'),
   ('{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}')) t(temp);
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint 'Npoint(1, 0.5)@2001-01-01'),
   ('{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'),
   (NULL)) t(temp);
 /* Errors */
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'),
   ('[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]')) t(temp);
 
@@ -46,15 +46,15 @@ SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
 
 -- extent(tnpoint): bulk aggregation across the per-subtype tables.
 -- round to 10 decimal places to suppress platform floating-point ULP differences
-SELECT stboxRound(extent(inst), 10) FROM tbl_tnpoint_inst;
-SELECT stboxRound(extent(ti), 10) FROM tbl_tnpoint_discseq;
-SELECT stboxRound(extent(seq), 10) FROM tbl_tnpoint_seq;
-SELECT stboxRound(extent(ss), 10) FROM tbl_tnpoint_seqset;
-SELECT stboxRound(extent(temp), 10) FROM tbl_tnpoint;
+SELECT round(extent(inst), 10) FROM tbl_tnpoint_inst;
+SELECT round(extent(ti), 10) FROM tbl_tnpoint_discseq;
+SELECT round(extent(seq), 10) FROM tbl_tnpoint_seq;
+SELECT round(extent(ss), 10) FROM tbl_tnpoint_seqset;
+SELECT round(extent(temp), 10) FROM tbl_tnpoint;
 
 -- Group-by aggregation (ensures the combine path runs across partial states)
-SELECT k%10, stboxRound(extent(inst), 10) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, stboxRound(extent(temp), 10) FROM tbl_tnpoint GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, round(extent(inst), 10) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, round(extent(temp), 10) FROM tbl_tnpoint GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------
 

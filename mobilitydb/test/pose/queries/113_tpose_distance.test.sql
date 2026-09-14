@@ -65,11 +65,11 @@ SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
 -- tDistance
 -------------------------------------------------------------------------------
 
-SELECT tRound(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
-SELECT tRound(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
-SELECT tRound(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(1 0)'), 6);
-SELECT tRound(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(1 0),0)'), 6);
-SELECT tRound(tDistance(
+SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(1 0)'), 6);
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(1 0),0)'), 6);
+SELECT round(tDistance(
   tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'), 6);
 

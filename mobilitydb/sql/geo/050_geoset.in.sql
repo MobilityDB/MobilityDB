@@ -341,11 +341,11 @@ CREATE FUNCTION transformPipeline(geogset, text, srid integer DEFAULT 0,
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION setRound(geomset, integer DEFAULT 0)
+CREATE FUNCTION round(geomset, integer DEFAULT 0)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setRound(geogset, integer DEFAULT 0)
+CREATE FUNCTION round(geogset, integer DEFAULT 0)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

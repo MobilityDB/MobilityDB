@@ -470,7 +470,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_round);
  * @ingroup mobilitydb_cbuffer_base_transf
  * @brief Return a circular buffer with the precision of the values set to a
  * number of decimal places
- * @sqlfn cbufferRound()
+ * @sqlfn round()
  */
 Datum
 Cbuffer_round(PG_FUNCTION_ARGS)
@@ -486,7 +486,7 @@ PG_FUNCTION_INFO_V1(Cbufferarr_round);
  * @ingroup mobilitydb_cbuffer_base_transf
  * @brief Return an array of circular buffers with the precision of the values
  * set to a number of decimal places
- * @sqlfn cbufferRound()
+ * @sqlfn round()
  */
 Datum
 Cbufferarr_round(PG_FUNCTION_ARGS)

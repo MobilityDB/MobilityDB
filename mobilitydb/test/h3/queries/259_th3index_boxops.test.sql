@@ -39,32 +39,32 @@
 -- A cell holding a pole reaches it and spans every longitude
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(stbox(h3index '8001fffffffffff'), 6);
-SELECT stboxRound(stbox(h3index '81033ffffffffff'), 6);
-SELECT stboxRound(stbox(h3index '80f3fffffffffff'), 6);
-SELECT stboxRound(stbox(h3index '81f2bffffffffff'), 6);
+SELECT round(stbox(h3index '8001fffffffffff'), 6);
+SELECT round(stbox(h3index '81033ffffffffff'), 6);
+SELECT round(stbox(h3index '80f3fffffffffff'), 6);
+SELECT round(stbox(h3index '81f2bffffffffff'), 6);
 
 -------------------------------------------------------------------------------
 -- A cell crossing the antimeridian takes the full longitude range
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(stbox(h3index '807ffffffffffff'), 6);
-SELECT stboxRound(stbox(h3index '817ebffffffffff'), 6);
+SELECT round(stbox(h3index '807ffffffffffff'), 6);
+SELECT round(stbox(h3index '817ebffffffffff'), 6);
 
 -------------------------------------------------------------------------------
 -- A cell away from both takes the extent of its own boundary
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(stbox(h3index '801ffffffffffff'), 6);
-SELECT stboxRound(stbox(h3index '821fa7fffffffff'), 6);
+SELECT round(stbox(h3index '801ffffffffffff'), 6);
+SELECT round(stbox(h3index '821fa7fffffffff'), 6);
 
 -------------------------------------------------------------------------------
 -- A temporal cell carries the same spatial extent as the cell it takes
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(stbox(th3index '8001fffffffffff@2001-01-01'), 6);
-SELECT stboxRound(stbox(th3index '807ffffffffffff@2001-01-01'), 6);
-SELECT stboxRound(stbox(th3index '[8001fffffffffff@2001-01-01, 801ffffffffffff@2001-01-02]'), 6);
+SELECT round(stbox(th3index '8001fffffffffff@2001-01-01'), 6);
+SELECT round(stbox(th3index '807ffffffffffff@2001-01-01'), 6);
+SELECT round(stbox(th3index '[8001fffffffffff@2001-01-01, 801ffffffffffff@2001-01-02]'), 6);
 
 -------------------------------------------------------------------------------
 -- No parent/child containment property is asserted here. H3 cells are NOT
@@ -81,10 +81,10 @@ SELECT stboxRound(stbox(th3index '[8001fffffffffff@2001-01-01, 801ffffffffffff@2
 -- adds the period and nothing else, so its X and Y are those of the first.
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'), 6);
-SELECT stboxRound(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
-SELECT stboxRound(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')::stbox, 6)
-  && stboxRound(stbox(h3index '8001fffffffffff'), 6);
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'), 6);
+SELECT round(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')::stbox, 6)
+  && round(stbox(h3index '8001fffffffffff'), 6);
 SELECT hasX(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')),
   hasT(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'));
 SELECT SRID(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'));

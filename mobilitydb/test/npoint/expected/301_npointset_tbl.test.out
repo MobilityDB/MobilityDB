@@ -63,8 +63,8 @@ SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE 
        100
 (1 row)
 
-SELECT stboxRound(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox, 6);
-                           stboxround                           
+SELECT round(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox, 6);
+                             round                              
 ----------------------------------------------------------------
  SRID=5676;STBOX X((24.981714,25.103669),(71.258509,80.969651))
 (1 row)
@@ -75,7 +75,7 @@ SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;
    100
 (1 row)
 
-SELECT MIN(getPosition(startValue(setRound(n, 3)))) FROM tbl_npointset;
+SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
   min  
 -------
  0.003

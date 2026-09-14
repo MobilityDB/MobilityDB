@@ -182,10 +182,10 @@ SELECT MAX(lower(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
-SELECT MAX(lower(spansetRound(f, 5))) FROM tbl_floatspanset;
-SELECT MAX(lower(spansetDegrees(f))) FROM tbl_floatspanset;
-SELECT MAX(lower(spansetDegrees(f, true))) FROM tbl_floatspanset;
-SELECT MAX(lower(spansetRadians(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspanset;
+SELECT MAX(lower(radians(f))) FROM tbl_floatspanset;
 
 -------------------------------------------------------------------------------
 -- Comparison Functions
@@ -230,6 +230,6 @@ SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspanset;
 -- Transformation Functions
 -------------------------------------------------------------------------------
 
-SELECT MAX(lower(spansetRound(f, 6))) FROM tbl_floatspanset;
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
 
 -------------------------------------------------------------------------------

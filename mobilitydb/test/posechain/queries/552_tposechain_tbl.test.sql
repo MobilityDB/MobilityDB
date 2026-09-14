@@ -69,7 +69,7 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tpose(temp) IS NOT NULL;
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tposechain WHERE atTime(temp, timeSpan(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_tposechain WHERE tRound(temp, 6) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tposechain WHERE round(temp, 6) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tposechain WHERE shiftTime(temp, interval '1 day') <> temp;
 
 -------------------------------------------------------------------------------

@@ -116,7 +116,7 @@ SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min'))
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE temp::tgeompoint IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE tRound(temp, 7) = tRound((temp::tgeompoint)::tnpoint, 7);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
 
 -------------------------------------------------------------------------------
 --  Accessor functions

@@ -29,11 +29,11 @@
 
 -------------------------------------------------------------------------------
 
-SELECT asText(tRound(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
 
-SELECT asEWKT(tRound(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
 
-SELECT asEWKT(array_agg(tRound(inst, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE inst IS NOT NULL AND k % 10 = 1;
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions

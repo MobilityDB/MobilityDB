@@ -168,10 +168,10 @@ SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f))), 6) FROM tbl_floatspan t1,
 SELECT MAX(lower(shiftScale(t1.d, t2.i, t3.i))) FROM tbl_datespan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
 SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
 
-SELECT MAX(lower(spanRound(f, 5))) FROM tbl_floatspan;
-SELECT MAX(lower(spanDegrees(f))) FROM tbl_floatspan;
-SELECT MAX(lower(spanDegrees(f, true))) FROM tbl_floatspan;
-SELECT MAX(lower(spanRadians(f))) FROM tbl_floatspan;
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspan;
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspan;
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspan;
+SELECT MAX(lower(radians(f))) FROM tbl_floatspan;
 
 -------------------------------------------------------------------------------
 -- Comparison Functions

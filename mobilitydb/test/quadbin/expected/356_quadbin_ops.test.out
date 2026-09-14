@@ -198,20 +198,20 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
  1202021322
 (1 row)
 
-SELECT stboxRound(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01'), 6);
-                                                         stboxround                                                          
+SELECT round(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01'), 6);
+                                                            round                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
-                                                         stboxround                                                          
+SELECT round(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+                                                            round                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01')::stbox, 6)
-  && stboxRound(stbox(quadbin '48a6227affffffff'), 6);
+SELECT round(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01')::stbox, 6)
+  && round(stbox(quadbin '48a6227affffffff'), 6);
  ?column? 
 ----------
  t

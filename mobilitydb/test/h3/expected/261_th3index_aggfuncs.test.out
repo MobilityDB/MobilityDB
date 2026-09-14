@@ -1,38 +1,38 @@
-SELECT stboxRound(extent(temp), 6) FROM ( VALUES
+SELECT round(extent(temp), 6) FROM ( VALUES
   (NULL::th3index),
   (th3index '831c02fffffffff@2001-01-01'),
   (th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}')) t(temp);
-                                                              stboxround                                                               
+                                                                 round                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((-145.20901,49.268689),(-142.844448,50.533827)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(temp), 6) FROM ( VALUES
+SELECT round(extent(temp), 6) FROM ( VALUES
   (th3index '831c02fffffffff@2001-01-01'),
   (th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}'),
   (NULL)) t(temp);
-                                                              stboxround                                                               
+                                                                 round                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((-145.20901,49.268689),(-142.844448,50.533827)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(temp), 6) FROM ( VALUES
+SELECT round(extent(temp), 6) FROM ( VALUES
   (th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]'),
   ('{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], [871fa44a8ffffff@2001-01-03, 880326b885fffff@2001-01-04]}')) t(temp);
-                                                             stboxround                                                              
+                                                                round                                                                
 -------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((-145.20901,49.268689),(65.602001,89.583016)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(temp), 6) FROM ( VALUES (th3index '831c02fffffffff@2001-01-01')) t(temp);
-                                                              stboxround                                                               
+SELECT round(extent(temp), 6) FROM ( VALUES (th3index '831c02fffffffff@2001-01-01')) t(temp);
+                                                                 round                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((-145.20901,49.268689),(-143.772016,50.213164)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(temp), 6) FROM ( VALUES (NULL::th3index)) t(temp);
- stboxround 
-------------
+SELECT round(extent(temp), 6) FROM ( VALUES (NULL::th3index)) t(temp);
+ round 
+-------
  
 (1 row)
 

@@ -34,19 +34,19 @@
 
 /*****************************************************************************/
 
-CREATE FUNCTION stboxRound(stbox, integer DEFAULT 0)
+CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxRound(stbox[], integer DEFAULT 0)
+CREATE FUNCTION round(stbox[], integer DEFAULT 0)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Stboxarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geometryRound(geometry, integer DEFAULT 0)
+CREATE FUNCTION round(geometry, integer DEFAULT 0)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geo_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geographyRound(geography, integer DEFAULT 0)
+CREATE FUNCTION round(geography, integer DEFAULT 0)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Geo_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -174,20 +174,20 @@ CREATE FUNCTION getZ(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tRound(tgeompoint, integer DEFAULT 0)
+CREATE FUNCTION round(tgeompoint, integer DEFAULT 0)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tRound(tgeogpoint, integer DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint, integer DEFAULT 0)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tRound(tgeompoint[], integer DEFAULT 0)
+CREATE FUNCTION round(tgeompoint[], integer DEFAULT 0)
   RETURNS tgeompoint[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tRound(tgeogpoint[], integer DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   RETURNS tgeogpoint[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -744,7 +744,7 @@ PG_FUNCTION_INFO_V1(Floatspan_floor);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span rounded down to the nearest integer
- * @sqlfn spanFloor()
+ * @sqlfn floor()
  */
 Datum
 Floatspan_floor(PG_FUNCTION_ARGS)
@@ -758,7 +758,7 @@ PG_FUNCTION_INFO_V1(Floatspan_ceil);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span rounded up to the nearest integer
- * @sqlfn spanCeil()
+ * @sqlfn ceil()
  */
 Datum
 Floatspan_ceil(PG_FUNCTION_ARGS)
@@ -791,7 +791,7 @@ PG_FUNCTION_INFO_V1(Floatspan_round);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span with the precision of the values set to a number
  * of decimal places
- * @sqlfn spanRound()
+ * @sqlfn round()
  */
 Datum
 Floatspan_round(PG_FUNCTION_ARGS)
@@ -806,7 +806,7 @@ PG_FUNCTION_INFO_V1(Floatspan_degrees);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span with the values converted to degrees
- * @sqlfn spanDegrees()
+ * @sqlfn degrees()
  */
 Datum
 Floatspan_degrees(PG_FUNCTION_ARGS)
@@ -823,7 +823,7 @@ PG_FUNCTION_INFO_V1(Floatspan_radians);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set with the values converted to radians
- * @sqlfn spanRadians()
+ * @sqlfn radians()
  */
 Datum
 Floatspan_radians(PG_FUNCTION_ARGS)

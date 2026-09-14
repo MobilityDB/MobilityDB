@@ -181,7 +181,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE temp::tgeompoint IS NOT NULL;
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE tRound(temp, 7) = tRound((temp::tgeompoint)::tnpoint, 7);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
  count 
 -------
    100

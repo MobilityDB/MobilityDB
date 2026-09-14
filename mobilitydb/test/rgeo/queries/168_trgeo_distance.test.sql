@@ -178,10 +178,10 @@ SELECT round(nearestApproachDistance(
 -- A multi-component target: the distance is the minimum over the components, so
 -- the closest component switches while the body translates and the temporal
 -- distance kinks where the two component distances cross
-SELECT tRound(tDistance(
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'MultiPoint(0 5,11 5)'), 6);
-SELECT tRound(tDistance(
+SELECT round(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'MultiPolygon(((0 5,1 5,1 6,0 6,0 5)),((11 5,12 5,12 6,11 6,11 5)))'), 6);
 

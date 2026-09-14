@@ -71,7 +71,7 @@ SELECT extent(temp::tstzspan) FROM tbl_tfloat;
 SELECT extent(temp::tstzspan) FROM tbl_ttext;
 
 SELECT extent(temp::intspan) FROM tbl_tint;
-SELECT spanRound(extent(temp::floatspan)) FROM tbl_tfloat;
+SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
 
 SELECT COUNT(*) FROM tbl_tbool_inst WHERE tint(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tbool_discseq WHERE tint(ti) IS NOT NULL;

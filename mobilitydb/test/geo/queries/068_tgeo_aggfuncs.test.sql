@@ -36,7 +36,7 @@ SELECT extent(temp) FROM (VALUES
   (tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]'),
   (tgeometry '[Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]'),
   (tgeometry '[Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]')) t(temp);
-SELECT stboxRound(extent(temp), 13) FROM (VALUES
+SELECT round(extent(temp), 13) FROM (VALUES
   (tgeography '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]'),
   (tgeography '[Point(3 3 3)@2001-01-03, Point(4 4 4)@2001-01-04]'),
   (tgeography '[Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]')) t(temp);

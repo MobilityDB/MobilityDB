@@ -156,97 +156,97 @@ SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
  5676
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
                    astext                   
 --------------------------------------------
  Cbuffer(POINT(1.123457 1.123457),0.123457)
 (1 row)
 
-SELECT ST_AsText(geometryRound(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
+SELECT ST_AsText(round(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
                     st_astext                    
 -------------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(0.8 1,1.2 1,0.8 1))
 (1 row)
 
-SELECT asText(cbufferRound((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
+SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
          astext          
 -------------------------
  Cbuffer(POINT(1 1),0.2)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 5),3)
 (1 row)
 
-SELECT ST_AsText(geometryRound(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
+SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
                  st_astext                 
 -------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(2 5,8 5,2 5))
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(0 0),1)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(2 0),2)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(2 0),2)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Linestring(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0, 5 5)'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))'), 6));
             astext            
 ------------------------------
  Cbuffer(POINT(5 5),7.071068)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Triangle((0 0, 10 0, 5 8.66, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Triangle((0 0, 10 0, 5 8.66, 0 0))'), 6));
                astext                
 -------------------------------------
  Cbuffer(POINT(5 2.886582),5.773418)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Multipoint(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 10 0, 5 5)'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Multipoint(0 0, 5 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 5 0, 10 0)'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT asText(cbufferRound(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
         astext         
 -----------------------
  Cbuffer(POINT(5 0),5)

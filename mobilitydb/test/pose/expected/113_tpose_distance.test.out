@@ -125,34 +125,34 @@ SELECT pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)';
 ERROR:  Operation on mixed SRID
 SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
 ERROR:  Operation on mixed SRID
-SELECT tRound(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
-                                              tround                                              
+SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+                                              round                                               
 --------------------------------------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
-                                              tround                                              
+SELECT round(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+                                              round                                               
 --------------------------------------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(1 0)'), 6);
-                                              tround                                              
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(1 0)'), 6);
+                                              round                                               
 --------------------------------------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(1 0),0)'), 6);
-                                              tround                                              
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(1 0),0)'), 6);
+                                              round                                               
 --------------------------------------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tDistance(
+SELECT round(tDistance(
   tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'), 6);
-                              tround                              
+                              round                               
 ------------------------------------------------------------------
  [2@Mon Jan 01 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST]
 (1 row)

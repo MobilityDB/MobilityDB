@@ -453,11 +453,11 @@ CREATE FUNCTION setInterp(tposechain, text)
   AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tRound(tposechain, integer DEFAULT 0)
+CREATE FUNCTION round(tposechain, integer DEFAULT 0)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tRound(tposechain[], integer DEFAULT 0)
+CREATE FUNCTION round(tposechain[], integer DEFAULT 0)
   RETURNS tposechain[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

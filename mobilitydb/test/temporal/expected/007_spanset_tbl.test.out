@@ -583,25 +583,25 @@ SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset
  Sun Dec 30 04:06:00 2001 PST
 (1 row)
 
-SELECT MAX(lower(spansetRound(f, 5))) FROM tbl_floatspanset;
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspanset;
    max    
 ----------
  47.33331
 (1 row)
 
-SELECT MAX(lower(spansetDegrees(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspanset;
         max         
 --------------------
  2711.9986879303624
 (1 row)
 
-SELECT MAX(lower(spansetDegrees(f, true))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspanset;
         max         
 --------------------
  359.61309578633416
 (1 row)
 
-SELECT MAX(lower(spansetRadians(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(radians(f))) FROM tbl_floatspanset;
         max         
 --------------------
  0.8261220427822861
@@ -787,7 +787,7 @@ SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspanset;
  t
 (1 row)
 
-SELECT MAX(lower(spansetRound(f, 6))) FROM tbl_floatspanset;
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
     max    
 -----------
  47.333306

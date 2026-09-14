@@ -92,38 +92,38 @@ SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- Modification functions
 -------------------------------------------------------------------------------
 
-SELECT asText(cbufferRound(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
 
 -------------------------------------------------------------------------------
 -- Cast functions 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(geometryRound(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
+SELECT ST_AsText(round(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
 
-SELECT asText(cbufferRound((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
+SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
 
 -- A circular-arc CURVEPOLYGON converts to the buffer of its centre and radius
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
-SELECT ST_AsText(geometryRound(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
+SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
 
 -- A circle stands the same way whichever pair of opposite points its ring
 -- names, and a curve polygon that is not a circle converts by the circle that
 -- encloses it
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
 
 -- SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::cbuffer;
 
 -- Minimum Enclosing Circle (via geometry::cbuffer cast for non-point geometries)
-SELECT asText(cbufferRound(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Linestring(0 0, 10 0, 5 5)'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Triangle((0 0, 10 0, 5 8.66, 0 0))'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Multipoint(0 0, 10 0, 5 5)'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Multipoint(0 0, 5 0, 10 0)'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'), 6));
-SELECT asText(cbufferRound(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Triangle((0 0, 10 0, 5 8.66, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 5 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
 
 -------------------------------------------------------------------------------
 -- Comparisons

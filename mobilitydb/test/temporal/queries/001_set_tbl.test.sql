@@ -141,10 +141,10 @@ SELECT MIN(startValue(shiftScale(b, 5, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shiftScale(f, 5, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
 
-SELECT MIN(startValue(setRound(f, 5))) FROM tbl_floatset;
-SELECT MIN(startValue(setDegrees(f))) FROM tbl_floatset;
-SELECT MIN(startValue(setDegrees(f, true))) FROM tbl_floatset;
-SELECT MIN(startValue(setRadians(f))) FROM tbl_floatset;
+SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
+SELECT MIN(startValue(degrees(f))) FROM tbl_floatset;
+SELECT MIN(startValue(degrees(f, true))) FROM tbl_floatset;
+SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

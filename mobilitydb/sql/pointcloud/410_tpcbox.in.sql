@@ -197,7 +197,7 @@ CREATE FUNCTION pcid(tpcbox)
  * Transformations
  ******************************************************************************/
 
-CREATE FUNCTION tpcboxRound(tpcbox, integer DEFAULT 0)
+CREATE FUNCTION round(tpcbox, integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -60,14 +60,14 @@ SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE 
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT stboxRound(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox, 6);
+SELECT round(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox, 6);
 
 SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(getPosition(startValue(setRound(n, 3)))) FROM tbl_npointset;
+SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

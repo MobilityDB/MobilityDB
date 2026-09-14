@@ -100,7 +100,7 @@ SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Po
  t
 (1 row)
 
-SELECT asEWKT(posechainRound(valueAtTimestamp(
+SELECT asEWKT(round(valueAtTimestamp(
   appendInstant(
     tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
       timestamptz '2001-01-01'),
@@ -112,13 +112,13 @@ SELECT asEWKT(posechainRound(valueAtTimestamp(
  PoseChain(Pose(POINT(0 0),0.785398),Pose(POINT(10 0),0))
 (1 row)
 
-SELECT asEWKT(tRound(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
+SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
                       asewkt                      
 --------------------------------------------------
  Pose(POINT(10 0),0)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
+SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
                       asewkt                      
 --------------------------------------------------
  Pose(POINT(10 0),0)@Mon Jan 01 00:00:00 2001 PST
@@ -172,13 +172,13 @@ SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 38
  SRID=3812;PoseChain(Pose(POINT(1 2),0))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
+SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
                                                       asewkt                                                      
 ------------------------------------------------------------------------------------------------------------------
  SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),1),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
                                             asewkt                                             
 -----------------------------------------------------------------------------------------------
  SRID=4326;PoseChain(Pose(POINT(595032.294558 5634012.833372),1))@Mon Jan 01 00:00:00 2001 PST

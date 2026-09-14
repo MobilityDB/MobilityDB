@@ -175,7 +175,7 @@ SELECT asText(tposeSeqSet(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(
 SELECT asText(setInterp(tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 'linear'));
 SELECT asText(setInterp(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', 'linear'));
 
-SELECT asText(tRound(tpose '{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(round(tpose '{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
 
 -------------------------------------------------------------------------------
 -- Append functions
@@ -195,10 +195,10 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poin
 -- Cast functions
 -------------------------------------------------------------------------------
 
-SELECT asText(tRound(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
-SELECT asText(tRound(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
-SELECT asText(tRound(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
-SELECT asText(tRound(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
+SELECT asText(round(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(round(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(round(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(round(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
 
 SELECT round(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tfloat, 6);
 SELECT round(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tfloat, 6);
@@ -238,7 +238,7 @@ SELECT memSize(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@
 SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'));
 SELECT asText(pitch(tpose '[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'));
 SELECT asText(roll(tpose '[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'));
-SELECT asText(tRound(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-02]'), 6));
+SELECT asText(round(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-02]'), 6));
 
 SELECT asText(getValue(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
 

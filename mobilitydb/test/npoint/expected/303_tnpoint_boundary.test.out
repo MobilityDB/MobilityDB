@@ -22,14 +22,14 @@ SELECT npoint(1, 0.9999);
  NPoint(1,0.9999)
 (1 row)
 
-SELECT geometryRound(geometry(npoint(1, 0.0))::geometry, 6);
-                   geometryround                    
+SELECT round(geometry(npoint(1, 0.0))::geometry, 6);
+                       round                        
 ----------------------------------------------------
  01010000202C160000734C16F71FD254401172DEFFC7855540
 (1 row)
 
-SELECT geometryRound(geometry(npoint(1, 1.0))::geometry, 6);
-                   geometryround                    
+SELECT round(geometry(npoint(1, 1.0))::geometry, 6);
+                       round                        
 ----------------------------------------------------
  01010000202C160000D6355A0EF4182B403BA6EECA2EF45140
 (1 row)

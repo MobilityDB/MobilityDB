@@ -1034,7 +1034,7 @@ PG_FUNCTION_INFO_V1(Stbox_round);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return a spatiotemporal box with the precision of the space bounds
  * set to a number of decimal values
- * @sqlfn stboxRound()
+ * @sqlfn round()
  */
 Datum
 Stbox_round(PG_FUNCTION_ARGS)
@@ -1050,7 +1050,7 @@ PG_FUNCTION_INFO_V1(Stboxarr_round);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return an array of temporal points with the precision of the
  * coordinates set to a number of decimal places
- * @sqlfn stboxRound()
+ * @sqlfn round()
  */
 Datum
 Stboxarr_round(PG_FUNCTION_ARGS)
