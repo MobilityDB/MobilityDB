@@ -58,6 +58,16 @@ boxtypes:
     valdesc:   temporal value
     file:      mobilitydb/src/temporal/temporal_boxops.c
     reference: true
+    # position wrappers: a span names its one dimension x, so the time operations call
+    # the x kernels (before -> left_span_span); a wrapper with a box operand backs the
+    # SQL function of every class over a timestamptz span (spanBefore ... tpcboxBefore)
+    sqlclass:  span
+    posaxes:   [t]
+    posprimaxes: {t: x}
+    possqlclasses: [span, tbox, stbox, tpcbox]
+    posgroup:  mobilitydb_temporal_bbox_pos
+    posfile:   mobilitydb/src/temporal/temporal_posops.c
+    posreference: true
 
   # tbox: a COMPOSITE box (value span × time). Its own directions dispatch on the
   # tbox primitives (overlaps_tbox_tbox, ...); the `valspan` sub-block adds the
@@ -77,6 +87,12 @@ boxtypes:
     valdesc:   temporal number
     file:      mobilitydb/src/temporal/temporal_boxops.c
     reference: true
+    # position wrappers: the value axis on the value span (valspan) and the tbox, the
+    # time axis on the tbox
+    posaxes:   [x, t]
+    posgroup:  mobilitydb_temporal_bbox_pos
+    posfile:   mobilitydb/src/temporal/temporal_posops.c
+    posreference: true
     valspan:
       box:       numspan
       prim:      span
@@ -85,3 +101,4 @@ boxtypes:
       dispbox:   boxop_tnumber_numspan
       boxdesc:   number span
       boxdescpl: number spans
+      posaxes:   [x]
