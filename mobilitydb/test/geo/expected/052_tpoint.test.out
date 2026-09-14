@@ -4085,6 +4085,12 @@ SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 88)@2001-01-01, Point(180
  POINT(180 89)
 (1 row)
 
+SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 89.999999)@2001-01-01, Point(0 89.9999999)@2001-01-03]', timestamptz '2001-01-02'), 8);
+      st_astext       
+----------------------
+ POINT(0 89.99999945)
+(1 row)
+
 SELECT asText(minusTime(tgeompoint 'Point(1 1)@2001-01-01', timestamptz '2001-01-01'));
  astext 
 --------

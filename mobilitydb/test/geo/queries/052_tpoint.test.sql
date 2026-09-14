@@ -1242,6 +1242,8 @@ SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(
 SELECT st_astext(valueAtTimestamp(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', timestamptz '2001-01-01'));
 -- A geodetic trajectory along a meridian passes over the pole and runs down the opposite meridian
 SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 88)@2001-01-01, Point(180 88)@2001-01-03]', timestamptz '2001-01-02 12:00'), 6);
+-- A geodetic trajectory a few centimetres from the pole keeps its distance to the pole
+SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 89.999999)@2001-01-01, Point(0 89.9999999)@2001-01-03]', timestamptz '2001-01-02'), 8);
 
 SELECT asText(minusTime(tgeompoint 'Point(1 1)@2001-01-01', timestamptz '2001-01-01'));
 SELECT asText(minusTime(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', timestamptz '2001-01-01'));
