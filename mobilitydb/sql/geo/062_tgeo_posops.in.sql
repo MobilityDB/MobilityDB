@@ -578,41 +578,45 @@ CREATE OPERATOR #&> (
 
 /* tgeometry op tgeometry */
 
-CREATE FUNCTION stboxLeft(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxLeft(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverleft(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverleft(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxRight(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxRight(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverright(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverright(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxBelow(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxBelow(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbelow(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverbelow(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAbove(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxAbove(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverabove(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverabove(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxFront(tgeometry, tgeometry)
   RETURNS boolean
@@ -634,25 +638,25 @@ CREATE FUNCTION stboxOverback(tgeometry, tgeometry)
   AS 'MODULE_PATHNAME', 'Overback_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxBefore(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxBefore(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbefore(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverbefore(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAfter(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxAfter(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverafter(inst1 tgeometry, inst2 tgeometry)
+CREATE FUNCTION stboxOverafter(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

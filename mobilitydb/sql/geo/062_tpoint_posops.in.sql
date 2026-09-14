@@ -578,41 +578,45 @@ CREATE OPERATOR #&> (
 
 /* tgeompoint op tgeompoint */
 
-CREATE FUNCTION stboxLeft(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxLeft(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverleft(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverleft(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxRight(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxRight(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverright(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverright(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxBelow(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxBelow(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbelow(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverbelow(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAbove(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxAbove(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverabove(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverabove(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxFront(tgeompoint, tgeompoint)
   RETURNS boolean
@@ -634,25 +638,25 @@ CREATE FUNCTION stboxOverback(tgeompoint, tgeompoint)
   AS 'MODULE_PATHNAME', 'Overback_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxBefore(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxBefore(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbefore(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverbefore(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAfter(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxAfter(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverafter(inst1 tgeompoint, inst2 tgeompoint)
+CREATE FUNCTION stboxOverafter(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
-  SUPPORT span_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
