@@ -369,11 +369,14 @@ def _posops_c_blocks():
 
 
 def _wrap_doc(text: str, width: int = 80) -> str:
-    """Rewrap every doc-comment line longer than `width` at a word boundary, the
-    continuation opening with ' * ' as the hand-written blocks do."""
+    """Rewrap every doc-comment prose line longer than `width` at a word boundary, the
+    continuation opening with ' * ' as the hand-written blocks do. A tag line other
+    than @brief (an @sqlfn naming several SQL functions) stays whole, as the tag
+    readers take it as one line."""
     out = []
     for line in text.split("\n"):
-        while len(line) > width and line.startswith(" * "):
+        while len(line) > width and line.startswith(" * ") and \
+                (line.startswith(" * @brief") or not line.startswith(" * @")):
             cut = line.rfind(" ", 3, width + 1)
             if cut <= 3:
                 break
@@ -388,26 +391,60 @@ def posfile(bt: dict) -> str:
     return bt.get("posfile", bt["file"])
 
 
+def _posops_directions(bt: dict) -> list:
+    """Ordered directions of a box type's position wrappers, as _boxops_directions
+    orders its topological ones: the value-span sub-block (kinds 0 and 1) when it
+    lists axes of its own, then the box's three directions (kinds 0, 1 and 2)."""
+    dirs = []
+    vs = bt.get("valspan")
+    if vs and vs.get("posaxes"):
+        dirs += [{**vs, "kind": k} for k in (0, 1)]
+    dirs += [{**bt, "kind": k} for k in (0, 1, 2)]
+    return dirs
+
+
+def _poskernel(o: dict, d: dict, ops: list) -> str:
+    """The operation whose kernel a wrapper calls: its own, or, on an axis the
+    direction's `posprimaxes` maps (a span names its one dimension x, so tstzspan maps
+    t to x), the operation in the same place on the mapped axis (before -> left)."""
+    target = d.get("posprimaxes", {}).get(o["axis"])
+    if not target:
+        return o["op"]
+    own = [p["op"] for p in ops if p["axis"] == o["axis"]]
+    return [p["op"] for p in ops if p["axis"] == target][own.index(o["op"])]
+
+
+def _possqlfn(o: dict, d: dict, bt: dict) -> str:
+    """The @sqlfn of a wrapper: <class><Op>() of the box type's SQL class, or, for a
+    direction with a box operand, of each class its `possqlclasses` lists, the SQL
+    functions over that box the wrapper backs."""
+    classes = (d.get("possqlclasses") if d["kind"] != 2 else None) or \
+        [bt.get("sqlclass", bt["box"])]
+    return ", ".join(f"{c}{o['op']}()" for c in classes)
+
+
 def render_posops_c(bt: dict, ops: list) -> str:
     """The position wrappers of a box type: per direction, its banner and one wrapper
-    per operation of the axes the box type lists."""
+    per operation of the axes the direction lists."""
     header, kinds, trailer = _posops_c_blocks()
-    axes = set(bt["posaxes"])
-    vals = {"BOX": bt["box"], "TSIDE": bt["tside"], "PRIM": bt.get("prim", bt["box"]),
-            "BOXDESC": bt["boxdesc"], "VALDESC": bt["valdesc"],
-            "POSGROUP": bt["posgroup"], "SQLCLASS": bt.get("sqlclass", bt["box"])}
 
-    def sub(fragment: str, extra: dict) -> str:
-        for k, v in {**vals, **extra}.items():
+    def sub(fragment: str, vals: dict) -> str:
+        for k, v in vals.items():
             fragment = fragment.replace("{" + k + "}", v)
         return fragment
 
     out = [header]
-    for banner, wrapper in kinds:
-        out.append(sub(banner, {}))
-        out += [_wrap_doc(sub(wrapper, {"OP": o["op"], "OPLC": o["op"].lower(),
-                                         "REL": o["rel"], "SQLOP": o["sqlop"]}))
-                for o in ops if o["axis"] in axes]
+    for d in _posops_directions(bt):
+        banner, wrapper = kinds[d["kind"]]
+        vals = {"BOX": d["box"], "TSIDE": bt["tside"], "PRIM": d.get("prim", d["box"]),
+                "BOXDESC": d.get("boxdesc", bt["boxdesc"]), "VALDESC": bt["valdesc"],
+                "POSGROUP": bt["posgroup"]}
+        out.append(sub(banner, vals))
+        out += [_wrap_doc(sub(wrapper, {**vals, "OP": o["op"],
+                                         "OPLC": _poskernel(o, d, ops).lower(),
+                                         "REL": o["rel"], "SQLOP": o["sqlop"],
+                                         "SQLFN": _possqlfn(o, d, bt)}))
+                for o in ops if o["axis"] in d["posaxes"]]
     out.append(trailer)
     return "\n\n".join(out)
 
@@ -454,7 +491,10 @@ def _posops_c_unbriefed(block: str) -> str:
 
 def _posops_c_filler(line: str) -> bool:
     """A line allowed between hand-written wrappers: blank, a row of asterisks, or a
-    one-line banner comment."""
+    one-line banner comment, never a marker of a generated region (two box types
+    sharing one file, as tstzspan and tbox do, meet at such a marker)."""
+    if "GENERATED-" in line:
+        return False
     return (not line.strip() or re.fullmatch(r"/\*+/", line) is not None
             or (line.startswith("/* ") and line.endswith(" */")))
 
