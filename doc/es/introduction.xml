@@ -598,5 +598,61 @@ SET client_min_messages TO notice;
 				</tbody>
 			</tgroup>
 		</informaltable>
+		<para>
+			Las funciones de posición, entre las cuales <varname>left</varname> y <varname>right</varname> coinciden con funciones de Apache Spark y Apache Flink, llevan como prefijo la clase cuyos valores o cuadros delimitadores comparan: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname> para los tipos conjunto, rango y conjunto de rangos, y para un cuadro delimitador o un valor temporal el tipo de su cuadro delimitador, <varname>tbox</varname>, <varname>stbox</varname> o <varname>tpcbox</varname>. Un valor temporal booleano, de texto o JSONB está delimitado por su rango de tiempo y lleva <varname>span</varname>. Las posiciones en el tiempo y a lo largo de los tres ejes espaciales llevan el prefijo por igual. La siguiente tabla da las funciones en ambas versiones.
+		</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Versión 1.3</entry>
+						<entry>Versión 1.4</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>before</varname></entry>
+						<entry><varname>setBefore</varname>, <varname>spanBefore</varname>, <varname>spansetBefore</varname>, <varname>tboxBefore</varname>, <varname>stboxBefore</varname>, <varname>tpcboxBefore</varname></entry>
+					</row>
+					<row>
+						<entry><varname>after</varname></entry>
+						<entry><varname>setAfter</varname>, <varname>spanAfter</varname>, <varname>spansetAfter</varname>, <varname>tboxAfter</varname>, <varname>stboxAfter</varname>, <varname>tpcboxAfter</varname></entry>
+					</row>
+					<row>
+						<entry><varname>overbefore</varname></entry>
+						<entry><varname>setOverbefore</varname>, <varname>spanOverbefore</varname>, <varname>spansetOverbefore</varname>, <varname>tboxOverbefore</varname>, <varname>stboxOverbefore</varname>, <varname>tpcboxOverbefore</varname></entry>
+					</row>
+					<row>
+						<entry><varname>overafter</varname></entry>
+						<entry><varname>setOverafter</varname>, <varname>spanOverafter</varname>, <varname>spansetOverafter</varname>, <varname>tboxOverafter</varname>, <varname>stboxOverafter</varname>, <varname>tpcboxOverafter</varname></entry>
+					</row>
+					<row>
+						<entry><varname>left</varname></entry>
+						<entry><varname>setLeft</varname>, <varname>spanLeft</varname>, <varname>spansetLeft</varname>, <varname>tboxLeft</varname>, <varname>stboxLeft</varname>, <varname>tpcboxLeft</varname></entry>
+					</row>
+					<row>
+						<entry><varname>right</varname></entry>
+						<entry><varname>setRight</varname>, <varname>spanRight</varname>, <varname>spansetRight</varname>, <varname>tboxRight</varname>, <varname>stboxRight</varname>, <varname>tpcboxRight</varname></entry>
+					</row>
+					<row>
+						<entry><varname>overleft</varname></entry>
+						<entry><varname>setOverleft</varname>, <varname>spanOverleft</varname>, <varname>spansetOverleft</varname>, <varname>tboxOverleft</varname>, <varname>stboxOverleft</varname>, <varname>tpcboxOverleft</varname></entry>
+					</row>
+					<row>
+						<entry><varname>overright</varname></entry>
+						<entry><varname>setOverright</varname>, <varname>spanOverright</varname>, <varname>spansetOverright</varname>, <varname>tboxOverright</varname>, <varname>stboxOverright</varname>, <varname>tpcboxOverright</varname></entry>
+					</row>
+					<row>
+						<entry><varname>below</varname>, <varname>above</varname>, <varname>overbelow</varname>, <varname>overabove</varname></entry>
+						<entry><varname>stboxBelow</varname>, <varname>stboxAbove</varname>, <varname>stboxOverbelow</varname>, <varname>stboxOverabove</varname>, <varname>tpcboxBelow</varname>, <varname>tpcboxAbove</varname>, <varname>tpcboxOverbelow</varname>, <varname>tpcboxOverabove</varname></entry>
+					</row>
+					<row>
+						<entry><varname>front</varname>, <varname>back</varname>, <varname>overfront</varname>, <varname>overback</varname></entry>
+						<entry><varname>stboxFront</varname>, <varname>stboxBack</varname>, <varname>stboxOverfront</varname>, <varname>stboxOverback</varname>, <varname>tpcboxFront</varname>, <varname>tpcboxBack</varname>, <varname>tpcboxOverfront</varname>, <varname>tpcboxOverback</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 	</sect1>
 </chapter>

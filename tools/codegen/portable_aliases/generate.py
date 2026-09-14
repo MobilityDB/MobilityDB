@@ -29,10 +29,11 @@
 """Verify every MobilityDB operator is covered by the portable SQL dialect.
 
 The portable SQL dialect (RFC: doc/rfc/sql-portability) names every operator's
-backing function with the bare portable name directly -- positional
-(left/right/before/after and the over* variants), topological
-(contains/contained/overlaps/adjacent/same) and comparison (tEqual/eEqual/aEqual, ...).
-The bare names live in the operator definitions themselves; there is no
+backing function with its portable name directly -- positional, carrying the
+prefix of the class compared (setLeft, spanBefore, tboxOverright, stboxAbove,
+tpcboxFront), topological (contains/contained/overlaps/adjacent/same) and
+comparison (tEqual/eEqual/aEqual, ...).
+The names live in the operator definitions themselves; there is no
 generated SQL.
 
 This tool classifies every CREATE OPERATOR symbol in mobilitydb/sql against the
@@ -50,17 +51,22 @@ import os
 import re
 import sys
 
-# RFC operator -> portable bare name (doc/rfc/sql-portability/README.md). Each
-# operator's backing function is named directly with this bare name.
-OP_TO_NAME = {
+# Position operator -> the position its backing function names. The function
+# carries the prefix of the class it compares (set, span, spanset, tbox, stbox,
+# tpcbox) before the capitalized position, so `<<` over two spans is spanLeft.
+POSITION = {
     "<<#": "before", "#>>": "after", "&<#": "overbefore", "#&>": "overafter",
     "<<": "left", ">>": "right", "&<": "overleft", "&>": "overright",
     "<<|": "below", "|>>": "above", "&<|": "overbelow", "|&>": "overabove",
     "<</": "front", "/>>": "back", "&</": "overfront", "/&>": "overback",
-    # The three comparison families -- temp / ever / always -- use one
-    # consistent camelCase shape appended below: <prefix>{Equal,NotEqual,LessThan,
-    # LessEqual,GreaterThan,GreaterEqual} with a single-letter prefix (t / e / a).
 }
+
+# RFC operator -> portable bare name (doc/rfc/sql-portability/README.md). Each
+# operator's backing function is named directly with this bare name. The three
+# comparison families -- temp / ever / always -- use one consistent camelCase
+# shape appended below: <prefix>{Equal,NotEqual,LessThan,LessEqual,GreaterThan,
+# GreaterEqual} with a single-letter prefix (t / e / a).
+OP_TO_NAME = {}
 
 # Operators whose backing PROCEDURE is a callable named function that is already
 # portable under its own name -- documented, not a gap.
@@ -110,8 +116,11 @@ def read_text(path):
 
 def classify(sym):
     """Classify one operator symbol; return None if it is a parity gap."""
+    if sym in POSITION:
+        pos = POSITION[sym]
+        return f"class-prefixed <class>{pos[0].upper()}{pos[1:]}() (position backing)"
     if sym in OP_TO_NAME:
-        return f"bare {OP_TO_NAME[sym]}() (positional/comparison backing)"
+        return f"bare {OP_TO_NAME[sym]}() (comparison backing)"
     if sym in TOPO:
         return "bare topological function (contains/contained/overlaps/adjacent/same)"
     if sym in TEMP or sym in EVER or sym in ALWAYS:

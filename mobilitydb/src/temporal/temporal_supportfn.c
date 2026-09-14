@@ -245,36 +245,58 @@ static const int16 TSpatialStrategies[] =
 * so most common functions first. Could be sorted
 * and searched with binary search.
 */
-/* The portable spellings of the time-dimension operators, which every class
- * carries. Listed here once and reused by the number and spatial tables */
-#define TIME_PORTABLE_FUNCTIONS \
+/* The portable spellings of the topological operators, which every class
+ * carries under the same names. Listed here once and reused by every table */
+#define TOPO_PORTABLE_FUNCTIONS \
   {"overlaps", OVERLAPS_IDX, 2, 0}, \
   {"contains", CONTAINS_IDX, 2, 0}, \
   {"contained", CONTAINED_IDX, 2, 0}, \
   {"adjacent", ADJACENT_IDX, 2, 0}, \
-  {"same", SAME_IDX, 2, 0}, \
-  {"before", BEFORE_IDX, 2, 0}, \
-  {"overbefore", OVERBEFORE_IDX, 2, 0}, \
-  {"after", AFTER_IDX, 2, 0}, \
-  {"overafter", OVERAFTER_IDX, 2, 0}
+  {"same", SAME_IDX, 2, 0}
 
-/* The portable spellings of the first-axis operators */
-#define AXIS1_PORTABLE_FUNCTIONS \
-  {"left", LEFT_IDX, 2, 0}, \
-  {"overleft", OVERLEFT_IDX, 2, 0}, \
-  {"right", RIGHT_IDX, 2, 0}, \
-  {"overright", OVERRIGHT_IDX, 2, 0}
+/* The portable spellings of the time-dimension position operators. A position
+ * function carries the prefix of the class whose values or boxes it compares
+ * (spanBefore, tboxBefore, stboxBefore), so a table lists it under each prefix
+ * its family declares */
+#define TIME_PORTABLE_FUNCTIONS(prefix) \
+  {prefix "Before", BEFORE_IDX, 2, 0}, \
+  {prefix "Overbefore", OVERBEFORE_IDX, 2, 0}, \
+  {prefix "After", AFTER_IDX, 2, 0}, \
+  {prefix "Overafter", OVERAFTER_IDX, 2, 0}
 
+/* The portable spellings of the first-axis position operators */
+#define AXIS1_PORTABLE_FUNCTIONS(prefix) \
+  {prefix "Left", LEFT_IDX, 2, 0}, \
+  {prefix "Overleft", OVERLEFT_IDX, 2, 0}, \
+  {prefix "Right", RIGHT_IDX, 2, 0}, \
+  {prefix "Overright", OVERRIGHT_IDX, 2, 0}
+
+/* A temporal Boolean, text or JSONB value is bounded by its time span */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  TIME_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS,
+  TIME_PORTABLE_FUNCTIONS("span"),
   {NULL, 0, 0, 0}
 };
 
+/* The value-domain types and the box types are their own bounding box, so
+ * this table serves the predicates over sets, spans and span sets and those
+ * of the box types over themselves */
 static const IndexableFunction SpanIndexableFunctions[] =
 {
-  TIME_PORTABLE_FUNCTIONS,
-  AXIS1_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS,
+  TIME_PORTABLE_FUNCTIONS("set"),
+  TIME_PORTABLE_FUNCTIONS("span"),
+  TIME_PORTABLE_FUNCTIONS("spanset"),
+  TIME_PORTABLE_FUNCTIONS("tbox"),
+  TIME_PORTABLE_FUNCTIONS("stbox"),
+  TIME_PORTABLE_FUNCTIONS("tpcbox"),
+  AXIS1_PORTABLE_FUNCTIONS("set"),
+  AXIS1_PORTABLE_FUNCTIONS("span"),
+  AXIS1_PORTABLE_FUNCTIONS("spanset"),
+  AXIS1_PORTABLE_FUNCTIONS("tbox"),
+  AXIS1_PORTABLE_FUNCTIONS("stbox"),
+  AXIS1_PORTABLE_FUNCTIONS("tpcbox"),
   {NULL, 0, 0, 0}
 };
 
@@ -282,8 +304,9 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
   /* Ever/always comparison functions */
   {"eEqual", EVER_EQ_IDX, 2, 0},
   {"aEqual", ALWAYS_EQ_IDX, 2, 0},
-  TIME_PORTABLE_FUNCTIONS,
-  AXIS1_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS,
+  TIME_PORTABLE_FUNCTIONS("tbox"),
+  AXIS1_PORTABLE_FUNCTIONS("tbox"),
   {NULL, 0, 0, 0}
 };
 
@@ -306,16 +329,17 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {"aTouches", ATOUCHES_IDX, 2, 0},
   {"aDwithin", ADWITHIN_IDX, 3, 3},
   /* Portable spellings of the bounding-box operators */
-  TIME_PORTABLE_FUNCTIONS,
-  AXIS1_PORTABLE_FUNCTIONS,
-  {"below", BELOW_IDX, 2, 0},
-  {"overbelow", OVERBELOW_IDX, 2, 0},
-  {"above", ABOVE_IDX, 2, 0},
-  {"overabove", OVERABOVE_IDX, 2, 0},
-  {"front", FRONT_IDX, 2, 0},
-  {"overfront", OVERFRONT_IDX, 2, 0},
-  {"back", BACK_IDX, 2, 0},
-  {"overback", OVERBACK_IDX, 2, 0},
+  TOPO_PORTABLE_FUNCTIONS,
+  TIME_PORTABLE_FUNCTIONS("stbox"),
+  AXIS1_PORTABLE_FUNCTIONS("stbox"),
+  {"stboxBelow", BELOW_IDX, 2, 0},
+  {"stboxOverbelow", OVERBELOW_IDX, 2, 0},
+  {"stboxAbove", ABOVE_IDX, 2, 0},
+  {"stboxOverabove", OVERABOVE_IDX, 2, 0},
+  {"stboxFront", FRONT_IDX, 2, 0},
+  {"stboxOverfront", OVERFRONT_IDX, 2, 0},
+  {"stboxBack", BACK_IDX, 2, 0},
+  {"stboxOverback", OVERBACK_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 

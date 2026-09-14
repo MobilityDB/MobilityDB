@@ -40,22 +40,22 @@
 
 /* tstzspan op ts2cell */
 
-CREATE FUNCTION before(tstzspan, ts2cell)
+CREATE FUNCTION stboxBefore(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tstzspan, ts2cell)
+CREATE FUNCTION stboxOverbefore(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tstzspan, ts2cell)
+CREATE FUNCTION stboxAfter(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tstzspan, ts2cell)
+CREATE FUNCTION stboxOverafter(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tspatial_supportfn
@@ -63,24 +63,24 @@ CREATE FUNCTION overafter(tstzspan, ts2cell)
 
 CREATE OPERATOR <<# (
   LEFTARG = tstzspan, RIGHTARG = ts2cell,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = #>>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tstzspan, RIGHTARG = ts2cell,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tstzspan, RIGHTARG = ts2cell,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = <<#,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tstzspan, RIGHTARG = ts2cell,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -88,62 +88,62 @@ CREATE OPERATOR #&> (
  * stbox
  *****************************************************************************/
 
-CREATE FUNCTION left(stbox, ts2cell)
+CREATE FUNCTION stboxLeft(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(stbox, ts2cell)
+CREATE FUNCTION stboxOverleft(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(stbox, ts2cell)
+CREATE FUNCTION stboxRight(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(stbox, ts2cell)
+CREATE FUNCTION stboxOverright(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(stbox, ts2cell)
+CREATE FUNCTION stboxBelow(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(stbox, ts2cell)
+CREATE FUNCTION stboxOverbelow(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(stbox, ts2cell)
+CREATE FUNCTION stboxAbove(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(stbox, ts2cell)
+CREATE FUNCTION stboxOverabove(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(stbox, ts2cell)
+CREATE FUNCTION stboxBefore(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(stbox, ts2cell)
+CREATE FUNCTION stboxOverbefore(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(stbox, ts2cell)
+CREATE FUNCTION stboxAfter(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(stbox, ts2cell)
+CREATE FUNCTION stboxOverafter(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
   SUPPORT tspatial_supportfn
@@ -151,68 +151,68 @@ CREATE FUNCTION overafter(stbox, ts2cell)
 
 CREATE OPERATOR << (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = stbox, RIGHTARG = ts2cell,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -222,22 +222,22 @@ CREATE OPERATOR #&> (
 
 /* ts2cell op tstzspan */
 
-CREATE FUNCTION before(ts2cell, tstzspan)
+CREATE FUNCTION stboxBefore(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(ts2cell, tstzspan)
+CREATE FUNCTION stboxOverbefore(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(ts2cell, tstzspan)
+CREATE FUNCTION stboxAfter(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(ts2cell, tstzspan)
+CREATE FUNCTION stboxOverafter(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tspatial_supportfn
@@ -245,24 +245,24 @@ CREATE FUNCTION overafter(ts2cell, tstzspan)
 
 CREATE OPERATOR <<# (
   LEFTARG = ts2cell, RIGHTARG = tstzspan,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = #>>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = ts2cell, RIGHTARG = tstzspan,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = ts2cell, RIGHTARG = tstzspan,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = <<#,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = ts2cell, RIGHTARG = tstzspan,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -270,62 +270,62 @@ CREATE OPERATOR #&> (
 
 /* ts2cell op stbox */
 
-CREATE FUNCTION left(ts2cell, stbox)
+CREATE FUNCTION stboxLeft(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(ts2cell, stbox)
+CREATE FUNCTION stboxOverleft(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(ts2cell, stbox)
+CREATE FUNCTION stboxRight(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(ts2cell, stbox)
+CREATE FUNCTION stboxOverright(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(ts2cell, stbox)
+CREATE FUNCTION stboxBelow(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(ts2cell, stbox)
+CREATE FUNCTION stboxOverbelow(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(ts2cell, stbox)
+CREATE FUNCTION stboxAbove(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(ts2cell, stbox)
+CREATE FUNCTION stboxOverabove(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(ts2cell, stbox)
+CREATE FUNCTION stboxBefore(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(ts2cell, stbox)
+CREATE FUNCTION stboxOverbefore(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(ts2cell, stbox)
+CREATE FUNCTION stboxAfter(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(ts2cell, stbox)
+CREATE FUNCTION stboxOverafter(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
   SUPPORT tspatial_supportfn
@@ -333,68 +333,68 @@ CREATE FUNCTION overafter(ts2cell, stbox)
 
 CREATE OPERATOR << (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = ts2cell, RIGHTARG = stbox,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -402,62 +402,62 @@ CREATE OPERATOR #&> (
 
 /* ts2cell op ts2cell */
 
-CREATE FUNCTION left(ts2cell, ts2cell)
+CREATE FUNCTION stboxLeft(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverleft(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(ts2cell, ts2cell)
+CREATE FUNCTION stboxRight(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverright(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(ts2cell, ts2cell)
+CREATE FUNCTION stboxBelow(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverbelow(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(ts2cell, ts2cell)
+CREATE FUNCTION stboxAbove(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverabove(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(ts2cell, ts2cell)
+CREATE FUNCTION stboxBefore(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverbefore(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(ts2cell, ts2cell)
+CREATE FUNCTION stboxAfter(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(ts2cell, ts2cell)
+CREATE FUNCTION stboxOverafter(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
   SUPPORT tspatial_supportfn
@@ -465,68 +465,68 @@ CREATE FUNCTION overafter(ts2cell, ts2cell)
 
 CREATE OPERATOR << (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = left,
+  PROCEDURE = stboxLeft,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overleft,
+  PROCEDURE = stboxOverleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = right,
+  PROCEDURE = stboxRight,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overright,
+  PROCEDURE = stboxOverright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = below,
+  PROCEDURE = stboxBelow,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overbelow,
+  PROCEDURE = stboxOverbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = above,
+  PROCEDURE = stboxAbove,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overabove,
+  PROCEDURE = stboxOverabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = before,
+  PROCEDURE = stboxBefore,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overbefore,
+  PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = after,
+  PROCEDURE = stboxAfter,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = ts2cell, RIGHTARG = ts2cell,
-  PROCEDURE = overafter,
+  PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 

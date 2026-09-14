@@ -36,22 +36,22 @@
 
 /* tstzspan op tjsonb */
 
-CREATE FUNCTION before(tstzspan, tjsonb)
+CREATE FUNCTION spanBefore(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tstzspan, tjsonb)
+CREATE FUNCTION spanOverbefore(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tstzspan, tjsonb)
+CREATE FUNCTION spanAfter(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tstzspan, tjsonb)
+CREATE FUNCTION spanOverafter(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT temporal_supportfn
@@ -59,45 +59,45 @@ CREATE FUNCTION overafter(tstzspan, tjsonb)
 
 CREATE OPERATOR <<# (
   LEFTARG    = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE  = before,
+  PROCEDURE  = spanBefore,
   COMMUTATOR = #>>,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG   = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE = overbefore,
+  PROCEDURE = spanOverbefore,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG    = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE  = after,
+  PROCEDURE  = spanAfter,
   COMMUTATOR = <<#,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG   = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE = overafter,
+  PROCEDURE = spanOverafter,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );
 
 /* tjsonb op tstzspan */
 
-CREATE FUNCTION before(tjsonb, tstzspan)
+CREATE FUNCTION spanBefore(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tjsonb, tstzspan)
+CREATE FUNCTION spanOverbefore(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tjsonb, tstzspan)
+CREATE FUNCTION spanAfter(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tjsonb, tstzspan)
+CREATE FUNCTION spanOverafter(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT temporal_supportfn
@@ -105,45 +105,45 @@ CREATE FUNCTION overafter(tjsonb, tstzspan)
 
 CREATE OPERATOR <<# (
   LEFTARG    = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE  = before,
+  PROCEDURE  = spanBefore,
   COMMUTATOR = #>>,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG   = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE = overbefore,
+  PROCEDURE = spanOverbefore,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG    = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE  = after,
+  PROCEDURE  = spanAfter,
   COMMUTATOR = <<#,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG   = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE = overafter,
+  PROCEDURE = spanOverafter,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );
 
 /* tjsonb op tjsonb */
 
-CREATE FUNCTION before(tjsonb, tjsonb)
+CREATE FUNCTION spanBefore(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tjsonb, tjsonb)
+CREATE FUNCTION spanOverbefore(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tjsonb, tjsonb)
+CREATE FUNCTION spanAfter(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tjsonb, tjsonb)
+CREATE FUNCTION spanOverafter(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
   SUPPORT temporal_supportfn
@@ -151,23 +151,23 @@ CREATE FUNCTION overafter(tjsonb, tjsonb)
 
 CREATE OPERATOR <<# (
   LEFTARG    = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE  = before,
+  PROCEDURE  = spanBefore,
   COMMUTATOR = #>>,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG   = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = overbefore,
+  PROCEDURE = spanOverbefore,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG    = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE  = after,
+  PROCEDURE  = spanAfter,
   COMMUTATOR = <<#,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG   = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = overafter,
+  PROCEDURE = spanOverafter,
   RESTRICT  = temporal_sel, JOIN = temporal_joinsel
 );

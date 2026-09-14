@@ -666,7 +666,7 @@ PG_FUNCTION_INFO_V1(Left_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox << tpcbox (strictly left, X-axis)
- * @sqlfn left()
+ * @sqlfn tpcboxLeft()
  * @sqlop @p <<
  */
 Datum Left_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -677,7 +677,7 @@ PG_FUNCTION_INFO_V1(Overleft_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox &< tpcbox (does not extend right, X-axis)
- * @sqlfn overleft()
+ * @sqlfn tpcboxOverleft()
  * @sqlop @p &<
  */
 Datum Overleft_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -688,7 +688,7 @@ PG_FUNCTION_INFO_V1(Right_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox >> tpcbox (strictly right, X-axis)
- * @sqlfn right()
+ * @sqlfn tpcboxRight()
  * @sqlop @p >>
  */
 Datum Right_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -699,7 +699,7 @@ PG_FUNCTION_INFO_V1(Overright_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox &> tpcbox (does not extend left, X-axis)
- * @sqlfn overright()
+ * @sqlfn tpcboxOverright()
  * @sqlop @p &>
  */
 Datum Overright_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -710,7 +710,7 @@ PG_FUNCTION_INFO_V1(Below_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox <<| tpcbox (strictly below, Y-axis)
- * @sqlfn below()
+ * @sqlfn tpcboxBelow()
  * @sqlop @p <<|
  */
 Datum Below_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -721,7 +721,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox &<| tpcbox (does not extend above, Y-axis)
- * @sqlfn overbelow()
+ * @sqlfn tpcboxOverbelow()
  * @sqlop @p &<|
  */
 Datum Overbelow_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -732,7 +732,7 @@ PG_FUNCTION_INFO_V1(Above_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox |>> tpcbox (strictly above, Y-axis)
- * @sqlfn above()
+ * @sqlfn tpcboxAbove()
  * @sqlop @p |>>
  */
 Datum Above_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -743,7 +743,7 @@ PG_FUNCTION_INFO_V1(Overabove_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox |&> tpcbox (does not extend below, Y-axis)
- * @sqlfn overabove()
+ * @sqlfn tpcboxOverabove()
  * @sqlop @p |&>
  */
 Datum Overabove_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -754,7 +754,7 @@ PG_FUNCTION_INFO_V1(Front_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox <</ tpcbox (strictly in front, Z-axis)
- * @sqlfn front()
+ * @sqlfn tpcboxFront()
  * @sqlop @p <</
  */
 Datum Front_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -765,7 +765,7 @@ PG_FUNCTION_INFO_V1(Overfront_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox &</ tpcbox (does not extend behind, Z-axis)
- * @sqlfn overfront()
+ * @sqlfn tpcboxOverfront()
  * @sqlop @p &</
  */
 Datum Overfront_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -776,7 +776,7 @@ PG_FUNCTION_INFO_V1(Back_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox />> tpcbox (strictly behind, Z-axis)
- * @sqlfn back()
+ * @sqlfn tpcboxBack()
  * @sqlop @p />>
  */
 Datum Back_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -787,7 +787,7 @@ PG_FUNCTION_INFO_V1(Overback_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox /&> tpcbox (does not extend in front, Z-axis)
- * @sqlfn overback()
+ * @sqlfn tpcboxOverback()
  * @sqlop @p /&>
  */
 Datum Overback_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -798,7 +798,7 @@ PG_FUNCTION_INFO_V1(Before_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox <<# tpcbox (strictly before, time)
- * @sqlfn before()
+ * @sqlfn tpcboxBefore()
  * @sqlop @p <<#
  */
 Datum Before_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -809,7 +809,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox &<# tpcbox (does not extend after, time)
- * @sqlfn overbefore()
+ * @sqlfn tpcboxOverbefore()
  * @sqlop @p &<#
  */
 Datum Overbefore_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -820,7 +820,7 @@ PG_FUNCTION_INFO_V1(After_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox #>> tpcbox (strictly after, time)
- * @sqlfn after()
+ * @sqlfn tpcboxAfter()
  * @sqlop @p #>>
  */
 Datum After_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -831,7 +831,7 @@ PG_FUNCTION_INFO_V1(Overafter_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_pos
  * @brief PG wrapper: tpcbox #&> tpcbox (does not extend before, time)
- * @sqlfn overafter()
+ * @sqlfn tpcboxOverafter()
  * @sqlop @p #&>
  */
 Datum Overafter_tpcbox_tpcbox(PG_FUNCTION_ARGS)

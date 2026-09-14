@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a set
- * @sqlfn left()
+ * @sqlfn setLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -197,7 +197,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the left of a value
- * @sqlfn left()
+ * @sqlfn setLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the left of the second one
- * @sqlfn left()
+ * @sqlfn setLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -228,7 +228,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a set
- * @sqlfn right()
+ * @sqlfn setRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the right of a value
- * @sqlfn right()
+ * @sqlfn setRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the right of the second one
- * @sqlfn right()
+ * @sqlfn setRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -273,7 +273,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a set
- * @sqlfn overleft()
+ * @sqlfn setOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -287,7 +287,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the right of a value
- * @sqlfn overleft()
+ * @sqlfn setOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -302,7 +302,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the right of the
  * second one
- * @sqlfn overleft()
+ * @sqlfn setOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -319,7 +319,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a set
- * @sqlfn overright()
+ * @sqlfn setOverright()
  * @sqlop @p
  */
 inline Datum
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the left of a value
- * @sqlfn overright()
+ * @sqlfn setOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -348,7 +348,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the left of the
  * second one
- * @sqlfn overright()
+ * @sqlfn setOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -636,7 +636,7 @@ PG_FUNCTION_INFO_V1(Before_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is before the second one
- * @sqlfn before()
+ * @sqlfn setBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_set_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -652,7 +652,7 @@ PG_FUNCTION_INFO_V1(After_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is after the second one
- * @sqlfn after()
+ * @sqlfn setAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_set_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -668,7 +668,7 @@ PG_FUNCTION_INFO_V1(Overbefore_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is not after the second one
- * @sqlfn overbefore()
+ * @sqlfn setOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_set_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -684,7 +684,7 @@ PG_FUNCTION_INFO_V1(Overafter_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is not before the second one
- * @sqlfn overafter()
+ * @sqlfn setOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_set_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(Before_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is before a value
- * @sqlfn before()
+ * @sqlfn setBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_set_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -716,7 +716,7 @@ PG_FUNCTION_INFO_V1(After_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is after a value
- * @sqlfn after()
+ * @sqlfn setAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_set_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -732,7 +732,7 @@ PG_FUNCTION_INFO_V1(Overbefore_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is not after a value
- * @sqlfn overbefore()
+ * @sqlfn setOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_set_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -748,7 +748,7 @@ PG_FUNCTION_INFO_V1(Overafter_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is not before a value
- * @sqlfn overafter()
+ * @sqlfn setOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_set_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -764,7 +764,7 @@ PG_FUNCTION_INFO_V1(Before_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is before a set
- * @sqlfn before()
+ * @sqlfn setBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_value_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -780,7 +780,7 @@ PG_FUNCTION_INFO_V1(After_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is after a set
- * @sqlfn after()
+ * @sqlfn setAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_value_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -796,7 +796,7 @@ PG_FUNCTION_INFO_V1(Overbefore_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is not after a set
- * @sqlfn overbefore()
+ * @sqlfn setOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_value_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -812,7 +812,7 @@ PG_FUNCTION_INFO_V1(Overafter_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is not before a set
- * @sqlfn overafter()
+ * @sqlfn setOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_value_set; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.

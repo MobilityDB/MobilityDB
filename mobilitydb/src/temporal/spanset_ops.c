@@ -381,7 +381,7 @@ PG_FUNCTION_INFO_V1(Left_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a span set
- * @sqlfn left()
+ * @sqlfn spansetLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -395,7 +395,7 @@ PG_FUNCTION_INFO_V1(Left_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the left of a span set
- * @sqlfn left()
+ * @sqlfn spanLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is to the left of a value
- * @sqlfn left()
+ * @sqlfn spansetLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is to the left a span
- * @sqlfn left()
+ * @sqlfn spansetLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is to the left of the second one
- * @sqlfn left()
+ * @sqlfn spansetLeft()
  * @sqlop @p <<
  */
 inline Datum
@@ -455,7 +455,7 @@ PG_FUNCTION_INFO_V1(Right_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a span set
- * @sqlfn right()
+ * @sqlfn spansetRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -469,7 +469,7 @@ PG_FUNCTION_INFO_V1(Right_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the right of a span set
- * @sqlfn right()
+ * @sqlfn spanRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is to the right of a value
- * @sqlfn right()
+ * @sqlfn spansetRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -497,7 +497,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is to the right of a span
- * @sqlfn right()
+ * @sqlfn spansetRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -511,7 +511,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is to the right of the second one
- * @sqlfn right()
+ * @sqlfn spansetRight()
  * @sqlop @p >>
  */
 inline Datum
@@ -529,7 +529,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a span set
- * @sqlfn overleft()
+ * @sqlfn spansetOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -543,7 +543,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set does not extend to the right of a value
- * @sqlfn overleft()
+ * @sqlfn spansetOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -557,7 +557,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the right of a span set
- * @sqlfn overleft()
+ * @sqlfn spanOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -571,7 +571,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set does not extend to the right of a span
- * @sqlfn overleft()
+ * @sqlfn spansetOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -586,7 +586,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_spanset);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set does not extend to the right of the
  * second one
- * @sqlfn overleft()
+ * @sqlfn spansetOverleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -604,7 +604,7 @@ PG_FUNCTION_INFO_V1(Overright_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a span set
- * @sqlfn overright()
+ * @sqlfn spansetOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -618,7 +618,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set does not extend to the left of a value
- * @sqlfn overright()
+ * @sqlfn spansetOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -632,7 +632,7 @@ PG_FUNCTION_INFO_V1(Overright_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the left of a span set
- * @sqlfn overright()
+ * @sqlfn spanOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -646,7 +646,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set does not extend to the left of a span
- * @sqlfn overright()
+ * @sqlfn spansetOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -661,7 +661,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_spanset);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set does not extend to the left of the
  * second one
- * @sqlfn overright()
+ * @sqlfn spansetOverright()
  * @sqlop @p &>
  */
 inline Datum
@@ -1104,7 +1104,7 @@ PG_FUNCTION_INFO_V1(Before_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is before a span set
- * @sqlfn before()
+ * @sqlfn spanBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_span_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1120,7 +1120,7 @@ PG_FUNCTION_INFO_V1(After_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is after a span set
- * @sqlfn after()
+ * @sqlfn spanAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_span_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1136,7 +1136,7 @@ PG_FUNCTION_INFO_V1(Overbefore_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is not after a span set
- * @sqlfn overbefore()
+ * @sqlfn spanOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_span_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1152,7 +1152,7 @@ PG_FUNCTION_INFO_V1(Overafter_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is not before a span set
- * @sqlfn overafter()
+ * @sqlfn spanOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_span_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1168,7 +1168,7 @@ PG_FUNCTION_INFO_V1(Before_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is before a span
- * @sqlfn before()
+ * @sqlfn spansetBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_spanset_span; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1184,7 +1184,7 @@ PG_FUNCTION_INFO_V1(After_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is after a span
- * @sqlfn after()
+ * @sqlfn spansetAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_spanset_span; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1200,7 +1200,7 @@ PG_FUNCTION_INFO_V1(Overbefore_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is not after a span
- * @sqlfn overbefore()
+ * @sqlfn spansetOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_spanset_span; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1216,7 +1216,7 @@ PG_FUNCTION_INFO_V1(Overafter_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is not before a span
- * @sqlfn overafter()
+ * @sqlfn spansetOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_spanset_span; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1232,7 +1232,7 @@ PG_FUNCTION_INFO_V1(Before_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is before a value
- * @sqlfn before()
+ * @sqlfn spansetBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_spanset_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1248,7 +1248,7 @@ PG_FUNCTION_INFO_V1(After_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is after a value
- * @sqlfn after()
+ * @sqlfn spansetAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_spanset_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1264,7 +1264,7 @@ PG_FUNCTION_INFO_V1(Overbefore_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is not after a value
- * @sqlfn overbefore()
+ * @sqlfn spansetOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_spanset_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1280,7 +1280,7 @@ PG_FUNCTION_INFO_V1(Overafter_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span set is not before a value
- * @sqlfn overafter()
+ * @sqlfn spansetOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_spanset_value; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1296,7 +1296,7 @@ PG_FUNCTION_INFO_V1(Before_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is before a span set
- * @sqlfn before()
+ * @sqlfn spansetBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_value_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1312,7 +1312,7 @@ PG_FUNCTION_INFO_V1(After_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is after a span set
- * @sqlfn after()
+ * @sqlfn spansetAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_value_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1328,7 +1328,7 @@ PG_FUNCTION_INFO_V1(Overbefore_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is not after a span set
- * @sqlfn overbefore()
+ * @sqlfn spansetOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_value_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1344,7 +1344,7 @@ PG_FUNCTION_INFO_V1(Overafter_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is not before a span set
- * @sqlfn overafter()
+ * @sqlfn spansetOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_value_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1360,7 +1360,7 @@ PG_FUNCTION_INFO_V1(Before_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is before the second one
- * @sqlfn before()
+ * @sqlfn spansetBefore()
  * @sqlop @p <<#
  * @note Time-axis name for the same 1-D bound comparison as #Left_spanset_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1376,7 +1376,7 @@ PG_FUNCTION_INFO_V1(After_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is after the second one
- * @sqlfn after()
+ * @sqlfn spansetAfter()
  * @sqlop @p #>>
  * @note Time-axis name for the same 1-D bound comparison as #Right_spanset_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1392,7 +1392,7 @@ PG_FUNCTION_INFO_V1(Overbefore_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is not after the second one
- * @sqlfn overbefore()
+ * @sqlfn spansetOverbefore()
  * @sqlop @p &<#
  * @note Time-axis name for the same 1-D bound comparison as #Overleft_spanset_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.
@@ -1408,7 +1408,7 @@ PG_FUNCTION_INFO_V1(Overafter_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span set is not before the second one
- * @sqlfn overafter()
+ * @sqlfn spansetOverafter()
  * @sqlop @p #&>
  * @note Time-axis name for the same 1-D bound comparison as #Overright_spanset_spanset; a distinct
  * wrapper so the SQL name/operator resolve correctly in the generated catalog.

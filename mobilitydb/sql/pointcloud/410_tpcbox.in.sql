@@ -349,126 +349,126 @@ CREATE OPERATOR CLASS tpcbox_btree_ops
  * A predicate only evaluates on dimensions both operands carry.
  ******************************************************************************/
 
-CREATE FUNCTION left(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxLeft(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Left_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overleft(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverleft(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overleft_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION right(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxRight(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Right_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overright(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverright(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overright_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION below(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxBelow(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Below_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbelow(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverbelow(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overbelow_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION above(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxAbove(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Above_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overabove(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverabove(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overabove_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION front(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxFront(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Front_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overfront(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverfront(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overfront_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION back(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxBack(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Back_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overback(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverback(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overback_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION before(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxBefore(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Before_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overbefore(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverbefore(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overbefore_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION after(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxAfter(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'After_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overafter(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxOverafter(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overafter_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
-  PROCEDURE = left, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxLeft, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = >>
 );
 CREATE OPERATOR &< (
-  PROCEDURE = overleft, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverleft, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR >> (
-  PROCEDURE = right, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxRight, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = <<
 );
 CREATE OPERATOR &> (
-  PROCEDURE = overright, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverright, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR <<| (
-  PROCEDURE = below, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxBelow, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = |>>
 );
 CREATE OPERATOR &<| (
-  PROCEDURE = overbelow, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverbelow, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR |>> (
-  PROCEDURE = above, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxAbove, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = <<|
 );
 CREATE OPERATOR |&> (
-  PROCEDURE = overabove, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverabove, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR <</ (
-  PROCEDURE = front, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxFront, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = />>
 );
 CREATE OPERATOR &</ (
-  PROCEDURE = overfront, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverfront, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR />> (
-  PROCEDURE = back, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxBack, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = <</
 );
 CREATE OPERATOR /&> (
-  PROCEDURE = overback, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverback, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR <<# (
-  PROCEDURE = before, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxBefore, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = #>>
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = overbefore, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverbefore, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = after, LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  PROCEDURE = tpcboxAfter, LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = <<#
 );
 CREATE OPERATOR #&> (
-  PROCEDURE = overafter, LEFTARG = tpcbox, RIGHTARG = tpcbox
+  PROCEDURE = tpcboxOverafter, LEFTARG = tpcbox, RIGHTARG = tpcbox
 );
 
 /*****************************************************************************/

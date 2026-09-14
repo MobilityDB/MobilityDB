@@ -1217,18 +1217,21 @@ uses for its estimators.
 
 What the support function buys is the index: it rewrites a predicate into the
 bounding-box operator an opclass answers, so the portable spellings of those
-operators — `overlaps` for `&&`, `contains` for `@>`, `before` for `<<#`, the
-table in `doc/portable_sql.xml` — reach the same index as the operator, rather
-than being kept as a filter over a sequential scan.
+operators — `overlaps` for `&&`, `contains` for `@>`, `stboxBefore` for `<<#`
+over a spatiotemporal value, the table in `doc/portable_sql.xml` — reach the
+same index as the operator, rather than being kept as a filter over a
+sequential scan. `temporal_supportfn.c` recognizes a position predicate by its
+name, so each of its tables lists the class prefixes its family declares.
 
 Three facts bound which declarations carry the clause:
 
 - **A predicate is rewritten under the commuted spelling when its indexed
   operand is on the right**, the support function putting that operand on the
   left. The commuting pairs are the ones the operators declare as `COMMUTATOR`:
-  `contains`/`contained`, `before`/`after`, `left`/`right`, `below`/`above`,
-  `front`/`back`, with `overlaps`, `same` and `adjacent` commuting to
-  themselves. ⛔ The eight `over` predicates declare **no** commutator —
+  `contains`/`contained` and, under each class prefix, the positions
+  `Before`/`After`, `Left`/`Right`, `Below`/`Above` and `Front`/`Back`
+  (`stboxBefore`/`stboxAfter`), with `overlaps`, `same` and `adjacent`
+  commuting to themselves. ⛔ The eight `over` predicates declare **no** commutator —
   `s &< v` bounds one side and is no `v` OP `s` — so they keep the predicate as
   a filter in that operand order instead of rewriting it into a different
   question.
@@ -1259,7 +1262,7 @@ box-building step is skipped — the operand is passed through as-is.
 
 `SpanStrategies[]` carries **both** axes, because one array serves types whose
 single dimension is spelled differently: a time span answers the
-`before`/`after` family and a number span the `left`/`right` one. The axis a
+`spanBefore`/`spanAfter` family and a number span the `spanLeft`/`spanRight` one. The axis a
 given span does not have simply finds no operator for its strategy and keeps the
 predicate as a filter, so no per-type table is needed.
 

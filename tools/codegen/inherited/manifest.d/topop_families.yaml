@@ -3,7 +3,7 @@ topop_families:
   file: mobilitydb/sql/temporal/002_set_ops.in.sql
   reference: true
   begin: "CREATE FUNCTION contains(intset,"
-  end: "CREATE FUNCTION left(integer"
+  end: "CREATE FUNCTION setLeft(integer"
   selectivity: [span, span, span, none, none, span]
   pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [text, textset], [date, dateset], [timestamptz, tstzset]]
   blocks:
