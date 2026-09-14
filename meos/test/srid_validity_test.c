@@ -40,8 +40,10 @@
  * The program obtains SRID_INVALID as the error value of #geo_srid on a null
  * geometry, which the public headers do not otherwise name, and verifies
  * that every function refusing it returns NULL and sets #meos_errno. It also
- * verifies that #stbox_make reports a time span of another type, and that
- * a valid SRID still answers with no error left behind.
+ * verifies that #geog_in and #geom_to_geog refuse a coordinate system that
+ * is not lon/lat with the same error, that #stbox_make reports a time span of
+ * another type, and that a valid SRID still answers with no error left
+ * behind.
  *
  * The program can be build as follows
  * @code
@@ -116,6 +118,15 @@ int main(void)
   check_refused("posechain_set_srid(pc, SRID_INVALID)",
     posechain_set_srid(pc, invalid), MEOS_ERR_INVALID_ARG_VALUE);
 
+  /* A geography refuses a coordinate system that is not lon/lat, whether it
+   * is read from text or converted from a geometry */
+  GSERIALIZED *planar = geom_in("SRID=3857;Point(1 1)", -1);
+  assert(planar);
+  check_refused("geog_in(\"SRID=3857;Point(1 1)\", -1)",
+    geog_in("SRID=3857;Point(1 1)", -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("geom_to_geog(SRID=3857 point)", geom_to_geog(planar),
+    MEOS_ERR_INVALID_ARG_VALUE);
+
   /* A time span of another type is reported rather than read as a period */
   check_refused("stbox_make(..., [1, 3])",
     stbox_make(true, false, false, 0, 1, 2, 1, 2, 0, 0, ispan),
@@ -138,7 +149,7 @@ int main(void)
   assert(pose2 != NULL);
   assert(meos_errno() == 0);
 
-  free(gs); free(box); free(pose2);
+  free(gs); free(box); free(pose2); free(planar);
   free(cb); free(pose); free(pc); free(ispan);
 
   /* Finalize MEOS */

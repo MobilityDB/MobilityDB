@@ -1677,7 +1677,7 @@ TGEOMETRY_CONFIG = dict(
         # The geometry/geography conversions read the coordinates as lon/lat,
         # so they take the geodetic (SRID 4326) inputs: the planar SRID 5676
         # defaults are refused with "Only lon/lat coordinate systems are
-        # supported in geography". Each direction also fixes the shape of the
+        # supported". Each direction also fixes the shape of the
         # values it converts: only a point-valued tgeography becomes a
         # tgeogpoint, and only a STEP tgeogpoint becomes a tgeography.
         "tgeometry_to_tgeography":  {0: "tgeo_geod1"},
@@ -1686,7 +1686,7 @@ TGEOMETRY_CONFIG = dict(
         "tgeogpoint_to_tgeography": {0: "tgeogpoint_step1"},
         # The geog_* surface needs real lon/lat literals: every canned
         # geometry above is planar (SRID 5676) and is refused with "Only
-        # lon/lat coordinate systems are supported in geography".
+        # lon/lat coordinate systems are supported".
         "geog_in":           {0: '"SRID=4326;Point(2 49)"', 1: "-1"},
         # WKB encoding of geog_in("SRID=4326;Point(2 49)", -1) via
         # geo_as_hexewkb(g, "NDR"), pasted here so the constructor test does
@@ -1858,7 +1858,7 @@ TGEOMETRY_CONFIG = dict(
   GSERIALIZED *geom_out_param = NULL;
   /* Real lon/lat inputs for the geog_* surface: every geometry above uses
    * the planar SRID 5676, which geography rejects ("Only lon/lat coordinate
-   * systems are supported in geography"). */
+   * systems are supported"). */
   GSERIALIZED *geom_lonlat1 = geom_in("SRID=4326;Point(2 49)", -1);
   GSERIALIZED *geog1 = geog_in("SRID=4326;Polygon((2 49,3 49,3 50,2 50,2 49))", -1);
   Set *geomset1 = geomset_in("{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}");
