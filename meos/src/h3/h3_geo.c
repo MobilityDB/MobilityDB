@@ -365,9 +365,9 @@ h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
   if (sphere_project(&path->g1, path->dist / 2.0, path->azimuth, &gm) !=
       LW_SUCCESS)
     return false;
-  POINT3D mid;
-  geog2cart(&gm, &mid);
-  h3_vec_cross(&path->a, &mid, &path->normal);
+  /* Read from the angles of the two points: the Cartesian cross product of
+   * two close unit vectors loses its precision to cancellation */
+  robust_cross_product(&path->g1, &gm, &path->normal);
   if (path->normal.x == 0.0 && path->normal.y == 0.0 && path->normal.z == 0.0)
     return false;
   normalize(&path->normal);
@@ -414,18 +414,24 @@ h3_cell_exit_param_geodetic(H3Index cell, const H3SegmentPath *path,
   CellBoundary bnd;
   if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
     return 2.0;
+  GEOGRAPHIC_POINT g[MAX_CELL_BNDRY_VERTS];
   POINT3D v[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd.numVerts; i++)
   {
-    GEOGRAPHIC_POINT g = { .lat = bnd.verts[i].lat, .lon = bnd.verts[i].lng };
-    geog2cart(&g, &v[i]);
+    g[i].lat = bnd.verts[i].lat;
+    g[i].lon = bnd.verts[i].lng;
+    geog2cart(&g[i], &v[i]);
   }
   double best = 2.0;
   for (int i = 0; i < bnd.numVerts; i++)
   {
     int j = (i + 1) % bnd.numVerts;
     POINT3D m, d, c;
-    h3_vec_cross(&v[i], &v[j], &m);
+    /* The normal of the circle of the edge, read from the angles of its
+     * vertices: their Cartesian cross product loses to cancellation all but
+     * the rounding of a unit vector, which on the edge of a fine cell places
+     * the circle millimetres off the vertices */
+    robust_cross_product(&g[i], &g[j], &m);
     h3_vec_cross(&path->normal, &m, &d);
     if (d.x == 0.0 && d.y == 0.0 && d.z == 0.0)
       continue;              /* the edge lies on the circle of the path */

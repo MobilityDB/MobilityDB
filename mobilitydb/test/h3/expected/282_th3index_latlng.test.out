@@ -237,6 +237,18 @@ SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeomp
  t
 (1 row)
 
+SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 15))) AS other_cell
+FROM (SELECT p, th3index(p, 15) AS c FROM (VALUES (tgeogpoint
+  '[Point(37.1124 -29.7116)@2001-01-01, Point(37.1124305 -29.7116247)@2001-01-03]'))
+  AS v(p)) AS q, generate_series(timestamptz '2001-01-01 00:17',
+    '2001-01-02 23:43', interval '37 minutes') AS t;
+ instants | other_cell 
+----------+------------
+       77 |          0
+(1 row)
+
 SELECT numInstants(th3index(tgeogpoint
   '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
