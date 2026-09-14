@@ -87,4 +87,18 @@ CREATE FUNCTION ts2CellToToken(ts2cell)
   AS 'MODULE_PATHNAME', 'Ts2cell_cell_to_token'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Conversion from a temporal point
+ *
+ * `ts2cell(tgeogpoint, integer)` answers the temporal cell of a geodetic
+ * trajectory. An S2 cell edge is an arc of a great circle, the path a geodetic
+ * point moves along, so each segment is traversed cell by cell on the sphere
+ * and the result holds every cell the trajectory crosses.
+ ******************************************************************************/
+
+CREATE FUNCTION ts2cell(tgeogpoint, integer)
+  RETURNS ts2cell
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_to_ts2cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

@@ -175,4 +175,26 @@ Ts2cell_cell_to_token(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************
+ * Conversion from a temporal point
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tgeogpoint_to_ts2cell(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_to_ts2cell);
+/**
+ * @ingroup mobilitydb_s2cell_conversion
+ * @brief Return the temporal S2 cell of a temporal geodetic point at the
+ * given level
+ * @sqlfn ts2cell()
+ */
+Datum
+Tgeogpoint_to_ts2cell(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 level = PG_GETARG_INT32(1);
+  Temporal *result = tgeogpoint_to_ts2cell(temp, level);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/

@@ -87,3 +87,109 @@ SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2001-01-01]'))
  t
 (1 row)
 
+SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10);
+               ts2cell               
+-------------------------------------
+ 47c3c3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT startValue(ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10))
+  = geoToS2Cell(geography 'Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell(tgeogpoint
+  '[Point(4.3500 50.8500)@2001-01-01, Point(4.3501 50.8501)@2001-01-02]', 10);
+                                  ts2cell                                   
+----------------------------------------------------------------------------
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT ts2cell(tgeogpoint '{Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02}', 4);
+                               ts2cell                                
+----------------------------------------------------------------------
+ {101@Mon Jan 01 00:00:00 2001 PST, 209@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT ts2cell(tgeogpoint
+  'Interp=Step;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4);
+                               ts2cell                                
+----------------------------------------------------------------------
+ [101@Mon Jan 01 00:00:00 2001 PST, 209@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT numValues(getValues(t)), numInstants(t),
+  startValue(t) = geoToS2Cell(geography 'Point(1 1)', 4),
+  endValue(t) = geoToS2Cell(geography 'Point(60 -40)', 4)
+FROM (SELECT ts2cell(tgeogpoint
+  '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
+ numvalues | numinstants | ?column? | ?column? 
+-----------+-------------+----------+----------
+        19 |          20 | t        | t
+(1 row)
+
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToS2Cell(valueAtTimestamp(p, t), 8)) AS other_cell
+FROM (SELECT p, ts2cell(p, 8) AS c FROM (VALUES
+  (tgeogpoint '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]'),
+  (tgeogpoint '[Point(179 10)@2001-01-01, Point(-179 12)@2001-01-03]'),
+  (tgeogpoint '[Point(0 88)@2001-01-01, Point(170 88)@2001-01-03]'),
+  (tgeogpoint '[Point(0 86)@2001-01-01, Point(0 89.5)@2001-01-03]'),
+  (tgeogpoint '[Point(0 88)@2001-01-01, Point(180 88)@2001-01-03]'))
+  AS v(p)) AS q,
+  generate_series(timestamptz '2001-01-01 00:17', timestamptz '2001-01-02 23:00',
+    interval '37 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+ instants | other_cell 
+----------+------------
+      343 |          0
+(1 row)
+
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToS2Cell(valueAtTimestamp(p, t), 16)) AS other_cell
+FROM (SELECT p, ts2cell(p, 16) AS c FROM (VALUES
+  (tgeogpoint '[Point(90 89.661652198)@2001-01-01, Point(90 88.678114725)@2001-01-03]'))
+  AS v(p)) AS q,
+  generate_series(timestamptz '2001-01-01 00:17', timestamptz '2001-01-02 23:00',
+    interval '37 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+ instants | other_cell 
+----------+------------
+       76 |          0
+(1 row)
+
+SELECT getTime(ts2cell(p, 10)) = getTime(p) FROM (VALUES
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02]'),
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)'))
+  AS v(p);
+ ?column? 
+----------
+ t
+ t
+(2 rows)
+
+SELECT endValue(ts2cell(tgeogpoint
+  '[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)', 10))
+  = geoToS2Cell(geography 'Point(4.40 50.90)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numSequences(ts2cell(tgeogpoint
+  '{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
+ numsequences 
+--------------
+            2
+(1 row)
+
+/* Errors */
+SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 31);
+ERROR:  The resolution must be between 0 and 30
+SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', -1);
+ERROR:  The resolution must be between 0 and 30
