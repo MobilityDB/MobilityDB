@@ -209,6 +209,16 @@ SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeomp
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
 
+-- A geodetic trajectory holds the cell of its own position at every instant
+-- at the finest resolution too, where a cell edge is under a metre long
+SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 15))) AS other_cell
+FROM (SELECT p, th3index(p, 15) AS c FROM (VALUES (tgeogpoint
+  '[Point(37.1124 -29.7116)@2001-01-01, Point(37.1124305 -29.7116247)@2001-01-03]'))
+  AS v(p)) AS q, generate_series(timestamptz '2001-01-01 00:17',
+    '2001-01-02 23:43', interval '37 minutes') AS t;
+
 -- A geodetic trajectory moves along the great circle between its instants, so
 -- one crossing the antimeridian enters the cells along its shortest route.
 -- The planar trajectory between the same positions moves along the straight
