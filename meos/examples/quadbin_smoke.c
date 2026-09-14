@@ -42,11 +42,12 @@
 
 #include <stdio.h>    /* for printf */
 #include <stdlib.h>   /* for free */
-/* Include the MEOS API header and the quadbin extension API */
+/* Include the MEOS API header, the quadbin extension API and the cell index
+ * API shared by the cell index families */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_quadbin.h>
-#include "temporal/tcellindex.h"
+#include <meos_cellindex.h>
 
 int main(void)
 {
