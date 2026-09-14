@@ -98,7 +98,7 @@ CREATE FUNCTION npointsetFromHexEWKB(text)
 
 CREATE FUNCTION asText(npointset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Set_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(npointset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
