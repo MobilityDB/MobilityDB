@@ -66,6 +66,10 @@
  * @ingroup meos_h3
  * @brief Accessor functions for temporal H3 cell indices
  *
+ * @defgroup meos_h3_transf Transformation functions
+ * @ingroup meos_h3
+ * @brief Transformation functions for temporal H3 cell indices
+ *
  * @defgroup meos_h3_inspection Index-inspection functions
  * @ingroup meos_h3
  * @brief Per-instant inspection of the underlying H3 cell payload

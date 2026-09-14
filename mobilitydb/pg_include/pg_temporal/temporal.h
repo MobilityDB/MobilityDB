@@ -76,9 +76,19 @@ typedef struct
   bool done;
   int i;
   int count;
-  Temporal *temp;  /* Temporal value to unnest */
-  Datum *values;   /* Values obtained by getValues(temp) */
+  Datum *values;       /* Distinct values of the temporal value */
+  SpanSet **spansets;  /* Span set on which each value is taken */
 } TempUnnestState;
+
+/**
+ * Function answering the distinct values of a temporal value, each with the
+ * span set on which it is taken, as #temporal_unnest does
+ */
+typedef SpanSet **(*temporal_unnest_fn)(const Temporal *temp, Datum **values,
+  int *count);
+
+extern Datum Temporal_unnest_ext(FunctionCallInfo fcinfo,
+  temporal_unnest_fn unnest);
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL

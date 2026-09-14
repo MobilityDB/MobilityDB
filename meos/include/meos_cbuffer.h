@@ -244,6 +244,7 @@ extern Cbuffer *tcbuffer_start_value(const Temporal *temp);
 extern bool tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Cbuffer **value);
 extern bool tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result);
 extern Cbuffer **tcbuffer_values(const Temporal *temp, int *count);
+extern SpanSet **tcbuffer_unnest(const Temporal *temp, Cbuffer ***values, int *count);
 
 /*****************************************************************************
  * Conversion functions

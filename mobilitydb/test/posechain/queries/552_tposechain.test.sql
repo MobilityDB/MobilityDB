@@ -149,3 +149,12 @@ SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(P
 SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(Pose(Point(5 6), 0))@2001-01-02]');
 
 -------------------------------------------------------------------------------
+-- unnest: one row per distinct chain, a repeated chain carrying both
+-- of its times
+-------------------------------------------------------------------------------
+
+SELECT (rec).time FROM (SELECT unnest(tposechain
+  '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 0), 0))@2001-01-02,
+  PoseChain(Pose(Point(0 0), 0))@2001-01-03}') AS rec) AS t;
+
+-------------------------------------------------------------------------------

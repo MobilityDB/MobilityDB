@@ -313,6 +313,7 @@ extern Jsonb *tjsonb_start_value(const Temporal *temp);
 extern bool tjsonb_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,  Jsonb **value);
 extern bool tjsonb_value_n(const Temporal *temp, int n, Jsonb **result);
 extern Jsonb **tjsonb_values(const Temporal *temp, int *count);
+extern SpanSet **tjsonb_unnest(const Temporal *temp, Jsonb ***values, int *count);
 
 /*****************************************************************************
  * Transformation functions

@@ -395,6 +395,39 @@ tjsonb_values(const Temporal *temp, int *count)
   return result;
 }
 
+/**
+ * @ingroup meos_json_transf
+ * @brief Return the distinct values of a temporal JSONB, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tjsonb_unnest(const Temporal *temp, Jsonb ***values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  Jsonb **vals = palloc(sizeof(Jsonb *) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetJsonbP(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**

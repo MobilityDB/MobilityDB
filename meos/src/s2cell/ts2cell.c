@@ -358,6 +358,39 @@ ts2cell_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_s2cell_transf
+ * @brief Return the distinct values of a temporal S2 cell, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+ts2cell_unnest(const Temporal *temp, S2CellId **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TS2CELL(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  S2CellId *vals = palloc(sizeof(S2CellId) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetS2Cell(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
  * @ingroup meos_s2cell_accessor
  * @brief Return the S2 cell of a temporal S2 cell at a timestamptz
  * @param[in] temp Temporal S2 cell

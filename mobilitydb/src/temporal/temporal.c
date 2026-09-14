@@ -1873,50 +1873,15 @@ Temporal_shift_scale_time(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Create the initial state that persists across multiple calls of the
- * function
- * @param[in] temp Temporal value
- */
-TempUnnestState *
-temporal_unnest_state_make(const Temporal *temp)
-{
-  TempUnnestState *state = palloc0(sizeof(TempUnnestState));
-  int count;
-  Datum *values = temporal_values(temp, &count);
-  /* Fill in state */
-  state->done = false;
-  state->i = 0;
-  state->count = count;
-  state->values = values;
-  state->temp = temporal_copy(temp);
-  return state;
-}
-
-/**
- * @brief Increment the current state to the next unnest value
- * @param[in] state State to increment
- */
-void
-temporal_unnest_state_next(TempUnnestState *state)
-{
-  if (! state || state->done)
-    return;
-  /* Move to the next bin */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
-
-PGDLLEXPORT Datum Temporal_unnest(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_unnest);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return the list of values and associated span sets of a temporal value
- * @sqlfn unnest()
+ * @brief Return the rows of a temporal value, each pairing one of its
+ * distinct values with the span set on which it is taken
+ * @details The function computing the values and their span sets is called
+ * once, on the first call, and every later call returns the next row
+ * @param[in] fcinfo Function call information
+ * @param[in] unnest Function answering the values and their span sets
  */
 Datum
-Temporal_unnest(PG_FUNCTION_ARGS)
+Temporal_unnest_ext(FunctionCallInfo fcinfo, temporal_unnest_fn unnest)
 {
   FuncCallContext *funcctx;
 
@@ -1932,7 +1897,10 @@ Temporal_unnest(PG_FUNCTION_ARGS)
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     ensure_nonlinear_interp(temp->flags);
     /* Create function state */
-    funcctx->user_fctx = temporal_unnest_state_make(temp);
+    TempUnnestState *state = palloc0(sizeof(TempUnnestState));
+    state->spansets = unnest(temp, &state->values, &state->count);
+    state->done = (state->count == 0);
+    funcctx->user_fctx = state;
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -1943,37 +1911,42 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   TempUnnestState *state = funcctx->user_fctx;
-  /* Stop when we've used up all bins */
+  /* Stop when every row is returned */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-    // pfree(state->values);
-    // pfree(state->temp);
     pfree(state);
     MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
   }
 
-  /* Get value */
+  /* Get the value and its span set */
   Datum values[2]; /* used to construct the composite return value */
   values[0] = state->values[state->i];
-  /* Get span set */
-  Temporal *rest = temporal_restrict_value(state->temp,
-    state->values[state->i], REST_AT);
-  if (! rest)
-    elog(ERROR, "Unexpected error with temporal value %s",
-      temporal_out(state->temp, OUT_DEFAULT_DECIMAL_DIGITS));
-  values[1] = PointerGetDatum(temporal_time(rest));
-  pfree(rest);
+  values[1] = PointerGetDatum(state->spansets[state->i]);
   /* Advance state */
-  temporal_unnest_state_next(state);
+  if (++state->i == state->count)
+    state->done = true;
   /* Form tuple and return */
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
   Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
+}
+
+PGDLLEXPORT Datum Temporal_unnest(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_unnest);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the list of values and associated span sets of a temporal value
+ * @sqlfn unnest()
+ */
+Datum
+Temporal_unnest(PG_FUNCTION_ARGS)
+{
+  return Temporal_unnest_ext(fcinfo, &temporal_unnest);
 }
 
 /*****************************************************************************

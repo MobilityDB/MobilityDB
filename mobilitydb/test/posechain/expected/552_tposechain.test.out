@@ -226,3 +226,12 @@ SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(P
  STBOX XT(((1,2),(5,6)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+SELECT (rec).time FROM (SELECT unnest(tposechain
+  '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 0), 0))@2001-01-02,
+  PoseChain(Pose(Point(0 0), 0))@2001-01-03}') AS rec) AS t;
+                                                             time                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST], [Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+ {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+(2 rows)
+

@@ -118,6 +118,8 @@ extern TSequence **trgeometry_sequences(const Temporal *temp, int *count);
 extern TInstant *trgeometry_start_instant(const Temporal *temp);
 extern TSequence *trgeometry_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeometry_start_value(const Temporal *temp);
+extern Pose **trgeometry_values(const Temporal *temp, int *count);
+extern SpanSet **trgeometry_unnest(const Temporal *temp, GSERIALIZED ***values, int *count);
 extern bool trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED *trgeometry_traversed_area(const Temporal *temp, bool unary_union);
 extern Temporal *trgeometry_centroid(const Temporal *temp);

@@ -48,6 +48,10 @@
  * @ingroup meos_npoint
  * @brief Accessor functions for temporal network points
  *
+ * @defgroup meos_npoint_transf Transformation functions
+ * @ingroup meos_npoint
+ * @brief Transformation functions for temporal network points
+ *
  * @defgroup meos_npoint_restrict Restriction functions
  * @ingroup meos_npoint
  * @brief Restriction functions for temporal network points

@@ -465,6 +465,39 @@ tbool_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal boolean, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tbool_unnest(const Temporal *temp, bool **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  bool *vals = palloc(sizeof(bool) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetBool(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return the array of base values of a temporal integer
  * @param[in] temp Temporal value
@@ -481,6 +514,39 @@ tint_values(const Temporal *temp, int *count)
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
   pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal integer, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tint_unnest(const Temporal *temp, int **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  int *vals = palloc(sizeof(int) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetInt32(datums[i]);
+  *values = vals;
+  pfree(datums);
   return result;
 }
 
@@ -505,6 +571,39 @@ tbigint_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal big integer, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tbigint_unnest(const Temporal *temp, int64 **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  int64 *vals = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetInt64(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return the array of base values of a temporal float
  * @param[in] temp Temporal value
@@ -525,6 +624,39 @@ tfloat_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal float, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tfloat_unnest(const Temporal *temp, double **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  double *vals = palloc(sizeof(double) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetFloat8(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return the array of copies of base values of a temporal text
  * @param[in] temp Temporal value
@@ -541,6 +673,39 @@ ttext_values(const Temporal *temp, int *count)
   for (int i = 0; i < *count; i++)
     result[i] = text_copy(DatumGetTextP(datumarr[i]));
   pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal text, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+ttext_unnest(const Temporal *temp, text ***values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  text **vals = palloc(sizeof(text *) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetTextP(datums[i]);
+  *values = vals;
+  pfree(datums);
   return result;
 }
 

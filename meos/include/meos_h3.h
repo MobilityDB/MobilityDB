@@ -194,6 +194,7 @@ extern H3Index th3index_start_value(const Temporal *temp);
 extern H3Index th3index_end_value(const Temporal *temp);
 extern bool th3index_value_n(const Temporal *temp, int n, H3Index *result);
 extern H3Index *th3index_values(const Temporal *temp, int *count);
+extern SpanSet **th3index_unnest(const Temporal *temp, H3Index **values, int *count);
 extern bool th3index_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, H3Index *result);
 

@@ -407,4 +407,57 @@ tposechain_num_poses(const Temporal *temp)
   return posechain_num_poses(DatumGetPoseChainP(tinstant_value_p(inst)));
 }
 
+/**
+ * @ingroup meos_posechain_accessor
+ * @brief Return the array of copies of base values of a temporal pose chain
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+PoseChain **
+tposechain_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  PoseChain **result = palloc(sizeof(PoseChain *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = posechain_copy(DatumGetPoseChainP(datumarr[i]));
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return the distinct values of a temporal pose chain, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tposechain_unnest(const Temporal *temp, PoseChain ***values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  PoseChain **vals = palloc(sizeof(PoseChain *) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetPoseChainP(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
 /*****************************************************************************/

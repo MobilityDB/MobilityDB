@@ -378,6 +378,39 @@ th3index_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_h3_transf
+ * @brief Return the distinct values of a temporal H3 cell, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+th3index_unnest(const Temporal *temp, H3Index **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  H3Index *vals = palloc(sizeof(H3Index) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetH3Index(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
  * @ingroup meos_h3_accessor
  * @brief Return the H3 cell value of `temp` at timestamp `t`.
  * @param[in] temp Temporal H3 cell

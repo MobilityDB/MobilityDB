@@ -244,6 +244,7 @@ extern S2CellId ts2cell_start_value(const Temporal *temp);
 extern S2CellId ts2cell_end_value(const Temporal *temp);
 extern bool ts2cell_value_n(const Temporal *temp, int n, S2CellId *result);
 extern S2CellId *ts2cell_values(const Temporal *temp, int *count);
+extern SpanSet **ts2cell_unnest(const Temporal *temp, S2CellId **values, int *count);
 extern bool ts2cell_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, S2CellId *result);
 

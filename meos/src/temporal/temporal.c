@@ -2144,6 +2144,36 @@ temporal_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_internal_temporal_transf
+ * @brief Return the distinct base values of a temporal value, each with the
+ * span set on which the temporal value takes it
+ * @param[in] temp Temporal value
+ * @param[out] values Array of copies of the distinct base values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+temporal_unnest(const Temporal *temp, Datum **values, int *count)
+{
+  assert(temp); assert(values); assert(count);
+  Datum *vals = temporal_values(temp, count);
+  SpanSet **result = palloc(sizeof(SpanSet *) * *count);
+  for (int i = 0; i < *count; i++)
+  {
+    /* The value is one the temporal value takes, so its restriction to the
+     * value is never empty */
+    Temporal *rest = temporal_restrict_value(temp, vals[i], REST_AT);
+    assert(rest);
+    result[i] = temporal_time(rest);
+    pfree(rest);
+  }
+  *values = vals;
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return the base values of a temporal number as a span set
  * @param[in] temp Temporal value

@@ -517,6 +517,31 @@ SELECT asText(shiftScaleTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 -- [Pose(POINT(0 0),0)@2001-01-02, Pose(POINT(10 0),0)@2001-01-04]
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="trgeometry_unnest">
+				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
+				<para>Transforma una trgeometry no lineal en un conjunto de filas, una por pose distinta, cada una es una pareja compuesta de la geometría de referencia con la pose aplicada y el conjunto de períodos durante el cual la trgeometry toma esa pose &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+unnest(trgeometry) → {(value,time)}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText((un).value), (un).time
+FROM (SELECT unnest(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-02,
+  Pose(Point(0 0), 0.0)@2001-01-03}') AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01], [2001-01-03, 2001-01-03]}
+-- POLYGON((4 0,5 0,5 1,4 1,4 0)) | {[2001-01-02, 2001-01-02]}
+SELECT ST_AsText(ST_SnapToGrid((un).value, 0.000001)), (un).time
+FROM (SELECT unnest(merge(
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(0 0)', 0), timestamptz '2001-01-01'),
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(3 2)', pi() / 2), timestamptz '2001-01-02'))) AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01]}
+-- POLYGON((3 2,3 3,2 3,2 2,3 2)) | {[2001-01-02, 2001-01-02]}
+</programlisting>
+				<para>La pose se aplica a la geometría de referencia en cada fila del resultado: el valor de una fila es la geometría de referencia rotada según la orientación de la pose y luego trasladada a su posición, la geometría que <varname>startValue</varname> y <varname>valueAtTimestamp</varname> devuelven en esa pose. En el segundo ejemplo la pose rota el cuadrado 90° y lo desplaza a (3, 2). Una geometría de referencia que una rotación lleva sobre sí misma produce filas con geometrías iguales, una por pose.</para>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

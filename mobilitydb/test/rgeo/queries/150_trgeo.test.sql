@@ -680,3 +680,21 @@ SELECT asText(merge(ARRAY[
 SELECT asText(merge(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+
+-------------------------------------------------------------------------------
+-- unnest: one row per distinct pose
+-- The value of every row is the reference geometry with the pose applied, the
+-- rigid-body transform startValue applies: rotated by the pose's orientation,
+-- then translated to its position. A repeated pose names its placement once,
+-- with both of its times
+-------------------------------------------------------------------------------
+
+SELECT ST_AsText((rec).value), (rec).time FROM (SELECT unnest(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(4 0), 0.0)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}') AS rec) AS t;
+SELECT ST_AsText(ST_SnapToGrid((rec).value, 0.000001)), (rec).time
+FROM (SELECT unnest(merge(
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))', pose(geometry 'Point(0 0)', 0),
+    timestamptz '2001-01-01'),
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))', pose(geometry 'Point(3 2)', pi() / 2),
+    timestamptz '2001-01-02'))) AS rec) AS t;

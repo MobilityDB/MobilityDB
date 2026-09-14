@@ -62,6 +62,10 @@
  * @ingroup meos_s2cell
  * @brief Accessor functions for temporal S2 cell indices
  *
+ * @defgroup meos_s2cell_transf Transformation functions
+ * @ingroup meos_s2cell
+ * @brief Transformation functions for temporal S2 cell indices
+ *
  * @defgroup meos_s2cell_comp Comparison functions
  * @ingroup meos_s2cell
  * @brief Comparison functions for temporal S2 cell indices

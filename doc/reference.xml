@@ -2464,6 +2464,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift, scale, or both shift and scale the time domain of a trgeometry</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_unnest"><varname>unnest</varname></link>: Transform a nonlinear trgeometry into a set of rows, one per distinct pose, each one is a pair composed of the reference geometry with the pose applied and the period set during which the trgeometry takes that pose &SRF;</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

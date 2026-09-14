@@ -479,6 +479,71 @@ trgeometry_start_value(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_accessor
+ * @brief Return the array of copies of base values of a temporal rigid geometry
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+Pose **
+trgeometry_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  Pose **result = palloc(sizeof(Pose *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = pose_copy(DatumGetPoseP(datumarr[i]));
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return the rows of a temporal rigid geometry, one per distinct pose,
+ * each pairing the reference geometry with that pose applied with the span set
+ * on which the pose is taken
+ * @details The pose is applied to the reference geometry in every row: the
+ * geometry is rotated by the pose's orientation, then translated to its
+ * position, the rigid-body transform #trgeometry_start_value applies. A
+ * reference geometry that a rotation maps onto itself yields rows with equal
+ * geometries, one per pose
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the reference geometry with each distinct pose
+ * applied
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th pose
+ * @csqlfn #Trgeometry_unnest()
+ */
+SpanSet **
+trgeometry_unnest(const Temporal *temp, GSERIALIZED ***values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *poses;
+  SpanSet **result = temporal_unnest(temp, &poses, count);
+  const GSERIALIZED *geom = trgeo_geom_p(temp);
+  GSERIALIZED **vals = palloc(sizeof(GSERIALIZED *) * *count);
+  for (int i = 0; i < *count; i++)
+  {
+    /* The poses are copies, freed once they have placed the geometry */
+    Pose *pose = DatumGetPoseP(poses[i]);
+    vals[i] = pose_apply_geo(pose, geom);
+    pfree(pose);
+  }
+  *values = vals;
+  pfree(poses);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the end base value of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Trgeometry_end_value()
