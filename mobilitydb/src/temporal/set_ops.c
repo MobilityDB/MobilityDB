@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a set
  * @sqlfn setOverright()
- * @sqlop @p
+ * @sqlop @p &>
  */
 inline Datum
 Overright_value_set(PG_FUNCTION_ARGS)

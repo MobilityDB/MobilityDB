@@ -388,7 +388,6 @@ PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz
  * @sqlfn stbox()
- * @sqlop @p ::
  */
 Datum
 Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -409,7 +408,6 @@ PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz span
  * @sqlfn stbox()
- * @sqlop @p ::
  */
 Datum
 Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)

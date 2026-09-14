@@ -397,7 +397,6 @@ PG_FUNCTION_INFO_V1(Cbuffer_timestamptz_to_stbox);
  * @brief Construct a spatiotemporal box from a circular buffer and a
  * timestamptz
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Cbuffer_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -415,7 +414,6 @@ PG_FUNCTION_INFO_V1(Cbuffer_tstzspan_to_stbox);
  * timestamptz span
  * box
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Cbuffer_tstzspan_to_stbox(PG_FUNCTION_ARGS)
