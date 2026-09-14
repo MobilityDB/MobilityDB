@@ -87,6 +87,23 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxLeft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverleft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxRight(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverright(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) > 0 FROM tbl_tgeompoint3D_big WHERE stboxOverbelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAbove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverabove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxFront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverfront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBack(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverback(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverbefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAfter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverafter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
@@ -153,6 +170,23 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxLeft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverleft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxRight(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverright(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverbelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAbove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverabove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxFront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverfront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBack(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverback(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverbefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAfter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverafter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
@@ -209,6 +243,23 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tgeompoint '[Point(1 1 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxLeft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverleft(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxRight(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverright(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverbelow(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAbove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverabove(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxFront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverfront(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBack(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverback(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxBefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverbefore(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxAfter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE stboxOverafter(temp, tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
