@@ -81,14 +81,18 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests that a count of zero decimal digits is accepted wherever a function tests a decimal-digit count.  
+<p>A program that tests how the functions taking a count of decimal digits treat a count of zero and a negative count.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__cbuffer_8h_source.html">meos_cbuffer.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__npoint_8h_source.html">meos_npoint.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
 </div><table class="memberdecls">
@@ -105,8 +109,9 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests that a count of zero decimal digits is accepted wherever a function tests a decimal-digit count. </p>
-<p >A count of decimal digits says how many digits a value keeps after the decimal point, and zero keeps none; tspatial_as_text, geo_round and posearr_round accept it, as every output and rounding function of MEOS does. The program verifies that pcpoint_as_hexwkb and pcpatch_as_hexwkb, which hand their hex output a count of zero, answer the hex their input reads back with no error left behind; that tspatial_out and pose_round answer for a count of zero; and that a negative count is still reported with MEOS_ERR_INVALID_ARG_VALUE.</p>
+<div class="textblock"><p >A program that tests how the functions taking a count of decimal digits treat a count of zero and a negative count. </p>
+<p >A count of decimal digits says how many digits a value keeps after the decimal point, and zero keeps none; every output and rounding function of MEOS accepts it. A negative count is an erroneous argument, which the public function taking it reports at its entry, as it reports a null value, so that every binding calling the function receives the error instead of a value rounded to tens or an assertion failure in an internal function.</p>
+<p >The program verifies that pcpoint_as_hexwkb and pcpatch_as_hexwkb, which hand their hex output a count of zero, answer the hex their input reads back with no error left behind; that tspatial_out, pose_round, geo_as_text and float_round answer for a count of zero, and pose_as_geopose for the negative precision GeoPose reads as its lossless form; that the text, EWKT, GeoJSON and MF-JSON outputs and the rounding functions report a negative count with MEOS_ERR_INVALID_ARG_VALUE, as do the internal outputs of a temporal value, an array of them, a set, a span and a span set, which the PostgreSQL wrappers of every type call with the count a user writes; and that an MF-JSON precision above the default writes the default number of decimal digits.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o decimal_digits_test decimal_digits_test.c -L/usr/local/lib -lmeos</div>
 <div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
