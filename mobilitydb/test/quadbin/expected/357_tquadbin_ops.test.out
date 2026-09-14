@@ -206,10 +206,10 @@ SELECT numSequences(tquadbin(tgeompoint
 
 /* Errors */
 SELECT tquadbin(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
-ERROR:  Only lon/lat coordinate systems are supported in geography
+ERROR:  Only lon/lat coordinate systems are supported
 SELECT tquadbin(tgeompoint
   'SRID=3857;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-02]', 10);
-ERROR:  Only lon/lat coordinate systems are supported in geography
+ERROR:  Only lon/lat coordinate systems are supported
 SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 27);
 ERROR:  The resolution must be between 0 and 26
 SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', -1);

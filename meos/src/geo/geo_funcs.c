@@ -3121,8 +3121,8 @@ ensure_srid_is_latlong(int32_t srid)
 {
   if (srid_is_latlong(srid))
     return true;
-  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-    "Only lon/lat coordinate systems are supported in geography");
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only lon/lat coordinate systems are supported");
   return false;
 }
 /**
