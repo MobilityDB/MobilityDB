@@ -276,6 +276,7 @@ TAB_SIZE               = 4
 ALIASES                = "csqlfn=@par C-SQL Function:^^" \
                          "csqlaggfn=@par C-SQL Aggregate Role:^^" \
                          "sqlfn=@par SQL Function:^^" \
+                         "altsqlfn=@par Alternative SQL Function:^^" \
                          "sqlaggfn=@par SQL Aggregate:^^" \
                          "sqlop=@par SQL Operator:^^" \
                          "errval=@return On error return"
