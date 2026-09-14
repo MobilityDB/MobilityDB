@@ -518,6 +518,31 @@ SELECT asText(shiftScaleTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 -- [Pose(POINT(0 0),0)@2001-01-02, Pose(POINT(10 0),0)@2001-01-04]
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="trgeometry_unnest">
+				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
+				<para>Transform a nonlinear trgeometry into a set of rows, one per distinct pose, each one is a pair composed of the reference geometry with the pose applied and the period set during which the trgeometry takes that pose &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+unnest(trgeometry) → {(value,time)}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText((un).value), (un).time
+FROM (SELECT unnest(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-02,
+  Pose(Point(0 0), 0.0)@2001-01-03}') AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01], [2001-01-03, 2001-01-03]}
+-- POLYGON((4 0,5 0,5 1,4 1,4 0)) | {[2001-01-02, 2001-01-02]}
+SELECT ST_AsText(ST_SnapToGrid((un).value, 0.000001)), (un).time
+FROM (SELECT unnest(merge(
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(0 0)', 0), timestamptz '2001-01-01'),
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(3 2)', pi() / 2), timestamptz '2001-01-02'))) AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01]}
+-- POLYGON((3 2,3 3,2 3,2 2,3 2)) | {[2001-01-02, 2001-01-02]}
+</programlisting>
+				<para>The pose is applied to the reference geometry in every row of the result: the value of a row is the reference geometry rotated by the orientation of the pose and then translated to its position, the geometry that <varname>startValue</varname> and <varname>valueAtTimestamp</varname> return at that pose. In the second example the pose rotates the square by 90° and moves it to (3, 2). A reference geometry that a rotation maps onto itself yields rows with equal geometries, one per pose.</para>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

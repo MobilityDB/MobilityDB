@@ -271,6 +271,7 @@ extern GSERIALIZED *tnpoint_trajectory(const Temporal *temp);
 extern bool tnpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Npoint **value);
 extern bool tnpoint_value_n(const Temporal *temp, int n, Npoint **result);
 extern Npoint **tnpoint_values(const Temporal *temp, int *count);
+extern SpanSet **tnpoint_unnest(const Temporal *temp, Npoint ***values, int *count);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 
 /*****************************************************************************

@@ -178,6 +178,10 @@
  * @ingroup meos_pointcloud
  * @brief Accessor functions for temporal pgpointcloud types
  *
+ * @defgroup meos_pointcloud_transf Transformation functions
+ * @ingroup meos_pointcloud
+ * @brief Transformation functions for temporal pgpointcloud types
+ *
  * @defgroup meos_pointcloud_restrict Restriction functions
  * @ingroup meos_pointcloud
  * @brief Restriction functions for temporal pgpointcloud types

@@ -62,6 +62,10 @@
  * @ingroup meos_quadbin
  * @brief Accessor functions for temporal QUADBIN cell indices
  *
+ * @defgroup meos_quadbin_transf Transformation functions
+ * @ingroup meos_quadbin
+ * @brief Transformation functions for temporal QUADBIN cell indices
+ *
  * @defgroup meos_quadbin_comp Comparison functions
  * @ingroup meos_quadbin
  * @brief Comparison functions for temporal QUADBIN cell indices

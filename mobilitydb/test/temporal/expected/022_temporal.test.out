@@ -20088,3 +20088,11 @@ SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
  CCC
 (3 rows)
 
+SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
+  false@2001-01-02, true@2001-01-03}') AS rec) AS t;
+ value |                                                             time                                                             
+-------+------------------------------------------------------------------------------------------------------------------------------
+ f     | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+ t     | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST], [Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(2 rows)
+

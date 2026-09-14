@@ -487,6 +487,41 @@ Trgeometry_start_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * @brief Return the distinct placements of a temporal rigid geometry, each
+ * with the span set on which it is taken, the placements given as datums
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] values Array of the placements
+ * @param[out] count Number of values in the output arrays
+ */
+static SpanSet **
+trgeometry_unnest_datums(const Temporal *temp, Datum **values, int *count)
+{
+  GSERIALIZED **geoms;
+  SpanSet **result = trgeometry_unnest(temp, &geoms, count);
+  Datum *datums = palloc(sizeof(Datum) * *count);
+  for (int i = 0; i < *count; i++)
+    datums[i] = PointerGetDatum(geoms[i]);
+  pfree(geoms);
+  *values = datums;
+  return result;
+}
+
+PGDLLEXPORT Datum Trgeometry_unnest(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_unnest);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return the rows of a temporal rigid geometry, one per distinct pose,
+ * each pairing the reference geometry with that pose applied with the span set
+ * on which the pose is taken
+ * @sqlfn unnest()
+ */
+Datum
+Trgeometry_unnest(PG_FUNCTION_ARGS)
+{
+  return Temporal_unnest_ext(fcinfo, &trgeometry_unnest_datums);
+}
+
 PGDLLEXPORT Datum Trgeometry_end_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_end_value);
 /**

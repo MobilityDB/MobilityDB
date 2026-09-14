@@ -1255,6 +1255,7 @@ extern Datum *tsequenceset_values_p(const TSequenceSet *ss, int *count);
 extern void temporal_restart(Temporal *temp, int count);
 extern TSequence *temporal_tsequence(const Temporal *temp, interpType interp);
 extern TSequenceSet *temporal_tsequenceset(const Temporal *temp, interpType interp);
+extern SpanSet **temporal_unnest(const Temporal *temp, Datum **values, int *count);
 extern TInstant *tinstant_shift_time(const TInstant *inst, const Interval *interv);
 extern TSequence *tinstant_as_tsequence(const TInstant *inst, interpType interp);
 extern TSequence *tinstant_to_tsequence_free(TInstant *inst, interpType interp);

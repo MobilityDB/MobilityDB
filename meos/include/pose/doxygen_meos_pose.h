@@ -186,6 +186,10 @@
  * @ingroup meos_posechain
  * @brief Accessor functions for temporal pose chains
  *
+ * @defgroup meos_posechain_transf Transformation functions
+ * @ingroup meos_posechain
+ * @brief Transformation functions for temporal pose chains
+ *
  * @defgroup meos_posechain_comp Comparison functions
  * @ingroup meos_posechain
  * @brief Comparison functions for temporal pose chains

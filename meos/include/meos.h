@@ -1453,6 +1453,7 @@ extern bool tbool_start_value(const Temporal *temp);
 extern bool tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, bool *value);
 extern bool tbool_value_n(const Temporal *temp, int n, bool *result);
 extern bool *tbool_values(const Temporal *temp, int *count);
+extern SpanSet **tbool_unnest(const Temporal *temp, bool **values, int *count);
 extern Interval *temporal_duration(const Temporal *temp, bool boundspan);
 extern TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
@@ -1489,6 +1490,7 @@ extern double tfloat_start_value(const Temporal *temp);
 extern bool tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, double *value);
 extern bool tfloat_value_n(const Temporal *temp, int n, double *result);
 extern double *tfloat_values(const Temporal *temp, int *count);
+extern SpanSet **tfloat_unnest(const Temporal *temp, double **values, int *count);
 extern int tint_end_value(const Temporal *temp);
 extern int64 tbigint_end_value(const Temporal *temp);
 extern int tint_max_value(const Temporal *temp);
@@ -1502,7 +1504,9 @@ extern bool tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool 
 extern bool tint_value_n(const Temporal *temp, int n, int *result);
 extern bool tbigint_value_n(const Temporal *temp, int64 n, int64 *result);
 extern int *tint_values(const Temporal *temp, int *count);
+extern SpanSet **tint_unnest(const Temporal *temp, int **values, int *count);
 extern int64 *tbigint_values(const Temporal *temp, int *count);
+extern SpanSet **tbigint_unnest(const Temporal *temp, int64 **values, int *count);
 extern double tnumber_avg_value(const Temporal *temp);
 extern double tnumber_integral(const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
@@ -1514,6 +1518,7 @@ extern text *ttext_start_value(const Temporal *temp);
 extern bool ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, text **value);
 extern bool ttext_value_n(const Temporal *temp, int n, text **result);
 extern text **ttext_values(const Temporal *temp, int *count);
+extern SpanSet **ttext_unnest(const Temporal *temp, text ***values, int *count);
 
 /*****************************************************************************
  * Transformation functions for temporal types

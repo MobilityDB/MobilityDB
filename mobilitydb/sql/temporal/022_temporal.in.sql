@@ -1275,6 +1275,10 @@ CREATE CAST (ttext AS tstzspan) WITH FUNCTION timeSpan(ttext);
  * Transform a temporal value to a set of records
  *****************************************************************************/
 
+CREATE TYPE bool_tstzspanset AS (
+  value boolean,
+  time tstzspanset
+);
 CREATE TYPE int_tstzspanset AS (
   value integer,
   time tstzspanset
@@ -1292,6 +1296,10 @@ CREATE TYPE text_tstzspanset AS (
   time tstzspanset
 );
 
+CREATE FUNCTION unnest(tbool)
+  RETURNS SETOF bool_tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION unnest(tint)
   RETURNS SETOF int_tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_unnest'

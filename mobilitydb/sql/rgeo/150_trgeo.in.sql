@@ -580,7 +580,7 @@ CREATE FUNCTION afterTimestamp(trgeometry, timestamptz, strict boolean DEFAULT T
 
 CREATE FUNCTION unnest(trgeometry)
   RETURNS SETOF geom_tstzspanset
-  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  AS 'MODULE_PATHNAME', 'Trgeometry_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

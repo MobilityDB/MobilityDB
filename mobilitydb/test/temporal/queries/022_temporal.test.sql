@@ -4171,3 +4171,8 @@ SELECT (rec).value FROM (SELECT unnest(tfloat '{10@2001-01-01, 9.5@2001-01-02,
 -- Text ordering likewise
 SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
   BBB@2001-01-03, CCC@2001-01-04}') AS rec) AS t;
+
+-- Boolean ordering puts false before true, and the repeated true carries both
+-- of its times
+SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
+  false@2001-01-02, true@2001-01-03}') AS rec) AS t;

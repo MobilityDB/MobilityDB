@@ -2455,6 +2455,9 @@
 				<listitem>
 					<para><link linkend="trgeometry_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplaza, escalar, o desplazar y escalar el dominio temporal de una trgeometry</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_unnest"><varname>unnest</varname></link>: Transforma una trgeometry no lineal en un conjunto de filas, una por pose distinta, cada una es una pareja compuesta de la geometría de referencia con la pose aplicada y el conjunto de períodos durante el cual la trgeometry toma esa pose &SRF;</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
