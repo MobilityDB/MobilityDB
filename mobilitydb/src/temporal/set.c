@@ -237,6 +237,7 @@ PG_FUNCTION_INFO_V1(Set_constructor);
  * @ingroup mobilitydb_setspan_constructor
  * @brief Return a set from an array of values
  * @sqlfn set()
+ * @altsqlfn setMake()
  */
 Datum
 Set_constructor(PG_FUNCTION_ARGS)
@@ -262,6 +263,7 @@ PG_FUNCTION_INFO_V1(Value_to_set);
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a base value into a set
  * @sqlfn set()
+ * @altsqlfn setMake()
  */
 Datum
 Value_to_set(PG_FUNCTION_ARGS)
