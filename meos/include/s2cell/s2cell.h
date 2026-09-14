@@ -81,6 +81,8 @@ extern void s2cell_cell_vertices(S2CellId cell, double *longitudes,
   double *latitudes);
 extern void s2cell_cell_bounding_box(S2CellId cell, double *xmin, double *ymin,
   double *xmax, double *ymax);
+extern int s2cell_segment_cells(double lon1, double lat1, double lon2,
+  double lat2, uint32_t level, S2CellId *cells, double *enter, int maxout);
 
 /*****************************************************************************/
 

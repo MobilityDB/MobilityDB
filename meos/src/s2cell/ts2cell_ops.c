@@ -54,6 +54,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <meos_s2cell.h>
 #include <pgtypes.h>
 #include "temporal/meos_catalog.h"
@@ -188,6 +189,196 @@ ts2cell_cell_to_token(const Temporal *temp)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
+ * Conversion from a temporal point
+ *****************************************************************************/
+
+/**
+ * @brief Append the instant of a cell entered at a timestamp
+ * @details A cell's entry time is interpolated from the parameter at which the
+ * path reaches it, while a timestamp holds whole microseconds, so two
+ * crossings closer together than one microsecond round to the same instant.
+ * The second is placed one microsecond after the first: that is the smallest
+ * separation the type can state, it keeps the order the crossings occur in,
+ * and it keeps the cell.
+ */
+static void
+ts2cell_entry_append(TInstant ***instants, int *count, int *size,
+  S2CellId cell, TimestampTz t)
+{
+  if (*count > 0 && t <= (*instants)[*count - 1]->t)
+    t = (*instants)[*count - 1]->t + 1;
+  if (*count == *size)
+  {
+    *size *= 2;
+    *instants = repalloc(*instants, sizeof(TInstant *) * (size_t) *size);
+  }
+  (*instants)[(*count)++] = tinstant_make(S2CellGetDatum(cell), T_TS2CELL,
+    t);
+  return;
+}
+
+/**
+ * @brief Return the position of a temporal point instant
+ */
+static const POINT2D *
+tpointinst_point2d(const TInstant *inst)
+{
+  return GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
+}
+
+/**
+ * @brief Return the temporal S2 cell of a temporal geodetic point sequence at
+ * a level, or NULL when its positions are not in a lon/lat reference system
+ * @details A sequence stating nothing between its instants, discrete or
+ * stepwise, holds the cells of its instants. A linear sequence moves along the
+ * great circle between two instants, and each segment is traversed cell by
+ * cell, so the result holds every cell the trajectory crosses and each of its
+ * instants marks the time the trajectory enters that cell. The last cell holds
+ * to the end of the trajectory.
+ */
+static TSequence *
+tpointseq_to_ts2cell(const TSequence *seq, int32 level)
+{
+  /* The reference system is the one every instant carries, so the adapter
+   * testing it reads the first instant alone */
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+  S2CellId cell = geo_to_s2cell_cell(
+    DatumGetGserializedP(tinstant_value_p(inst)), level);
+  if (cell == (S2CellId) 0)
+    return NULL;
+  int size = seq->count + 1, count = 0;
+  TInstant **instants = palloc(sizeof(TInstant *) * (size_t) size);
+  ts2cell_entry_append(&instants, &count, &size, cell, inst->t);
+  S2CellId last = cell;
+
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp != LINEAR)
+  {
+    for (int i = 1; i < seq->count; i++)
+    {
+      inst = TSEQUENCE_INST_N(seq, i);
+      const POINT2D *p = tpointinst_point2d(inst);
+      ts2cell_entry_append(&instants, &count, &size,
+        s2cell_point_to_cell(p->x, p->y, (uint32_t) level), inst->t);
+    }
+    return tsequence_make_free(instants, count, seq->period.lower_inc,
+      seq->period.upper_inc, interp, NORMALIZE);
+  }
+
+  /* The walk writes one entry per cell a segment crosses, into arrays that
+   * grow until the whole segment fits, so no segment is cut short */
+  int maxout = 64;
+  S2CellId *cells = palloc(sizeof(S2CellId) * (size_t) maxout);
+  double *enter = palloc(sizeof(double) * (size_t) maxout);
+  for (int i = 0; i + 1 < seq->count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const POINT2D *p1 = tpointinst_point2d(inst1);
+    const POINT2D *p2 = tpointinst_point2d(inst2);
+    int ncells;
+    while ((ncells = s2cell_segment_cells(p1->x, p1->y, p2->x, p2->y,
+        (uint32_t) level, cells, enter, maxout)) == maxout)
+    {
+      maxout *= 2;
+      cells = repalloc(cells, sizeof(S2CellId) * (size_t) maxout);
+      enter = repalloc(enter, sizeof(double) * (size_t) maxout);
+    }
+    /* A segment starts in the cell the previous one ends in */
+    for (int k = 0; k < ncells; k++)
+    {
+      if (cells[k] == last)
+        continue;
+      ts2cell_entry_append(&instants, &count, &size, cells[k], inst1->t +
+        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]));
+      last = cells[k];
+    }
+    /* The endpoint's own cell closes the segment when the traversal stopped
+     * short of it, as for an endpoint lying on a cell boundary within the
+     * rounding of the crossing */
+    S2CellId endcell = s2cell_point_to_cell(p2->x, p2->y, (uint32_t) level);
+    if (endcell != (S2CellId) 0 && endcell != last)
+    {
+      ts2cell_entry_append(&instants, &count, &size, endcell, inst2->t);
+      last = endcell;
+    }
+  }
+  pfree(cells); pfree(enter);
+
+  /* The last cell holds to the end of the trajectory, which the closing
+   * instant states, since a sequence reaches no further than its last
+   * instant. Under an exclusive upper bound, a cell the trajectory reaches at
+   * its end is held for no time and is no part of the value */
+  TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
+  if (! seq->period.upper_inc)
+    while (count > 1 && instants[count - 1]->t >= tend)
+      pfree(instants[--count]);
+  if (instants[count - 1]->t < tend)
+    ts2cell_entry_append(&instants, &count, &size,
+      DatumGetS2Cell(tinstant_value_p(instants[count - 1])), tend);
+  return tsequence_make_free(instants, count, seq->period.lower_inc,
+    seq->period.upper_inc, STEP, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal S2 cell of a temporal geodetic point sequence
+ * set at a level, or NULL when its positions are not in a lon/lat reference
+ * system
+ */
+static TSequenceSet *
+tpointseqset_to_ts2cell(const TSequenceSet *ss, int32 level)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    sequences[i] = tpointseq_to_ts2cell(TSEQUENCESET_SEQ_N(ss, i), level);
+    if (sequences[i] == NULL)
+    {
+      for (int j = 0; j < i; j++)
+        pfree(sequences[j]);
+      pfree(sequences);
+      return NULL;
+    }
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the temporal S2 cell of a temporal geodetic point at a level,
+ * holding every cell the trajectory crosses
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @csqlfn #Tgeogpoint_to_ts2cell()
+ */
+Temporal *
+tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL);
+  if (! ensure_valid_cell_resolution(T_TS2CELL, level))
+    return NULL;
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      S2CellId cell = geo_to_s2cell_cell(
+        DatumGetGserializedP(tinstant_value_p(inst)), level);
+      return (cell == (S2CellId) 0) ? NULL :
+        (Temporal *) tinstant_make(S2CellGetDatum(cell), T_TS2CELL, inst->t);
+    }
+    case TSEQUENCE:
+      return (Temporal *) tpointseq_to_ts2cell((const TSequence *) temp,
+        level);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpointseqset_to_ts2cell(
+        (const TSequenceSet *) temp, level);
+  }
 }
 
 /*****************************************************************************/

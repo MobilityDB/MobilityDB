@@ -652,6 +652,183 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
   return;
 }
 
+/*****************************************************************************
+ * Cells crossed by a geodetic segment
+ *****************************************************************************/
+
+/**
+ * @brief Set the last argument to the four vertices of an S2 cell as unit
+ * vectors, three coordinates each, in the order #s2cell_cell_vertices states
+ * them
+ */
+static void
+s2cell_cell_xyz_vertices(S2CellId cell, double *verts)
+{
+  double umin, vmin, umax, vmax;
+  uint32_t face = s2cell_cell_uv(cell, &umin, &vmin, &umax, &vmax);
+  const double us[4] = { umin, umax, umax, umin };
+  const double vs[4] = { vmin, vmin, vmax, vmax };
+  for (int k = 0; k < 4; k++)
+    s2cell_face_uv_to_xyz(face, us[k], vs[k], &verts[3 * k]);
+  return;
+}
+
+/**
+ * @brief Set the last two arguments to the longitudes and latitudes in
+ * radians of four cell vertices given by their `(x, y, z)` coordinates, as
+ * #s2cell_xyz_to_lonlat reads them in degrees
+ */
+static void
+s2cell_xyz_vertices_to_lonlat(const double *verts, double *lons,
+  double *lats)
+{
+  for (int k = 0; k < 4; k++)
+  {
+    const double *p = &verts[3 * k];
+    lons[k] = atan2(p[1], p[0]);
+    lats[k] = atan2(p[2], sqrt(p[0] * p[0] + p[1] * p[1]));
+  }
+  return;
+}
+
+/**
+ * @brief Return the angle subtended by the shortest edge of a cell given by
+ * its four vertices as unit vectors
+ */
+static double
+s2cell_shortest_edge(const double *verts)
+{
+  double best = DBL_MAX;
+  for (int k = 0; k < 4; k++)
+  {
+    const double *p = &verts[3 * k];
+    const double *q = &verts[3 * ((k + 1) % 4)];
+    const double c[3] = { p[1] * q[2] - p[2] * q[1],
+      p[2] * q[0] - p[0] * q[2], p[0] * q[1] - p[1] * q[0] };
+    double angle = atan2(sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]),
+      p[0] * q[0] + p[1] * q[1] + p[2] * q[2]);
+    if (angle < best)
+      best = angle;
+  }
+  return best;
+}
+
+/**
+ * @brief Return the S2 cell of a level holding the position a geodetic path
+ * reaches at a parameter, or 0 when the position cannot be projected
+ */
+static S2CellId
+s2cell_arc_cell(const DggsArc *arc, double t, uint32_t level)
+{
+  double lon, lat;
+  if (! dggs_arc_point(arc, t, &lon, &lat))
+    return (S2CellId) 0;
+  return s2cell_point_to_cell(lon * 180.0 / M_PI, lat * 180.0 / M_PI, level);
+}
+
+/**
+ * @brief Fill `cells` with every S2 cell a geodetic segment crosses, and
+ * `enter` with the segment parameter at which it reaches each
+ * @details A traversal, not a sampling walk: from the cell in hand the walk
+ * leaves through its boundary, and the cell just beyond that crossing is a
+ * neighbour of it, so no cell between the two is passed over. An S2 cell edge
+ * lies on a line of constant `u` or `v` of its cube face, which the gnomonic
+ * projection of the face maps to a great circle, the circle a geodetic point
+ * moves along. Every crossing is therefore found on the sphere, where a path
+ * across the antimeridian, over a pole or from one cube face to the next is
+ * an arc like any other.
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] level S2 level
+ * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
+ * always 0, the parameter of the first endpoint
+ * @param[in] maxout Capacity of both arrays
+ * @return Number of cells written, which is `maxout` when the arrays fill
+ * before the segment ends, or 0 when the first lookup fails
+ */
+int
+s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
+  uint32_t level, S2CellId *cells, double *enter, int maxout)
+{
+  assert(cells); assert(enter);
+  if (maxout < 1)
+    return 0;
+  S2CellId cur = s2cell_point_to_cell(lon1, lat1, level);
+  if (cur == (S2CellId) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  /* A cell is convex on the sphere, so a path whose far endpoint lies in the
+   * cell of its near one never leaves it */
+  if (s2cell_point_to_cell(lon2, lat2, level) == cur)
+    return n;
+  DggsArc arc;
+  if (! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
+    return n;
+
+  /* A position on a cell boundary belongs to the one cell its level assigns
+   * it, and a path starting there may move into the neighbouring cell at
+   * once: the walk leaves from the cell just past the start */
+  double t = 0.0, verts[12];
+  s2cell_cell_xyz_vertices(cur, verts);
+  double t0 = s2cell_shortest_edge(verts) * 1e-4 / arc.dist;
+  if (t0 < 1.0)
+  {
+    S2CellId first = s2cell_arc_cell(&arc, t0, level);
+    if (first != (S2CellId) 0 && first != cur && n < maxout)
+    {
+      cells[n] = first; enter[n] = 0.0; n++;
+      cur = first;
+      t = t0;
+    }
+  }
+  while (n < maxout)
+  {
+    s2cell_cell_xyz_vertices(cur, verts);
+    double lons[4], lats[4];
+    s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
+    /* An S2 cell is convex, bounded by four arcs of great circles */
+    double texit = dggs_arc_exit_param(&arc, lons, lats, 4, t, true);
+    if (texit > 1.0)
+      break;                 /* the segment ends inside this cell */
+    /* A nudge past the crossing lands inside the next cell without reaching
+     * the one after it: a ten-thousandth of the shortest edge of the cell is
+     * far below the width of a neighbouring cell of the level and far above
+     * the rounding of the crossing itself */
+    double nudge = s2cell_shortest_edge(verts) * 1e-4 / arc.dist;
+    double tn = texit + nudge;
+    S2CellId next = (S2CellId) 0;
+    /* A nudge that lands back in the cell just left says the crossing sits
+     * within its own rounding, so widen it rather than stall. A crossing
+     * nearer the end of the segment than the nudge reads the cell of the end,
+     * which is the cell the path enters there */
+    for (int k = 0; k < 8; k++)
+    {
+      if (tn > 1.0)
+        tn = 1.0;
+      next = s2cell_arc_cell(&arc, tn, level);
+      if (next == (S2CellId) 0 || next != cur || tn >= 1.0)
+        break;
+      tn += nudge * (double) (1 << k);
+    }
+    if (next == (S2CellId) 0)
+      break;                 /* the position cannot be projected */
+    if (next == cur)
+    {
+      /* An arc leaving a convex cell never returns to it, so a crossing past
+       * which the path is still in the cell is one the rounding places on the
+       * circle of an edge the path runs along. The walk goes on from that
+       * crossing and not from the farthest probe, which can lie past the
+       * crossing through which the path does leave */
+      t = texit;
+      continue;
+    }
+    cells[n] = next; enter[n] = texit; n++;
+    cur = next;
+    t = tn;
+  }
+  return n;
+}
+
 /**
  * @brief Return the geodetic bounding box of an S2 cell
  * @details The box CONTAINS the cell. The shared derivation in

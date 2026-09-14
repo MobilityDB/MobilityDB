@@ -71,6 +71,7 @@
 #include <meos_h3.h>
 #include <meos_quadbin.h>
 #include <meos_raster.h>
+#include <meos_s2cell.h>
 #include <meos_internal.h>
 
 /** Positions of the dense sequence the truth is read from */
@@ -346,6 +347,74 @@ tquadbin_check(double lon0, double lat0, double lon1, double lat1,
   return;
 }
 
+/**
+ * @brief Count the timestamps at which the temporal S2 cell of a linear
+ * geodetic segment holds a cell other than the one holding the position of the
+ * segment then, and the cells it holds that no such position reaches nor
+ * borders
+ * @details As for #tquadbin_check, the position at each timestamp is read from
+ * the temporal point itself and its cell through the static adapter, and the
+ * segment spans an hour. A held cell the sampled positions do not reach is one
+ * the path crosses between two of them, so it shares an edge with a cell they
+ * reach.
+ */
+static void
+ts2cell_check(double lon0, double lat0, double lon1, double lat1,
+  int32 level, long *wrong, long *offpath, long *none)
+{
+  char wkt[256];
+  snprintf(wkt, sizeof(wkt), "[Point(%.9f %.9f)@2020-01-01 00:00:00, "
+    "Point(%.9f %.9f)@2020-01-01 01:00:00]", lon0, lat0, lon1, lat1);
+  Temporal *seg = tgeogpoint_in(wkt);
+  Temporal *cover = (seg != NULL) ? tgeogpoint_to_ts2cell(seg, level) : NULL;
+  if (cover == NULL)
+  {
+    (*none)++;
+    free(seg);
+    return;
+  }
+  int ncover = 0;
+  S2CellId *cells = ts2cell_values(cover, &ncover);
+  S2CellId *truth = malloc(sizeof(S2CellId) * (DENSE_POSITIONS + 1));
+  int ntruth = 0;
+  TimestampTz t0 = temporal_start_timestamptz(seg);
+  TimestampTz t1 = temporal_end_timestamptz(seg);
+  for (int s = 0; s <= DENSE_POSITIONS; s++)
+  {
+    TimestampTz t = t0 + (t1 - t0) * s / DENSE_POSITIONS;
+    GSERIALIZED *pos = NULL;
+    S2CellId held = 0;
+    if (! tgeo_value_at_timestamptz(seg, t, true, &pos) ||
+        ! ts2cell_value_at_timestamptz(cover, t, true, &held))
+    {
+      (*wrong)++;
+      free(pos);
+      continue;
+    }
+    S2CellId cell = geo_to_s2cell_cell(pos, level);
+    free(pos);
+    if (held != cell)
+      (*wrong)++;
+    if (! holds(truth, ntruth, cell))
+      truth[ntruth++] = cell;
+  }
+  for (int i = 0; i < ncover; i++)
+  {
+    if (holds(truth, ntruth, cells[i]))
+      continue;
+    int nnb = 0;
+    S2CellId *nb = s2cell_edge_neighbors(cells[i], &nnb);
+    bool near = false;
+    for (int j = 0; j < nnb && ! near; j++)
+      near = holds(truth, ntruth, nb[j]);
+    free(nb);
+    if (! near)
+      (*offpath)++;
+  }
+  free(truth); free(cells); free(cover); free(seg);
+  return;
+}
+
 int main(void)
 {
   meos_initialize();
@@ -535,6 +604,93 @@ int main(void)
       printf("  %ld tquadbin value(s) were not built at all\n", none);
     if (wrong > 0 || offpath > 0 || none > 0)
       failures++;
+  }
+
+  /* A temporal S2 cell holds at every timestamp the cell of the position of
+   * its trajectory then, and no cell away from the path. The regimes are the
+   * ones a geodetic path meets on the cube: a crossing of the antimeridian at
+   * the equator and at 60N, a path beside the pole, a path over the corner
+   * where three cube faces meet, arcs of tens of degrees at a coarse level,
+   * which pass from one face to the next, a path along the meridian 0 or 90,
+   * which cube face 2 maps to a line between cells at every level, and a path
+   * along one of those meridians over the pole and down the opposite one */
+  {
+    const char *sname[7] = { "antimeridian at 0N", "antimeridian at 60N",
+      "beside the pole", "cube corner", "long arcs", "along a cell edge",
+      "over the pole" };
+    /* The corner of faces 0, 1 and 2 lies where x = y = z */
+    const double clat = atan(1.0 / sqrt(2.0)) * 180.0 / M_PI;
+    for (int k = 0; k < 7; k++)
+    {
+      long wrong = 0, offpath = 0, none = 0;
+      unsigned seed = 20260915u + (unsigned) k;
+      int32 level = (k == 4) ? 4 : 16;
+      for (int t = 0; t < NSEGMENTS; t++)
+      {
+        double r1 = rand_r(&seed) / (double) RAND_MAX;
+        double r2 = rand_r(&seed) / (double) RAND_MAX;
+        double r3 = rand_r(&seed) / (double) RAND_MAX;
+        double r4 = rand_r(&seed) / (double) RAND_MAX;
+        double lon0, lat0, lon1, lat1;
+        if (k < 2)
+        {
+          double lat = (k == 0) ? 0.5 : 60.0;
+          lon0 = 180.0 - 0.02 * r1;
+          lon1 = -180.0 + 0.02 * r2;
+          lat0 = lat + 0.01 * (r3 - 0.5);
+          lat1 = lat + 0.01 * (r4 - 0.5);
+        }
+        else if (k == 2)
+        {
+          lon0 = 360.0 * r1 - 180.0;
+          lon1 = 360.0 * r2 - 180.0;
+          lat0 = 89.990 + 0.009 * r3;
+          lat1 = 89.990 + 0.009 * r4;
+        }
+        else if (k == 3)
+        {
+          lon0 = 45.0 + 0.02 * (r1 - 0.5);
+          lon1 = 45.0 + 0.02 * (r2 - 0.5);
+          lat0 = clat + 0.02 * (r3 - 0.5);
+          lat1 = clat + 0.02 * (r4 - 0.5);
+        }
+        else if (k == 5)
+        {
+          lon0 = lon1 = (r1 < 0.5) ? 0.0 : 90.0;
+          lat0 = 50.0 + 39.0 * r2;
+          lat1 = lat0 + 0.02 * (r3 - 0.5);
+        }
+        else if (k == 6)
+        {
+          lon0 = (r1 < 0.5) ? 0.0 : 90.0;
+          lon1 = lon0 - 180.0;
+          lat0 = 89.990 + 0.009 * r2;
+          lat1 = 89.990 + 0.009 * r3;
+        }
+        else
+        {
+          lon0 = 360.0 * r1 - 180.0;
+          lat0 = 160.0 * r2 - 80.0;
+          lon1 = lon0 + 80.0 * (r3 - 0.5);
+          if (lon1 > 180.0)
+            lon1 -= 360.0;
+          if (lon1 < -180.0)
+            lon1 += 360.0;
+          lat1 = lat0 + 80.0 * (r4 - 0.5);
+          if (lat1 > 85.0)
+            lat1 = 85.0;
+          if (lat1 < -85.0)
+            lat1 = -85.0;
+        }
+        ts2cell_check(lon0, lat0, lon1, lat1, level, &wrong, &offpath, &none);
+      }
+      printf("%-20s ts2cell positions in another cell %ld, off the path %ld\n",
+        sname[k], wrong, offpath);
+      if (none > 0)
+        printf("  %ld ts2cell value(s) were not built at all\n", none);
+      if (wrong > 0 || offpath > 0 || none > 0)
+        failures++;
+    }
   }
 
   if (failures > 0)
