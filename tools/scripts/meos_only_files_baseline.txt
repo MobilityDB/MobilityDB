@@ -2,7 +2,6 @@
 # grandfathered in. The list only shrinks: a new violation
 # fails the check. Regenerate with --rebaseline after a split.
 meos/src/geo/postgis_funcs.c	meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, \	file-scope conditional
-meos/src/geo/tgeo_spatialfuncs.c	ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZ	file-scope conditional
 meos/src/geo/tspatial.c	inline char **	file-scope conditional
 meos/src/geo/tspatial_transform_meos.c	#define MAX_LEN_HEADER 1024	conditional in a MEOS-only file
 meos/src/geo/tspatial_transform_meos.c	#include "lwgeom_pg.h"	conditional in a MEOS-only file
@@ -38,10 +37,6 @@ meos/src/pointcloud/schema_hook.c	#include <utils/memutils.h>  /* TopMemoryConte
 meos/src/temporal/doublen.c	double2_make(double a, double b)	file-scope conditional
 meos/src/temporal/doublen.c	double3_make(double a, double b, double c)	file-scope conditional
 meos/src/temporal/doublen.c	double4_make(double a, double b, double c, double d)	file-scope conditional
-meos/src/temporal/meos_error.c	#include "utils/elog.h"	file-scope conditional
-meos/src/temporal/meos_error.c	default_error_handler(int errlevel, int errcode, const char *errmsg)	file-scope conditional
-meos/src/temporal/meos_error.c	meos_errno_set(int err)	file-scope conditional
-meos/src/temporal/meos_error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
 meos/src/temporal/meos.c	#define USE_POSTGRES_DATES 0	file-scope conditional
 meos/src/temporal/meos.c	geos_finalize(void)	file-scope conditional
 meos/src/temporal/meos.c	prng_finalize(void)	file-scope conditional
@@ -53,6 +48,10 @@ meos/src/temporal/meos_catalog.c	ensure_tgeodetic_type(MeosType type)	file-scope
 meos/src/temporal/meos_catalog.c	ensure_timespanset_type(MeosType type)	file-scope conditional
 meos/src/temporal/meos_catalog.c	ensure_tspatial_type(MeosType type)	file-scope conditional
 meos/src/temporal/meos_catalog.c	geoset_type(MeosType type)	file-scope conditional
+meos/src/temporal/meos_error.c	#include "utils/elog.h"	file-scope conditional
+meos/src/temporal/meos_error.c	default_error_handler(int errlevel, int errcode, const char *errmsg)	file-scope conditional
+meos/src/temporal/meos_error.c	meos_errno_set(int err)	file-scope conditional
+meos/src/temporal/meos_error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
 meos/src/temporal/set.c	set_compact(const Set *s)	file-scope conditional
 meos/src/temporal/skiplist.c	#define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */	file-scope conditional
 meos/src/temporal/skiplist.c	datum_func2 func, bool crossings, SkipListType sktype)	file-scope conditional
