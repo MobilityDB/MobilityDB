@@ -927,27 +927,18 @@ double sphere_distance_cartesian(const POINT3D *s, const POINT3D *e)
 double sphere_direction(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT *e, double d)
 {
 	double heading = 0.0;
-	double f;
 
 	/* Starting from the poles? Special case. */
 	if ( FP_IS_ZERO(cos(s->lat)) )
 		return (s->lat > 0.0) ? M_PI : 0.0;
 
-	f = (sin(e->lat) - sin(s->lat) * cos(d)) / (sin(d) * cos(s->lat));
-	if ( FP_EQUALS(f, 1.0) )
-		heading = 0.0;
-	else if ( FP_EQUALS(f, -1.0) )
-		heading = M_PI;
-	else if ( fabs(f) > 1.0 )
-	{
-		LWDEBUGF(4, "f = %g", f);
-		heading = acos(f);
-	}
-	else
-		heading = acos(f);
-
-	if ( sin(e->lon - s->lon) < 0.0 )
-		heading = -1 * heading;
+	/* MEOS: the bearing is read from its two components rather than from its
+	 * cosine, which rounds outside [-1, 1] for two points on one meridian and
+	 * made acos answer NaN there; the distance is not needed */
+	(void) d;
+	heading = atan2(sin(e->lon - s->lon) * cos(e->lat),
+		cos(s->lat) * sin(e->lat) - sin(s->lat) * cos(e->lat) * cos(e->lon - s->lon));
+	LWDEBUGF(4, "heading = %g", heading);
 
 	return heading;
 }

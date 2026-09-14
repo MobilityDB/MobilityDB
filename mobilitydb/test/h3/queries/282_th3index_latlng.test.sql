@@ -230,4 +230,13 @@ FROM (SELECT p, th3index(p, 3) AS c FROM (VALUES
   AS q, generate_series(timestamptz '2001-01-01 00:17',
     '2001-01-02 23:43', interval '37 minutes') AS t;
 
+-- So does one moving along a meridian, whose bearing is due north
+SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 9))) AS other_cell
+FROM (SELECT p, th3index(p, 9) AS c FROM (VALUES
+  (tgeogpoint '[Point(0 -79.269)@2001-01-01, Point(0 -79.239)@2001-01-03]'))
+  AS v(p)) AS q, generate_series(timestamptz '2001-01-01 00:17',
+    '2001-01-02 23:43', interval '37 minutes') AS t;
+
 -------------------------------------------------------------------------------
