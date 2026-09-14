@@ -98,11 +98,17 @@ typedef struct
   double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
   double xmin, ymin, xmax, ymax; /**< Precomputed bounding box of the edge */
   double dx, dy, length;         /**< Precomputed dx, dy, and length */
-  double tol;                    /**< Precomputed #coordinate_tolerance of the
+  double tol;                    /**< Precomputed #coordinate_rounding of the
                                       edge, which its own coordinates fix */
   double cx, cy, radius;         /**< Arc center and radius (an arc only) */
   double theta0, theta1;         /**< Arc start/end angles (an arc only) */
   bool ccw;                      /**< Arc traversed counterclockwise */
+  double sx, sy, mx, my, ex, ey; /**< Input points fixing the circle of an arc
+                                      (an arc only): its start, middle and end,
+                                      or the ends of its diameter in (sx,sy)
+                                      and (ex,ey) */
+  bool diameter;                 /**< The circle of an arc is the one on the
+                                      diameter from (sx,sy) to (ex,ey) */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -163,6 +169,9 @@ extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
+extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
+extern int arc_circle_side(const Edge *e, double qx, double qy);
+extern bool arc_same_circle(const Edge *a, const Edge *b);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
@@ -177,7 +186,11 @@ extern bool meos_spatialrel_ctx(const void *ctx1, const void *ctx2,
   spatialRel rel, bool *result);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
+extern int point_in_polygon_vertex(double x, double y, Edge **edges,
+  int nedges);
 extern int point_in_polygon_index(double x, double y, Edge **edges,
+  int nedges, const RTree *rtree, double xmax);
+extern int point_in_polygon_index_vertex(double x, double y, Edge **edges,
   int nedges, const RTree *rtree, double xmax);
 /**
  * @brief Return true if a polygon ring turns the same way at every vertex,
@@ -216,8 +229,9 @@ geom_ring_is_convex(const POINTARRAY *pa)
 }
 
 extern bool relate_point_on_boundary(double x, double y, Edge **edges,
-  int nedges);
-extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
+  int nedges, bool vertex);
+extern int relate_point_in_area(double x, double y, Edge **edges, int nedges,
+  bool vertex);
 /* Reading a point question out of an index instead of the whole array, which
  * the buffer overlay asks as well: it locates a point per boundary piece
  * against each operand, so the edges are read once and the questions asked
@@ -245,7 +259,7 @@ extern void relate_edges_init(RelateEdges *re, Edge **edges, int nedges,
   bool index);
 extern void relate_edges_clear(RelateEdges *re);
 extern int relate_point_in_area_index(double x, double y,
-  const RelateEdges *re);
+  const RelateEdges *re, bool vertex);
 /* Where two arcs meet, which the buffer overlay asks as well: solving the two
  * circles and keeping the solutions both angular spans hold is one
  * computation, and an intersection the two engines place differently is a
@@ -748,6 +762,25 @@ arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
 }
 
 /**
+ * @brief Return the rounding the square of the half-chord of two circles
+ * carries
+ * @details The square is `r1^2 - aa^2`, with `aa = (d^2 + r1^2 - r2^2) / (2 d)`
+ * read from the centres and radii the arcs carry: each square is rounded to a
+ * few units in its last place, and `aa` carries the rounding of the three
+ * squares it is built from, so the difference is resolved to that much and no
+ * further. A square within it reads as a tangency and one below it as circles
+ * that do not meet. The bound is made of the squares themselves, so it scales
+ * with the circles and answers alike at every size, where a fixed length
+ * reads distinct circles as one once they are small
+ */
+static inline double
+arc_half_chord_rounding(double d, double r1, double r2, double aa)
+{
+  return 4.0 * DBL_EPSILON * (r1 * r1 + aa * aa +
+    fabs(aa) * (d * d + r1 * r1 + r2 * r2) / d);
+}
+
+/**
  * @brief Return true if two circular arcs properly cross
  * @details Proper means the two curves pass through one another at a point
  * interior to both, which is for two arcs what #relate_edges_cross decides for
@@ -769,25 +802,22 @@ arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
 static inline bool
 arcarc_cross(const Edge *a, const Edge *b)
 {
+  /* One circle: a shared stretch or a common endpoint, never a crossing */
+  if (arc_same_circle(a, b))
+    return false;
   double dx = b->cx - a->cx, dy = b->cy - a->cy;
   double d = hypot(dx, dy);
-  /* One circle: a shared stretch or a common endpoint, never a crossing */
-  if (d <= MEOS_GEOM_TOLERANCE)
+  /* Two circles about one centre never meet */
+  if (d == 0.0)
     return false;
-  /* Separate or nested circles never meet */
-  if (d > a->radius + b->radius + MEOS_GEOM_TOLERANCE ||
-      d < fabs(a->radius - b->radius) - MEOS_GEOM_TOLERANCE)
-    return false;
-
   double aa = (d * d + a->radius * a->radius - b->radius * b->radius) /
     (2.0 * d);
   double h2 = a->radius * a->radius - aa * aa;
-  /* Tangent circles touch at one point without passing through */
-  if (h2 <= 0.0)
+  /* Separate and nested circles never meet, and tangent ones touch at one
+   * point without passing through */
+  if (h2 <= arc_half_chord_rounding(d, a->radius, b->radius, aa))
     return false;
   double h = sqrt(h2);
-  if (h <= MEOS_GEOM_TOLERANCE)
-    return false;
 
   /* HOW FAR THE CROSSING POINT ITSELF IS RESOLVED, and why a parameter margin
    * cannot stand in for it. The half-chord comes from `r^2 - aa^2`, two
@@ -943,7 +973,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
 static inline double
 coordinate_rounding(double c1, double c2)
 {
-  return 4.0 * DBL_EPSILON * fmax(fabs(c1), fabs(c2));
+  return 4.0 * DBL_EPSILON * Max(fabs(c1), fabs(c2));
 }
 
 /**
@@ -999,8 +1029,8 @@ point_on_segment_within(double px, double py, double x1, double y1, double x2,
   double y2, double tol)
 {
   /* Fast bounding-box rejection, which is where all but a few calls end */
-  if ((px < fmin(x1, x2) - tol) || (px > fmax(x1, x2) + tol) ||
-      (py < fmin(y1, y2) - tol) || (py > fmax(y1, y2) + tol))
+  if ((px < Min(x1, x2) - tol) || (px > Max(x1, x2) + tol) ||
+      (py < Min(y1, y2) - tol) || (py > Max(y1, y2) + tol))
     return false;
 
   /* Vectors AP and AB */
@@ -1054,8 +1084,8 @@ static inline bool
 point_on_segment_exact(double px, double py, double x1, double y1, double x2,
   double y2)
 {
-  if (px < fmin(x1, x2) || px > fmax(x1, x2) ||
-      py < fmin(y1, y2) || py > fmax(y1, y2))
+  if (px < Min(x1, x2) || px > Max(x1, x2) ||
+      py < Min(y1, y2) || py > Max(y1, y2))
     return false;
   return cross_product_sign(x1, y1, x2, y2, x1, y1, px, py) == 0;
 }
