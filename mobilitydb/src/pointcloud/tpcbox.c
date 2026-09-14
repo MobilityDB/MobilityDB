@@ -841,25 +841,20 @@ Datum Overafter_tpcbox_tpcbox(PG_FUNCTION_ARGS)
  * Comparison
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpcbox_eq(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_eq);
+PGDLLEXPORT Datum Tpcbox_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_cmp);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
- * @brief PG wrapper: tpcbox = tpcbox
- * @sqlfn eq()
- * @sqlop @p =
+ * @brief B-tree comparator for tpcbox
+ * @sqlfn cmp()
  */
-Datum Tpcbox_eq(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_eq) }
-
-PGDLLEXPORT Datum Tpcbox_ne(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_ne);
-/**
- * @ingroup mobilitydb_pointcloud_box_comp
- * @brief PG wrapper: tpcbox <> tpcbox
- * @sqlfn ne()
- * @sqlop @p <>
- */
-Datum Tpcbox_ne(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ne) }
+Datum
+Tpcbox_cmp(PG_FUNCTION_ARGS)
+{
+  TPCBox *a = PG_GETARG_TPCBOX_P(0);
+  TPCBox *b = PG_GETARG_TPCBOX_P(1);
+  PG_RETURN_INT32(tpcbox_cmp(a, b));
+}
 
 PGDLLEXPORT Datum Tpcbox_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_lt);
@@ -881,16 +876,6 @@ PG_FUNCTION_INFO_V1(Tpcbox_le);
  */
 Datum Tpcbox_le(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_le) }
 
-PGDLLEXPORT Datum Tpcbox_gt(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gt);
-/**
- * @ingroup mobilitydb_pointcloud_box_comp
- * @brief PG wrapper: tpcbox > tpcbox
- * @sqlfn gt()
- * @sqlop @p >
- */
-Datum Tpcbox_gt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_gt) }
-
 PGDLLEXPORT Datum Tpcbox_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_ge);
 /**
@@ -901,19 +886,34 @@ PG_FUNCTION_INFO_V1(Tpcbox_ge);
  */
 Datum Tpcbox_ge(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ge) }
 
-PGDLLEXPORT Datum Tpcbox_cmp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_cmp);
+PGDLLEXPORT Datum Tpcbox_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gt);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
- * @brief B-tree comparator for tpcbox
- * @sqlfn cmp()
+ * @brief PG wrapper: tpcbox > tpcbox
+ * @sqlfn gt()
+ * @sqlop @p >
  */
-Datum
-Tpcbox_cmp(PG_FUNCTION_ARGS)
-{
-  TPCBox *a = PG_GETARG_TPCBOX_P(0);
-  TPCBox *b = PG_GETARG_TPCBOX_P(1);
-  PG_RETURN_INT32(tpcbox_cmp(a, b));
-}
+Datum Tpcbox_gt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_gt) }
+
+PGDLLEXPORT Datum Tpcbox_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_eq);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox = tpcbox
+ * @sqlfn eq()
+ * @sqlop @p =
+ */
+Datum Tpcbox_eq(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_eq) }
+
+PGDLLEXPORT Datum Tpcbox_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_ne);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox <> tpcbox
+ * @sqlfn ne()
+ * @sqlop @p <>
+ */
+Datum Tpcbox_ne(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ne) }
 
 /*****************************************************************************/
