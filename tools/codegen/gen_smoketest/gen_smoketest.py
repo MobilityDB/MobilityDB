@@ -2598,8 +2598,25 @@ def load_sidecar(path):
     return cfg
 
 
+def suite_names():
+    """The name of every suite this generator configures: the legacy in-file
+    CONFIGS and each meos/test/smoke/<family>.json a family drops, whether or
+    not its header is installed. run_smoketests.sh runs exactly these, so a
+    family is named in one place, its config, and a suite whose header did not
+    install still reaches the runner, which fails it rather than passing over
+    it."""
+    names = [cfg["out"][:-2] for cfg in CONFIGS.values()]
+    for path in sorted(glob.glob(os.path.join(SMOKE_DIR, "*.json"))):
+        with open(path) as f:
+            names.append(json.load(f)["out"][:-2])
+    return names
+
+
 def main():
     target = sys.argv[1] if len(sys.argv) > 1 else None
+    if target == "--list":
+        print("\n".join(suite_names()))
+        return
     for name, cfg in CONFIGS.items():
         if target and name != target:
             continue

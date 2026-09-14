@@ -23,26 +23,18 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 MEOS_BUILD_DIR="${MEOS_BUILD_DIR:-/usr/local/lib}"
 MEOS_INCLUDE_DIR="${MEOS_INCLUDE_DIR:-/usr/local/include}"
 
-SUITES=(
-  trgeometry_test
-  tpose_smoketest
-  tcbuffer_smoketest
-  tnpoint_smoketest
-  tgeometry_smoketest
-  tjsonb_smoketest
-)
-
-# Self-contained family suites: a family drops meos/test/smoke/<family>.json and
-# is DISCOVERED here (never centrally listed) — mirroring append_portable_aliases'
-# file(GLOB ...). Each suite name comes from the sidecar's "out" field. The
-# per-suite loop below skips any suite whose .c was not generated (its feature /
-# header absent on this build), so a discovered family is safe on a partial build.
-if command -v python3 >/dev/null 2>&1; then
-  for _sc in "$HERE"/smoke/*.json; do
-    [ -e "$_sc" ] || continue
-    SUITES+=("$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['out'][:-2])" "$_sc")")
-  done
+GEN="$HERE/../../tools/codegen/gen_smoketest/gen_smoketest.py"
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "[FAIL]  python3 is required to name and generate the smoke suites"
+  exit 1
 fi
+
+# The suites are the ones the generator configures: its in-file configs and
+# each meos/test/smoke/<family>.json a family drops, which it DISCOVERS rather
+# than lists (the append_portable_aliases file(GLOB ...) model). Nothing here
+# names a family, so adding one is adding its sidecar. A suite whose header did
+# not install is still listed, and the loop below fails it.
+mapfile -t SUITES < <(python3 "$GEN" --list)
 
 # Regenerate the smoke-test C files from the INSTALLED MEOS headers so the
 # suite always matches the library it is about to link against. Committed
@@ -114,12 +106,12 @@ for suite in "${SUITES[@]}"; do
 done
 
 # Refusing a skip leaves DELETION as the remaining way to stop running a suite,
-# and a deleted name reports nothing anywhere: the COUNT is the only thing that
-# moves. The floor is the number of suites master runs -- six named in SUITES
-# plus each meos/test/smoke/*.json a family drops -- so removing a name or a
-# sidecar reddens instead of quietly shrinking the run. Raise it when a family
-# is added.
-floor="${MEOS_SMOKE_FLOOR:-7}"
+# and a deleted config or sidecar reports nothing anywhere: the COUNT is the
+# only thing that moves. The floor is the number of suites master runs -- the
+# generator's six in-file configs plus its four meos/test/smoke/*.json
+# sidecars -- so removing one reddens instead of quietly shrinking the run.
+# Raise it when a family is added.
+floor="${MEOS_SMOKE_FLOOR:-10}"
 if [ "$ran" -lt "$floor" ]; then
   echo
   echo "[FAIL]  $ran smoke suite(s) ran, below the floor of $floor"

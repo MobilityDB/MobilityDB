@@ -9,6 +9,8 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
+      - 'postgis/**'
+      - 'tools/codegen/gen_smoketest/**'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages
@@ -19,6 +21,8 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
+      - 'postgis/**'
+      - 'tools/codegen/gen_smoketest/**'
       - 'CMakeLists.txt'
     branches-ignore:
       - gh-pages

@@ -99,29 +99,8 @@ jobs:
           # schema ownership is actually checked; this run only asserts
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o pcschema_dims_load_test pcschema_dims_load_test.c -L/usr/local/lib -lmeos
           ./pcschema_dims_load_test
-          # The tcbuffer test program is generated from the installed headers
-          # (gen_smoketest.py introspects meos_cbuffer.h) so it tracks the current
-          # API. Regenerate and compile it here; the CBUFFER family is built and
-          # installed above.
-          python3 ../../tools/codegen/gen_smoketest/gen_smoketest.py tcbuffer
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tcbuffer_smoketest tcbuffer_smoketest.c -L/usr/local/lib -lmeos -lm
-          ./tcbuffer_smoketest
-          # The tgeometry test program is generated from the installed headers
-          # (gen_smoketest.py introspects meos_geo.h) so it tracks the current
-          # API. Regenerate and compile it here; the geo type is built and
-          # installed above.
-          python3 ../../tools/codegen/gen_smoketest/gen_smoketest.py tgeometry
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tgeometry_smoketest tgeometry_smoketest.c -L/usr/local/lib -lmeos -lm
-          ./tgeometry_smoketest
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o json_test json_test.c -L/usr/local/lib -lmeos
           ./json_test
-          # The tjsonb test program is generated from the installed headers
-          # (gen_smoketest.py introspects meos_json.h) so it tracks the current
-          # API. Regenerate and compile it here; the JSON family is built and
-          # installed above.
-          python3 ../../tools/codegen/gen_smoketest/gen_smoketest.py tjsonb
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tjsonb_smoketest tjsonb_smoketest.c -L/usr/local/lib -lmeos -lm
-          ./tjsonb_smoketest
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o error_test error_test.c -L/usr/local/lib -lmeos
           ./error_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o merge_test merge_test.c -L/usr/local/lib -lmeos
