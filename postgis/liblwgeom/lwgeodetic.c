@@ -1258,25 +1258,25 @@ double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e
 */
 int sphere_project(const GEOGRAPHIC_POINT *r, double distance, double azimuth, GEOGRAPHIC_POINT *n)
 {
-	double d = distance;
-	double lat1 = r->lat;
-	double lon1 = r->lon;
-	double lat2, lon2;
-
-	lat2 = asin(sin(lat1)*cos(d) + cos(lat1)*sin(d)*cos(azimuth));
-
-	/* If we're going straight up or straight down, we don't need to calculate the longitude */
-	/* MEOS: such a path keeps the meridian of its start until it passes over
-	 * a pole and runs down the opposite meridian from there on; past the pole
-	 * the second component the general case reads is negative */
-	if ( FP_EQUALS(azimuth, M_PI) || FP_EQUALS(azimuth, 0.0) )
-	{
-		lon2 = ( cos(d) - sin(lat1) * sin(lat2) < 0.0 ) ? lon1 + M_PI : lon1;
-	}
-	else
-	{
-		lon2 = lon1 + atan2(sin(azimuth)*sin(d)*cos(lat1), cos(d)-sin(lat1)*sin(lat2));
-	}
+	/* MEOS: the projected point is the start moved along the great circle of
+	 * the azimuth, cos(d) a + sin(d) t with t the unit tangent of the azimuth
+	 * at the start, and its latitude and longitude are read by atan2. The asin
+	 * of a sine that rounds to 1 places every point within about 1.5e-8 rad of
+	 * a pole on the pole, and a path over a pole needs no case of its own */
+	double sin_lat = sin(r->lat), cos_lat = cos(r->lat);
+	double sin_lon = sin(r->lon), cos_lon = cos(r->lon);
+	double sin_d = sin(distance), cos_d = cos(distance);
+	double sin_az = sin(azimuth), cos_az = cos(azimuth);
+	/* The tangent towards the north is (-sin_lat cos_lon, -sin_lat sin_lon,
+	 * cos_lat) and the one towards the east (-sin_lon, cos_lon, 0) */
+	double tx = -cos_az * sin_lat * cos_lon - sin_az * sin_lon;
+	double ty = -cos_az * sin_lat * sin_lon + sin_az * cos_lon;
+	double tz = cos_az * cos_lat;
+	double x = cos_d * cos_lat * cos_lon + sin_d * tx;
+	double y = cos_d * cos_lat * sin_lon + sin_d * ty;
+	double z = cos_d * sin_lat + sin_d * tz;
+	double lat2 = atan2(z, sqrt(x * x + y * y));
+	double lon2 = atan2(y, x);
 
 	if ( isnan(lat2) || isnan(lon2) )
 		return LW_FAILURE;
