@@ -51,15 +51,21 @@
 /* MobilityDB */
 #include "pg_geo/tspatial_boxops.h"
 
+/* GENERATED-POSOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/posops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
+/*****************************************************************************
+ * Position operators
+ *****************************************************************************/
+
 /*****************************************************************************/
-/* stbox op Temporal */
+/* spatiotemporal box op spatiotemporal value */
 
 PGDLLEXPORT Datum Left_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is to the left of a temporal
- * spatial value
+ * @brief Return true if a spatiotemporal box is to the left of a spatiotemporal
+ * value
  * @sqlfn stboxLeft()
  * @sqlop @p <<
  */
@@ -88,8 +94,8 @@ PGDLLEXPORT Datum Right_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is to the right of a temporal
- * spatial value
+ * @brief Return true if a spatiotemporal box is to the right of a
+ * spatiotemporal value
  * @sqlfn stboxRight()
  * @sqlop @p >>
  */
@@ -132,8 +138,8 @@ PGDLLEXPORT Datum Overbelow_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbelow_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box does not extend above a temporal
- * spatial value
+ * @brief Return true if a spatiotemporal box does not extend above a
+ * spatiotemporal value
  * @sqlfn stboxOverbelow()
  * @sqlop @p &<|
  */
@@ -161,8 +167,8 @@ PGDLLEXPORT Datum Overabove_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overabove_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box does not extend below a temporal
- * spatial value
+ * @brief Return true if a spatiotemporal box does not extend below a
+ * spatiotemporal value
  * @sqlfn stboxOverabove()
  * @sqlop @p |&>
  */
@@ -206,8 +212,8 @@ PGDLLEXPORT Datum Back_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is at the back of a temporal
- * spatial value
+ * @brief Return true if a spatiotemporal box is at the back of a spatiotemporal
+ * value
  * @sqlfn stboxBack()
  * @sqlop @p />>
  */
@@ -236,8 +242,7 @@ PGDLLEXPORT Datum Before_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is before a spatiotemporal
- * value
+ * @brief Return true if a spatiotemporal box is before a spatiotemporal value
  * @sqlfn stboxBefore()
  * @sqlop @p <<#
  */
@@ -292,7 +297,7 @@ Overafter_stbox_tspatial(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op stbox */
+/* spatiotemporal value op spatiotemporal box */
 
 PGDLLEXPORT Datum Left_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tspatial_stbox);
@@ -343,8 +348,8 @@ PGDLLEXPORT Datum Overright_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal value does not extend to the left
- * of a spatiotemporal box
+ * @brief Return true if a spatiotemporal value does not extend to the left of a
+ * spatiotemporal box
  * @sqlfn stboxOverright()
  * @sqlop @p &>
  */
@@ -416,8 +421,8 @@ PGDLLEXPORT Datum Front_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Front_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal value is in front of a
- * spatiotemporal box
+ * @brief Return true if a spatiotemporal value is in front of a spatiotemporal
+ * box
  * @sqlfn stboxFront()
  * @sqlop @p <</
  */
@@ -431,8 +436,8 @@ PGDLLEXPORT Datum Overfront_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overfront_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal value does not extend to the back
- * of a spatiotemporal box
+ * @brief Return true if a spatiotemporal value does not extend to the back of a
+ * spatiotemporal box
  * @sqlfn stboxOverfront()
  * @sqlop @p &</
  */
@@ -461,8 +466,8 @@ PGDLLEXPORT Datum Overback_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overback_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal value does not extend to the front
- * of a spatiotemporal box
+ * @brief Return true if a spatiotemporal value does not extend to the front of
+ * a spatiotemporal box
  * @sqlfn stboxOverback()
  * @sqlop @p /&>
  */
@@ -476,8 +481,7 @@ PGDLLEXPORT Datum Before_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if a spatiotemporal value is before a spatiotemporal
- * box
+ * @brief Return true if a spatiotemporal value is before a spatiotemporal box
  * @sqlfn stboxBefore()
  * @sqlop @p <<#
  */
@@ -532,7 +536,7 @@ Overafter_tspatial_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op Temporal */
+/* spatiotemporal value op spatiotemporal value */
 
 PGDLLEXPORT Datum Left_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tspatial_tspatial);
@@ -553,8 +557,8 @@ PGDLLEXPORT Datum Overleft_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value does not extend to
- * the right of the second one
+ * @brief Return true if the first spatiotemporal value does not extend to the
+ * right of the second one
  * @sqlfn stboxOverleft()
  * @sqlop @p &<
  */
@@ -568,8 +572,8 @@ PGDLLEXPORT Datum Right_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is to the right of
- * the second one
+ * @brief Return true if the first spatiotemporal value is to the right of the
+ * second one
  * @sqlfn stboxRight()
  * @sqlop @p >>
  */
@@ -583,8 +587,8 @@ PGDLLEXPORT Datum Overright_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value does not extend to
- * the left of the second one
+ * @brief Return true if the first spatiotemporal value does not extend to the
+ * left of the second one
  * @sqlfn stboxOverright()
  * @sqlop @p &>
  */
@@ -598,8 +602,7 @@ PGDLLEXPORT Datum Below_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Below_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is below the second
- * one
+ * @brief Return true if the first spatiotemporal value is below the second one
  * @sqlfn stboxBelow()
  * @sqlop @p <<|
  */
@@ -628,8 +631,7 @@ PGDLLEXPORT Datum Above_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Above_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is above the second
- * one
+ * @brief Return true if the first spatiotemporal value is above the second one
  * @sqlfn stboxAbove()
  * @sqlop @p |>>
  */
@@ -673,8 +675,8 @@ PGDLLEXPORT Datum Overfront_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overfront_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value does not extend to
- * the back of the second one
+ * @brief Return true if the first spatiotemporal value does not extend to the
+ * back of the second one
  * @sqlfn stboxOverfront()
  * @sqlop @p &</
  */
@@ -703,8 +705,8 @@ PGDLLEXPORT Datum Overback_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overback_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value does not extend to
- * the front of the second one
+ * @brief Return true if the first spatiotemporal value does not extend to the
+ * front of the second one
  * @sqlfn stboxOverback()
  * @sqlop @p /&>
  */
@@ -718,8 +720,7 @@ PGDLLEXPORT Datum Before_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is before the second
- * one
+ * @brief Return true if the first spatiotemporal value is before the second one
  * @sqlfn stboxBefore()
  * @sqlop @p <<#
  */
@@ -733,8 +734,8 @@ PGDLLEXPORT Datum Overbefore_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is not after the
- * second one
+ * @brief Return true if the first spatiotemporal value is not after the second
+ * one
  * @sqlfn stboxOverbefore()
  * @sqlop @p &<#
  */
@@ -748,8 +749,7 @@ PGDLLEXPORT Datum After_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is after the second
- * one
+ * @brief Return true if the first spatiotemporal value is after the second one
  * @sqlfn stboxAfter()
  * @sqlop @p #>>
  */
@@ -763,8 +763,8 @@ PGDLLEXPORT Datum Overafter_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overafter_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_pos
- * @brief Return true if the first spatiotemporal value is not before the
- * second one
+ * @brief Return true if the first spatiotemporal value is not before the second
+ * one
  * @sqlfn stboxOverafter()
  * @sqlop @p #&>
  */
@@ -775,3 +775,4 @@ Overafter_tspatial_tspatial(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+/* GENERATED-POSOPS-END stbox */
