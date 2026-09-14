@@ -239,6 +239,48 @@ SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"uni
  {"10", "20"}
 (1 row)
 
+SELECT pg_typeof(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed');
+ pg_typeof 
+-----------
+ textset
+(1 row)
+
+SELECT pg_typeof(jsonbsetObjectFieldText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', 'speed'));
+ pg_typeof 
+-----------
+ textset
+(1 row)
+
+SELECT pg_typeof(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
+ pg_typeof 
+-----------
+ textset
+(1 row)
+
+SELECT pg_typeof(jsonbsetArrayElementText(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}', 1));
+ pg_typeof 
+-----------
+ textset
+(1 row)
+
+SELECT startValue(jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units');
+ startvalue 
+------------
+ km/h
+(1 row)
+
+SELECT (jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units') = textset '{"km/h"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT startValue(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
+ startvalue 
+------------
+ La Bourse
+(1 row)
+
 SELECT intset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
  intset 
 --------

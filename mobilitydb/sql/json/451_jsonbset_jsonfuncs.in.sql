@@ -59,7 +59,7 @@ CREATE FUNCTION jsonbsetObjectFieldOpr(jsonbset, text)
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetObjectFieldTextOpr(jsonbset, text)
-  RETURNS jsonbset
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -108,7 +108,7 @@ CREATE FUNCTION jsonbsetArrayElement(jsonbset, integer,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetArrayElementText(jsonbset, integer,
     null_handle text DEFAULT 'use_json_null')
-  RETURNS jsonbset
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -117,7 +117,7 @@ CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, int)
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, int)
-  RETURNS jsonbset
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

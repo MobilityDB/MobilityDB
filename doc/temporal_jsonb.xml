@@ -108,7 +108,7 @@ SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bou
 				<para>Extract an element from a JSON array</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
-jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
+jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → textset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
@@ -878,9 +878,9 @@ SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2
 				<indexterm significance="normal"><primary><varname>tjsonbArrayElementText</varname></primary></indexterm>
 				<para>Extract an element from a temporal JSON array</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonArrayElement(ttext,integer,null_handle text='use_json_null') → ttext
 tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
-tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → ttext
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
