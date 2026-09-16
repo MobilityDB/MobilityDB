@@ -1962,15 +1962,16 @@ raster_to_stbox(const Raster *rast)
 
 /**
  * @brief State a raster sampling call keeps for the length of a trajectory:
- * the deserialized raster, the band the values are read from, the inverse
- * geotransform, computed once and handed to every point conversion, whether
- * a nodata pixel carries no value, and whether a pixel of the band could not
- * be read
+ * the deserialized raster, the band the values are read from, the geotransform
+ * and its inverse, computed once and handed to every crossing and every point
+ * conversion, whether a nodata pixel carries no value, and whether a pixel of
+ * the band could not be read
  */
 typedef struct
 {
   rt_raster raster;   /**< Raster carrying its bands */
   rt_band band;       /**< Band the pixel values are read from */
+  double gt[6];       /**< Geotransform of the raster */
   double igt[6];      /**< Inverse geotransform of the raster */
   bool exclude_nodata; /**< Whether a nodata pixel carries no value */
   bool unreadable;    /**< Whether a pixel of the band could not be read */
@@ -1992,6 +1993,18 @@ raster_value_grid(const void *ctxp, double x, double y, double *col,
   memcpy(igt, state->igt, sizeof(igt));
   GDALApplyGeoTransform(igt, x, y, col, row);
   return;
+}
+
+/**
+ * @brief Raster crossing callback placing the grid lines of a PostGIS raster
+ * with its geotransform, see #raster_affine_cross()
+ */
+static double
+raster_value_cross(const void *ctxp, double x1, double y1, double x2,
+  double y2, int axis, double k)
+{
+  const RasterSampleState *state = (const RasterSampleState *) ctxp;
+  return raster_affine_cross(state->gt, x1, y1, x2, y2, axis, k);
 }
 
 /**
@@ -2104,6 +2117,12 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
       "Could not read band %d of the raster", band);
     return false;
   }
+  state->gt[0] = rt_raster_get_x_offset(raster);
+  state->gt[1] = rt_raster_get_x_scale(raster);
+  state->gt[2] = rt_raster_get_x_skew(raster);
+  state->gt[3] = rt_raster_get_y_offset(raster);
+  state->gt[4] = rt_raster_get_y_skew(raster);
+  state->gt[5] = rt_raster_get_y_scale(raster);
   state->raster = raster;
   state->band = rtband;
   state->exclude_nodata = exclude_nodata;
@@ -2122,7 +2141,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   ops->grid = &raster_value_grid;
   ops->pixel = &raster_value_pixel;
   ops->point = bilinear ? &raster_value_bilinear : NULL;
-  ops->cross = NULL;
+  ops->cross = &raster_value_cross;
   ops->ctx = state;
   ops->width = (int) rt_raster_get_width(raster);
   ops->height = (int) rt_raster_get_height(raster);

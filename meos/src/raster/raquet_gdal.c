@@ -412,13 +412,14 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
 
 /**
  * @brief Per-call state of the GDAL grid callbacks: the raster band to read,
- * the inverse geotransform mapping a geographic point to a pixel
- * (col, row), the band size, the nodata sentinel, and whether a pixel of the
- * band could not be read
+ * the geotransform placing the grid lines and its inverse mapping a
+ * geographic point to a pixel (col, row), the band size, the nodata sentinel,
+ * and whether a pixel of the band could not be read
  */
 typedef struct
 {
   GDALRasterBandH band;
+  double gt[6];
   double inv_gt[6];
   int xsize;
   int ysize;
@@ -442,6 +443,18 @@ raster_value_gdal_grid(const void *ctxp, double x, double y, double *col,
   memcpy(inv_gt, ctx->inv_gt, sizeof(inv_gt));
   GDALApplyGeoTransform(inv_gt, x, y, col, row);
   return;
+}
+
+/**
+ * @brief Raster crossing callback placing the grid lines of a GDAL raster
+ * with its geotransform, see #raster_affine_cross()
+ */
+static double
+raster_value_gdal_cross(const void *ctxp, double x1, double y1, double x2,
+  double y2, int axis, double k)
+{
+  const RasterValueGdalCtx *ctx = (const RasterValueGdalCtx *) ctxp;
+  return raster_affine_cross(ctx->gt, x1, y1, x2, y2, axis, k);
 }
 
 /**
@@ -508,6 +521,7 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
       "Raster has no geotransform: %s", path);
     return false;
   }
+  memcpy(ctx->gt, gt, sizeof(gt));
   if (! GDALInvGeoTransform(gt, ctx->inv_gt))
   {
     raquet_gdal_release(ds, NULL, NULL);
@@ -547,7 +561,7 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   ops->grid = &raster_value_gdal_grid;
   ops->pixel = &raster_value_gdal_pixel;
   ops->point = NULL;
-  ops->cross = NULL;
+  ops->cross = &raster_value_gdal_cross;
   ops->ctx = ctx;
   ops->width = ctx->xsize;
   ops->height = ctx->ysize;

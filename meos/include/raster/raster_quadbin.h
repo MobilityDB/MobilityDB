@@ -104,14 +104,16 @@ typedef struct RasterGridOps
   raster_point_fn point;    /**< Value at a position, NULL where a position
                                  answers the value of the pixel it falls in */
   raster_cross_fn cross;   /**< Parameter at which a segment reaches a grid
-                                 line, NULL when the grid coordinates are
-                                 affine in the position */
+                                 line, NULL to solve it from the grid
+                                 coordinates of the endpoints */
   void *ctx;                /**< State of the engine, passed to the callbacks */
   int width;                /**< Number of columns of the grid */
   int height;               /**< Number of rows of the grid */
   STBox box;                /**< Extent of the grid, the pre-filter */
 } RasterGridOps;
 
+extern double raster_affine_cross(const double *gt, double x1, double y1,
+  double x2, double y2, int axis, double k);
 extern Temporal *raster_value_sampler(const Temporal *traj,
   const RasterGridOps *ops);
 extern Temporal *raster_at_value_sampler(const Temporal *traj,
