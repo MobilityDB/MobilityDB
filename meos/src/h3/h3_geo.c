@@ -31,13 +31,12 @@
  * @file
  * @brief Public API: static GSERIALIZED geometry → set of H3 cells.
  *
- * Covers every WKT/GSERIALIZED geometry type:
+ * The cover of a geometry is the set of the cells that hold a point of it:
  *
- *   POINT             — single H3 cell via geo_to_h3index_cell.
- *   LINESTRING        — sample each segment at edge_length(res)/2 spacing
- *                       (Nyquist), latLngToCell per sample, dedup.
- *   POLYGON           — outer + holes converted to GeoPolygon in radians,
- *                       polygonToCells, dedup.
+ *   POINT             — the cell holding it.
+ *   LINESTRING        — the cells its segments pass through.
+ *   POLYGON           — the cells its rings pass through, together with the
+ *                       cells whose centre it holds.
  *   MULTIPOINT        — union of per-component POINTs.
  *   MULTILINESTRING   — union of per-component LINESTRINGs.
  *   MULTIPOLYGON      — union of per-component POLYGONs.
@@ -58,7 +57,8 @@
 #include <h3api.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <lwgeodetic.h>
+#include <liblwgeom_internal.h>  /* lwpoly_contains_point, LW_OUTSIDE */
+#include <lwgeodetic.h>  /* lwpoly_covers_point2d */
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -70,20 +70,26 @@
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/tcellindex.h"
 #include "temporal/temporal.h"  /* ORDER macro for set_make_free */
-#include "temporal/tcellindex.h"
 
 /*****************************************************************************
  * Growable buffer of H3Index — accumulator for the recursive walker
  *****************************************************************************/
 
+/** @brief Number of cells a cover gathers at most, the count at which a
+ * request states a resolution far finer than the geometry it covers */
+#define H3_MAX_COVER_CELLS 4194304
+
 /**
  * @brief Growable accumulator of H3 cells filled by the geometry walker
+ * @details The limit is enforced as the cells arrive, since a polygon at a
+ * resolution far finer than its extent encloses more cells than memory holds
  */
 typedef struct h3_buf
 {
   H3Index *cells;
   int      count;
   int      capacity;
+  bool     overflow;   /**< True once the cover would pass the limit */
   bool     error;      /**< True once a component raised an error */
 } h3_buf;
 
@@ -95,23 +101,35 @@ h3_buf_init(h3_buf *buf, int initial_capacity)
 {
   buf->capacity = initial_capacity > 0 ? initial_capacity : 64;
   buf->count    = 0;
+  buf->overflow = false;
   buf->error    = false;
   buf->cells    = palloc(sizeof(H3Index) * (size_t) buf->capacity);
 }
 
 /**
- * @brief Ensure that an accumulator can hold @p additional further cells
+ * @brief Make room for @p additional further cells in an accumulator
+ * @return False, and the accumulator marked as overflowing, when the cells
+ * would pass #H3_MAX_COVER_CELLS
  */
-static void
-h3_buf_grow(h3_buf *buf, int additional)
+static bool
+h3_buf_reserve(h3_buf *buf, long additional)
 {
-  if (buf->count + additional <= buf->capacity)
-    return;
+  if (buf->overflow)
+    return false;
+  if ((long) buf->count + additional > H3_MAX_COVER_CELLS)
+  {
+    buf->overflow = true;
+    return false;
+  }
+  int needed = buf->count + (int) additional;
+  if (needed <= buf->capacity)
+    return true;
   int new_cap = buf->capacity;
-  while (new_cap < buf->count + additional)
+  while (new_cap < needed)
     new_cap *= 2;
   buf->cells = repalloc(buf->cells, sizeof(H3Index) * (size_t) new_cap);
   buf->capacity = new_cap;
+  return true;
 }
 
 /**
@@ -120,39 +138,8 @@ h3_buf_grow(h3_buf *buf, int additional)
 static inline void
 h3_buf_push(h3_buf *buf, H3Index cell)
 {
-  if (cell == (H3Index) 0)
-    return;
-  h3_buf_grow(buf, 1);
-  buf->cells[buf->count++] = cell;
-}
-
-/**
- * @brief Push the ring of radius one around a cell, that is the cell and the
- * six neighbours `gridDisk(c, 1)` returns
- * @details The ring is the unit by which both covers widen to stay
- * conservative: #polygon_to_cells_into applies it to the cells
- * #polygonToCells returns, which are those whose centre falls inside the
- * polygon, and #linestring_to_cells_into applies it to the cell holding each
- * sample of a segment. In both the omitted cell is one the geometry meets
- * while the test that selected the cells does not see it, and in both such a
- * cell neighbours one that was selected.
- */
-static void
-h3_buf_push_ring1(h3_buf *out, H3Index c)
-{
-  if (c == (H3Index) 0)
-    return;
-  H3Index neighbors[7];   /* gridDisk(_, 1) returns exactly 7 cells */
-  memset(neighbors, 0, sizeof(neighbors));
-  if (gridDisk(c, 1, neighbors) != E_SUCCESS)
-  {
-    /* gridDisk failure: fall back to the centre cell */
-    h3_buf_push(out, c);
-    return;
-  }
-  for (int i = 0; i < 7; i++)
-    if (neighbors[i] != (H3Index) 0)
-      h3_buf_push(out, neighbors[i]);
+  if (cell != (H3Index) 0 && h3_buf_reserve(buf, 1))
+    buf->cells[buf->count++] = cell;
 }
 
 /**
@@ -168,29 +155,10 @@ h3_buf_free(h3_buf *buf)
   buf->capacity = 0;
 }
 
-/*****************************************************************************
- * Dedup + Set construction
- *
- * Sort by H3Index value (uint64), then linear scan removing adjacent
- * duplicates.  Builds a Datum array and wraps in a Set via set_make_free.
- *****************************************************************************/
-
-/**
- * @brief Compare two H3 cells by index value, the ordering used to sort an
- * accumulator
- */
-static int
-h3index_compare(const void *a, const void *b)
-{
-  H3Index av = *(const H3Index *) a;
-  H3Index bv = *(const H3Index *) b;
-  if (av < bv) return -1;
-  if (av > bv) return  1;
-  return 0;
-}
-
 /**
  * @brief Return the set of the distinct cells of an accumulator, which is freed
+ * @details The set orders its values and drops the duplicates, which the
+ * accumulator holds wherever two segments pass through one cell
  */
 static Set *
 h3_buf_to_set(h3_buf *buf)
@@ -200,40 +168,100 @@ h3_buf_to_set(h3_buf *buf)
     h3_buf_free(buf);
     return NULL;
   }
-  qsort(buf->cells, (size_t) buf->count, sizeof(H3Index), h3index_compare);
-  /* in-place dedup */
-  int n = 1;
-  for (int i = 1; i < buf->count; i++)
-    if (buf->cells[i] != buf->cells[i - 1])
-      buf->cells[n++] = buf->cells[i];
-  Datum *datums = palloc(sizeof(Datum) * (size_t) n);
-  for (int i = 0; i < n; i++)
+  int count = buf->count;
+  Datum *datums = palloc(sizeof(Datum) * (size_t) count);
+  for (int i = 0; i < count; i++)
     datums[i] = H3IndexGetDatum(buf->cells[i]);
   h3_buf_free(buf);
-  return set_make_free(datums, n, T_H3INDEX, ORDER);
+  return set_make_free(datums, count, T_H3INDEX, ORDER);
 }
 
 /*****************************************************************************
- * libh3 sampling step — segment Nyquist spacing in degrees
- *
- * Approximates lat/lng degrees per metre at the equator (1° ≈ 111 320 m).
- * The approximation is conservative away from the equator (longitude
- * degrees shrink); over-sampling is harmless after dedup.  Returned value
- * is in degrees per single sample.
+ * Hash set of H3Index — the cells the fill of a polygon has read
  *****************************************************************************/
 
 /**
- * @brief Return the spacing in degrees at which a segment is sampled for a given
- * resolution
+ * @brief Open-addressing hash set of H3 cells, the null cell marking a free
+ * slot
  */
-double
-h3_sample_step_deg(int32 resolution)
+typedef struct
 {
-  double edge_m;
-  if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
-    edge_m = 1000.0;   /* fallback ~1 km */
-  /* Nyquist: sample at edge/2, in degrees-per-sample. */
-  return (edge_m / 2.0) / 111320.0;
+  H3Index *slots;
+  uint64   mask;       /**< Number of slots minus one, a power of two */
+  uint64   count;      /**< Number of cells held */
+} h3_cellset;
+
+/**
+ * @brief Initialize a hash set with room for @p expected cells
+ */
+static void
+h3_cellset_init(h3_cellset *set, int expected)
+{
+  uint64 size = 64;
+  while (size < (uint64) expected * 2)
+    size <<= 1;
+  set->slots = palloc0(sizeof(H3Index) * size);
+  set->mask  = size - 1;
+  set->count = 0;
+}
+
+/**
+ * @brief Return the slot of a cell in the slots of a hash set: the slot
+ * holding it, or the free slot where it belongs
+ */
+static uint64
+h3_cellset_slot(const H3Index *slots, uint64 mask, H3Index cell)
+{
+  /* The SplitMix64 finalizer spreads the bits neighbouring cells share over
+   * the whole word */
+  uint64 h = cell;
+  h = (h ^ (h >> 30)) * UINT64CONST(0xbf58476d1ce4e5b9);
+  h = (h ^ (h >> 27)) * UINT64CONST(0x94d049bb133111eb);
+  h ^= h >> 31;
+  uint64 i = h & mask;
+  while (slots[i] != (H3Index) 0 && slots[i] != cell)
+    i = (i + 1) & mask;
+  return i;
+}
+
+/**
+ * @brief Add a cell to a hash set
+ * @return True when the set did not hold the cell
+ */
+static bool
+h3_cellset_add(h3_cellset *set, H3Index cell)
+{
+  uint64 i = h3_cellset_slot(set->slots, set->mask, cell);
+  if (set->slots[i] == cell)
+    return false;
+  set->slots[i] = cell;
+  set->count++;
+  if (set->count * 2 > set->mask + 1)
+  {
+    /* Keep the load below one half */
+    uint64 size = (set->mask + 1) << 1;
+    H3Index *slots = palloc0(sizeof(H3Index) * size);
+    for (uint64 k = 0; k <= set->mask; k++)
+    {
+      if (set->slots[k] != (H3Index) 0)
+        slots[h3_cellset_slot(slots, size - 1, set->slots[k])] =
+          set->slots[k];
+    }
+    pfree(set->slots);
+    set->slots = slots;
+    set->mask  = size - 1;
+  }
+  return true;
+}
+
+/**
+ * @brief Free the slots of a hash set
+ */
+static void
+h3_cellset_free(h3_cellset *set)
+{
+  pfree(set->slots);
+  set->slots = NULL;
 }
 
 /**
@@ -469,223 +497,285 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
 
 
 /*****************************************************************************
- * POINT — single cell.  Uses the existing geo_to_h3index_cell which has
- * the SRID guard.
+ * Geometry to cell set
+ *
+ * The cover of a geometry is the set of the cells that hold a point of it,
+ * each point assigned to its cell as #h3_latlng_deg_to_cell assigns it, which
+ * is the assignment a temporal H3 cell takes its values from. A line gives
+ * the cells its segments pass through, found by the traversal of
+ * #h3_segment_cells. A polygon gives the cells its rings pass through together
+ * with the cells it encloses: a cell holding no point of a ring holds no
+ * boundary point, so its points lie all inside the polygon or all outside it,
+ * and the centre of the cell decides which.
  *****************************************************************************/
 
 /**
- * @brief Push the cell containing a point into the accumulator
+ * @brief Push the cells a segment passes through into the accumulator
+ * @details The traversal writes into arrays that grow until the whole segment
+ * fits, and the cell of the far endpoint closes the segment when the
+ * traversal stopped short of it, as for an endpoint lying on a cell boundary
+ * within the rounding of the crossing
  */
 static void
-point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
+segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
+  bool geodetic, int32 resolution, h3_buf *out)
 {
-  if (lwpoint_is_empty(lwp))
-    return;
-  const POINT2D *p = getPoint2d_cp(lwp->point, 0);
-  H3Index cell = h3_latlng_deg_to_cell(p->y, p->x, resolution);
-  h3_buf_push(out, cell);
+  int maxout = 64, ncells;
+  H3Index *cells = palloc(sizeof(H3Index) * (size_t) maxout);
+  double *enter = palloc(sizeof(double) * (size_t) maxout);
+  while ((ncells = h3_segment_cells(lon1, lat1, lon2, lat2, geodetic,
+      resolution, cells, enter, maxout)) == maxout)
+  {
+    if (maxout >= H3_MAX_COVER_CELLS)
+    {
+      out->overflow = true;
+      pfree(cells); pfree(enter);
+      return;
+    }
+    maxout *= 2;
+    cells = repalloc(cells, sizeof(H3Index) * (size_t) maxout);
+    enter = repalloc(enter, sizeof(double) * (size_t) maxout);
+  }
+  for (int k = 0; k < ncells; k++)
+    h3_buf_push(out, cells[k]);
+  h3_buf_push(out, h3_latlng_deg_to_cell(lat2, lon2, resolution));
+  pfree(cells); pfree(enter);
 }
 
-/*****************************************************************************
- * LINESTRING — segment sampling, each sample expanded by one ring.
- *
- * For each adjacent pair of vertices, sample the segment at half a cell edge
- * and emit the ring around the cell holding each sample.
- *
- * THE RING IS WHAT MAKES THE COVER CONSERVATIVE, AND SAMPLING ALONE IS NOT.
- * A cover is read to prune, so it holds every cell the line meets: a cell it
- * omits is a row a caller filtering on the cover never sees. Sampling bounds
- * the distance between consecutive samples, which is a weaker statement than
- * "every cell the segment crosses holds a sample" — a segment clipping the
- * corner of a cell between two samples leaves that cell unsampled, and the
- * finer the resolution the smaller such a corner needs to be.
- *
- * A cell crossed between two consecutive samples lies within half an edge of
- * one of them, so it is that sample's own cell or a neighbour of it, and the
- * ring of radius one around each sample holds it. This is the rule
- * #polygon_to_cells_into already applies to the cells #polygonToCells returns.
- *****************************************************************************/
-
 /**
- * @brief Emit the cells a linestring meets, each sample's ring included
+ * @brief Push the cells a point array passes through into the accumulator
  */
 static void
-linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
+pointarray_to_cells_into(const POINTARRAY *pa, bool geodetic,
+  int32 resolution, h3_buf *out)
 {
-  POINTARRAY *pa = line->points;
   if (pa == NULL || pa->npoints == 0)
     return;
-  double step_deg = h3_sample_step_deg(resolution);
-  if (step_deg <= 0.0)
-    step_deg = 1e-5;   /* defensive — finest practical spacing */
-
-  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  const POINT2D *p = getPoint2d_cp(pa, 0);
+  h3_buf_push(out, h3_latlng_deg_to_cell(p->y, p->x, resolution));
+  for (uint32_t i = 0; i + 1 < pa->npoints && ! out->overflow; i++)
   {
     const POINT2D *p0 = getPoint2d_cp(pa, i);
     const POINT2D *p1 = getPoint2d_cp(pa, i + 1);
-    double dx = p1->x - p0->x;
-    double dy = p1->y - p0->y;
-    double seg_deg = sqrt(dx * dx + dy * dy);
-    int nsamples = (int) ceil(seg_deg / step_deg);
-    if (nsamples < 1)
-      nsamples = 1;
-    for (int s = 0; s <= nsamples; s++)
-    {
-      double t = (double) s / (double) nsamples;
-      double lat = p0->y + t * dy;
-      double lng = p0->x + t * dx;
-      h3_buf_push_ring1(out, h3_latlng_deg_to_cell(lat, lng, resolution));
-    }
+    segment_to_cells_into(p0->x, p0->y, p1->x, p1->y, geodetic, resolution,
+      out);
   }
 }
 
-/*****************************************************************************
- * POLYGON — outer ring + holes → GeoPolygon (in radians) → polygonToCells.
- *****************************************************************************/
+/**
+ * @brief Return true if a polygon holds the centre of a cell
+ * @details A planar polygon reads its edges as straight lines in longitude
+ * and latitude, a geodetic one as arcs of great circles, the paths the walk
+ * of its rings follows
+ */
+static bool
+polygon_holds_cell_centre(const LWPOLY *poly, bool geodetic, H3Index cell)
+{
+  LatLng ll;
+  if (cellToLatLng(cell, &ll) != E_SUCCESS)
+    return false;
+  POINT2D pt;
+  pt.x = radsToDegs(ll.lng); pt.y = radsToDegs(ll.lat);
+  if (geodetic)
+    return lwpoly_covers_point2d(poly, &pt);
+  return lwpoly_contains_point(poly, &pt) != LW_OUTSIDE;
+}
 
 /**
- * @brief Convert a point array into an H3 geoloop in radians, dropping the
- * repeated closing vertex
+ * @brief Return true if a hash set holds a cell
+ */
+static bool
+h3_cellset_contains(const h3_cellset *set, H3Index cell)
+{
+  return set->slots[h3_cellset_slot(set->slots, set->mask, cell)] == cell;
+}
+
+/**
+ * @brief Growable stack of the cells a fill has still to read
+ */
+typedef struct
+{
+  H3Index *cells;
+  int      count;
+  int      capacity;
+} h3_stack;
+
+/**
+ * @brief Push a cell onto a stack
  */
 static void
-pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
+h3_stack_push(h3_stack *stack, H3Index cell)
 {
-  uint32_t n = pa->npoints;
-  /* H3 polygons must NOT repeat the first vertex at the end; drop it if
-   * the ring is closed (npoints with last == first). */
-  if (n >= 2)
+  if (stack->count == stack->capacity)
   {
-    const POINT2D *first = getPoint2d_cp(pa, 0);
-    const POINT2D *last = getPoint2d_cp(pa, n - 1);
-    if (first->x == last->x && first->y == last->y)
-      n--;
+    stack->capacity *= 2;
+    stack->cells = repalloc(stack->cells,
+      sizeof(H3Index) * (size_t) stack->capacity);
   }
-  loop->numVerts = (int) n;
-  loop->verts    = palloc(sizeof(LatLng) * (size_t) (n > 0 ? n : 1));
-  for (uint32_t i = 0; i < n; i++)
+  stack->cells[stack->count++] = cell;
+}
+
+/**
+ * @brief Return in the last argument the neighbours of a cell, the null cell
+ * filling the unused entries
+ */
+static void
+h3_cell_neighbours(H3Index cell, H3Index *neighbours)
+{
+  memset(neighbours, 0, sizeof(H3Index) * 7);
+  if (gridDisk(cell, 1, neighbours) != E_SUCCESS)
+    memset(neighbours, 0, sizeof(H3Index) * 7);
+}
+
+/**
+ * @brief Return true if a cell shares an edge with a cell of a ring
+ */
+static bool
+h3_cell_borders_ring(H3Index cell, const h3_cellset *ring)
+{
+  H3Index neighbours[7];   /* gridDisk(_, 1) returns at most 7 cells */
+  h3_cell_neighbours(cell, neighbours);
+  for (int k = 0; k < 7; k++)
   {
-    const POINT2D *p = getPoint2d_cp(pa, i);
-    loop->verts[i].lng = degsToRads(p->x);
-    loop->verts[i].lat = degsToRads(p->y);
+    if (neighbours[k] != (H3Index) 0 && neighbours[k] != cell &&
+        h3_cellset_contains(ring, neighbours[k]))
+      return true;
   }
+  return false;
 }
 
 /**
- * @brief Free the vertices of a geoloop and reset it to empty
+ * @brief Push the cells of a polygon into the accumulator
+ * @details The rings give the cells their points are assigned to, and the
+ * cells holding no point of a ring give the cells the polygon encloses. Two
+ * such cells sharing an edge lie on the same side of the boundary: a path
+ * between their centres through the two cells passes no point of a ring,
+ * since every such point is assigned to a cell of a ring. The cells holding
+ * no point of a ring therefore fall into components, each wholly inside the
+ * polygon or wholly outside it, and each component borders a cell of a ring.
+ * The fill reads the band of the cells bordering a ring cell. The centre of
+ * the first cell of a component read in the band decides the component: one
+ * inside is taken whole, spreading through the cells holding no ring point,
+ * which the rings enclose; one outside is followed along the band alone, so
+ * the space outside the polygon is never read beyond it. The cost is one
+ * point-in-polygon test per component, and a bounded number of neighbour
+ * reads per cell of the cover and of the band.
  */
 static void
-geoloop_free(GeoLoop *loop)
+polygon_to_cells_into(LWPOLY *poly, bool geodetic, int32 resolution,
+  h3_buf *out)
 {
-  if (loop->verts != NULL)
-    pfree(loop->verts);
-  loop->verts    = NULL;
-  loop->numVerts = 0;
-}
-
-/**
- * @brief Push the cells covering an LWPOLY into the accumulator
- * @details Coverage is layered so that the union is a superset of every cell
- * whose interior intersects the polygon:
- *   (a) `polygonToCells` (cells with centroid inside the polygon),
- *       each expanded by `gridDisk(c, 1)` to include boundary cells.
- *   (b) Each polygon vertex's containing cell, also expanded by
- *       `gridDisk(c, 1)`.  Covers polygons that contain no cell
- *       centroid (i.e. polygons smaller than a hexagon at the
- *       chosen resolution).
- * Layers (a) and (b) merge via the sort+dedup in `h3_buf_to_set`.
- */
-static void
-polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
-{
-  if (poly == NULL || poly->nrings == 0)
+  if (lwpoly_is_empty(poly))
     return;
-  GeoPolygon gp;
-  pointarray_to_geoloop(poly->rings[0], &gp.geoloop);
-  gp.numHoles = (int) poly->nrings - 1;
-  if (gp.numHoles > 0)
-  {
-    gp.holes = palloc(sizeof(GeoLoop) * (size_t) gp.numHoles);
-    for (int i = 0; i < gp.numHoles; i++)
-      pointarray_to_geoloop(poly->rings[i + 1], &gp.holes[i]);
-  }
-  else
-  {
-    gp.holes = NULL;
-  }
 
-  /* (a) Centroid-containment cells, each expanded by gridDisk(k=1). */
-  int64_t max_cells = 0;
-  H3Error err = maxPolygonToCellsSize(&gp, resolution, 0, &max_cells);
-  if (err == E_SUCCESS && max_cells > 0)
+  /* (a) The cells the rings pass through */
+  int first = out->count;
+  for (uint32_t i = 0; i < poly->nrings && ! out->overflow; i++)
+    pointarray_to_cells_into(poly->rings[i], geodetic, resolution, out);
+  int nbnd = out->count - first;
+  if (nbnd == 0 || out->overflow)
+    return;
+
+  /* (b) The cells the rings enclose, one component at a time */
+  if (geodetic)
+    /* The geodetic point-in-polygon test reads the box of the polygon */
+    lwgeom_add_bbox(lwpoly_as_lwgeom(poly));
+  h3_cellset ring, seen;
+  h3_cellset_init(&ring, nbnd);
+  h3_cellset_init(&seen, nbnd * 4);
+  /* The ring cells are read from a copy, since the fill grows the cells of
+   * the accumulator */
+  H3Index *bnd = palloc(sizeof(H3Index) * (size_t) nbnd);
+  for (int i = 0; i < nbnd; i++)
   {
-    H3Index *cells = palloc0(sizeof(H3Index) * (size_t) max_cells);
-    err = polygonToCells(&gp, resolution, 0, cells);
-    if (err == E_SUCCESS)
+    bnd[i] = out->cells[first + i];
+    h3_cellset_add(&ring, bnd[i]);
+  }
+  h3_stack stack;
+  stack.capacity = 64;
+  stack.count = 0;
+  stack.cells = palloc(sizeof(H3Index) * (size_t) stack.capacity);
+
+  for (int i = 0; i < nbnd && ! out->overflow; i++)
+  {
+    H3Index seeds[7];
+    h3_cell_neighbours(bnd[i], seeds);
+    for (int j = 0; j < 7 && ! out->overflow; j++)
     {
-      for (int64_t i = 0; i < max_cells; i++)
-        if (cells[i] != (H3Index) 0)
-          h3_buf_push_ring1(out, cells[i]);
+      H3Index seed = seeds[j];
+      if (seed == (H3Index) 0 || h3_cellset_contains(&ring, seed) ||
+          ! h3_cellset_add(&seen, seed))
+        continue;
+      bool inside = polygon_holds_cell_centre(poly, geodetic, seed);
+      if (inside)
+        h3_buf_push(out, seed);
+      stack.count = 0;
+      h3_stack_push(&stack, seed);
+      while (stack.count > 0 && ! out->overflow)
+      {
+        H3Index neighbours[7];
+        h3_cell_neighbours(stack.cells[--stack.count], neighbours);
+        for (int k = 0; k < 7; k++)
+        {
+          H3Index cell = neighbours[k];
+          if (cell == (H3Index) 0 || h3_cellset_contains(&ring, cell) ||
+              h3_cellset_contains(&seen, cell) ||
+              (! inside && ! h3_cell_borders_ring(cell, &ring)))
+            continue;
+          h3_cellset_add(&seen, cell);
+          if (inside)
+            h3_buf_push(out, cell);
+          h3_stack_push(&stack, cell);
+        }
+      }
     }
-    pfree(cells);
   }
-
-  /* (b) Vertex cells, each expanded by gridDisk(k=1). */
-  uint32_t nv = gp.geoloop.numVerts;
-  for (uint32_t i = 0; i < nv; i++)
-  {
-    LatLng *ll = &gp.geoloop.verts[i];
-    H3Index c;
-    if (latLngToCell(ll, resolution, &c) == E_SUCCESS)
-      h3_buf_push_ring1(out, c);
-  }
-
-  geoloop_free(&gp.geoloop);
-  if (gp.holes != NULL)
-  {
-    for (int i = 0; i < gp.numHoles; i++)
-      geoloop_free(&gp.holes[i]);
-    pfree(gp.holes);
-  }
+  pfree(bnd);
+  pfree(stack.cells);
+  h3_cellset_free(&seen);
+  h3_cellset_free(&ring);
 }
 
-/*****************************************************************************
- * Recursive walker — dispatch any LWGEOM type into the accumulator.
- *****************************************************************************/
-
 /**
- * @brief Push the cells a geometry meets into the accumulator, recursing into
+ * @brief Push the cells of a geometry into the accumulator, recursing into
  * its components
  */
 static void
-lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
+lwgeom_to_cells_into(LWGEOM *geom, bool geodetic, int32 resolution,
+  h3_buf *out)
 {
-  if (geom == NULL)
+  if (geom == NULL || lwgeom_is_empty(geom))
     return;
   switch (geom->type)
   {
     case POINTTYPE:
-      point_to_cells_into((const LWPOINT *) geom, resolution, out);
+    {
+      const POINT2D *p = getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
+      h3_buf_push(out, h3_latlng_deg_to_cell(p->y, p->x, resolution));
       break;
+    }
     case LINETYPE:
-      linestring_to_cells_into((const LWLINE *) geom, resolution, out);
+      pointarray_to_cells_into(((const LWLINE *) geom)->points, geodetic,
+        resolution, out);
       break;
     case POLYGONTYPE:
-      polygon_to_cells_into((const LWPOLY *) geom, resolution, out);
+      polygon_to_cells_into((LWPOLY *) geom, geodetic, resolution, out);
       break;
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
     case MULTIPOLYGONTYPE:
     case COLLECTIONTYPE:
     {
-      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
-      for (uint32_t i = 0; i < col->ngeoms && ! out->error; i++)
-        lwgeom_to_cells_into(col->geoms[i], resolution, out);
+      LWCOLLECTION *col = (LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms && ! out->overflow && ! out->error;
+          i++)
+        lwgeom_to_cells_into(col->geoms[i], geodetic, resolution, out);
       break;
     }
     default:
       /* A cover omitting the cells of a component would drop a trajectory
        * the prefilter must keep, so a type the walk does not state is refused
-       * rather than read as meeting no cell */
+       * rather than read as holding no cell */
       out->error = true;
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "The cover of a geometry of type %s is not supported",
@@ -701,18 +791,21 @@ lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
 /**
  * @ingroup meos_h3_conversion
  * @brief Return the set of H3 cells covering a static geometry at the given
- * resolution.
- * @details Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
- * combinations recursively.  Any other type (TIN, TRIANGLE, the curve
+ * resolution
+ * @details The cover is the set of the cells that hold a point of the
+ * geometry, each point assigned to its cell as #geo_to_h3index_cell assigns
+ * it: a point gives the cell holding it, a line the cells its segments pass
+ * through, and a polygon those of its rings together with the cells they
+ * enclose. It is the set a temporal H3 cell of a trajectory takes its values
+ * from, so a trajectory sharing a point with the geometry takes a cell of the
+ * cover there. MULTI* and GEOMETRYCOLLECTION values give the union of the
+ * cells of their components, and any other type (TIN, TRIANGLE, the curve
  * family), alone or inside a collection, is refused, since a cover omitting
- * its cells would drop a trajectory the prefilter must keep.
- *
- * Returns NULL when the geometry is empty, when no valid cells could be
- * produced, or on libh3 error.  The returned Set is owned by the caller
- * and freed via @ref free.
- *
- * @param[in] gs Geometry
- * @param[in] resolution H3 resolution (0..15).
+ * its cells would drop a trajectory the prefilter must keep. An empty
+ * geometry holds no point and gives `NULL`.
+ * @param[in] gs Geometry in a lon/lat (SRID 4326) reference system
+ * @param[in] resolution H3 resolution
+ * @errval NULL
  * @csqlfn #Geo_to_h3indexset()
  */
 Set *
@@ -727,14 +820,24 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   if (lwgeom == NULL)
     return NULL;
-
+  /* A geodetic segment follows its great circle, a planar one its straight
+   * line in longitude and latitude */
+  bool geodetic = FLAGS_GET_GEODETIC(lwgeom->flags);
   h3_buf buf;
   h3_buf_init(&buf, 64);
-  lwgeom_to_cells_into(lwgeom, resolution, &buf);
+  lwgeom_to_cells_into(lwgeom, geodetic, resolution, &buf);
   lwgeom_free(lwgeom);
   if (buf.error)
   {
     h3_buf_free(&buf);
+    return NULL;
+  }
+  if (buf.overflow)
+  {
+    h3_buf_free(&buf);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The cover of the geometry at resolution %d exceeds %d cells",
+      resolution, H3_MAX_COVER_CELLS);
     return NULL;
   }
   return h3_buf_to_set(&buf);
