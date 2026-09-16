@@ -117,7 +117,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the set of H3 cells covering a static geometry at the given resolution. </p>
-<p >Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION combinations recursively. Unsupported geometry types (TIN, CURVE family, etc.) contribute zero cells; for collections that mix supported and unsupported types, only the supported components contribute.</p>
+<p >Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION combinations recursively. Any other type (TIN, TRIANGLE, the curve family), alone or inside a collection, is refused, since a cover omitting its cells would drop a trajectory the prefilter must keep.</p>
 <p >Returns NULL when the geometry is empty, when no valid cells could be produced, or on libh3 error. The returned <a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> is owned by the caller and freed via free.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

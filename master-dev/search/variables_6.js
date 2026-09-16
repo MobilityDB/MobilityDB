@@ -20,7 +20,7 @@ var searchData=
   ['eq_5fopr_17',['eq_opr',['../structTemporalAnalyzeExtraData_ad4f22fa812be7c9667e87cdbed65bc4f.html#ad4f22fa812be7c9667e87cdbed65bc4f',1,'TemporalAnalyzeExtraData']]],
   ['eqbes_18',['eqbes',['../projection__gk_8c_a88b2fdbd247fa7bb19547ac680253e61.html#a88b2fdbd247fa7bb19547ac680253e61',1,'projection_gk.c']]],
   ['eqwgs_19',['eqwgs',['../projection__gk_8c_a90d0feca775a837e1f929d514954029a.html#a90d0feca775a837e1f929d514954029a',1,'projection_gk.c']]],
-  ['error_20',['error',['../structquadbin__buf_a255ad7044eab6909272a06b008ac41a4.html#a255ad7044eab6909272a06b008ac41a4',1,'quadbin_buf::error()'],['../structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333',1,'wkb_parse_state::error()']]],
+  ['error_20',['error',['../structh3__buf_adead8d8aaa3d7fedc519d8325c09d852.html#adead8d8aaa3d7fedc519d8325c09d852',1,'h3_buf::error()'],['../structquadbin__buf_a255ad7044eab6909272a06b008ac41a4.html#a255ad7044eab6909272a06b008ac41a4',1,'quadbin_buf::error()'],['../structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333',1,'wkb_parse_state::error()']]],
   ['errors_21',['errors',['../structworker__arg_ab31952db5f848e9461f8504b3496c7f5.html#ab31952db5f848e9461f8504b3496c7f5',1,'worker_arg']]],
   ['etype_22',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge']]],
   ['events_23',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'tpoint_geom_clip.c']]],
