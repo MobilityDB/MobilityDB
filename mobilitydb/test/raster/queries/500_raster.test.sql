@@ -226,6 +226,46 @@ SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.9 1.05)@2001-01-01,
   POINT(1.05 0.9)@2001-01-02]', r)::text AS result
 FROM rast;
 
+-- A trip reaches a pixel at the instant a geometric restriction reaches its
+-- edge. The trip below moves at 1 m/s from x = 600020 and crosses the column
+-- line x = 600300 of a raster with 100 m pixels at 08:04:40 exactly, the
+-- instant atGeometry answers for the same line.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(4, 1, 600000.0, 6400200.0, 100.0, -100.0, 0.0, 0.0,
+        25832),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1, ARRAY[[-9.0::float4, -10.0::float4, -12.0::float4, -14.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=25832;[POINT(600020 6400150)@2025-01-01 08:00:00+00,
+    POINT(600380 6400150)@2025-01-01 08:06:00+00]' AS t
+)
+SELECT rasterValue(t, r)::text AS result,
+  endTimestamp(atGeometry(t, ST_MakeEnvelope(600000, 6400100, 600300, 6400200,
+    25832))) AS edge_reached
+FROM rast, trip;
+
+-- On a skewed grid the column lines are oblique, and the trip reaches the
+-- pixel it enters at the instant it leaves the polygon of the pixel before.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 1, 0.0, 1.0, 1.0, -1.0, 0.5, 0.0, 3857),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1, ARRAY[[1.0::float4, 2.0::float4, 3.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=3857;[POINT(0.3 0.5)@2001-01-01,
+    POINT(2.9 0.5)@2001-01-03]' AS t
+)
+SELECT rasterValue(t, r)::text AS result,
+  endTimestamp(atGeometry(t, ST_PixelAsPolygon(r, 1, 1))) AS left_first_pixel
+FROM rast, trip;
+
 -- A single segment crossing pixels that alternate between a value and nodata
 -- answers one sequence per visit, six here.
 WITH rast AS (

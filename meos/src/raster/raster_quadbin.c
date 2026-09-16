@@ -390,6 +390,56 @@ raquet_cross(const void *ctxp, double x1, double y1, double x2, double y2,
 }
 
 /**
+ * @brief Return the parameter at which a segment reaches a grid line of a
+ * raster georeferenced by an affine geotransform
+ * @details The line is placed in world coordinates and met there, as a
+ * geometric restriction of the trajectory meets a boundary. The grid
+ * coordinates of the endpoints would state the same parameter, but the
+ * inverse geotransform reaches a grid coordinate near zero by subtracting two
+ * magnitudes of the order of the world coordinates, and the error that leaves
+ * behind is enough to place a crossing that falls on a microsecond one
+ * microsecond before it. The column line @p k runs from
+ * (gt[0] + k gt[1], gt[3] + k gt[4]) in the direction (gt[2], gt[5]), and the
+ * row line @p k from (gt[0] + k gt[2], gt[3] + k gt[5]) in the direction
+ * (gt[1], gt[4]). A raster without skew has vertical column lines and
+ * horizontal row lines, and the parameter is then the quotient of the
+ * distances along one axis. Two rasters tiled from one grid place the edge
+ * they share at the same double, so a trip leaves one at the instant it
+ * enters the other.
+ * @param[in] gt Geotransform of the raster, in the GDAL order
+ * @param[in] x1,y1,x2,y2 Endpoints of the segment, in the reference system of
+ * the raster
+ * @param[in] axis 0 for a column line, 1 for a row line
+ * @param[in] k Grid line
+ */
+double
+raster_affine_cross(const double *gt, double x1, double y1, double x2,
+  double y2, int axis, double k)
+{
+  double bx, by, dx, dy;
+  if (axis == 0)
+  {
+    bx = gt[0] + k * gt[1];
+    by = gt[3] + k * gt[4];
+    dx = gt[2];
+    dy = gt[5];
+    if (dx == 0.0)
+      return (bx - x1) / (x2 - x1);
+  }
+  else
+  {
+    bx = gt[0] + k * gt[2];
+    by = gt[3] + k * gt[5];
+    dx = gt[1];
+    dy = gt[4];
+    if (dy == 0.0)
+      return (by - y1) / (y2 - y1);
+  }
+  return ((bx - x1) * dy - (by - y1) * dx) /
+    ((x2 - x1) * dy - (y2 - y1) * dx);
+}
+
+/**
  * @brief Fill the grid descriptor of a Raquet tile
  * @details Mirrors #dggs_cellops(), which answers the descriptor of a DGGS:
  * an engine states its grid in one place, and every sampling entry point
