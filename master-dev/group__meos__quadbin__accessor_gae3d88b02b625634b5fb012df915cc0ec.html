@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tquadbin_value_at_timestamptz</title>
+<title>MobilityDB: quadbinset_grid_disk</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,45 +81,33 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gaccb34c22921adf9a969363cbf7fcb4c8.html#gaccb34c22921adf9a969363cbf7fcb4c8">quadbin_cell_to_children_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gaa82627f042fe7e5927402378b2cfac49.html#gaa82627f042fe7e5927402378b2cfac49">quadbin_grid_disk</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gae3d88b02b625634b5fb012df915cc0ec.html#gae3d88b02b625634b5fb012df915cc0ec">quadbinset_grid_disk</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__quadbin__accessor_gae3d88b02b625634b5fb012df915cc0ec.html#gae3d88b02b625634b5fb012df915cc0ec">quadbinset_grid_disk</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_ga812af6672a6a2509edbaeaef05f85043.html#ga812af6672a6a2509edbaeaef05f85043">tquadbin_end_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_ga267a9a699d87faf52df729204a3bf3ed.html#ga267a9a699d87faf52df729204a3bf3ed">tquadbin_start_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__quadbin__accessor_ga6c1958a1f4a7bb2ca278fce6e0167adc.html#ga6c1958a1f4a7bb2ca278fce6e0167adc">tquadbin_value_at_timestamptz</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_ga6c1958a1f4a7bb2ca278fce6e0167adc.html#ga6c1958a1f4a7bb2ca278fce6e0167adc">tquadbin_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gaf0162222113929fa48c0cf4f4db490df.html#gaf0162222113929fa48c0cf4f4db490df">tquadbin_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_ga8fe40a9de30af9a75c578112b5126dbc.html#ga8fe40a9de30af9a75c578112b5126dbc">tquadbin_values</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6c1958a1f4a7bb2ca278fce6e0167adc" name="ga6c1958a1f4a7bb2ca278fce6e0167adc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6c1958a1f4a7bb2ca278fce6e0167adc">&#9670;&#160;</a></span>tquadbin_value_at_timestamptz()</h2>
+<a id="gae3d88b02b625634b5fb012df915cc0ec" name="gae3d88b02b625634b5fb012df915cc0ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae3d88b02b625634b5fb012df915cc0ec">&#9670;&#160;</a></span>quadbinset_grid_disk()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool tquadbin_value_at_timestamptz </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * quadbinset_grid_disk </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>cells</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>t</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>strict</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a> *&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>k</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -129,17 +117,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the quadbin cell value of <code>temp</code> at timestamp <code>t</code>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the set of QUADBIN cells within grid distance k of a cell of a QUADBIN cell set. </p>
+<p >The union of the disks of the cells of the set, which at k = 1 widens a cover by the ring of cells around it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> quadbin cell </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">strict</td><td>True to require an exact instant match; false to return the value at the containing sequence under step interpolation. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>The quadbin cell value at <code>t</code> (only written on success) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cells</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> of QUADBIN cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td><a class="el" href="structGrid.html" title="Grid a trajectory is read against: a PostGIS raster, or a Raquet tile given by its pixels.">Grid</a> distance @csqlfn <a class="el" href="group__mobilitydb__quadbin__set_ga7b0a7c2ce5c00e79adc12505e1249e5f.html#ga7b0a7c2ce5c00e79adc12505e1249e5f" title="Return all cells within grid distance k of a cell of a quadbinset as a quadbinset @sqlfn gridDisk()">Quadbinset_grid_disk()</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><code>true</code> on success, <code>false</code> if <code>t</code> lies outside <code>temp</code>. @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_ga2db56d515d1de8210c6b6306479dce8c.html#ga2db56d515d1de8210c6b6306479dce8c" title="Return the base value of a temporal value at a timestamptz @sqlfn valueAtTimestamp()">Temporal_value_at_timestamptz()</a> </dd></dl>
 
 </div>
 </div>

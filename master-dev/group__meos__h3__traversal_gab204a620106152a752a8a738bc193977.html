@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Quadbin_grid_disk</title>
+<title>MobilityDB: h3indexset_grid_disk</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__quadbin__set.html">Set functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__h3__traversal.html">Grid-traversal functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,29 +79,51 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__quadbin__set_ga65d59457fee5445c234ad53b9e70f97c.html#ga65d59457fee5445c234ad53b9e70f97c">Quadbin_grid_disk</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__set_ga7b0a7c2ce5c00e79adc12505e1249e5f.html#ga7b0a7c2ce5c00e79adc12505e1249e5f">Quadbinset_grid_disk</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_ga282a4c801cabbe64af90dc293d2cc456.html#ga282a4c801cabbe64af90dc293d2cc456">h3_grid_disk</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_ga7327708ca1ebe2003f8d57d515e44e66.html#ga7327708ca1ebe2003f8d57d515e44e66">h3_grid_path_cells</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gaa5180cd43a468eddeaa9e0b7e436e994.html#gaa5180cd43a468eddeaa9e0b7e436e994">h3_grid_ring</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__h3__traversal_gab204a620106152a752a8a738bc193977.html#gab204a620106152a752a8a738bc193977">h3indexset_grid_disk</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_ga2dce9385ef61478b0a58adb5ade6299a.html#ga2dce9385ef61478b0a58adb5ade6299a">th3index_cell_to_local_ij</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gaa0a72f357dd7bd669c27c3b4e58e3760.html#gaa0a72f357dd7bd669c27c3b4e58e3760">th3index_grid_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gabb22b54bebfd98c860fbd328558be833.html#gabb22b54bebfd98c860fbd328558be833">th3index_local_ij_to_cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga65d59457fee5445c234ad53b9e70f97c" name="ga65d59457fee5445c234ad53b9e70f97c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga65d59457fee5445c234ad53b9e70f97c">&#9670;&#160;</a></span>Quadbin_grid_disk()</h2>
+<a id="gab204a620106152a752a8a738bc193977" name="gab204a620106152a752a8a738bc193977"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab204a620106152a752a8a738bc193977">&#9670;&#160;</a></span>h3indexset_grid_disk()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Quadbin_grid_disk </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * h3indexset_grid_disk </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>k</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return all cells within grid distance k of the origin as a quadbinset @sqlfn gridDisk() </p>
+<p>Return the set of H3 cells within grid distance k of a cell of an H3 cell set. </p>
+<p >The union of the disks of the cells of the set, which at k = 1 widens a cover by the ring of cells around it </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cells</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> of H3 cells </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td><a class="el" href="structGrid.html" title="Grid a trajectory is read against: a PostGIS raster, or a Raquet tile given by its pixels.">Grid</a> distance @csqlfn <a class="el" href="group__mobilitydb__h3__set_ga4502a1bc03053f356f0aeaefd91d4c32.html#ga4502a1bc03053f356f0aeaefd91d4c32" title="Return all cells within k grid-steps of a cell of a set @sqlfn gridDisk()">H3indexset_grid_disk()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
