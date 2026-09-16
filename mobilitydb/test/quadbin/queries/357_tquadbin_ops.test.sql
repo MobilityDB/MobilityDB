@@ -173,3 +173,55 @@ SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 27);
 SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', -1);
 
 -------------------------------------------------------------------------------
+-- eEqual / ?= -- cell set vs tquadbin prefilter
+-------------------------------------------------------------------------------
+
+-- A trip read against the cover of a region it crosses, and of one it never
+-- reaches, in both argument orders
+WITH t(trip) AS (VALUES (tquadbin(tgeompoint
+  'SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.40 50.90)@2001-01-02]',
+  10)))
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.95, 4.30 50.95, 4.30 50.80))', 10) ?= trip,
+  trip ?= geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80,
+    4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 10),
+  eEqual(geoToQuadbinSet(geometry 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+    10.5 50.5, 10.0 50.5, 10.0 50.0))', 10), trip),
+  eEqual(trip, geoToQuadbinSet(geometry 'SRID=4326;POLYGON((10.0 50.0,
+    10.5 50.0, 10.5 50.5, 10.0 50.5, 10.0 50.0))', 10))
+FROM t;
+
+-- The prefilter answers from the instants of every subtype, and stops at the
+-- first instant the set contains. Each subtype is asked for a hit and a miss,
+-- and the sequence forms are asked where the hit sits, so a walk that stopped
+-- at the wrong place or skipped a composing sequence is refused.
+
+-- Temporal instant
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '48a6227affffffff@2001-01-01';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '48a6227bffffffff@2001-01-01';
+
+-- Discrete sequence: the hit at the first instant, at the last, and absent
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227affffffff@2001-01-01, 48a6227bffffffff@2001-01-02}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227bffffffff@2001-01-01, 480fffffffffffff@2001-01-02}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{48a6227bffffffff@2001-01-01, 48a62278ffffffff@2001-01-02}';
+
+-- Step sequence
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '[48a6227bffffffff@2001-01-01, 48a6227affffffff@2001-01-02]';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '[48a6227bffffffff@2001-01-01, 48a62278ffffffff@2001-01-02]';
+
+-- Sequence set: the hit in the first composing sequence, in the last, absent
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227affffffff@2001-01-01], [48a6227bffffffff@2001-01-02]}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227bffffffff@2001-01-01], [480fffffffffffff@2001-01-02]}';
+SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
+       tquadbin '{[48a6227bffffffff@2001-01-01], [48a62278ffffffff@2001-01-02]}';
+
+-------------------------------------------------------------------------------

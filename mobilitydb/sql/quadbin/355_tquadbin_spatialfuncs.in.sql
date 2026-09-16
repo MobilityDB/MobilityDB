@@ -141,4 +141,33 @@ CREATE FUNCTION tquadbinCellToQuadkey(tquadbin)
 CREATE CAST (tquadbin AS tgeompoint)
   WITH FUNCTION cellToPoint(tquadbin);
 
+/******************************************************************************
+ * quadbinset × tquadbin — ever-equal (sound cell-set prefilter)
+ *
+ * True when the temporal quadbin cell ever equals a cell in the set. Paired
+ * with geoToQuadbinSet, this is the sound, conservative spatial prefilter for
+ * the exact eIntersects(geometry, tquadbin): the cell-granularity test never
+ * drops a real intersection, and the exact predicate confirms the survivors.
+ ******************************************************************************/
+
+CREATE FUNCTION eEqual(quadbinset, tquadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_quadbinset_tquadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eEqual(tquadbin, quadbinset)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT eEqual($2, $1) $$;
+
+CREATE OPERATOR ?= (
+  LEFTARG = quadbinset, RIGHTARG = tquadbin,
+  PROCEDURE = eEqual,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?= (
+  LEFTARG = tquadbin, RIGHTARG = quadbinset,
+  PROCEDURE = eEqual,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /******************************************************************************/
