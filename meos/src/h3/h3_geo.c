@@ -84,6 +84,7 @@ typedef struct h3_buf
   H3Index *cells;
   int      count;
   int      capacity;
+  bool     error;      /**< True once a component raised an error */
 } h3_buf;
 
 /**
@@ -94,6 +95,7 @@ h3_buf_init(h3_buf *buf, int initial_capacity)
 {
   buf->capacity = initial_capacity > 0 ? initial_capacity : 64;
   buf->count    = 0;
+  buf->error    = false;
   buf->cells    = palloc(sizeof(H3Index) * (size_t) buf->capacity);
 }
 
@@ -680,15 +682,19 @@ lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
-      for (uint32_t i = 0; i < col->ngeoms; i++)
+      for (uint32_t i = 0; i < col->ngeoms && ! out->error; i++)
         lwgeom_to_cells_into(col->geoms[i], resolution, out);
       break;
     }
     default:
-      /* TIN / TRIANGLE / CURVE family etc. — silently skip; recursive
-       * GeometryCollection callers continue with the components they do
-       * understand. */
-      break;
+      /* A cover omitting the cells of a component would drop a trajectory
+       * the prefilter must keep, so a type the walk does not state is refused
+       * rather than read as meeting no cell */
+      out->error = true;
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "The cover of a geometry of type %s is not supported",
+        lwtype_name(geom->type));
+      return;
   }
 }
 
@@ -701,10 +707,9 @@ lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
  * @brief Return the set of H3 cells covering a static geometry at the given
  * resolution.
  * @details Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
- * combinations recursively.  Unsupported geometry types (TIN, CURVE
- * family, etc.) contribute zero cells; for collections that mix
- * supported and unsupported types, only the supported components
- * contribute.
+ * combinations recursively.  Any other type (TIN, TRIANGLE, the curve
+ * family), alone or inside a collection, is refused, since a cover omitting
+ * its cells would drop a trajectory the prefilter must keep.
  *
  * Returns NULL when the geometry is empty, when no valid cells could be
  * produced, or on libh3 error.  The returned Set is owned by the caller
@@ -731,7 +736,11 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
   h3_buf_init(&buf, 64);
   lwgeom_to_cells_into(lwgeom, resolution, &buf);
   lwgeom_free(lwgeom);
-
+  if (buf.error)
+  {
+    h3_buf_free(&buf);
+    return NULL;
+  }
   return h3_buf_to_set(&buf);
 }
 
