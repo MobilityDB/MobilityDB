@@ -24,11 +24,13 @@ SELECT getResolution(ts2cell(tgeompoint
 SELECT numInstants(ts2cell(tgeompoint
   'SRID=4326;[POINT(-15 44.5)@2001-01-01, POINT(15 44.5)@2001-01-02]', 0));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id12482"></a><a class="indexterm" name="id12485"></a><p>Devolver el centroide geodésico temporal de cada celda de una trayectoria</p><pre class="programlisting">
-cellToPoint(cell) → geometry
-cellToPoint(tcell) → tgeogpoint
-tgeompoint(tcell) → tgeompoint
-</pre><p>La forma <code class="varname">tgeompoint</code> responde el mismo centroide como un punto plano en SRID 4326, y H3 es la única cuadrícula que publica ambas formas. La operación se llama <code class="varname">cellToPoint</code> para todas las cuadrículas, siendo la ranura <code class="varname">cell_to_point</code> del descriptor lo que lo fija.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id12482"></a><a class="indexterm" name="id12485"></a><p>Devolver el centroide de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
+cellToPoint({h3index,quadbin}) → geometry
+cellToPoint(s2cell) → geography
+cellToPoint({th3index,ts2cell}) → tgeogpoint
+cellToPoint(tquadbin) → tgeompoint
+tgeompoint(th3index) → tgeompoint
+</pre><p>El centroide está en el SRID 4326, y su tipo depende de la cuadrícula. Una celda S2 responde un punto geodésico, ya que sus aristas son arcos de círculo máximo, y una tesela QUADBIN uno plano, ya que la tesela es un rectángulo en longitud y latitud. Una celda H3 responde un punto plano y una celda H3 temporal uno geodésico, y <code class="varname">tgeompoint</code> responde el mismo centroide como un punto plano, de modo que H3 es la única cuadrícula que publica ambas formas para una trayectoria. La operación se llama <code class="varname">cellToPoint</code> para todas las cuadrículas, siendo la ranura <code class="varname">cell_to_point</code> del descriptor lo que lo fija.</p><pre class="programlisting">
 SELECT ST_AsText(cellToPoint(h3index '871fa44a8ffffff'), 6);
 -- POINT(4.297401 50.8043)
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
@@ -43,10 +45,12 @@ SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
 -- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12496"></a><p>Devolver la frontera poligonal temporal de cada celda de una trayectoria, como una geografía temporal</p><pre class="programlisting">
-cellToBoundary(cell) → geometry
-cellToBoundary(tcell) → tgeography
-</pre><p>Devolver la frontera poligonal de una celda en el SRID 4326. La forma estática toma una única <code class="varname">cell</code>; la forma temporal devuelve la frontera de cada celda de una trayectoria. El anillo se cierra sobre su primer vértice, de modo que un hexágono H3 lleva siete puntos y un cuadrado QUADBIN o un cuadrilátero esférico S2 cinco.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12496"></a><p>Devolver la frontera poligonal de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
+cellToBoundary({h3index,quadbin}) → geometry
+cellToBoundary(s2cell) → geography
+cellToBoundary({th3index,ts2cell}) → tgeography
+cellToBoundary(tquadbin) → tgeometry
+</pre><p>La frontera está en el SRID 4326, y su tipo depende de la cuadrícula como el centroide de <a class="link" href="ch16s12.html#tcell_cell_to_latlng"><code class="varname">cellToPoint</code></a>: una geografía para S2, una geometría para QUADBIN y, para H3, una geometría para una celda y una geografía para una trayectoria. El anillo se cierra sobre su primer vértice, de modo que un hexágono H3 lleva siete puntos y un cuadrado QUADBIN o un cuadrilátero esférico S2 cinco.</p><pre class="programlisting">
 SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
 -- 7
 SELECT ST_GeometryType(getValue(cellToBoundary(th3index
