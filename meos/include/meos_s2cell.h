@@ -260,6 +260,7 @@ extern Set *s2cell_to_set(S2CellId cell);
 extern Temporal *tbigint_to_ts2cell(const Temporal *temp);
 extern Temporal *ts2cell_to_tbigint(const Temporal *temp);
 extern Temporal *tgeogpoint_to_ts2cell(const Temporal *temp, int32 level);
+extern Temporal *tgeompoint_to_ts2cell(const Temporal *temp, int32 level);
 
 /* Ever, always and temporal comparisons */
 

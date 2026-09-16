@@ -158,10 +158,63 @@ SELECT numSequences(ts2cell(tgeogpoint
   '{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
 
--- A level outside 0 to 30
+-------------------------------------------------------------------------------
+-- Conversion from a temporal point: ts2cell(tgeompoint, integer)
+-------------------------------------------------------------------------------
+
+-- An instant yields the cell holding its position, as for a geodetic point
+SELECT ts2cell(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10) =
+  ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10);
+
+-- A planar segment follows the straight line in longitude and latitude, which
+-- is no great circle. Cube face 2 holds the positions where the height z is at
+-- least |x| and |y|, so its edge toward face 0 reaches latitude 45 on the
+-- meridian 0 and latitude 44.0 on the meridians -15 and 15. The parallel 44.5
+-- between those meridians starts and ends in face 2 and dips into face 0 on
+-- the way: three instants over two cells and a closing instant, where the
+-- great circle between the same positions bulges north and stays in face 2
+SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
+  numValues(getValues(ts2cell(tgeogpoint
+    '[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0)))
+FROM (SELECT ts2cell(tgeompoint
+  'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 0) AS t)
+  AS q;
+
+-- At every sampled timestamp the value is the cell holding the position of the
+-- planar trajectory then, over a diagonal from one cube face to the next, a
+-- parallel at high latitude, the parallel dipping out of face 2, a path near
+-- the antimeridian and one along a meridian. The samples lie between the
+-- minutes
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToS2Cell(valueAtTimestamp(p, t)::geography, z)) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> ts2cell(p::tgeogpoint, z))
+    AS other_than_geodetic
+FROM (SELECT p, z, ts2cell(p, z) AS c FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 6),
+  (tgeompoint 'SRID=4326;[Point(-170 75)@2001-01-01, Point(170 78)@2001-01-02]', 5),
+  (tgeompoint 'SRID=4326;[Point(-15 44.5)@2001-01-01, Point(15 44.5)@2001-01-02]', 7),
+  (tgeompoint 'SRID=4326;[Point(179 10)@2001-01-01, Point(175 -30)@2001-01-02]', 8),
+  (tgeompoint 'SRID=4326;[Point(4.35 10)@2001-01-01, Point(4.35 50)@2001-01-02]', 9))
+  AS v(p, z)) AS q,
+  generate_series(timestamptz '2001-01-01 00:00:30',
+    timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
+
+-- A sequence set yields one sequence per sequence, spanning its period
+SELECT numSequences(t), getTime(t) = getTime(p)
+FROM (SELECT p, ts2cell(p, 4) AS t FROM (VALUES (tgeompoint
+  'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04)}')) AS v(p))
+  AS q;
+
+-- A level outside 0 to 30, and a planar reference system other than lon/lat
 /* Errors */
 SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 31);
 SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', -1);
+SELECT ts2cell(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 31);
+SELECT ts2cell(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
+SELECT ts2cell(tgeompoint
+  'SRID=3857;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-02]', 10);
 
 -------------------------------------------------------------------------------
 -- eEqual / ?= -- cell set vs ts2cell prefilter

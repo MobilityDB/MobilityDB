@@ -230,14 +230,15 @@ tpointinst_point2d(const TInstant *inst)
 }
 
 /**
- * @brief Return the temporal S2 cell of a temporal geodetic point sequence at
- * a level, or NULL when its positions are not in a lon/lat reference system
+ * @brief Return the temporal S2 cell of a temporal point sequence at a level,
+ * or NULL when its positions are not in a lon/lat reference system
  * @details A sequence stating nothing between its instants, discrete or
- * stepwise, holds the cells of its instants. A linear sequence moves along the
- * great circle between two instants, and each segment is traversed cell by
- * cell, so the result holds every cell the trajectory crosses and each of its
- * instants marks the time the trajectory enters that cell. The last cell holds
- * to the end of the trajectory.
+ * stepwise, holds the cells of its instants. A linear sequence moves between
+ * two instants along the great circle of a geodetic point, or the straight
+ * line in longitude and latitude of a planar one, and each segment is
+ * traversed cell by cell, so the result holds every cell the trajectory
+ * crosses and each of its instants marks the time the trajectory enters that
+ * cell. The last cell holds to the end of the trajectory.
  */
 static TSequence *
 tpointseq_to_ts2cell(const TSequence *seq, int32 level)
@@ -270,6 +271,7 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
 
   /* The walk writes one entry per cell a segment crosses, into arrays that
    * grow until the whole segment fits, so no segment is cut short */
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   int maxout = 64;
   S2CellId *cells = palloc(sizeof(S2CellId) * (size_t) maxout);
   double *enter = palloc(sizeof(double) * (size_t) maxout);
@@ -281,7 +283,7 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
     const POINT2D *p2 = tpointinst_point2d(inst2);
     int ncells;
     while ((ncells = s2cell_segment_cells(p1->x, p1->y, p2->x, p2->y,
-        (uint32_t) level, cells, enter, maxout)) == maxout)
+        geodetic, (uint32_t) level, cells, enter, maxout)) == maxout)
     {
       maxout *= 2;
       cells = repalloc(cells, sizeof(S2CellId) * (size_t) maxout);
@@ -324,9 +326,8 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
 }
 
 /**
- * @brief Return the temporal S2 cell of a temporal geodetic point sequence
- * set at a level, or NULL when its positions are not in a lon/lat reference
- * system
+ * @brief Return the temporal S2 cell of a temporal point sequence set at a
+ * level, or NULL when its positions are not in a lon/lat reference system
  */
 static TSequenceSet *
 tpointseqset_to_ts2cell(const TSequenceSet *ss, int32 level)
@@ -347,18 +348,12 @@ tpointseqset_to_ts2cell(const TSequenceSet *ss, int32 level)
 }
 
 /**
- * @ingroup meos_s2cell_conversion
- * @brief Return the temporal S2 cell of a temporal geodetic point at a level,
- * holding every cell the trajectory crosses
- * @param[in] temp Temporal point
- * @param[in] level S2 level
- * @csqlfn #Tgeogpoint_to_ts2cell()
+ * @brief Return the temporal S2 cell of a temporal point at a level, holding
+ * every cell the trajectory crosses
  */
-Temporal *
-tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
+static Temporal *
+tpoint_to_ts2cell(const Temporal *temp, int32 level)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(temp, NULL);
   if (! ensure_valid_cell_resolution(T_TS2CELL, level))
     return NULL;
 
@@ -379,6 +374,39 @@ tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
       return (Temporal *) tpointseqset_to_ts2cell(
         (const TSequenceSet *) temp, level);
   }
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the temporal S2 cell of a temporal geodetic point at a level,
+ * holding every cell the trajectory crosses
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @csqlfn #Tgeogpoint_to_ts2cell()
+ */
+Temporal *
+tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL);
+  return tpoint_to_ts2cell(temp, level);
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the temporal S2 cell of a temporal planar point in a lon/lat
+ * reference system at a level, holding every cell the trajectory crosses
+ * along its straight lines in longitude and latitude
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @csqlfn #Tgeompoint_to_ts2cell()
+ */
+Temporal *
+tgeompoint_to_ts2cell(const Temporal *temp, int32 level)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL);
+  return tpoint_to_ts2cell(temp, level);
 }
 
 /*****************************************************************************/

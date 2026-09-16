@@ -267,7 +267,7 @@ segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
   int maxout = 64, ncells;
   S2CellId *cells = palloc(sizeof(S2CellId) * (size_t) maxout);
   double *enter = palloc(sizeof(double) * (size_t) maxout);
-  while ((ncells = s2cell_segment_cells(lon1, lat1, lon2, lat2,
+  while ((ncells = s2cell_segment_cells(lon1, lat1, lon2, lat2, true,
       (uint32_t) level, cells, enter, maxout)) == maxout)
   {
     if (maxout >= S2CELL_MAX_COVER_CELLS)

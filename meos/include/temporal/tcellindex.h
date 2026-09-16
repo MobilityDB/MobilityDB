@@ -186,6 +186,20 @@ typedef struct
   double normal[3];       /**< Unit normal of the circle of the path */
 } DggsArc;
 
+/**
+ * @brief Straight path in longitude and latitude of a planar segment, the one
+ * a temporal planar point moves along between two instants
+ */
+typedef struct
+{
+  double lon;             /**< Longitude of the first endpoint, in radians */
+  double lat;             /**< Latitude of the first endpoint, in radians */
+  double dlon;            /**< Step in longitude to the second endpoint */
+  double dlat;            /**< Step in latitude to the second endpoint */
+  double length;          /**< Length of the path in the plane, in radians */
+  double curvature;       /**< Bound on the second derivative of the path */
+} DggsLine;
+
 /*****************************************************************************
  * Membership of a temporal cell index in a cell set — shared by every DGGS.
  *
@@ -202,5 +216,11 @@ extern bool dggs_arc_point(const DggsArc *arc, double t, double *lon,
   double *lat);
 extern double dggs_arc_exit_param(const DggsArc *arc, const double *lons,
   const double *lats, int count, double tmin, bool convex);
+extern bool dggs_line_init(double lon1, double lat1, double lon2,
+  double lat2, DggsLine *line);
+extern void dggs_line_point(const DggsLine *line, double t, double *lon,
+  double *lat);
+extern double dggs_line_exit_param(const DggsLine *line, const double *lons,
+  const double *lats, int count, double tmin);
 
 #endif /* __TCELLINDEX_H__ */

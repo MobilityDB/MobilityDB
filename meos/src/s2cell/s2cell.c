@@ -653,7 +653,7 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
 }
 
 /*****************************************************************************
- * Cells crossed by a geodetic segment
+ * Cells crossed by a segment
  *****************************************************************************/
 
 /**
@@ -727,8 +727,87 @@ s2cell_arc_cell(const DggsArc *arc, double t, uint32_t level)
 }
 
 /**
- * @brief Fill `cells` with every S2 cell a geodetic segment crosses, and
- * `enter` with the segment parameter at which it reaches each
+ * @brief Fill `cells` with every S2 cell a planar segment crosses, and `enter`
+ * with the segment parameter at which it reaches each
+ * @details The walk of the geodetic segment, along the straight line in
+ * longitude and latitude a planar point moves along: from the cell in hand the
+ * walk leaves through its boundary, found by #dggs_line_exit_param, and the
+ * cell just beyond that crossing is a neighbour of it. That line is no great
+ * circle, so it may leave a cell and come back to it, and the walk runs for
+ * every segment, whatever cell its far endpoint lies in.
+ */
+static int
+s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
+  uint32_t level, S2CellId *cells, double *enter, int maxout)
+{
+  S2CellId cur = s2cell_point_to_cell(lon1, lat1, level);
+  if (cur == (S2CellId) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+  DggsLine line;
+  if (! dggs_line_init(lon1, lat1, lon2, lat2, &line))
+    return n;
+
+  /* A position on a cell boundary belongs to the one cell its level assigns
+   * it, and a path starting there may move into the neighbouring cell at
+   * once: the walk leaves from the cell just past the start */
+  double t = 0.0, verts[12], lon, lat;
+  s2cell_cell_xyz_vertices(cur, verts);
+  double t0 = s2cell_shortest_edge(verts) * 1e-4 / line.length;
+  if (t0 < 1.0)
+  {
+    dggs_line_point(&line, t0, &lon, &lat);
+    S2CellId first = s2cell_point_to_cell(lon, lat, level);
+    if (first != (S2CellId) 0 && first != cur && n < maxout)
+    {
+      cells[n] = first; enter[n] = 0.0; n++;
+      cur = first;
+      t = t0;
+    }
+  }
+  while (n < maxout)
+  {
+    s2cell_cell_xyz_vertices(cur, verts);
+    double lons[4], lats[4];
+    s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
+    double texit = dggs_line_exit_param(&line, lons, lats, 4, t);
+    if (texit > 1.0)
+      break;                 /* the segment ends inside this cell */
+    /* The nudge of the geodetic walk, measured along the line */
+    double nudge = s2cell_shortest_edge(verts) * 1e-4 / line.length;
+    double tn = texit + nudge;
+    S2CellId next = (S2CellId) 0;
+    for (int k = 0; k < 8; k++)
+    {
+      if (tn > 1.0)
+        tn = 1.0;
+      dggs_line_point(&line, tn, &lon, &lat);
+      next = s2cell_point_to_cell(lon, lat, level);
+      if (next == (S2CellId) 0 || next != cur || tn >= 1.0)
+        break;
+      tn += nudge * (double) (1 << k);
+    }
+    if (next == (S2CellId) 0)
+      break;                 /* the position cannot be projected */
+    if (next == cur)
+    {
+      /* A path still in the cell past the crossing touches the edge circle
+       * there, or meets it within the rounding, so the walk goes on from
+       * just past that crossing */
+      t = texit + nudge;
+      continue;
+    }
+    cells[n] = next; enter[n] = texit; n++;
+    cur = next;
+    t = tn;
+  }
+  return n;
+}
+
+/**
+ * @brief Fill `cells` with every S2 cell a segment crosses, and `enter` with
+ * the segment parameter at which it reaches each
  * @details A traversal, not a sampling walk: from the cell in hand the walk
  * leaves through its boundary, and the cell just beyond that crossing is a
  * neighbour of it, so no cell between the two is passed over. An S2 cell edge
@@ -736,8 +815,10 @@ s2cell_arc_cell(const DggsArc *arc, double t, uint32_t level)
  * projection of the face maps to a great circle, the circle a geodetic point
  * moves along. Every crossing is therefore found on the sphere, where a path
  * across the antimeridian, over a pole or from one cube face to the next is
- * an arc like any other.
+ * an arc like any other. A planar segment follows the straight line in
+ * longitude and latitude, traversed as #s2cell_line_cells states.
  * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] geodetic True when the segment is geodetic
  * @param[in] level S2 level
  * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
  * always 0, the parameter of the first endpoint
@@ -747,11 +828,14 @@ s2cell_arc_cell(const DggsArc *arc, double t, uint32_t level)
  */
 int
 s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
-  uint32_t level, S2CellId *cells, double *enter, int maxout)
+  bool geodetic, uint32_t level, S2CellId *cells, double *enter, int maxout)
 {
   assert(cells); assert(enter);
   if (maxout < 1)
     return 0;
+  if (! geodetic)
+    return s2cell_line_cells(lon1, lat1, lon2, lat2, level, cells, enter,
+      maxout);
   S2CellId cur = s2cell_point_to_cell(lon1, lat1, level);
   if (cur == (S2CellId) 0)
     return 0;
