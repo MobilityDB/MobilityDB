@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: quadbin_tile_index</title>
+<title>MobilityDB: quadbin_tile_exit_param_geodetic</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -119,16 +119,16 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aa6884f160dee54a2d2a3efbad018a27c.html#aa6884f160dee54a2d2a3efbad018a27c">quadbin_segment_cells</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga5dd1b6f533577c12a397777f5e6d719a.html#ga5dd1b6f533577c12a397777f5e6d719a">quadbin_string_to_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a6155a6814e22be8a10e3244d07f5b254.html#a6155a6814e22be8a10e3244d07f5b254">quadbin_tile_coords</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aa79c3b7f6cbd91eb25aa19c31eb76c3a.html#aa79c3b7f6cbd91eb25aa19c31eb76c3a">quadbin_tile_exit_param_geodetic</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aa79c3b7f6cbd91eb25aa19c31eb76c3a.html#aa79c3b7f6cbd91eb25aa19c31eb76c3a">quadbin_tile_exit_param_geodetic</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a75a314b3c7e65c7e87d0969b99ac78cc.html#a75a314b3c7e65c7e87d0969b99ac78cc">quadbin_tile_shortest_side</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga7d391cb27833644db25c6d18afbcee39.html#ga7d391cb27833644db25c6d18afbcee39">quadbin_tile_to_cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac4e22662e7c3aade6f69a203b291fc87" name="ac4e22662e7c3aade6f69a203b291fc87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4e22662e7c3aade6f69a203b291fc87">&#9670;&#160;</a></span>quadbin_tile_index()</h2>
+<a id="aa79c3b7f6cbd91eb25aa19c31eb76c3a" name="aa79c3b7f6cbd91eb25aa19c31eb76c3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa79c3b7f6cbd91eb25aa19c31eb76c3a">&#9670;&#160;</a></span>quadbin_tile_exit_param_geodetic()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -137,16 +137,34 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static long quadbin_tile_index </td>
+          <td class="memname">static double quadbin_tile_exit_param_geodetic </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
+          <td class="paramtype">const <a class="el" href="structDggsArc.html">DggsArc</a> *&#160;</td>
+          <td class="paramname"><em>arc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>n</em>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tmin</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -161,7 +179,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the tile holding a fractional tile coordinate, in the grid of <code>n</code> tiles a side. </p>
+<p>Return where a geodetic path leaves the tile holding it, in the grid of <code>n</code> tiles a side. </p>
+<p >A tile spans at most half the meridians, so it lies in the two hemispheres bounded by the planes of its west and east meridians, and between the planes of constant height of its north and south parallels. A path inside every one of those half-spaces leaves the tile where it first reaches any of their planes. The top and bottom rows reach the poles, since a position beyond the latitude limit of the grid lies in them. </p><dl class="section return"><dt>Returns</dt><dd>The path parameter of the exit, or a value above 1 when the path ends inside the tile </dd></dl>
 
 </div>
 </div>

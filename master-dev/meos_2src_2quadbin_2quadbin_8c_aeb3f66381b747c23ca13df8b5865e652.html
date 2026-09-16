@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: quadbin_tile_index</title>
+<title>MobilityDB: quadbin_arc_plane_param</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,7 +84,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_adc2076adb7d5cff0028d16f0d98e7465.html#adc2076adb7d5cff0028d16f0d98e7465">QB_S</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ae875795babe459d9628167d53e713424.html#ae875795babe459d9628167d53e713424">quadbin_arc_cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a6248a163cdb888cb1d9b7e9868b27791.html#a6248a163cdb888cb1d9b7e9868b27791">quadbin_arc_cells</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aeb3f66381b747c23ca13df8b5865e652.html#aeb3f66381b747c23ca13df8b5865e652">quadbin_arc_plane_param</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aeb3f66381b747c23ca13df8b5865e652.html#aeb3f66381b747c23ca13df8b5865e652">quadbin_arc_plane_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_gae30691575832c9d96763d69f4495ae14.html#gae30691575832c9d96763d69f4495ae14">quadbin_cell_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a2b3542c773b1578850c4fca350da81a3.html#a2b3542c773b1578850c4fca350da81a3">quadbin_cell_bounding_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a332cd8ba527cec417599ac67f8a981bb.html#a332cd8ba527cec417599ac67f8a981bb">quadbin_cell_point</a></td></tr>
@@ -120,15 +120,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga5dd1b6f533577c12a397777f5e6d719a.html#ga5dd1b6f533577c12a397777f5e6d719a">quadbin_string_to_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a6155a6814e22be8a10e3244d07f5b254.html#a6155a6814e22be8a10e3244d07f5b254">quadbin_tile_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aa79c3b7f6cbd91eb25aa19c31eb76c3a.html#aa79c3b7f6cbd91eb25aa19c31eb76c3a">quadbin_tile_exit_param_geodetic</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a75a314b3c7e65c7e87d0969b99ac78cc.html#a75a314b3c7e65c7e87d0969b99ac78cc">quadbin_tile_shortest_side</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga7d391cb27833644db25c6d18afbcee39.html#ga7d391cb27833644db25c6d18afbcee39">quadbin_tile_to_cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac4e22662e7c3aade6f69a203b291fc87" name="ac4e22662e7c3aade6f69a203b291fc87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4e22662e7c3aade6f69a203b291fc87">&#9670;&#160;</a></span>quadbin_tile_index()</h2>
+<a id="aeb3f66381b747c23ca13df8b5865e652" name="aeb3f66381b747c23ca13df8b5865e652"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb3f66381b747c23ca13df8b5865e652">&#9670;&#160;</a></span>quadbin_arc_plane_param()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -137,16 +137,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static long quadbin_tile_index </td>
+          <td class="memname">static double quadbin_arc_plane_param </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
+          <td class="paramtype">const <a class="el" href="structDggsArc.html">DggsArc</a> *&#160;</td>
+          <td class="paramname"><em>arc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>m</em>[3], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>n</em>&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tmin</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -161,7 +173,9 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the tile holding a fractional tile coordinate, in the grid of <code>n</code> tiles a side. </p>
+<p>Return the parameter at which a geodetic path reaches the plane <code>p . </code></p>
+<p >m = c strictly ahead of <code>tmin</code>, or a value above 1 when the path ends before it</p>
+<p >The path is the circle <code>p(θ) = a cos θ + (n × a) sin θ</code> of its first endpoint <code>a</code> and the normal <code>n</code> of its circle, <code>θ</code> the angle travelled, so <code>p . m = A cos θ + B sin θ</code> with <code>A = a . m</code> and <code>B = (n × a) . m</code>, which reaches <code>c</code> at <code>θ = atan2(B, A) ± acos(c / hypot(A, B))</code>. </p>
 
 </div>
 </div>

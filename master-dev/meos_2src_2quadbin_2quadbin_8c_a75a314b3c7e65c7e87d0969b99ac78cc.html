@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: quadbin_tile_index</title>
+<title>MobilityDB: quadbin_tile_shortest_side</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -120,15 +120,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga5dd1b6f533577c12a397777f5e6d719a.html#ga5dd1b6f533577c12a397777f5e6d719a">quadbin_string_to_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a6155a6814e22be8a10e3244d07f5b254.html#a6155a6814e22be8a10e3244d07f5b254">quadbin_tile_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_aa79c3b7f6cbd91eb25aa19c31eb76c3a.html#aa79c3b7f6cbd91eb25aa19c31eb76c3a">quadbin_tile_exit_param_geodetic</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a75a314b3c7e65c7e87d0969b99ac78cc.html#a75a314b3c7e65c7e87d0969b99ac78cc">quadbin_tile_shortest_side</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87">quadbin_tile_index</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2quadbin_8c_a75a314b3c7e65c7e87d0969b99ac78cc.html#a75a314b3c7e65c7e87d0969b99ac78cc">quadbin_tile_shortest_side</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin_ga7d391cb27833644db25c6d18afbcee39.html#ga7d391cb27833644db25c6d18afbcee39">quadbin_tile_to_cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac4e22662e7c3aade6f69a203b291fc87" name="ac4e22662e7c3aade6f69a203b291fc87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4e22662e7c3aade6f69a203b291fc87">&#9670;&#160;</a></span>quadbin_tile_index()</h2>
+<a id="a75a314b3c7e65c7e87d0969b99ac78cc" name="a75a314b3c7e65c7e87d0969b99ac78cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75a314b3c7e65c7e87d0969b99ac78cc">&#9670;&#160;</a></span>quadbin_tile_shortest_side()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -137,10 +137,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static long quadbin_tile_index </td>
+          <td class="memname">static double quadbin_tile_shortest_side </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -161,7 +161,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the tile holding a fractional tile coordinate, in the grid of <code>n</code> tiles a side. </p>
+<p>Return the angle subtended by the shortest side of a tile, in the grid of <code>n</code> tiles a side. </p>
 
 </div>
 </div>

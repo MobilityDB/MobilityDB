@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tquadbin_entry_append</title>
+<title>MobilityDB: tpoint_to_tquadbin</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,18 +89,18 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_ac198225647d908e10f9dc83d4881958a.html#ac198225647d908e10f9dc83d4881958a">quadbin_cellops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__conversion_gaf83ad3af39083ea966452e3e4e67cad2.html#gaf83ad3af39083ea966452e3e4e67cad2">tgeogpoint_to_tquadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__conversion_ga843a723d2a295ae7a8d73bd2103550f8.html#ga843a723d2a295ae7a8d73bd2103550f8">tgeompoint_to_tquadbin</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_ad718f9c1b05a823fb991bbf0ca99f89f.html#ad718f9c1b05a823fb991bbf0ca99f89f">tpoint_to_tquadbin</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_ad718f9c1b05a823fb991bbf0ca99f89f.html#ad718f9c1b05a823fb991bbf0ca99f89f">tpoint_to_tquadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_a481803065e565276ea113ed9a38f478d.html#a481803065e565276ea113ed9a38f478d">tpointinst_point2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_af35e37dbc5b6bddef50c6a40c6c3d279.html#af35e37dbc5b6bddef50c6a40c6c3d279">tpointseq_to_tquadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_af5cd7494cd416c54c0a90fac3950041f.html#af5cd7494cd416c54c0a90fac3950041f">tpointseqset_to_tquadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cellindex_ga5a4eba39764904a0dadcbe9761913cc5.html#ga5a4eba39764904a0dadcbe9761913cc5">tquadbin_cell_to_quadkey</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_ac85e1e17786aa11c88a42c5fcffc8451.html#ac85e1e17786aa11c88a42c5fcffc8451">tquadbin_entry_append</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2quadbin_2tquadbin__ops_8c_ac85e1e17786aa11c88a42c5fcffc8451.html#ac85e1e17786aa11c88a42c5fcffc8451">tquadbin_entry_append</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac85e1e17786aa11c88a42c5fcffc8451" name="ac85e1e17786aa11c88a42c5fcffc8451"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac85e1e17786aa11c88a42c5fcffc8451">&#9670;&#160;</a></span>tquadbin_entry_append()</h2>
+<a id="ad718f9c1b05a823fb991bbf0ca99f89f" name="ad718f9c1b05a823fb991bbf0ca99f89f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad718f9c1b05a823fb991bbf0ca99f89f">&#9670;&#160;</a></span>tpoint_to_tquadbin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,34 +109,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tquadbin_entry_append </td>
+          <td class="memname">static <a class="el" href="structTemporal.html">Temporal</a> * tpoint_to_tquadbin </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> ***&#160;</td>
-          <td class="paramname"><em>instants</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a>&#160;</td>
-          <td class="paramname"><em>cell</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>t</em>&#160;</td>
+          <td class="paramtype">int32&#160;</td>
+          <td class="paramname"><em>resolution</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -151,8 +133,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Append the instant of a cell entered at a timestamp. </p>
-<p >A cell's entry time is interpolated from the parameter at which the path reaches it, while a timestamp holds whole microseconds, so two crossings closer together than one microsecond round to the same instant. The second is placed one microsecond after the first: that is the smallest separation the type can state, it keeps the order the crossings occur in, and it keeps the cell. </p>
+<p>Return the temporal quadbin cell of a temporal point at a resolution, holding every cell the trajectory crosses. </p>
 
 </div>
 </div>
