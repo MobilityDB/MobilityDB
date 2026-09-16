@@ -33,6 +33,7 @@
     "^ts2cellseqset_in$": {"char *": "\"{[47c3c444c0000000@2001-01-01, 47c3c444c0000000@2001-01-03]}\""},
     "^tbigint_to_ts2cell$": {"Temporal *": "tbigint1"},
     "^tgeogpoint_": {"Temporal *": "tgeogpoint1"},
+    "^tgeompoint_": {"Temporal *": "tgeompoint1"},
     "^geo_to_s2cell_set$": {"GSERIALIZED *": "geog1"}
   },
   "override_args": {
@@ -63,6 +64,7 @@
     "  /* 5171192596709507072 is the cell 47c3c444c0000000 as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5171192596709507072@2001-01-01, 5171192596709507072@2001-01-03]\");",
     "  Temporal *tgeogpoint1 = tgeogpoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
+    "  Temporal *tgeompoint1 = tgeompoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
     "  GSERIALIZED *geom1 = geom_in(\"SRID=4326;Point(4.35 50.85)\", -1);",
     "  /* The cover of a geography reads its edges as geodesics, so it takes a",
     "   * geodetic point. */",
@@ -91,6 +93,7 @@
     "  free(ts2cell1);",
     "  free(tbigint1);",
     "  free(tgeogpoint1);",
+    "  free(tgeompoint1);",
     "  free(geom1);",
     "  free(geog1);",
     "  free(tstzspan1);"

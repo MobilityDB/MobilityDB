@@ -610,6 +610,160 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
   return best;
 }
 
+/*****************************************************************************
+ * Planar path of a segment
+ *****************************************************************************/
+
+/**
+ * @brief Return in the last argument the straight path in longitude and
+ * latitude of a planar segment
+ * @details The position at parameter `t` is `p(t) = (cos φ cos λ, cos φ sin λ,
+ * sin φ)` with `λ = λ1 + t Δλ` and `φ = φ1 + t Δφ`. Its second derivative has
+ * the squared norm `(Δλ² + Δφ²)² cos² φ + (4 Δλ² Δφ² + Δφ⁴) sin² φ`, which is
+ * at most the larger of its two coefficients: the bound the exit search steps
+ * by.
+ * @param[in] lon1,lat1,lon2,lat2 Endpoints in degrees
+ * @param[out] line Path
+ * @return False when the path has no length, since it then leaves no cell
+ */
+bool
+dggs_line_init(double lon1, double lat1, double lon2, double lat2,
+  DggsLine *line)
+{
+  assert(line);
+  memset(line, 0, sizeof(DggsLine));
+  line->lon = deg2rad(lon1);
+  line->lat = deg2rad(lat1);
+  line->dlon = deg2rad(lon2 - lon1);
+  line->dlat = deg2rad(lat2 - lat1);
+  double a2 = line->dlon * line->dlon, b2 = line->dlat * line->dlat;
+  line->length = sqrt(a2 + b2);
+  if (line->length <= 0.0)
+    return false;
+  double c1 = (a2 + b2) * (a2 + b2), c2 = 4.0 * a2 * b2 + b2 * b2;
+  line->curvature = sqrt(c1 > c2 ? c1 : c2);
+  return true;
+}
+
+/**
+ * @brief Return in the last two arguments the position a planar path reaches
+ * at a parameter, in degrees
+ */
+void
+dggs_line_point(const DggsLine *line, double t, double *lon, double *lat)
+{
+  assert(line); assert(lon); assert(lat);
+  *lon = rad2deg(line->lon + t * line->dlon);
+  *lat = rad2deg(line->lat + t * line->dlat);
+  return;
+}
+
+/**
+ * @brief Return in the last two arguments the value and the derivative at a
+ * parameter of the height of a planar path above the plane of normal `m`
+ */
+static void
+dggs_line_height(const DggsLine *line, const POINT3D *m, double t,
+  double *value, double *slope)
+{
+  double lon = line->lon + t * line->dlon, lat = line->lat + t * line->dlat;
+  double cl = cos(lon), sl = sin(lon), cp = cos(lat), sp = sin(lat);
+  POINT3D p = { .x = cp * cl, .y = cp * sl, .z = sp };
+  POINT3D d = { .x = -line->dlat * sp * cl - line->dlon * cp * sl,
+    .y = -line->dlat * sp * sl + line->dlon * cp * cl,
+    .z = line->dlat * cp };
+  *value = dggs_vec_dot(m, &p);
+  *slope = dggs_vec_dot(m, &d);
+  return;
+}
+
+/**
+ * @brief Return the first parameter strictly ahead of `tmin` at which a
+ * planar path reaches the plane of normal `m` from its positive side, or a
+ * value above 1 when it does not before its end
+ * @details The height `f` of the path above the plane has a second derivative
+ * of norm at most `M`, the curvature bound of the path, so over a step `h` it
+ * stays above `f + f' h - M h² / 2`. The search steps to the first zero of
+ * that bound, which the height cannot reach sooner: no crossing is stepped
+ * over, however short the stretch the path spends beyond the plane. Near a
+ * crossing the steps shrink quadratically onto it.
+ */
+static double
+dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
+{
+  double t = tmin, f, d;
+  double mm = line->curvature;
+  for (int i = 0; i < 1024 && t <= 1.0; i++)
+  {
+    dggs_line_height(line, m, t, &f, &d);
+    if (f <= 0.0)
+    {
+      /* A position on the plane within its rounding: the path leaves here
+       * unless it heads inward */
+      if (d <= 0.0)
+        return (t > tmin) ? t : nextafter(tmin, 2.0);
+      f = 0.0;
+    }
+    double h = (d + sqrt(d * d + 2.0 * mm * f)) / mm;
+    if (h <= 1e-15)
+      return (t > tmin) ? t : nextafter(tmin, 2.0);
+    t += h;
+  }
+  return (t > 1.0) ? 2.0 : t;
+}
+
+/**
+ * @brief Return where a planar path leaves a convex cell
+ * @details A convex cell is the intersection of the hemispheres its edge
+ * circles bound, so a path inside it leaves it where it first reaches any of
+ * their planes. The straight line in longitude and latitude is no great
+ * circle, so a crossing has no closed form and is searched for along the path.
+ * @param[in] line Path
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in the order
+ * they join
+ * @param[in] count Number of vertices
+ * @param[in] tmin Parameter the exit lies strictly ahead of
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+double
+dggs_line_exit_param(const DggsLine *line, const double *lons,
+  const double *lats, int count, double tmin)
+{
+  assert(line); assert(lons); assert(lats);
+  /* The interior lies on the side of every edge circle the centre of the
+   * vertices lies on */
+  POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
+  for (int i = 0; i < count; i++)
+  {
+    GEOGRAPHIC_POINT g = { .lat = lats[i], .lon = lons[i] };
+    POINT3D v;
+    geog2cart(&g, &v);
+    centre.x += v.x; centre.y += v.y; centre.z += v.z;
+  }
+  double best = 2.0;
+  for (int i = 0; i < count; i++)
+  {
+    int j = (i + 1) % count;
+    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
+    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
+    POINT3D m;
+    /* Read from the angles of the vertices, as #dggs_arc_exit_param does */
+    robust_cross_product(&gi, &gj, &m);
+    if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
+      continue;
+    normalize(&m);
+    if (dggs_vec_dot(&m, &centre) < 0.0)
+    {
+      m.x = -m.x; m.y = -m.y; m.z = -m.z;
+    }
+    double t = dggs_line_plane_param(line, &m, tmin);
+    if (t < best)
+      best = t;
+  }
+  return best;
+}
+
 /*****************************************************************************/
 
 
