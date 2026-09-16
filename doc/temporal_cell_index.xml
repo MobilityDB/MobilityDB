@@ -359,7 +359,9 @@ SELECT (tbigint '5171187903383994368@2001-01-01')::ts2cell;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Cast a temporal cell to a temporal geodetic or planar point of cell centroids</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tcell::{tgeogpoint,tgeompoint}
+th3index::{tgeogpoint,tgeompoint}
+tquadbin::tgeompoint
+ts2cell::tgeogpoint
 </programlisting>
 				<para>The cast of a QUADBIN cell answers a point of the Web-Mercator plane the grid is defined on, while the cast of an S2 cell answers a geodetic one; each grid declares the single cast its own definition calls for. H3 declares both, so it is the one grid where the caller chooses between the geodetic and the SRID-4326 planar representation.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1108,13 +1110,15 @@ SELECT numInstants(ts2cell(tgeompoint
 			<listitem xml:id="tcell_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
-				<para>Return the temporal geodetic centroid of each cell in a trajectory</para>
+				<para>Return the centroid of a cell, or of each cell in a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-cellToPoint(cell) → geometry
-cellToPoint(tcell) → tgeogpoint
-tgeompoint(tcell) → tgeompoint
+cellToPoint({h3index,quadbin}) → geometry
+cellToPoint(s2cell) → geography
+cellToPoint({th3index,ts2cell}) → tgeogpoint
+cellToPoint(tquadbin) → tgeompoint
+tgeompoint(th3index) → tgeompoint
 </programlisting>
-				<para>The <varname>tgeompoint</varname> form answers the same centroid as an SRID-4326 planar point, and H3 is the one grid publishing both forms. The operation is named <varname>cellToPoint</varname> for every grid, the <varname>cell_to_point</varname> slot of the descriptor being what fixes it.</para>
+				<para>The centroid is in SRID 4326, and its type follows the grid. An S2 cell answers a geodetic point, since its edges are arcs of great circles, and a QUADBIN tile a planar one, since the tile is a rectangle in longitude and latitude. An H3 cell answers a planar point and a temporal H3 cell a geodetic one, and <varname>tgeompoint</varname> answers the same centroid as a planar point, so H3 is the one grid publishing both forms for a trajectory. The operation is named <varname>cellToPoint</varname> for every grid, the <varname>cell_to_point</varname> slot of the descriptor being what fixes it.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(cellToPoint(h3index '871fa44a8ffffff'), 6);
 -- POINT(4.297401 50.8043)
@@ -1135,12 +1139,14 @@ SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 
 			<listitem xml:id="tcell_cell_to_boundary">
 				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
-				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
+				<para>Return the polygon boundary of a cell, or of each cell in a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-cellToBoundary(cell) → geometry
-cellToBoundary(tcell) → tgeography
+cellToBoundary({h3index,quadbin}) → geometry
+cellToBoundary(s2cell) → geography
+cellToBoundary({th3index,ts2cell}) → tgeography
+cellToBoundary(tquadbin) → tgeometry
 </programlisting>
-				<para>Return the polygon boundary of a cell in SRID 4326. The static form takes a single <varname>cell</varname>; the temporal form returns the boundary of each cell in a trajectory. The ring closes on its first vertex, so an H3 hexagon carries seven points and a QUADBIN square or an S2 spherical quadrilateral five.</para>
+				<para>The boundary is in SRID 4326, and its type follows the grid as the centroid of <link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname></link> does: a geography for S2, a geometry for QUADBIN, and for H3 a geometry for a cell and a geography for a trajectory. The ring closes on its first vertex, so an H3 hexagon carries seven points and a QUADBIN square or an S2 spherical quadrilateral five.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
 -- 7

@@ -3001,10 +3001,10 @@
 					<para><link linkend="tcell_tgeompoint_to_th3"><varname>tcell</varname></link>: Devolver la celda temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o plano</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Devolver el centroide geodésico temporal de cada celda de una trayectoria</para>
+					<para><link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Devolver el centroide de una celda, o de cada celda de una trayectoria</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link>: Devolver la frontera poligonal temporal de cada celda de una trayectoria, como una geografía temporal</para>
+					<para><link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link>: Devolver la frontera poligonal de una celda, o de cada celda de una trayectoria</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
