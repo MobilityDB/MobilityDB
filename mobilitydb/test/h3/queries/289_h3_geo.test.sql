@@ -60,7 +60,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
 SELECT numvalues(geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7));
 
 -------------------------------------------------------------------------------
--- LINESTRING → cells along the path (sampling, each sample ringed)
+-- LINESTRING → cells along the path
 -------------------------------------------------------------------------------
 
 -- ~10 km segment across Brussels at resolution 7 (cell edge ~ 1.2 km).
@@ -74,11 +74,9 @@ SELECT numvalues(
   geoToH3IndexSet(
     geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)', 5)) >= 1;
 
--- THE COVER HOLDS THE CELL OF EVERY POINT ON THE LINE, and sampling alone
--- does not give that: a cell the line enters and leaves between two
--- consecutive samples is named by neither of them. Each sample therefore
--- contributes the ring of its own neighbours, which is what makes the cover
--- conservative. Read at a resolution fine enough for the gap to open.
+-- THE COVER HOLDS THE CELL OF EVERY POINT ON THE LINE, the cell latLngToCell
+-- assigns it, since the segments are walked from cell to cell. Read at a
+-- resolution fine enough for a cell to be crossed between two samples.
 WITH line(g) AS (
   VALUES (geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
 samples AS (
@@ -107,6 +105,65 @@ SELECT numvalues(
                                  (4.34 50.84, 4.36 50.84,
                                   4.36 50.86, 4.34 50.86, 4.34 50.84))',
     7)) > 0;
+
+-------------------------------------------------------------------------------
+-- The cover against the cells of the points of the geometry
+-------------------------------------------------------------------------------
+
+-- THE COVER IS THE SET OF THE CELLS THAT HOLD A POINT OF THE GEOMETRY, and it
+-- is read against two bounds taken from the cell outlines of cellToBoundary.
+-- Every cell whose interior shares a point with the interior of the geometry
+-- holds a point of it, so the cover omits none (missed), and every cell of the
+-- cover shares a point with the geometry (overclaim). A cell sharing only a
+-- point of its outline with the geometry (outline) holds a point of it only
+-- where the grid assigns that point to it. The candidates are the cells of a
+-- grid of points over the box of the geometry widened by one cell, together
+-- with their neighbours. The cases are a 20 km sliver 5 m and 20 m wide, whose
+-- ring crosses cells no centre of which the sliver holds, the line along its
+-- axis, a polygon with a hole, and a 13 km by 16 km and a 300 m by 300 m
+-- rectangle.
+WITH geo(name, g, resmin, resmax) AS (VALUES
+  ('sliver 5 m', geometry 'SRID=4326;POLYGON((10.872725 54.9479166,
+    11.1276484 55.0519101, 11.1276032 55.0519468, 10.8726797 54.9479532,
+    10.872725 54.9479166))', 7, 9),
+  ('sliver 20 m', geometry 'SRID=4326;POLYGON((10.8727929 54.9478617,
+    11.1277161 55.0518551, 11.1275355 55.0520018, 10.8726118 54.948008,
+    10.8727929 54.9478617))', 7, 9),
+  ('line', geometry 'SRID=4326;LINESTRING(10.8727024 54.9479349,
+    11.1276258 55.0519285)', 7, 9),
+  ('hole', geometry 'SRID=4326;POLYGON((11.24 54.59, 11.27 54.59,
+    11.27 54.607, 11.24 54.607, 11.24 54.59), (11.25 54.595, 11.26 54.595,
+    11.26 54.6, 11.25 54.6, 11.25 54.595))', 8, 10),
+  ('belt', geometry 'SRID=4326;POLYGON((11.2 54.55, 11.2 54.6937298,
+    11.4016945 54.6937298, 11.4016945 54.55, 11.2 54.55))', 7, 9),
+  ('port', geometry 'SRID=4326;POLYGON((11.2031 54.5517, 11.2031 54.5543949,
+    11.2077467 54.5543949, 11.2077467 54.5517, 11.2031 54.5517))', 7, 12)),
+cases AS (
+  SELECT name, g, res, ST_XMax(b) - ST_XMin(b) AS dx, ST_YMax(b) - ST_YMin(b) AS dy
+  FROM geo, generate_series(resmin, resmax) AS res,
+    LATERAL (SELECT cellToBoundary(latLngToCell(ST_Centroid(g), res)) AS b) AS c),
+cand AS (
+  SELECT DISTINCT name, res, n.c
+  FROM cases,
+    generate_series(0, ceil((ST_XMax(g) - ST_XMin(g) + 2 * dx) / (dx / 4))::int) AS i,
+    generate_series(0, ceil((ST_YMax(g) - ST_YMin(g) + 2 * dy) / (dy / 4))::int) AS j,
+    LATERAL unnest(gridDisk(latLngToCell(ST_SetSRID(ST_MakePoint(
+      ST_XMin(g) - dx + i * dx / 4, ST_YMin(g) - dy + j * dy / 4), 4326), res), 1))
+      AS n(c)),
+shared AS (
+  SELECT k.name, k.res, k.c,
+    ST_Relate(cellToBoundary(k.c), cases.g, 'T********') AS interior
+  FROM cand k JOIN cases USING (name, res)
+  WHERE ST_Intersects(cellToBoundary(k.c), cases.g)),
+cover AS (
+  SELECT name, res, unnest(geoToH3IndexSet(g, res)) AS c FROM cases)
+SELECT name, res, count(*) FILTER (WHERE o.interior) AS interior,
+  count(v.c) AS cover,
+  count(*) FILTER (WHERE o.interior AND v.c IS NULL) AS missed,
+  count(*) FILTER (WHERE v.c IS NOT NULL AND o.c IS NULL) AS overclaim,
+  count(*) FILTER (WHERE v.c IS NOT NULL AND NOT o.interior) AS outline
+FROM shared o FULL JOIN cover v USING (name, res, c)
+GROUP BY name, res ORDER BY name, res;
 
 -------------------------------------------------------------------------------
 -- MULTIPOINT → union of per-point cells

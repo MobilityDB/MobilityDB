@@ -96,12 +96,10 @@ extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd,
 extern GSERIALIZED *h3index_cell_to_geogpoint(H3Index cell);
 extern GSERIALIZED *h3index_cell_to_geog(H3Index cell);
 
-/* Cell-sampling helpers shared between the static-geo walker
- * (h3_geo.c::linestring_to_cells_into) and the temporal densifier
- * (th3index_latlng.c::tpointseq_densify_to_th3index). Nyquist step
- * = (edge_m / 2) / 111320 m-per-degree; cell lookup is a thin
+/* Cell traversal helpers shared between the static-geo cover
+ * (h3_geo.c::geo_to_h3index_set) and the temporal densifier
+ * (th3index_latlng.c::tpointseq_densify_to_th3index); cell lookup is a thin
  * latLngToCell wrapper that returns 0 on libh3 error. */
-extern double h3_sample_step_deg(int32 resolution);
 extern double h3_segment_length_deg(double lon1, double lat1, double lon2,
   double lat2, bool geodetic);
 extern int h3_segment_cells(double lon1, double lat1, double lon2,
