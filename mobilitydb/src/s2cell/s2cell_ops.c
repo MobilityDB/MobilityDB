@@ -183,6 +183,44 @@ S2cell_cell_to_children(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum S2cellset_compact_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cellset_compact_cells);
+/**
+ * @ingroup mobilitydb_s2cell_base_hierarchy
+ * @brief Return the compacted representation of an s2cellset
+ * @sqlfn compactCells()
+ */
+Datum
+S2cellset_compact_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  Set *result = s2cellset_compact_cells(cells);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum S2cellset_uncompact_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cellset_uncompact_cells);
+/**
+ * @ingroup mobilitydb_s2cell_base_hierarchy
+ * @brief Return the uncompacted representation of an s2cellset at the target
+ * resolution
+ * @sqlfn uncompactCells()
+ */
+Datum
+S2cellset_uncompact_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = s2cellset_uncompact_cells(cells, resolution);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum S2cell_cell_contains(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_cell_contains);
 /**

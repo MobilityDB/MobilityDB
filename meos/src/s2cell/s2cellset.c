@@ -55,6 +55,7 @@
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER */
 #include "temporal/type_parser.h"  /* set_parse */
+#include "temporal/tcellindex.h"
 #include "s2cell/s2cell.h"
 
 /*****************************************************************************
@@ -212,6 +213,43 @@ s2cell_cell_to_children_set(S2CellId cell, int children_level)
     return NULL;
   }
   return s2cellset_from_buffer(cells, count);
+}
+
+/**
+ * @ingroup meos_s2cell_accessor
+ * @brief Return the compacted set of an S2 cell set
+ * @details A cell covered by a coarser cell of the set is dropped, and every
+ * four children of one parent merge into that parent, from the finest
+ * resolution up, so the result covers the region of the set with the fewest
+ * cells
+ * @param[in] cells Set of S2 cells
+ * @csqlfn #S2cellset_compact_cells()
+ */
+Set *
+s2cellset_compact_cells(const Set *cells)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(cells, NULL);
+  return dggs_quadtree_compact_cells(cells, T_TS2CELL);
+}
+
+/**
+ * @ingroup meos_s2cell_accessor
+ * @brief Return the set of cells at a resolution covering an S2 cell
+ * set
+ * @details A cell coarser than the resolution yields its descendants at the
+ * resolution; a cell finer than the resolution raises an error
+ * @param[in] cells Set of S2 cells
+ * @param[in] resolution Resolution of the result
+ * @csqlfn #S2cellset_uncompact_cells()
+ */
+Set *
+s2cellset_uncompact_cells(const Set *cells, int resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(cells, NULL);
+  return dggs_quadtree_uncompact_cells(cells, resolution, T_TS2CELL,
+    &s2cell_cell_to_children);
 }
 
 /*****************************************************************************/

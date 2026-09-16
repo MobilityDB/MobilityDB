@@ -58,4 +58,9 @@ extern Set *s2cell_edge_neighbors_set(S2CellId cell);
 /** Return the children of `cell` at level `children_level`. */
 extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
 
+/** Return the compacted set of `cells`, and the set of cells at level
+ * `resolution` covering `cells`. */
+extern Set *s2cellset_compact_cells(const Set *cells);
+extern Set *s2cellset_uncompact_cells(const Set *cells, int resolution);
+
 #endif /* __S2CELLSET_H__ */

@@ -156,7 +156,7 @@ PG_FUNCTION_INFO_V1(H3_compact_cells);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the compacted representation of an h3indexset
- * @sqlfn h3CompactCells()
+ * @sqlfn compactCells()
  */
 Datum
 H3_compact_cells(PG_FUNCTION_ARGS)
@@ -175,7 +175,7 @@ PG_FUNCTION_INFO_V1(H3_uncompact_cells);
  * @ingroup mobilitydb_h3_set
  * @brief Return the uncompacted representation of an h3indexset at
  * the target resolution
- * @sqlfn h3UncompactCells()
+ * @sqlfn uncompactCells()
  */
 Datum
 H3_uncompact_cells(PG_FUNCTION_ARGS)

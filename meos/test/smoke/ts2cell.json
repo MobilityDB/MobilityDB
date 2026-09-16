@@ -40,6 +40,7 @@
     "s2cell_cell_to_child": {"1": "16", "2": "0"},
     "s2cell_cell_to_children": {"1": "16"},
     "s2cell_cell_to_children_set": {"1": "16"},
+    "s2cellset_uncompact_cells": {"1": "16"},
     "s2cell_edge_length": {"1": "0"},
     "ts2cellseq_make": {"0": "s2arr_same1", "2": "2"},
     "s2cellset_make": {"0": "s2arr1", "1": "2"}

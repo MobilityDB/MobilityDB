@@ -97,6 +97,16 @@ CREATE FUNCTION gridDisk(quadbinset, integer)
   AS 'MODULE_PATHNAME', 'Quadbinset_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION compactCells(quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Quadbinset_compact_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION uncompactCells(quadbinset, integer)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Quadbinset_uncompact_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Point ↔ cell
  *

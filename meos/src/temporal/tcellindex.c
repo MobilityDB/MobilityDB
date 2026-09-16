@@ -41,6 +41,7 @@
 
 /* C */
 #include <assert.h>
+#include <inttypes.h>
 #include <math.h>
 #include <string.h>
 /* PostgreSQL */
@@ -51,6 +52,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 
@@ -851,6 +853,221 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
 
 /*****************************************************************************/
 
+
+/*****************************************************************************
+ * Compaction of a set of cells of a quadtree grid
+ *****************************************************************************/
+
+/** @brief Largest number of cells an uncompacted set holds */
+#define DGGS_MAX_UNCOMPACT_CELLS 4194304
+
+/**
+ * @brief Comparator of two cell identifiers in ascending order
+ */
+static int
+dggs_cell_cmp(const void *a, const void *b)
+{
+  uint64 x = *(const uint64 *) a, y = *(const uint64 *) b;
+  return (x > y) - (x < y);
+}
+
+/**
+ * @brief A cell with the parent it merges into
+ */
+typedef struct
+{
+  uint64 parent;          /**< Parent one level coarser */
+  uint64 cell;            /**< Cell */
+} DggsCellParent;
+
+/**
+ * @brief Comparator of two cells by their parent, then by themselves
+ */
+static int
+dggs_cell_parent_cmp(const void *a, const void *b)
+{
+  const DggsCellParent *x = a, *y = b;
+  if (x->parent != y->parent)
+    return (x->parent > y->parent) - (x->parent < y->parent);
+  return (x->cell > y->cell) - (x->cell < y->cell);
+}
+
+/**
+ * @brief Return the resolution of a cell through the descriptor of its grid
+ */
+static int32
+dggs_cell_resolution(const DggsCellOps *ops, uint64 cell)
+{
+  return DatumGetInt32(ops->get_resolution(Int64GetDatum((int64) cell)));
+}
+
+/**
+ * @brief Return the ancestor of a cell at a resolution through the descriptor
+ * of its grid
+ */
+static uint64
+dggs_cell_parent(const DggsCellOps *ops, uint64 cell, int32 resolution)
+{
+  return (uint64) DatumGetInt64(ops->cell_to_parent(
+    Int64GetDatum((int64) cell), Int32GetDatum(resolution)));
+}
+
+/**
+ * @brief Return the compacted set of a set of cells of a quadtree grid
+ * @details A QUADBIN tile and an S2 cell are each exactly the union of their
+ * four children, so a set of cells states the same region once a cell covered
+ * by a coarser cell of the set is dropped and every four children of one
+ * parent merge into that parent. The merge runs from the finest
+ * resolution up, since a parent it adds may complete a group one level
+ * coarser. This is the normalization the S2 library states for a cell union:
+ * the cells may be of any resolutions, and the result holds no cell covered by
+ * another and no four children of one parent.
+ * @param[in] cells Set of cells
+ * @param[in] temptype Temporal cell-index type naming the grid
+ */
+Set *
+dggs_quadtree_compact_cells(const Set *cells, MeosType temptype)
+{
+  assert(cells);
+  const DggsCellOps *ops = dggs_cellops(temptype);
+  if (! ops)
+    return NULL;
+  int n = cells->count;
+  uint64 *ids = palloc(sizeof(uint64) * (size_t) n);
+  for (int i = 0; i < n; i++)
+    ids[i] = (uint64) DatumGetInt64(SET_VAL_N(cells, i));
+  qsort(ids, (size_t) n, sizeof(uint64), dggs_cell_cmp);
+
+  /* A cell covered by a coarser cell of the set adds nothing to the region */
+  uint64 *cur = palloc(sizeof(uint64) * (size_t) n);
+  int m = 0;
+  int32 maxres = ops->min_resolution;
+  for (int i = 0; i < n; i++)
+  {
+    int32 res = dggs_cell_resolution(ops, ids[i]);
+    bool covered = false;
+    for (int32 r = ops->min_resolution; r < res && ! covered; r++)
+    {
+      uint64 parent = dggs_cell_parent(ops, ids[i], r);
+      covered = bsearch(&parent, ids, (size_t) n, sizeof(uint64),
+        dggs_cell_cmp) != NULL;
+    }
+    if (covered)
+      continue;
+    cur[m++] = ids[i];
+    if (res > maxres)
+      maxres = res;
+  }
+  pfree(ids);
+
+  /* The four children of one parent are that parent, from the finest
+   * resolution up */
+  for (int32 r = maxres; r > ops->min_resolution; r--)
+  {
+    DggsCellParent *pairs = palloc(sizeof(DggsCellParent) * (size_t) m);
+    uint64 *next = palloc(sizeof(uint64) * (size_t) m);
+    int k = 0, nm = 0;
+    for (int j = 0; j < m; j++)
+    {
+      if (dggs_cell_resolution(ops, cur[j]) == r)
+      {
+        pairs[k].parent = dggs_cell_parent(ops, cur[j], r - 1);
+        pairs[k++].cell = cur[j];
+      }
+      else
+        next[nm++] = cur[j];
+    }
+    qsort(pairs, (size_t) k, sizeof(DggsCellParent), dggs_cell_parent_cmp);
+    for (int g = 0; g < k; )
+    {
+      int h = g;
+      while (h < k && pairs[h].parent == pairs[g].parent)
+        h++;
+      /* The set holds distinct cells, so a group of four is every child */
+      if (h - g == 4)
+        next[nm++] = pairs[g].parent;
+      else
+        for (int j = g; j < h; j++)
+          next[nm++] = pairs[j].cell;
+      g = h;
+    }
+    pfree(pairs); pfree(cur);
+    cur = next;
+    m = nm;
+  }
+
+  Datum *datums = palloc(sizeof(Datum) * (size_t) m);
+  for (int j = 0; j < m; j++)
+    datums[j] = Int64GetDatum((int64) cur[j]);
+  pfree(cur);
+  return set_make_free(datums, m, ops->celltype, ORDER);
+}
+
+/**
+ * @brief Return the set of cells at a resolution covering a set of cells of a
+ * quadtree grid
+ * @details A cell coarser than the resolution yields its descendants at the
+ * resolution, and a cell at the resolution is kept. A cell finer than
+ * the resolution cannot be stated at it, so it raises an error, as it does
+ * when the result would hold more than #DGGS_MAX_UNCOMPACT_CELLS cells.
+ * @param[in] cells Set of cells
+ * @param[in] resolution Resolution of the result
+ * @param[in] temptype Temporal cell-index type naming the grid
+ * @param[in] children Function returning the descendants of a cell at a
+ * resolution, with their number in its last argument
+ */
+Set *
+dggs_quadtree_uncompact_cells(const Set *cells, int32 resolution,
+  MeosType temptype, uint64 *(*children)(uint64, uint32_t, int *))
+{
+  assert(cells); assert(children);
+  const DggsCellOps *ops = dggs_cellops(temptype);
+  if (! ops || ! ensure_valid_cell_resolution(temptype, resolution))
+    return NULL;
+  int64 total = 0;
+  for (int i = 0; i < cells->count; i++)
+  {
+    uint64 cell = (uint64) DatumGetInt64(SET_VAL_N(cells, i));
+    int32 res = dggs_cell_resolution(ops, cell);
+    if (res > resolution)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The cell %" PRIu64 " of resolution %d is finer than the resolution %d",
+        cell, res, resolution);
+      return NULL;
+    }
+    total += INT64_C(1) << (2 * (resolution - res));
+    if (total > DGGS_MAX_UNCOMPACT_CELLS)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The cells at resolution %d would be more than %d", resolution,
+        DGGS_MAX_UNCOMPACT_CELLS);
+      return NULL;
+    }
+  }
+  Datum *datums = palloc(sizeof(Datum) * (size_t) total);
+  int k = 0;
+  for (int i = 0; i < cells->count; i++)
+  {
+    uint64 cell = (uint64) DatumGetInt64(SET_VAL_N(cells, i));
+    if (dggs_cell_resolution(ops, cell) == resolution)
+    {
+      datums[k++] = SET_VAL_N(cells, i);
+      continue;
+    }
+    int count;
+    uint64 *desc = children(cell, (uint32_t) resolution, &count);
+    if (! desc)
+    {
+      pfree(datums);
+      return NULL;
+    }
+    for (int j = 0; j < count; j++)
+      datums[k++] = Int64GetDatum((int64) desc[j]);
+    pfree(desc);
+  }
+  return set_make_free(datums, k, ops->celltype, ORDER);
+}
 
 /*****************************************************************************
  * Membership of a temporal cell index in a cell set

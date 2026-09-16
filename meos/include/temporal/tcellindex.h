@@ -210,6 +210,15 @@ typedef struct
 
 extern bool tcellindex_ever_in_set(const Temporal *temp, const Set *cells);
 
+/*****************************************************************************
+ * Compaction of a set of cells of a quadtree grid — shared by every DGGS whose
+ * cell is exactly the union of its four children.
+ *****************************************************************************/
+
+extern Set *dggs_quadtree_compact_cells(const Set *cells, MeosType temptype);
+extern Set *dggs_quadtree_uncompact_cells(const Set *cells, int32 resolution,
+  MeosType temptype, uint64 *(*children)(uint64, uint32_t, int *));
+
 extern bool dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
   DggsArc *arc);
 extern bool dggs_arc_point(const DggsArc *arc, double t, double *lon,

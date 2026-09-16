@@ -222,3 +222,60 @@ SELECT s2TokenToCell(s2CellToToken(geoToS2Cell(geography 'SRID=4326;Point(4.35 5
   = geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 
 -------------------------------------------------------------------------------
+-- compactCells / uncompactCells
+-------------------------------------------------------------------------------
+
+-- An S2 cell is exactly the union of its four children, so the sixteen
+-- grandchildren of a cell compact to the cell and uncompact back to themselves,
+-- while the six faces, which have no parent, stay six
+SELECT numValues(compactCells(cellToChildren(s2cell '47c3c', 9))),
+  startValue(compactCells(cellToChildren(s2cell '47c3c', 9))) = s2cell '47c3c',
+  uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 9)), 9) =
+    cellToChildren(s2cell '47c3c', 9),
+  (SELECT numValues(compactCells(setUnion(geoToS2Cell(g, 0))))
+   FROM unnest(ARRAY[geography 'Point(0 0)', 'Point(90 0)', 'Point(0 90)',
+     'Point(180 0)', 'Point(-90 0)', 'Point(0 -90)']) AS g) AS faces;
+
+-- Without one grandchild, three children of the cell and the three siblings of
+-- the missing grandchild remain. A cell covered by a coarser cell of the set is
+-- dropped, and the region a set states is kept: the compacted set and the set
+-- uncompact to the same cells
+WITH g(c) AS (
+  SELECT unnest(cellToChildren(s2cell '47c3c', 9))),
+part(cells) AS (
+  SELECT setUnion(c) FROM g
+  WHERE c <> startValue(cellToChildren(s2cell '47c3c', 9))),
+mixed(cells) AS (
+  SELECT setUnion(c) FROM (
+    SELECT c FROM g
+    WHERE c <> startValue(cellToChildren(s2cell '47c3c', 9))
+    UNION ALL
+    SELECT unnest(cellToChildren(s2cell '47c3c', 8))) AS u(c))
+SELECT numValues(compactCells(part.cells)) AS without_one,
+  numValues(compactCells(mixed.cells)) = 1 AND
+    startValue(compactCells(mixed.cells)) = s2cell '47c3c' AS with_children,
+  uncompactCells(compactCells(part.cells), 9) = uncompactCells(part.cells, 9)
+    AS same_region
+FROM part, mixed;
+
+-- The compacted cover of a polygon states the region of the cover with fewer
+-- cells: it uncompacts back to the cover and holds no four children of one
+-- parent
+WITH s(cells) AS (VALUES (geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80,
+  4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 14)))
+SELECT numValues(cells) AS cover, numValues(compactCells(cells)) AS compacted,
+  uncompactCells(compactCells(cells), 14) = cells AS same_region,
+  (SELECT count(*) FROM (
+     SELECT cellToParent(c, getResolution(c) - 1)
+     FROM unnest(compactCells(cells)) AS c
+     GROUP BY 1 HAVING count(*) = 4) AS q) AS groups_of_four
+FROM s;
+
+/* Errors */
+-- A cell finer than the level, a result of more than 4194304 cells, and a level
+-- outside 0 to 30
+SELECT uncompactCells(cellToChildren(s2cell '47c3c', 9), 8);
+SELECT uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)), 19);
+SELECT uncompactCells(cellToChildren(s2cell '47c3c', 9), 31);
+
+-------------------------------------------------------------------------------

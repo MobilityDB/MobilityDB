@@ -106,17 +106,17 @@ SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
 SELECT cellToChildren(h3index '8a2a1072b59ffff', 5);
 
 -------------------------------------------------------------------------------
--- h3CompactCells / h3UncompactCells
+-- compactCells / uncompactCells
 -------------------------------------------------------------------------------
 
 -- Round-trip: uncompact(compact(children)) recovers the input
-SELECT h3UncompactCells(
-         h3CompactCells(cellToChildren(
+SELECT uncompactCells(
+         compactCells(cellToChildren(
            h3index '8a2a1072b59ffff', 11)), 11)
        = cellToChildren(h3index '8a2a1072b59ffff', 11);
 
 -- Full hexagonal set of siblings compacts to one parent
-SELECT numValues(h3CompactCells(
+SELECT numValues(compactCells(
          cellToChildren(h3index '8a2a1072b59ffff', 11))) = 1;
 
 -------------------------------------------------------------------------------

@@ -93,6 +93,60 @@ FROM s;
 /* Errors */
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
 ERROR:  quadbin_grid_disk: k must be >= 0
+SELECT numValues(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))),
+  startValue(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))) =
+    quadbin '48a6227affffffff',
+  uncompactCells(compactCells(cellToChildren(quadbin '48a6227affffffff', 12)), 12) =
+    cellToChildren(quadbin '48a6227affffffff', 12);
+ numvalues | ?column? | ?column? 
+-----------+----------+----------
+         1 | t        | t
+(1 row)
+
+WITH g(c) AS (
+  SELECT unnest(cellToChildren(quadbin '48a6227affffffff', 12))),
+part(cells) AS (
+  SELECT setUnion(c) FROM g
+  WHERE c <> startValue(cellToChildren(quadbin '48a6227affffffff', 12))),
+mixed(cells) AS (
+  SELECT setUnion(c) FROM (
+    SELECT c FROM g
+    WHERE c <> startValue(cellToChildren(quadbin '48a6227affffffff', 12))
+    UNION ALL
+    SELECT unnest(cellToChildren(quadbin '48a6227affffffff', 11))) AS u(c))
+SELECT numValues(compactCells(part.cells)) AS without_one,
+  compactCells(mixed.cells) = quadbinset '{48a6227affffffff}' AS with_children,
+  uncompactCells(compactCells(part.cells), 12) = uncompactCells(part.cells, 12)
+    AS same_region
+FROM part, mixed;
+ without_one | with_children | same_region 
+-------------+---------------+-------------
+           6 | t             | t
+(1 row)
+
+WITH s(cells) AS (VALUES (geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80,
+  4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 14)))
+SELECT numValues(cells) AS cover, numValues(compactCells(cells)) AS compacted,
+  uncompactCells(compactCells(cells), 14) = cells AS same_region,
+  (SELECT count(*) FROM (
+     SELECT cellToParent(c, getResolution(c) - 1)
+     FROM unnest(compactCells(cells)) AS c
+     GROUP BY 1 HAVING count(*) = 4) AS q) AS groups_of_four
+FROM s;
+ cover | compacted | same_region | groups_of_four 
+-------+-----------+-------------+----------------
+    96 |        33 | t           |              0
+(1 row)
+
+/* Errors */
+-- A cell finer than the resolution, a result of more than 4194304 cells, and a
+-- resolution outside 0 to 26
+SELECT uncompactCells(cellToChildren(quadbin '48a6227affffffff', 12), 11);
+ERROR:  The cell 5243916723769311231 of resolution 12 is finer than the resolution 11
+SELECT uncompactCells(quadbinset '{480fffffffffffff}', 12);
+ERROR:  The cells at resolution 12 would be more than 4194304
+SELECT uncompactCells(cellToChildren(quadbin '48a6227affffffff', 12), 27);
+ERROR:  The resolution must be between 0 and 26
 SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
   = quadbin '48a6227affffffff';
  ?column? 

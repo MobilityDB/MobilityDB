@@ -83,6 +83,60 @@ FROM s;
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
 
 -------------------------------------------------------------------------------
+-- compactCells / uncompactCells
+-------------------------------------------------------------------------------
+
+-- A tile is exactly the union of its four children, so the sixteen
+-- grandchildren of a tile compact to the tile and uncompact back to themselves
+SELECT numValues(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))),
+  startValue(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))) =
+    quadbin '48a6227affffffff',
+  uncompactCells(compactCells(cellToChildren(quadbin '48a6227affffffff', 12)), 12) =
+    cellToChildren(quadbin '48a6227affffffff', 12);
+
+-- Without one grandchild, three children of the tile and the three siblings of
+-- the missing grandchild remain. A cell covered by a coarser cell of the set is
+-- dropped, so adding the children of the tile, of a coarser resolution, gives
+-- the tile again, and the region a set states is kept: the compacted set and
+-- the set uncompact to the same cells
+WITH g(c) AS (
+  SELECT unnest(cellToChildren(quadbin '48a6227affffffff', 12))),
+part(cells) AS (
+  SELECT setUnion(c) FROM g
+  WHERE c <> startValue(cellToChildren(quadbin '48a6227affffffff', 12))),
+mixed(cells) AS (
+  SELECT setUnion(c) FROM (
+    SELECT c FROM g
+    WHERE c <> startValue(cellToChildren(quadbin '48a6227affffffff', 12))
+    UNION ALL
+    SELECT unnest(cellToChildren(quadbin '48a6227affffffff', 11))) AS u(c))
+SELECT numValues(compactCells(part.cells)) AS without_one,
+  compactCells(mixed.cells) = quadbinset '{48a6227affffffff}' AS with_children,
+  uncompactCells(compactCells(part.cells), 12) = uncompactCells(part.cells, 12)
+    AS same_region
+FROM part, mixed;
+
+-- The compacted cover of a polygon states the region of the cover with fewer
+-- cells: it uncompacts back to the cover and holds no four children of one
+-- parent
+WITH s(cells) AS (VALUES (geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80,
+  4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 14)))
+SELECT numValues(cells) AS cover, numValues(compactCells(cells)) AS compacted,
+  uncompactCells(compactCells(cells), 14) = cells AS same_region,
+  (SELECT count(*) FROM (
+     SELECT cellToParent(c, getResolution(c) - 1)
+     FROM unnest(compactCells(cells)) AS c
+     GROUP BY 1 HAVING count(*) = 4) AS q) AS groups_of_four
+FROM s;
+
+/* Errors */
+-- A cell finer than the resolution, a result of more than 4194304 cells, and a
+-- resolution outside 0 to 26
+SELECT uncompactCells(cellToChildren(quadbin '48a6227affffffff', 12), 11);
+SELECT uncompactCells(quadbinset '{480fffffffffffff}', 12);
+SELECT uncompactCells(cellToChildren(quadbin '48a6227affffffff', 12), 27);
+
+-------------------------------------------------------------------------------
 -- Point <-> cell  (lon/lat, SRID 4326)
 -------------------------------------------------------------------------------
 
