@@ -42,6 +42,7 @@
 
 /*****************************************************************************/
 
+extern bool raster_quadbin_is_cell(uint64 cell);
 extern bool raster_quadbin_from_bounds(double origin_x, double origin_y,
   double pixel_w, double pixel_h, int xsize, int ysize, uint64 *result);
 

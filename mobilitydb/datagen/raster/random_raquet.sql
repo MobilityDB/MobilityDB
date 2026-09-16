@@ -48,7 +48,8 @@
  * @param[in] tz Zoom level (0..26)
  * @note Mirrors the spread_bits encoding of the raster kernel: the coordinates
  * are scaled to the 2^26 grid, their bits spread into alternating positions,
- * and interleaved under the header, mode bit and zoom
+ * and interleaved under the header, mode bit and zoom, and the 52 - 2 * zoom
+ * bits below the zoom are set to one, as a QUADBIN cell carries them
  */
 DROP FUNCTION IF EXISTS raquet_tile_to_cell;
 CREATE FUNCTION raquet_tile_to_cell(tx bigint, ty bigint, tz int)
@@ -72,7 +73,8 @@ BEGIN
   yy := (yy | (yy <<  2)) & x'3333333333333333'::bigint;
   yy := (yy | (yy <<  1)) & x'5555555555555555'::bigint;
   RETURN x'4000000000000000'::bigint | (1::bigint << 59) |
-    (tz::bigint << 52) | (xx | (yy << 1));
+    (tz::bigint << 52) | (xx | (yy << 1)) |
+    (x'000FFFFFFFFFFFFF'::bigint >> (2 * tz));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

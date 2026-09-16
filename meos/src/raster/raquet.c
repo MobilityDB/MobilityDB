@@ -43,6 +43,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <math.h>
 #include <string.h>
@@ -603,6 +604,13 @@ raquet_make(uint64 quadbin, int32 width, int32 height, MeosPixType pixtype,
   VALIDATE_NOT_NULL(pixels, NULL);
   if (! ensure_valid_pixtype((uint8) pixtype))
     return NULL;
+  if (! raster_quadbin_is_cell(quadbin))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The QUADBIN value %016" PRIx64 " of a raquet tile is not a cell of the grid",
+      quadbin);
+    return NULL;
+  }
   /* The dimensions are taken in the type the SQL surface uses and validated
    * before the narrowing to the uint16 fields below, so that a negative value
    * is rejected here instead of wrapping to a large positive one */
