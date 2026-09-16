@@ -9,15 +9,22 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 -- 48a6227affffffff
 SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 -- 47c3c3
-</pre></li><li class="listitem"><a name="tcell_geoToH3IndexSet"></a><a class="indexterm" name="id12950"></a><p>Return the set of cells of a grid covering a geometry at the given resolution</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_geoToH3IndexSet"></a><a class="indexterm" name="id12950"></a><a class="indexterm" name="id12953"></a><a class="indexterm" name="id12956"></a><p>Return the set of cells of a grid covering a geometry at the given resolution</p><pre class="programlisting">
 geoToH3IndexSet(geometry,integer) → h3indexset
-</pre><p>Every geometry type is supported: a <code class="varname">POINT</code> yields a single cell, a <code class="varname">LINESTRING</code> samples its segments and takes the neighbours of each sample, so that the set holds every cell the line meets, a <code class="varname">POLYGON</code> fills its interior, and <code class="varname">MULTI*</code> / <code class="varname">GEOMETRYCOLLECTION</code> values return the union of their components. The covering is stated for H3 alone: it is the one grid MobilityDB carries a region-covering kernel for, and the QUADBIN and S2 forms are not yet implemented. It answers every cell the geometry meets, the covering a spatial prefilter needs, where the h3-pg function <code class="varname">h3_polygon_to_cells</code> answers the cells whose centre a polygon holds, which is why the name stays MobilityDB's.</p><pre class="programlisting">
+geoToQuadbinSet(geometry,integer) → quadbinset
+</pre><p>Every geometry type is supported: a <code class="varname">POINT</code> yields a single cell, a <code class="varname">LINESTRING</code> the cells it meets, a <code class="varname">POLYGON</code> those of its boundary together with those of its interior, and <code class="varname">MULTI*</code> / <code class="varname">GEOMETRYCOLLECTION</code> values return the union of their components. H3 samples each segment and widens the cells it selects by their neighbours, so that the set holds every cell the geometry meets and may hold a neighbour it does not meet. A QUADBIN tile is bounded by two meridians and two parallels, so QUADBIN walks each segment from tile to tile and fills the rows of tiles between the boundary tiles of a polygon, and the set holds exactly the tiles the geometry meets. The S2 form is not yet implemented. The covering answers every cell the geometry meets, the covering a spatial prefilter needs, where the h3-pg function <code class="varname">h3_polygon_to_cells</code> answers the cells whose centre a polygon holds, which is why the name stays MobilityDB's.</p><pre class="programlisting">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
-</pre></li><li class="listitem"><a name="tcell_ever_eq_set"></a><a class="indexterm" name="id12964"></a><p>Return whether a temporal cell trajectory ever takes one of the cells in a cell set</p><pre class="programlisting">
+SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10);
+-- {"48a6227affffffff"}
+</pre></li><li class="listitem"><a name="tcell_ever_eq_set"></a><a class="indexterm" name="id12970"></a><p>Return whether a temporal cell trajectory ever takes one of the cells in a cell set</p><pre class="programlisting">
 h3indexset ?= th3index → boolean
-</pre><p>Combined with the cell set constructor it answers whether a trip ever passes through a region without materialising the trajectory geometry, a conservative prefilter for the exact <code class="varname">eIntersects</code>. It rests on a kernel of its own, which H3 alone carries; the QUADBIN and S2 forms are not yet implemented.</p><pre class="programlisting">
+quadbinset ?= tquadbin → boolean
+</pre><p>Combined with the cell set constructor it answers whether a trip ever passes through a region without materialising the trajectory geometry, a conservative prefilter for the exact <code class="varname">eIntersects</code>. It rests on a kernel every grid shares, declared for H3 and QUADBIN; the S2 form is not yet implemented.</p><pre class="programlisting">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
   th3index '871fa4418ffffff@2001-01-01';
+-- t
+SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10) ?=
+  tquadbin '48a6227affffffff@2001-01-01';
 -- t
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s08.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s10.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Restrictions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Inspection</td></tr></table></div></body></html>
