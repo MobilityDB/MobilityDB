@@ -92,6 +92,11 @@ CREATE FUNCTION gridDisk(quadbin, integer)
   AS 'MODULE_PATHNAME', 'Quadbin_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION gridDisk(quadbinset, integer)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Quadbinset_grid_disk'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Point ↔ cell
  *

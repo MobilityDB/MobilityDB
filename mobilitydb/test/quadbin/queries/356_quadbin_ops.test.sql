@@ -68,6 +68,20 @@ SELECT numValues(gridDisk(quadbin '48a6227affffffff', 0));  -- 1
 SELECT numValues(gridDisk(quadbin '48a6227affffffff', 1));  -- 9
 SELECT numValues(gridDisk(quadbin '48a6227affffffff', 2));  -- 25
 
+-- The disk of a set is the union of the disks of its cells. Widening the disk
+-- of radius 1 by one step gives the disk of radius 2 around the same origin,
+-- and a step count of 0 gives the set itself
+WITH s(cells) AS (VALUES (gridDisk(quadbin '48a6227affffffff', 1)))
+SELECT numValues(gridDisk(cells, 1)),
+  gridDisk(cells, 1) = (SELECT setUnion(d)
+    FROM unnest(cells) AS c, unnest(gridDisk(c, 1)) AS d),
+  gridDisk(cells, 1) = gridDisk(quadbin '48a6227affffffff', 2),
+  gridDisk(cells, 0) = cells
+FROM s;
+
+/* Errors */
+SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
+
 -------------------------------------------------------------------------------
 -- Point <-> cell  (lon/lat, SRID 4326)
 -------------------------------------------------------------------------------

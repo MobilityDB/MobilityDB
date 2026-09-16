@@ -74,6 +74,25 @@ H3_grid_disk(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum H3indexset_grid_disk(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3indexset_grid_disk);
+/**
+ * @ingroup mobilitydb_h3_set
+ * @brief Return all cells within k grid-steps of a cell of a set
+ * @sqlfn gridDisk()
+ */
+Datum
+H3indexset_grid_disk(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int k = PG_GETARG_INT32(1);
+  Set *result = h3indexset_grid_disk(cells, k);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum H3_grid_ring(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(H3_grid_ring);
 /**
