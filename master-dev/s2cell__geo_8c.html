@@ -75,6 +75,8 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">s2cell_geo.c File Reference</div></div>
 </div><!--header-->
@@ -83,25 +85,86 @@ $(function() {
 <p>Geometry adapters between an S2 cell and PostGIS geometries.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="s2cell_8h_source.html">s2cell/s2cell.h</a>&quot;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
+<code>#include &lt;lwgeodetic.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__s2cell_8h_source.html">meos_s2cell.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structs2cell__buf.html">s2cell_buf</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Growable accumulator of S2 cells filled by the geography walker.  <a href="structs2cell__buf.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a7e7b316a41950272a93ea32685c2c260"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a7e7b316a41950272a93ea32685c2c260.html#a7e7b316a41950272a93ea32685c2c260">S2CELL_MAX_COVER_CELLS</a>&#160;&#160;&#160;4194304</td></tr>
+<tr class="memdesc:a7e7b316a41950272a93ea32685c2c260"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of cells a cover gathers at most, the count at which a request states a level far finer than the geography it covers.  <a href="s2cell__geo_8c_a7e7b316a41950272a93ea32685c2c260.html#a7e7b316a41950272a93ea32685c2c260">More...</a><br /></td></tr>
+<tr class="separator:a7e7b316a41950272a93ea32685c2c260"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga430db5a1630cdf56604281a9f05d1ed6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_ga430db5a1630cdf56604281a9f05d1ed6.html#ga430db5a1630cdf56604281a9f05d1ed6">ever_eq_s2cellset_ts2cell</a> (const <a class="el" href="structSet.html">Set</a> *cells, const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga430db5a1630cdf56604281a9f05d1ed6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a temporal S2 cell ever takes a cell of an S2 cell set.  <a href="group__meos__s2cell_ga430db5a1630cdf56604281a9f05d1ed6.html#ga430db5a1630cdf56604281a9f05d1ed6">More...</a><br /></td></tr>
+<tr class="separator:ga430db5a1630cdf56604281a9f05d1ed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf363a1c5493fcbe31fe16c9e63746678"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_gaf363a1c5493fcbe31fe16c9e63746678.html#gaf363a1c5493fcbe31fe16c9e63746678">geo_to_s2cell_cell</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, int32 level)</td></tr>
 <tr class="memdesc:gaf363a1c5493fcbe31fe16c9e63746678"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the S2 cell covering a lon/lat point at a level.  <a href="group__meos__s2cell_gaf363a1c5493fcbe31fe16c9e63746678.html#gaf363a1c5493fcbe31fe16c9e63746678">More...</a><br /></td></tr>
 <tr class="separator:gaf363a1c5493fcbe31fe16c9e63746678"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadabb79678e460012db2b273099ad26bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_gadabb79678e460012db2b273099ad26bc.html#gadabb79678e460012db2b273099ad26bc">geo_to_s2cell_set</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, int32 level)</td></tr>
+<tr class="memdesc:gadabb79678e460012db2b273099ad26bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the set of S2 cells covering a geography at the given level.  <a href="group__meos__s2cell_gadabb79678e460012db2b273099ad26bc.html#gadabb79678e460012db2b273099ad26bc">More...</a><br /></td></tr>
+<tr class="separator:gadabb79678e460012db2b273099ad26bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce13e4cd919416fa2b938a88adeb1d0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_abce13e4cd919416fa2b938a88adeb1d0.html#abce13e4cd919416fa2b938a88adeb1d0">lwgeom_to_cells_into</a> (<a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, int32 level, <a class="el" href="structs2cell__buf.html">s2cell_buf</a> *out)</td></tr>
+<tr class="memdesc:abce13e4cd919416fa2b938a88adeb1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells a geography meets into the accumulator, recursing into its components.  <a href="s2cell__geo_8c_abce13e4cd919416fa2b938a88adeb1d0.html#abce13e4cd919416fa2b938a88adeb1d0">More...</a><br /></td></tr>
+<tr class="separator:abce13e4cd919416fa2b938a88adeb1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4afb43afda2dd1b69483009e0e409d81"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a4afb43afda2dd1b69483009e0e409d81.html#a4afb43afda2dd1b69483009e0e409d81">pointarray_to_cells_into</a> (const <a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *pa, int32 level, <a class="el" href="structs2cell__buf.html">s2cell_buf</a> *out)</td></tr>
+<tr class="memdesc:a4afb43afda2dd1b69483009e0e409d81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells a point array passes through into the accumulator.  <a href="s2cell__geo_8c_a4afb43afda2dd1b69483009e0e409d81.html#a4afb43afda2dd1b69483009e0e409d81">More...</a><br /></td></tr>
+<tr class="separator:a4afb43afda2dd1b69483009e0e409d81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdd9cac0d5c146f7f6e9058f67a1911e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_abdd9cac0d5c146f7f6e9058f67a1911e.html#abdd9cac0d5c146f7f6e9058f67a1911e">polygon_fill_cell</a> (const <a class="el" href="structLWPOLY.html">LWPOLY</a> *poly, <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> cell, int32 level, const <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> *bnd, int nbnd, <a class="el" href="structs2cell__buf.html">s2cell_buf</a> *out)</td></tr>
+<tr class="memdesc:abdd9cac0d5c146f7f6e9058f67a1911e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells of a level that a polygon encloses within a cell.  <a href="s2cell__geo_8c_abdd9cac0d5c146f7f6e9058f67a1911e.html#abdd9cac0d5c146f7f6e9058f67a1911e">More...</a><br /></td></tr>
+<tr class="separator:abdd9cac0d5c146f7f6e9058f67a1911e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1302574b91317f34727f3eb903316c9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_ac1302574b91317f34727f3eb903316c9.html#ac1302574b91317f34727f3eb903316c9">polygon_to_cells_into</a> (<a class="el" href="structLWPOLY.html">LWPOLY</a> *poly, int32 level, <a class="el" href="structs2cell__buf.html">s2cell_buf</a> *out)</td></tr>
+<tr class="memdesc:ac1302574b91317f34727f3eb903316c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells a polygon meets into the accumulator.  <a href="s2cell__geo_8c_ac1302574b91317f34727f3eb903316c9.html#ac1302574b91317f34727f3eb903316c9">More...</a><br /></td></tr>
+<tr class="separator:ac1302574b91317f34727f3eb903316c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ff8a209e78fcfcec73290f5d3eb1ef1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a3ff8a209e78fcfcec73290f5d3eb1ef1.html#a3ff8a209e78fcfcec73290f5d3eb1ef1">s2cell_buf_free</a> (<a class="el" href="structs2cell__buf.html">s2cell_buf</a> *buf)</td></tr>
+<tr class="memdesc:a3ff8a209e78fcfcec73290f5d3eb1ef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the cells held by an accumulator and reset it to empty.  <a href="s2cell__geo_8c_a3ff8a209e78fcfcec73290f5d3eb1ef1.html#a3ff8a209e78fcfcec73290f5d3eb1ef1">More...</a><br /></td></tr>
+<tr class="separator:a3ff8a209e78fcfcec73290f5d3eb1ef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9719ff43dac68d72ea8a7ca7ea1fc3dc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a9719ff43dac68d72ea8a7ca7ea1fc3dc.html#a9719ff43dac68d72ea8a7ca7ea1fc3dc">s2cell_buf_init</a> (<a class="el" href="structs2cell__buf.html">s2cell_buf</a> *buf, int initial_capacity)</td></tr>
+<tr class="memdesc:a9719ff43dac68d72ea8a7ca7ea1fc3dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an accumulator with a starting capacity.  <a href="s2cell__geo_8c_a9719ff43dac68d72ea8a7ca7ea1fc3dc.html#a9719ff43dac68d72ea8a7ca7ea1fc3dc">More...</a><br /></td></tr>
+<tr class="separator:a9719ff43dac68d72ea8a7ca7ea1fc3dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77ecfa863f11c3e7eef4e015382d1f24"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a77ecfa863f11c3e7eef4e015382d1f24.html#a77ecfa863f11c3e7eef4e015382d1f24">s2cell_buf_push</a> (<a class="el" href="structs2cell__buf.html">s2cell_buf</a> *buf, <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> cell)</td></tr>
+<tr class="memdesc:a77ecfa863f11c3e7eef4e015382d1f24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a cell to an accumulator, ignoring the null cell.  <a href="s2cell__geo_8c_a77ecfa863f11c3e7eef4e015382d1f24.html#a77ecfa863f11c3e7eef4e015382d1f24">More...</a><br /></td></tr>
+<tr class="separator:a77ecfa863f11c3e7eef4e015382d1f24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a9dd68757b9fa580f81a1020566d1a5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a4a9dd68757b9fa580f81a1020566d1a5.html#a4a9dd68757b9fa580f81a1020566d1a5">s2cell_buf_reserve</a> (<a class="el" href="structs2cell__buf.html">s2cell_buf</a> *buf, long additional)</td></tr>
+<tr class="memdesc:a4a9dd68757b9fa580f81a1020566d1a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make room for <code>additional</code> further cells in an accumulator.  <a href="s2cell__geo_8c_a4a9dd68757b9fa580f81a1020566d1a5.html#a4a9dd68757b9fa580f81a1020566d1a5">More...</a><br /></td></tr>
+<tr class="separator:a4a9dd68757b9fa580f81a1020566d1a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8d98bea049d30d2fe3d9c300f3d1c0e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_af8d98bea049d30d2fe3d9c300f3d1c0e.html#af8d98bea049d30d2fe3d9c300f3d1c0e">s2cell_buf_to_set</a> (<a class="el" href="structs2cell__buf.html">s2cell_buf</a> *buf)</td></tr>
+<tr class="memdesc:af8d98bea049d30d2fe3d9c300f3d1c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the set of the distinct cells of an accumulator, which is freed.  <a href="s2cell__geo_8c_af8d98bea049d30d2fe3d9c300f3d1c0e.html#af8d98bea049d30d2fe3d9c300f3d1c0e">More...</a><br /></td></tr>
+<tr class="separator:af8d98bea049d30d2fe3d9c300f3d1c0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga484b95700fca84dd9fd8259129de8b6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_ga484b95700fca84dd9fd8259129de8b6a.html#ga484b95700fca84dd9fd8259129de8b6a">s2cell_cell_to_geog</a> (<a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> cell)</td></tr>
 <tr class="memdesc:ga484b95700fca84dd9fd8259129de8b6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the boundary of an S2 cell as a geodetic polygon (SRID 4326)  <a href="group__meos__s2cell_ga484b95700fca84dd9fd8259129de8b6a.html#ga484b95700fca84dd9fd8259129de8b6a">More...</a><br /></td></tr>
 <tr class="separator:ga484b95700fca84dd9fd8259129de8b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabf95e17a8d44d70854d0582816e94230"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_gabf95e17a8d44d70854d0582816e94230.html#gabf95e17a8d44d70854d0582816e94230">s2cell_cell_to_geogpoint</a> (<a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> cell)</td></tr>
 <tr class="memdesc:gabf95e17a8d44d70854d0582816e94230"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the centre of an S2 cell as a geodetic point (SRID 4326)  <a href="group__meos__s2cell_gabf95e17a8d44d70854d0582816e94230.html#gabf95e17a8d44d70854d0582816e94230">More...</a><br /></td></tr>
 <tr class="separator:gabf95e17a8d44d70854d0582816e94230"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74c4fe90feb738baf7e6af3fae5763e4"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a74c4fe90feb738baf7e6af3fae5763e4.html#a74c4fe90feb738baf7e6af3fae5763e4">s2cell_id_compare</a> (const void *a, const void *b)</td></tr>
+<tr class="memdesc:a74c4fe90feb738baf7e6af3fae5763e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two S2 cells by identifier, the ordering of the boundary cells the range test searches.  <a href="s2cell__geo_8c_a74c4fe90feb738baf7e6af3fae5763e4.html#a74c4fe90feb738baf7e6af3fae5763e4">More...</a><br /></td></tr>
+<tr class="separator:a74c4fe90feb738baf7e6af3fae5763e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b4099641b25d35ef0c8f5c858e630b7"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a8b4099641b25d35ef0c8f5c858e630b7.html#a8b4099641b25d35ef0c8f5c858e630b7">s2cell_ids_in_range</a> (const <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> *ids, int count, <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> lo, <a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a> hi)</td></tr>
+<tr class="memdesc:a8b4099641b25d35ef0c8f5c858e630b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a sorted array of cell identifiers holds one in the inclusive range [<code>lo</code>, <code>hi</code>].  <a href="s2cell__geo_8c_a8b4099641b25d35ef0c8f5c858e630b7.html#a8b4099641b25d35ef0c8f5c858e630b7">More...</a><br /></td></tr>
+<tr class="separator:a8b4099641b25d35ef0c8f5c858e630b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c90cac9c24af10cd1d5e68d8c711d6d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2cell__geo_8c_a2c90cac9c24af10cd1d5e68d8c711d6d.html#a2c90cac9c24af10cd1d5e68d8c711d6d">segment_to_cells_into</a> (double lon1, double lat1, double lon2, double lat2, int32 level, <a class="el" href="structs2cell__buf.html">s2cell_buf</a> *out)</td></tr>
+<tr class="memdesc:a2c90cac9c24af10cd1d5e68d8c711d6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells a geodetic segment passes through into the accumulator.  <a href="s2cell__geo_8c_a2c90cac9c24af10cd1d5e68d8c711d6d.html#a2c90cac9c24af10cd1d5e68d8c711d6d">More...</a><br /></td></tr>
+<tr class="separator:a2c90cac9c24af10cd1d5e68d8c711d6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Geometry adapters between an S2 cell and PostGIS geometries. </p>
