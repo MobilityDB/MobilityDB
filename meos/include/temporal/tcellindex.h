@@ -186,6 +186,16 @@ typedef struct
   double normal[3];       /**< Unit normal of the circle of the path */
 } DggsArc;
 
+/*****************************************************************************
+ * Membership of a temporal cell index in a cell set — shared by every DGGS.
+ *
+ * The walk reads the values of the temporal value and the set alone, so one
+ * statement of it answers for every grid; each family's `ever_eq` entry point
+ * validates its own two types and calls it.
+ *****************************************************************************/
+
+extern bool tcellindex_ever_in_set(const Temporal *temp, const Set *cells);
+
 extern bool dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
   DggsArc *arc);
 extern bool dggs_arc_point(const DggsArc *arc, double t, double *lon,

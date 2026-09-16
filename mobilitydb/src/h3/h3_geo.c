@@ -99,7 +99,7 @@ Geo_to_h3indexset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Ever_eq_h3indexset_th3index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ever_eq_h3indexset_th3index);
 /**
- * @ingroup mobilitydb_h3_comp
+ * @ingroup mobilitydb_h3_comp_ever
  * @brief True iff the th3index value sequence ever lies in any cell of
  *        the candidate set
  *

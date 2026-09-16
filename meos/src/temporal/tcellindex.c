@@ -50,6 +50,7 @@
 #include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 
@@ -611,3 +612,52 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
 
 /*****************************************************************************/
 
+
+/*****************************************************************************
+ * Membership of a temporal cell index in a cell set
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a temporal sequence holds a value the set contains
+ */
+static bool
+tsequence_ever_in_set(const TSequence *seq, const Set *cells)
+{
+  for (int i = 0; i < seq->count; i++)
+    if (contains_set_value(cells, tinstant_value_p(TSEQUENCE_INST_N(seq, i))))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return true if a temporal cell index ever takes a cell of a cell set
+ * @details The walk stops at the first instant the set contains. It reads the
+ * values of @p temp and of @p cells alone, so it answers for every grid; the
+ * types are validated by the family entry point that calls it.
+ * @param[in] temp Temporal cell index
+ * @param[in] cells Set of cells of the grid of @p temp
+ */
+bool
+tcellindex_ever_in_set(const Temporal *temp, const Set *cells)
+{
+  assert(temp); assert(cells);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return contains_set_value(cells,
+        tinstant_value_p((TInstant *) temp));
+    case TSEQUENCE:
+      return tsequence_ever_in_set((TSequence *) temp, cells);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        if (tsequence_ever_in_set(TSEQUENCESET_SEQ_N(ss, i), cells))
+          return true;
+      return false;
+    }
+  }
+}
+
+/*****************************************************************************/

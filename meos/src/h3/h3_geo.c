@@ -67,6 +67,7 @@
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
+#include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/tcellindex.h"
 #include "temporal/temporal.h"  /* ORDER macro for set_make_free */
 #include "temporal/tcellindex.h"
@@ -735,19 +736,6 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 }
 
 /**
- * @brief Return true if any instant of a temporal sequence holds a value that
- * a set contains
- */
-static bool
-tsequence_ever_in_set(const TSequence *seq, const Set *s)
-{
-  for (int i = 0; i < seq->count; i++)
-    if (contains_set_value(s, tinstant_value_p(TSEQUENCE_INST_N(seq, i))))
-      return true;
-  return false;
-}
-
-/**
  * @ingroup meos_h3_comp
  * @brief Return true if a temporal H3 cell is ever equal to a cell of an H3
  * cell set
@@ -764,28 +752,8 @@ int
 ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cells, -1); VALIDATE_NOT_NULL(th3idx, -1);
-  /* The value the caller gets for a temporal value of another type is the one
-   * #th3index_values gave it, which is the answer that it holds no cell */
-  VALIDATE_TH3INDEX(th3idx, 0);
-
-  assert(temptype_subtype(th3idx->subtype));
-  switch (th3idx->subtype)
-  {
-    case TINSTANT:
-      return contains_set_value(cells,
-        tinstant_value_p((TInstant *) th3idx)) ? 1 : 0;
-    case TSEQUENCE:
-      return tsequence_ever_in_set((TSequence *) th3idx, cells) ? 1 : 0;
-    default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (TSequenceSet *) th3idx;
-      for (int i = 0; i < ss->count; i++)
-        if (tsequence_ever_in_set(TSEQUENCESET_SEQ_N(ss, i), cells))
-          return 1;
-      return 0;
-    }
-  }
+  VALIDATE_H3INDEXSET(cells, -1); VALIDATE_TH3INDEX(th3idx, -1);
+  return tcellindex_ever_in_set(th3idx, cells) ? 1 : 0;
 }
 
 /*****************************************************************************/
