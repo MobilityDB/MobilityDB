@@ -35,11 +35,12 @@
  * the `quadbinset` MobilityDB set type. They are the square-quadtree
  * counterpart of the h3index set-returning functions, dropping the
  * hexagon-only families (directed edges, vertexes, icosahedron faces,
- * compact / uncompact, grid path / ring) and keeping the operations with
- * a square analogue:
+ * grid path / ring) and keeping the operations with a square analogue:
  *
  *   * the k-ring (square Chebyshev disk) around a cell,
- *   * the four-per-level children of a cell at a finer resolution.
+ *   * the four-per-level children of a cell at a finer resolution,
+ *   * the compaction of a cell set and its reverse, a tile being exactly the
+ *     union of its four children.
  *
  * All functions here operate on STATIC `quadbin` values; the temporal
  * lift is handled by the tquadbin layer.
@@ -73,5 +74,12 @@ extern Set *quadbin_grid_disk(Quadbin origin, int k);
  */
 extern Set *quadbin_cell_to_children_set(Quadbin origin,
   int children_resolution);
+
+/**
+ * Return the compacted set of `cells`, and the set of cells at resolution
+ * `resolution` covering `cells`.
+ */
+extern Set *quadbinset_compact_cells(const Set *cells);
+extern Set *quadbinset_uncompact_cells(const Set *cells, int resolution);
 
 #endif /* __QUADBINSET_H__ */

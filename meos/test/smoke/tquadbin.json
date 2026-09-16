@@ -39,6 +39,7 @@
   "override_args": {
     "quadbin_cell_to_children": {"1": "5"},
     "quadbin_cell_to_children_set": {"1": "5"},
+    "quadbinset_uncompact_cells": {"1": "6"},
     "tquadbin_cell_to_children": {"1": "5"},
     "tquadbinseq_make": {"0": "qarr_same1", "2": "2"},
     "quadbinset_make": {"0": "qarr1", "1": "2"}

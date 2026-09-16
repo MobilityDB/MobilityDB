@@ -50,6 +50,7 @@
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER */
 #include "temporal/type_parser.h"  /* set_parse */
+#include "temporal/tcellindex.h"
 #include "quadbin/quadbin.h"
 
 /*****************************************************************************
@@ -245,6 +246,43 @@ quadbin_cell_to_children_set(Quadbin origin, int children_resolution)
     return NULL;
   }
   return quadbinset_from_buffer(cells, count);
+}
+
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the compacted set of a QUADBIN cell set
+ * @details A cell covered by a coarser cell of the set is dropped, and every
+ * four children of one parent merge into that parent, from the finest
+ * resolution up, so the result covers the region of the set with the fewest
+ * cells
+ * @param[in] cells Set of QUADBIN cells
+ * @csqlfn #Quadbinset_compact_cells()
+ */
+Set *
+quadbinset_compact_cells(const Set *cells)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(cells, NULL);
+  return dggs_quadtree_compact_cells(cells, T_TQUADBIN);
+}
+
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of cells at a resolution covering a QUADBIN cell
+ * set
+ * @details A cell coarser than the resolution yields its descendants at the
+ * resolution; a cell finer than the resolution raises an error
+ * @param[in] cells Set of QUADBIN cells
+ * @param[in] resolution Resolution of the result
+ * @csqlfn #Quadbinset_uncompact_cells()
+ */
+Set *
+quadbinset_uncompact_cells(const Set *cells, int resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(cells, NULL);
+  return dggs_quadtree_uncompact_cells(cells, resolution, T_TQUADBIN,
+    &quadbin_cell_to_children);
 }
 
 /*****************************************************************************/

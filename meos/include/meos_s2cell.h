@@ -209,6 +209,8 @@ extern STBox *s2cell_tstzspan_to_stbox(S2CellId cell, const Span *s);
 
 extern Set *s2cell_edge_neighbors_set(S2CellId cell);
 extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
+extern Set *s2cellset_compact_cells(const Set *cells);
+extern Set *s2cellset_uncompact_cells(const Set *cells, int resolution);
 
 /* Input and output functions of `s2cellset` */
 

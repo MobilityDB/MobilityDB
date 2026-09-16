@@ -140,12 +140,12 @@ CREATE FUNCTION cellToChildren(h3index, integer)
   AS 'MODULE_PATHNAME', 'H3_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3CompactCells(h3indexset)
+CREATE FUNCTION compactCells(h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_compact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3UncompactCells(h3indexset, integer)
+CREATE FUNCTION uncompactCells(h3indexset, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_uncompact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

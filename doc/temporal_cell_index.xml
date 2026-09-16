@@ -1368,12 +1368,16 @@ SELECT cellToChildren(s2cell '47c3c', 8);
 				<indexterm significance="normal"><primary><varname>compactCells</varname></primary></indexterm>
 				<para>Compacted representation of a cell set, finer cells being merged into their parent whenever the parent's full set of children is present</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-h3CompactCells(h3indexset) → h3indexset
+compactCells(cellset) → cellset
 </programlisting>
-				<para>Compaction is stated for H3 alone: it is the one grid MobilityDB carries the kernel for, and the QUADBIN and S2 forms are not yet implemented.</para>
+				<para>A QUADBIN tile and an S2 cell are each exactly the union of their four children, so the cells of a QUADBIN or S2 set may be of any resolutions: a cell covered by a coarser cell of the set is dropped, and every four children of one parent are replaced by that parent, from the finest resolution up, as the S2 library normalizes a cell union. An H3 cell covers its seven children only approximately, so an H3 set is compacted as the H3 library compacts it, from cells of a single resolution, and cells of two resolutions raise an error. A compacted set mixes resolutions, while <varname>?=</varname> compares cells, so a compacted cover is uncompacted to the resolution of a trajectory before the trajectory is read against it.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT h3CompactCells(cellToChildren(h3index '831c02fffffffff', 4));
+SELECT compactCells(cellToChildren(h3index '831c02fffffffff', 4));
 -- {"831c02fffffffff"}
+SELECT compactCells(cellToChildren(quadbin '48a6227affffffff', 12));
+-- {"48a6227affffffff"}
+SELECT compactCells(cellToChildren(s2cell '47c3c', 9));
+-- {"47c3c"}
 </programlisting>
 			</listitem>
 
@@ -1381,12 +1385,17 @@ SELECT h3CompactCells(cellToChildren(h3index '831c02fffffffff', 4));
 				<indexterm significance="normal"><primary><varname>uncompactCells</varname></primary></indexterm>
 				<para>Uncompacted representation at the given resolution, the inverse of <varname>compactCells</varname></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-h3UncompactCells(h3indexset,integer) → h3indexset
+uncompactCells(cellset,integer) → cellset
 </programlisting>
+				<para>A cell coarser than the resolution is replaced by its descendants at the resolution. A cell finer than the resolution cannot be stated at it and raises an error, as does a QUADBIN or S2 result of more than 4194304 cells.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numValues(h3UncompactCells(h3CompactCells(
+SELECT numValues(uncompactCells(compactCells(
   cellToChildren(h3index '831c02fffffffff', 4)), 4));
 -- 7
+SELECT numValues(uncompactCells(quadbinset '{48a6227affffffff}', 12));
+-- 16
+SELECT numValues(uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)), 9));
+-- 16
 </programlisting>
 			</listitem>
 

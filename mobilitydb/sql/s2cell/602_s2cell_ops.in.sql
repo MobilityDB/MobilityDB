@@ -82,6 +82,16 @@ CREATE FUNCTION cellToChildren(s2cell, integer)
   AS 'MODULE_PATHNAME', 'S2cell_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION compactCells(s2cellset)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'S2cellset_compact_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION uncompactCells(s2cellset, integer)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'S2cellset_uncompact_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION s2CellContains(s2cell, s2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'S2cell_cell_contains'

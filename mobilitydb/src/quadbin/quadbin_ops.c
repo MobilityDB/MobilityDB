@@ -185,6 +185,44 @@ Quadbinset_grid_disk(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Quadbinset_compact_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbinset_compact_cells);
+/**
+ * @ingroup mobilitydb_quadbin_set
+ * @brief Return the compacted representation of a quadbinset
+ * @sqlfn compactCells()
+ */
+Datum
+Quadbinset_compact_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  Set *result = quadbinset_compact_cells(cells);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Quadbinset_uncompact_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbinset_uncompact_cells);
+/**
+ * @ingroup mobilitydb_quadbin_set
+ * @brief Return the uncompacted representation of a quadbinset at the target
+ * resolution
+ * @sqlfn uncompactCells()
+ */
+Datum
+Quadbinset_uncompact_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = quadbinset_uncompact_cells(cells, resolution);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 /*****************************************************************************
  * Point <-> cell
  *****************************************************************************/
