@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dggs_line_plane_param</title>
+<title>MobilityDB: dggs_line_plane_sign_change</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,8 +88,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_af310b22a1508ec6d8a48b97e371cfcdc.html#af310b22a1508ec6d8a48b97e371cfcdc">dggs_line_exit_param_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a462af7bd24a8716d7ae254a28ebbd03f.html#a462af7bd24a8716d7ae254a28ebbd03f">dggs_line_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_af508fe40a661d317fda99d3ecfc1dcce.html#af508fe40a661d317fda99d3ecfc1dcce">dggs_line_init</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_a35577fa9b3a901fa8f67a6bfc46bfa36.html#a35577fa9b3a901fa8f67a6bfc46bfa36">dggs_line_plane_param</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a64ae72e07bc570ae284d764b7f107888.html#a64ae72e07bc570ae284d764b7f107888">dggs_line_plane_sign_change</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a35577fa9b3a901fa8f67a6bfc46bfa36.html#a35577fa9b3a901fa8f67a6bfc46bfa36">dggs_line_plane_param</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_a64ae72e07bc570ae284d764b7f107888.html#a64ae72e07bc570ae284d764b7f107888">dggs_line_plane_sign_change</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a7d8d1049c95897b671a32b4a83da2781.html#a7d8d1049c95897b671a32b4a83da2781">dggs_line_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a4915b12a2d955b3f1b1439a6df5db3fa.html#a4915b12a2d955b3f1b1439a6df5db3fa">dggs_lonlat_boundary_set_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">dggs_lonlat_to_xyz</a></td></tr>
@@ -112,8 +112,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a35577fa9b3a901fa8f67a6bfc46bfa36" name="a35577fa9b3a901fa8f67a6bfc46bfa36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a35577fa9b3a901fa8f67a6bfc46bfa36">&#9670;&#160;</a></span>dggs_line_plane_param()</h2>
+<a id="a64ae72e07bc570ae284d764b7f107888" name="a64ae72e07bc570ae284d764b7f107888"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64ae72e07bc570ae284d764b7f107888">&#9670;&#160;</a></span>dggs_line_plane_sign_change()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -122,7 +122,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double dggs_line_plane_param </td>
+          <td class="memname">static double dggs_line_plane_sign_change </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structDggsLine.html">DggsLine</a> *&#160;</td>
           <td class="paramname"><em>line</em>, </td>
@@ -152,8 +152,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the first parameter strictly ahead of <code>tmin</code> at which a planar path reaches the plane of normal <code>m</code> from its positive side, or a value above 1 when it does not before its end. </p>
-<p >The height <code>f</code> of the path above the plane has a second derivative of norm at most <code>M</code>, the curvature bound of the path, so over a step <code>h</code> it stays above &lsquo;f + f&rsquo; h - M h² / 2`. The search steps to the first zero of that bound, which the height cannot reach sooner: no crossing is stepped over, however short the stretch the path spends beyond the plane. Near a crossing the steps shrink quadratically onto it. </p>
+<p>Return the first parameter strictly ahead of <code>tmin</code> at which the height of a planar path above the plane of normal <code>m</code> changes sign, or a value above 1 when it does not before its end. </p>
+<p >The search of <a class="el" href="tcellindex_8c_a35577fa9b3a901fa8f67a6bfc46bfa36.html#a35577fa9b3a901fa8f67a6bfc46bfa36" title="Return the first parameter strictly ahead of tmin at which a planar path reaches the plane of normal ...">dggs_line_plane_param</a>, read from whichever side of the plane the path lies on at <code>tmin</code> </p>
 
 </div>
 </div>
