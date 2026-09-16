@@ -92,11 +92,17 @@ rtree_query_srid(const RTree *rtree)
 }
 
 /**
- * @brief Return true if a point is located in a polygon 
+ * @brief Return true if a point is located in a polygon
+ * @param[in] x,y Point
+ * @param[in] edges,nedges Edges of the polygon
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] xmax Greatest x the edges reach, which bounds the ray
+ * @param[in] results Array the index search collects its ids into, made by
+ * #index_result_create, or @p NULL when @p rtree is @p NULL
  */
 static inline int
 point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
-  const RTree *rtree, double xmax)
+  const RTree *rtree, double xmax, MeosArray *results)
 {
   int inside = 0;
   /* The height the ray is cast at. A ray at the height of a vertex meets the
@@ -128,7 +134,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
       double xhi = (x > xmax) ? x : xmax;
       stbox_set(true, false, false, rtree_query_srid(rtree), x, xhi, ry, ry,
         0, 0, NULL, &query);
-      n = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
+      n = rtree_search(rtree, INDEX_OVERLAPS, &query, results);
       /* A search that cannot answer reports INT_MAX rather than a count, and
        * reading that as one walks the result array two billion entries past
        * its end. Scanning every edge answers the same question */
@@ -141,7 +147,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
     for (int i = 0; i < n && ! shared; i++)
     {
       const Edge *restrict e = rtree ?
-        edges[INDEX_RESULT_ID_N(rtree_results, i)] : edges[i];
+        edges[INDEX_RESULT_ID_N(results, i)] : edges[i];
 
       /* Only polygon boundary edges bound a region. Point, line, and
        * standalone (1D) arc edges are ignored by the even-odd containment
@@ -252,7 +258,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 int
 point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
-  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0);
+  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL);
 }
 
 /**
@@ -267,12 +273,18 @@ int
 point_in_polygon_index(double x, double y, Edge **edges, int nedges,
   const RTree *rtree, double xmax)
 {
-  /* The indexed walk reads its candidates into the per-thread array the clip
-   * context otherwise owns. A caller outside that context finds it empty, and
-   * an empty one is what the search would read through */
-  if (rtree && ! rtree_results)
-    rtree_results = index_result_create();
-  return point_in_polygon_impl(x, y, edges, nedges, rtree, xmax);
+  if (! rtree)
+    return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL);
+  /* The ids are collected into an array this call owns. The per-thread array
+   * of the clip context lives only as long as the context that makes it, and
+   * the memory an array is allocated in may be released once the call that
+   * allocated it returns, so an array kept past that call is read after it is
+   * released */
+  MeosArray *results = index_result_create();
+  int result = point_in_polygon_impl(x, y, edges, nedges, rtree, xmax,
+    results);
+  meos_array_destroy(results);
+  return result;
 }
 
 /**
@@ -638,7 +650,8 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     double tm = (ta + tb) * 0.5;
     double x = ax + tm * rx;
     double y = ay + tm * ry;
-    if (point_in_polygon_impl(x, y, all_edges, all_nedges, rtree, xmax))
+    if (point_in_polygon_impl(x, y, all_edges, all_nedges, rtree, xmax,
+          rtree_results))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
@@ -1964,7 +1977,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
   if (! result && edges_have_area(ctx->edge_ptrs, ctx->nedges))
     for (int i = 0; i < n && ! result; i++)
       if (point_in_polygon_impl(ptr[i]->x1, ptr[i]->y1, ctx->edge_ptrs,
-            ctx->nedges, ctx->rtree, ctx->box.xmax))
+            ctx->nedges, ctx->rtree, ctx->box.xmax, rtree_results))
         result = true;
   if (! result && edges_have_area(ptr, n))
     for (int i = 0; i < ctx->nedges && ! result; i++)
@@ -2525,8 +2538,8 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
       if (point_edge_dist2(px, py, edges[i]) <= d2 + MEOS_GEOM_TOLERANCE)
         return true;
   }
-  return point_in_polygon_impl(px, py, edges, nedges, rtree, xmax) ?
-    true : false;
+  return point_in_polygon_impl(px, py, edges, nedges, rtree, xmax,
+    rtree_results) ? true : false;
 }
 
 /**
