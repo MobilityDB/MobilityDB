@@ -278,7 +278,7 @@ CREATE FUNCTION rasterTileValue(
  * @brief Return the distinct QUADBIN cells at a zoom level covered by a
  * trajectory, suitable as a WHERE-clause join key against a Raquet table
  * @param[in] traj Trajectory (SRID 4326)
- * @param[in] zoom  QUADBIN zoom level (0–15)
+ * @param[in] zoom  QUADBIN zoom level (0–26)
  */
 CREATE OR REPLACE FUNCTION quadbins(
     traj  tgeompoint,

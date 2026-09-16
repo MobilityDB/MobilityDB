@@ -607,8 +607,21 @@ SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01,
     Point(170.0 10.0)@2024-01-02}', 3), 1) AS num_instant_tiles;
 
--- Invalid zoom level raises an error.
-SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
+-- The cover reaches every zoom of the QUADBIN grid. At zoom 20 a tile spans
+-- 360 / 2^20 degrees of longitude, so a trip along latitude 0.00005 from
+-- longitude 0.0001 to 0.0021 runs from tile column
+-- floor(180.0001 / 360 * 2^20) = 524288 to floor(180.0021 / 360 * 2^20) =
+-- 524294 within one row, seven tiles, and at zoom 26 the cover holds tiles of
+-- that zoom.
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;[Point(0.0001 0.00005)@2024-01-01,
+    Point(0.0021 0.00005)@2024-01-02]', 20), 1) AS num_zoom20_tiles;
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;{Point(0.0001 0.00005)@2024-01-01}', 26), 1)
+  AS num_zoom26_tiles;
+
+-- A zoom beyond the grid raises an error.
+SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 27);
 
 -------------------------------------------------------------------------------
 -- rasterTileValueQuadbin
