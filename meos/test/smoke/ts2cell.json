@@ -32,7 +32,8 @@
     "^ts2cellseq_in$": {"char *": "\"[47c3c444c0000000@2001-01-01, 47c3c444c0000000@2001-01-03]\""},
     "^ts2cellseqset_in$": {"char *": "\"{[47c3c444c0000000@2001-01-01, 47c3c444c0000000@2001-01-03]}\""},
     "^tbigint_to_ts2cell$": {"Temporal *": "tbigint1"},
-    "^tgeogpoint_": {"Temporal *": "tgeogpoint1"}
+    "^tgeogpoint_": {"Temporal *": "tgeogpoint1"},
+    "^geo_to_s2cell_set$": {"GSERIALIZED *": "geog1"}
   },
   "override_args": {
     "s2cell_cell_to_child": {"1": "16", "2": "0"},
@@ -63,6 +64,9 @@
     "  Temporal *tbigint1 = tbigint_in(\"[5171192596709507072@2001-01-01, 5171192596709507072@2001-01-03]\");",
     "  Temporal *tgeogpoint1 = tgeogpoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
     "  GSERIALIZED *geom1 = geom_in(\"SRID=4326;Point(4.35 50.85)\", -1);",
+    "  /* The cover of a geography reads its edges as geodesics, so it takes a",
+    "   * geodetic point. */",
+    "  GSERIALIZED *geog1 = geog_in(\"SRID=4326;Point(4.35 50.85)\", -1);",
     "  S2CellId s2_out = 0;",
     "  int n_out = 0;"
   ],
@@ -88,6 +92,7 @@
     "  free(tbigint1);",
     "  free(tgeogpoint1);",
     "  free(geom1);",
+    "  free(geog1);",
     "  free(tstzspan1);"
   ]
 }

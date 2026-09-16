@@ -935,17 +935,21 @@ SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 				<indexterm significance="normal"><primary><varname>cellset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToH3IndexSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToQuadbinSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToS2CellSet</varname></primary></indexterm>
 				<para>Return the set of cells of a grid covering a geometry at the given resolution</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 geoToQuadbinSet(geometry,integer) → quadbinset
+geoToS2CellSet(geography,integer) → s2cellset
 </programlisting>
-				<para>A <varname>POINT</varname> yields a single cell, a <varname>LINESTRING</varname> the cells it meets, a <varname>POLYGON</varname> those of its boundary together with those of its interior, and <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> values return the union of their components. A curve, a <varname>TIN</varname> or a <varname>TRIANGLE</varname>, alone or inside a collection, is refused, since a cover omitting its cells would drop a trajectory the prefilter must keep. H3 samples each segment and widens the cells it selects by their neighbours, so that the set holds every cell the geometry meets and may hold a neighbour it does not meet. A QUADBIN tile is bounded by two meridians and two parallels, so QUADBIN walks each segment from tile to tile and fills the rows of tiles between the boundary tiles of a polygon, and the set holds exactly the tiles the geometry meets. The S2 form is not yet implemented. The covering answers every cell the geometry meets, the covering a spatial prefilter needs, where the h3-pg function <varname>h3_polygon_to_cells</varname> answers the cells whose centre a polygon holds, which is why the name stays MobilityDB's.</para>
+				<para>A <varname>POINT</varname> yields a single cell, a <varname>LINESTRING</varname> the cells it meets, a <varname>POLYGON</varname> those of its boundary together with those of its interior, and <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> values return the union of their components. A curve, a <varname>TIN</varname> or a <varname>TRIANGLE</varname>, alone or inside a collection, is refused, since a cover omitting its cells would drop a trajectory the prefilter must keep. H3 samples each segment and widens the cells it selects by their neighbours, so that the set holds every cell the geometry meets and may hold a neighbour it does not meet. A QUADBIN tile is bounded by two meridians and two parallels, so QUADBIN walks each segment from tile to tile and fills the rows of tiles between the boundary tiles of a polygon, and the set holds exactly the tiles the geometry meets. An S2 cell is bounded by four arcs of great circles, the path a geodetic segment follows, so S2 walks each segment of a geography from cell to cell and reads the cube faces down the cell hierarchy for the cells a polygon encloses, and the set holds exactly the cells the geography meets. The covering answers every cell the geometry meets, the covering a spatial prefilter needs, where the h3-pg function <varname>h3_polygon_to_cells</varname> answers the cells whose centre a polygon holds, which is why the name stays MobilityDB's.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
 SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 -- {"48a6227affffffff"}
+SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', 10);
+-- {"47c3c3"}
 </programlisting>
 			</listitem>
 
@@ -955,14 +959,18 @@ SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 h3indexset ?= th3index → boolean
 quadbinset ?= tquadbin → boolean
+s2cellset ?= ts2cell → boolean
 </programlisting>
-				<para>Combined with the cell set constructor it answers whether a trip ever passes through a region without materialising the trajectory geometry, a conservative prefilter for the exact <varname>eIntersects</varname>. It rests on a kernel every grid shares, declared for H3 and QUADBIN; the S2 form is not yet implemented.</para>
+				<para>Combined with the cell set constructor it answers whether a trip ever passes through a region without materialising the trajectory geometry, a conservative prefilter for the exact <varname>eIntersects</varname>. It rests on a kernel every grid shares.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
   th3index '871fa4418ffffff@2001-01-01';
 -- t
 SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10) ?=
   tquadbin '48a6227affffffff@2001-01-01';
+-- t
+SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', 10) ?=
+  ts2cell '47c3c3@2001-01-01';
 -- t
 </programlisting>
 			</listitem>

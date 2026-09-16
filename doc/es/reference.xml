@@ -2968,7 +2968,7 @@
 					<para><link linkend="tcell_latLngToCell"><varname>latLngToCell</varname>, <varname>geoToQuadbinCell</varname>, <varname>geoToS2Cell</varname></link>: Devolver la celda de una cuadrícula que contiene una geometría de punto en la resolución dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_geoToH3IndexSet"><varname>cellset</varname>, <varname>geoToH3IndexSet</varname>, <varname>geoToQuadbinSet</varname></link>: Devolver el conjunto de celdas de una cuadrícula que cubren una geometría en la resolución dada</para>
+					<para><link linkend="tcell_geoToH3IndexSet"><varname>cellset</varname>, <varname>geoToH3IndexSet</varname>, <varname>geoToQuadbinSet</varname>, <varname>geoToS2CellSet</varname></link>: Devolver el conjunto de celdas de una cuadrícula que cubren una geometría en la resolución dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_ever_eq_set"><varname>eEqual</varname></link>: Devolver si una trayectoria de celdas temporales toma alguna vez una de las celdas de un conjunto de celdas</para>

@@ -63,6 +63,7 @@
 #include "s2cell/s2cell.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Accessors
@@ -280,6 +281,46 @@ S2cell_point_to_cell(PG_FUNCTION_ARGS)
   S2CellId result = geo_to_s2cell_cell(gs, level);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_S2CELL(result);
+}
+
+PGDLLEXPORT Datum Geo_to_s2cellset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_to_s2cellset);
+/**
+ * @ingroup mobilitydb_s2cell_base_conversion
+ * @brief Return the set of the S2 cells a geography meets at the given level
+ * @sqlfn geoToS2CellSet()
+ */
+Datum
+Geo_to_s2cellset(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32 level = PG_GETARG_INT32(1);
+  Set *result = geo_to_s2cell_set(gs, level);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Ever_eq_s2cellset_ts2cell(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_s2cellset_ts2cell);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell ever takes a cell of an S2 cell set
+ * @sqlfn eEqual()
+ * @sqlop @p ?=
+ */
+Datum
+Ever_eq_s2cellset_ts2cell(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int r = ever_eq_s2cellset_ts2cell(cells, temp);
+  PG_FREE_IF_COPY(cells, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (r < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(r == 1);
 }
 
 PGDLLEXPORT Datum S2cell_cell_to_point(PG_FUNCTION_ARGS);
