@@ -5,7 +5,6 @@
 # remains, then regenerate with --rebaseline.
 meos/src/geo/geo_funcs.c	relate_extract_edges	switch geom->type
 meos/src/geo/tgeo_distance.c	dist_geom_edges	switch lw->type
-meos/src/h3/h3_geo.c	lwgeom_to_cells_into	switch geom->type
 meos/src/pointcloud/pgsql_compat.c	meos_pc_patch_serialize	switch patch->type
 meos/src/pointcloud/tpc_boxops.c	tpointcloudinst_set_tpcbox	else T_TPCPATCH
 meos/src/rgeo/trgeo_geom_clip.c	clip_lwgeom_m1_accum	switch geom->type

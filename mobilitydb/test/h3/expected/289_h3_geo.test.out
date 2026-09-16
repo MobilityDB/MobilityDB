@@ -141,6 +141,20 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
 ERROR:  The resolution must be between 0 and 15
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
 ERROR:  The resolution must be between 0 and 15
+SELECT numValues(geoToH3IndexSet(ST_CurveToLine(geometry 'SRID=4326;
+  CURVEPOLYGON(CIRCULARSTRING(4.30 50.80, 4.40 50.90, 4.30 50.80))'), 7)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT geoToH3IndexSet(geometry 'SRID=4326;CURVEPOLYGON(CIRCULARSTRING(
+  4.30 50.80, 4.40 50.90, 4.30 50.80))', 7);
+ERROR:  The cover of a geometry of type CurvePolygon is not supported
+SELECT geoToH3IndexSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+  POINT(4.35 50.85), CIRCULARSTRING(4.30 50.80, 4.50 51.00, 4.70 50.80))', 7);
+ERROR:  The cover of a geometry of type CircularString is not supported
 WITH t AS (
   SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,

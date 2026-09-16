@@ -166,6 +166,17 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT EMPTY', 7);
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
 
+-- A CURVE IS REFUSED, alone or inside a collection, rather than read as meeting
+-- no cell: the cells of its linearization are what the cover would have to
+-- hold, and a cover without them drops every trajectory crossing the curve
+SELECT numValues(geoToH3IndexSet(ST_CurveToLine(geometry 'SRID=4326;
+  CURVEPOLYGON(CIRCULARSTRING(4.30 50.80, 4.40 50.90, 4.30 50.80))'), 7)) > 0;
+/* Errors */
+SELECT geoToH3IndexSet(geometry 'SRID=4326;CURVEPOLYGON(CIRCULARSTRING(
+  4.30 50.80, 4.40 50.90, 4.30 50.80))', 7);
+SELECT geoToH3IndexSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+  POINT(4.35 50.85), CIRCULARSTRING(4.30 50.80, 4.50 51.00, 4.70 50.80))', 7);
+
 -------------------------------------------------------------------------------
 -- eEqual / ?= — set vs th3index prefilter
 -------------------------------------------------------------------------------
