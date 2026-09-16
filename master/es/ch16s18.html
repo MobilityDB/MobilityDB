@@ -32,8 +32,8 @@ SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
 raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
 </pre><p>Las funciones que respaldan estos operadores son <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> y <code class="varname">gt</code>, junto con <code class="varname">cmp(raquet,raquet) → integer</code>, que devuelve -1, 0 o 1.</p><pre class="programlisting">
 -- Two tiles with the same cell, layout and pixels are equal
-SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
-  'uint8') = raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
+SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135,
+  'uint8') = raquet('\x0102'::bytea, 2, 1, 5194902170171867135, 'uint8');
 -- true
 -- Deduplicate tiles, which the btree and hash operator classes support
 SELECT DISTINCT tile FROM elevation_tiles;

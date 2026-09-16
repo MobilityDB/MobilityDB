@@ -87,21 +87,21 @@ FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS
 </pre></li><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id12217"></a><p>Devuelve la celda QUADBIN de una tesela Raquet</p><pre class="programlisting">
 quadbin(raquet) → bigint
 </pre><pre class="programlisting">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 5193776270265024512
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+-- 5194902170171867135
 </pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id12224"></a><p>Devuelve el ancho en píxeles de un ráster o de una tesela Raquet</p><pre class="programlisting">
 width({raster,raquet}) → integer
 </pre><pre class="programlisting">
 SELECT width(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 3
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- 2
 </pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id12231"></a><p>Devuelve el alto en píxeles de un ráster o de una tesela Raquet</p><pre class="programlisting">
 height({raster,raquet}) → integer
 </pre><pre class="programlisting">
 SELECT height(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 2
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- 2
 </pre></li><li class="listitem"><a name="raster_bandPixelType"></a><a class="indexterm" name="id12238"></a><p>Devuelve el nombre del tipo de dato de píxel de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
 bandPixelType(raster,band integer=1) → text
@@ -111,8 +111,8 @@ SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 -- int16
 -- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | uint8
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8') AS tile) t;
+-- 5194902170171867135 | 2 | 2 | uint8
 </pre></li><li class="listitem"><a name="raster_bandHasNoDataValue"></a><a class="indexterm" name="id12258"></a><p>Devuelve si una banda de un ráster o una tesela Raquet establece un valor nodata</p><pre class="programlisting">
 bandHasNoDataValue(raster,band integer=1) → boolean
 bandHasNoDataValue(raquet) → boolean
@@ -120,7 +120,7 @@ bandHasNoDataValue(raquet) → boolean
 SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- true
-SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
   'uint8'));
 -- false
 </pre></li><li class="listitem"><a name="raster_bandNoDataValue"></a><a class="indexterm" name="id12266"></a><p>Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
@@ -130,15 +130,15 @@ bandNoDataValue(raquet) → float8
 SELECT bandNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- -9999
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8',
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8',
   255));
 -- 255
 -- A tile built without a nodata value states none
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- NULL
 </pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id12275"></a><p>Devuelve los bytes de píxeles de un mosaico Raquet</p><pre class="programlisting">
 pixels(raquet) → bytea
 </pre><p>Los bytes están en orden de fila mayor y empaquetados, <code class="varname">width</code> × <code class="varname">height</code> píxeles del tamaño de <a class="link" href="ch16s05.html#raster_bandPixelType"><code class="varname">bandPixelType</code></a> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</p><pre class="programlisting">
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- \x01020304
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversión de tipos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>

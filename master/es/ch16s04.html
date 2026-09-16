@@ -22,7 +22,7 @@ SELECT asText((ts2cell '47c3c@2001-01-01')::tgeogpoint, 6);
 stbox(raquet) → stbox
 </pre><p>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</p><pre class="programlisting">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')), 6);
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')), 6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 -- Keep the tiles whose footprint overlaps a region of interest
 SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;

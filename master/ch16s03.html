@@ -37,7 +37,7 @@ raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
 SELECT raquet(band_data, width, height, quadbin, 'float32',
   nodata) AS tile FROM elevation_raquet;
 -- A 2 x 2 UINT8 tile with no nodata
-SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
 </pre></li><li class="listitem"><a name="raquetRead"></a><a class="indexterm" name="id12587"></a><p>Decode a raster file into a Raquet raster tile via GDAL</p><pre class="programlisting">
 raquetRead(bytea,quadbin bigint) → raquet
 raquetRead(text,quadbin bigint) → raquet

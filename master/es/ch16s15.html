@@ -43,11 +43,11 @@ SELECT numValues(h3UncompactCells(h3CompactCells(
 -- 7
 </pre></li><li class="listitem"><a name="raster_quadbins"></a><a class="indexterm" name="id12662"></a><p>Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</p><pre class="programlisting">
 quadbins(tgeompoint,zoom integer) → bigint[]
-</pre><p>Devuelve el conjunto de celdas QUADBIN únicas que cubre la trayectoria. Una trayectoria que no afirma nada entre sus instantes cubre las teselas que los contienen; una que se mueve entre ellos cubre además todas las teselas que atraviesa por el camino, ya que el segmento se recorre tesela a tesela. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet, donde una tesela que el trayecto atraviesa pero el conjunto omite es una tesela que la unión nunca lee. El parámetro <code class="varname">zoom</code> debe estar en [0, 15].</p><pre class="programlisting">
+</pre><p>Devuelve el conjunto de celdas QUADBIN únicas que cubre la trayectoria. Una trayectoria que no afirma nada entre sus instantes cubre las teselas que los contienen; una que se mueve entre ellos cubre además todas las teselas que atraviesa por el camino, ya que el segmento se recorre tesela a tesela, y no cubre nada a través de un hueco entre dos de sus secuencias. Cada celda lleva a uno los bits por debajo de su zoom, como la rejilla QUADBIN define una celda. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet, donde una tesela que el trayecto atraviesa pero el conjunto omite es una tesela que la unión nunca lee. El parámetro <code class="varname">zoom</code> debe estar en [0, 26].</p><pre class="programlisting">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;
   {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
--- {5202501994543054848,5203346419473186816,5203416788217364480}
+-- {5202572363287232511,5203416788217364479,5203487156961542143}
 -- Count of Raquet tiles a ship trajectory overlaps at zoom 8
 SELECT array_length(quadbins(trip, 8),
   1) AS tile_count FROM trips ORDER BY tile_count DESC;
