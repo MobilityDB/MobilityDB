@@ -92,15 +92,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="s2cell_8h_a1d36964140656b2f6b40398a6e20bc0e.html#a1d36964140656b2f6b40398a6e20bc0e">s2cell_lsb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="s2cell_8h_acf2deb2532dbfab6478e8b8522530182.html#acf2deb2532dbfab6478e8b8522530182">s2cell_lsb_for_level</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="s2cell_8h_a344da41ee16a9b31cc9bc08106332510.html#a344da41ee16a9b31cc9bc08106332510">s2cell_parse</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="s2cell_8h_a3d3da225b3bcbf84352a5956b00f28db.html#a3d3da225b3bcbf84352a5956b00f28db">s2cell_segment_cells</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="s2cell_8h_a9a5fe6644144a5387f50165ad34dbade.html#a9a5fe6644144a5387f50165ad34dbade">s2cell_segment_cells</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="s2cell_8h_aafd10efc60c66a5370266771885ba3d4.html#aafd10efc60c66a5370266771885ba3d4">s2cell_to_face_ij</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="s2cell_8h_aeeb80d0b6fa710b9c6741c4e2cf2d5e9.html#aeeb80d0b6fa710b9c6741c4e2cf2d5e9">S2CellGetDatum</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3d3da225b3bcbf84352a5956b00f28db" name="a3d3da225b3bcbf84352a5956b00f28db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d3da225b3bcbf84352a5956b00f28db">&#9670;&#160;</a></span>s2cell_segment_cells()</h2>
+<a id="a9a5fe6644144a5387f50165ad34dbade" name="a9a5fe6644144a5387f50165ad34dbade"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a5fe6644144a5387f50165ad34dbade">&#9670;&#160;</a></span>s2cell_segment_cells()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -128,6 +128,12 @@ $(function() {
           <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>lat2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geodetic</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -161,10 +167,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Fill <code>cells</code> with every S2 cell a geodetic segment crosses, and <code>enter</code> with the segment parameter at which it reaches each. </p>
-<p >A traversal, not a sampling walk: from the cell in hand the walk leaves through its boundary, and the cell just beyond that crossing is a neighbour of it, so no cell between the two is passed over. An S2 cell edge lies on a line of constant <code>u</code> or <code>v</code> of its cube face, which the gnomonic projection of the face maps to a great circle, the circle a geodetic point moves along. Every crossing is therefore found on the sphere, where a path across the antimeridian, over a pole or from one cube face to the next is an arc like any other. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Fill <code>cells</code> with every S2 cell a segment crosses, and <code>enter</code> with the segment parameter at which it reaches each. </p>
+<p >A traversal, not a sampling walk: from the cell in hand the walk leaves through its boundary, and the cell just beyond that crossing is a neighbour of it, so no cell between the two is passed over. An S2 cell edge lies on a line of constant <code>u</code> or <code>v</code> of its cube face, which the gnomonic projection of the face maps to a great circle, the circle a geodetic point moves along. Every crossing is therefore found on the sphere, where a path across the antimeridian, over a pole or from one cube face to the next is an arc like any other. A planar segment follows the straight line in longitude and latitude, traversed as <a class="el" href="meos_2src_2s2cell_2s2cell_8c_aa669f5571cfeec4005f672b1702788ab.html#aa669f5571cfeec4005f672b1702788ab" title="Fill cells with every S2 cell a planar segment crosses, and enter with the segment parameter at which...">s2cell_line_cells</a> states. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">lon1,lat1,lon2,lat2</td><td>Segment endpoints in degrees </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True when the segment is geodetic </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>S2 level </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cells,enter</td><td>Arrays of at least <code>maxout</code> entries; <code>enter[0]</code> is always 0, the parameter of the first endpoint </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">maxout</td><td>Capacity of both arrays </td></tr>
