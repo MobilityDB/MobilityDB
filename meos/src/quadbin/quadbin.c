@@ -67,6 +67,7 @@
 #include <pg_int.h>
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
+#include "temporal/tcellindex.h"
 
 /*****************************************************************************
  * Input/output
@@ -595,6 +596,199 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 }
 
 /**
+ * @brief Return the parameter at which a geodetic path reaches the plane
+ * `p . m = c` strictly ahead of `tmin`, or a value above 1 when the path ends
+ * before it
+ * @details The path is the circle `p(θ) = a cos θ + (n × a) sin θ` of its first
+ * endpoint `a` and the normal `n` of its circle, `θ` the angle travelled, so
+ * `p . m = A cos θ + B sin θ` with `A = a . m` and `B = (n × a) . m`, which
+ * reaches `c` at `θ = atan2(B, A) ± acos(c / hypot(A, B))`.
+ */
+static double
+quadbin_arc_plane_param(const DggsArc *arc, const double m[3], double c,
+  double tmin)
+{
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  double ca = a[0] * m[0] + a[1] * m[1] + a[2] * m[2];
+  double cb = b[0] * m[0] + b[1] * m[1] + b[2] * m[2];
+  double r = hypot(ca, cb);
+  if (r == 0.0 || fabs(c) > r)
+    return 2.0;
+  double base = atan2(cb, ca), half = acos(c / r), best = 2.0;
+  for (int s = -1; s <= 1; s += 2)
+  {
+    double theta = fmod(base + s * half, 2.0 * M_PI);
+    if (theta < 0.0)
+      theta += 2.0 * M_PI;
+    double t = theta / arc->dist;
+    if (t > tmin && t <= 1.0 && t < best)
+      best = t;
+  }
+  return best;
+}
+
+/**
+ * @brief Return where a geodetic path leaves the tile holding it, in the grid
+ * of `n` tiles a side
+ * @details A tile spans at most half the meridians, so it lies in the two
+ * hemispheres bounded by the planes of its west and east meridians, and
+ * between the planes of constant height of its north and south parallels. A
+ * path inside every one of those half-spaces leaves the tile where it first
+ * reaches any of their planes. The top and bottom rows reach the poles, since
+ * a position beyond the latitude limit of the grid lies in them.
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the tile
+ */
+static double
+quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
+  double n, double tmin)
+{
+  double best = 2.0, t;
+  if (n > 1.0)
+  {
+    for (int k = 0; k < 2; k++)
+    {
+      double lon = ((double) x + k) / n * 2.0 * M_PI - M_PI;
+      const double m[3] = { -sin(lon), cos(lon), 0.0 };
+      t = quadbin_arc_plane_param(arc, m, 0.0, tmin);
+      if (t < best)
+        best = t;
+    }
+  }
+  const double pole[3] = { 0.0, 0.0, 1.0 };
+  if (y > 0)
+  {
+    t = quadbin_arc_plane_param(arc, pole,
+      sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), tmin);
+    if (t < best)
+      best = t;
+  }
+  if ((double) y + 1.0 < n)
+  {
+    t = quadbin_arc_plane_param(arc, pole,
+      sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), tmin);
+    if (t < best)
+      best = t;
+  }
+  return best;
+}
+
+/**
+ * @brief Return the cell holding the position a geodetic path reaches at a
+ * parameter, or 0 when the position cannot be projected
+ */
+static Quadbin
+quadbin_arc_cell(const DggsArc *arc, double t, uint32_t resolution)
+{
+  double lon, lat;
+  if (! dggs_arc_point(arc, t, &lon, &lat))
+    return (Quadbin) 0;
+  return quadbin_point_to_cell(lon * 180.0 / M_PI, lat * 180.0 / M_PI,
+    resolution);
+}
+
+/**
+ * @brief Return the angle subtended by the shortest side of a tile, in the
+ * grid of `n` tiles a side
+ */
+static double
+quadbin_tile_shortest_side(uint32_t y, double n)
+{
+  double north = quadbin_row_latitude((double) y, n) * M_PI / 180.0;
+  double south = quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0;
+  double width = 2.0 * M_PI / n *
+    cos(fabs(north) > fabs(south) ? north : south);
+  double height = north - south;
+  return (width < height) ? width : height;
+}
+
+/**
+ * @brief Fill `cells` with every cell a geodetic segment crosses, and `enter`
+ * with the segment parameter at which it reaches each
+ * @details The walk of #s2cell_segment_cells: from the tile in hand the walk
+ * leaves through its boundary, and the tile just beyond that crossing is a
+ * neighbour of it, so no tile between the two is passed over. The crossing is
+ * found on the sphere, where a path across the antimeridian or near a pole is
+ * an arc like any other.
+ */
+static int
+quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
+  uint32_t resolution, Quadbin *cells, double *enter, int maxout)
+{
+  Quadbin cur = quadbin_point_to_cell(lon1, lat1, resolution);
+  cells[0] = cur; enter[0] = 0.0;
+  int count = 1;
+  /* A path ending in the tile it starts in may still leave it on the way: an
+   * arc bulges toward the pole, across the parallel bounding a tile there, so
+   * the walk runs whatever tile the far endpoint lies in */
+  DggsArc arc;
+  if (! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
+    return count;
+  double n = (double) (UINT64_C(1) << resolution);
+  uint32_t x, y, z;
+
+  /* A position on a tile boundary belongs to the one tile the grid assigns
+   * it, and a path starting there may move into the neighbouring tile at
+   * once: the walk leaves from the tile just past the start */
+  double t = 0.0;
+  quadbin_cell_tile(cur, &x, &y, &z);
+  double t0 = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
+  if (t0 < 1.0)
+  {
+    Quadbin first = quadbin_arc_cell(&arc, t0, resolution);
+    if (first != (Quadbin) 0 && first != cur && count < maxout)
+    {
+      cells[count] = first; enter[count++] = 0.0;
+      cur = first;
+      t = t0;
+    }
+  }
+  while (count < maxout)
+  {
+    quadbin_cell_tile(cur, &x, &y, &z);
+    double texit = quadbin_tile_exit_param_geodetic(&arc, x, y, n, t);
+    if (texit > 1.0)
+      break;                 /* the segment ends inside this tile */
+    /* A nudge past the crossing lands inside the next tile without reaching
+     * the one after it: a ten-thousandth of the shortest side of the tile is
+     * far below the width of a neighbouring tile and far above the rounding
+     * of the crossing itself */
+    double nudge = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
+    double tn = texit + nudge;
+    Quadbin next = (Quadbin) 0;
+    /* A nudge that lands back in the tile just left says the crossing sits
+     * within its own rounding, so widen it rather than stall. A crossing
+     * nearer the end of the segment than the nudge reads the tile of the end,
+     * which is the tile the path enters there */
+    for (int k = 0; k < 8; k++)
+    {
+      if (tn > 1.0)
+        tn = 1.0;
+      next = quadbin_arc_cell(&arc, tn, resolution);
+      if (next == (Quadbin) 0 || next != cur || tn >= 1.0)
+        break;
+      tn += nudge * (double) (1 << k);
+    }
+    if (next == (Quadbin) 0)
+      break;                 /* the position cannot be projected */
+    if (next == cur)
+    {
+      /* A path past a crossing still in the tile is one the rounding places
+       * on a boundary plane the path runs along or touches, so the walk goes
+       * on from that crossing */
+      t = texit;
+      continue;
+    }
+    cells[count] = next; enter[count++] = texit;
+    cur = next;
+    t = tn;
+  }
+  return count;
+}
+
+/**
  * @brief Fill `cells` with every cell a segment crosses, and `enter` with the
  * segment parameter at which it reaches each
  * @details A traversal, not a sampling walk. The segment is the straight line
@@ -608,21 +802,30 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
  * south of the parallel meeting there; a path through that point passes
  * through that tile when it lies beside the corner, and then enters the tile
  * diagonally across. The walk ends in the tile holding the second endpoint.
+ *
+ * A geodetic segment follows the great circle through its endpoints, and is
+ * traversed tile by tile on the sphere as #quadbin_arc_cells states.
  * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] geodetic True when the segment is geodetic
  * @param[in] resolution Quadbin resolution
  * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
  *   always 0, the parameter of the first endpoint
- * @param[in] maxout Capacity of both arrays, which the walk needs to be one
- *   more than the column and the row distances between the endpoint tiles
- * @return Number of cells written
+ * @param[in] maxout Capacity of both arrays. A planar walk needs one more
+ *   than the column and the row distances between the endpoint tiles
+ * @return Number of cells written, which is `maxout` when the arrays fill
+ * before the segment ends
  */
 int
 quadbin_segment_cells(double lon1, double lat1, double lon2, double lat2,
-  uint32_t resolution, Quadbin *cells, double *enter, int maxout)
+  bool geodetic, uint32_t resolution, Quadbin *cells, double *enter,
+  int maxout)
 {
   assert(cells); assert(enter); assert(resolution <= QUADBIN_MAX_RESOLUTION);
   if (maxout < 1)
     return 0;
+  if (geodetic)
+    return quadbin_arc_cells(lon1, lat1, lon2, lat2, resolution, cells, enter,
+      maxout);
   double n = (double) (UINT64_C(1) << resolution);
   double x0, y0, x1, y1;
   quadbin_tile_coords(lon1, lat1, n, &x0, &y0);

@@ -257,11 +257,12 @@ tpointinst_point2d(const TInstant *inst)
  * resolution, or NULL when its positions are not in a lon/lat reference
  * system
  * @details A sequence stating nothing between its instants, discrete or
- * stepwise, holds the cells of its instants. A linear sequence moves along the
- * straight line in longitude and latitude between two instants, and each
- * segment is traversed tile by tile, so the result holds every cell the
- * trajectory crosses and each of its instants marks the time the trajectory
- * enters that cell. The last cell holds to the end of the trajectory.
+ * stepwise, holds the cells of its instants. A linear sequence moves between
+ * two instants along the straight line in longitude and latitude of a planar
+ * point, or the great circle of a geodetic one, and each segment is traversed
+ * tile by tile, so the result holds every cell the trajectory crosses and each
+ * of its instants marks the time the trajectory enters that cell. The last
+ * cell holds to the end of the trajectory.
  */
 static TSequence *
 tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
@@ -292,22 +293,10 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
       seq->period.upper_inc, interp, NORMALIZE);
   }
 
-  /* A segment crosses one tile per column and one per row between the tiles
-   * of its endpoints, so the widest segment sizes the walk of every one */
-  int maxout = 1;
-  for (int i = 0; i + 1 < seq->count; i++)
-  {
-    const POINT2D *pa = tpointinst_point2d(TSEQUENCE_INST_N(seq, i));
-    const POINT2D *pb = tpointinst_point2d(TSEQUENCE_INST_N(seq, i + 1));
-    uint32_t xa, ya, xb, yb, z;
-    quadbin_cell_tile(quadbin_point_to_cell(pa->x, pa->y,
-      (uint32_t) resolution), &xa, &ya, &z);
-    quadbin_cell_tile(quadbin_point_to_cell(pb->x, pb->y,
-      (uint32_t) resolution), &xb, &yb, &z);
-    long span = labs((long) xb - (long) xa) + labs((long) yb - (long) ya) + 1;
-    if (span > maxout)
-      maxout = (int) span;
-  }
+  /* The walk writes one entry per cell a segment crosses, into arrays that
+   * grow until the whole segment fits, so no segment is cut short */
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
+  int maxout = 64;
   Quadbin *cells = palloc(sizeof(Quadbin) * (size_t) maxout);
   double *enter = palloc(sizeof(double) * (size_t) maxout);
   for (int i = 0; i + 1 < seq->count; i++)
@@ -316,8 +305,14 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     const POINT2D *p1 = tpointinst_point2d(inst1);
     const POINT2D *p2 = tpointinst_point2d(inst2);
-    int ncells = quadbin_segment_cells(p1->x, p1->y, p2->x, p2->y,
-      (uint32_t) resolution, cells, enter, maxout);
+    int ncells;
+    while ((ncells = quadbin_segment_cells(p1->x, p1->y, p2->x, p2->y,
+        geodetic, (uint32_t) resolution, cells, enter, maxout)) == maxout)
+    {
+      maxout *= 2;
+      cells = repalloc(cells, sizeof(Quadbin) * (size_t) maxout);
+      enter = repalloc(enter, sizeof(double) * (size_t) maxout);
+    }
     /* A segment starts in the cell the previous one ends in */
     for (int k = 0; k < ncells; k++)
     {
@@ -326,6 +321,16 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
       tquadbin_entry_append(&instants, &count, &size, cells[k], inst1->t +
         (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]));
       last = cells[k];
+    }
+    /* The endpoint's own cell closes the segment when the traversal stopped
+     * short of it, as for an endpoint lying on a tile boundary within the
+     * rounding of the crossing */
+    Quadbin endcell = quadbin_point_to_cell(p2->x, p2->y,
+      (uint32_t) resolution);
+    if (endcell != last)
+    {
+      tquadbin_entry_append(&instants, &count, &size, endcell, inst2->t);
+      last = endcell;
     }
   }
   pfree(cells); pfree(enter);
@@ -370,19 +375,12 @@ tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution)
 }
 
 /**
- * @ingroup meos_quadbin_conversion
- * @brief Return the temporal quadbin cell of a temporal planar point in a
- * lon/lat reference system at a resolution, holding every cell the
- * trajectory crosses
- * @param[in] temp Temporal point
- * @param[in] resolution Quadbin resolution
- * @csqlfn #Tgeompoint_to_tquadbin()
+ * @brief Return the temporal quadbin cell of a temporal point at a resolution,
+ * holding every cell the trajectory crosses
  */
-Temporal *
-tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
+static Temporal *
+tpoint_to_tquadbin(const Temporal *temp, int32 resolution)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOMPOINT(temp, NULL);
   if (! ensure_valid_cell_resolution(T_TQUADBIN, resolution))
     return NULL;
 
@@ -403,6 +401,40 @@ tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
       return (Temporal *) tpointseqset_to_tquadbin(
         (const TSequenceSet *) temp, resolution);
   }
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the temporal quadbin cell of a temporal planar point in a
+ * lon/lat reference system at a resolution, holding every cell the
+ * trajectory crosses
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @csqlfn #Tgeompoint_to_tquadbin()
+ */
+Temporal *
+tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL);
+  return tpoint_to_tquadbin(temp, resolution);
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the temporal quadbin cell of a temporal geodetic point at a
+ * resolution, holding every cell the trajectory crosses along its great
+ * circles
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @csqlfn #Tgeogpoint_to_tquadbin()
+ */
+Temporal *
+tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL);
+  return tpoint_to_tquadbin(temp, resolution);
 }
 
 /*****************************************************************************/

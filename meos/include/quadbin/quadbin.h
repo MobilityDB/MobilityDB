@@ -62,8 +62,8 @@ extern void quadbin_cell_point(Quadbin cell, double *longitude,
 extern void quadbin_cell_bounding_box(Quadbin cell, double *xmin,
   double *ymin, double *xmax, double *ymax);
 extern int quadbin_segment_cells(double lon1, double lat1, double lon2,
-  double lat2, uint32_t resolution, Quadbin *cells, double *enter,
-  int maxout);
+  double lat2, bool geodetic, uint32_t resolution, Quadbin *cells,
+  double *enter, int maxout);
 
 /*****************************************************************************/
 

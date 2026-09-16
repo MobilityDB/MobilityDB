@@ -204,7 +204,63 @@ SELECT numSequences(tquadbin(tgeompoint
             2
 (1 row)
 
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10) =
+  tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2)))
+FROM (SELECT tquadbin(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2) AS t) AS q;
+ numinstants | numvalues | ?column? | numvalues 
+-------------+-----------+----------+-----------
+           4 |         2 | t        |         1
+(1 row)
+
+SELECT numValues(getValues(tquadbin(tgeogpoint
+    '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3))),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3)));
+ numvalues | numvalues 
+-----------+-----------
+         2 |         9
+(1 row)
+
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t)::geometry, z)) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> tquadbin(p::tgeompoint, z))
+    AS other_than_planar
+FROM (SELECT p, z, tquadbin(p, z) AS c FROM (VALUES
+  (tgeogpoint '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4),
+  (tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2),
+  (tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 6),
+  (tgeogpoint '[Point(10 80)@2001-01-01, Point(-170 75)@2001-01-02]', 5))
+  AS v(p, z)) AS q,
+  generate_series(timestamptz '2001-01-01 00:00:30',
+    timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
+ instants | other_cell | other_than_planar 
+----------+------------+-------------------
+     5760 |          0 |                 4
+(1 row)
+
+SELECT numSequences(t), getTime(t) = getTime(p)
+FROM (SELECT p, tquadbin(p, 4) AS t FROM (VALUES (tgeogpoint
+  '{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04)}')) AS v(p))
+  AS q;
+ numsequences | ?column? 
+--------------+----------
+            2 | t
+(1 row)
+
 /* Errors */
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 27);
+ERROR:  The resolution must be between 0 and 26
 SELECT tquadbin(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
 ERROR:  Only lon/lat coordinate systems are supported
 SELECT tquadbin(tgeompoint

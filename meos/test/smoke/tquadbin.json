@@ -33,6 +33,7 @@
     "^tquadbinseq_in$": {"char *": "\"[48427fffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]\""},
     "^tquadbinseqset_in$": {"char *": "\"{[48427fffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]}\""},
     "^tbigint_to_tquadbin$": {"Temporal *": "tbigint1"},
+    "^tgeogpoint_": {"Temporal *": "tgeogpoint1"},
     "^tgeompoint_": {"Temporal *": "tgeompoint1"}
   },
   "override_args": {
@@ -59,6 +60,7 @@
     "  /* 5206864856682070015 is the cell 48427fffffffffff as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5206864856682070015@2001-01-01, 5206864856682070015@2001-01-03]\");",
     "  Temporal *tgeompoint1 = tgeompoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
+    "  Temporal *tgeogpoint1 = tgeogpoint_in(\"[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
     "  GSERIALIZED *geom1 = geom_in(\"SRID=4326;Point(4.35 50.85)\", -1);",
     "  Quadbin q_out = 0;",
     "  uint32_t u32_out = 0;",
@@ -84,6 +86,7 @@
     "  free(tquadbin1);",
     "  free(tbigint1);",
     "  free(tgeompoint1);",
+    "  free(tgeogpoint1);",
     "  free(geom1);",
     "  free(tstzspan1);"
   ]
