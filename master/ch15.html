@@ -55,7 +55,7 @@ SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bou
 -- {"La Bourse", "Manneken Pis"}
 </pre></li><li class="listitem"><a name="jsonbset_array_element"></a><a class="indexterm" name="id11546"></a><a class="indexterm" name="id11549"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
 jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
-jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
+jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
 SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
   '["Palais Royal", "Manneken Pis"]']), 0);

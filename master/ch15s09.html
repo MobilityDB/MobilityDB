@@ -60,9 +60,9 @@ SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2
   "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #&gt;&gt; ARRAY[text 'PoIs', '1'];
 -- {["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]}
 </pre></li><li class="listitem"><a name="tjson_array_element"></a><a class="indexterm" name="id11951"></a><a class="indexterm" name="id11954"></a><a class="indexterm" name="id11957"></a><p>Extract an element from a temporal JSON array</p><pre class="programlisting">
-tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonArrayElement(ttext,integer,null_handle text='use_json_null') → ttext
 tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
-tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → ttext
 </pre><pre class="programlisting">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
