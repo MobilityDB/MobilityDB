@@ -771,7 +771,7 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
     s2cell_cell_xyz_vertices(cur, verts);
     double lons[4], lats[4];
     s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
-    double texit = dggs_line_exit_param(&line, lons, lats, 4, t);
+    double texit = dggs_line_exit_param(&line, lons, lats, 4, t, true);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
     /* The nudge of the geodetic walk, measured along the line */

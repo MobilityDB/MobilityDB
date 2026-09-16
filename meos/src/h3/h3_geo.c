@@ -250,39 +250,6 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 }
 
 /**
- * @brief Return where a segment leaves the cell it currently sits in
- * @details The exit is the nearest crossing of the cell boundary strictly
- * ahead of `tmin`, found by intersecting the segment with each boundary edge
- * in the lon/lat plane the walk is stated in.
- * @return the segment parameter of the exit, or a value above 1 when the
- * segment ends inside the cell
- */
-static double
-h3_cell_exit_param(H3Index cell, double lon1, double lat1, double dlon,
-  double dlat, double tmin)
-{
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
-    return 2.0;
-  double best = 2.0;
-  for (int i = 0; i < bnd.numVerts; i++)
-  {
-    int j = (i + 1) % bnd.numVerts;
-    double ax = radsToDegs(bnd.verts[i].lng), ay = radsToDegs(bnd.verts[i].lat);
-    double bx = radsToDegs(bnd.verts[j].lng), by = radsToDegs(bnd.verts[j].lat);
-    double ex = bx - ax, ey = by - ay;
-    double den = dlon * ey - dlat * ex;
-    if (den == 0.0)
-      continue;              /* parallel to this edge */
-    double t = ((ax - lon1) * ey - (ay - lat1) * ex) / den;
-    double u = ((ax - lon1) * dlat - (ay - lat1) * dlon) / den;
-    if (t > tmin && t <= 1.0 && u >= 0.0 && u <= 1.0 && t < best)
-      best = t;
-  }
-  return best;
-}
-
-/**
  * @brief Path a segment follows between its two endpoints
  * @details A planar point moves along the straight line in longitude and
  * latitude, a geodetic one along the great circle through its endpoints, as
@@ -293,6 +260,7 @@ typedef struct
   bool geodetic;          /**< True when the path is a great circle */
   double lon1, lat1;      /**< First endpoint, in degrees */
   double dlon, dlat;      /**< Planar path: the step to the second endpoint */
+  DggsLine line;          /**< Planar path: its straight line */
   DggsArc arc;            /**< Geodetic path: its great circle */
 } H3SegmentPath;
 
@@ -331,7 +299,7 @@ h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
   path->lon1 = lon1; path->lat1 = lat1;
   path->dlon = lon2 - lon1; path->dlat = lat2 - lat1;
   if (! geodetic)
-    return path->dlon != 0.0 || path->dlat != 0.0;
+    return dggs_line_init(lon1, lat1, lon2, lat2, &path->line);
   return dggs_arc_init(lon1, lat1, lon2, lat2, &path->arc);
 }
 
@@ -381,6 +349,34 @@ h3_cell_exit_param_geodetic(H3Index cell, const H3SegmentPath *path,
     lats[i] = bnd.verts[i].lat;
   }
   return dggs_arc_exit_param(&path->arc, lons, lats, bnd.numVerts, tmin,
+    false);
+}
+
+/**
+ * @brief Return where a planar path leaves the cell holding it
+ * @details A cell edge is an arc of a great circle, which the straight line in
+ * longitude and latitude of the path is not, so the exit is searched for along
+ * the path by #dggs_line_exit_param: the nearest crossing of an edge strictly
+ * ahead of `tmin`. A cell spanning two faces of the icosahedron bends at the
+ * vertices where it crosses between them, so the crossing counts where it lies
+ * on its edge.
+ * @return the path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+static double
+h3_cell_exit_param_planar(H3Index cell, const H3SegmentPath *path,
+  double tmin)
+{
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
+    return 2.0;
+  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
+  for (int i = 0; i < bnd.numVerts; i++)
+  {
+    lons[i] = bnd.verts[i].lng;
+    lats[i] = bnd.verts[i].lat;
+  }
+  return dggs_line_exit_param(&path->line, lons, lats, bnd.numVerts, tmin,
     false);
 }
 
@@ -447,7 +443,7 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   while (n < maxout)
   {
     double texit = geodetic ? h3_cell_exit_param_geodetic(cur, &path, t) :
-      h3_cell_exit_param(cur, lon1, lat1, path.dlon, path.dlat, t);
+      h3_cell_exit_param_planar(cur, &path, t);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
     double tn = texit + nudge;
