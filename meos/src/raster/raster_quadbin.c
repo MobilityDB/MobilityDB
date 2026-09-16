@@ -50,6 +50,7 @@
 
 /* C */
 #include <float.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -132,7 +133,9 @@ qb_to_xyz(uint64_t cell, uint32_t *tx, uint32_t *ty, uint32_t *tz)
  * @brief Morton-encode tile (x, y, z) into a QUADBIN cell.
  * @details Canonical spread_bits algorithm matching CARTO quadbin-js
  * quadbinTileToCell: scale to 2^26 grid, spread left (shifts 16→8→4→2→1),
- * interleave x/y.
+ * interleave x/y, and set to one the 52 - 2z bits of the Morton code below
+ * the zoom, which a QUADBIN cell carries as its footer and which the QUADBIN
+ * family's #quadbin_tile_to_cell() sets in the same way.
  */
 static uint64_t
 xyz_to_qb(uint32_t tx, uint32_t ty, uint32_t tz)
@@ -151,7 +154,28 @@ xyz_to_qb(uint32_t tx, uint32_t ty, uint32_t tz)
   yy = (yy | (yy <<  4)) & QB_B[2];
   yy = (yy | (yy <<  2)) & QB_B[1];
   yy = (yy | (yy <<  1)) & QB_B[0];
-  return QB_HEADER | QB_MODE | ((uint64_t)tz << 52) | (xx | (yy << 1));
+  return QB_HEADER | QB_MODE | ((uint64_t)tz << 52) | (xx | (yy << 1)) |
+    (QB_FOOTER >> (tz * 2));
+}
+
+/**
+ * @brief Return true if @p cell is a cell of the QUADBIN tile grid
+ * @details A cell carries the header bit, the cell mode, a zoom of the grid,
+ * and the bits of the Morton code below the zoom set to one, the rule
+ * #quadbin_is_valid_index() of the QUADBIN family states for any index, here
+ * restricted to the cell mode a tile key has
+ * @param[in] cell QUADBIN identifier
+ */
+bool
+raster_quadbin_is_cell(uint64 cell)
+{
+  if ((cell & QB_HEADER) != QB_HEADER || ((cell >> 59) & 7) != 1)
+    return false;
+  uint32_t zoom = (uint32_t) ((cell >> 52) & 0x1F);
+  if (zoom > QB_MAX_ZOOM)
+    return false;
+  uint64_t footer = QB_FOOTER >> (zoom * 2);
+  return (cell & footer) == footer;
 }
 
 /**
@@ -497,6 +521,13 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(pixels, NULL);
+  if (! raster_quadbin_is_cell(quadbin))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The QUADBIN value %016" PRIx64 " of a raquet tile is not a cell of the grid",
+      quadbin);
+    return NULL;
+  }
   /* The dimensions are taken in the type the SQL surface uses and validated
    * before the narrowing to the tile's uint16 fields, so that a value outside
    * that range is rejected here instead of wrapping to a different tile than
@@ -1284,6 +1315,28 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   int ninsts;
   const TInstant **insts = temporal_insts_p(traj, &ninsts);
   bool densify = (MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR);
+  /* A trajectory states where it is between two consecutive instants of one
+   * of its sequences and nothing across the gap between two sequences, so
+   * only the segments inside a sequence are traversed. The instants of a
+   * sequence set come in the order of its sequences, and the instant closing
+   * each sequence is marked so that the walk stops there */
+  bool *seqend = NULL;
+  if (densify)
+  {
+    seqend = palloc0(sizeof(bool) * (size_t) ninsts);
+    if (traj->subtype == TSEQUENCESET)
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) traj;
+      int k = 0;
+      for (int j = 0; j < ss->count; j++)
+      {
+        k += TSEQUENCESET_SEQ_N(ss, j)->count;
+        seqend[k - 1] = true;
+      }
+    }
+    else
+      seqend[ninsts - 1] = true;
+  }
 
   /* One cell per instant, and one per tile the traversal steps through when
    * the trajectory moves between them. A traversal crosses at most one tile
@@ -1294,6 +1347,8 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   if (densify)
     for (int i = 0; i + 1 < ninsts; i++)
     {
+      if (seqend[i])
+        continue;
       double lo1, la1, lo2, la2;
       tinstant_point_coords(insts[i], &lo1, &la1);
       tinstant_point_coords(insts[i + 1], &lo2, &la2);
@@ -1313,7 +1368,7 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
      * between them, and a join filtered on the cells it answers loses every
      * tile the trip crosses but the list omits. The segment is therefore
      * TRAVERSED tile by tile, which holds every one of them */
-    if (! densify || i + 1 >= ninsts)
+    if (! densify || seqend[i])
       continue;
     double lon2, lat2;
     tinstant_point_coords(insts[i + 1], &lon2, &lat2);
@@ -1321,6 +1376,8 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   }
 
   pfree(insts);
+  if (seqend)
+    pfree(seqend);
   *count = ncells;
   return cells;
 }

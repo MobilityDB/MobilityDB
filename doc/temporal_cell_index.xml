@@ -194,7 +194,7 @@ SELECT length(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4
 SELECT get_byte(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
   'XDR'), 0);
 -- 0
-SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
+SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
 -- 31
 </programlisting>
 			</listitem>
@@ -207,7 +207,7 @@ asHexWKB({raster,raquet},endian text='') → text
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asHexWKB(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
 -- 122
-SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
+SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
 -- 62
 </programlisting>
 			</listitem>
@@ -223,8 +223,8 @@ raquetFromBinary(bytea) → raquet
 SELECT rasterFromBinary(asBinary(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
+  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -240,8 +240,8 @@ raquetFromHexWKB(text) → raquet
 SELECT rasterFromHexWKB(asHexWKB(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
+  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -311,7 +311,7 @@ raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
 SELECT raquet(band_data, width, height, quadbin, 'float32',
   nodata) AS tile FROM elevation_raquet;
 -- A 2 x 2 UINT8 tile with no nodata
-SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetRead">
@@ -383,7 +383,7 @@ stbox(raquet) → stbox
 				<para>Returns the tile footprint: the longitude and latitude envelope of its QUADBIN cell, in SRID 4326 and without a time dimension. The footprint follows from the cell alone, so tiles differing in pixels, dimensions or pixel type share it. The conversion is also available as a cast.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')), 6);
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')), 6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 -- Keep the tiles whose footprint overlaps a region of interest
 SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;
@@ -599,8 +599,8 @@ FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS
 quadbin(raquet) → bigint
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 5193776270265024512
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+-- 5194902170171867135
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_width">
@@ -612,7 +612,7 @@ width({raster,raquet}) → integer
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT width(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 3
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -625,7 +625,7 @@ height({raster,raquet}) → integer
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT height(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 2
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -642,8 +642,8 @@ SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 -- int16
 -- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | uint8
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8') AS tile) t;
+-- 5194902170171867135 | 2 | 2 | uint8
 </programlisting>
 			</listitem>
 			<listitem xml:id="raster_bandHasNoDataValue">
@@ -658,7 +658,7 @@ bandHasNoDataValue(raquet) → boolean
 SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- true
-SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
   'uint8'));
 -- false
 </programlisting>
@@ -675,11 +675,11 @@ bandNoDataValue(raquet) → float8
 SELECT bandNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- -9999
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8',
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8',
   255));
 -- 255
 -- A tile built without a nodata value states none
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- NULL
 </programlisting>
 			</listitem>
@@ -691,7 +691,7 @@ pixels(raquet) → bytea
 </programlisting>
 				<para>The bytes are row-major and packed, <varname>width</varname> × <varname>height</varname> pixels of the size of <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
 -- \x01020304
 </programlisting>
 			</listitem>
@@ -1393,12 +1393,12 @@ SELECT numValues(h3UncompactCells(h3CompactCells(
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbins(tgeompoint,zoom integer) → bigint[]
 </programlisting>
-				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers every tile it crosses on the way, since the segment is traversed tile by tile. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 15].</para>
+				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers every tile it crosses on the way, since the segment is traversed tile by tile, and covers nothing across a gap between two of its sequences. Each cell carries the bits below its zoom set to one, as the QUADBIN grid defines a cell. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 26].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;
   {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
--- {5202501994543054848,5203346419473186816,5203416788217364480}
+-- {5202572363287232511,5203416788217364479,5203487156961542143}
 -- Count of Raquet tiles a ship trajectory overlaps at zoom 8
 SELECT array_length(quadbins(trip, 8),
   1) AS tile_count FROM trips ORDER BY tile_count DESC;
@@ -1568,8 +1568,8 @@ raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
 				<para>The functions backing these operators are <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> and <varname>gt</varname>, together with <varname>cmp(raquet,raquet) → integer</varname>, which returns -1, 0, or 1.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Two tiles with the same cell, layout and pixels are equal
-SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
-  'uint8') = raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
+SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135,
+  'uint8') = raquet('\x0102'::bytea, 2, 1, 5194902170171867135, 'uint8');
 -- true
 -- Deduplicate tiles, which the btree and hash operator classes support
 SELECT DISTINCT tile FROM elevation_tiles;

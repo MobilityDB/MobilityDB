@@ -324,7 +324,7 @@ int main(void)
     meos_errno_reset();
     Temporal *tile = raster_tile_value_quadbin(traj, tile_pixels,
       sizeof(tile_pixels), bad_dims[i][0], bad_dims[i][1],
-      5193776270265024512ULL, MEOS_PT_UINT8, 0.0, false);
+      5194902170171867135ULL, MEOS_PT_UINT8, 0.0, false);
     printf("raster_tile_value_quadbin(%d x %d): %s, errno %d\n",
       bad_dims[i][0], bad_dims[i][1], tile ? "non-NULL" : "NULL",
       meos_errno());
