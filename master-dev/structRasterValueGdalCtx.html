@@ -76,13 +76,15 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Per-call state of the GDAL grid callbacks: the raster band to read, the inverse geotransform mapping a geographic point to a pixel (col, row), the band size, the nodata sentinel, and whether a pixel of the band could not be read.  
+<p>Per-call state of the GDAL grid callbacks: the raster band to read, the geotransform placing the grid lines and its inverse mapping a geographic point to a pixel (col, row), the band size, the nodata sentinel, and whether a pixel of the band could not be read.  
  <a href="structRasterValueGdalCtx.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a6e3cb767104890e727f3568299311c20"><td class="memItemLeft" align="right" valign="top">GDALRasterBandH&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterValueGdalCtx_a6e3cb767104890e727f3568299311c20.html#a6e3cb767104890e727f3568299311c20">band</a></td></tr>
 <tr class="separator:a6e3cb767104890e727f3568299311c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a1c186c3c3019b2c1e5fdf654787d11"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterValueGdalCtx_a0a1c186c3c3019b2c1e5fdf654787d11.html#a0a1c186c3c3019b2c1e5fdf654787d11">gt</a> [6]</td></tr>
+<tr class="separator:a0a1c186c3c3019b2c1e5fdf654787d11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1079289cc6e8c6df1d5699075e3b4b0c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterValueGdalCtx_a1079289cc6e8c6df1d5699075e3b4b0c.html#a1079289cc6e8c6df1d5699075e3b4b0c">has_nodata</a></td></tr>
 <tr class="separator:a1079289cc6e8c6df1d5699075e3b4b0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe199fefbd8b51e0775e1144cb18001d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterValueGdalCtx_afe199fefbd8b51e0775e1144cb18001d.html#afe199fefbd8b51e0775e1144cb18001d">inv_gt</a> [6]</td></tr>
@@ -97,7 +99,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:a049879dcf6cadd67210b386377f11f10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Per-call state of the GDAL grid callbacks: the raster band to read, the inverse geotransform mapping a geographic point to a pixel (col, row), the band size, the nodata sentinel, and whether a pixel of the band could not be read. </p>
+<div class="textblock"><p >Per-call state of the GDAL grid callbacks: the raster band to read, the geotransform placing the grid lines and its inverse mapping a geographic point to a pixel (col, row), the band size, the nodata sentinel, and whether a pixel of the band could not be read. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/raster/<a class="el" href="raquet__gdal_8c.html">raquet_gdal.c</a></li>
 </ul>
