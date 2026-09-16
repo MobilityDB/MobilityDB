@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tinstant_point_coords</title>
+<title>MobilityDB: raster_quadbin_is_cell</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -108,7 +108,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a82ac20ee6f0c36ff75e2882818a153a1.html#a82ac20ee6f0c36ff75e2882818a153a1">raster_minus_value_sampler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_acf3f3f250d1f143ef97f65dc904c4b40.html#acf3f3f250d1f143ef97f65dc904c4b40">raster_quadbin_bounds</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_afbee819387dc775b1c13d7fdb565504c.html#afbee819387dc775b1c13d7fdb565504c">raster_quadbin_from_bounds</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a335430afa528202f9d52e3acbcb6877f.html#a335430afa528202f9d52e3acbcb6877f">raster_quadbin_is_cell</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_a335430afa528202f9d52e3acbcb6877f.html#a335430afa528202f9d52e3acbcb6877f">raster_quadbin_is_cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_ac18e1d3cea95768bc5975eb8ede0c6e2.html#ac18e1d3cea95768bc5975eb8ede0c6e2">raster_quadbin_zoom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_ae477519e61e974253d1f01ccbf66bce2.html#ae477519e61e974253d1f01ccbf66bce2">raster_run_close</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_abd2696fec0d11f4eafeb73b8f4de7bf3.html#abd2696fec0d11f4eafeb73b8f4de7bf3">raster_run_enter</a></td></tr>
@@ -117,7 +117,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gab5df545295142b446f3bf3a00c4ae170.html#gab5df545295142b446f3bf3a00c4ae170">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a980502ce0cf85771fc2e323b49c44fae.html#a980502ce0cf85771fc2e323b49c44fae">raster_value_sampler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_aebd5ed076ea45b7a91eb0b726decda7e.html#aebd5ed076ea45b7a91eb0b726decda7e">read_pixel</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_aa36dc5e7cdf49ace3652826f744873f8.html#aa36dc5e7cdf49ace3652826f744873f8">tinstant_point_coords</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_aa36dc5e7cdf49ace3652826f744873f8.html#aa36dc5e7cdf49ace3652826f744873f8">tinstant_point_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a4fa80a263bd1bdfc078f6b52d51245b6.html#a4fa80a263bd1bdfc078f6b52d51245b6">tpointseq_raster_value_traverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga683d59d59af47d462f0a1b7bb844b77c.html#ga683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_aa85a5b017219744ba535ed557c1c2173.html#aa85a5b017219744ba535ed557c1c2173">xyz_to_qb</a></td></tr>
@@ -125,48 +125,29 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa36dc5e7cdf49ace3652826f744873f8" name="aa36dc5e7cdf49ace3652826f744873f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa36dc5e7cdf49ace3652826f744873f8">&#9670;&#160;</a></span>tinstant_point_coords()</h2>
+<a id="a335430afa528202f9d52e3acbcb6877f" name="a335430afa528202f9d52e3acbcb6877f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a335430afa528202f9d52e3acbcb6877f">&#9670;&#160;</a></span>raster_quadbin_is_cell()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tinstant_point_coords </td>
+          <td class="memname">bool raster_quadbin_is_cell </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
-          <td class="paramname"><em>inst</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">uint64&#160;</td>
+          <td class="paramname"><em>cell</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>lon</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>lat</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the lon/lat a temporal point instant holds. </p>
-<p >The position is read, never kept, and the instant that holds it outlives the call, so it is borrowed rather than copied </p>
+<p>Return true if <code>cell</code> is a cell of the QUADBIN tile grid. </p>
+<p >A cell carries the header bit, the cell mode, a zoom of the grid, and the bits of the Morton code below the zoom set to one, the rule <a class="el" href="group__meos__quadbin_gaaa1d146f2803c373fd131fe7a7f66260.html#gaaa1d146f2803c373fd131fe7a7f66260" title="Return true if index is a structurally valid quadbin index @csqlfn Quadbin_is_valid_index()">quadbin_is_valid_index()</a> of the QUADBIN family states for any index, here restricted to the cell mode a tile key has </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>QUADBIN identifier </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
