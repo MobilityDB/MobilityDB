@@ -165,6 +165,26 @@ Quadbin_grid_disk(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Quadbinset_grid_disk(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbinset_grid_disk);
+/**
+ * @ingroup mobilitydb_quadbin_set
+ * @brief Return all cells within grid distance k of a cell of a quadbinset as
+ * a quadbinset
+ * @sqlfn gridDisk()
+ */
+Datum
+Quadbinset_grid_disk(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int k = PG_GETARG_INT32(1);
+  Set *result = quadbinset_grid_disk(cells, k);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 /*****************************************************************************
  * Point <-> cell
  *****************************************************************************/

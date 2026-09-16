@@ -1305,9 +1305,11 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 gridDisk(h3index,integer) → h3indexset
 gridDisk(quadbin,integer) → quadbinset
+gridDisk(h3indexset,integer) → h3indexset
+gridDisk(quadbinset,integer) → quadbinset
 s2EdgeNeighbors(s2cell) → s2cellset
 </programlisting>
-				<para>The disk includes the origin, which is the whole of it at <varname>k</varname> = 0. Its shape follows the grid: on the QUADBIN square grid the disk at step <varname>k</varname> is the <varname>(2k+1)</varname>×<varname>(2k+1)</varname> block of cells centred on the origin, while on the H3 hexagonal grid it is the ring of hexagons at that many steps and everything inside it. S2 states the four cells sharing an edge with the origin and takes no step count, so it answers the disk at <varname>k</varname> = 1 less the origin itself.</para>
+				<para>The disk includes the origin, which is the whole of it at <varname>k</varname> = 0. Its shape follows the grid: on the QUADBIN square grid the disk at step <varname>k</varname> is the <varname>(2k+1)</varname>×<varname>(2k+1)</varname> block of cells centred on the origin, while on the H3 hexagonal grid it is the ring of hexagons at that many steps and everything inside it. S2 states the four cells sharing an edge with the origin and takes no step count, so it answers the disk at <varname>k</varname> = 1 less the origin itself. A cell set gives the union of the disks of its cells, which at <varname>k</varname> = 1 widens a cover by the ring of cells around it, and a disk of radius 1 widened by one step is the disk of radius 2 around the same origin.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT gridDisk(h3index '871fa44a8ffffff', 1);
 /* {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
@@ -1316,6 +1318,10 @@ SELECT gridDisk(quadbin '48a6227affffffff', 1);
 /* {"48a6226dffffffff", "48a6226fffffffff", "48a62278ffffffff", "48a62279ffffffff",
    "48a6227affffffff", "48a6227bffffffff", "48a622c5ffffffff", "48a622d0ffffffff",
    "48a622d1ffffffff"} */
+SELECT numValues(gridDisk(gridDisk(h3index '871fa44a8ffffff', 1), 1));
+-- 19
+SELECT numValues(gridDisk(gridDisk(quadbin '48a6227affffffff', 1), 1));
+-- 25
 SELECT s2EdgeNeighbors(s2cell '47c3c');
 -- {"47c14", "47c24", "47c34", "47c44"}
 </programlisting>

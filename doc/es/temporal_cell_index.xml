@@ -1302,9 +1302,11 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 gridDisk(h3index,integer) → h3indexset
 gridDisk(quadbin,integer) → quadbinset
+gridDisk(h3indexset,integer) → h3indexset
+gridDisk(quadbinset,integer) → quadbinset
 s2EdgeNeighbors(s2cell) → s2cellset
 </programlisting>
-				<para>El disco incluye el origen, que es todo el disco cuando <varname>k</varname> = 0. Su forma sigue a la cuadrícula: en la cuadrícula cuadrada QUADBIN el disco en el paso <varname>k</varname> es el bloque de <varname>(2k+1)</varname>×<varname>(2k+1)</varname> celdas centrado en el origen, mientras que en la cuadrícula hexagonal H3 es el anillo de hexágonos a esa cantidad de pasos y todo lo que hay dentro de él. S2 presenta las cuatro celdas que comparten una arista con el origen y no toma un número de pasos, de modo que responde el disco en <varname>k</varname> = 1 menos el propio origen.</para>
+				<para>El disco incluye el origen, que es todo el disco cuando <varname>k</varname> = 0. Su forma sigue a la cuadrícula: en la cuadrícula cuadrada QUADBIN el disco en el paso <varname>k</varname> es el bloque de <varname>(2k+1)</varname>×<varname>(2k+1)</varname> celdas centrado en el origen, mientras que en la cuadrícula hexagonal H3 es el anillo de hexágonos a esa cantidad de pasos y todo lo que hay dentro de él. S2 presenta las cuatro celdas que comparten una arista con el origen y no toma un número de pasos, de modo que responde el disco en <varname>k</varname> = 1 menos el propio origen. Un conjunto de celdas da la unión de los discos de sus celdas, que en <varname>k</varname> = 1 amplía una cobertura con el anillo de celdas que la rodea, y un disco de radio 1 ampliado un paso es el disco de radio 2 alrededor del mismo origen.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT gridDisk(h3index '871fa44a8ffffff', 1);
 /* {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
@@ -1313,6 +1315,10 @@ SELECT gridDisk(quadbin '48a6227affffffff', 1);
 /* {"48a6226dffffffff", "48a6226fffffffff", "48a62278ffffffff", "48a62279ffffffff",
    "48a6227affffffff", "48a6227bffffffff", "48a622c5ffffffff", "48a622d0ffffffff",
    "48a622d1ffffffff"} */
+SELECT numValues(gridDisk(gridDisk(h3index '871fa44a8ffffff', 1), 1));
+-- 19
+SELECT numValues(gridDisk(gridDisk(quadbin '48a6227affffffff', 1), 1));
+-- 25
 SELECT s2EdgeNeighbors(s2cell '47c3c');
 -- {"47c14", "47c24", "47c34", "47c44"}
 </programlisting>

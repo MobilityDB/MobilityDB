@@ -78,6 +78,21 @@ SELECT numValues(gridDisk(quadbin '48a6227affffffff', 2));
         25
 (1 row)
 
+WITH s(cells) AS (VALUES (gridDisk(quadbin '48a6227affffffff', 1)))
+SELECT numValues(gridDisk(cells, 1)),
+  gridDisk(cells, 1) = (SELECT setUnion(d)
+    FROM unnest(cells) AS c, unnest(gridDisk(c, 1)) AS d),
+  gridDisk(cells, 1) = gridDisk(quadbin '48a6227affffffff', 2),
+  gridDisk(cells, 0) = cells
+FROM s;
+ numvalues | ?column? | ?column? | ?column? 
+-----------+----------+----------+----------
+        25 | t        | t        | t
+(1 row)
+
+/* Errors */
+SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
+ERROR:  quadbin_grid_disk: k must be >= 0
 SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
   = quadbin '48a6227affffffff';
  ?column? 

@@ -184,6 +184,44 @@ quadbin_grid_disk(Quadbin origin, int k)
   return quadbinset_from_buffer(cells, count);
 }
 
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of QUADBIN cells within grid distance k of a cell of a
+ * QUADBIN cell set
+ * @details The union of the disks of the cells of the set, which at k = 1
+ * widens a cover by the ring of cells around it
+ * @param[in] cells Set of QUADBIN cells
+ * @param[in] k Grid distance
+ * @csqlfn #Quadbinset_grid_disk()
+ */
+Set *
+quadbinset_grid_disk(const Set *cells, int k)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(cells, NULL);
+  int capacity = cells->count * 9, count = 0;
+  Datum *datums = palloc(sizeof(Datum) * (size_t) capacity);
+  for (int i = 0; i < cells->count; i++)
+  {
+    Set *disk = quadbin_grid_disk(DatumGetQuadbin(SET_VAL_N(cells, i)), k);
+    if (! disk)
+    {
+      pfree(datums);
+      return NULL;
+    }
+    if (count + disk->count > capacity)
+    {
+      while (count + disk->count > capacity)
+        capacity *= 2;
+      datums = repalloc(datums, sizeof(Datum) * (size_t) capacity);
+    }
+    for (int j = 0; j < disk->count; j++)
+      datums[count++] = SET_VAL_N(disk, j);
+    pfree(disk);
+  }
+  return set_make_free(datums, count, T_QUADBIN, ORDER);
+}
+
 /*****************************************************************************
  * Hierarchy
  *****************************************************************************/

@@ -230,6 +230,44 @@ meos_h3_grid_disk(H3Index origin, int k)
 
 /**
  * @ingroup meos_h3_traversal
+ * @brief Return the set of H3 cells within grid distance k of a cell of an H3
+ * cell set
+ * @details The union of the disks of the cells of the set, which at k = 1
+ * widens a cover by the ring of cells around it
+ * @param[in] cells Set of H3 cells
+ * @param[in] k Grid distance
+ * @csqlfn #H3indexset_grid_disk()
+ */
+Set *
+h3indexset_grid_disk(const Set *cells, int k)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(cells, NULL);
+  int capacity = cells->count * 7, count = 0;
+  Datum *datums = palloc(sizeof(Datum) * (size_t) capacity);
+  for (int i = 0; i < cells->count; i++)
+  {
+    Set *disk = meos_h3_grid_disk(DatumGetH3Index(SET_VAL_N(cells, i)), k);
+    if (! disk)
+    {
+      pfree(datums);
+      return NULL;
+    }
+    if (count + disk->count > capacity)
+    {
+      while (count + disk->count > capacity)
+        capacity *= 2;
+      datums = repalloc(datums, sizeof(Datum) * (size_t) capacity);
+    }
+    for (int j = 0; j < disk->count; j++)
+      datums[count++] = SET_VAL_N(disk, j);
+    pfree(disk);
+  }
+  return set_make_free(datums, count, T_H3INDEX, ORDER);
+}
+
+/**
+ * @ingroup meos_h3_traversal
  * @brief Return the set of H3 cells at exactly grid distance k from an origin
  * cell
  * @csqlfn #H3_grid_ring()

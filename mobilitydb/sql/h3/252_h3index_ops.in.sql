@@ -116,6 +116,11 @@ CREATE FUNCTION gridDisk(h3index, integer)
   AS 'MODULE_PATHNAME', 'H3_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION gridDisk(h3indexset, integer)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'H3indexset_grid_disk'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION h3GridRing(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_grid_ring'

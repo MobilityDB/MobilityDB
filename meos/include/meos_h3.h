@@ -279,6 +279,10 @@ extern Set    *h3indexset_make(const H3Index *values, int count);
 
 extern H3Index *h3indexset_values(const Set *s, int *count);
 
+/* Grid traversal functions of `h3indexset` */
+
+extern Set    *h3indexset_grid_disk(const Set *cells, int k);
+
 /* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
 extern H3Index geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution);
 extern Set    *geo_to_h3index_set(const GSERIALIZED *gs,    int32 resolution);

@@ -197,6 +197,7 @@ extern char *quadbin_cell_to_quadkey(Quadbin cell);
 
 /* Set-returning static helpers (square subset; return `quadbinset`) */
 extern Set *quadbin_grid_disk(Quadbin origin, int k);
+extern Set *quadbinset_grid_disk(const Set *cells, int k);
 extern Set *quadbin_cell_to_children_set(Quadbin origin,
   int children_resolution);
 

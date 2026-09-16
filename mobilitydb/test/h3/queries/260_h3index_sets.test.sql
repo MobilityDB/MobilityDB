@@ -50,6 +50,20 @@ SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 3)) = 37;
 /* Errors */
 SELECT gridDisk(h3index '8a2a1072b59ffff', -1);
 
+-- The disk of a set is the union of the disks of its cells. Widening the disk
+-- of radius 1 by one step gives the disk of radius 2 around the same origin,
+-- and a step count of 0 gives the set itself
+WITH s(cells) AS (VALUES (gridDisk(h3index '8a2a1072b59ffff', 1)))
+SELECT numValues(gridDisk(cells, 1)),
+  gridDisk(cells, 1) = (SELECT setUnion(d)
+    FROM unnest(cells) AS c, unnest(gridDisk(c, 1)) AS d),
+  gridDisk(cells, 1) = gridDisk(h3index '8a2a1072b59ffff', 2),
+  gridDisk(cells, 0) = cells
+FROM s;
+
+/* Errors */
+SELECT gridDisk(h3indexset '{8a2a1072b59ffff}', -1);
+
 -------------------------------------------------------------------------------
 -- h3GridRing
 -------------------------------------------------------------------------------
