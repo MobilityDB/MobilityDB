@@ -84,10 +84,11 @@
  * on both axes; QUADBIN tile (x, y, z) covers 2*QB_MERC_MAX / 2^z metres. */
 #define QB_MERC_MAX  20037508.342789244
 
-/* Highest zoom level accepted when covering a trajectory with QUADBIN cells.
- * The zoom bounds the shift building the tile grid, so it is validated before
- * use; the value is the documented range of #trajectory_quadbins() */
-#define QB_TRAJECTORY_MAX_ZOOM  15
+/* Highest zoom level of the QUADBIN grid: its identifier holds the zoom in five
+ * bits and the tile in the Morton code of the 52 bits below them, two bits per
+ * level. The zoom bounds the shift building the tile grid, so it is validated
+ * before use */
+#define QB_MAX_ZOOM  26
 
 /** Latitude the Web-Mercator grid reaches, beyond which a tile has no extent */
 #define QB_MAX_LATITUDE  85.051129
@@ -1254,12 +1255,12 @@ quadbin_segment_cells_add(uint64 *cells, int *ncells, double lon1, double lat1,
  * @details Suitable for use as the WHERE-clause argument when joining against
  * a Raquet table:
  * @code{.sql}
- *   SELECT raster_tile_value_quadbin(band_data, 256, 256, quadbin, ...)
+ *   SELECT rasterTileValueQuadbin(traj, band_data, 256, 256, quadbin, ...)
  *   FROM   elevation_raquet
- *   WHERE  quadbin = ANY(trajectory_quadbins(traj, 8));
+ *   WHERE  quadbin = ANY(quadbins(traj, 8));
  * @endcode
  * @param[in] traj Input tgeompoint trajectory (SRID 4326)
- * @param[in] zoom Raquet zoom level (0–15)
+ * @param[in] zoom QUADBIN zoom level (0–26)
  * @param[out] count Number of distinct cells returned
  * @return Palloc'd array of QUADBIN cell identifiers
  * @csqlfn #Trajectory_quadbins()
@@ -1272,11 +1273,11 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   /* The zoom bounds the shift building the tile grid below. A caller passing a
    * negative zoom reaches this as a large unsigned value, so the upper test
    * covers both ends of the documented range */
-  if (zoom > QB_TRAJECTORY_MAX_ZOOM)
+  if (zoom > QB_MAX_ZOOM)
   {
     *count = 0;
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "zoom level must be between 0 and %d", QB_TRAJECTORY_MAX_ZOOM);
+      "zoom level must be between 0 and %d", QB_MAX_ZOOM);
     return NULL;
   }
 
