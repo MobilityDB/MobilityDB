@@ -340,6 +340,38 @@ SELECT rasterValue(t, r, 1, true, 'bilinear')::text AS bilinear,
     ST_Value(r, 1, ST_Point(1.25, 1.75, 4326), true, 'bilinear') AS second_as_postgis
 FROM rast, trip;
 
+-- A raster loaded as tiles is read along a trip by merging the reads of its
+-- tiles: a position lies in a pixel of one tile, so the merge answers the read
+-- of the whole raster. The trips run along both diagonals, along a tile edge,
+-- out of the raster and back, through tile corners, at their instants alone
+-- and to an exclusive upper bound, over tiles of 1x1 and of 2x2 pixels.
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4, 40.0::float4],
+    [50.0::float4, 60.0::float4, 70.0::float4, 80.0::float4],
+    [90.0::float4, 100.0::float4, 110.0::float4, 120.0::float4],
+    [130.0::float4, 140.0::float4, 150.0::float4, 160.0::float4]]) AS rast
+), trips(id, trip) AS (VALUES
+  (1, tgeompoint 'SRID=4326;[POINT(0.5 3.5)@2001-01-01, POINT(3.5 0.5)@2001-01-02]'),
+  (2, tgeompoint 'SRID=4326;[POINT(0.2 3.7)@2001-01-01, POINT(3.9 3.1)@2001-01-02,
+    POINT(3.2 0.3)@2001-01-03]'),
+  (3, tgeompoint 'SRID=4326;[POINT(0.5 2.0)@2001-01-01, POINT(3.5 2.0)@2001-01-02]'),
+  (4, tgeompoint 'SRID=4326;[POINT(-1 2.5)@2001-01-01, POINT(5 2.5)@2001-01-02]'),
+  (5, tgeompoint 'SRID=4326;{POINT(0.5 0.5)@2001-01-01, POINT(2.5 2.5)@2001-01-02,
+    POINT(3.5 3.5)@2001-01-03}'),
+  (6, tgeompoint 'SRID=4326;[POINT(1.5 3.5)@2001-01-01, POINT(1.5 0.5)@2001-01-02)'),
+  (7, tgeompoint 'SRID=4326;[POINT(2 4)@2001-01-01, POINT(4 2)@2001-01-02]')
+), merged AS (
+  SELECT id, s, mergeAgg(rasterValue(trip, tile)) AS m
+  FROM trips, r, (VALUES (1), (2)) AS v(s), ST_Tile(rast, s, s) AS tile
+  GROUP BY id, s
+), whole AS (
+  SELECT id, rasterValue(trip, rast) AS w FROM trips, r
+)
+SELECT count(*) AS reads, count(*) FILTER (WHERE m = w) AS as_whole
+FROM merged JOIN whole USING (id);
+
 -- A bilinear value varies quadratically in time along a trip that moves
 -- between its instants, which a temporal float cannot state, and a read the
 -- raster does not know is refused rather than taken for another.
