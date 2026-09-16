@@ -96,13 +96,19 @@ CREATE FUNCTION gridDisk(quadbin, integer)
  * Point ↔ cell
  *
  * `geoToQuadbinCell` maps a lon/lat point (SRID 4326) at the
- * given resolution to its quadbin cell; `cellToPoint`
+ * given resolution to its quadbin cell; `geoToQuadbinSet` gives the set of
+ * the cells any lon/lat geometry meets; `cellToPoint`
  * returns the cell centroid as a lon/lat point.
  ******************************************************************************/
 
 CREATE FUNCTION geoToQuadbinCell(geometry, integer)
   RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Quadbin_point_to_cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geoToQuadbinSet(geometry, integer)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Geo_to_quadbinset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cellToPoint(quadbin)

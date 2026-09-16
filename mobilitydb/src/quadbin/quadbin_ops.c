@@ -65,6 +65,7 @@
 #include "quadbin/quadbin.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Resolution
@@ -184,6 +185,48 @@ Quadbin_point_to_cell(PG_FUNCTION_ARGS)
   Quadbin result = geo_to_quadbin_cell(gs, resolution);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_QUADBIN(result);
+}
+
+PGDLLEXPORT Datum Geo_to_quadbinset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_to_quadbinset);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return the set of the quadbin cells a lon/lat geometry (SRID 4326)
+ * meets at the given resolution
+ * @sqlfn geoToQuadbinSet()
+ */
+Datum
+Geo_to_quadbinset(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32 resolution = PG_GETARG_INT32(1);
+  Set *result = geo_to_quadbin_set(gs, resolution);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Ever_eq_quadbinset_tquadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_quadbinset_tquadbin);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal quadbin cell ever takes a cell of a quadbin
+ * cell set
+ * @sqlfn eEqual()
+ * @sqlop @p ?=
+ */
+Datum
+Ever_eq_quadbinset_tquadbin(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  Temporal *tqb = PG_GETARG_TEMPORAL_P(1);
+  int r = ever_eq_quadbinset_tquadbin(cells, tqb);
+  PG_FREE_IF_COPY(cells, 0);
+  PG_FREE_IF_COPY(tqb, 1);
+  if (r < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(r == 1);
 }
 
 PGDLLEXPORT Datum Quadbin_cell_to_point(PG_FUNCTION_ARGS);

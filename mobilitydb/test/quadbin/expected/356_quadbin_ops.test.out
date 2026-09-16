@@ -126,6 +126,91 @@ SELECT ST_SRID(cellToPoint(quadbin '48a6227affffffff'));
     4326
 (1 row)
 
+SELECT numValues(geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 10)),
+  startValue(geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 10)) =
+  geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10);
+ numvalues | ?column? 
+-----------+----------
+         1 | t
+(1 row)
+
+SELECT numValues(geoToQuadbinSet(
+  geometry 'SRID=4326;MULTIPOINT((4.35 50.85), (4.35 50.85))', 10));
+ numvalues 
+-----------
+         1
+(1 row)
+
+WITH parent(cell) AS (VALUES
+  (geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 8))),
+geoms(name, geom) AS (VALUES
+  ('concave', geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.90, 4.40 50.90, 4.40 50.83, 4.35 50.83, 4.35 50.90, 4.30 50.90,
+    4.30 50.80))'),
+  ('holed', geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80, 4.45 50.90,
+    4.30 50.90, 4.30 50.80), (4.34 50.83, 4.41 50.83, 4.41 50.87, 4.34 50.87,
+    4.34 50.83))'),
+  ('line', geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
+cover AS (
+  SELECT name, unnest(geoToQuadbinSet(geom, 15)) AS cell FROM geoms),
+oracle AS (
+  SELECT g.name, c.cell
+  FROM geoms g, parent p, unnest(cellToChildren(p.cell, 15)) AS c(cell)
+  WHERE ST_Intersects(cellToBoundary(c.cell), g.geom))
+SELECT g.name,
+  ST_Covers(cellToBoundary(p.cell), g.geom) AS inside_parent,
+  (SELECT count(*) FROM cover c WHERE c.name = g.name) AS cover,
+  (SELECT count(*) FROM oracle o WHERE o.name = g.name) AS oracle,
+  (SELECT count(*) FROM (SELECT cell FROM cover WHERE name = g.name
+     EXCEPT SELECT cell FROM oracle WHERE name = g.name) AS x) AS cover_only,
+  (SELECT count(*) FROM (SELECT cell FROM oracle WHERE name = g.name
+     EXCEPT SELECT cell FROM cover WHERE name = g.name) AS y) AS oracle_only
+FROM geoms g, parent p
+ORDER BY g.name;
+  name   | inside_parent | cover | oracle | cover_only | oracle_only 
+---------+---------------+-------+--------+------------+-------------
+ concave | t             |   185 |    185 |          0 |           0
+ holed   | t             |   200 |    200 |          0 |           0
+ line    | t             |    29 |     29 |          0 |           0
+(3 rows)
+
+SELECT geoToQuadbinSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+    POINT(4.35 50.85), LINESTRING(4.40 50.88, 4.42 50.90),
+    POLYGON((4.30 50.80, 4.32 50.80, 4.32 50.82, 4.30 50.82, 4.30 50.80)))',
+    12) =
+  setUnion(setUnion(
+    geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 12),
+    geoToQuadbinSet(geometry 'SRID=4326;LINESTRING(4.40 50.88, 4.42 50.90)',
+      12)),
+    geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.32 50.80,
+      4.32 50.82, 4.30 50.82, 4.30 50.80))', 12));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT EMPTY', 10) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 27);
+ERROR:  The resolution must be between 0 and 26
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+ERROR:  The resolution must be between 0 and 26
+SELECT geoToQuadbinSet(geometry 'SRID=3857;POINT(4.35 50.85)', 10);
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT geoToQuadbinSet(geometry 'SRID=4326;CURVEPOLYGON(CIRCULARSTRING(
+  4.30 50.80, 4.40 50.90, 4.30 50.80))', 10);
+ERROR:  The cover of a geometry of type CurvePolygon is not supported
+SELECT geoToQuadbinSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+  POINT(4.35 50.85), CIRCULARSTRING(4.30 50.80, 4.35 50.85, 4.40 50.80))', 10);
+ERROR:  The cover of a geometry of type CircularString is not supported
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+  4.45 50.90, 4.30 50.90, 4.30 50.80))', 26);
+ERROR:  The cover of the geometry at resolution 26 exceeds 4194304 cells
 SELECT ST_GeometryType(cellToBoundary(quadbin '48a6227affffffff'));
  st_geometrytype 
 -----------------

@@ -98,6 +98,82 @@ SELECT round(ST_Y(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
 SELECT ST_SRID(cellToPoint(quadbin '48a6227affffffff'));
 
 -------------------------------------------------------------------------------
+-- Geometry -> cell set  (lon/lat, SRID 4326)
+-------------------------------------------------------------------------------
+
+-- A point gives the set of its one cell
+SELECT numValues(geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 10)),
+  startValue(geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 10)) =
+  geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10);
+
+-- The same point twice gives one cell
+SELECT numValues(geoToQuadbinSet(
+  geometry 'SRID=4326;MULTIPOINT((4.35 50.85), (4.35 50.85))', 10));
+
+-- THE COVER IS EXACTLY THE TILES THE GEOMETRY MEETS. Each geometry is read
+-- against the tiles of resolution 15 inside the tile of resolution 8 holding
+-- it, those whose boundary it intersects, and the query states how many cells
+-- each side holds and how many each holds that the other does not. The line
+-- crosses tiles corner-wise, the hole of the first polygon is wider than a
+-- tile, and the rows of the concave polygon leave tiles outside it between its
+-- two arms
+WITH parent(cell) AS (VALUES
+  (geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 8))),
+geoms(name, geom) AS (VALUES
+  ('concave', geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.90, 4.40 50.90, 4.40 50.83, 4.35 50.83, 4.35 50.90, 4.30 50.90,
+    4.30 50.80))'),
+  ('holed', geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80, 4.45 50.90,
+    4.30 50.90, 4.30 50.80), (4.34 50.83, 4.41 50.83, 4.41 50.87, 4.34 50.87,
+    4.34 50.83))'),
+  ('line', geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
+cover AS (
+  SELECT name, unnest(geoToQuadbinSet(geom, 15)) AS cell FROM geoms),
+oracle AS (
+  SELECT g.name, c.cell
+  FROM geoms g, parent p, unnest(cellToChildren(p.cell, 15)) AS c(cell)
+  WHERE ST_Intersects(cellToBoundary(c.cell), g.geom))
+SELECT g.name,
+  ST_Covers(cellToBoundary(p.cell), g.geom) AS inside_parent,
+  (SELECT count(*) FROM cover c WHERE c.name = g.name) AS cover,
+  (SELECT count(*) FROM oracle o WHERE o.name = g.name) AS oracle,
+  (SELECT count(*) FROM (SELECT cell FROM cover WHERE name = g.name
+     EXCEPT SELECT cell FROM oracle WHERE name = g.name) AS x) AS cover_only,
+  (SELECT count(*) FROM (SELECT cell FROM oracle WHERE name = g.name
+     EXCEPT SELECT cell FROM cover WHERE name = g.name) AS y) AS oracle_only
+FROM geoms g, parent p
+ORDER BY g.name;
+
+-- A collection gives the union of the covers of its components
+SELECT geoToQuadbinSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+    POINT(4.35 50.85), LINESTRING(4.40 50.88, 4.42 50.90),
+    POLYGON((4.30 50.80, 4.32 50.80, 4.32 50.82, 4.30 50.82, 4.30 50.80)))',
+    12) =
+  setUnion(setUnion(
+    geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 12),
+    geoToQuadbinSet(geometry 'SRID=4326;LINESTRING(4.40 50.88, 4.42 50.90)',
+      12)),
+    geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.32 50.80,
+      4.32 50.82, 4.30 50.82, 4.30 50.80))', 12));
+
+-- An empty geometry holds no cell
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT EMPTY', 10) IS NULL;
+
+-- A resolution outside 0 to 26, a reference system other than lon/lat, a
+-- curve, alone or inside a collection, whose cells the walk does not state,
+-- and a cover of more cells than a set is built from
+/* Errors */
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', 27);
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+SELECT geoToQuadbinSet(geometry 'SRID=3857;POINT(4.35 50.85)', 10);
+SELECT geoToQuadbinSet(geometry 'SRID=4326;CURVEPOLYGON(CIRCULARSTRING(
+  4.30 50.80, 4.40 50.90, 4.30 50.80))', 10);
+SELECT geoToQuadbinSet(geometry 'SRID=4326;GEOMETRYCOLLECTION(
+  POINT(4.35 50.85), CIRCULARSTRING(4.30 50.80, 4.35 50.85, 4.40 50.80))', 10);
+SELECT geoToQuadbinSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+  4.45 50.90, 4.30 50.90, 4.30 50.80))', 26);
+
+-------------------------------------------------------------------------------
 -- Boundary
 -------------------------------------------------------------------------------
 
