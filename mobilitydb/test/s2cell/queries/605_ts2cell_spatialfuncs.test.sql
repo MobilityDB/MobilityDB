@@ -164,3 +164,52 @@ SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 31);
 SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', -1);
 
 -------------------------------------------------------------------------------
+-- eEqual / ?= -- cell set vs ts2cell prefilter
+-------------------------------------------------------------------------------
+
+-- A trip read against the cover of a region it crosses, and of one it never
+-- reaches, in both argument orders
+WITH t(trip) AS (VALUES (ts2cell(tgeogpoint
+  '[Point(4.35 50.85)@2001-01-01, Point(4.40 50.90)@2001-01-02]', 12)))
+SELECT geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.95, 4.30 50.95, 4.30 50.80))', 12) ?= trip,
+  trip ?= geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80,
+    4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 12),
+  eEqual(geoToS2CellSet(geography 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+    10.5 50.5, 10.0 50.5, 10.0 50.0))', 12), trip),
+  eEqual(trip, geoToS2CellSet(geography 'SRID=4326;POLYGON((10.0 50.0,
+    10.5 50.0, 10.5 50.5, 10.0 50.5, 10.0 50.0))', 12))
+FROM t;
+
+-- The prefilter answers from the instants of every subtype, and stops at the
+-- first instant the set contains. Each subtype is asked for a hit and a miss,
+-- and the sequence forms are asked where the hit sits, so a walk that stopped
+-- at the wrong place or skipped a composing sequence is refused.
+
+-- Temporal instant
+SELECT s2cellset '{47c3c3, 54b5c9}' ?= ts2cell '47c3c3@2001-01-01';
+SELECT s2cellset '{47c3c3, 54b5c9}' ?= ts2cell '47c3c4@2001-01-01';
+
+-- Discrete sequence: the hit at the first instant, at the last, and absent
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{47c3c3@2001-01-01, 47c3c4@2001-01-02}';
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{47c3c4@2001-01-01, 54b5c9@2001-01-02}';
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '{47c3c4@2001-01-01, 54b5c9@2001-01-02}';
+
+-- Step sequence
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '[47c3c4@2001-01-01, 54b5c9@2001-01-02]';
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '[47c3c4@2001-01-01, 54b5c9@2001-01-02]';
+
+-- Sequence set: the hit in the first composing sequence, in the last, absent
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{[47c3c3@2001-01-01], [47c3c4@2001-01-02]}';
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{[47c3c4@2001-01-01], [54b5c9@2001-01-02]}';
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '{[47c3c4@2001-01-01], [54b5c9@2001-01-02]}';
+
+-------------------------------------------------------------------------------

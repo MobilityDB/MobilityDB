@@ -112,6 +112,11 @@ CREATE FUNCTION geoToS2Cell(geography, integer)
   AS 'MODULE_PATHNAME', 'S2cell_point_to_cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geoToS2CellSet(geography, integer)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'Geo_to_s2cellset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION cellToPoint(s2cell)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'S2cell_cell_to_point'

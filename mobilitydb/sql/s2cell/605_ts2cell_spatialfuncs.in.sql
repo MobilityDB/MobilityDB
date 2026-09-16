@@ -101,4 +101,33 @@ CREATE FUNCTION ts2cell(tgeogpoint, integer)
   AS 'MODULE_PATHNAME', 'Tgeogpoint_to_ts2cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * s2cellset × ts2cell — ever-equal (sound cell-set prefilter)
+ *
+ * True when the temporal S2 cell ever equals a cell in the set. Paired with
+ * geoToS2CellSet, this is the sound, conservative spatial prefilter for the
+ * exact eIntersects(geography, ts2cell): the cell-granularity test never drops
+ * a real intersection, and the exact predicate confirms the survivors.
+ ******************************************************************************/
+
+CREATE FUNCTION eEqual(s2cellset, ts2cell)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_s2cellset_ts2cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eEqual(ts2cell, s2cellset)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT eEqual($2, $1) $$;
+
+CREATE OPERATOR ?= (
+  LEFTARG = s2cellset, RIGHTARG = ts2cell,
+  PROCEDURE = eEqual,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?= (
+  LEFTARG = ts2cell, RIGHTARG = s2cellset,
+  PROCEDURE = eEqual,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /*****************************************************************************/

@@ -194,8 +194,10 @@ extern double s2cell_edge_length(S2CellId cell, uint32_t edge);
 /* Geometry (lon/lat, SRID 4326) */
 
 extern S2CellId geo_to_s2cell_cell(const GSERIALIZED *point, int32 level);
+extern Set *geo_to_s2cell_set(const GSERIALIZED *gs, int32 level);
 extern GSERIALIZED *s2cell_cell_to_geogpoint(S2CellId cell);
 extern GSERIALIZED *s2cell_cell_to_geog(S2CellId cell);
+extern int ever_eq_s2cellset_ts2cell(const Set *cells, const Temporal *temp);
 
 /* Bounding box */
 

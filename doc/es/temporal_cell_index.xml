@@ -933,17 +933,21 @@ SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 				<indexterm significance="normal"><primary><varname>cellset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToH3IndexSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToQuadbinSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToS2CellSet</varname></primary></indexterm>
 				<para>Devolver el conjunto de celdas de una cuadrícula que cubren una geometría en la resolución dada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 geoToQuadbinSet(geometry,integer) → quadbinset
+geoToS2CellSet(geography,integer) → s2cellset
 </programlisting>
-				<para>Un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> las celdas que toca, un <varname>POLYGON</varname> las de su borde junto con las de su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. Una curva, un <varname>TIN</varname> o un <varname>TRIANGLE</varname>, por sí solos o dentro de una colección, se rechazan, ya que una cobertura que omitiera sus celdas descartaría una trayectoria que el prefiltro debe conservar. H3 muestrea cada segmento y amplía las celdas que selecciona con sus vecinas, de modo que el conjunto contiene todas las celdas que la geometría toca y puede contener una vecina que no toca. Una tesela QUADBIN está delimitada por dos meridianos y dos paralelos, de modo que QUADBIN recorre cada segmento de tesela en tesela y rellena las filas de teselas entre las teselas del borde de un polígono, y el conjunto contiene exactamente las teselas que la geometría toca. La forma para S2 aún no está implementada. La cobertura devuelve todas las celdas que la geometría toca, la cobertura que necesita un prefiltro espacial, donde la función <varname>h3_polygon_to_cells</varname> de h3-pg devuelve las celdas cuyo centro contiene un polígono, razón por la que el nombre sigue siendo el de MobilityDB.</para>
+				<para>Un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> las celdas que toca, un <varname>POLYGON</varname> las de su borde junto con las de su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. Una curva, un <varname>TIN</varname> o un <varname>TRIANGLE</varname>, por sí solos o dentro de una colección, se rechazan, ya que una cobertura que omitiera sus celdas descartaría una trayectoria que el prefiltro debe conservar. H3 muestrea cada segmento y amplía las celdas que selecciona con sus vecinas, de modo que el conjunto contiene todas las celdas que la geometría toca y puede contener una vecina que no toca. Una tesela QUADBIN está delimitada por dos meridianos y dos paralelos, de modo que QUADBIN recorre cada segmento de tesela en tesela y rellena las filas de teselas entre las teselas del borde de un polígono, y el conjunto contiene exactamente las teselas que la geometría toca. Una celda S2 está delimitada por cuatro arcos de círculos máximos, el camino que sigue un segmento geodésico, de modo que S2 recorre cada segmento de una geografía de celda en celda y lee las caras del cubo hacia abajo en la jerarquía de celdas para obtener las celdas que encierra un polígono, y el conjunto contiene exactamente las celdas que la geografía toca. La cobertura devuelve todas las celdas que la geometría toca, la cobertura que necesita un prefiltro espacial, donde la función <varname>h3_polygon_to_cells</varname> de h3-pg devuelve las celdas cuyo centro contiene un polígono, razón por la que el nombre sigue siendo el de MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
 SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 -- {"48a6227affffffff"}
+SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', 10);
+-- {"47c3c3"}
 </programlisting>
 			</listitem>
 
@@ -953,14 +957,18 @@ SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 h3indexset ?= th3index → boolean
 quadbinset ?= tquadbin → boolean
+s2cellset ?= ts2cell → boolean
 </programlisting>
-				<para>Combinado con el constructor del conjunto de celdas responde si un viaje pasa alguna vez por una región sin materializar la geometría de la trayectoria, un prefiltro conservador para el <varname>eIntersects</varname> exacto. Descansa sobre un núcleo que comparten todas las cuadrículas, declarado para H3 y QUADBIN; la forma para S2 aún no está implementada.</para>
+				<para>Combinado con el constructor del conjunto de celdas responde si un viaje pasa alguna vez por una región sin materializar la geometría de la trayectoria, un prefiltro conservador para el <varname>eIntersects</varname> exacto. Descansa sobre un núcleo que comparten todas las cuadrículas.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
   th3index '871fa4418ffffff@2001-01-01';
 -- t
 SELECT geoToQuadbinSet(geometry 'SRID=4326;Point(4.35 50.85)', 10) ?=
   tquadbin '48a6227affffffff@2001-01-01';
+-- t
+SELECT geoToS2CellSet(geography 'SRID=4326;Point(4.35 50.85)', 10) ?=
+  ts2cell '47c3c3@2001-01-01';
 -- t
 </programlisting>
 			</listitem>

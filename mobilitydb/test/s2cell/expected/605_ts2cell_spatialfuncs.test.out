@@ -193,3 +193,87 @@ SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 31);
 ERROR:  The resolution must be between 0 and 30
 SELECT ts2cell(tgeogpoint 'Point(4.35 50.85)@2001-01-01', -1);
 ERROR:  The resolution must be between 0 and 30
+WITH t(trip) AS (VALUES (ts2cell(tgeogpoint
+  '[Point(4.35 50.85)@2001-01-01, Point(4.40 50.90)@2001-01-02]', 12)))
+SELECT geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+    4.45 50.95, 4.30 50.95, 4.30 50.80))', 12) ?= trip,
+  trip ?= geoToS2CellSet(geography 'SRID=4326;POLYGON((4.30 50.80,
+    4.45 50.80, 4.45 50.95, 4.30 50.95, 4.30 50.80))', 12),
+  eEqual(geoToS2CellSet(geography 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+    10.5 50.5, 10.0 50.5, 10.0 50.0))', 12), trip),
+  eEqual(trip, geoToS2CellSet(geography 'SRID=4326;POLYGON((10.0 50.0,
+    10.5 50.0, 10.5 50.5, 10.0 50.5, 10.0 50.0))', 12))
+FROM t;
+ ?column? | ?column? | eequal | eequal 
+----------+----------+--------+--------
+ t        | t        | f      | f
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?= ts2cell '47c3c3@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?= ts2cell '47c3c4@2001-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{47c3c3@2001-01-01, 47c3c4@2001-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{47c3c4@2001-01-01, 54b5c9@2001-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '{47c3c4@2001-01-01, 54b5c9@2001-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '[47c3c4@2001-01-01, 54b5c9@2001-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '[47c3c4@2001-01-01, 54b5c9@2001-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{[47c3c3@2001-01-01], [47c3c4@2001-01-02]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3, 54b5c9}' ?=
+  ts2cell '{[47c3c4@2001-01-01], [54b5c9@2001-01-02]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c3}' ?=
+  ts2cell '{[47c3c4@2001-01-01], [54b5c9@2001-01-02]}';
+ ?column? 
+----------
+ f
+(1 row)
+
