@@ -1,4 +1,24 @@
 var searchData=
 [
-  ['varlena_0',['varlena',['../structvarlena.html',1,'']]]
+  ['tbox_0',['TBox',['../structTBox.html',1,'']]],
+  ['tboxgridstate_1',['TboxGridState',['../structTboxGridState.html',1,'']]],
+  ['tboxnode_2',['TboxNode',['../structTboxNode.html',1,'']]],
+  ['tcbufferdiscctx_3',['TcbufferDiscCtx',['../structTcbufferDiscCtx.html',1,'']]],
+  ['tcbuffergeoctx_4',['TcbufferGeoCtx',['../structTcbufferGeoCtx.html',1,'']]],
+  ['tcbuffersegbox_5',['TcbufferSegBox',['../structTcbufferSegBox.html',1,'']]],
+  ['tdist_5farray_6',['tdist_array',['../structtdist__array.html',1,'']]],
+  ['tdist_5felem_7',['tdist_elem',['../structtdist__elem.html',1,'']]],
+  ['temporal_8',['Temporal',['../structTemporal.html',1,'']]],
+  ['temporalanalyzeextradata_9',['TemporalAnalyzeExtraData',['../structTemporalAnalyzeExtraData.html',1,'']]],
+  ['tempunneststate_10',['TempUnnestState',['../structTempUnnestState.html',1,'']]],
+  ['textset_5frecord_11',['textset_record',['../structtextset__record.html',1,'']]],
+  ['tgeoarrjoinstate_12',['TgeoarrJoinState',['../structTgeoarrJoinState.html',1,'']]],
+  ['tgeoarrpair_13',['TgeoarrPair',['../structTgeoarrPair.html',1,'']]],
+  ['tinstant_14',['TInstant',['../structTInstant.html',1,'']]],
+  ['tpcbox_15',['TPCBox',['../structTPCBox.html',1,'']]],
+  ['tpcpatchpointsstate_16',['TpcpatchPointsState',['../structTpcpatchPointsState.html',1,'']]],
+  ['trip_5frecord_17',['trip_record',['../structtrip__record.html',1,'']]],
+  ['trip_5ft_18',['trip_t',['../structtrip__t.html',1,'']]],
+  ['tsequence_19',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_20',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];
