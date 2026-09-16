@@ -266,7 +266,7 @@ segment_to_cells_into(double lon1, double lat1, double lon2, double lat2,
   if (! quadbin_buf_reserve(out, span))
     return;
   double *enter = palloc(sizeof(double) * (size_t) span);
-  out->count += quadbin_segment_cells(lon1, lat1, lon2, lat2,
+  out->count += quadbin_segment_cells(lon1, lat1, lon2, lat2, false,
     (uint32_t) resolution, out->cells + out->count, enter, (int) span);
   pfree(enter);
 }

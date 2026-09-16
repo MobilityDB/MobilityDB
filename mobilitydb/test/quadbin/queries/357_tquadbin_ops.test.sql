@@ -164,8 +164,62 @@ SELECT numSequences(tquadbin(tgeompoint
   'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
 
+-------------------------------------------------------------------------------
+-- Conversion from a temporal point: tquadbin(tgeogpoint, integer)
+-------------------------------------------------------------------------------
+
+-- An instant yields the cell holding its position, as for a planar point
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 10) =
+  tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10);
+
+-- A geodetic segment follows its great circle. The arc from longitude -170 to
+-- -100 along latitude 65 rises to latitude 69.1, north of the parallel 66.51
+-- bounding the zoom-2 tiles it starts and ends in, so it leaves its tile for
+-- the one north of it and comes back: three instants over two cells, where
+-- the straight line in longitude and latitude stays in one tile
+SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2)))
+FROM (SELECT tquadbin(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2) AS t) AS q;
+
+-- An arc across the antimeridian takes its short way, through the tiles of
+-- the last and the first columns, where the straight line in longitude and
+-- latitude sweeps every column of the grid
+SELECT numValues(getValues(tquadbin(tgeogpoint
+    '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3))),
+  numValues(getValues(tquadbin(tgeompoint
+    'SRID=4326;[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3)));
+
+-- At every sampled timestamp the value is the cell holding the position of the
+-- geodetic trajectory then, for an arc crossing rows and columns, the arc
+-- bulging north of its tile, an arc across the antimeridian and one over the
+-- pole. The samples lie between the minutes, so none falls on the pole or the
+-- antimeridian, where a position has more than one longitude
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t)::geometry, z)) AS other_cell,
+  count(DISTINCT p::text) FILTER (WHERE c <> tquadbin(p::tgeompoint, z))
+    AS other_than_planar
+FROM (SELECT p, z, tquadbin(p, z) AS c FROM (VALUES
+  (tgeogpoint '[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4),
+  (tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2),
+  (tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 6),
+  (tgeogpoint '[Point(10 80)@2001-01-01, Point(-170 75)@2001-01-02]', 5))
+  AS v(p, z)) AS q,
+  generate_series(timestamptz '2001-01-01 00:00:30',
+    timestamptz '2001-01-01 23:59:30', interval '1 minute') AS t;
+
+-- A sequence set yields one sequence per sequence, spanning its period
+SELECT numSequences(t), getTime(t) = getTime(p)
+FROM (SELECT p, tquadbin(p, 4) AS t FROM (VALUES (tgeogpoint
+  '{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04)}')) AS v(p))
+  AS q;
+
 -- A reference system other than lon/lat, and a resolution outside 0 to 26
 /* Errors */
+SELECT tquadbin(tgeogpoint 'Point(4.35 50.85)@2001-01-01', 27);
 SELECT tquadbin(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
 SELECT tquadbin(tgeompoint
   'SRID=3857;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-02]', 10);

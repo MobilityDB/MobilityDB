@@ -191,6 +191,24 @@ Tquadbin_cell_to_quadkey(PG_FUNCTION_ARGS)
  * Conversion from a temporal point
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tgeogpoint_to_tquadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_to_tquadbin);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return the temporal quadbin cell of a temporal geodetic point at the
+ * given resolution
+ * @sqlfn tquadbin()
+ */
+Datum
+Tgeogpoint_to_tquadbin(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 resolution = PG_GETARG_INT32(1);
+  Temporal *result = tgeogpoint_to_tquadbin(temp, resolution);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tgeompoint_to_tquadbin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tquadbin);
 /**
