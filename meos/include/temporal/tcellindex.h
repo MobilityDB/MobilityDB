@@ -221,6 +221,6 @@ extern bool dggs_line_init(double lon1, double lat1, double lon2,
 extern void dggs_line_point(const DggsLine *line, double t, double *lon,
   double *lat);
 extern double dggs_line_exit_param(const DggsLine *line, const double *lons,
-  const double *lats, int count, double tmin);
+  const double *lats, int count, double tmin, bool convex);
 
 #endif /* __TCELLINDEX_H__ */

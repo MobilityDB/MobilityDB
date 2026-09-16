@@ -249,4 +249,27 @@ FROM (SELECT p, th3index(p, 9) AS c FROM (VALUES
   AS v(p)) AS q, generate_series(timestamptz '2001-01-01 00:17',
     '2001-01-02 23:43', interval '37 minutes') AS t;
 
+-- A planar trajectory moves along the straight line in longitude and latitude,
+-- which crosses a cell edge where the great-circle arc of the edge lies, not
+-- where the straight chord between its vertices does. At resolution 1 the
+-- trajectory below enters cell 811e3ffffffffff, and holds it at 22:00:30
+SELECT valueAtTimestamp(th3index(tgeompoint
+  'SRID=4326;[Point(-37.3 45)@2001-01-01, Point(22.7 45.5)@2001-01-02]', 1),
+  timestamptz '2001-01-01 22:00:30');
+
+-- At every sampled timestamp a planar trajectory holds the cell of its own
+-- position, at the coarse resolutions where a cell edge and its chord part
+-- by the most
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), r))) AS other_cell
+FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(-37.3 45)@2001-01-01, Point(22.7 45.5)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(11.9 -65)@2001-01-01, Point(51.9 -62)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(-37.3 5)@2001-01-01, Point(-12.3 -4)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(11.9 -25)@2001-01-01, Point(14.9 15)@2001-01-02]'))
+  AS v(p), (VALUES (0), (2)) AS rs(r)) AS q,
+  generate_series(timestamptz '2001-01-01 00:07:30',
+    timestamptz '2001-01-01 23:52:30', interval '15 minutes') AS t;
+
 -------------------------------------------------------------------------------

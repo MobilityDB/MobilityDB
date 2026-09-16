@@ -713,24 +713,109 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
 }
 
 /**
- * @brief Return where a planar path leaves a convex cell
+ * @brief Return the first parameter strictly ahead of `tmin` at which the
+ * height of a planar path above the plane of normal `m` changes sign, or a
+ * value above 1 when it does not before its end
+ * @details The search of #dggs_line_plane_param, read from whichever side of
+ * the plane the path lies on at `tmin`
+ */
+static double
+dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
+  double tmin)
+{
+  double t = tmin, f, d;
+  double mm = line->curvature;
+  dggs_line_height(line, m, t, &f, &d);
+  /* A start on the plane lies on the side the path heads to */
+  double side = (f > 0.0 || (f == 0.0 && d >= 0.0)) ? 1.0 : -1.0;
+  for (int i = 0; i < 1024 && t <= 1.0; i++)
+  {
+    double g = side * f, e = side * d;
+    if (g <= 0.0 && t > tmin)
+      return t;
+    if (g < 0.0)
+      g = 0.0;
+    double h = (e + sqrt(e * e + 2.0 * mm * g)) / mm;
+    t += (h > 1e-15) ? h : 1e-15;
+    dggs_line_height(line, m, t, &f, &d);
+  }
+  return (t > 1.0) ? 2.0 : t;
+}
+
+/**
+ * @brief Return where a planar path first crosses an edge of a cell, a
+ * crossing of the circle of an edge counting where it lies between the two
+ * vertices of the edge
+ */
+static double
+dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
+  const double *lats, int count, double tmin)
+{
+  double best = 2.0;
+  for (int i = 0; i < count; i++)
+  {
+    int j = (i + 1) % count;
+    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
+    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
+    POINT3D vi, vj, m, c;
+    geog2cart(&gi, &vi);
+    geog2cart(&gj, &vj);
+    robust_cross_product(&gi, &gj, &m);
+    if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
+      continue;
+    normalize(&m);
+    /* A straight line in longitude and latitude meets a great circle a few
+     * times at most over a segment, and a crossing off the edge is followed
+     * by the next one */
+    double t = tmin;
+    for (int k = 0; k < 8; k++)
+    {
+      t = dggs_line_plane_sign_change(line, &m, t);
+      if (t > 1.0 || t >= best)
+        break;
+      double lon, lat;
+      dggs_line_point(line, t, &lon, &lat);
+      GEOGRAPHIC_POINT gp = { .lat = deg2rad(lat), .lon = deg2rad(lon) };
+      POINT3D p;
+      geog2cart(&gp, &p);
+      dggs_vec_cross(&vi, &p, &c);
+      if (dggs_vec_dot(&c, &m) < 0.0)
+        continue;
+      dggs_vec_cross(&p, &vj, &c);
+      if (dggs_vec_dot(&c, &m) < 0.0)
+        continue;
+      best = t;
+      break;
+    }
+  }
+  return best;
+}
+
+/**
+ * @brief Return where a planar path leaves a cell
  * @details A convex cell is the intersection of the hemispheres its edge
  * circles bound, so a path inside it leaves it where it first reaches any of
- * their planes. The straight line in longitude and latitude is no great
- * circle, so a crossing has no closed form and is searched for along the path.
+ * their planes. A cell that is not convex is left where the path first crosses
+ * an edge: a crossing of the circle of an edge counts where it lies between the
+ * two vertices of the edge, as #dggs_arc_exit_param tests it. The straight line
+ * in longitude and latitude is no great circle, so a crossing has no closed
+ * form and is searched for along the path.
  * @param[in] line Path
  * @param[in] lons,lats Vertices of the cell boundary in radians, in the order
  * they join
  * @param[in] count Number of vertices
  * @param[in] tmin Parameter the exit lies strictly ahead of
+ * @param[in] convex True when the cell is convex
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
 double
 dggs_line_exit_param(const DggsLine *line, const double *lons,
-  const double *lats, int count, double tmin)
+  const double *lats, int count, double tmin, bool convex)
 {
   assert(line); assert(lons); assert(lats);
+  if (! convex)
+    return dggs_line_exit_param_edges(line, lons, lats, count, tmin);
   /* The interior lies on the side of every edge circle the centre of the
    * vertices lies on */
   POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
