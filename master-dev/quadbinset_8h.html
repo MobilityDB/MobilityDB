@@ -96,13 +96,20 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa82627f042fe7e5927402378b2cfac49"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__quadbin__accessor_gaa82627f042fe7e5927402378b2cfac49.html#gaa82627f042fe7e5927402378b2cfac49">quadbin_grid_disk</a> (<a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a> origin, int k)</td></tr>
 <tr class="memdesc:gaa82627f042fe7e5927402378b2cfac49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return all cells within <code>k</code> grid steps of <code>origin</code> (the square Chebyshev disk; <code>origin</code> itself is included at k=0).  <a href="group__meos__quadbin__accessor_gaa82627f042fe7e5927402378b2cfac49.html#gaa82627f042fe7e5927402378b2cfac49">More...</a><br /></td></tr>
 <tr class="separator:gaa82627f042fe7e5927402378b2cfac49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb0210079b663ed0373bd8fa396cd149"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__quadbin__accessor_gafb0210079b663ed0373bd8fa396cd149.html#gafb0210079b663ed0373bd8fa396cd149">quadbinset_compact_cells</a> (const <a class="el" href="structSet.html">Set</a> *cells)</td></tr>
+<tr class="memdesc:gafb0210079b663ed0373bd8fa396cd149"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the compacted set of <code>cells</code>, and the set of cells at resolution <code>resolution</code> covering <code>cells</code>.  <a href="group__meos__quadbin__accessor_gafb0210079b663ed0373bd8fa396cd149.html#gafb0210079b663ed0373bd8fa396cd149">More...</a><br /></td></tr>
+<tr class="separator:gafb0210079b663ed0373bd8fa396cd149"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaae48baad370bc4b7581ffb9033ef2583"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__quadbin__accessor_gaae48baad370bc4b7581ffb9033ef2583.html#gaae48baad370bc4b7581ffb9033ef2583">quadbinset_uncompact_cells</a> (const <a class="el" href="structSet.html">Set</a> *cells, int resolution)</td></tr>
+<tr class="memdesc:gaae48baad370bc4b7581ffb9033ef2583"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the set of cells at a resolution covering a QUADBIN cell set.  <a href="group__meos__quadbin__accessor_gaae48baad370bc4b7581ffb9033ef2583.html#gaae48baad370bc4b7581ffb9033ef2583">More...</a><br /></td></tr>
+<tr class="separator:gaae48baad370bc4b7581ffb9033ef2583"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Set-returning static helpers on <code>quadbin</code>. </p>
-<p >These wrap the quadbin cell kernel's array-returning primitives into the <code>quadbinset</code> MobilityDB set type. They are the square-quadtree counterpart of the h3index set-returning functions, dropping the hexagon-only families (directed edges, vertexes, icosahedron faces, compact / uncompact, grid path / ring) and keeping the operations with a square analogue:</p>
+<p >These wrap the quadbin cell kernel's array-returning primitives into the <code>quadbinset</code> MobilityDB set type. They are the square-quadtree counterpart of the h3index set-returning functions, dropping the hexagon-only families (directed edges, vertexes, icosahedron faces, grid path / ring) and keeping the operations with a square analogue:</p>
 <ul>
 <li>the k-ring (square Chebyshev disk) around a cell,</li>
-<li>the four-per-level children of a cell at a finer resolution.</li>
+<li>the four-per-level children of a cell at a finer resolution,</li>
+<li>the compaction of a cell set and its reverse, a tile being exactly the union of its four children.</li>
 </ul>
 <p >All functions here operate on STATIC <code>quadbin</code> values; the temporal lift is handled by the tquadbin layer. </p>
 </div></div><!-- contents -->

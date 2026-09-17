@@ -75,6 +75,8 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tcellindex.c File Reference</div></div>
 </div><!--header-->
@@ -84,6 +86,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;inttypes.h&gt;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
@@ -91,9 +94,22 @@ $(function() {
 <code>#include &lt;lwgeodetic.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="lifting_8h_source.html">temporal/lifting.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDggsCellParent.html">DggsCellParent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A cell with the parent it merges into.  <a href="structDggsCellParent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:aa7a9e2cae7aac54c6cf6d9e5e147e125"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_aa7a9e2cae7aac54c6cf6d9e5e147e125.html#aa7a9e2cae7aac54c6cf6d9e5e147e125">DGGS_MAX_UNCOMPACT_CELLS</a>&#160;&#160;&#160;4194304</td></tr>
+<tr class="memdesc:aa7a9e2cae7aac54c6cf6d9e5e147e125"><td class="mdescLeft">&#160;</td><td class="mdescRight">Largest number of cells an uncompacted set holds.  <a href="tcellindex_8c_aa7a9e2cae7aac54c6cf6d9e5e147e125.html#aa7a9e2cae7aac54c6cf6d9e5e147e125">More...</a><br /></td></tr>
+<tr class="separator:aa7a9e2cae7aac54c6cf6d9e5e147e125"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a2dd8aca8345bcd5999b8b038e719dffd"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a2dd8aca8345bcd5999b8b038e719dffd.html#a2dd8aca8345bcd5999b8b038e719dffd">dggs_arc_exit_param</a> (const <a class="el" href="structDggsArc.html">DggsArc</a> *arc, const double *lons, const double *lats, int count, double tmin, bool convex)</td></tr>
@@ -108,6 +124,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a70e2f25cc0f5094a639c600543a6b54e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a70e2f25cc0f5094a639c600543a6b54e.html#a70e2f25cc0f5094a639c600543a6b54e">dggs_arc_point</a> (const <a class="el" href="structDggsArc.html">DggsArc</a> *arc, double t, double *lon, double *lat)</td></tr>
 <tr class="memdesc:a70e2f25cc0f5094a639c600543a6b54e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last two arguments the position a geodetic path reaches at a parameter.  <a href="tcellindex_8c_a70e2f25cc0f5094a639c600543a6b54e.html#a70e2f25cc0f5094a639c600543a6b54e">More...</a><br /></td></tr>
 <tr class="separator:a70e2f25cc0f5094a639c600543a6b54e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95daa6bc36aa231627f52c77aaee0c9d"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a95daa6bc36aa231627f52c77aaee0c9d.html#a95daa6bc36aa231627f52c77aaee0c9d">dggs_cell_cmp</a> (const void *a, const void *b)</td></tr>
+<tr class="memdesc:a95daa6bc36aa231627f52c77aaee0c9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparator of two cell identifiers in ascending order.  <a href="tcellindex_8c_a95daa6bc36aa231627f52c77aaee0c9d.html#a95daa6bc36aa231627f52c77aaee0c9d">More...</a><br /></td></tr>
+<tr class="separator:a95daa6bc36aa231627f52c77aaee0c9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afec42c0b15d987bb9802c4141d6baee4"><td class="memItemLeft" align="right" valign="top">static uint64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_afec42c0b15d987bb9802c4141d6baee4.html#afec42c0b15d987bb9802c4141d6baee4">dggs_cell_parent</a> (const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> *ops, uint64 cell, int32 resolution)</td></tr>
+<tr class="memdesc:afec42c0b15d987bb9802c4141d6baee4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ancestor of a cell at a resolution through the descriptor of its grid.  <a href="tcellindex_8c_afec42c0b15d987bb9802c4141d6baee4.html#afec42c0b15d987bb9802c4141d6baee4">More...</a><br /></td></tr>
+<tr class="separator:afec42c0b15d987bb9802c4141d6baee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0095b56d39a5ca8febc6e29bd84497ec"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a0095b56d39a5ca8febc6e29bd84497ec.html#a0095b56d39a5ca8febc6e29bd84497ec">dggs_cell_parent_cmp</a> (const void *a, const void *b)</td></tr>
+<tr class="memdesc:a0095b56d39a5ca8febc6e29bd84497ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparator of two cells by their parent, then by themselves.  <a href="tcellindex_8c_a0095b56d39a5ca8febc6e29bd84497ec.html#a0095b56d39a5ca8febc6e29bd84497ec">More...</a><br /></td></tr>
+<tr class="separator:a0095b56d39a5ca8febc6e29bd84497ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c66a7163ca3a614c5c3c8278686480b"><td class="memItemLeft" align="right" valign="top">static int32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a6c66a7163ca3a614c5c3c8278686480b.html#a6c66a7163ca3a614c5c3c8278686480b">dggs_cell_resolution</a> (const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> *ops, uint64 cell)</td></tr>
+<tr class="memdesc:a6c66a7163ca3a614c5c3c8278686480b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the resolution of a cell through the descriptor of its grid.  <a href="tcellindex_8c_a6c66a7163ca3a614c5c3c8278686480b.html#a6c66a7163ca3a614c5c3c8278686480b">More...</a><br /></td></tr>
+<tr class="separator:a6c66a7163ca3a614c5c3c8278686480b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae3db76ef453387d197b78005cd4f4b7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype)</td></tr>
 <tr class="memdesc:aae3db76ef453387d197b78005cd4f4b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the operations descriptor for a temporal cell-index type.  <a href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">More...</a><br /></td></tr>
 <tr class="separator:aae3db76ef453387d197b78005cd4f4b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,6 +166,12 @@ Functions</h2></td></tr>
 <tr class="memitem:abdcaf38080f331bc15e1895012c7f104"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">dggs_lonlat_to_xyz</a> (double lon, double lat, double xyz[3])</td></tr>
 <tr class="memdesc:abdcaf38080f331bc15e1895012c7f104"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the unit vector of a lon/lat position.  <a href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">More...</a><br /></td></tr>
 <tr class="separator:abdcaf38080f331bc15e1895012c7f104"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac304db5abc4f64be77a5adf43590b564"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_ac304db5abc4f64be77a5adf43590b564.html#ac304db5abc4f64be77a5adf43590b564">dggs_quadtree_compact_cells</a> (const <a class="el" href="structSet.html">Set</a> *cells, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype)</td></tr>
+<tr class="memdesc:ac304db5abc4f64be77a5adf43590b564"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the compacted set of a set of cells of a quadtree grid.  <a href="tcellindex_8c_ac304db5abc4f64be77a5adf43590b564.html#ac304db5abc4f64be77a5adf43590b564">More...</a><br /></td></tr>
+<tr class="separator:ac304db5abc4f64be77a5adf43590b564"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab658868840e04f0e5d5458b2f760f991"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_ab658868840e04f0e5d5458b2f760f991.html#ab658868840e04f0e5d5458b2f760f991">dggs_quadtree_uncompact_cells</a> (const <a class="el" href="structSet.html">Set</a> *cells, int32 resolution, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype, uint64 *(*children)(uint64, uint32_t, int *))</td></tr>
+<tr class="memdesc:ab658868840e04f0e5d5458b2f760f991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the set of cells at a resolution covering a set of cells of a quadtree grid.  <a href="tcellindex_8c_ab658868840e04f0e5d5458b2f760f991.html#ab658868840e04f0e5d5458b2f760f991">More...</a><br /></td></tr>
+<tr class="separator:ab658868840e04f0e5d5458b2f760f991"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8650a79353459e4a7cf8f1efc9e16cd0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8c_a8650a79353459e4a7cf8f1efc9e16cd0.html#a8650a79353459e4a7cf8f1efc9e16cd0">dggs_vec_cross</a> (const <a class="el" href="structPOINT3D.html">POINT3D</a> *p, const <a class="el" href="structPOINT3D.html">POINT3D</a> *q, <a class="el" href="structPOINT3D.html">POINT3D</a> *r)</td></tr>
 <tr class="memdesc:a8650a79353459e4a7cf8f1efc9e16cd0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the last argument to the cross product of the first two.  <a href="tcellindex_8c_a8650a79353459e4a7cf8f1efc9e16cd0.html#a8650a79353459e4a7cf8f1efc9e16cd0">More...</a><br /></td></tr>
 <tr class="separator:a8650a79353459e4a7cf8f1efc9e16cd0"><td class="memSeparator" colspan="2">&#160;</td></tr>

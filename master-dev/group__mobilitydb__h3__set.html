@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Static set-returning helpers (gridDisk, cellToChildren, h3CompactCells, …) surfaced via <code><a class="el" href="mobilitydb_2src_2h3_2h3index__sets_8c.html" title="PG V1 wrappers for the static set-returning h3 helpers.">mobilitydb/src/h3/h3index_sets.c</a></code>  
+<p>Static set-returning helpers (gridDisk, cellToChildren, compactCells, …) surfaced via <code><a class="el" href="mobilitydb_2src_2h3_2h3index__sets_8c.html" title="PG V1 wrappers for the static set-returning h3 helpers.">mobilitydb/src/h3/h3index_sets.c</a></code>  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -88,7 +88,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaee4bec64729355a7a7ba54f5f2866a7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the vertexes of a cell @sqlfn h3CellToVertexes()  <a href="group__mobilitydb__h3__set_gaee4bec64729355a7a7ba54f5f2866a7f.html#gaee4bec64729355a7a7ba54f5f2866a7f">More...</a><br /></td></tr>
 <tr class="separator:gaee4bec64729355a7a7ba54f5f2866a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafebafbc9adc5d3ed4bc30fabff2977d0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__set_gafebafbc9adc5d3ed4bc30fabff2977d0.html#gafebafbc9adc5d3ed4bc30fabff2977d0">H3_compact_cells</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:gafebafbc9adc5d3ed4bc30fabff2977d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the compacted representation of an h3indexset @sqlfn h3CompactCells()  <a href="group__mobilitydb__h3__set_gafebafbc9adc5d3ed4bc30fabff2977d0.html#gafebafbc9adc5d3ed4bc30fabff2977d0">More...</a><br /></td></tr>
+<tr class="memdesc:gafebafbc9adc5d3ed4bc30fabff2977d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the compacted representation of an h3indexset @sqlfn compactCells()  <a href="group__mobilitydb__h3__set_gafebafbc9adc5d3ed4bc30fabff2977d0.html#gafebafbc9adc5d3ed4bc30fabff2977d0">More...</a><br /></td></tr>
 <tr class="separator:gafebafbc9adc5d3ed4bc30fabff2977d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga43804d5677c30f888560d465c46b264e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__set_ga43804d5677c30f888560d465c46b264e.html#ga43804d5677c30f888560d465c46b264e">H3_get_icosahedron_faces</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga43804d5677c30f888560d465c46b264e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the icosahedron face indexes intersected by a cell @sqlfn h3GetIcosahedronFaces()  <a href="group__mobilitydb__h3__set_ga43804d5677c30f888560d465c46b264e.html#ga43804d5677c30f888560d465c46b264e">More...</a><br /></td></tr>
@@ -106,14 +106,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga3b2988ed1b2d1fc07575321f5bd59ab6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the outgoing directed edges of a cell @sqlfn h3OriginToDirectedEdges()  <a href="group__mobilitydb__h3__set_ga3b2988ed1b2d1fc07575321f5bd59ab6.html#ga3b2988ed1b2d1fc07575321f5bd59ab6">More...</a><br /></td></tr>
 <tr class="separator:ga3b2988ed1b2d1fc07575321f5bd59ab6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga24c592e7924889bd2f0396edbb393f6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__set_ga24c592e7924889bd2f0396edbb393f6a.html#ga24c592e7924889bd2f0396edbb393f6a">H3_uncompact_cells</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga24c592e7924889bd2f0396edbb393f6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the uncompacted representation of an h3indexset at the target resolution @sqlfn h3UncompactCells()  <a href="group__mobilitydb__h3__set_ga24c592e7924889bd2f0396edbb393f6a.html#ga24c592e7924889bd2f0396edbb393f6a">More...</a><br /></td></tr>
+<tr class="memdesc:ga24c592e7924889bd2f0396edbb393f6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the uncompacted representation of an h3indexset at the target resolution @sqlfn uncompactCells()  <a href="group__mobilitydb__h3__set_ga24c592e7924889bd2f0396edbb393f6a.html#ga24c592e7924889bd2f0396edbb393f6a">More...</a><br /></td></tr>
 <tr class="separator:ga24c592e7924889bd2f0396edbb393f6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4502a1bc03053f356f0aeaefd91d4c32"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__set_ga4502a1bc03053f356f0aeaefd91d4c32.html#ga4502a1bc03053f356f0aeaefd91d4c32">H3indexset_grid_disk</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga4502a1bc03053f356f0aeaefd91d4c32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return all cells within k grid-steps of a cell of a set @sqlfn gridDisk()  <a href="group__mobilitydb__h3__set_ga4502a1bc03053f356f0aeaefd91d4c32.html#ga4502a1bc03053f356f0aeaefd91d4c32">More...</a><br /></td></tr>
 <tr class="separator:ga4502a1bc03053f356f0aeaefd91d4c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Static set-returning helpers (gridDisk, cellToChildren, h3CompactCells, …) surfaced via <code><a class="el" href="mobilitydb_2src_2h3_2h3index__sets_8c.html" title="PG V1 wrappers for the static set-returning h3 helpers.">mobilitydb/src/h3/h3index_sets.c</a></code> </p>
+<p >Static set-returning helpers (gridDisk, cellToChildren, compactCells, …) surfaced via <code><a class="el" href="mobilitydb_2src_2h3_2h3index__sets_8c.html" title="PG V1 wrappers for the static set-returning h3 helpers.">mobilitydb/src/h3/h3index_sets.c</a></code> </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

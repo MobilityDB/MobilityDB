@@ -49,11 +49,12 @@ var searchData=
   ['delta_5funix_5fpostgres_5fepoch_46',['DELTA_UNIX_POSTGRES_EPOCH',['../meos_2include_2temporal_2temporal_8h_a9e2e6c0d74336fd387f1805faa853229.html#a9e2e6c0d74336fd387f1805faa853229',1,'temporal.h']]],
   ['dense_5fbufsz_47',['DENSE_BUFSZ',['../cellcover__test_8c_aed31066014650b42645279fc0c2274fb.html#aed31066014650b42645279fc0c2274fb',1,'cellcover_test.c']]],
   ['dense_5fpositions_48',['DENSE_POSITIONS',['../cellcover__test_8c_a4fd6f0e6710f85e74b98fef49d1503fe.html#a4fd6f0e6710f85e74b98fef49d1503fe',1,'DENSE_POSITIONS():&#160;cellcover_test.c'],['../rasterwalk__test_8c_a4fd6f0e6710f85e74b98fef49d1503fe.html#a4fd6f0e6710f85e74b98fef49d1503fe',1,'DENSE_POSITIONS():&#160;rasterwalk_test.c']]],
-  ['discontinuous_49',['DISCONTINUOUS',['../meos_2include_2temporal_2temporal_8h_a04b3107dfcf77825787f00d509bb98d0.html#a04b3107dfcf77825787f00d509bb98d0',1,'temporal.h']]],
-  ['dist_50',['DIST',['../setset__pairs__test_8c_ab8a17bd7aebfe396839620a814ec3e4d.html#ab8a17bd7aebfe396839620a814ec3e4d',1,'setset_pairs_test.c']]],
-  ['double2pgetdatum_51',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],
-  ['double3pgetdatum_52',['Double3PGetDatum',['../meos_2include_2temporal_2temporal_8h_a510bcaed2c65d1111a7492315648df86.html#a510bcaed2c65d1111a7492315648df86',1,'temporal.h']]],
-  ['double4pgetdatum_53',['Double4PGetDatum',['../meos_2include_2temporal_2temporal_8h_a1b25eb74c05a533191b049358180e88a.html#a1b25eb74c05a533191b049358180e88a',1,'temporal.h']]],
-  ['double_5fpad_54',['DOUBLE_PAD',['../meos_8h_ad541123ad64c1db30045cc5c5fcf41f0.html#ad541123ad64c1db30045cc5c5fcf41f0',1,'meos.h']]],
-  ['dp_5fstack_5fsize_55',['DP_STACK_SIZE',['../meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9',1,'temporal_analytics.c']]]
+  ['dggs_5fmax_5funcompact_5fcells_49',['DGGS_MAX_UNCOMPACT_CELLS',['../tcellindex_8c_aa7a9e2cae7aac54c6cf6d9e5e147e125.html#aa7a9e2cae7aac54c6cf6d9e5e147e125',1,'tcellindex.c']]],
+  ['discontinuous_50',['DISCONTINUOUS',['../meos_2include_2temporal_2temporal_8h_a04b3107dfcf77825787f00d509bb98d0.html#a04b3107dfcf77825787f00d509bb98d0',1,'temporal.h']]],
+  ['dist_51',['DIST',['../setset__pairs__test_8c_ab8a17bd7aebfe396839620a814ec3e4d.html#ab8a17bd7aebfe396839620a814ec3e4d',1,'setset_pairs_test.c']]],
+  ['double2pgetdatum_52',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],
+  ['double3pgetdatum_53',['Double3PGetDatum',['../meos_2include_2temporal_2temporal_8h_a510bcaed2c65d1111a7492315648df86.html#a510bcaed2c65d1111a7492315648df86',1,'temporal.h']]],
+  ['double4pgetdatum_54',['Double4PGetDatum',['../meos_2include_2temporal_2temporal_8h_a1b25eb74c05a533191b049358180e88a.html#a1b25eb74c05a533191b049358180e88a',1,'temporal.h']]],
+  ['double_5fpad_55',['DOUBLE_PAD',['../meos_8h_ad541123ad64c1db30045cc5c5fcf41f0.html#ad541123ad64c1db30045cc5c5fcf41f0',1,'meos.h']]],
+  ['dp_5fstack_5fsize_56',['DP_STACK_SIZE',['../meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9',1,'temporal_analytics.c']]]
 ];
