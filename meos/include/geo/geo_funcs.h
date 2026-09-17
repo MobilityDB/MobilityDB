@@ -1029,8 +1029,8 @@ point_on_segment_within(double px, double py, double x1, double y1, double x2,
   double y2, double tol)
 {
   /* Fast bounding-box rejection, which is where all but a few calls end */
-  if ((px < fmin(x1, x2) - tol) || (px > fmax(x1, x2) + tol) ||
-      (py < fmin(y1, y2) - tol) || (py > fmax(y1, y2) + tol))
+  if ((px < Min(x1, x2) - tol) || (px > Max(x1, x2) + tol) ||
+      (py < Min(y1, y2) - tol) || (py > Max(y1, y2) + tol))
     return false;
 
   /* Vectors AP and AB */
