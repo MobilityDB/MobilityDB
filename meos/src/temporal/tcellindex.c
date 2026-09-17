@@ -731,6 +731,169 @@ dggs_crossing_param(double tin, double tout, uint64 cell,
   return tout;
 }
 
+/**
+ * @brief Return in @p params the parameters at which a geodetic path meets a
+ * plane through the centre of the sphere, and their number
+ * @details The circle of the path meets the plane `<p, m> = c` where its angle
+ * from the first endpoint solves `ca cos(theta) + cb sin(theta) = c`, with
+ * `ca` and `cb` the projections on the plane of the endpoint and of the
+ * direction perpendicular to it in the circle. The equation has two solutions,
+ * one, or none, as the circle crosses the plane, touches it, or misses it.
+ * @param[in] arc Path
+ * @param[in] m Unit normal of the plane
+ * @param[in] c Offset of the plane from the centre
+ * @param[out] params Array of at least two parameters, in `[0, 1]` and
+ * ascending
+ * @return Number of parameters written
+ */
+int
+dggs_arc_plane_params(const DggsArc *arc, const double m[3], double c,
+  double *params)
+{
+  assert(arc); assert(m); assert(params);
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  double ca = a[0] * m[0] + a[1] * m[1] + a[2] * m[2];
+  double cb = b[0] * m[0] + b[1] * m[1] + b[2] * m[2];
+  double r = hypot(ca, cb);
+  if (r == 0.0 || fabs(c) > r)
+    return 0;
+  double base = atan2(cb, ca), half = acos(c / r);
+  int count = 0;
+  for (int s = -1; s <= 1; s += 2)
+  {
+    double theta = fmod(base + s * half, 2.0 * M_PI);
+    if (theta < 0.0)
+      theta += 2.0 * M_PI;
+    double t = theta / arc->dist;
+    if (t >= 0.0 && t <= 1.0)
+      params[count++] = t;
+  }
+  if (count == 2 && params[0] > params[1])
+  {
+    double swap = params[0]; params[0] = params[1]; params[1] = swap;
+  }
+  return count;
+}
+
+/**
+ * @brief Return where a geodetic path first reaches a plane through the centre
+ * of the sphere after a parameter
+ * @param[in] arc Path
+ * @param[in] m Unit normal of the plane
+ * @param[in] c Offset of the plane from the centre
+ * @param[in] tmin Parameter the crossing lies strictly ahead of
+ * @return The path parameter of the crossing, or a value above 1 when the path
+ * reaches the plane nowhere ahead of @p tmin
+ */
+double
+dggs_arc_plane_param(const DggsArc *arc, const double m[3], double c,
+  double tmin)
+{
+  double params[2], best = 2.0;
+  int count = dggs_arc_plane_params(arc, m, c, params);
+  for (int i = 0; i < count; i++)
+    if (params[i] > tmin && params[i] < best)
+      best = params[i];
+  return best;
+}
+
+/**
+ * @brief Return true if a position lies in a box of longitudes and latitudes
+ */
+static bool
+dggs_lonlat_box_holds(double lon, double lat, double xmin, double ymin,
+  double xmax, double ymax)
+{
+  assert(xmin <= xmax); assert(ymin <= ymax);
+  return lon >= xmin && lon <= xmax && lat >= ymin && lat <= ymax;
+}
+
+/**
+ * @brief Return in @p tin and @p tout the parameters between which a geodetic
+ * path lies in a box of longitudes and latitudes, and the number of such
+ * spans
+ * @details A box is bounded by the planes of two meridians, which pass through
+ * the centre of the sphere, and by the planes of constant height of two
+ * parallels. The path meets each of them at parameters #dggs_arc_plane_params
+ * states, and those parameters cut the path into pieces that lie wholly inside
+ * the box or wholly outside it, so the position halfway along a piece says
+ * which. A path is therefore clipped where it crosses the box and not where a
+ * straight line in longitude and latitude would, which no geodetic path
+ * follows.
+ * @param[in] arc Path
+ * @param[in] xmin,ymin,xmax,ymax Bounds of the box, in degrees
+ * @param[out] tin,tout Arrays of at least @p maxout parameters
+ * @param[in] maxout Capacity of both arrays
+ * @return Number of spans written
+ */
+int
+dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin, double ymin,
+  double xmax, double ymax, double *tin, double *tout, int maxout)
+{
+  assert(arc); assert(tin); assert(tout);
+  if (maxout < 1)
+    return 0;
+  /* The parameters at which the path reaches a bound of the box */
+  double cuts[12], params[2];
+  int ncuts = 0;
+  cuts[ncuts++] = 0.0;
+  cuts[ncuts++] = 1.0;
+  for (int k = 0; k < 2; k++)
+  {
+    double lon = (k == 0 ? xmin : xmax) * M_PI / 180.0;
+    const double m[3] = { -sin(lon), cos(lon), 0.0 };
+    int count = dggs_arc_plane_params(arc, m, 0.0, params);
+    for (int i = 0; i < count; i++)
+      cuts[ncuts++] = params[i];
+  }
+  const double pole[3] = { 0.0, 0.0, 1.0 };
+  for (int k = 0; k < 2; k++)
+  {
+    double lat = (k == 0 ? ymin : ymax) * M_PI / 180.0;
+    int count = dggs_arc_plane_params(arc, pole, sin(lat), params);
+    for (int i = 0; i < count; i++)
+      cuts[ncuts++] = params[i];
+  }
+  /* In ascending order, which is the order the path passes them */
+  for (int i = 1; i < ncuts; i++)
+  {
+    double v = cuts[i];
+    int j = i - 1;
+    while (j >= 0 && cuts[j] > v)
+    {
+      cuts[j + 1] = cuts[j]; j--;
+    }
+    cuts[j + 1] = v;
+  }
+  /* A piece between two cuts lies wholly inside the box or wholly outside it,
+   * and the position halfway along it says which; a piece following one that
+   * is inside extends its span */
+  int nspans = 0;
+  for (int i = 0; i + 1 < ncuts; i++)
+  {
+    if (cuts[i + 1] <= cuts[i])
+      continue;
+    double lon, lat;
+    if (! dggs_arc_point(arc, (cuts[i] + cuts[i + 1]) / 2.0, &lon, &lat))
+      continue;
+    if (! dggs_lonlat_box_holds(lon * 180.0 / M_PI, lat * 180.0 / M_PI, xmin,
+          ymin, xmax, ymax))
+      continue;
+    if (nspans > 0 && tout[nspans - 1] == cuts[i])
+      tout[nspans - 1] = cuts[i + 1];
+    else if (nspans < maxout)
+    {
+      tin[nspans] = cuts[i];
+      tout[nspans++] = cuts[i + 1];
+    }
+    else
+      break;
+  }
+  return nspans;
+}
+
 /*****************************************************************************
  * Planar path of a segment
  *****************************************************************************/

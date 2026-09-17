@@ -63,6 +63,13 @@ atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 </programlisting>
 				<para>El tercer argumento opcional se utiliza para mosaicos multidimensionales (ver <xref linkend="ttype_tiling"/>) para excluir el borde superior de los mosaicos cuando un valor temporal se divide en varios mosaicos, de modo que todos los fragmentos de la geometría temporal sean exclusivos.</para>
+				<para>Un punto temporal geodésico recorre el círculo máximo entre dos posiciones, y la caja lo contiene donde ese círculo entra en ella y sale de ella: un viaje de <varname>Point(10 60)</varname> a <varname>Point(50 60)</varname> alcanza la latitud 61.518762, y un viaje que cruza el antimeridiano recorre las longitudes por el camino corto. Dos cajas que se encuentran en un cruce indican el mismo instante para él, de modo que las piezas de un viaje contienen el período del viaje y sus posiciones.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false), 6);
+/* {[POINT(10 60)@2001-01-01, POINT(18.168064 61)@2001-01-01 05:02:50.433397),
+   [POINT(41.831936 61)@2001-01-01 18:57:09.566602, POINT(50 60)@2001-01-02]} */
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));

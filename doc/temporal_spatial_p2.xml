@@ -63,6 +63,13 @@ atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 </programlisting>
 				<para>The third optional argument is used for multidimensional tiling (see <xref linkend="ttype_tiling"/>) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal geometry are exclusive.</para>
+				<para>A geodetic temporal point travels the great circle between two positions, and the box holds it where that circle enters and leaves the box: a trip from <varname>Point(10 60)</varname> to <varname>Point(50 60)</varname> reaches latitude 61.518762, and a trip across the antimeridian sweeps the longitudes the short way round. Two boxes meeting at a crossing state the same instant for it, so the pieces of a trip hold the period of the trip and its positions.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false), 6);
+/* {[POINT(10 60)@2001-01-01, POINT(18.168064 61)@2001-01-01 05:02:50.433397),
+   [POINT(41.831936 61)@2001-01-01 18:57:09.566602, POINT(50 60)@2001-01-02]} */
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));
