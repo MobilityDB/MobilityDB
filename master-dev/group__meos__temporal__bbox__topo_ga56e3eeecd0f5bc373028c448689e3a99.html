@@ -151,7 +151,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the time of two temporal values actually overlaps. </p>
-<p >Unlike <a class="el" href="group__meos__temporal__bbox__topo_gac7faf717b31ba4a483b0e5187a50c7b4.html#gac7faf717b31ba4a483b0e5187a50c7b4">overlaps_temporal_temporal</a>, which tests the bounding spans, this walks the actual periods, so two values whose active parts fall in each other's gaps do not count as overlapping. The periods are read in place from the sequences, so there is no allocation. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Unlike <a class="el" href="group__meos__temporal__bbox__topo_gac7faf717b31ba4a483b0e5187a50c7b4.html#gac7faf717b31ba4a483b0e5187a50c7b4">overlaps_temporal_temporal</a>, which tests the bounding spans, this walks the parts each value is defined on, so two values whose active parts fall in each other's gaps do not count as overlapping, and neither do two sets of instants that interleave without sharing one. The periods are read in place from the sequences, so there is no allocation. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values </td></tr>
   </table>
