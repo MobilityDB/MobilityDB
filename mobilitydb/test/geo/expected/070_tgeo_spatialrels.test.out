@@ -1001,6 +1001,84 @@ SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Po
  t
 (1 row)
 
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+ eintersects 
+-------------
+ 
+(1 row)
+
+SELECT aIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+ aintersects 
+-------------
+ 
+(1 row)
+
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+ edisjoint 
+-----------
+ 
+(1 row)
+
+SELECT aDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+ adisjoint 
+-----------
+ 
+(1 row)
+
+SELECT eContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT aContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+ acontains 
+-----------
+ 
+(1 row)
+
+SELECT eCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT aCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+ acovers 
+---------
+ 
+(1 row)
+
+SELECT eTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+ etouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]', 10);
+ edwithin 
+----------
+ 
+(1 row)
+
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+ etouches 
+----------
+ t
+(1 row)
+
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
  eintersects 
 -------------

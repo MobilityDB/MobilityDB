@@ -666,6 +666,13 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return -1;
+
+  /* Common-time gate: two temporal geometries sharing no instant are compared nowhere,
+   * so the relationship has no answer, as #ea_dwithin_tgeo_tgeo also states. The always
+   * branch below reads the traversed areas, which carry no time of their own */
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
+
   /* Ever */
   if (ever)
     return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, EVER);
@@ -1771,6 +1778,12 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
       ! ensure_not_geodetic(temp1->temptype) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp1->temptype, temp2->flags))
+    return -1;
+
+  /* Common-time gate, before the box test: the box carries time as a dimension, so two
+   * geometries sharing no instant have boxes that do not overlap, and the test below would
+   * answer 0 where the relationship has no answer at all */
+  if (! temporal_time_overlaps(temp1, temp2))
     return -1;
 
   /* Bounding box test */
