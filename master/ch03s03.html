@@ -56,4 +56,9 @@ SELECT geography 'Linestring(1 1,2 2)'::stbox;
 -- SRID=4326;GEODSTBOX X((1,1),(2,2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 -- STBOX T((2001-01-01,2001-01-04))
+</pre><p>The box of a geodetic temporal point holds the great circles it travels between its positions, which rise above them or fall below them: a trip from <code class="varname">Point(10 60)</code> to <code class="varname">Point(50 60)</code> reaches latitude 61.518762, and one whose positions lie more than half the globe apart in longitude crosses the antimeridian and spans every longitude.</p><pre class="programlisting">
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+-- SRID=4326;GEODSTBOX XT(((10,60),(50,61.518762)),[2001-01-01, 2001-01-02])
+SELECT stbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]');
+-- SRID=4326;GEODSTBOX XT(((-180,60),(180,60.378349)),[2001-01-01, 2001-01-02])
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Constructors </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Accessors</td></tr></table></div></body></html>
