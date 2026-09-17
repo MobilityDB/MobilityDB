@@ -244,7 +244,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE cos(temp) IS NOT NULL;
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE tan(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tan(temp / 100.0) IS NOT NULL;
  count 
 -------
     96
