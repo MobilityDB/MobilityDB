@@ -21,6 +21,21 @@ SELECT ST_AsText(round(traversedArea(
 
 SELECT asText(round(centroid(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
+                                           astext                                           
+--------------------------------------------------------------------------------------------
+ [POINT(0.5 0.5)@Thu Jan 01 00:00:00 2026 PST, POINT(2.5 0.5)@Fri Jan 02 00:00:00 2026 PST]
+(1 row)
+
+SELECT ST_AsText(valueAtTimestamp(centroid(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'),
+  '2026-01-01 12:00'));
+   st_astext    
+----------------
+ POINT(1.5 0.5)
+(1 row)
+
+SELECT asText(round(centroid(
+  trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
                                                  astext                                                 
 --------------------------------------------------------------------------------------------------------
  Interp=Step;[POINT(0.5 0.5)@Thu Jan 01 00:00:00 2026 PST, POINT(2.5 0.5)@Fri Jan 02 00:00:00 2026 PST]

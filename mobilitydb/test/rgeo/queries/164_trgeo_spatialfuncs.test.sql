@@ -51,6 +51,14 @@ SELECT ST_AsText(round(traversedArea(
 SELECT asText(round(centroid(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
 
+-- The centroid keeps the interpolation of the body: halfway through the
+-- translation it is halfway between its two positions.
+SELECT ST_AsText(valueAtTimestamp(centroid(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'),
+  '2026-01-01 12:00'));
+SELECT asText(round(centroid(
+  trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
+
 -- convexHull: convex hull of the traversed area.
 SELECT ST_AsText(round(convexHull(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
