@@ -42,6 +42,10 @@ SELECT asText(round(bodyPointTrajectory(
   'Point(0 0)'), 6));
 
 SELECT asText((trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]')::tgeompoint);
+SELECT bodyPointTrajectory(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
+  'Point(0 0)') =
+  (trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]')::tgeompoint;
 
 -- Body front-right corner (1,0): at t1 (yaw=0) world (1,0); at t2 (yaw=π/2)
 -- the body's +X axis now points +Y, so the corner is at world (10,1).
@@ -54,6 +58,17 @@ SELECT asText(round(bodyPointTrajectory(
 SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(0 1)'), 6));
+
+-- A point off the center of a body that only rotates follows a quarter of a
+-- circle, which the linear result replaces by the chord between its positions
+SELECT asText(round(bodyPointTrajectory(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(0 0),1.5707963267948966)@2026-01-01 00:01:00]',
+  'Point(1 0)'), 6));
+
+-- A body with step interpolation gives a trajectory with step interpolation
+SELECT asText(round(bodyPointTrajectory(
+  trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
+  'Point(1 0)'), 6));
 
 -------------------------------------------------------------------------------
 -- 2D static body (no motion): trajectory is constant.

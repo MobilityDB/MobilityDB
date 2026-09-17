@@ -902,6 +902,9 @@ datum_pose_geom_centroid(Datum pose_datum, Datum geom_datum)
 /**
  * @ingroup meos_rgeo_accessor
  * @brief Return the centroid of a temporal rigid geometry as a temporal point
+ * @details The centroid is a point fixed on the body, so the result has the
+ * interpolation of the temporal rigid geometry, as the result of
+ * #trgeometry_body_point_trajectory
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Trgeometry_centroid()
  */
@@ -918,6 +921,7 @@ trgeometry_centroid(const Temporal *temp)
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = T_GEOMETRY;
   lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.reslinear = true;
   lfinfo.invert = INVERT_NO;
   return tfunc_temporal_base(temp, PointerGetDatum(trgeo_geom_p(temp)), &lfinfo);
 }
@@ -963,6 +967,11 @@ datum_pose_apply_to_geom(Datum pose_datum, Datum geom_datum)
  * @ingroup meos_rgeo_spatialfuncs
  * @brief Return the world-frame trajectory of a body-frame point on a moving
  * rigid geometry
+ * @details The pose is applied to the point at each instant, and the result
+ * has the interpolation of the temporal rigid geometry. A linear result is
+ * exact along a segment in which the body does not rotate. Along a segment in
+ * which it rotates, the point follows a curve, which the result replaces by
+ * the segment joining the positions at the two instants.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Body-frame geometry
  * @csqlfn #Trgeometry_body_point_trajectory()
@@ -981,6 +990,7 @@ trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = T_GEOMETRY;
   lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.reslinear = true;
   lfinfo.invert = INVERT_NO;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }

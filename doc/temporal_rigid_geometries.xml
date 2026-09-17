@@ -359,7 +359,7 @@ centroid(trgeometry) → tgeompoint
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(centroid( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
--- Interp=Step;[POINT(0.5 0.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]
+-- [POINT(0.5 0.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -382,12 +382,16 @@ SELECT ST_GeometryType(convexHull( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0)
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 bodyPointTrajectory(trgeometry,geometry) → tgeompoint
 </programlisting>
-				<para>The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant.</para>
+				<para>The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant. The result has the interpolation of the temporal rigid geometry. With linear interpolation, the result is exact along a segment in which the body does not rotate. Along a segment in which the body rotates, the point follows a curve, which the result replaces by the segment joining its positions at the two instants, as in the second example below, where the point moves from (1 0) to (0 1) along a quarter of a circle.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(bodyPointTrajectory( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]',
   geometry 'Point(0 0)'));
--- Interp=Step;[POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-02]
+-- [POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-02]
+SELECT asText(round(bodyPointTrajectory( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(1 0)'), 6));
+-- [POINT(1 0)@2001-01-01, POINT(0 1)@2001-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>
