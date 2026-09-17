@@ -30,6 +30,8 @@
 
 #include "librtcore.h"
 #include "librtcore_internal.h"
+/* MEOS: the covers test this file asks is answered by the native engine */
+#include "geo/geo_funcs.h"
 
 #include <math.h>
 
@@ -893,8 +895,10 @@ rt_raster_compute_skewed_raster(
 	int y;
 
 	LWGEOM *geom = NULL;
-	GEOSGeometry *sgeom = NULL;
-	GEOSGeometry *ngeom = NULL;
+	/* MEOS: the covers test is answered by the native engine, which reads the
+	 * geometries themselves, so neither extent is converted */
+	LWGEOM *ngeom = NULL;
+	bool result = false;
 
 	if (
 		(tolerance < 0.) ||
@@ -1128,8 +1132,7 @@ rt_raster_compute_skewed_raster(
 	raster->width = _r[0];
 	raster->height = _r[1];
 
-	/* initialize GEOS */
-	initGEOS(rtinfo, lwgeom_geos_error);
+	/* MEOS: the covers test below reaches no GEOS entry point, so none is started */
 
 	/* create reference LWPOLY */
 	{
@@ -1140,30 +1143,26 @@ rt_raster_compute_skewed_raster(
 			return NULL;
 		}
 
-		ngeom = (GEOSGeometry *) LWGEOM2GEOS(lwpoly_as_lwgeom(npoly), 0);
-		lwpoly_free(npoly);
+		ngeom = lwpoly_as_lwgeom(npoly);
 	}
 
 	do {
 		covers = 0;
 
-		/* construct sgeom from raster */
+		/* construct the skewed extent from raster */
 		if ((rt_raster_get_convex_hull(raster, &geom) != ES_NONE) || geom == NULL) {
 			rterror("rt_raster_compute_skewed_raster: Could not build skewed extent's geometry for covers test");
-			GEOSGeom_destroy(ngeom);
+			lwgeom_free(ngeom);
 			rt_raster_destroy(raster);
 			return NULL;
 		}
 
-		sgeom = (GEOSGeometry *) LWGEOM2GEOS(geom, 0);
+		covers = meos_relate_pattern(geom, ngeom, "******FF*", &result) ? result : 2;
 		lwgeom_free(geom);
-
-		covers = GEOSRelatePattern(sgeom, ngeom, "******FF*");
-		GEOSGeom_destroy(sgeom);
 
 		if (covers == 2) {
 			rterror("rt_raster_compute_skewed_raster: Could not run covers test");
-			GEOSGeom_destroy(ngeom);
+			lwgeom_free(ngeom);
 			rt_raster_destroy(raster);
 			return NULL;
 		}
@@ -1195,23 +1194,20 @@ rt_raster_compute_skewed_raster(
 			else
 				raster->height--;
 
-			/* construct sgeom from raster */
+			/* construct the skewed extent from raster */
 			if ((rt_raster_get_convex_hull(raster, &geom) != ES_NONE) || geom == NULL) {
 				rterror("rt_raster_compute_skewed_raster: Could not build skewed extent's geometry for minimizing dimensions");
-				GEOSGeom_destroy(ngeom);
+				lwgeom_free(ngeom);
 				rt_raster_destroy(raster);
 				return NULL;
 			}
 
-			sgeom = (GEOSGeometry *) LWGEOM2GEOS(geom, 0);
+			covers = meos_relate_pattern(geom, ngeom, "******FF*", &result) ? result : 2;
 			lwgeom_free(geom);
-
-			covers = GEOSRelatePattern(sgeom, ngeom, "******FF*");
-			GEOSGeom_destroy(sgeom);
 
 			if (covers == 2) {
 				rterror("rt_raster_compute_skewed_raster: Could not run covers test for minimizing dimensions");
-				GEOSGeom_destroy(ngeom);
+				lwgeom_free(ngeom);
 				rt_raster_destroy(raster);
 				return NULL;
 			}
@@ -1224,7 +1220,7 @@ rt_raster_compute_skewed_raster(
 
 	}
 
-	GEOSGeom_destroy(ngeom);
+	lwgeom_free(ngeom);
 
 	return raster;
 }
