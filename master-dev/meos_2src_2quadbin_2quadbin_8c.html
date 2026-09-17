@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -99,6 +100,12 @@ $(function() {
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuadbinArcAt.html">QuadbinArcAt</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A geodetic path and the resolution its tiles are read at, the state <a class="el" href="tcellindex_8h_a162d16ac9db01f4cf2915544b0952b1f.html#a162d16ac9db01f4cf2915544b0952b1f" title="Return where a path leaves a cell, read from a parameter at which it still holds the cell and one at ...">dggs_crossing_param()</a> reads a tile of the path from.  <a href="structQuadbinArcAt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ae71449b1cc6e6250b91f539153a7a0d3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2quadbin_2quadbin_8c_ae71449b1cc6e6250b91f539153a7a0d3.html#ae71449b1cc6e6250b91f539153a7a0d3">M_PI</a>&#160;&#160;&#160;3.14159265358979323846</td></tr>
@@ -121,6 +128,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae875795babe459d9628167d53e713424"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2quadbin_2quadbin_8c_ae875795babe459d9628167d53e713424.html#ae875795babe459d9628167d53e713424">quadbin_arc_cell</a> (const <a class="el" href="structDggsArc.html">DggsArc</a> *arc, double t, uint32_t resolution)</td></tr>
 <tr class="memdesc:ae875795babe459d9628167d53e713424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the cell holding the position a geodetic path reaches at a parameter, or 0 when the position cannot be projected.  <a href="meos_2src_2quadbin_2quadbin_8c_ae875795babe459d9628167d53e713424.html#ae875795babe459d9628167d53e713424">More...</a><br /></td></tr>
 <tr class="separator:ae875795babe459d9628167d53e713424"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa612a07d126c32356d3e9d540bf3f51"><td class="memItemLeft" align="right" valign="top">static uint64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2quadbin_2quadbin_8c_aaa612a07d126c32356d3e9d540bf3f51.html#aaa612a07d126c32356d3e9d540bf3f51">quadbin_arc_cell_at</a> (void *state, double t)</td></tr>
+<tr class="memdesc:aaa612a07d126c32356d3e9d540bf3f51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the tile the path of a geodetic segment holds at a parameter, or 0 when the position cannot be projected.  <a href="meos_2src_2quadbin_2quadbin_8c_aaa612a07d126c32356d3e9d540bf3f51.html#aaa612a07d126c32356d3e9d540bf3f51">More...</a><br /></td></tr>
+<tr class="separator:aaa612a07d126c32356d3e9d540bf3f51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6248a163cdb888cb1d9b7e9868b27791"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2quadbin_2quadbin_8c_a6248a163cdb888cb1d9b7e9868b27791.html#a6248a163cdb888cb1d9b7e9868b27791">quadbin_arc_cells</a> (double lon1, double lat1, double lon2, double lat2, uint32_t resolution, <a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a> *cells, double *enter, int maxout)</td></tr>
 <tr class="memdesc:a6248a163cdb888cb1d9b7e9868b27791"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill <code>cells</code> with every cell a geodetic segment crosses, and <code>enter</code> with the segment parameter at which it reaches each.  <a href="meos_2src_2quadbin_2quadbin_8c_a6248a163cdb888cb1d9b7e9868b27791.html#a6248a163cdb888cb1d9b7e9868b27791">More...</a><br /></td></tr>
 <tr class="separator:a6248a163cdb888cb1d9b7e9868b27791"><td class="memSeparator" colspan="2">&#160;</td></tr>

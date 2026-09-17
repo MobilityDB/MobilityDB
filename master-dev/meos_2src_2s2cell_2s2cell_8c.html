@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -103,6 +104,12 @@ $(function() {
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structS2PathAt.html">S2PathAt</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A path of a segment and the level its cells are read at, the state <a class="el" href="tcellindex_8h_a162d16ac9db01f4cf2915544b0952b1f.html#a162d16ac9db01f4cf2915544b0952b1f" title="Return where a path leaves a cell, read from a parameter at which it still holds the cell and one at ...">dggs_crossing_param()</a> reads a cell of the path from.  <a href="structS2PathAt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:aade45a48d2d48bcd5ecc2a57f15de9df"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2s2cell_2s2cell_8c_aade45a48d2d48bcd5ecc2a57f15de9df.html#aade45a48d2d48bcd5ecc2a57f15de9df">S2_EARTH_RADIUS</a>&#160;&#160;&#160;6371007.180918475</td></tr>
@@ -232,6 +239,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a344da41ee16a9b31cc9bc08106332510"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2s2cell_2s2cell_8c_a344da41ee16a9b31cc9bc08106332510.html#a344da41ee16a9b31cc9bc08106332510">s2cell_parse</a> (const char *str)</td></tr>
 <tr class="memdesc:a344da41ee16a9b31cc9bc08106332510"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a string into an S2 cell.  <a href="meos_2src_2s2cell_2s2cell_8c_a344da41ee16a9b31cc9bc08106332510.html#a344da41ee16a9b31cc9bc08106332510">More...</a><br /></td></tr>
 <tr class="separator:a344da41ee16a9b31cc9bc08106332510"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af41fc5f7672f2e9238e282438084b06f"><td class="memItemLeft" align="right" valign="top">static uint64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2s2cell_2s2cell_8c_af41fc5f7672f2e9238e282438084b06f.html#af41fc5f7672f2e9238e282438084b06f">s2cell_path_cell_at</a> (void *state, double t)</td></tr>
+<tr class="memdesc:af41fc5f7672f2e9238e282438084b06f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the S2 cell the path of a segment holds at a parameter, or 0 when the position cannot be projected.  <a href="meos_2src_2s2cell_2s2cell_8c_af41fc5f7672f2e9238e282438084b06f.html#af41fc5f7672f2e9238e282438084b06f">More...</a><br /></td></tr>
+<tr class="separator:af41fc5f7672f2e9238e282438084b06f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafd18c6cca4f1f54469e39c97c374495d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0">S2CellId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__s2cell_gafd18c6cca4f1f54469e39c97c374495d.html#gafd18c6cca4f1f54469e39c97c374495d">s2cell_point_to_cell</a> (double longitude, double latitude, uint32_t level)</td></tr>
 <tr class="memdesc:gafd18c6cca4f1f54469e39c97c374495d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the S2 cell of <code>level</code> containing a geodetic position.  <a href="group__meos__s2cell_gafd18c6cca4f1f54469e39c97c374495d.html#gafd18c6cca4f1f54469e39c97c374495d">More...</a><br /></td></tr>
 <tr class="separator:gafd18c6cca4f1f54469e39c97c374495d"><td class="memSeparator" colspan="2">&#160;</td></tr>

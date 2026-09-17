@@ -152,7 +152,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Append the instant of a cell entered at a timestamp. </p>
-<p >A cell's entry time is interpolated from the parameter at which the path reaches it, while a timestamp holds whole microseconds, so two crossings closer together than one microsecond round to the same instant. The second is placed one microsecond after the first: that is the smallest separation the type can state, it keeps the order the crossings occur in, and it keeps the cell. </p>
+<p >A cell's entry time is interpolated from the parameter at which the path reaches it, while a timestamp holds whole microseconds, so two crossings closer together than one microsecond round to the same instant. A microsecond is the smallest separation the type can state, so a cell left again before it holds any time is not part of the result: the cell entered at that instant replaces it, as a crossing within <a class="el" href="meos_2include_2temporal_2temporal_8h_a390788067e16536aadb3c44552d90557.html#a390788067e16536aadb3c44552d90557" title="Floating point precision.">MEOS_EPSILON</a> of the end of a segment is no crossing for <a class="el" href="tgeo__distance_8h_a8a0d33cecd2e24bc18b56d9783ace581.html#a8a0d33cecd2e24bc18b56d9783ace581" title="Return 1 or 2 if two temporal geography point segments are at a minimum distance during the period de...">tgeogpointsegm_distance_turnpt()</a> </p>
 
 </div>
 </div>

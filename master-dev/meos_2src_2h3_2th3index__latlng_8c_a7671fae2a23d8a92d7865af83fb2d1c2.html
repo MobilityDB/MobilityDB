@@ -127,7 +127,10 @@ $(function() {
 <b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> {                                                              \</div>
 <div class="line">      <a class="code hl_typedef" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> ts_ = (_ts);                                        \</div>
 <div class="line">      if (have_ts &amp;&amp; ts_ &lt;= last_ts)                                  \</div>
-<div class="line">        ts_ = last_ts + 1;                                            \</div>
+<div class="line">      {                                                               \</div>
+<div class="line">        pfree(instants[--ninsts]);                                    \</div>
+<div class="line">        ts_ = last_ts;                                                \</div>
+<div class="line">      }                                                               \</div>
 <div class="line">      if (ninsts &gt;= maxcount)                                         \</div>
 <div class="line">      {                                                               \</div>
 <div class="line">        maxcount = (maxcount * 2 &gt; ninsts + 1)                        \</div>
