@@ -273,3 +273,21 @@ FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
     timestamptz '2001-01-01 23:52:30', interval '15 minutes') AS t;
 
 -------------------------------------------------------------------------------
+
+-- The cover of a trajectory cut at half-open periods merges into the cover of
+-- the whole trajectory, and every cell of a cover is held for some time
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-02)'),
+  (tstzspan '[2001-01-02, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-03]'))
+SELECT merge(array_agg(th3index(atTime(tp, period), 3) ORDER BY period))
+  = th3index(tp, 3) AS periods_as_whole
+FROM trip, periods GROUP BY tp;
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(th3index(tp, 3)) u;

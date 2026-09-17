@@ -147,17 +147,46 @@ SELECT endValue(tquadbin(tgeompoint
 
 -- A tile holds its west and north boundaries, so the point where four tiles
 -- meet belongs to the one east of the meridian and south of the parallel
--- meeting there. A path through that point from the south-west passes through
--- that tile at the crossing and then enters the tile diagonally across, and
--- one from the south-east crosses straight from its own tile, which holds the
--- point, into the tile diagonally across.
+-- meeting there. A path through that point from the south-west leaves its
+-- tile for the one diagonally across, which it holds from the crossing on;
+-- the tile holding the corner it holds for no time, so the cover states the
+-- cell the path enters, as a tile of the space grid does not hold its upper
+-- border.
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2);
 SELECT valueAtTimestamp(tquadbin(tgeompoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
-  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2);
+  timestamptz '2001-01-02') = geoToQuadbinCell(valueAtTimestamp(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]',
+  timestamptz '2001-01-02' + interval '1 microsecond'), 2) AS states_the_cell_entered;
+SELECT valueAtTimestamp(tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
+  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2)
+  AS states_the_corner_owner;
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(-45 -10)@2001-01-01, Point(-135 10)@2001-01-03]', 2);
+
+-- The cover of a trajectory cut at half-open periods merges into the cover of
+-- the whole trajectory, one period ending where the path crosses the corner
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-02)'),
+  (tstzspan '[2001-01-02, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-03]'))
+SELECT merge(array_agg(tquadbin(atTime(tp, period), 2) ORDER BY period))
+  = tquadbin(tp, 2) AS periods_as_whole
+FROM trip, periods GROUP BY tp;
+
+-- Every cell of a cover is held for some time, but for the cell reached at the
+-- last instant, which is stated there as the space split states the tile of
+-- the last corner under its default borderInc
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
 
 -- A sequence set yields one sequence per sequence
 SELECT numSequences(tquadbin(tgeompoint

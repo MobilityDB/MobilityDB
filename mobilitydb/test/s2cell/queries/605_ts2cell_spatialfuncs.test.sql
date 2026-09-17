@@ -266,3 +266,23 @@ SELECT s2cellset '{47c3c3}' ?=
   ts2cell '{[47c3c4@2001-01-01], [54b5c9@2001-01-02]}';
 
 -------------------------------------------------------------------------------
+
+-- The cover of a trajectory cut at half-open periods merges into the cover of
+-- the whole trajectory, here for a trajectory ending on a cell boundary: the
+-- cell reached at the last instant is stated there, as the space split states
+-- the tile of the last corner under its default borderInc
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-02)'),
+  (tstzspan '[2001-01-02, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-03]'))
+SELECT merge(array_agg(ts2cell(atTime(tp, period), 3) ORDER BY period))
+  = ts2cell(tp, 3) AS periods_as_whole
+FROM trip, periods GROUP BY tp;
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(ts2cell(tp, 3)) u;
