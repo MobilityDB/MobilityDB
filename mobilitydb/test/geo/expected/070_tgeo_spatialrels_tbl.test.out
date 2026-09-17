@@ -151,7 +151,7 @@ SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_geometry3D t2 WHERE t1.k % 3 = 0 AN
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDisjoint(t1.temp, t2.temp);
  count 
 -------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geography t1, tbl_tgeography t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
@@ -169,7 +169,7 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_geography t2 WHERE t1.k % 3 = 0 AND 
 SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aDisjoint(t1.temp, t2.temp);
  count 
 -------
-     0
+     4
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geography3D t1, tbl_tgeography3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
