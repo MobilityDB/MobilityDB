@@ -780,12 +780,12 @@ int main(void)
    * interior of the circle empty. The step the interior witness takes, the
    * band within which a point lies on an edge and the band within which an
    * edge end lies on a ray are each sized from the edge's own coordinates, so
-   * none of them crosses the circle at any scale. At s = 2^-40 the area of
-   * the square falls under the bound ring_encloses_no_area reads it against,
-   * which the range stops short of */
+   * none of them crosses the circle at any scale, and whether the square
+   * encloses area is the exact sign of its shoelace sum, which no scale
+   * turns to zero */
   double exs_s = 1.0;
   int exs_ok = 0;
-  for (int k = 0; k >= -39; k--, exs_s *= 0.5)
+  for (int k = 0; k >= -40; k--, exs_s *= 0.5)
   {
     char arc_wkt[160], seg_wkt[128], circ_wkt[160], sq_wkt[256];
     snprintf(arc_wkt, sizeof arc_wkt,
@@ -816,8 +816,8 @@ int main(void)
     free(self); free(inside); free(arc); free(seg); free(circ); free(sq);
   }
   printf("a segment crossing an arc, a circle against itself and a square "
-    "inside it relate alike at %d scales from 1 to 2^-39\n", exs_ok);
-  assert(exs_ok == 40);
+    "inside it relate alike at %d scales from 1 to 2^-40\n", exs_ok);
+  assert(exs_ok == 41);
   meos_errno_reset();
 
   /* Two members of a multi-surface bound one region where they share a stretch
@@ -828,12 +828,10 @@ int main(void)
    * interior of their union. Read against an absolute distance, the two facing
    * sides are one stretch the union keeps once, the square loses its right
    * side and its centre falls outside. Two squares sharing a side exactly are
-   * one region, and the middle of that side lies in its interior. At
-   * s = 2^-40 the area of each square falls under the bound
-   * ring_encloses_no_area reads it against, which the range stops short of */
+   * one region, and the middle of that side lies in its interior */
   double sp_s = 1.0;
   int sp_ok = 0;
-  for (int k = 0; k >= -39; k--, sp_s *= 0.5)
+  for (int k = 0; k >= -40; k--, sp_s *= 0.5)
   {
     char gap_wkt[512], shared_wkt[512], centre_wkt[96], side_wkt[96];
     double g = sp_s + 5e-13 * sp_s, s2 = 2 * sp_s;
@@ -864,8 +862,8 @@ int main(void)
     free(side);
   }
   printf("a point relates alike to two members apart by 5e-13 s and to two "
-    "sharing a side at %d scales from 1 to 2^-39\n", sp_ok);
-  assert(sp_ok == 40);
+    "sharing a side at %d scales from 1 to 2^-40\n", sp_ok);
+  assert(sp_ok == 41);
   meos_errno_reset();
 
   /* Two circles cross where the distance between their centres lies between
@@ -914,12 +912,10 @@ int main(void)
    * corner, on its top side or on its left side, is a region and relates to
    * itself as one at every scale. Read against an absolute length, the short
    * side takes every point to its start, the portions the matrix walks along
-   * it are misplaced, and the square reads as crossing itself. At s = 2^-40
-   * the area of the square falls under the bound ring_encloses_no_area reads
-   * it against, which the range stops short of */
+   * it are misplaced, and the square reads as crossing itself */
   double se_s = 1.0;
   int se_ok = 0;
-  for (int k = 0; k >= -39; k--, se_s *= 0.5)
+  for (int k = 0; k >= -40; k--, se_s *= 0.5)
   {
     char top_wkt[256], left_wkt[256];
     double se_e = 5e-13 * se_s;
@@ -941,8 +937,36 @@ int main(void)
     free(m_top); free(m_left); free(top); free(left);
   }
   printf("a square with a side 5e-13 s long relates to itself as a region at "
-    "%d scales from 1 to 2^-39\n", se_ok);
-  assert(se_ok == 40);
+    "%d scales from 1 to 2^-40\n", se_ok);
+  assert(se_ok == 41);
+  meos_errno_reset();
+
+  /* A ring encloses area exactly where the shoelace sum of its vertices is
+   * not zero. The triangle (0 0), (s 0), (s/2 1e-13 s) encloses 5e-14 s^2, so
+   * at every scale it is a region holding the point (s/2 2.5e-14 s) in its
+   * interior. Read against a band that area is none, and the triangle is
+   * taken for the linework it traces, on which the point does not lie */
+  double sl_s = 1.0;
+  int sl_ok = 0;
+  for (int k = 0; k >= -40; k--, sl_s *= 0.5)
+  {
+    char tri_wkt[256], pt_wkt[96];
+    snprintf(tri_wkt, sizeof tri_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,0 0))", sl_s, sl_s / 2, 1e-13 * sl_s);
+    snprintf(pt_wkt, sizeof pt_wkt, "POINT(%.17g %.17g)", sl_s / 2,
+      2.5e-14 * sl_s);
+    GSERIALIZED *tri = geom_in(tri_wkt, -1);
+    GSERIALIZED *pt = geom_in(pt_wkt, -1);
+    assert(tri != NULL); assert(pt != NULL);
+    char *m = geom_relate(tri, pt);
+    assert(m != NULL);
+    assert(strcmp(m, "0F2FF1FF2") == 0);
+    sl_ok++;
+    free(m); free(tri); free(pt);
+  }
+  printf("a triangle enclosing 5e-14 s^2 holds its point at %d scales from 1 "
+    "to 2^-40\n", sl_ok);
+  assert(sl_ok == 41);
   meos_errno_reset();
 
   /* The distance between curves is checked on the cases PostGIS gives its
@@ -1799,6 +1823,34 @@ int main(void)
     free(want); free(want_rev); free(partner);
   }
   free(zl_point);
+
+  /* A cell of the matrix holds the largest dimension the geometries meet in,
+   * whatever order their edges are read in. The witness is the pair the GEOS
+   * validate suite asserts: a line runs along a polygon edge, so its interior
+   * meets the polygon boundary along a stretch, then leaves the boundary at a
+   * vertex, where the two meet in a point as well. The same line spelled
+   * backwards is the control, and so is the pair read in the other order */
+  const char *ib_poly = "POLYGON((150 150,410 150,280 20,20 20,150 150))";
+  const char *ib_lines[] = {"LINESTRING(200 150,310 150,360 220)",
+    "LINESTRING(360 220,310 150,200 150)"};
+  GSERIALIZED *ib_area = geom_in(ib_poly, -1);
+  assert(ib_area != NULL);
+  for (size_t i = 0; i < sizeof(ib_lines) / sizeof(ib_lines[0]); i++)
+  {
+    GSERIALIZED *line = geom_in(ib_lines[i], -1);
+    assert(line != NULL);
+    meos_errno_reset();
+    char *got = geom_relate(line, ib_area);
+    char *got_rev = geom_relate(ib_area, line);
+    printf("geom_relate(%s, %s): %s, reversed %s, errno %d\n", ib_lines[i],
+      ib_poly, got, got_rev, meos_errno());
+    assert(got != NULL); assert(got_rev != NULL);
+    assert(strcmp(got, "F11F00212") == 0);
+    assert(strcmp(got_rev, "FF2101102") == 0);
+    assert(meos_errno() == 0);
+    free(got); free(got_rev); free(line);
+  }
+  free(ib_area);
 
   /* Equality is read from the native DE-9IM matrix, so two circular strings
    * describing the SAME arc through DIFFERENT defining points are equal. The
