@@ -117,15 +117,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the set of H3 cells covering a static geometry at the given resolution. </p>
-<p >Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION combinations recursively. Any other type (TIN, TRIANGLE, the curve family), alone or inside a collection, is refused, since a cover omitting its cells would drop a trajectory the prefilter must keep.</p>
-<p >Returns NULL when the geometry is empty, when no valid cells could be produced, or on libh3 error. The returned <a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> is owned by the caller and freed via free.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The cover is the set of the cells that hold a point of the geometry, each point assigned to its cell as <a class="el" href="group__meos__h3__conversion_gadb35d8d14131493da1408cf9d41eb96a.html#gadb35d8d14131493da1408cf9d41eb96a" title="Single H3 cell covering a POINT geometry at the given resolution.">geo_to_h3index_cell</a> assigns it: a point gives the cell holding it, a line the cells its segments pass through, and a polygon those of its rings together with the cells they enclose. It is the set a temporal H3 cell of a trajectory takes its values from, so a trajectory sharing a point with the geometry takes a cell of the cover there. MULTI* and GEOMETRYCOLLECTION values give the union of the cells of their components, and any other type (TIN, TRIANGLE, the curve family), alone or inside a collection, is refused, since a cover omitting its cells would drop a trajectory the prefilter must keep. An empty geometry holds no point and gives <code>NULL</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">resolution</td><td>H3 resolution (0..15). @csqlfn <a class="el" href="group__mobilitydb__h3__conversion_ga45a9bf6105cff8fd4256b03c0c8b77c3.html#ga45a9bf6105cff8fd4256b03c0c8b77c3" title="Set of H3 cells covering a static geometry at the given resolution.">Geo_to_h3indexset()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry in a lon/lat (SRID 4326) reference system </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resolution</td><td>H3 resolution </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__h3__conversion_ga45a9bf6105cff8fd4256b03c0c8b77c3.html#ga45a9bf6105cff8fd4256b03c0c8b77c3" title="Set of H3 cells covering a static geometry at the given resolution.">Geo_to_h3indexset()</a> </dd></dl>
 
 </div>
 </div>
