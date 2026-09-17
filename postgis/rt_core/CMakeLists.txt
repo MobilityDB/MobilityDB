@@ -25,6 +25,18 @@ target_include_directories(librtcore SYSTEM PRIVATE
   "${POSTGRESQL_INCLUDE_DIR}"
   "${CMAKE_SOURCE_DIR}/pgtypes"
   "${CMAKE_BINARY_DIR}/pgtypes")
+if(WIN32)
+  # PostgreSQL states the headers Windows does not carry under port/win32 and
+  # reads them unqualified: port.h asks for <netinet/in.h> where the platform
+  # has no inet_aton, and only that directory answers it. This is the rest of
+  # the set meos/CMakeLists.txt puts in front of MEOS itself. /* MEOS */
+  target_include_directories(librtcore SYSTEM PRIVATE
+    "${POSTGRESQL_INCLUDE_DIR}/port/win32")
+  if(MSVC)
+    target_include_directories(librtcore SYSTEM PRIVATE
+      "${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc")
+  endif()
+endif()
 target_include_directories(librtcore PRIVATE "${CMAKE_SOURCE_DIR}/meos/include")
 
 # Hide the vendored raster core symbols from the shared library's dynamic table,
