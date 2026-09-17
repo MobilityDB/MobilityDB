@@ -684,7 +684,8 @@ raster_run_push(RasterRun *run, double value, TimestampTz t)
  * @details The last value of the run holds up to @p t. A run whose upper
  * bound is exclusive ends on the value it holds before @p t, so a value the
  * trip reaches at @p t itself, which it holds for no time before the run
- * ends, is not part of the run.
+ * ends, is not part of the run, and a run holding only such a value holds no
+ * time at all and is not part of the answer.
  */
 static void
 raster_run_close(RasterRun *run, TimestampTz t, bool upper_inc,
@@ -694,8 +695,18 @@ raster_run_close(RasterRun *run, TimestampTz t, bool upper_inc,
     return;
   bool lower_inc = run->lower_inc;
   if (! upper_inc)
+  {
     while (run->count > 1 && run->insts[run->count - 1]->t >= t)
       pfree(run->insts[--run->count]);
+    if (run->insts[0]->t >= t)
+    {
+      pfree(run->insts[0]);
+      pfree(run->insts);
+      run->insts = NULL;
+      run->count = run->size = 0;
+      return;
+    }
+  }
   const TInstant *last = run->insts[run->count - 1];
   if (last->t < t)
     raster_run_push(run, DatumGetFloat8(tinstant_value_p(last)), t);

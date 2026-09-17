@@ -344,7 +344,8 @@ FROM rast, trip;
 -- tiles: a position lies in a pixel of one tile, so the merge answers the read
 -- of the whole raster. The trips run along both diagonals, along a tile edge,
 -- out of the raster and back, through tile corners, at their instants alone
--- and to an exclusive upper bound, over tiles of 1x1 and of 2x2 pixels.
+-- and to an exclusive upper bound, inside a tile and on a tile edge, over tiles
+-- of 1x1 and of 2x2 pixels.
 WITH r AS (
   SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
     4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
@@ -361,7 +362,9 @@ WITH r AS (
   (5, tgeompoint 'SRID=4326;{POINT(0.5 0.5)@2001-01-01, POINT(2.5 2.5)@2001-01-02,
     POINT(3.5 3.5)@2001-01-03}'),
   (6, tgeompoint 'SRID=4326;[POINT(1.5 3.5)@2001-01-01, POINT(1.5 0.5)@2001-01-02)'),
-  (7, tgeompoint 'SRID=4326;[POINT(2 4)@2001-01-01, POINT(4 2)@2001-01-02]')
+  (7, tgeompoint 'SRID=4326;[POINT(2 4)@2001-01-01, POINT(4 2)@2001-01-02]'),
+  (8, tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(2 2.5)@2001-01-02)'),
+  (9, tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(2 2.5)@2001-01-02]')
 ), merged AS (
   SELECT id, s, mergeAgg(rasterValue(trip, tile)) AS m
   FROM trips, r, (VALUES (1), (2)) AS v(s), ST_Tile(rast, s, s) AS tile
@@ -371,6 +374,61 @@ WITH r AS (
 )
 SELECT count(*) AS reads, count(*) FILTER (WHERE m = w) AS as_whole
 FROM merged JOIN whole USING (id);
+
+-- A trip ending on the edge of a raster under an exclusive upper bound reaches
+-- the raster at the instant it excludes, and holds no value of it; under a
+-- closed bound it holds the value of the edge pixel at that instant.
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0.0, 1.0, 1.0, -1.0, 0.0,
+    0.0, 4326), '8BUI'::text, 0, NULL), 1, 1, 1, ARRAY[[2]]::double precision[][]) AS rast
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[Point(-0.5 0.5)@2001-01-01,
+    Point(0 0.5)@2001-01-02)', rast) AS exclusive_end,
+  asText(rasterValue(tgeompoint 'SRID=4326;[Point(-0.5 0.5)@2001-01-01,
+    Point(0 0.5)@2001-01-02]', rast)) AS closed_end
+FROM r;
+SELECT rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
+    Point(0 45)@2001-01-02)', raquet('\x14141414'::bytea, 2, 2,
+    quadbinTileToCell(1, 0, 1), 'uint8')) AS exclusive_end,
+  asText(rasterTileValue(tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01,
+    Point(0 45)@2001-01-02]', raquet('\x14141414'::bytea, 2, 2,
+    quadbinTileToCell(1, 0, 1), 'uint8'))) AS closed_end;
+
+-- Tiles valid over successive half-open periods are read along a trip one
+-- period at a time and the reads merged: here the trip crosses from one tile
+-- into the other at 12:00, where a period also starts.
+WITH tiles(quadbin, period, tile) AS (
+  SELECT quadbinTileToCell(x, 0, 1), p.period,
+    raquet(decode(repeat(lpad(to_hex(p.v + x), 2, '0'), 4), 'hex'), 2, 2,
+      quadbinTileToCell(x, 0, 1), 'uint8')
+  FROM generate_series(0, 1) x,
+    (VALUES (tstzspan '[2001-01-01 00:00:00, 2001-01-01 06:00:00)', 10),
+            (tstzspan '[2001-01-01 06:00:00, 2001-01-01 12:00:00)', 30),
+            (tstzspan '[2001-01-01 12:00:00, 2001-01-02 00:00:00]', 50)) AS p(period, v)
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-90 45)@2001-01-01, Point(90 45)@2001-01-02]'
+)
+SELECT asText(merge(array_agg(rasterTileValue(atTime(tp, period), tile)
+  ORDER BY period, quadbin) FILTER (WHERE rasterTileValue(atTime(tp, period), tile)
+  IS NOT NULL))) AS per_period
+FROM trip, tiles
+WHERE period && timeSpan(tp);
+
+-- The reads of a trip cut at half-open periods, one of them ending where the
+-- trip crosses into the next pixel, merge into the read of the whole trip.
+WITH r AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 1, 0.0, 1.0, 1.0, -1.0, 0.0,
+    0.0, 4326), '8BUI'::text, 0, NULL), 1, 1, 1,
+    ARRAY[[1, 2, 3, 4]]::double precision[][]) AS rast
+), trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(0.5 0.5)@2001-01-01, Point(3.5 0.5)@2001-01-04]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-01 12:00:00)'),
+  (tstzspan '[2001-01-01 12:00:00, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-04]'))
+SELECT (SELECT merge(array_agg(rasterValue(atTime(tp, period), rast) ORDER BY period))
+    FROM periods) = rasterValue(tp, rast) AS periods_as_whole
+FROM r, trip;
 
 -- A bilinear value varies quadratically in time along a trip that moves
 -- between its instants, which a temporal float cannot state, and a read the
