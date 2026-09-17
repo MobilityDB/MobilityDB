@@ -353,6 +353,25 @@ h3_segment_path_cell(const H3SegmentPath *path, double t, int32 resolution)
   return cell;
 }
 
+/** @brief A path of a segment and the resolution its cells are read at, the
+ * state #dggs_crossing_param() reads a cell of the path from */
+typedef struct
+{
+  const H3SegmentPath *path; /**< Path of the segment */
+  int32 resolution;          /**< Resolution of the grid */
+} H3PathAt;
+
+/**
+ * @brief Return the cell the path of a segment holds at a parameter, or 0 when
+ * the position cannot be projected
+ */
+static uint64
+h3_path_cell_at(void *state, double t)
+{
+  const H3PathAt *at = (const H3PathAt *) state;
+  return (uint64) h3_segment_path_cell(at->path, t, at->resolution);
+}
+
 /**
  * @brief Return where a geodetic path leaves the cell holding it
  * @details A cell edge is an arc of a great circle, as the path is, so the
@@ -467,6 +486,7 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   if (h3_latlng_deg_to_cell(lat2, lon2, resolution) == cur)
     return n;
 
+  H3PathAt at = { .path = &path, .resolution = resolution };
   double t = 0.0;
   while (n < maxout)
   {
@@ -474,7 +494,7 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
       h3_cell_exit_param_planar(cur, &path, t);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
-    double tn = texit + nudge;
+    double tn = texit + nudge, tin = texit;
     H3Index next = (H3Index) 0;
     /* A nudge that lands back in the cell just left says the crossing sits
      * within its own rounding, so widen it rather than stall */
@@ -483,12 +503,19 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
       next = h3_segment_path_cell(&path, tn, resolution);
       if (next != (H3Index) 0 && next != cur)
         break;
+      tin = tn;
       tn += nudge * (double) (1 << k);
       next = (H3Index) 0;
     }
     if (next == (H3Index) 0 || tn >= 1.0)
       break;
-    cells[n] = next; enter[n] = texit; n++;
+    /* A crossing the path is still in the cell past is one the rounding of an
+     * edge the path runs along places where the path is: the probes bracket
+     * the crossing, and halving the bracket closes on it */
+    cells[n] = next;
+    enter[n] = (tin > texit) ?
+      dggs_crossing_param(tin, tn, cur, &h3_path_cell_at, &at) : texit;
+    n++;
     cur = next;
     t = tn;
   }

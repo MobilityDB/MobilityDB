@@ -705,6 +705,25 @@ quadbin_arc_cell(const DggsArc *arc, double t, uint32_t resolution)
     resolution);
 }
 
+/** @brief A geodetic path and the resolution its tiles are read at, the state
+ * #dggs_crossing_param() reads a tile of the path from */
+typedef struct
+{
+  const DggsArc *arc;        /**< Path of a geodetic segment */
+  uint32_t resolution;       /**< Resolution of the grid */
+} QuadbinArcAt;
+
+/**
+ * @brief Return the tile the path of a geodetic segment holds at a parameter,
+ * or 0 when the position cannot be projected
+ */
+static uint64
+quadbin_arc_cell_at(void *state, double t)
+{
+  const QuadbinArcAt *path = (const QuadbinArcAt *) state;
+  return (uint64) quadbin_arc_cell(path->arc, t, path->resolution);
+}
+
 /**
  * @brief Return the angle subtended by the shortest side of a tile, in the
  * grid of `n` tiles a side
@@ -746,8 +765,11 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
   uint32_t x, y, z;
 
   /* A position on a tile boundary belongs to the one tile the grid assigns
-   * it, and a path starting there may move into the neighbouring tile at
-   * once: the walk leaves from the tile just past the start */
+   * it, and a path starting there moves into the neighbouring tile at once,
+   * through a crossing no search strictly ahead of the start states: the walk
+   * leaves from the tile just past the start, entered where the halving of
+   * #dggs_crossing_param() places the crossing */
+  QuadbinArcAt path = { .arc = &arc, .resolution = resolution };
   double t = 0.0;
   quadbin_cell_tile(cur, &x, &y, &z);
   double t0 = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
@@ -756,7 +778,9 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
     Quadbin first = quadbin_arc_cell(&arc, t0, resolution);
     if (first != (Quadbin) 0 && first != cur && count < maxout)
     {
-      cells[count] = first; enter[count++] = 0.0;
+      cells[count] = first;
+      enter[count++] = dggs_crossing_param(0.0, t0, cur, &quadbin_arc_cell_at,
+        &path);
       cur = first;
       t = t0;
     }
@@ -772,7 +796,7 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
      * far below the width of a neighbouring tile and far above the rounding
      * of the crossing itself */
     double nudge = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
-    double tn = texit + nudge;
+    double tn = texit + nudge, tin = texit;
     Quadbin next = (Quadbin) 0;
     /* A nudge that lands back in the tile just left says the crossing sits
      * within its own rounding, so widen it rather than stall. A crossing
@@ -785,6 +809,7 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
       next = quadbin_arc_cell(&arc, tn, resolution);
       if (next == (Quadbin) 0 || next != cur || tn >= 1.0)
         break;
+      tin = tn;
       tn += nudge * (double) (1 << k);
     }
     if (next == (Quadbin) 0)
@@ -797,7 +822,12 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
       t = texit;
       continue;
     }
-    cells[count] = next; enter[count++] = texit;
+    /* A crossing the path is still in the tile past is one the rounding of a
+     * boundary the path runs along places where the path is: the probes
+     * bracket the crossing, and halving the bracket closes on it */
+    cells[count] = next;
+    enter[count++] = (tin > texit) ?
+      dggs_crossing_param(tin, tn, cur, &quadbin_arc_cell_at, &path) : texit;
     cur = next;
     t = tn;
   }

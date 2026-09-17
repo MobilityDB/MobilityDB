@@ -691,6 +691,46 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
   return best;
 }
 
+/**
+ * @brief Return where a path leaves a cell, read from a parameter at which it
+ * still holds the cell and one at which it holds another
+ * @details The closed form of a crossing reads the circle of a cell edge, and
+ * a path running along that edge meets the circle everywhere: the parameter it
+ * answers is then the rounding of the path's own position and no crossing at
+ * all, which the walk sees as a path still in the cell past its own exit. The
+ * probes of the walk bracket the crossing, and halving the bracket closes on
+ * it, as the clip of a rigid geometry closes on a root its closed form does
+ * not state.
+ * @param[in] tin Parameter at which the path holds @p cell
+ * @param[in] tout Parameter at which the path holds another cell
+ * @param[in] cell Cell the path holds at @p tin
+ * @param[in] cell_at Cell of the path at a parameter, 0 when the position
+ * cannot be projected
+ * @param[in] state Passed to @p cell_at
+ * @return The parameter of the first position the path holds another cell at,
+ * within the halving
+ */
+double
+dggs_crossing_param(double tin, double tout, uint64 cell,
+  uint64 (*cell_at)(void *, double), void *state)
+{
+  assert(cell_at);
+  for (int i = 0; i < 60; i++)
+  {
+    double tm = (tin + tout) / 2.0;
+    if (tm <= tin || tm >= tout)
+      break;                 /* the bracket holds no parameter between them */
+    uint64 at = cell_at(state, tm);
+    if (at == cell)
+      tin = tm;
+    else if (at != 0)
+      tout = tm;
+    else
+      break;                 /* the position cannot be projected */
+  }
+  return tout;
+}
+
 /*****************************************************************************
  * Planar path of a segment
  *****************************************************************************/

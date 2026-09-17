@@ -286,3 +286,14 @@ WITH trip(tp) AS (
 SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
   count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
 FROM trip, unnest(ts2cell(tp, 3)) u;
+
+-- A trajectory over the pole runs along the edge of a cell, where the closed
+-- form of a crossing reads the position of the trajectory itself: every cell
+-- of the cover is the cell the trajectory holds just after it is entered
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(0 89.996498882)@2020-01-01, Point(-180 89.990887383)@2020-01-01 01:00:00]'
+)
+SELECT count(*) AS cells,
+  count(*) FILTER (WHERE (u).value = geoToS2Cell(valueAtTimestamp(tp,
+    lower(span((u).time)) + interval '1 microsecond'), 16)) AS cells_the_trip_holds
+FROM trip, unnest(ts2cell(tp, 16)) u;
