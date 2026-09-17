@@ -531,6 +531,13 @@ SELECT round(tan(tfloat '1@2001-01-01'), 6);
 SELECT round(tan(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}'), 6);
 SELECT round(tan(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]'), 6);
 SELECT round(tan(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}'), 6);
+-- The tangent is undefined at pi/2 plus a multiple of pi: a segment reaching a
+-- pole raises an error, while a segment within a branch is densified
+SELECT round(tan(tfloat '[0@2001-01-01, 3@2001-01-02]'), 6);
+SELECT round(tan(tfloat 'Interp=Step;[0@2001-01-01, 3@2001-01-02]'), 6);
+SELECT numInstants(tan(tfloat '[-1@2001-01-01, 1@2001-01-02]')) > 2;
+-- A pole in the gap between two sequences is not reached
+SELECT numSequences(tan(tfloat '{[1@2001-01-01, 1.5@2001-01-02], [1.6@2001-01-03, 2@2001-01-04]}'));
 
 -------------------------------------------------------------------------------
 

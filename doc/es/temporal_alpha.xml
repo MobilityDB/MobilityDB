@@ -575,12 +575,13 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 ln(tfloat) → tfloat
 log10(tfloat) → tfloat
 </programlisting>
-				<para>El número flotante temporal no puede ser cero o negativo</para>
+				<para>El número flotante temporal no puede ser cero o negativo. Con interpolación lineal, el resultado tiene, en cada segmento, los instantes del segmento y el instante en el que la interpolación lineal más se aleja del logaritmo, y se interpola linealmente entre ellos</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 1@2001-01-05]}');
-/* {[0@2001-01-01, 2.302585092994046@2001-01-02, 1.6094379124341@2001-01-03], 
-   [0@2001-01-04, 0@2001-01-05]} */
+/* {[0@2001-01-01, 1.363192132076512@2001-01-01 07:45:23.043236,
+   2.302585092994046@2001-01-02, 1.975950833017318@2001-01-02 13:22:31.148467,
+   1.6094379124341@2001-01-03], [0@2001-01-04, 0@2001-01-05]} */
 SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 -- ERROR:  Cannot take logarithm of zero or a negative number
 </programlisting>
@@ -592,9 +593,11 @@ SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 exp(tfloat) → tfloat
 </programlisting>
+				<para>Con interpolación lineal, el resultado tiene, en cada segmento, los instantes del segmento y el instante en el que la interpolación lineal más se aleja de la exponencial, y se interpola linealmente entre ellos</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}');
-/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02],
+/* {[2.718281828459045@2001-01-01, 2447.0830569101154@2001-01-01 18:08:25.45925,
+   22026.465794806718@2001-01-02],
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
 SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
@@ -611,13 +614,16 @@ sin(tfloat) → tfloat
 cos(tfloat) → tfloat
 tan(tfloat) → tfloat
 </programlisting>
+				<para>Con interpolación lineal, el resultado de <varname>sin</varname> y <varname>cos</varname> tiene, en cada segmento, los instantes del segmento y los de los extremos de la función, el resultado de <varname>tan</varname> se refina por bisección donde la función es empinada, y el resultado se interpola linealmente entre sus instantes. El número flotante temporal de <varname>tan</varname> no puede alcanzar π/2 más un múltiplo de π, en un instante o a lo largo de un segmento con interpolación lineal</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
--- [0@2001-01-01, -0.000000@2001-01-02]
+-- [0@2001-01-01, 1@2001-01-01 06:00:00.000001, -1@2001-01-01 18:00:00.000002, 0@2001-01-02]
 SELECT round(cos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
 -- [1@2001-01-01, -1@2001-01-02]
 SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
 -- {0@2001-01-01, 1@2001-01-02}
+SELECT tan(tfloat '[0@2001-01-01, 3@2001-01-02]');
+-- ERROR:  Cannot take the tangent of pi/2 plus a multiple of pi
 </programlisting>
 			</listitem>
 		</itemizedlist>

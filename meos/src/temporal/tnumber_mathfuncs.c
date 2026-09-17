@@ -1090,16 +1090,67 @@ datum_tan(Datum d)
 }
 
 /**
+ * @brief Return true if a value of the interval [@p lo, @p hi] is a pole of
+ * the tangent, that is, π/2 + kπ for an integer k
+ * @param[in] lo, hi Bounds of the interval, @p lo <= @p hi
+ */
+static bool
+float_interval_has_tan_pole(double lo, double hi)
+{
+  double pole = M_PI_2 + ceil((lo - M_PI_2) / M_PI) * M_PI;
+  return pole <= hi;
+}
+
+/**
+ * @brief Return true if a temporal float reaches a pole of the tangent, that
+ * is, if one of its values is π/2 + kπ for an integer k, or if a segment of
+ * a sequence with linear interpolation passes through one
+ * @param[in] temp Temporal float
+ */
+static bool
+tfloat_reaches_tan_pole(const Temporal *temp)
+{
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  bool result = false;
+  for (int i = 0; i < count && ! result; i++)
+  {
+    double value = DatumGetFloat8(tinstant_value_p(instants[i]));
+    result = float_interval_has_tan_pole(value, value);
+  }
+  pfree(instants);
+  if (result || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return result;
+
+  const TSequence **seqs = temporal_sequences_p(temp, &count);
+  for (int i = 0; i < count && ! result; i++)
+  {
+    double value1 =
+      DatumGetFloat8(tinstant_value_p(TSEQUENCE_INST_N(seqs[i], 0)));
+    for (int j = 1; j < seqs[i]->count && ! result; j++)
+    {
+      double value2 =
+        DatumGetFloat8(tinstant_value_p(TSEQUENCE_INST_N(seqs[i], j)));
+      result = float_interval_has_tan_pole(Min(value1, value2),
+        Max(value1, value2));
+      value1 = value2;
+    }
+  }
+  pfree(seqs);
+  return result;
+}
+
+/**
  * @ingroup meos_temporal_math
  * @brief Return the tangent of a temporal float
  * @param[in] temp Temporal value (in radians)
- * @note tan is monotone within each branch (π/2 + kπ poles) and so has no
- * extrema, but its curvature grows without bound near a pole. Unlike sin and
- * cos, whose turning points are analytic, tan has no closed-form critical
- * points, so it is densified by adaptive recursive bisection (see
- * #tfunc_tlinearseq_adaptive): the bisection refines the steep near-pole
- * regions, and the C library yields ±Inf for an argument landing exactly on a
- * pole (see #datum_tan). No bespoke pole detection is needed.
+ * @note tan is undefined at its poles π/2 + kπ, so a temporal float that
+ * reaches a pole, at an instant or along a segment with linear interpolation,
+ * is refused, as #tfloat_ln refuses a temporal float that reaches zero. Within
+ * a branch between two poles tan is monotone and so has no extrema, but its
+ * curvature grows without bound near a pole, and unlike sin and cos it has no
+ * closed-form critical points, so it is densified by adaptive recursive
+ * bisection (see #tfunc_tlinearseq_adaptive).
  * @csqlfn #Tfloat_tan()
  */
 Temporal *
@@ -1107,6 +1158,13 @@ tfloat_tan(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  /* Cannot compute the tangent at a pole */
+  if (tfloat_reaches_tan_pole(temp))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot take the tangent of pi/2 plus a multiple of pi");
+    return NULL;
+  }
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
