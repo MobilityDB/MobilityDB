@@ -330,7 +330,7 @@ raquet_from_gdal_dataset(GDALDatasetH ds, const char *vpath, uint64 quadbin,
  * @csqlfn #Raquet_read()
  */
 Raquet *
-raquet_read(const char *path, uint64 quadbin)
+raquet_read(const char *path, Quadbin quadbin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, NULL);
@@ -364,7 +364,7 @@ raquet_read(const char *path, uint64 quadbin)
  * @csqlfn #Raquet_read_bytes()
  */
 Raquet *
-raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
+raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(data, NULL);

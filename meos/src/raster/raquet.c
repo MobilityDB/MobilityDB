@@ -597,7 +597,7 @@ raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out)
  * @csqlfn #Raquet_constructor()
  */
 Raquet *
-raquet_make(uint64 quadbin, int32 width, int32 height, MeosPixType pixtype,
+raquet_make(Quadbin quadbin, int32 width, int32 height, MeosPixType pixtype,
   double nodata, bool has_nodata, const uint8_t *pixels, size_t pixels_size)
 {
   /* Ensure the validity of the arguments */
@@ -677,7 +677,7 @@ raquet_copy(const Raquet *rq)
  * @errval UINT64_MAX
  * @csqlfn #Raquet_quadbin()
  */
-uint64
+Quadbin
 raquet_quadbin(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */

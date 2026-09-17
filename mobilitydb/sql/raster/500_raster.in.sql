@@ -37,7 +37,6 @@
  *     exclude_nodata_value boolean DEFAULT true,
  *     resample text DEFAULT 'nearest') → tfloat
  *   rasterTileValueQuadbin(tgeompoint, bytea, ...) → tfloat
- *   quadbins(tgeompoint, integer) → bigint[]
  *
  * Restriction functions (SQL-defined, compose the sampling operators):
  *   atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
@@ -51,7 +50,7 @@
  * file on the server in place of the raster, which GDAL reads.
  *
  * This file is compiled into the mobilitydb extension only when
- * MobilityDB is built with `-DRASTER=ON`; the generated
+ * MobilityDB is built with `-DQUADBIN=ON -DRASTER=ON`; the generated
  * `mobilitydb.control` then declares `requires = '...postgis_raster'`
  * so the extension stack is created in a single CASCADE:
  *
@@ -132,7 +131,7 @@ CREATE FUNCTION asHexWKB(raquet, endian text DEFAULT '')
  ******************************************************************************/
 
 CREATE FUNCTION raquet(pixels bytea, width integer, height integer,
-    quadbin bigint, pixtype text, nodata float8 DEFAULT NULL)
+    quadbin quadbin, pixtype text, nodata float8 DEFAULT NULL)
   RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_constructor'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -146,7 +145,7 @@ CREATE FUNCTION raquet(pixels bytea, width integer, height integer,
  */
 CREATE FUNCTION raquetRead(
     rasterfile bytea,
-    quadbin    bigint DEFAULT NULL
+    quadbin    quadbin DEFAULT NULL
 ) RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_read_bytes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -161,7 +160,7 @@ CREATE FUNCTION raquetRead(
  */
 CREATE FUNCTION raquetRead(
     path    text,
-    quadbin bigint DEFAULT NULL
+    quadbin quadbin DEFAULT NULL
 ) RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_read'
   LANGUAGE C PARALLEL SAFE;
@@ -230,7 +229,7 @@ CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
     pixels     bytea,
     width      integer,
     height     integer,
-    quadbin    bigint,
+    quadbin    quadbin,
     pixtype    text,
     nodata     float8,
     has_nodata boolean
@@ -267,24 +266,6 @@ CREATE FUNCTION rasterTileValue(
     rast raquet[]
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value_array'
-  LANGUAGE C STRICT PARALLEL SAFE;
-
-/******************************************************************************
- * quadbins
- *****************************************************************************/
-
-/**
- * @ingroup mobilitydb_raster
- * @brief Return the distinct QUADBIN cells at a zoom level covered by a
- * trajectory, suitable as a WHERE-clause join key against a Raquet table
- * @param[in] traj Trajectory (SRID 4326)
- * @param[in] zoom  QUADBIN zoom level (0–26)
- */
-CREATE OR REPLACE FUNCTION quadbins(
-    traj  tgeompoint,
-    zoom  integer
-) RETURNS bigint[]
-  AS 'MODULE_PATHNAME', 'Trajectory_quadbins'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -740,7 +721,7 @@ CREATE FUNCTION dumpAsPolygons(rast raster, band integer DEFAULT 1,
  *****************************************************************************/
 
 CREATE FUNCTION quadbin(raquet)
-  RETURNS bigint
+  RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Raquet_quadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(raquet)

@@ -275,7 +275,8 @@ int main(void)
   GSERIALIZED *tpos = geompoint_make2d(4326, tlon, tlat);
   TInstant *tinst = tpointinst_make(tpos, 0);
   int ncells = 0;
-  uint64 *cells = trajectory_quadbins((Temporal *) tinst, 12, &ncells);
+  Temporal *tcells = tgeompoint_to_tquadbin((Temporal *) tinst, 12);
+  Quadbin *cells = tquadbin_values(tcells, &ncells);
   const int tw = 32, th = 32;
   uint8_t *tpix = malloc((size_t) tw * th * 2);
   for (int i = 0; i < tw * th; i++)
@@ -329,7 +330,8 @@ int main(void)
     free(runs); free(seg); free(rast);
   }
 
-  free(aligned); free(rotated); free(cells); free(tinst); free(tpos);
+  free(aligned); free(rotated); free(cells); free(tcells); free(tinst);
+  free(tpos);
   free(tpix);
   if (failures > 0)
   {

@@ -194,7 +194,8 @@ SELECT length(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4
 SELECT get_byte(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
   'XDR'), 0);
 -- 0
-SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
+SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')));
 -- 31
 </programlisting>
 			</listitem>
@@ -207,7 +208,8 @@ asHexWKB({raster,raquet},endian text='') → text
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asHexWKB(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
 -- 122
-SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
+SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')));
 -- 62
 </programlisting>
 			</listitem>
@@ -223,8 +225,9 @@ raquetFromBinary(bytea) → raquet
 SELECT rasterFromBinary(asBinary(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -240,8 +243,9 @@ raquetFromHexWKB(text) → raquet
 SELECT rasterFromHexWKB(asHexWKB(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -302,7 +306,7 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construye una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
+raquet(bytea,width integer,height integer,quadbin,pixtype text,
   nodata float8) → raquet
 </programlisting>
 				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
@@ -311,15 +315,15 @@ raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
 SELECT raquet(band_data, width, height, quadbin, 'float32',
   nodata) AS tile FROM elevation_raquet;
 -- A 2 x 2 UINT8 tile with no nodata
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetRead">
 				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
 				<para>Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-raquetRead(bytea,quadbin bigint) → raquet
-raquetRead(text,quadbin bigint) → raquet
+raquetRead(bytea,quadbin) → raquet
+raquetRead(text,quadbin) → raquet
 </programlisting>
 				<para>Lee los bytes de <varname>rasterfile</varname>, un ráster en cualquier formato compatible con GDAL (GeoTIFF, PNG, …), a través del sistema de archivos virtual <varname>/vsimem/</varname> de GDAL, y empaqueta su primera banda, en orden de fila mayor, en un único valor <varname>raquet</varname> autodescriptivo georreferenciado por la celda <varname>quadbin</varname>. El tipo de datos de la banda debe ser uno de <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname> o <varname>Float64</varname>; el valor de nodata de la banda, cuando está definido, se traslada a la tesela. Como el archivo se suministra como bytes, no se requiere acceso a archivos del lado del servidor. GDAL realiza la decodificación, por lo que el controlador de formato del ráster debe estar permitido por la configuración <varname>postgis.gdal_enabled_drivers</varname> de PostGIS (que deshabilita todos los controladores de forma predeterminada); habilítelo con, por ejemplo, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. Esta es la contraparte de ingesta del constructor <link linkend="raquet"><varname>raquet</varname></link>, que construye una tesela a partir de bytes de píxeles ya decodificados. Cuando se omite <varname>quadbin</varname> o es <varname>NULL</varname>, el identificador de la tesela se deriva de la georreferenciación del ráster: el ráster debe llevar una referencia espacial <varname>EPSG:3857</varname> (Web-Mercator) y una geotransformación alineada con los ejes que describa una única tesela QUADBIN. Un ráster sin referencia espacial, uno que no esté en <varname>EPSG:3857</varname>, o una geotransformación rotada o no alineada con la cuadrícula de teselas provoca un error en lugar de ser forzado. La forma que recibe <varname>text</varname> lee en su lugar el archivo ráster del servidor en esa ruta, allí donde PostGIS permite leer una banda ráster almacenada fuera de la base de datos, como indica <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -391,7 +395,8 @@ stbox(raquet) → stbox
 				<para>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')), 6);
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
+  'uint8')), 6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 -- Keep the tiles whose footprint overlaps a region of interest
 SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;
@@ -604,11 +609,11 @@ FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS
 				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
 				<para>Devuelve la celda QUADBIN de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-quadbin(raquet) → bigint
+quadbin(raquet) → quadbin
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
--- 5194902170171867135
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8'));
+-- 4817ffffffffffff
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_width">
@@ -620,7 +625,7 @@ width({raster,raquet}) → integer
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT width(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 3
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+SELECT width(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -633,7 +638,7 @@ height({raster,raquet}) → integer
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT height(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 2
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+SELECT height(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -650,8 +655,9 @@ SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 -- int16
 -- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8') AS tile) t;
--- 5194902170171867135 | 2 | 2 | uint8
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8')
+  AS tile) t;
+-- 4817ffffffffffff | 2 | 2 | uint8
 </programlisting>
 			</listitem>
 			<listitem xml:id="raster_bandHasNoDataValue">
@@ -666,7 +672,7 @@ bandHasNoDataValue(raquet) → boolean
 SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- true
-SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
+SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'uint8'));
 -- false
 </programlisting>
@@ -683,11 +689,12 @@ bandNoDataValue(raquet) → float8
 SELECT bandNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
   0::float8, -9999::float8));
 -- -9999
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8',
-  255));
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
+  'uint8', 255));
 -- 255
 -- A tile built without a nodata value states none
-SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
+  'uint8'));
 -- NULL
 </programlisting>
 			</listitem>
@@ -699,7 +706,7 @@ pixels(raquet) → bytea
 </programlisting>
 				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8'));
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8'));
 -- \x01020304
 </programlisting>
 			</listitem>
@@ -1085,7 +1092,7 @@ tquadbin(tpoint,integer) → tquadbin
 ts2cell(tpoint,integer) → ts2cell
 </programlisting>
 				<para>El SRID debe ser 4326 para las sobrecargas de <varname>tgeompoint</varname>. El constructor sobre un punto temporal se presenta para todas las cuadrículas, sobre un punto geodésico y uno plano.</para>
-				<para>Una trayectoria que no indica nada entre sus instantes, discreta o escalonada, produce las celdas que los contienen y conserva su interpolación; una que se desplaza entre ellos produce todas las celdas que atraviesa por el camino, ya que el segmento se recorre celda a celda en lugar de muestrearse. El segmento se recorre a lo largo del camino que sigue su punto: el círculo máximo de un <varname>tgeogpoint</varname>, de modo que una trayectoria que cruza el antimeridiano o pasa cerca de un polo produce las celdas de su ruta más corta, y la recta en longitud y latitud de un <varname>tgeompoint</varname>. Un círculo máximo se curva hacia el polo en longitud y latitud, de modo que el arco entre dos posiciones de una misma tesela QUADBIN puede salir de la tesela y volver a ella. Una arista de celda S2 es un arco de círculo máximo, que una recta en longitud y latitud no es, de modo que esa recta entre dos posiciones de una misma celda S2 también puede salir de la celda y volver a ella. Una tesela QUADBIN contiene sus bordes oeste y norte, de modo que un camino que pasa por el punto donde se encuentran cuatro teselas pasa por la tesela al este del meridiano y al sur del paralelo que se cruzan allí. Cada instante del resultado marca el momento en que la trayectoria entró en esa celda, y la última celda se mantiene hasta el final de la trayectoria, de modo que el resultado abarca su período. Con un límite superior exclusivo, una celda que la trayectoria alcanza solo en su final, sin mantenerla ningún tiempo, no forma parte del resultado.</para>
+				<para>Una trayectoria que no indica nada entre sus instantes, discreta o escalonada, produce las celdas que los contienen y conserva su interpolación; una que se desplaza entre ellos produce todas las celdas que atraviesa por el camino, ya que el segmento se recorre celda a celda en lugar de muestrearse. El segmento se recorre a lo largo del camino que sigue su punto: el círculo máximo de un <varname>tgeogpoint</varname>, de modo que una trayectoria que cruza el antimeridiano o pasa cerca de un polo produce las celdas de su ruta más corta, y la recta en longitud y latitud de un <varname>tgeompoint</varname>. Un círculo máximo se curva hacia el polo en longitud y latitud, de modo que el arco entre dos posiciones de una misma tesela QUADBIN puede salir de la tesela y volver a ella. Una arista de celda S2 es un arco de círculo máximo, que una recta en longitud y latitud no es, de modo que esa recta entre dos posiciones de una misma celda S2 también puede salir de la celda y volver a ella. Una tesela QUADBIN contiene sus bordes oeste y norte, de modo que un camino que pasa por el punto donde se encuentran cuatro teselas pasa por la tesela al este del meridiano y al sur del paralelo que se cruzan allí. Cada instante del resultado marca el momento en que la trayectoria entró en esa celda, y la última celda se mantiene hasta el final de la trayectoria, de modo que el resultado abarca su período. Con un límite superior exclusivo, una celda que la trayectoria alcanza solo en su final, sin mantenerla ningún tiempo, no forma parte del resultado. Las celdas distintas del resultado, que devuelve <varname>getValues</varname>, son las teselas que cubre una trayectoria, la clave de combinación de una tabla Raquet, donde una tesela que el viaje cruza y la clave omite es una tesela que la combinación nunca lee.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getResolution(th3index(tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
@@ -1401,27 +1408,6 @@ SELECT numValues(uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)),
 -- 16
 </programlisting>
 			</listitem>
-
-
-
-
-			<listitem xml:id="raster_quadbins">
-				<indexterm significance="normal"><primary><varname>quadbins</varname></primary></indexterm>
-				<para>Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-quadbins(tgeompoint,zoom integer) → bigint[]
-</programlisting>
-				<para>Devuelve el conjunto de celdas QUADBIN únicas que cubre la trayectoria. Una trayectoria que no afirma nada entre sus instantes cubre las teselas que los contienen; una que se mueve entre ellos cubre además todas las teselas que atraviesa por el camino, ya que el segmento se recorre tesela a tesela, y no cubre nada a través de un hueco entre dos de sus secuencias. Cada celda lleva a uno los bits por debajo de su zoom, como la rejilla QUADBIN define una celda. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet, donde una tesela que el trayecto atraviesa pero el conjunto omite es una tesela que la unión nunca lee. El parámetro <varname>zoom</varname> debe estar en [0, 26].</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Three instants spanning three tiles at zoom 3
-SELECT quadbins(tgeompoint 'SRID=4326;
-  {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
--- {5202572363287232511,5203416788217364479,5203487156961542143}
--- Count of Raquet tiles a ship trajectory overlaps at zoom 8
-SELECT array_length(quadbins(trip, 8),
-  1) AS tile_count FROM trips ORDER BY tile_count DESC;
-</programlisting>
-			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_everalways_rels">
 		<title>Relaciones siempre y alguna vez</title>
@@ -1586,8 +1572,8 @@ raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
 				<para>Las funciones que respaldan estos operadores son <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname>, junto con <varname>cmp(raquet,raquet) → integer</varname>, que devuelve -1, 0 o 1.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Two tiles with the same cell, layout and pixels are equal
-SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135,
-  'uint8') = raquet('\x0102'::bytea, 2, 1, 5194902170171867135, 'uint8');
+SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
+  'uint8') = raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'uint8');
 -- true
 -- Deduplicate tiles, which the btree and hash operator classes support
 SELECT DISTINCT tile FROM elevation_tiles;
@@ -2255,13 +2241,16 @@ SELECT s2EdgeNeighbors(s2cell '47c3c3');
 
 Los tipos <varname>uint64</varname> e <varname>int64</varname> contienen valores fuera de ese dominio: una tesela de cualquiera de ellos se almacena y se vuelve a leer exactamente, mientras que muestrear un píxel cuyo valor ningún número de doble precisión nombra genera un error en lugar de responder con un valor vecino. Esto permite consultas como <emphasis>¿qué perfil de elevación siguió cada vehículo?</emphasis> o <emphasis>¿qué viajes entraron en una banda de umbral de temperatura?</emphasis></para>
 
-		<para>El patrón de consulta típico une una trayectoria con una tabla Raquet en dos pasos:</para>
+		<para>Un archivo Raquet almacena la celda QUADBIN de una tesela como un entero de 64 bits, que una columna del tipo <varname>quadbin</varname> contiene una vez convertido, comprobando la conversión que cada valor es un índice QUADBIN. El patrón de consulta típico une entonces una trayectoria con una tabla Raquet en dos pasos:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Type the cell column of a loaded Raquet table
+ALTER TABLE elevation_raquet ALTER COLUMN quadbin TYPE quadbin USING quadbin::quadbin;
 -- Step 1: identify which tiles the trajectory overlaps
-SELECT DISTINCT q FROM unnest(quadbins(traj, 8)) AS q;
+SELECT getValues(tquadbin(traj, 8));
 -- Step 2: sample each matching tile
 SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32', nodata,
-  true) FROM elevation_raquet WHERE quadbin = ANY(quadbins(traj, 8));
+  true) FROM elevation_raquet
+WHERE quadbin IN (SELECT unnest(getValues(tquadbin(traj, 8))));
 </programlisting>
 
 		<para>Los operadores de restricción y predicado que cierran la sección componen <varname>rasterValue</varname> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <varname>band</varname> (por defecto 1) e invocan <varname>rasterValue</varname> exactamente una vez por invocación.</para>
@@ -2546,7 +2535,8 @@ rasterTileValue(tgeompoint,rast raquet) → tfloat
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
-FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
+FROM trips t JOIN elevation_tiles r
+  ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))));
 </programlisting>
 			</listitem>
 
@@ -2560,7 +2550,8 @@ rasterTileValue(tgeompoint,rast raquet[]) → tfloat
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
-JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid, t.trip;
+JOIN elevation_tiles r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))))
+GROUP BY t.tripid, t.trip;
 </programlisting>
 			</listitem>
 
@@ -2569,18 +2560,18 @@ JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid
 				<para>Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
-  quadbin bigint,pixtype text,nodata float8,has_nodata boolean) → tfloat
+  quadbin,pixtype text,nodata float8,has_nodata boolean) → tfloat
 </programlisting>
 				<para>Lee un arreglo de píxeles de banda única en orden de fila mayor a lo largo de <varname>traj</varname> (SRID 4326), como <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> lee un ráster. La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <varname>quadbin</varname> mediante la transformada de tesela deslizante Web-Mercator. El argumento <varname>pixtype</varname> debe ser uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Cuando <varname>has_nodata</varname> es verdadero, un píxel igual a <varname>nodata</varname> no lleva valor. Devuelve <varname>NULL</varname> cuando el trayecto nunca encuentra un píxel con datos.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample elevation tiles from a Raquet Parquet table for all ship trajectories
 SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
   r.quadbin, 'float32', r.nodata, true) FROM trips t
-JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
+JOIN elevation_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))));
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
   r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
-JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
+JOIN sst_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 6))));
 </programlisting>
 			</listitem>
 
@@ -2653,20 +2644,20 @@ SELECT tripid FROM trips,
 			</listitem>
 		</itemizedlist>
 
-		<para>Para usar los operadores descritos aquí, MobilityDB debe ser compilado con <varname>-DRASTER=ON</varname>. En tal compilación, el archivo <filename>mobilitydb.control</filename> generado declara <varname>requires = 'postgis, postgis_raster'</varname>, por lo que un único <varname>CASCADE</varname> crea la pila completa:</para>
+		<para>Para usar los operadores descritos aquí, MobilityDB debe ser compilado con <varname>-DQUADBIN=ON</varname> y <varname>-DRASTER=ON</varname>, ya que una tesela Raquet se identifica por una celda <varname>quadbin</varname>. En tal compilación, el archivo <filename>mobilitydb.control</filename> generado declara <varname>requires = 'postgis, postgis_raster'</varname>, por lo que un único <varname>CASCADE</varname> crea la pila completa:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "postgis_raster"
 </programlisting>
 
-		<para>El ráster de PostGIS forma parte del paquete estándar <varname>postgresql-<replaceable>N</replaceable>-postgis-3</varname> en Debian/Ubuntu; no se requiere ningún paquete adicional. Pase <varname>-DRASTER=ON</varname> a CMake:</para>
+		<para>El ráster de PostGIS forma parte del paquete estándar <varname>postgresql-<replaceable>N</replaceable>-postgis-3</varname> en Debian/Ubuntu; no se requiere ningún paquete adicional. Pase <varname>-DQUADBIN=ON</varname> y <varname>-DRASTER=ON</varname> a CMake:</para>
 		<programlisting language="bash" xml:space="preserve" format="linespecific">
-cmake -DRASTER=ON ..
+cmake -DQUADBIN=ON -DRASTER=ON ..
 make -j$(nproc)
 sudo make install
 </programlisting>
-		<para>Para incluir el ráster en la compilación de cobertura de CI junto con otras familias opcionales, añada <varname>-DRASTER=ON</varname> a la invocación de cmake en <filename>.github/workflows/pgversion.yml</filename>.</para>
+		<para>Las compilaciones de CI, entre ellas <filename>.github/workflows/pgversion.yml</filename>, pasan <varname>-DALL=ON</varname>, que incluye el ráster junto con las demás familias opcionales.</para>
 	</sect1>
 
 </chapter>

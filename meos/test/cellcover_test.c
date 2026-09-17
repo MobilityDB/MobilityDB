@@ -159,13 +159,15 @@ quadbin_missing(const char *seg_wkt, const char *dense_wkt, uint32_t zoom)
   if (dense == NULL || seg == NULL)
     return 0;
   int ncover = 0, ntruth = 0;
-  uint64 *cover = trajectory_quadbins(seg, zoom, &ncover);
-  uint64 *truth = trajectory_quadbins(dense, zoom, &ntruth);
+  Temporal *tcover = tgeompoint_to_tquadbin(seg, (int32) zoom);
+  Temporal *ttruth = tgeompoint_to_tquadbin(dense, (int32) zoom);
+  Quadbin *cover = tquadbin_values(tcover, &ncover);
+  Quadbin *truth = tquadbin_values(ttruth, &ntruth);
   long missing = 0;
   for (int i = 0; i < ntruth; i++)
-    if (! holds(cover, ncover, truth[i]))
+    if (! holds((const uint64 *) cover, ncover, (uint64) truth[i]))
       missing++;
-  free(cover); free(truth); free(seg); free(dense);
+  free(cover); free(truth); free(tcover); free(ttruth); free(seg); free(dense);
   return missing;
 }
 

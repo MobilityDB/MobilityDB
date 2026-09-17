@@ -339,7 +339,8 @@ int main(void)
    * the value asserted beside them, which is what ties the decoding to the
    * byte order of the specification rather than to that of the machine */
   int zero_count;
-  uint64 *zero_quadbin = trajectory_quadbins(traj, 0, &zero_count);
+  Temporal *zero_tquadbin = tgeompoint_to_tquadbin(traj, 0);
+  Quadbin *zero_quadbin = tquadbin_values(zero_tquadbin, &zero_count);
   assert(zero_quadbin != NULL && zero_count >= 1);
   const uint8_t pixel_int8[1] = {0xff};
   const uint8_t pixel_uint16[2] = {0xff, 0xff};
@@ -411,7 +412,7 @@ int main(void)
     assert(tile == NULL);
     assert(meos_errno() != 0);
   }
-  free(zero_quadbin);
+  free(zero_quadbin); free(zero_tquadbin);
   free(traj);
 
   /* A trajectory that moves between its instants covers the tiles it crosses:
@@ -428,13 +429,16 @@ int main(void)
     " Point(150.0 10.0)@2024-01-08, Point(170.0 10.0)@2024-01-09}");
   assert(traj_across != NULL && traj_sampled != NULL);
   int ncrossed, nsampled;
-  uint64 *crossed = trajectory_quadbins(traj_across, 3, &ncrossed);
-  uint64 *sampled = trajectory_quadbins(traj_sampled, 3, &nsampled);
-  printf("trajectory_quadbins(linear trip, 3): %d cell(s), sampled: %d\n",
+  Temporal *tcrossed = tgeompoint_to_tquadbin(traj_across, 3);
+  Temporal *tsampled = tgeompoint_to_tquadbin(traj_sampled, 3);
+  Quadbin *crossed = tquadbin_values(tcrossed, &ncrossed);
+  Quadbin *sampled = tquadbin_values(tsampled, &nsampled);
+  printf("tquadbin_values(linear trip, 3): %d cell(s), sampled: %d\n",
     ncrossed, nsampled);
   assert(ncrossed == 4);
   assert(nsampled == 4);
-  free(crossed); free(sampled); free(traj_across); free(traj_sampled);
+  free(crossed); free(sampled); free(tcrossed); free(tsampled);
+  free(traj_across); free(traj_sampled);
 
   /* The sampling of a PostGIS raster is answered by MEOS, so a program using
    * the library reads the values a PostgreSQL session reads. The trajectory

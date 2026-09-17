@@ -49,6 +49,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_quadbin.h>
 
 /*****************************************************************************/
 
@@ -96,16 +97,16 @@ extern char *raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_ou
 
 /* Constructor functions for Raquet tiles */
 
-extern Raquet *raquet_make(uint64 quadbin, int32 width, int32 height,
+extern Raquet *raquet_make(Quadbin quadbin, int32 width, int32 height,
   MeosPixType pixtype, double nodata, bool has_nodata, const uint8_t *pixels,
   size_t pixels_size);
 extern Raquet *raquet_copy(const Raquet *rq);
-extern Raquet *raquet_read(const char *path, uint64 quadbin);
-extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin);
+extern Raquet *raquet_read(const char *path, Quadbin quadbin);
+extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin);
 
 /* Accessor functions for Raquet tiles */
 
-extern uint64 raquet_quadbin(const Raquet *rq);
+extern Quadbin raquet_quadbin(const Raquet *rq);
 extern int raquet_width(const Raquet *rq);
 extern int raquet_height(const Raquet *rq);
 extern char *raquet_band_pixel_type(const Raquet *rq);
@@ -240,14 +241,11 @@ extern int araster_value_gdal(const Temporal *traj, const char *path, int band,
 
 extern Temporal *raster_tile_value_quadbin(const Temporal *traj,
   const uint8_t *pixels, size_t pixels_size, int32 width, int32 height,
-  uint64 quadbin, MeosPixType pixtype, double nodata, bool has_nodata);
+  Quadbin quadbin, MeosPixType pixtype, double nodata, bool has_nodata);
 
 extern Temporal *raster_tile_value(const Temporal *traj, const Raquet *rq);
 extern Temporal *raster_tile_value_array(const Temporal *traj,
   const Raquet **rqarr, int count);
-
-extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
-  int *count);
 
 /*****************************************************************************/
 
