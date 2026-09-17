@@ -68,14 +68,16 @@ SELECT length(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4
 SELECT get_byte(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
   'XDR'), 0);
 -- 0
-SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
+SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')));
 -- 31
 </pre></li><li class="listitem"><a name="raquet_asHexWKB"></a><a class="indexterm" name="id12505"></a><p>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a raster or a Raquet tile</p><pre class="programlisting">
 asHexWKB({raster,raquet},endian text='') → text
 </pre><pre class="programlisting">
 SELECT length(asHexWKB(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
 -- 122
-SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8')));
+SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')));
 -- 62
 </pre></li><li class="listitem"><a name="raquetFromBinary"></a><a class="indexterm" name="id12512"></a><a class="indexterm" name="id12515"></a><p>Return a raster or a Raquet tile from its Well-Known Binary (WKB) representation</p><pre class="programlisting">
 rasterFromBinary(bytea) → raster
@@ -84,8 +86,9 @@ raquetFromBinary(bytea) → raquet
 SELECT rasterFromBinary(asBinary(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
 </pre></li><li class="listitem"><a name="raquetFromHexWKB"></a><a class="indexterm" name="id12522"></a><a class="indexterm" name="id12525"></a><p>Return a raster or a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
 rasterFromHexWKB(text) → raster
@@ -94,7 +97,8 @@ raquetFromHexWKB(text) → raquet
 SELECT rasterFromHexWKB(asHexWKB(r, 'XDR')) = r
 FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
 -- true
-SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135, 'uint8');
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  quadbin '4817ffffffffffff', 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 -- true
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 16. Temporal Tessellations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
