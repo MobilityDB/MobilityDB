@@ -101,6 +101,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="raquet_8h_source.html">raster/raquet.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="raster__quadbin_8h_source.html">raster/raster_quadbin.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="quadbin_8h_source.html">quadbin/quadbin.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis_8h_source.html">pg_geo/postgis.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
@@ -315,9 +316,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a79e095e85106757b7e4da7bad4767f47"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">text_to_pixtype</a> (const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *pt)</td></tr>
 <tr class="memdesc:a79e095e85106757b7e4da7bad4767f47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a pixtype name text argument to a MeosPixType code.  <a href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">More...</a><br /></td></tr>
 <tr class="separator:a79e095e85106757b7e4da7bad4767f47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_ga5a84025ae3b110fb38f4c2a1cf3730f9.html#ga5a84025ae3b110fb38f4c2a1cf3730f9">Trajectory_quadbins</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distinct QUADBIN cells at a zoom level covered by a trajectory, for use as a WHERE-clause join key against a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> table.  <a href="group__mobilitydb__raster_ga5a84025ae3b110fb38f4c2a1cf3730f9.html#ga5a84025ae3b110fb38f4c2a1cf3730f9">More...</a><br /></td></tr>
-<tr class="separator:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >PostgreSQL functions of the raster sampling operators. </p>

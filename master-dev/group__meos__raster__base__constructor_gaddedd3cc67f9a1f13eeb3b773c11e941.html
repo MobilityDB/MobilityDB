@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_read_bytes</title>
+<title>MobilityDB: raquet_read</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,35 +80,29 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga93af28d0517be177a160e306506561fd.html#ga93af28d0517be177a160e306506561fd">raquet_copy</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8facb564940b8be715d890a311167dd5.html#ga8facb564940b8be715d890a311167dd5">raquet_make</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga91c64841b73e1197b633fc569a632fbe.html#ga91c64841b73e1197b633fc569a632fbe">raquet_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__constructor_gaddedd3cc67f9a1f13eeb3b773c11e941.html#gaddedd3cc67f9a1f13eeb3b773c11e941">raquet_read</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga454c9a9294d936ced5218db64031d256.html#ga454c9a9294d936ced5218db64031d256">raquet_read_bytes</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8148a95b3bfb66a65ce6628ba5858c33" name="ga8148a95b3bfb66a65ce6628ba5858c33"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8148a95b3bfb66a65ce6628ba5858c33">&#9670;&#160;</a></span>raquet_read_bytes()</h2>
+<a id="gaddedd3cc67f9a1f13eeb3b773c11e941" name="gaddedd3cc67f9a1f13eeb3b773c11e941"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaddedd3cc67f9a1f13eeb3b773c11e941">&#9670;&#160;</a></span>raquet_read()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structRaquet.html">Raquet</a> * raquet_read_bytes </td>
+          <td class="memname"><a class="el" href="structRaquet.html">Raquet</a> * raquet_read </td>
           <td>(</td>
-          <td class="paramtype">const uint8_t *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint64&#160;</td>
+          <td class="paramtype"><a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a>&#160;</td>
           <td class="paramname"><em>quadbin</em>&#160;</td>
         </tr>
         <tr>
@@ -119,12 +113,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile decoded from an in-memory raster file via GDAL. </p>
-<p >Identical to <a class="el" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86" title="Return a Raquet tile read from a raster file via GDAL.">raquet_read</a> but the raster file is supplied as a byte buffer (e.g. a <code>bytea</code>) rather than a filesystem path. The bytes are exposed to GDAL through its <code>/vsimem/</code> virtual filesystem, so no server-side file access is required. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile read from a raster file via GDAL. </p>
+<p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Raster file bytes (any GDAL-supported format) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Number of bytes in <code>data</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference @csqlfn <a class="el" href="group__mobilitydb__raster_gaca6464eb97937bd5b1b9b152816e4284.html#gaca6464eb97937bd5b1b9b152816e4284" title="Return a Raquet tile decoded from an in-memory raster file via GDAL.">Raquet_read_bytes()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference @csqlfn <a class="el" href="group__mobilitydb__raster_gadd3326aa667969a105ab781f6f4e19ff.html#gadd3326aa667969a105ab781f6f4e19ff" title="Return a Raquet tile read from a raster file on the server via GDAL.">Raquet_read()</a> </td></tr>
   </table>
   </dd>
 </dl>
