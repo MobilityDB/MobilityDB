@@ -1925,8 +1925,17 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
     rel == COVERS);
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  /* A geometry asked about many times is read as edges once: what that
+   * reading produced is held for the calls that follow, and a geometry
+   * recognised by its serialized value reads it rather than building it */
+  void *ent1, *ent2;
+  void *ctx1 = relate_ctx_borrow(gs1, geom1, &ent1);
+  void *ctx2 = relate_ctx_borrow(gs2, geom2, &ent2);
   bool result;
-  bool answered = meos_spatialrel(geom1, geom2, rel, &result);
+  bool answered = ctx1 && ctx2 &&
+    meos_spatialrel_ctx(ctx1, ctx2, rel, &result);
+  relate_ctx_return(ctx1, ent1);
+  relate_ctx_return(ctx2, ent2);
   uint8_t badtype = answered ? 0 : geo_unsupported_type(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
   if (! answered)
