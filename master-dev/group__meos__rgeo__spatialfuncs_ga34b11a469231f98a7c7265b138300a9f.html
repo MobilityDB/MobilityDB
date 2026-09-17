@@ -111,7 +111,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the world-frame trajectory of a body-frame point on a moving rigid geometry. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The pose is applied to the point at each instant, and the result has the interpolation of the temporal rigid geometry. A linear result is exact along a segment in which the body does not rotate. Along a segment in which it rotates, the point follows a curve, which the result replaces by the segment joining the positions at the two instants. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Body-frame geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__spatialfuncs_ga0357bdfa49d242ca61ef572117211457.html#ga0357bdfa49d242ca61ef572117211457" title="Return the world-frame trajectory of a body-frame point on a moving rigid geometry @sqlfn bodyPointTr...">Trgeometry_body_point_trajectory()</a> </td></tr>
