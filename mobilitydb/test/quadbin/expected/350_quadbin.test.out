@@ -84,6 +84,29 @@ SELECT (quadbin '480fffffffffffff')::bigint;
 (1 row)
 
 /* Errors */
+SELECT 42::bigint::quadbin;
+ERROR:  The value 42 does not encode a valid quadbin index
+CREATE TABLE tbl_quadbin_assign(cell quadbin);
+CREATE TABLE
+INSERT INTO tbl_quadbin_assign VALUES (42::bigint);
+ERROR:  The value 42 does not encode a valid quadbin index
+INSERT INTO tbl_quadbin_assign VALUES (5192650370358181887::bigint);
+INSERT 0 1
+SELECT cell FROM tbl_quadbin_assign;
+       cell       
+------------------
+ 480fffffffffffff
+(1 row)
+
+DROP TABLE tbl_quadbin_assign;
+DROP TABLE
+SELECT 5785823699403800575::bigint::quadbin = quadbin '504b5fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
 SELECT 5192650370358181887::bigint = quadbin '480fffffffffffff';
 ERROR:  operator does not exist: bigint = quadbin at character 49
 SELECT isValidIndex(quadbin '480fffffffffffff');

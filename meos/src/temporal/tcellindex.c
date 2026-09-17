@@ -55,6 +55,12 @@
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
+#if H3
+  #include "h3/h3index.h"
+#endif
+#if QUADBIN
+  #include <meos_quadbin.h>
+#endif
 
 /* Per-DGGS descriptors, defined in each family and referenced here under the
  * same build-flag guard that compiles the family. */
@@ -149,6 +155,79 @@ ensure_valid_cell_resolution(MeosType temptype, int32 resolution)
     "The resolution must be between %d and %d", ops->min_resolution,
     ops->max_resolution);
   return false;
+}
+
+/**
+ * @brief Ensure that a 64-bit integer encodes a cell of the grid of a temporal
+ * cell-index type, or raise an error
+ * @details A cell of each grid is a 64-bit integer with the structure its grid
+ * defines: QUADBIN by its header, resolution and unused bits, S2 by its face
+ * and the one bit ending its position, H3 by its mode bits. Not every integer
+ * is a value of a cell-index type, so an integer entering one is checked as
+ * the text input of the type checks its string: an S2 value is a cell of its
+ * grid, a QUADBIN value a well-formed index of any mode, since the quadbin
+ * type holds one, and an H3 value a cell, a directed edge, a vertex or the
+ * zero sentinel, since the h3index type holds all of them.
+ * @param[in] value Integer, as a Datum
+ * @param[in] temptype Temporal cell-index type naming the grid
+ */
+bool
+ensure_valid_cell(Datum value, MeosType temptype)
+{
+#if H3
+  if (temptype == T_TH3INDEX)
+  {
+    if (h3index_is_valid_input((H3Index) DatumGetInt64(value)))
+      return true;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value %" PRId64 " does not encode a valid H3 cell, directed edge "
+      "or vertex", DatumGetInt64(value));
+    return false;
+  }
+#endif
+#if QUADBIN
+  if (temptype == T_TQUADBIN)
+  {
+    if (quadbin_is_valid_index((Quadbin) DatumGetInt64(value)))
+      return true;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value %" PRId64 " does not encode a valid quadbin index",
+      DatumGetInt64(value));
+    return false;
+  }
+#endif
+  const DggsCellOps *ops = dggs_cellops(temptype);
+  if (! ops)
+    return false;
+  if (DatumGetBool(ops->is_valid_cell(value)))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The value %" PRId64 " does not encode a valid %s",
+    DatumGetInt64(value), meostype_name(ops->celltype));
+  return false;
+}
+
+/**
+ * @brief Ensure that every value of a temporal 64-bit integer encodes a cell
+ * of the grid of a temporal cell-index type, or raise an error
+ * @param[in] temp Temporal 64-bit integer
+ * @param[in] temptype Temporal cell-index type naming the grid
+ */
+bool
+ensure_valid_tcell(const Temporal *temp, MeosType temptype)
+{
+  int count;
+  Datum *values = temporal_values_p(temp, &count);
+  for (int i = 0; i < count; i++)
+  {
+    if (! ensure_valid_cell(values[i], temptype))
+    {
+      pfree(values);
+      return false;
+    }
+  }
+  pfree(values);
+  return true;
 }
 
 /*****************************************************************************

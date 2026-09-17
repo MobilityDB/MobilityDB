@@ -96,19 +96,21 @@ CREATE TYPE quadbin (
 /******************************************************************************
  * Casts to / from bigint
  *
- * ASSIGNMENT-only (matches the tquadbin ↔ tbigint design): the user
- * must spell out `::quadbin` or `::bigint` so an arbitrary int64
- * cannot silently flow into a quadbin-specific function. quadbin and
- * bigint share the same on-disk representation (both int64 passed
- * by value), so the casts are WITHOUT FUNCTION — same pattern as
- * `353_tquadbin.in.sql` uses for tquadbin ↔ tbigint.
- *
- * Note: bigint is a reserved word in SQL, so `CREATE FUNCTION
- * bigint(quadbin)` would be a syntax error. WITHOUT FUNCTION
- * sidesteps the need for a dedicated cast function here.
+ * A quadbin and a bigint share one on-disk representation, an int64 passed by
+ * value, while not every bigint is a cell: a QUADBIN cell has the header,
+ * resolution and unused bits its grid defines. The cast into quadbin checks
+ * the value as the text input does and raises when it encodes no cell; the
+ * cast out of quadbin is the binary coercion, since every cell is a bigint.
+ * Both are ASSIGNMENT casts, applied in an assignment and stated with `::`
+ * elsewhere.
  ******************************************************************************/
 
-CREATE CAST (bigint AS quadbin) WITHOUT FUNCTION AS ASSIGNMENT;
+CREATE FUNCTION quadbin(bigint)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Bigint_to_quadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (bigint AS quadbin) WITH FUNCTION quadbin(bigint) AS ASSIGNMENT;
 CREATE CAST (quadbin AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************

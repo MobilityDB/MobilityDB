@@ -68,6 +68,7 @@
  *****************************************************************************/
 
 extern H3Index meos_h3index_in(const char *str);
+extern bool h3index_is_valid_input(H3Index index);
 extern char *meos_h3index_out(H3Index cell);
 extern bool meos_h3index_eq(H3Index a, H3Index b);
 extern bool meos_h3index_ne(H3Index a, H3Index b);

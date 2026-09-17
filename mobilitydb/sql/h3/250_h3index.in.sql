@@ -168,22 +168,21 @@ CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
 /******************************************************************************
  * Casts to / from bigint
  *
- * ASSIGNMENT-only (matches the th3index ↔ tbigint design): the user
- * must spell out `::h3index` or `::bigint` so an arbitrary int64
- * cannot silently flow into an H3-specific function. h3index and
- * bigint share the same on-disk representation (both int64 passed
- * by value), so the casts are WITHOUT FUNCTION — same pattern as
- * `253_th3index.in.sql` uses for th3index ↔ tbigint.
- *
- * Note: bigint is a reserved word in SQL, so `CREATE FUNCTION
- * bigint(h3index)` would be a syntax error. WITHOUT FUNCTION
- * sidesteps the need for a dedicated cast function here.
+ * h3index and bigint share the same on-disk representation (both int64
+ * passed by value), while not every bigint is an H3 index. The cast into
+ * h3index checks the value as the text input does, admitting the zero
+ * sentinel and a valid cell, directed edge or vertex, through the MEOS
+ * function bigint_to_h3index; the cast out of h3index is the binary
+ * coercion. Both are ASSIGNMENT casts, applied in an assignment and stated
+ * with `::` elsewhere.
  ******************************************************************************/
 
 -- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
 -- ⛔ RETAINED AS A WORKED REFERENCE — the bigint casts a host must provide
 -- itself where no h3 extension provides them. See the file header.
--- CREATE CAST (bigint AS h3index) WITHOUT FUNCTION AS ASSIGNMENT;
+-- CREATE FUNCTION h3index(bigint) RETURNS h3index
+--   AS 'MODULE_PATHNAME', 'Bigint_to_h3index' LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE CAST (bigint AS h3index) WITH FUNCTION h3index(bigint) AS ASSIGNMENT;
 -- CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************

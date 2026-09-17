@@ -126,6 +126,7 @@ typedef uint64 S2CellId;
 /* Input and output functions */
 
 extern S2CellId s2cell_in(const char *str);
+extern S2CellId bigint_to_s2cell(int64 i);
 extern char *s2cell_out(S2CellId cell);
 
 /* Comparison functions */

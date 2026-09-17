@@ -123,6 +123,22 @@ quadbin_in(const char *str)
   return quadbin_parse(str);
 }
 
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return a QUADBIN index from a 64-bit integer, raising an error when
+ * the integer encodes no well-formed index
+ * @param[in] i Integer
+ * @csqlfn #Bigint_to_quadbin()
+ */
+Quadbin
+bigint_to_quadbin(int64 i)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_cell(Int64GetDatum(i), T_TQUADBIN))
+    return (Quadbin) 0;
+  return (Quadbin) i;
+}
+
 /*****************************************************************************
  * Comparison / ordering
  *****************************************************************************/

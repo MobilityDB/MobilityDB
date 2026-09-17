@@ -41,7 +41,7 @@
 
 	<para>They answer the same questions, so this chapter states each operation once and names the grid only where the answer depends on it. S2 calls a resolution a <emphasis>level</emphasis>; the two words denote the same quantity.</para>
 
-	<para>A cell index type shares its on-disk representation with <varname>tbigint</varname>: both store a temporal 64-bit integer. The distinct SQL type exists so that the type-checker rejects a cell-specific function applied to an arbitrary <varname>tbigint</varname> trajectory, and the reverse. Casts to and from <varname>tbigint</varname> are binary-coercion only, zero-cost at run time, and explicit, so a query states <varname>::</varname>.</para>
+	<para>A cell index type shares its on-disk representation with <varname>tbigint</varname>: both store a temporal 64-bit integer. Not every integer is a cell, since each grid gives its cells the structure its specification defines, QUADBIN its header, resolution and unused bits, S2 its face and the one bit ending its position, and H3 its mode bits. The distinct SQL type exists so that the type-checker rejects a cell-specific function applied to an arbitrary <varname>tbigint</varname> trajectory, and the reverse, and an integer entering a cell type is checked as the text input of the type checks its string: an S2 value is a cell of its grid, a QUADBIN value a well-formed index of any mode, and an H3 value a cell, a directed edge or a vertex.</para>
 
 	<para>As with other temporal types, a cell index type has four subtypes: <varname>Instant</varname>, discrete sequence, continuous sequence with step interpolation, and <varname>SequenceSet</varname>. Cell identifiers are discrete, so linear interpolation between two of them has no meaning and step interpolation is always used.</para>
 
@@ -333,7 +333,7 @@ SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
 	<sect1 xml:id="tcell_conversions">
 		<title>Conversions</title>
 
-		<para>A <varname>tcell</varname> value shares the same on-disk representation as <varname>tbigint</varname>. The binary-coercion cast between them is <emphasis>explicit</emphasis>, requiring <varname>::</varname>, so cell-specific functions cannot be silently called on arbitrary bigint trajectories.</para>
+		<para>A <varname>tcell</varname> value shares the same on-disk representation as <varname>tbigint</varname>, and a cell the same representation as <varname>bigint</varname>. A cast between them is an assignment cast: it applies in an assignment, such as inserting a <varname>tbigint</varname> into a <varname>tcell</varname> column, and elsewhere a query states <varname>::</varname>, so cell-specific functions cannot be silently called on arbitrary integers.</para>
 
 		<para>A tile converts to the spatiotemporal box of its footprint, which is what gives a table of tiles a spatial index.</para>
 
@@ -342,9 +342,11 @@ SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert between a <varname>tcell</varname> and a <varname>tbigint</varname></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{bigint,quadbin}::{quadbin,bigint}
+{bigint,s2cell}::{s2cell,bigint}
 {tbigint,tcell}::{tcell,tbigint}
 </programlisting>
-				<para>The cast is a binary coercion in both directions, so it costs nothing beyond the type change. It round trips: casting a cell to <varname>tbigint</varname> and back answers the cell it started from.</para>
+				<para>The cast out of a cell type is a binary coercion, since every cell is an integer. The cast into a cell type checks every value as the text input of the type does and raises an error otherwise, as the MF-JSON and WKB input of the type do: an S2 value must be a cell of its grid, a QUADBIN value a well-formed index of any mode, as the <varname>quadbin</varname> type holds, and an H3 value a cell, a directed edge or a vertex, since an H3 index names all three. The <varname>h3index</varname> type and its casts to and from <varname>bigint</varname> are those of the H3 extension. The cast round trips: casting a cell to an integer and back answers the cell it started from.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
 -- 831c02fffffffff@2001-01-01
@@ -352,6 +354,10 @@ SELECT (tbigint '5234909528541102079@2001-01-01')::tquadbin;
 -- 48a6227affffffff@2001-01-01
 SELECT (tbigint '5171187903383994368@2001-01-01')::ts2cell;
 -- 47c3c@2001-01-01
+SELECT 5234909528541102079::bigint::quadbin;
+-- 48a6227affffffff
+SELECT (tbigint '42@2001-01-01')::tquadbin;
+-- ERROR:  The value 42 does not encode a valid quadbin index
 </programlisting>
 			</listitem>
 
@@ -2053,12 +2059,12 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 isValidIndex(quadbin) → boolean
 </programlisting>
-				<para>Correct header tag and resolution field.</para>
+				<para>Correct header tag and resolution field. The input of the <varname>quadbin</varname> type raises an error on any other value, so every value of the type is a valid index, while <link linkend="tcell_is_valid_cell"><varname>isValidCell</varname></link> answers whether the index is a data cell: the index 504b5fffffffffff carries mode 2.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT isValidIndex(quadbin '480fffffffffffff');
 -- t
-SELECT isValidIndex(0::bigint::quadbin);
--- f
+SELECT isValidIndex(quadbin '504b5fffffffffff');
+-- t
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_quadbin_cell_sibling">

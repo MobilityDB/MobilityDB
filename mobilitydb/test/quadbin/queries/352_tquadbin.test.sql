@@ -128,6 +128,17 @@ SELECT tquadbinFromHexEWKB(replace(asHexEWKB(tquadbin '480fffffffffffff@2001-01-
 SELECT (tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint;
 SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
 
+-- Not every integer is a cell: an integer encoding no QUADBIN cell is refused
+-- by the cast, and in MF-JSON and WKB input, as in text input
+/* Errors */
+SELECT (tbigint '[5192650370358181887@2001-01-01, 42@2001-01-02]')::tquadbin;
+SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'),
+  '5192650370358181887', '42'));
+SELECT tquadbinFromHexWKB(replace(asHexWKB(tquadbin '480fffffffffffff@2001-01-01',
+  'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
+SELECT quadbinsetFromHexWKB(replace(asHexWKB(quadbinset '{480fffffffffffff}',
+  'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
+
 -- Round-trip preserves value
 SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
   = tquadbin '480fffffffffffff@2012-01-01 08:00:00';

@@ -75,6 +75,18 @@ SELECT NOT (quadbin '480fffffffffffff' = quadbin '48427fffffffffff');
 SELECT 5192650370358181887::bigint::quadbin;
 SELECT (quadbin '480fffffffffffff')::bigint;
 
+-- Not every integer is a cell: the cast into quadbin checks the value, as the
+-- text input does, explicitly and in an assignment
+/* Errors */
+SELECT 42::bigint::quadbin;
+CREATE TABLE tbl_quadbin_assign(cell quadbin);
+INSERT INTO tbl_quadbin_assign VALUES (42::bigint);
+INSERT INTO tbl_quadbin_assign VALUES (5192650370358181887::bigint);
+SELECT cell FROM tbl_quadbin_assign;
+DROP TABLE tbl_quadbin_assign;
+-- The type holds a well-formed index of any mode, as its text input does
+SELECT 5785823699403800575::bigint::quadbin = quadbin '504b5fffffffffff';
+
 -- The cast is NOT implicit — direct comparison without `::` must error
 /* Errors */
 \set VERBOSITY terse

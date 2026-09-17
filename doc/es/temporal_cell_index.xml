@@ -41,7 +41,7 @@
 
 	<para>Responden a las mismas preguntas, de modo que este capítulo presenta cada operación una sola vez y nombra la cuadrícula únicamente donde la respuesta depende de ella. S2 llama <emphasis>nivel</emphasis> a una resolución; las dos palabras denotan la misma cantidad.</para>
 
-	<para>Un tipo de índice de celda comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe para que el verificador de tipos rechace una función específica de celdas aplicada a una trayectoria <varname>tbigint</varname> arbitraria, y a la inversa. Las conversiones desde y hacia <varname>tbigint</varname> son de coerción binaria solamente, sin coste en tiempo de ejecución, y explícitas, de modo que una consulta escribe <varname>::</varname>.</para>
+	<para>Un tipo de índice de celda comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. No todo entero es una celda, ya que cada cuadrícula da a sus celdas la estructura que define su especificación: QUADBIN su cabecera, resolución y bits no usados, S2 su cara y el bit uno que termina su posición, y H3 sus bits de modo. El tipo SQL distinto existe para que el verificador de tipos rechace una función específica de celdas aplicada a una trayectoria <varname>tbigint</varname> arbitraria, y a la inversa, y un entero que entra en un tipo de celda se comprueba como la entrada de texto del tipo comprueba su cadena: un valor S2 es una celda de su cuadrícula, un valor QUADBIN un índice bien formado de cualquier modo, y un valor H3 una celda, una arista dirigida o un vértice.</para>
 
 	<para>Como con otros tipos temporales, un tipo de índice de celda tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos y <varname>SequenceSet</varname>. Los identificadores de celda son discretos, de modo que la interpolación lineal entre dos de ellos carece de sentido y siempre se usa la interpolación de pasos.</para>
 
@@ -333,7 +333,7 @@ SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
 	<sect1 xml:id="tcell_conversions">
 		<title>Conversión de tipos</title>
 
-		<para>Un valor <varname>tcell</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis>, requiere <varname>::</varname>, de modo que las funciones específicas de celdas no puedan invocarse silenciosamente sobre trayectorias bigint arbitrarias.</para>
+		<para>Un valor <varname>tcell</varname> comparte la misma representación en disco que <varname>tbigint</varname>, y una celda la misma representación que <varname>bigint</varname>. Una conversión entre ellos es una conversión de asignación: se aplica en una asignación, como al insertar un <varname>tbigint</varname> en una columna <varname>tcell</varname>, y en los demás casos una consulta escribe <varname>::</varname>, de modo que las funciones específicas de celdas no puedan invocarse silenciosamente sobre enteros arbitrarios.</para>
 
 		<para>Una tesela se convierte en la caja espaciotemporal de su huella, que es lo que da un índice espacial a una tabla de teselas.</para>
 
@@ -342,9 +342,11 @@ SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir entre un <varname>tcell</varname> y un <varname>tbigint</varname></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{bigint,quadbin}::{quadbin,bigint}
+{bigint,s2cell}::{s2cell,bigint}
 {tbigint,tcell}::{tcell,tbigint}
 </programlisting>
-				<para>La conversión es una coerción binaria en ambas direcciones, de modo que no cuesta nada más allá del cambio de tipo. Da la vuelta completa: convertir una celda a <varname>tbigint</varname> y de vuelta devuelve la celda de la que se partió.</para>
+				<para>La conversión desde un tipo de celda es una coerción binaria, ya que toda celda es un entero. La conversión hacia un tipo de celda comprueba cada valor como lo hace la entrada de texto del tipo y provoca un error en caso contrario, como lo hacen las entradas MF-JSON y WKB del tipo: un valor S2 debe ser una celda de su cuadrícula, un valor QUADBIN un índice bien formado de cualquier modo, como los que contiene el tipo <varname>quadbin</varname>, y un valor H3 una celda, una arista dirigida o un vértice, ya que un índice H3 nombra los tres. El tipo <varname>h3index</varname> y sus conversiones desde y hacia <varname>bigint</varname> son los de la extensión H3. La conversión da la vuelta completa: convertir una celda a un entero y de vuelta devuelve la celda de la que se partió.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
 -- 831c02fffffffff@2001-01-01
@@ -352,6 +354,10 @@ SELECT (tbigint '5234909528541102079@2001-01-01')::tquadbin;
 -- 48a6227affffffff@2001-01-01
 SELECT (tbigint '5171187903383994368@2001-01-01')::ts2cell;
 -- 47c3c@2001-01-01
+SELECT 5234909528541102079::bigint::quadbin;
+-- 48a6227affffffff
+SELECT (tbigint '42@2001-01-01')::tquadbin;
+-- ERROR:  The value 42 does not encode a valid quadbin index
 </programlisting>
 			</listitem>
 
@@ -2050,12 +2056,12 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 isValidIndex(quadbin) → boolean
 </programlisting>
-				<para>Etiqueta de cabecera y campo de resolución correctos.</para>
+				<para>Etiqueta de cabecera y campo de resolución correctos. La entrada del tipo <varname>quadbin</varname> provoca un error ante cualquier otro valor, por lo que todo valor del tipo es un índice válido, mientras que <link linkend="tcell_is_valid_cell"><varname>isValidCell</varname></link> responde si el índice es una celda de datos: el índice 504b5fffffffffff lleva el modo 2.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT isValidIndex(quadbin '480fffffffffffff');
 -- t
-SELECT isValidIndex(0::bigint::quadbin);
--- f
+SELECT isValidIndex(quadbin '504b5fffffffffff');
+-- t
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_quadbin_cell_sibling">

@@ -290,16 +290,16 @@ SELECT (tbigint '622236723497533439@2012-01-01 08:00:00')::th3index;
  8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
-SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::th3index;
+SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497500671@2001-01-02}')::th3index;
                                            th3index                                           
 ----------------------------------------------------------------------------------------------
- {8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST}
+ {8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6457fff@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::th3index;
+SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497500671@2001-01-02]')::th3index;
                                            th3index                                           
 ----------------------------------------------------------------------------------------------
- [8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST]
+ [8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6457fff@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT (th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint;
@@ -308,6 +308,40 @@ SELECT (th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint;
  622236723497533439@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
+SELECT (tbigint '1270755069838884863@2001-01-01')::th3index;
+                   th3index                    
+-----------------------------------------------
+ 11a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT (tbigint '0@2001-01-01')::th3index;
+            th3index            
+--------------------------------
+ 0@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3indexsetFromHexWKB(asHexWKB(h3OriginToDirectedEdges(h3index '8a2a100d645ffff')))
+  = h3OriginToDirectedEdges(h3index '8a2a100d645ffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT (tbigint '622236723497533440@2001-01-01')::th3index;
+ERROR:  The value 622236723497533440 does not encode a valid H3 cell, directed edge or vertex
+CREATE TABLE tbl_th3index_assign(temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_assign VALUES (tbigint '42@2001-01-01');
+ERROR:  The value 42 does not encode a valid H3 cell, directed edge or vertex
+DROP TABLE tbl_th3index_assign;
+DROP TABLE
+SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
+  '612544986753269759', '42'));
+ERROR:  The value 42 does not encode a valid H3 cell, directed edge or vertex
+SELECT th3indexFromHexWKB(replace(asHexWKB(th3index '880326b885fffff@2012-01-01 08:00:00',
+  'XDR'), '0880326B885FFFFF', '000000000000002A'));
+ERROR:  The value 42 does not encode a valid H3 cell, directed edge or vertex
 SELECT (th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02}')::tbigint;
                                               tbigint                                               
 ----------------------------------------------------------------------------------------------------

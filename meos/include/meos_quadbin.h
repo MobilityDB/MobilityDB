@@ -115,6 +115,7 @@ typedef uint64 Quadbin;
 /* Input and output functions */
 
 extern Quadbin quadbin_in(const char *str);
+extern Quadbin bigint_to_quadbin(int64 i);
 
 /* Comparison functions */
 

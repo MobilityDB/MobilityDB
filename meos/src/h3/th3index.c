@@ -63,6 +63,7 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "h3/h3index.h"
@@ -468,6 +469,8 @@ tbigint_to_th3index(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
+  if (! ensure_valid_tcell(temp, T_TH3INDEX))
+    return NULL;
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_h3index_identity;
