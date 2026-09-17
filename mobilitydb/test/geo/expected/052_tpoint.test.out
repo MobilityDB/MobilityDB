@@ -1846,6 +1846,37 @@ SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
  SRID=4326;GEODSTBOX XT(((1.5,1.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+                                                     stbox                                                     
+---------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((10,60),(50,61.518762)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]');
+                                                      stbox                                                       
+------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((-180,60),(180,60.378349)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]')
+  && stbox 'SRID=4326;GEODSTBOX X((20 61),(40 62))' AS the_box_meets_what_the_trip_reaches;
+ the_box_meets_what_the_trip_reaches 
+-------------------------------------
+ t
+(1 row)
+
+SELECT stbox(tgeogpoint 'Interp=Step;[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+                                                 stbox                                                  
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((10,60),(50,60)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox(tgeompoint 'SRID=4326;[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+                                               stbox                                                
+----------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((10,60),(50,60)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
 SELECT ST_AsEWKT(getValue(tgeompoint 'Point(1 1)@2001-01-01'));
  st_asewkt  
 ------------

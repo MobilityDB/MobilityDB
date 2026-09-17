@@ -316,6 +316,13 @@ SELECT geography 'Linestring(1 1,2 2)'::stbox;
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 -- STBOX T((2001-01-01,2001-01-04))
 </programlisting>
+				<para>La caja de un punto temporal geodésico contiene los círculos máximos que recorre entre sus posiciones, que se elevan por encima de ellas o descienden por debajo: un viaje de <varname>Point(10 60)</varname> a <varname>Point(50 60)</varname> alcanza la latitud 61.518762, y uno cuyas posiciones distan más de media vuelta al globo en longitud cruza el antimeridiano y abarca todas las longitudes.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+-- SRID=4326;GEODSTBOX XT(((10,60),(50,61.518762)),[2001-01-01, 2001-01-02])
+SELECT stbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]');
+-- SRID=4326;GEODSTBOX XT(((-180,60),(180,60.378349)),[2001-01-01, 2001-01-02])
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>

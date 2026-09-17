@@ -524,6 +524,53 @@ dggs_lonlat_boundary_set_box(const double *lons, const double *lats,
   return;
 }
 
+/**
+ * @brief Extend a box of longitudes and latitudes by the geodesic joining two
+ * positions
+ * @details A geodetic point travels the great circle between two positions,
+ * which rises above, or falls below, both of them, so a box holding the two
+ * does not hold the path: the extremes #dggs_arc_lat_extreme() states are what
+ * the endpoints alone leave out. A path whose endpoints lie more than half the
+ * globe apart in longitude travels the short way, across the antimeridian, and
+ * the longitudes it passes are the ones outside the interval its endpoints
+ * bound, which a box of one interval states as the whole range.
+ * @param[in] lon1,lat1,lon2,lat2 Positions in degrees
+ * @param[inout] xmin,ymin,xmax,ymax Bounds of the box, in degrees
+ */
+void
+dggs_lonlat_segment_extend_box(double lon1, double lat1, double lon2,
+  double lat2, double *xmin, double *ymin, double *xmax, double *ymax)
+{
+  assert(xmin); assert(ymin); assert(xmax); assert(ymax);
+  double a[3], b[3], lat;
+  dggs_lonlat_to_xyz(lon1, lat1, a);
+  dggs_lonlat_to_xyz(lon2, lat2, b);
+  /* The extreme is rounded away from the box, to the microdegree: a box holds
+   * what it bounds, and the position a query reads at the extreme is the same
+   * quantity computed along another route, which the rounding of a double
+   * places a few units of the last place away. The rounding also states the
+   * same bound on every platform, which an index key compared across them
+   * needs */
+  if (dggs_arc_lat_extreme(a, b, true, &lat))
+  {
+    lat = ceil(lat * 1.0e6) / 1.0e6;
+    if (lat > *ymax)
+      *ymax = lat;
+  }
+  if (dggs_arc_lat_extreme(a, b, false, &lat))
+  {
+    lat = floor(lat * 1.0e6) / 1.0e6;
+    if (lat < *ymin)
+      *ymin = lat;
+  }
+  if (fabs(lon1 - lon2) > 180.0)
+  {
+    *xmin = -180.0;
+    *xmax = 180.0;
+  }
+  return;
+}
+
 /*****************************************************************************
  * Geodetic path of a segment
  *****************************************************************************/

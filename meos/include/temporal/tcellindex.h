@@ -178,6 +178,9 @@ extern bool ensure_valid_tcell(const Temporal *temp, MeosType temptype);
 extern void dggs_lonlat_boundary_set_box(const double *lons,
   const double *lats, int count, bool north_pole, bool south_pole,
   double *xmin, double *ymin, double *xmax, double *ymax);
+extern void dggs_lonlat_segment_extend_box(double lon1, double lat1,
+  double lon2, double lat2, double *xmin, double *ymin, double *xmax,
+  double *ymax);
 
 /*****************************************************************************
  * Geodetic path of a segment — shared by every DGGS whose cells are defined
