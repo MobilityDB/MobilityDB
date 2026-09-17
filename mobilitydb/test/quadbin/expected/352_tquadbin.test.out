@@ -252,6 +252,18 @@ SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
  480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
+/* Errors */
+SELECT (tbigint '[5192650370358181887@2001-01-01, 42@2001-01-02]')::tquadbin;
+ERROR:  The value 42 does not encode a valid quadbin index
+SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'),
+  '5192650370358181887', '42'));
+ERROR:  The value 42 does not encode a valid quadbin index
+SELECT tquadbinFromHexWKB(replace(asHexWKB(tquadbin '480fffffffffffff@2001-01-01',
+  'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
+ERROR:  The value 42 does not encode a valid quadbin index
+SELECT quadbinsetFromHexWKB(replace(asHexWKB(quadbinset '{480fffffffffffff}',
+  'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
+ERROR:  The value 42 does not encode a valid quadbin index
 SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
   = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
  ?column? 

@@ -148,6 +148,18 @@ extern const DggsCellOps *dggs_cellops(MeosType temptype);
  */
 extern bool ensure_valid_cell_resolution(MeosType temptype, int32 resolution);
 
+/**
+ * @brief Ensure that a 64-bit integer encodes a cell of the grid of a temporal
+ * cell-index type, or raise an error.
+ */
+extern bool ensure_valid_cell(Datum value, MeosType temptype);
+
+/**
+ * @brief Ensure that every value of a temporal 64-bit integer encodes a cell
+ * of the grid of a temporal cell-index type, or raise an error.
+ */
+extern bool ensure_valid_tcell(const Temporal *temp, MeosType temptype);
+
 /*****************************************************************************
  * Generic temporal entry points — shared by every DGGS.
  *

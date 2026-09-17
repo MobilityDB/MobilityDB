@@ -63,6 +63,7 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "quadbin/quadbin.h"
@@ -457,6 +458,8 @@ tbigint_to_tquadbin(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
+  if (! ensure_valid_tcell(temp, T_TQUADBIN))
+    return NULL;
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

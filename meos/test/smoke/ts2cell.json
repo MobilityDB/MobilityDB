@@ -37,6 +37,7 @@
     "^geo_to_s2cell_set$": {"GSERIALIZED *": "geog1"}
   },
   "override_args": {
+    "bigint_to_s2cell": {"0": "(int64) s2cell1"},
     "s2cell_cell_to_child": {"1": "16", "2": "0"},
     "s2cell_cell_to_children": {"1": "16"},
     "s2cell_cell_to_children_set": {"1": "16"},

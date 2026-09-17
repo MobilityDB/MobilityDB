@@ -45,6 +45,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
+#include "temporal/tcellindex.h"
 #include "temporal/tbox.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
@@ -501,6 +502,9 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
           return NULL;
         }
         values[i] = Int64GetDatum(json_object_get_int64(jvalue));
+        /* Not every integer is a value of a cell-index type */
+        if (temptype != T_TBIGINT && ! ensure_valid_cell(values[i], temptype))
+          return NULL;
         break;
       case T_TFLOAT:
         values[i] = Float8GetDatum(json_object_get_double(jvalue));
@@ -1969,8 +1973,12 @@ h3index_from_wkb_state(meos_wkb_parse_state *s)
       return (Datum) 0;
     }
   }
-  /* Read the cell id, wire-format identical to int8 */
-  return Int64GetDatum(int64_from_wkb_state(s));
+  /* Read the cell id, wire-format identical to int8, which not every integer
+   * is */
+  Datum cell = Int64GetDatum(int64_from_wkb_state(s));
+  if (! ensure_valid_cell(cell, T_TH3INDEX))
+    return (Datum) 0;
+  return cell;
 }
 #endif /* H3 */
 
@@ -2208,6 +2216,22 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
 
 /*****************************************************************************/
 
+#if H3 || QUADBIN || S2CELL
+/**
+ * @brief Return a cell read as a 64-bit integer and advance the parse state,
+ * raising an error when the integer encodes no cell of the grid of a temporal
+ * cell-index type
+ */
+static Datum
+base_cell_from_wkb_state(meos_wkb_parse_state *s, MeosType temptype)
+{
+  Datum cell = Int64GetDatum(int64_from_wkb_state(s));
+  if (! ensure_valid_cell(cell, temptype))
+    return (Datum) 0;
+  return cell;
+}
+#endif /* H3 || QUADBIN || S2CELL */
+
 /**
  * @brief Return a base value from its WKB representation
  */
@@ -2240,7 +2264,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
 #if H3
     case T_H3INDEX:
       /* h3index is a uint64 cell id, wire-format identical to int8. */
-      return Int64GetDatum(int64_from_wkb_state(s));
+      return base_cell_from_wkb_state(s, T_TH3INDEX);
 #endif /* H3 */
 #if JSON
     case T_JSONB:
@@ -2264,12 +2288,12 @@ base_from_wkb_state(meos_wkb_parse_state *s)
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
-      return Int64GetDatum(int64_from_wkb_state(s));
+      return base_cell_from_wkb_state(s, T_TQUADBIN);
 #endif /* QUADBIN */
 #if S2CELL
     case T_S2CELL:
       /* an S2 cell is a uint64 cell id, wire-format identical to int8 */
-      return Int64GetDatum(int64_from_wkb_state(s));
+      return base_cell_from_wkb_state(s, T_TS2CELL);
 #endif /* S2CELL */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,

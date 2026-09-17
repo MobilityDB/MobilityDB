@@ -1243,6 +1243,22 @@ s2cell_in(const char *str)
 }
 
 /**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return an S2 cell from a 64-bit integer, raising an error when the
+ * integer encodes no cell
+ * @param[in] i Integer
+ * @csqlfn #Bigint_to_s2cell()
+ */
+S2CellId
+bigint_to_s2cell(int64 i)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_cell(Int64GetDatum(i), T_TS2CELL))
+    return (S2CellId) 0;
+  return (S2CellId) i;
+}
+
+/**
  * @ingroup meos_s2cell_base_inout
  * @brief Return the string representation of an S2 cell
  * @param[in] cell S2 cell

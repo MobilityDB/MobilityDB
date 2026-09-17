@@ -48,6 +48,15 @@ SELECT ((s2cell '47c3c444c0000000')::bigint)::s2cell = s2cell '47c3c444c0000000'
  t
 (1 row)
 
+/* Errors */
+SELECT 42::bigint::s2cell;
+ERROR:  The value 42 does not encode a valid s2cell
+CREATE TABLE tbl_s2cell_assign(cell s2cell);
+CREATE TABLE
+INSERT INTO tbl_s2cell_assign VALUES (42::bigint);
+ERROR:  The value 42 does not encode a valid s2cell
+DROP TABLE tbl_s2cell_assign;
+DROP TABLE
 SELECT s2cell '47c3c444c0000000' < s2cell '47c3c444c0000004';
  ?column? 
 ----------

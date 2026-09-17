@@ -615,6 +615,22 @@ datum_h3_great_circle_distance(Datum a_d, Datum b_d, Datum unit_d)
  *****************************************************************************/
 
 /**
+ * @brief Return true if a 64-bit integer is a value of the h3index type: the
+ * zero sentinel, or a valid H3 cell, directed edge or vertex
+ * @details The mode bits and the digit sequence of an H3 index encode a cell,
+ * a directed edge or a vertex, and an integer that is none of the three names
+ * no place. The zero sentinel is admitted because H3 reserves it as the
+ * conventional "no index" marker. The text input and every input reading an
+ * integer apply this one test.
+ */
+bool
+h3index_is_valid_input(H3Index index)
+{
+  return index == (H3Index) 0 || h3_is_valid_cell_meos(index) ||
+    h3_is_valid_directed_edge_meos(index) || h3_is_valid_vertex_meos(index);
+}
+
+/**
  * @ingroup meos_h3_base_inout
  * @brief Parse a string into an H3Index. See header for the accepted
  * input shapes.
@@ -625,6 +641,25 @@ H3Index
 h3index_in(const char *str)
 {
   return meos_h3index_in(str);
+}
+
+/**
+ * @ingroup meos_h3_conversion
+ * @brief Return an H3 index from a 64-bit integer, raising an error when the
+ * integer is no H3 cell, directed edge or vertex, as the text input does
+ * @param[in] i Integer
+ */
+H3Index
+bigint_to_h3index(int64 i)
+{
+  if (! h3index_is_valid_input((H3Index) i))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value %" PRId64 " does not encode a valid H3 cell, directed edge "
+      "or vertex", i);
+    return (H3Index) 0;
+  }
+  return (H3Index) i;
 }
 #endif
 H3Index
@@ -684,9 +719,7 @@ meos_h3index_in(const char *str)
    * groups and indexes as if it were a place. The zero sentinel is admitted
    * because h3 reserves it as the conventional "no index" marker, which the
    * validity predicates report as false and which callers test for */
-  if (cell != (H3Index) 0 && ! h3_is_valid_cell_meos(cell) &&
-      ! h3_is_valid_directed_edge_meos(cell) &&
-      ! h3_is_valid_vertex_meos(cell))
+  if (! h3index_is_valid_input(cell))
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid h3index input \"%s\": not a valid H3 cell, directed edge or "

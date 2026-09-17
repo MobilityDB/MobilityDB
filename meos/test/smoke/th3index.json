@@ -42,6 +42,7 @@
     "^tgeompoint_": {"Temporal *": "tgeompoint1"}
   },
   "override_args": {
+    "bigint_to_h3index": {"0": "(int64) h3cell1"},
     "th3index_are_neighbor_cells": {"1": "th3index_nbr1"},
     "th3index_cells_to_directed_edge": {"1": "th3index_nbr1"},
     "th3index_grid_distance": {"1": "th3index_nbr1"},

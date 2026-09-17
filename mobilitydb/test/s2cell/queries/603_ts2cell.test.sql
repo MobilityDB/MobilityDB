@@ -141,6 +141,15 @@ SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
 SELECT ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
   = ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]';
 
+-- Not every integer is a cell: an integer encoding no S2 cell is refused by the
+-- cast, and in MF-JSON and WKB input, as in text input
+/* Errors */
+SELECT (tbigint '42@2001-01-01')::ts2cell;
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '5171187903383994368', '42'));
+SELECT ts2cellFromHexWKB(replace(asHexWKB(ts2cell '47c3c@2001-01-01', 'XDR'),
+  '47C3C00000000000', '000000000000002A'));
+
 -------------------------------------------------------------------------------
 -- Time spans
 --

@@ -136,11 +136,29 @@ SELECT th3indexFromHexEWKB(replace(asHexEWKB(th3index '880326b885fffff@2001-01-0
 
 -- tbigint -> th3index (explicit via ::)
 SELECT (tbigint '622236723497533439@2012-01-01 08:00:00')::th3index;
-SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::th3index;
-SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::th3index;
+SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497500671@2001-01-02}')::th3index;
+SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497500671@2001-01-02]')::th3index;
 
 -- th3index -> tbigint (explicit via ::)
 SELECT (th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint;
+
+-- An integer entering th3index is read as the text input reads its string: a
+-- directed edge and the zero sentinel are H3 indexes, and an integer that is no
+-- cell, directed edge or vertex is refused by the cast, in an assignment, and
+-- in MF-JSON and WKB input
+SELECT (tbigint '1270755069838884863@2001-01-01')::th3index;
+SELECT (tbigint '0@2001-01-01')::th3index;
+SELECT h3indexsetFromHexWKB(asHexWKB(h3OriginToDirectedEdges(h3index '8a2a100d645ffff')))
+  = h3OriginToDirectedEdges(h3index '8a2a100d645ffff');
+/* Errors */
+SELECT (tbigint '622236723497533440@2001-01-01')::th3index;
+CREATE TABLE tbl_th3index_assign(temp th3index);
+INSERT INTO tbl_th3index_assign VALUES (tbigint '42@2001-01-01');
+DROP TABLE tbl_th3index_assign;
+SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
+  '612544986753269759', '42'));
+SELECT th3indexFromHexWKB(replace(asHexWKB(th3index '880326b885fffff@2012-01-01 08:00:00',
+  'XDR'), '0880326B885FFFFF', '000000000000002A'));
 SELECT (th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02}')::tbigint;
 SELECT (th3index '[8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02]')::tbigint;
 

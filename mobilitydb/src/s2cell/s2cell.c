@@ -60,6 +60,21 @@ S2cell_in(PG_FUNCTION_ARGS)
   PG_RETURN_S2CELL(s2cell_in(str));
 }
 
+PGDLLEXPORT Datum Bigint_to_s2cell(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Bigint_to_s2cell);
+/**
+ * @ingroup mobilitydb_s2cell_conversion
+ * @brief Return an S2 cell from a big integer encoding one
+ * @sqlfn s2cell()
+ * @sqlop @p ::
+ */
+Datum
+Bigint_to_s2cell(PG_FUNCTION_ARGS)
+{
+  int64 i = PG_GETARG_INT64(0);
+  PG_RETURN_S2CELL(bigint_to_s2cell(i));
+}
+
 PGDLLEXPORT Datum S2cell_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_out);
 /**
@@ -84,7 +99,7 @@ Datum
 S2cell_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_S2CELL((S2CellId) pq_getmsgint64(buf));
+  PG_RETURN_S2CELL(bigint_to_s2cell(pq_getmsgint64(buf)));
 }
 
 PGDLLEXPORT Datum S2cell_send(PG_FUNCTION_ARGS);

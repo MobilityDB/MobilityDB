@@ -59,6 +59,21 @@ Quadbin_in(PG_FUNCTION_ARGS)
   PG_RETURN_QUADBIN(quadbin_in(str));
 }
 
+PGDLLEXPORT Datum Bigint_to_quadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Bigint_to_quadbin);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return a QUADBIN cell from a big integer encoding one
+ * @sqlfn quadbin()
+ * @sqlop @p ::
+ */
+Datum
+Bigint_to_quadbin(PG_FUNCTION_ARGS)
+{
+  int64 i = PG_GETARG_INT64(0);
+  PG_RETURN_QUADBIN(bigint_to_quadbin(i));
+}
+
 PGDLLEXPORT Datum Quadbin_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Quadbin_out);
 /**
@@ -83,7 +98,7 @@ Datum
 Quadbin_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_QUADBIN((Quadbin) pq_getmsgint64(buf));
+  PG_RETURN_QUADBIN(bigint_to_quadbin(pq_getmsgint64(buf)));
 }
 
 PGDLLEXPORT Datum Quadbin_send(PG_FUNCTION_ARGS);

@@ -94,16 +94,20 @@ CREATE TYPE s2cell (
 /******************************************************************************
  * Casts to and from bigint
  *
- * ASSIGNMENT-only, as the ts2cell to tbigint casts are: the query states
- * `::s2cell` or `::bigint`, so an arbitrary int64 cannot flow silently into a
- * function that expects a cell. An S2 cell and a bigint share one on-disk
- * representation, both int64 passed by value, so the casts carry no function.
- *
- * `bigint` is a reserved word, so `CREATE FUNCTION bigint(s2cell)` is a syntax
- * error; WITHOUT FUNCTION needs no cast function at all.
+ * An S2 cell and a bigint share one on-disk representation, an int64 passed
+ * by value, while not every bigint is a cell: an S2 cell has the face and the
+ * one bit ending its position its grid defines. The cast into s2cell checks the
+ * value as the text input does and raises when it encodes no cell; the cast
+ * out of s2cell is the binary coercion, since every cell is a bigint. Both are
+ * ASSIGNMENT casts, applied in an assignment and stated with `::` elsewhere.
  ******************************************************************************/
 
-CREATE CAST (bigint AS s2cell) WITHOUT FUNCTION AS ASSIGNMENT;
+CREATE FUNCTION s2cell(bigint)
+  RETURNS s2cell
+  AS 'MODULE_PATHNAME', 'Bigint_to_s2cell'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (bigint AS s2cell) WITH FUNCTION s2cell(bigint) AS ASSIGNMENT;
 CREATE CAST (s2cell AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************

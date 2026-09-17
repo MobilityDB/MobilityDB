@@ -61,6 +61,7 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "s2cell/s2cell.h"
@@ -446,6 +447,8 @@ tbigint_to_ts2cell(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
+  if (! ensure_valid_tcell(temp, T_TS2CELL))
+    return NULL;
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
