@@ -8,7 +8,7 @@ var searchData=
   ['e_5fsq_5',['e_sq',['../structSPHEROID_a073a962d09c242b88acbe3d9b7112098.html#a073a962d09c242b88acbe3d9b7112098',1,'SPHEROID']]],
   ['eb_6',['eb',['../structMeosDE9IM_a26ba0271aed95cc94d468624e1d8cd6b.html#a26ba0271aed95cc94d468624e1d8cd6b',1,'MeosDE9IM']]],
   ['edge_5fptrs_7',['edge_ptrs',['../structGeoEdgeCtx_af4430f5e568c1c02fc6406aff8367311.html#af4430f5e568c1c02fc6406aff8367311',1,'GeoEdgeCtx']]],
-  ['edges_8',['edges',['../structGeoEdgeCtx_a90df6b6e2a10046c1fabc4912e9fecf6.html#a90df6b6e2a10046c1fabc4912e9fecf6',1,'GeoEdgeCtx::edges()'],['../structRelateComp_a38254b4c3ab0387483080daa4e3becf5.html#a38254b4c3ab0387483080daa4e3becf5',1,'RelateComp::edges()'],['../structBufferLocator_a3bcd20b89e308dbada77a534f129ddaf.html#a3bcd20b89e308dbada77a534f129ddaf',1,'BufferLocator::edges()'],['../structRelateEdges_a23b8ada84a6ecbf50b4f8d1e0d28e971.html#a23b8ada84a6ecbf50b4f8d1e0d28e971',1,'RelateEdges::edges()']]],
+  ['edges_8',['edges',['../structRelateComp_a38254b4c3ab0387483080daa4e3becf5.html#a38254b4c3ab0387483080daa4e3becf5',1,'RelateComp::edges()'],['../structGeoEdgeCtx_a90df6b6e2a10046c1fabc4912e9fecf6.html#a90df6b6e2a10046c1fabc4912e9fecf6',1,'GeoEdgeCtx::edges()'],['../structRelateLinearEnds_a97976808c991e1e74059ede29896843e.html#a97976808c991e1e74059ede29896843e',1,'RelateLinearEnds::edges()'],['../structBufferLocator_a3bcd20b89e308dbada77a534f129ddaf.html#a3bcd20b89e308dbada77a534f129ddaf',1,'BufferLocator::edges()'],['../structRelateEdges_a23b8ada84a6ecbf50b4f8d1e0d28e971.html#a23b8ada84a6ecbf50b4f8d1e0d28e971',1,'RelateEdges::edges()']]],
   ['ee_9',['ee',['../structMeosDE9IM_a85a2b1133245ff95b5cc1ae9ab367d0d.html#a85a2b1133245ff95b5cc1ae9ab367d0d',1,'MeosDE9IM']]],
   ['efac_10',['efac',['../structAFFINE_af5d92ab470ac3f443fcc4fdcfdab4db9.html#af5d92ab470ac3f443fcc4fdcfdab4db9',1,'AFFINE']]],
   ['ei_11',['ei',['../structMeosDE9IM_a5d7abfda44e512b643caa27cd19e3bdf.html#a5d7abfda44e512b643caa27cd19e3bdf',1,'MeosDE9IM']]],
@@ -25,9 +25,11 @@ var searchData=
   ['etype_22',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge']]],
   ['events_23',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'tpoint_geom_clip.c']]],
   ['ever_24',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo']]],
-  ['exclude_5fnodata_25',['exclude_nodata',['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState']]],
-  ['expand_5farg_26',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
-  ['extent_27',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],
-  ['extra_28',['extra',['../structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e',1,'SkipList']]],
-  ['extrasize_29',['extrasize',['../structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5',1,'SkipList']]]
+  ['ex_25',['ex',['../structEdge_abb675272acf5d396d22957cb03319882.html#abb675272acf5d396d22957cb03319882',1,'Edge']]],
+  ['exclude_5fnodata_26',['exclude_nodata',['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState']]],
+  ['expand_5farg_27',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
+  ['extent_28',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],
+  ['extra_29',['extra',['../structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e',1,'SkipList']]],
+  ['extrasize_30',['extrasize',['../structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5',1,'SkipList']]],
+  ['ey_31',['ey',['../structEdge_a2333bb79c0546daddcae9ae20b439707.html#a2333bb79c0546daddcae9ae20b439707',1,'Edge']]]
 ];

@@ -12,11 +12,14 @@ var searchData=
   ['relatectx_9',['RelateCtx',['../structRelateCtx.html',1,'']]],
   ['relateedges_10',['RelateEdges',['../structRelateEdges.html',1,'']]],
   ['relateinterval_11',['RelateInterval',['../structRelateInterval.html',1,'']]],
-  ['relateoperand_12',['RelateOperand',['../structRelateOperand.html',1,'']]],
-  ['relateoperands_13',['RelateOperands',['../structRelateOperands.html',1,'']]],
-  ['reltype_5fcatalog_5fstruct_14',['reltype_catalog_struct',['../structreltype__catalog__struct.html',1,'']]],
-  ['rtree_15',['RTree',['../structRTree.html',1,'']]],
-  ['rtreenncursor_16',['RTreeNNCursor',['../structRTreeNNCursor.html',1,'']]],
-  ['rtreennentry_17',['RTreeNNEntry',['../structRTreeNNEntry.html',1,'']]],
-  ['rtreenode_18',['RTreeNode',['../structRTreeNode.html',1,'']]]
+  ['relatelinearends_12',['RelateLinearEnds',['../structRelateLinearEnds.html',1,'']]],
+  ['relatemember_13',['RelateMember',['../structRelateMember.html',1,'']]],
+  ['relateoperand_14',['RelateOperand',['../structRelateOperand.html',1,'']]],
+  ['relateoperands_15',['RelateOperands',['../structRelateOperands.html',1,'']]],
+  ['relatequery_16',['RelateQuery',['../structRelateQuery.html',1,'']]],
+  ['reltype_5fcatalog_5fstruct_17',['reltype_catalog_struct',['../structreltype__catalog__struct.html',1,'']]],
+  ['rtree_18',['RTree',['../structRTree.html',1,'']]],
+  ['rtreenncursor_19',['RTreeNNCursor',['../structRTreeNNCursor.html',1,'']]],
+  ['rtreennentry_20',['RTreeNNEntry',['../structRTreeNNEntry.html',1,'']]],
+  ['rtreenode_21',['RTreeNode',['../structRTreeNode.html',1,'']]]
 ];

@@ -9,8 +9,9 @@ var searchData=
   ['ops_6',['OPS',['../index__position__test_8c_a8aa90ada3aa6ec8f1e93b18b7b8db580.html#a8aa90ada3aa6ec8f1e93b18b7b8db580',1,'index_position_test.c']]],
   ['oracle_7',['oracle',['../structOpCase_a0395aabbdafdb0438ebce6a4fc49f2e1.html#a0395aabbdafdb0438ebce6a4fc49f2e1',1,'OpCase']]],
   ['ordered_8',['ordered',['../structmeos__wkb__parse__state_a4e0802bf3fbed7387f0fb2adbaf371bc.html#a4e0802bf3fbed7387f0fb2adbaf371bc',1,'meos_wkb_parse_state']]],
-  ['origin_9',['origin',['../structSpanBinState_ad11bc7b35c0d5f5e0b179bcd3b55359e.html#ad11bc7b35c0d5f5e0b179bcd3b55359e',1,'SpanBinState']]],
-  ['overflow_10',['overflow',['../structh3__buf_a30b9a3ec8e1549f88d2275ffcaa6a03f.html#a30b9a3ec8e1549f88d2275ffcaa6a03f',1,'h3_buf::overflow()'],['../structquadbin__buf_a4871b1dbdd31d3021c2cb6c9a3a1a10e.html#a4871b1dbdd31d3021c2cb6c9a3a1a10e',1,'quadbin_buf::overflow()'],['../structs2cell__buf_a2199978e5c55c404cce656b06eb2d660.html#a2199978e5c55c404cce656b06eb2d660',1,'s2cell_buf::overflow()']]],
-  ['overlap_11',['overlap',['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext']]],
-  ['own_12',['own',['../structRelateOperand_abe7cf00a84244424c725d7dcbaf617ce.html#abe7cf00a84244424c725d7dcbaf617ce',1,'RelateOperand']]]
+  ['orient_9',['orient',['../structRelateMember_a900e97f8135e44803fe4313cb21d8789.html#a900e97f8135e44803fe4313cb21d8789',1,'RelateMember']]],
+  ['origin_10',['origin',['../structSpanBinState_ad11bc7b35c0d5f5e0b179bcd3b55359e.html#ad11bc7b35c0d5f5e0b179bcd3b55359e',1,'SpanBinState']]],
+  ['overflow_11',['overflow',['../structh3__buf_a30b9a3ec8e1549f88d2275ffcaa6a03f.html#a30b9a3ec8e1549f88d2275ffcaa6a03f',1,'h3_buf::overflow()'],['../structquadbin__buf_a4871b1dbdd31d3021c2cb6c9a3a1a10e.html#a4871b1dbdd31d3021c2cb6c9a3a1a10e',1,'quadbin_buf::overflow()'],['../structs2cell__buf_a2199978e5c55c404cce656b06eb2d660.html#a2199978e5c55c404cce656b06eb2d660',1,'s2cell_buf::overflow()']]],
+  ['overlap_12',['overlap',['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext']]],
+  ['own_13',['own',['../structRelateOperand_abe7cf00a84244424c725d7dcbaf617ce.html#abe7cf00a84244424c725d7dcbaf617ce',1,'RelateOperand']]]
 ];
