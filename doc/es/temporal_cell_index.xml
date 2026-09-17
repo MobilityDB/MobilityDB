@@ -49,7 +49,7 @@
 
 	<para>La extensión <ulink url="https://postgis.net/docs/using_raster_dataman.html">ráster de PostGIS</ulink> almacena datos de cobertura en cuadrícula (elevación, temperatura, imágenes satelitales, …) en el tipo <varname>raster</varname>. Cada ráster tiene una o más bandas; una banda contiene un arreglo 2D de valores de píxel, una extensión espacial, un tamaño de píxel y un valor centinela opcional para datos nulos (<varname>nodata</varname>).</para>
 
-	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> es un formato ráster nativo en la nube que almacena teselas ráster como filas en un archivo Apache Parquet. Cada fila contiene los bytes de píxel de una tesela Web-Mercator junto con su identificador de celda <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink>, un entero de 64 bits que codifica el nivel de zoom y las coordenadas x/y intercaladas mediante Morton. No se requieren metadatos espaciales adicionales: el rectángulo delimitador y el mapeo de píxel a coordenadas quedan completamente determinados por el valor QUADBIN.</para>
+	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> es un formato ráster nativo en la nube que almacena teselas ráster como filas en un archivo Apache Parquet. Cada fila contiene los bytes de píxel de una tesela Web-Mercator junto con su identificador de celda <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink>, un entero de 64 bits que codifica el nivel de zoom y las coordenadas x/y intercaladas mediante Morton. No se requieren metadatos espaciales adicionales: el rectángulo delimitador y el mapeo de píxel a coordenadas quedan completamente determinados por el valor QUADBIN. La especificación llama a esa columna <varname>block</varname> y mantiene una fila más, en <varname>block</varname> = 0, cuya columna <varname>metadata</varname> indica en JSON el tamaño de la tesela, el tipo y el valor nodata de cada banda y la compresión de los bytes de las bandas.</para>
 
 	<para>Los dos se distinguen en lo que lleva un valor. Un valor <varname>raquet</varname> contiene sus píxeles y su celda QUADBIN en un único valor, de modo que su extensión y su rejilla de píxeles se derivan de la celda y responde únicamente a la rejilla Web-Mercator. Un <varname>raster</varname> de PostGIS declara un sistema de referencia espacial arbitrario y una georreferenciación afín arbitraria, y es el que toman las funciones de procesamiento de <xref linkend="tcell_raster_specific"/>: <link linkend="raster_clip"><varname>clip</varname></link>, <link linkend="raster_transform"><varname>transform</varname></link>, <link linkend="raster_rescale"><varname>rescale</varname></link>, <link linkend="raster_reclass"><varname>reclass</varname></link>, <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> y <link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>. MEOS calcula ambos, de modo que ninguno necesita PostgreSQL para evaluarse.</para>
 
@@ -309,11 +309,18 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 raquet(bytea,width integer,height integer,quadbin,pixtype text,
   nodata float8) → raquet
 </programlisting>
-				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Una tabla Raquet indica las dimensiones, el tipo de píxel y el valor nodata de sus teselas una sola vez, en la fila de metadatos en <varname>block</varname> = 0, que la consulta siguiente lee y deja fuera de las teselas: 0 no es un índice QUADBIN, por lo que la conversión a <varname>quadbin</varname> lo rechaza. El constructor lee los bytes de píxel tal como están, por lo que las bandas de un archivo Raquet cuyos metadatos indican una compresión <varname>gzip</varname> se descomprimen antes de llegar a él.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Package the loose tile columns of a Raquet table into raquet values
-SELECT raquet(band_data, width, height, quadbin, 'float32',
-  nodata) AS tile FROM elevation_raquet;
+-- Package the tiles of a Raquet table, whose band_1 column is uncompressed,
+-- into raquet values keyed by their QUADBIN cell
+CREATE TABLE elevation_tiles AS
+SELECT r.block::quadbin AS quadbin, raquet(r.band_1,
+    (m.meta->'tiling'->>'block_width')::integer,
+    (m.meta->'tiling'->>'block_height')::integer, r.block::quadbin,
+    m.meta->'bands'->0->>'type', (m.meta->'bands'->0->>'nodata')::float8) AS tile
+FROM elevation_raquet r,
+  (SELECT metadata::jsonb AS meta FROM elevation_raquet WHERE block = 0 LIMIT 1) m
+WHERE r.block &lt;&gt; 0;
 -- A 2 x 2 UINT8 tile with no nodata
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 </programlisting>
@@ -1323,7 +1330,7 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 		<title>Funciones que devuelven conjuntos</title>
 		<para>Las siguientes funciones auxiliares estáticas devuelven un <varname>cellset</varname>, el tipo compañero de colección finita de <varname>cell</varname>. Operan sobre una <varname>cell</varname> estática o sobre un <varname>cellset</varname> y no se elevan a <varname>tcell</varname>, quedando la elevación temporal aplazada a la espera de una primitiva <varname>tset&lt;T&gt;</varname>.</para>
 
-		<para>Las celdas QUADBIN que cubre una trayectoria se devuelven en un arreglo, que es la clave de unión por la que se lee una tabla Raquet.</para>
+		<para>Las celdas QUADBIN que cubre una trayectoria son los valores de <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link> sobre ella, que son la clave de unión por la que se lee una tabla Raquet.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_grid_disk">
@@ -2241,16 +2248,14 @@ SELECT s2EdgeNeighbors(s2cell '47c3c3');
 
 Los tipos <varname>uint64</varname> e <varname>int64</varname> contienen valores fuera de ese dominio: una tesela de cualquiera de ellos se almacena y se vuelve a leer exactamente, mientras que muestrear un píxel cuyo valor ningún número de doble precisión nombra genera un error en lugar de responder con un valor vecino. Esto permite consultas como <emphasis>¿qué perfil de elevación siguió cada vehículo?</emphasis> o <emphasis>¿qué viajes entraron en una banda de umbral de temperatura?</emphasis></para>
 
-		<para>Un archivo Raquet almacena la celda QUADBIN de una tesela como un entero de 64 bits, que una columna del tipo <varname>quadbin</varname> contiene una vez convertido, comprobando la conversión que cada valor es un índice QUADBIN. El patrón de consulta típico une entonces una trayectoria con una tabla Raquet en dos pasos:</para>
+		<para>Una tabla Raquet guarda la celda QUADBIN de una tesela en su columna <varname>block</varname> como un entero de 64 bits, junto a la fila de metadatos en <varname>block</varname> = 0, que no contiene ningún índice QUADBIN. Una consulta convierte las celdas de una trayectoria a <varname>bigint</varname> para leer esa columna, y una celda leída de ella a <varname>quadbin</varname>, comprobando la conversión que es un índice QUADBIN. El patrón de consulta típico une una trayectoria con una tabla Raquet en dos pasos:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Type the cell column of a loaded Raquet table
-ALTER TABLE elevation_raquet ALTER COLUMN quadbin TYPE quadbin USING quadbin::quadbin;
 -- Step 1: identify which tiles the trajectory overlaps
 SELECT getValues(tquadbin(traj, 8));
--- Step 2: sample each matching tile
-SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32', nodata,
-  true) FROM elevation_raquet
-WHERE quadbin IN (SELECT unnest(getValues(tquadbin(traj, 8))));
+-- Step 2: sample each matching tile, a 256 x 256 float32 band without nodata
+SELECT rasterTileValueQuadbin(traj, band_1, 256, 256, block::quadbin, 'float32', 0,
+  false) FROM elevation_raquet
+WHERE block IN (SELECT unnest(getValues(tquadbin(traj, 8)))::bigint);
 </programlisting>
 
 		<para>Los operadores de restricción y predicado que cierran la sección componen <varname>rasterValue</varname> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <varname>band</varname> (por defecto 1) e invocan <varname>rasterValue</varname> exactamente una vez por invocación.</para>
@@ -2564,14 +2569,16 @@ rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
 </programlisting>
 				<para>Lee un arreglo de píxeles de banda única en orden de fila mayor a lo largo de <varname>traj</varname> (SRID 4326), como <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> lee un ráster. La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <varname>quadbin</varname> mediante la transformada de tesela deslizante Web-Mercator. El argumento <varname>pixtype</varname> debe ser uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Cuando <varname>has_nodata</varname> es verdadero, un píxel igual a <varname>nodata</varname> no lleva valor. Devuelve <varname>NULL</varname> cuando el trayecto nunca encuentra un píxel con datos.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Sample elevation tiles from a Raquet Parquet table for all ship trajectories
-SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
-  r.quadbin, 'float32', r.nodata, true) FROM trips t
-JOIN elevation_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))));
+-- Sample the 256 x 256 float32 elevation tiles of a Raquet table, stating no
+-- nodata value, along every ship trajectory
+SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_1, 256, 256,
+  r.block::quadbin, 'float32', 0, false) FROM trips t
+JOIN elevation_raquet r
+  ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 8)))::bigint);
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
-  r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
-JOIN sst_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 6))));
+  r.band_1, 256, 256, r.block::quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
+JOIN sst_raquet r ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 6)))::bigint);
 </programlisting>
 			</listitem>
 

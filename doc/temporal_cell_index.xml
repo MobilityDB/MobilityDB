@@ -49,7 +49,7 @@
 
 	<para>The <ulink url="https://postgis.net/docs/using_raster_dataman.html">PostGIS raster</ulink> extension stores gridded coverage data (elevation, temperature, satellite imagery, …) in the <varname>raster</varname> type. Each raster has one or more bands; a band holds a 2D array of pixel values, a spatial extent, a pixel size, and an optional nodata sentinel value.</para>
 
-	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier, a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
+	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier, a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value. The specification names that column <varname>block</varname> and keeps one more row, at <varname>block</varname> = 0, whose <varname>metadata</varname> column states in JSON the tile size, the type and nodata value of each band, and the compression of the band bytes.</para>
 
 	<para>The two differ in what a value carries. A <varname>raquet</varname> value holds its pixels and its QUADBIN cell in one value, so its extent and its pixel grid follow from the cell and it answers the Web-Mercator grid alone. A PostGIS <varname>raster</varname> states an arbitrary spatial reference system and an arbitrary affine georeferencing, and it is the one the processing functions of <xref linkend="tcell_raster_specific"/> take: <link linkend="raster_clip"><varname>clip</varname></link>, <link linkend="raster_transform"><varname>transform</varname></link>, <link linkend="raster_rescale"><varname>rescale</varname></link>, <link linkend="raster_reclass"><varname>reclass</varname></link>, <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> and <link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>. MEOS computes both, so neither needs PostgreSQL to evaluate.</para>
 
@@ -309,11 +309,18 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 raquet(bytea,width integer,height integer,quadbin,pixtype text,
   nodata float8) → raquet
 </programlisting>
-				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. Pixels of more than one byte are little-endian, which is the byte order the RaQuet specification gives them whatever the byte order of the server, so that a tile keeps its values when it is read on another machine. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. Pixels of more than one byte are little-endian, which is the byte order the RaQuet specification gives them whatever the byte order of the server, so that a tile keeps its values when it is read on another machine. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. A Raquet table states the dimensions, the pixel type and the nodata value of its tiles once, in the metadata row at <varname>block</varname> = 0, which the query below reads and leaves out of the tiles: 0 is no QUADBIN index, so the cast to <varname>quadbin</varname> refuses it. The constructor reads the pixel bytes as they stand, so the bands of a Raquet file whose metadata states a <varname>gzip</varname> compression are decompressed before they reach it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Package the loose tile columns of a Raquet table into raquet values
-SELECT raquet(band_data, width, height, quadbin, 'float32',
-  nodata) AS tile FROM elevation_raquet;
+-- Package the tiles of a Raquet table, whose band_1 column is uncompressed,
+-- into raquet values keyed by their QUADBIN cell
+CREATE TABLE elevation_tiles AS
+SELECT r.block::quadbin AS quadbin, raquet(r.band_1,
+    (m.meta->'tiling'->>'block_width')::integer,
+    (m.meta->'tiling'->>'block_height')::integer, r.block::quadbin,
+    m.meta->'bands'->0->>'type', (m.meta->'bands'->0->>'nodata')::float8) AS tile
+FROM elevation_raquet r,
+  (SELECT metadata::jsonb AS meta FROM elevation_raquet WHERE block = 0 LIMIT 1) m
+WHERE r.block &lt;&gt; 0;
 -- A 2 x 2 UINT8 tile with no nodata
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 </programlisting>
@@ -1326,7 +1333,7 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 		<title>Set-Returning Functions</title>
 		<para>The following static helpers return a <varname>cellset</varname>, the finite-collection companion type of <varname>cell</varname>. They operate on a static <varname>cell</varname> or on a <varname>cellset</varname> and are not lifted to <varname>tcell</varname>, the temporal lift being deferred pending a <varname>tset&lt;T&gt;</varname> primitive.</para>
 
-		<para>The QUADBIN cells a trajectory covers are returned as an array, which is the join key a Raquet table is read by.</para>
+		<para>The QUADBIN cells a trajectory covers are the values of <link linkend="tcell_tgeompoint_to_th3"><varname>tquadbin</varname></link> over it, which are the join key a Raquet table is read by.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_grid_disk">
@@ -2244,16 +2251,14 @@ SELECT s2EdgeNeighbors(s2cell '47c3c3');
 
 The types <varname>uint64</varname> and <varname>int64</varname> hold values beyond that domain: a tile of either is stored and read back exactly, while sampling a pixel whose value no double precision number names raises an error rather than answering with a neighbouring value. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
 
-		<para>A Raquet file stores the QUADBIN cell of a tile as a 64-bit integer, which a column of the <varname>quadbin</varname> type holds once cast, the cast checking that every value is a QUADBIN index. The typical query pattern then joins a trajectory against a Raquet table in two steps:</para>
+		<para>A Raquet table keeps the QUADBIN cell of a tile in its <varname>block</varname> column as a 64-bit integer, beside the metadata row at <varname>block</varname> = 0, which holds no QUADBIN index. A query casts the cells of a trajectory to <varname>bigint</varname> to read that column, and a cell read from it to <varname>quadbin</varname>, the cast checking that it is a QUADBIN index. The typical query pattern joins a trajectory against a Raquet table in two steps:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Type the cell column of a loaded Raquet table
-ALTER TABLE elevation_raquet ALTER COLUMN quadbin TYPE quadbin USING quadbin::quadbin;
 -- Step 1: identify which tiles the trajectory overlaps
 SELECT getValues(tquadbin(traj, 8));
--- Step 2: sample each matching tile
-SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32', nodata,
-  true) FROM elevation_raquet
-WHERE quadbin IN (SELECT unnest(getValues(tquadbin(traj, 8))));
+-- Step 2: sample each matching tile, a 256 x 256 float32 band without nodata
+SELECT rasterTileValueQuadbin(traj, band_1, 256, 256, block::quadbin, 'float32', 0,
+  false) FROM elevation_raquet
+WHERE block IN (SELECT unnest(getValues(tquadbin(traj, 8)))::bigint);
 </programlisting>
 
 		<para>The restriction and predicate operators that close the section compose <varname>rasterValue</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>rasterValue</varname> exactly once per invocation.</para>
@@ -2567,14 +2572,16 @@ rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
 </programlisting>
 				<para>Reads a row-major single-band pixel array along <varname>traj</varname> (SRID 4326), as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> reads a raster. The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. When <varname>has_nodata</varname> is true, a pixel equal to <varname>nodata</varname> carries no value. Returns <varname>NULL</varname> when the trip never meets a pixel carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Sample elevation tiles from a Raquet Parquet table for all ship trajectories
-SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
-  r.quadbin, 'float32', r.nodata, true) FROM trips t
-JOIN elevation_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))));
+-- Sample the 256 x 256 float32 elevation tiles of a Raquet table, stating no
+-- nodata value, along every ship trajectory
+SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_1, 256, 256,
+  r.block::quadbin, 'float32', 0, false) FROM trips t
+JOIN elevation_raquet r
+  ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 8)))::bigint);
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
-  r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
-JOIN sst_raquet r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 6))));
+  r.band_1, 256, 256, r.block::quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
+JOIN sst_raquet r ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 6)))::bigint);
 </programlisting>
 			</listitem>
 
