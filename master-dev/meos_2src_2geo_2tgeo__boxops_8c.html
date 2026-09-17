@@ -82,7 +82,8 @@ $(function() {
 
 <p>Bounding box operators for temporal geos.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;geo/tspatial_boxops.h&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
+<code>#include &quot;geo/tspatial_boxops.h&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;utils/timestamp.h&gt;</code><br />
@@ -177,6 +178,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gae8754a40ac1e8b0374d834b1e1d21e5a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__bbox_gae8754a40ac1e8b0374d834b1e1d21e5a.html#gae8754a40ac1e8b0374d834b1e1d21e5a">tgeoinst_stboxes</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
 <tr class="memdesc:gae8754a40ac1e8b0374d834b1e1d21e5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a singleton array of spatiotemporal boxes from a temporal geo instant.  <a href="group__meos__internal__geo__bbox_gae8754a40ac1e8b0374d834b1e1d21e5a.html#gae8754a40ac1e8b0374d834b1e1d21e5a">More...</a><br /></td></tr>
 <tr class="separator:gae8754a40ac1e8b0374d834b1e1d21e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44b86714692ae6ad9fc23804a7c5cbdf"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__boxops_8c_a44b86714692ae6ad9fc23804a7c5cbdf.html#a44b86714692ae6ad9fc23804a7c5cbdf">tgeoinstarr_extend_stbox_geodetic</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
+<tr class="memdesc:a44b86714692ae6ad9fc23804a7c5cbdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extend a spatiotemporal box by the geodesics a temporal point travels between its instants.  <a href="meos_2src_2geo_2tgeo__boxops_8c_a44b86714692ae6ad9fc23804a7c5cbdf.html#a44b86714692ae6ad9fc23804a7c5cbdf">More...</a><br /></td></tr>
+<tr class="separator:a44b86714692ae6ad9fc23804a7c5cbdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaef5f8fadda674e9ffe0ebab2bca0d8fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__bbox_gaef5f8fadda674e9ffe0ebab2bca0d8fd.html#gaef5f8fadda674e9ffe0ebab2bca0d8fd">tgeoinstarr_set_stbox</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:gaef5f8fadda674e9ffe0ebab2bca0d8fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the spatiotemporal box of an array of temporal geo instants.  <a href="group__meos__internal__geo__bbox_gaef5f8fadda674e9ffe0ebab2bca0d8fd.html#gaef5f8fadda674e9ffe0ebab2bca0d8fd">More...</a><br /></td></tr>
 <tr class="separator:gaef5f8fadda674e9ffe0ebab2bca0d8fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
