@@ -49,6 +49,7 @@
 #include "temporal/lifting.h"
 #include "temporal/span.h"
 #include "temporal/temporal_restrict.h"
+#include "temporal/tcellindex.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
@@ -789,6 +790,184 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
 /*****************************************************************************/
 
 /**
+ * @brief Return the instant at which a geodetic segment reaches a parameter of
+ * its path
+ * @details The parameter states a position, and the position states the
+ * instant through #tpointsegm_timestamp_at_value1_iter(), the dating every
+ * clip of a segment in this file uses. A parameter at an end of the segment
+ * states the instant of that end, and a position the dating does not find
+ * falls back on the parameter itself
+ * @param[in] inst1,inst2 Bounds of the segment
+ * @param[in] arc Path of the segment
+ * @param[in] param Parameter along the path
+ * @param[in] srid SRID of the temporal point
+ */
+static TimestampTz
+tgeogpointsegm_timestamp_at_param(const TInstant *inst1, const TInstant *inst2,
+  const DggsArc *arc, double param, int32_t srid)
+{
+  if (param <= 0.0)
+    return inst1->t;
+  if (param >= 1.0)
+    return inst2->t;
+  double lon, lat;
+  TimestampTz result;
+  if (dggs_arc_point(arc, param, &lon, &lat))
+  {
+    GSERIALIZED *gs = geopoint_make(lon * 180.0 / M_PI, lat * 180.0 / M_PI,
+      0.0, false, true, srid);
+    bool found = tpointsegm_timestamp_at_value1_iter(inst1, inst2,
+      PointerGetDatum(gs), &result);
+    pfree(gs);
+    if (found)
+      return result;
+  }
+  return inst1->t +
+    (TimestampTz) ((double) (inst2->t - inst1->t) * param);
+}
+
+/**
+ * @brief Return true if a position lies in the spatial dimensions of a box
+ * @param[in] lon,lat Position in degrees
+ * @param[in] box Bounding box
+ * @param[in] border_inc True when the box contains the upper border
+ */
+static bool
+stbox_holds_lonlat(double lon, double lat, const STBox *box,
+  bool border_inc)
+{
+  if (lon < box->xmin || lat < box->ymin)
+    return false;
+  return border_inc ? (lon <= box->xmax && lat <= box->ymax) :
+    (lon < box->xmax && lat < box->ymax);
+}
+
+/**
+ * @brief Restrict a geodetic temporal point to the spatial dimensions of a
+ * spatiotemporal box
+ * @details A geodetic point travels the great circle between two positions,
+ * which is no straight line in longitude and latitude: a trip from
+ * `Point(10 60)` to `Point(50 60)` passes through latitude 61.518762, and a
+ * trip across the antimeridian sweeps the longitudes the other way round from
+ * the ones a straight line between its endpoints passes. The box is therefore
+ * met where #dggs_arc_lonlat_box_spans() states the path enters and leaves it,
+ * and the trip is restricted to the periods those parameters give, as a cell
+ * of a grid on the sphere is entered at the parameter of its own crossing.
+ * @param[in] seq Temporal point sequence
+ * @param[in] box Bounding box
+ * @param[in] border_inc True when the box contains the upper border
+ * @pre The box has only spatial dimension, the arguments have the same SRID,
+ * and the sequence is not instantaneous
+ */
+static TSequenceSet *
+tpointseq_linear_at_stbox_geodetic(const TSequence *seq, const STBox *box,
+  bool border_inc)
+{
+  assert(seq); assert(box); assert(tpoint_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR); assert(seq->count > 1);
+
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags) && MEOS_FLAGS_GET_Z(box->flags);
+  int32_t srid = tspatial_srid((Temporal *) seq);
+  Span *spans = palloc(sizeof(Span) * seq->count * 4);
+  int nspans = 0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
+    const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value_p(inst2));
+    const POINT2D *q1 = GSERIALIZED_POINT2D_P(p1);
+    const POINT2D *q2 = GSERIALIZED_POINT2D_P(p2);
+    double lon1 = q1->x, lat1 = q1->y, lon2 = q2->x, lat2 = q2->y;
+    DggsArc arc;
+    if (geopoint_eq(p1, p2) || ! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
+    {
+      /* A segment holding one position is in the box when that position is */
+      if (stbox_holds_lonlat(lon1, lat1, box, border_inc))
+        span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
+          true, (i == seq->count - 1) ? seq->period.upper_inc : false,
+          T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+      inst1 = inst2;
+      continue;
+    }
+    double tin[4], tout[4];
+    int count = dggs_arc_lonlat_box_spans(&arc, box->xmin, box->ymin,
+      box->xmax, box->ymax, tin, tout, 4);
+    /* The height of a geodetic point runs linearly in time, so the bounds of
+     * the box admit one stretch of the segment, which every span meets in */
+    double zlo = 0.0, zhi = 1.0;
+    if (hasz)
+    {
+      const POINT3DZ *r1 = GSERIALIZED_POINT3DZ_P(p1);
+      const POINT3DZ *r2 = GSERIALIZED_POINT3DZ_P(p2);
+      if (r1->z == r2->z)
+      {
+        if (r1->z < box->zmin || (border_inc ? r1->z > box->zmax :
+              r1->z >= box->zmax))
+          count = 0;
+      }
+      else
+      {
+        double a = (box->zmin - r1->z) / (r2->z - r1->z);
+        double b = (box->zmax - r1->z) / (r2->z - r1->z);
+        zlo = Min(a, b); zhi = Max(a, b);
+        if (zlo < 0.0) zlo = 0.0;
+        if (zhi > 1.0) zhi = 1.0;
+        if (zlo > zhi)
+          count = 0;
+      }
+    }
+    for (int k = 0; k < count; k++)
+    {
+      if (hasz)
+      {
+        if (tin[k] < zlo) tin[k] = zlo;
+        if (tout[k] > zhi) tout[k] = zhi;
+        if (tin[k] > tout[k])
+          continue;
+      }
+      /* A crossing is dated from the position the path holds there, as the
+       * clip of a segment by a geometry dates the points it answers, so two
+       * boxes meeting at that position state the same instant and the pieces
+       * of a trip split by a grid merge back into it. A parameter at an end of
+       * the segment states the instant of that end */
+      TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
+        tin[k], srid);
+      TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
+        tout[k], srid);
+      bool lower_inc = (t1 == inst1->t && i == 1) ?
+        seq->period.lower_inc : true;
+      bool upper_inc = (t2 == inst2->t) ?
+        ((i == seq->count - 1) ? seq->period.upper_inc : false) : border_inc;
+      if (t1 == t2)
+      {
+        if (! lower_inc || ! upper_inc)
+          continue;          /* the path holds the box for no time at all */
+        upper_inc = true;
+      }
+      span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), lower_inc,
+        upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+    }
+    inst1 = inst2;
+  }
+  if (nspans == 0)
+  {
+    pfree(spans);
+    return NULL;
+  }
+  /* The periods the trip holds the box, which the segments state one by one
+   * and a span set states as a whole */
+  SpanSet *ss = spanset_make_free(spans, nspans, NORMALIZE, ORDER);
+  Temporal *res = temporal_restrict_tstzspanset((Temporal *) seq, ss, REST_AT);
+  pfree(ss);
+  if (! res)
+    return NULL;
+  if (res->subtype == TSEQUENCE)
+    return tsequence_to_tsequenceset_free((TSequence *) res);
+  return (TSequenceSet *) res;
+}
+
+/**
  * @brief Restrict the temporal point to the spatial dimensions of a
  * spatiotemporal box
  * @param[in] seq Temporal point sequence
@@ -806,6 +985,11 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   assert(seq); assert(box); assert(tpoint_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
   assert(! MEOS_FLAGS_GET_T(box->flags)); assert(seq->count > 1);
+
+  /* A geodetic point travels the great circle between two positions, which no
+   * clip of a straight line in longitude and latitude follows */
+  if (MEOS_FLAGS_GET_GEODETIC(seq->flags))
+    return tpointseq_linear_at_stbox_geodetic(seq, box, border_inc);
 
   /* General case */
   bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);

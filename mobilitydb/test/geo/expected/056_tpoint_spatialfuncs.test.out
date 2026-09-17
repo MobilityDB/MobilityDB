@@ -3751,6 +3751,54 @@ select astext(atStbox(tgeompoint '(Point(3 1)@2001-01-01, Point(3 1)@2001-01-02,
  {[POINT(2 1)@Wed Jan 03 00:00:00 2001 PST, POINT(1 1)@Thu Jan 04 00:00:00 2001 PST)}
 (1 row)
 
+SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((-180 55),(-157.5 67))', false), 6);
+                                               astext                                               
+----------------------------------------------------------------------------------------------------
+ {[POINT(-170 60)@Mon Jan 01 00:00:00 2001 PST, POINT(180 60.378348)@Mon Jan 01 12:00:00 2001 PST)}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((157.5 55),(180 67))', false), 6);
+                                              astext                                               
+---------------------------------------------------------------------------------------------------
+ {[POINT(180 60.378348)@Mon Jan 01 12:00:00 2001 PST, POINT(170 60)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]'
+), pieces(piece) AS (
+  SELECT atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((-180 55),(-157.5 67))', false) FROM trip
+  UNION ALL
+  SELECT atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((157.5 55),(180 67))', false) FROM trip)
+SELECT timeSpan(merge(array_agg(piece))) = (SELECT timeSpan(tp) FROM trip)
+    AS pieces_hold_the_period,
+  valueAtTimestamp(merge(array_agg(piece)), '2001-01-01 06:00:00') =
+    (SELECT valueAtTimestamp(tp, '2001-01-01 06:00:00') FROM trip)
+    AS pieces_hold_the_position
+FROM pieces;
+ pieces_hold_the_period | pieces_hold_the_position 
+------------------------+--------------------------
+ t                      | t
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false), 6);
+                                                                                                    astext                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(10 60)@Mon Jan 01 00:00:00 2001 PST, POINT(18.168064 61)@Mon Jan 01 05:02:50.433397 2001 PST), [POINT(41.831936 61)@Mon Jan 01 18:57:09.566602 2001 PST, POINT(50 60)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]')
+SELECT timeSpan(merge(atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false),
+  minusStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false))) = timeSpan(tp)
+  AS at_and_minus_make_the_trip FROM trip;
+ at_and_minus_make_the_trip 
+----------------------------
+ t
+(1 row)
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2001-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])'));
 ERROR:  Operation on mixed planar and geodetic coordinates

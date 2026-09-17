@@ -1024,6 +1024,40 @@ select astext(atStbox(tgeompoint '(Point(1 1)@2001-01-01, Point(1 1)@2001-01-02,
 select astext(atStbox(tgeompoint '(Point(3 1)@2001-01-01, Point(3 1)@2001-01-02, Point(1 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
 
 
+-- A geodetic point travels the great circle between two positions, and the
+-- box is met where that circle crosses it: a trip across the antimeridian
+-- sweeps the longitudes the short way round, and the two boxes meeting there
+-- state the same crossing
+SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((-180 55),(-157.5 67))', false), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((157.5 55),(180 67))', false), 6);
+-- so the pieces hold the period of the trip and its positions, the crossing
+-- being an instant of the merge that the trip states by interpolation
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]'
+), pieces(piece) AS (
+  SELECT atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((-180 55),(-157.5 67))', false) FROM trip
+  UNION ALL
+  SELECT atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((157.5 55),(180 67))', false) FROM trip)
+SELECT timeSpan(merge(array_agg(piece))) = (SELECT timeSpan(tp) FROM trip)
+    AS pieces_hold_the_period,
+  valueAtTimestamp(merge(array_agg(piece)), '2001-01-01 06:00:00') =
+    (SELECT valueAtTimestamp(tp, '2001-01-01 06:00:00') FROM trip)
+    AS pieces_hold_the_position
+FROM pieces;
+-- The trip from Point(10 60) to Point(50 60) passes through latitude
+-- 61.518762, which a straight line in longitude and latitude never reaches, so
+-- the box below it holds the trip at its two ends and not in between
+SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false), 6);
+-- and the trip is what the box holds together with what it does not
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]')
+SELECT timeSpan(merge(atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false),
+  minusStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false))) = timeSpan(tp)
+  AS at_and_minus_make_the_trip FROM trip;
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2001-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])'));
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));

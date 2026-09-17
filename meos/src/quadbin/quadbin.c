@@ -611,39 +611,6 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
     (uint32_t) quadbin_tile_index(yf, n), resolution);
 }
 
-/**
- * @brief Return the parameter at which a geodetic path reaches the plane
- * `p . m = c` strictly ahead of `tmin`, or a value above 1 when the path ends
- * before it
- * @details The path is the circle `p(θ) = a cos θ + (n × a) sin θ` of its first
- * endpoint `a` and the normal `n` of its circle, `θ` the angle travelled, so
- * `p . m = A cos θ + B sin θ` with `A = a . m` and `B = (n × a) . m`, which
- * reaches `c` at `θ = atan2(B, A) ± acos(c / hypot(A, B))`.
- */
-static double
-quadbin_arc_plane_param(const DggsArc *arc, const double m[3], double c,
-  double tmin)
-{
-  const double *a = arc->a, *nm = arc->normal;
-  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
-    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
-  double ca = a[0] * m[0] + a[1] * m[1] + a[2] * m[2];
-  double cb = b[0] * m[0] + b[1] * m[1] + b[2] * m[2];
-  double r = hypot(ca, cb);
-  if (r == 0.0 || fabs(c) > r)
-    return 2.0;
-  double base = atan2(cb, ca), half = acos(c / r), best = 2.0;
-  for (int s = -1; s <= 1; s += 2)
-  {
-    double theta = fmod(base + s * half, 2.0 * M_PI);
-    if (theta < 0.0)
-      theta += 2.0 * M_PI;
-    double t = theta / arc->dist;
-    if (t > tmin && t <= 1.0 && t < best)
-      best = t;
-  }
-  return best;
-}
 
 /**
  * @brief Return where a geodetic path leaves the tile holding it, in the grid
@@ -668,7 +635,7 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
     {
       double lon = ((double) x + k) / n * 2.0 * M_PI - M_PI;
       const double m[3] = { -sin(lon), cos(lon), 0.0 };
-      t = quadbin_arc_plane_param(arc, m, 0.0, tmin);
+      t = dggs_arc_plane_param(arc, m, 0.0, tmin);
       if (t < best)
         best = t;
     }
@@ -676,14 +643,14 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
   const double pole[3] = { 0.0, 0.0, 1.0 };
   if (y > 0)
   {
-    t = quadbin_arc_plane_param(arc, pole,
+    t = dggs_arc_plane_param(arc, pole,
       sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), tmin);
     if (t < best)
       best = t;
   }
   if ((double) y + 1.0 < n)
   {
-    t = quadbin_arc_plane_param(arc, pole,
+    t = dggs_arc_plane_param(arc, pole,
       sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), tmin);
     if (t < best)
       best = t;
