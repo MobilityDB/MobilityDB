@@ -87,6 +87,11 @@ SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00'));
 SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}'));
 SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
 SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02], [47c3c3@2001-01-03, 47c3c3@2001-01-04]}'));
+-- A cell is written as its text form in a JSON string, and an integer is still
+-- read as the cell it encodes; the bounding box is the spatiotemporal box
+SELECT asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 1, 3, 6);
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '"47c3c"', '5171187903383994368'));
 
 -------------------------------------------------------------------------------
 -- Interpolation
@@ -146,7 +151,9 @@ SELECT ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
 /* Errors */
 SELECT (tbigint '42@2001-01-01')::ts2cell;
 SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
-  '5171187903383994368', '42'));
+  '"47c3c"', '42'));
+SELECT ts2cellFromMFJSON(replace(asMFJSON(ts2cell '47c3c@2001-01-01'),
+  '"47c3c"', '"2a"'));
 SELECT ts2cellFromHexWKB(replace(asHexWKB(ts2cell '47c3c@2001-01-01', 'XDR'),
   '47C3C00000000000', '000000000000002A'));
 

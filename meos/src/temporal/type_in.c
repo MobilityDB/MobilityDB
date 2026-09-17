@@ -486,6 +486,14 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
         break;
       case T_TBIGINT:
+        if (json_object_get_type(jvalue) != json_type_int)
+        {
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+            "Invalid integer value in 'values' array in MFJSON string");
+          return NULL;
+        }
+        values[i] = Int64GetDatum(json_object_get_int64(jvalue));
+        break;
 #if H3
       case T_TH3INDEX:
 #endif
@@ -495,17 +503,30 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
 #if S2CELL
       case T_TS2CELL:
 #endif
-        if (json_object_get_type(jvalue) != json_type_int)
+#if H3 || QUADBIN || S2CELL
+        /* A cell is written as its text form in a JSON string and read by
+         * the text input of its type; an integer is read as the cell it
+         * encodes, since not every integer is a value of a cell-index type */
+        if (json_object_get_type(jvalue) == json_type_string)
+        {
+          if (! basetype_in(json_object_get_string(jvalue),
+                temptype_basetype(temptype), true, &values[i]))
+            return NULL;
+        }
+        else if (json_object_get_type(jvalue) == json_type_int)
+        {
+          values[i] = Int64GetDatum(json_object_get_int64(jvalue));
+          if (! ensure_valid_cell(values[i], temptype))
+            return NULL;
+        }
+        else
         {
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-            "Invalid integer value in 'values' array in MFJSON string");
+            "Invalid cell value in 'values' array in MFJSON string");
           return NULL;
         }
-        values[i] = Int64GetDatum(json_object_get_int64(jvalue));
-        /* Not every integer is a value of a cell-index type */
-        if (temptype != T_TBIGINT && ! ensure_valid_cell(values[i], temptype))
-          return NULL;
         break;
+#endif /* H3 || QUADBIN || S2CELL */
       case T_TFLOAT:
         values[i] = Float8GetDatum(json_object_get_double(jvalue));
         break;
@@ -1152,10 +1173,10 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
       values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
 #endif /* CBUFFER */
 #if H3
-    /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
-     * crs/SRID is parsed as for a spatial type, but the 'values' array holds
-     * plain int8 cell ids, so they are parsed as base values (mirrors the
-     * tbigint sibling and the MF-JSON output in type_out.c). */
+    /* An h3index is a scalar cell carried with a geodetic bbox: the crs/SRID
+     * is parsed as for a spatial type, while the 'values' array holds the
+     * text form of each cell, parsed as base values (mirrors the MF-JSON
+     * output in type_out.c). */
     else if (temptype == T_TH3INDEX)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* H3 */
@@ -1170,8 +1191,8 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
       values = parse_mfjson_posechains(mfjson, srid, &nvalues);
 #endif /* POSE */
 #if QUADBIN
-    /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
-     * 'values' array holds plain cell ids parsed as base values */
+    /* A quadbin, like an h3index, is a scalar cell carried with a bbox: the
+     * 'values' array holds the text form of each cell, parsed as base values */
     else if (temptype == T_TQUADBIN)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* QUADBIN */
@@ -1228,10 +1249,10 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
       values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
 #endif /* CBUFFER */
 #if H3
-    /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
-     * crs/SRID is parsed as for a spatial type, but the 'values' array holds
-     * plain int8 cell ids, so they are parsed as base values (mirrors the
-     * tbigint sibling and the MF-JSON output in type_out.c). */
+    /* An h3index is a scalar cell carried with a geodetic bbox: the crs/SRID
+     * is parsed as for a spatial type, while the 'values' array holds the
+     * text form of each cell, parsed as base values (mirrors the MF-JSON
+     * output in type_out.c). */
     else if (temptype == T_TH3INDEX)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* H3 */
@@ -1246,8 +1267,8 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
       values = parse_mfjson_posechains(mfjson, srid, &nvalues);
 #endif /* POSE */
 #if QUADBIN
-    /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
-     * 'values' array holds plain cell ids parsed as base values */
+    /* A quadbin, like an h3index, is a scalar cell carried with a bbox: the
+     * 'values' array holds the text form of each cell, parsed as base values */
     else if (temptype == T_TQUADBIN)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* QUADBIN */
