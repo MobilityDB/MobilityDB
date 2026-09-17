@@ -31,17 +31,25 @@ SELECT cellToChildren(quadbin '48a6227affffffff', 11);
 SELECT cellToChildren(s2cell '47c3c', 8);
 -- {"47c39", "47c3b", "47c3d", "47c3f"}
 </pre></li><li class="listitem"><a name="tcell_compact_cells"></a><a class="indexterm" name="id13202"></a><p>Compacted representation of a cell set, finer cells being merged into their parent whenever the parent's full set of children is present</p><pre class="programlisting">
-h3CompactCells(h3indexset) → h3indexset
-</pre><p>Compaction is stated for H3 alone: it is the one grid MobilityDB carries the kernel for, and the QUADBIN and S2 forms are not yet implemented.</p><pre class="programlisting">
-SELECT h3CompactCells(cellToChildren(h3index '831c02fffffffff', 4));
+compactCells(cellset) → cellset
+</pre><p>A QUADBIN tile and an S2 cell are each exactly the union of their four children, so the cells of a QUADBIN or S2 set may be of any resolutions: a cell covered by a coarser cell of the set is dropped, and every four children of one parent are replaced by that parent, from the finest resolution up, as the S2 library normalizes a cell union. An H3 cell covers its seven children only approximately, so an H3 set is compacted as the H3 library compacts it, from cells of a single resolution, and cells of two resolutions raise an error. A compacted set mixes resolutions, while <code class="varname">?=</code> compares cells, so a compacted cover is uncompacted to the resolution of a trajectory before the trajectory is read against it.</p><pre class="programlisting">
+SELECT compactCells(cellToChildren(h3index '831c02fffffffff', 4));
 -- {"831c02fffffffff"}
-</pre></li><li class="listitem"><a name="tcell_uncompact_cells"></a><a class="indexterm" name="id13210"></a><p>Uncompacted representation at the given resolution, the inverse of <code class="varname">compactCells</code></p><pre class="programlisting">
-h3UncompactCells(h3indexset,integer) → h3indexset
-</pre><pre class="programlisting">
-SELECT numValues(h3UncompactCells(h3CompactCells(
+SELECT compactCells(cellToChildren(quadbin '48a6227affffffff', 12));
+-- {"48a6227affffffff"}
+SELECT compactCells(cellToChildren(s2cell '47c3c', 9));
+-- {"47c3c"}
+</pre></li><li class="listitem"><a name="tcell_uncompact_cells"></a><a class="indexterm" name="id13211"></a><p>Uncompacted representation at the given resolution, the inverse of <code class="varname">compactCells</code></p><pre class="programlisting">
+uncompactCells(cellset,integer) → cellset
+</pre><p>A cell coarser than the resolution is replaced by its descendants at the resolution. A cell finer than the resolution cannot be stated at it and raises an error, as does a QUADBIN or S2 result of more than 4194304 cells.</p><pre class="programlisting">
+SELECT numValues(uncompactCells(compactCells(
   cellToChildren(h3index '831c02fffffffff', 4)), 4));
 -- 7
-</pre></li><li class="listitem"><a name="raster_quadbins"></a><a class="indexterm" name="id13218"></a><p>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</p><pre class="programlisting">
+SELECT numValues(uncompactCells(quadbinset '{48a6227affffffff}', 12));
+-- 16
+SELECT numValues(uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)), 9));
+-- 16
+</pre></li><li class="listitem"><a name="raster_quadbins"></a><a class="indexterm" name="id13220"></a><p>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</p><pre class="programlisting">
 quadbins(tgeompoint,zoom integer) → bigint[]
 </pre><p>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers every tile it crosses on the way, since the segment is traversed tile by tile, and covers nothing across a gap between two of its sequences. Each cell carries the bits below its zoom set to one, as the QUADBIN grid defines a cell. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <code class="varname">zoom</code> must be in [0, 26].</p><pre class="programlisting">
 -- Three instants spanning three tiles at zoom 3
