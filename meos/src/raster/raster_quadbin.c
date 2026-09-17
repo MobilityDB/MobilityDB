@@ -657,16 +657,22 @@ typedef struct
  * @details A crossing time is interpolated from the parameter at which the
  * trip reaches a pixel, while a timestamp holds whole microseconds, so two
  * crossings closer together than one microsecond round to the same instant.
- * The second one is placed one microsecond after the first, as
- * #tpointseq_densify_to_th3index() places a cell: that is the smallest
- * separation the type can state, and it keeps both the pixel and the order
- * in which the trip reaches the pixels.
+ * The value of a crossing landing on or before the instant already stated is
+ * held for no time, so it is not part of the run, as a crossing within
+ * #MEOS_EPSILON of the end of a segment is no crossing for
+ * #tgeogpointsegm_distance_turnpt().
  */
 static void
 raster_run_push(RasterRun *run, double value, TimestampTz t)
 {
   if (run->count > 0 && t <= run->insts[run->count - 1]->t)
-    t = run->insts[run->count - 1]->t + 1;
+  {
+    /* The value already stated at this instant is left for this one before it
+     * holds any time, so this one is the value the trip reads there */
+    TimestampTz tlast = run->insts[run->count - 1]->t;
+    pfree(run->insts[--run->count]);
+    t = tlast;
+  }
   if (run->count >= run->size)
   {
     run->size = (run->size == 0) ? 8 : run->size * 2;

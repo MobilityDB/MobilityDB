@@ -200,16 +200,23 @@ ts2cell_cell_to_token(const Temporal *temp)
  * @details A cell's entry time is interpolated from the parameter at which the
  * path reaches it, while a timestamp holds whole microseconds, so two
  * crossings closer together than one microsecond round to the same instant.
- * The second is placed one microsecond after the first: that is the smallest
- * separation the type can state, it keeps the order the crossings occur in,
- * and it keeps the cell.
+ * A microsecond is the smallest separation the type can state, so a cell left
+ * again before it holds any time is not part of the result: the cell entered
+ * at that instant replaces it, as a crossing within #MEOS_EPSILON of the end
+ * of a segment is no crossing for #tgeogpointsegm_distance_turnpt()
  */
 static void
 ts2cell_entry_append(TInstant ***instants, int *count, int *size,
   S2CellId cell, TimestampTz t)
 {
   if (*count > 0 && t <= (*instants)[*count - 1]->t)
-    t = (*instants)[*count - 1]->t + 1;
+  {
+    /* The cell already stated at this instant is left for this one before it
+     * holds any time, so this one is the cell the trajectory holds there */
+    TimestampTz tlast = (*instants)[*count - 1]->t;
+    pfree((*instants)[--(*count)]);
+    t = tlast;
+  }
   if (*count == *size)
   {
     *size *= 2;
@@ -294,8 +301,16 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
     {
       if (cells[k] == last)
         continue;
-      ts2cell_entry_append(&instants, &count, &size, cells[k], inst1->t +
-        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]));
+      /* A crossing the last microsecond of the segment holds is the end of
+       * the segment at the resolution a timestamp states, so it enters at
+       * that instant, as the clip of a segment by a geometry states a
+       * parameter of 1 as the instant of the second position. A cell is then
+       * entered at the same instant however the segment is cut */
+      TimestampTz tenter = inst1->t +
+        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
+      if (inst2->t - tenter <= 1)
+        tenter = inst2->t;
+      ts2cell_entry_append(&instants, &count, &size, cells[k], tenter);
       last = cells[k];
     }
     /* The endpoint's own cell closes the segment when the traversal stopped

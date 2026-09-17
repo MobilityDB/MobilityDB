@@ -270,17 +270,19 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
    * path reaches it, while a timestamp holds whole microseconds, so two
    * crossings closer together than one microsecond round to the same
    * instant. A path passing near a vertex, where three cells meet, leaves
-   * one cell and enters the next over such a distance. A sequence requires
-   * increasing timestamps, so the second crossing is placed one microsecond
-   * after the first: that is the smallest separation the type can state, it
-   * keeps the order the crossings occur in, and it keeps the cell. Dropping
-   * the crossing instead would omit a cell the path passes through, which is
-   * the omission the traversal exists to remove. */
+   * one cell and enters the next over such a distance. The cell of a
+   * crossing landing on or before the instant already stated is held for no
+   * time, so it is not part of the result, as a crossing within
+   * #MEOS_EPSILON of the end of a segment is no crossing for
+   * #tgeogpointsegm_distance_turnpt(). */
   #define PUSH_INSTANT(_cell, _ts)                                    \
     do {                                                              \
       TimestampTz ts_ = (_ts);                                        \
       if (have_ts && ts_ <= last_ts)                                  \
-        ts_ = last_ts + 1;                                            \
+      {                                                               \
+        pfree(instants[--ninsts]);                                    \
+        ts_ = last_ts;                                                \
+      }                                                               \
       if (ninsts >= maxcount)                                         \
       {                                                               \
         maxcount = (maxcount * 2 > ninsts + 1)                        \
@@ -370,9 +372,16 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
         H3Index cell = xcells[k];
         if (have_last && cell == last_cell)
           continue;
+        /* A crossing the last microsecond of the segment holds is the end
+         * of the segment at the resolution a timestamp states, so it enters
+         * at that instant, as the clip of a segment by a geometry states a
+         * parameter of 1 as the instant of the second position. A cell is
+         * then entered at the same instant however the segment is cut */
         TimestampTz ts = (k == 0) ? inst_a->t
           : inst_a->t + (TimestampTz) ((double) (inst_b->t - inst_a->t)
               * xenter[k]);
+        if (inst_b->t - ts <= 1)
+          ts = inst_b->t;
         PUSH_INSTANT(cell, ts);
         last_cell = cell;
         have_last = true;

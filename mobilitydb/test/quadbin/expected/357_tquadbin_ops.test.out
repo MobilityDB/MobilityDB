@@ -176,17 +176,28 @@ SELECT endValue(tquadbin(tgeompoint
 
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2);
-                                                                                              tquadbin                                                                                               
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [4828ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4829ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4823ffffffffffff@Tue Jan 02 00:00:00.000001 2001 PST, 4823ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+                                                                   tquadbin                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [4828ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4823ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4823ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT valueAtTimestamp(tquadbin(tgeompoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
-  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2);
- ?column? 
-----------
+  timestamptz '2001-01-02') = geoToQuadbinCell(valueAtTimestamp(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]',
+  timestamptz '2001-01-02' + interval '1 microsecond'), 2) AS states_the_cell_entered;
+ states_the_cell_entered 
+-------------------------
  t
+(1 row)
+
+SELECT valueAtTimestamp(tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
+  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2)
+  AS states_the_corner_owner;
+ states_the_corner_owner 
+-------------------------
+ f
 (1 row)
 
 SELECT tquadbin(tgeompoint
@@ -194,6 +205,31 @@ SELECT tquadbin(tgeompoint
                                                                    tquadbin                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------
  [4829ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4822ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4822ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+), periods(period) AS (VALUES
+  (tstzspan '[2001-01-01, 2001-01-02)'),
+  (tstzspan '[2001-01-02, 2001-01-02 12:00:00)'),
+  (tstzspan '[2001-01-02 12:00:00, 2001-01-03]'))
+SELECT merge(array_agg(tquadbin(atTime(tp, period), 2) ORDER BY period))
+  = tquadbin(tp, 2) AS periods_as_whole
+FROM trip, periods GROUP BY tp;
+ periods_as_whole 
+------------------
+ t
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
+ cells_of_an_instant | cells_holding_time 
+---------------------+--------------------
+                   0 |                  2
 (1 row)
 
 SELECT numSequences(tquadbin(tgeompoint
@@ -227,7 +263,7 @@ SELECT numValues(getValues(tquadbin(tgeogpoint
     'SRID=4326;[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3)));
  numvalues | numvalues 
 -----------+-----------
-         2 |         9
+         2 |         8
 (1 row)
 
 SELECT count(*) AS instants,
