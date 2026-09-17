@@ -398,7 +398,8 @@ FROM rast;
 -- pixels of its QUADBIN cell.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01,
   Point(135.0 75.0)@2024-01-02]',
-  decode('01020304', 'hex'), 2, 2, 5194902170171867135, 'uint8', 0.0, false)::text;
+  decode('01020304', 'hex'), 2, 2, quadbin '4817ffffffffffff', 'uint8', 0.0,
+  false)::text;
 
 -- A band the raster does not have is an error, in either direction.
 WITH rast AS (
@@ -595,49 +596,52 @@ SELECT
 FROM rast;
 
 -------------------------------------------------------------------------------
--- quadbins
+-- The tiles a trajectory covers
+--
+-- The QUADBIN cells a trajectory holds at a zoom are the values of its
+-- temporal quadbin cell, the join key of a Raquet table
 -------------------------------------------------------------------------------
 
 -- Three distinct longitudes at zoom 3 produce three distinct QUADBIN cells.
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
-  Point(0.0 45.0)@2024-01-02, Point(60.0 45.0)@2024-01-03}', 3), 1) AS num_distinct_tiles;
+  Point(0.0 45.0)@2024-01-02, Point(60.0 45.0)@2024-01-03}', 3))) AS num_distinct_tiles;
 
 -- Two instants in the same tile → deduplicated to 1 cell.
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
-    Point(-61.0 44.0)@2024-01-02}', 3), 1) AS num_distinct_tiles;
+    Point(-61.0 44.0)@2024-01-02}', 3))) AS num_distinct_tiles;
 
 -- A trajectory that moves between its instants covers the tiles it crosses on
 -- the way: at zoom 3 a tile spans 45 degrees of longitude, so a trip from
 -- 10E to 170E crosses four of them, and the same path sampled every 20 degrees
 -- answers the same four.
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
-    Point(170.0 10.0)@2024-01-02]', 3), 1) AS num_crossed_tiles;
+    Point(170.0 10.0)@2024-01-02]', 3))) AS num_crossed_tiles;
 
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01, Point(30.0 10.0)@2024-01-02,
     Point(50.0 10.0)@2024-01-03, Point(70.0 10.0)@2024-01-04,
     Point(90.0 10.0)@2024-01-05, Point(110.0 10.0)@2024-01-06,
     Point(130.0 10.0)@2024-01-07, Point(150.0 10.0)@2024-01-08,
-    Point(170.0 10.0)@2024-01-09}', 3), 1) AS num_sampled_tiles;
+    Point(170.0 10.0)@2024-01-09}', 3))) AS num_sampled_tiles;
 
--- A diagonal crossing is the case a sampled walk loses: it leaves a tile
--- through a corner, over a chord that any step long enough to be economical
--- steps across. At zoom 5 a tile spans 11.25 degrees of longitude, so a trip
--- from (10,10) to (40,40) spans four tile columns and four Mercator rows, and
--- a monotone path across a four by four span visits four plus four minus one
--- of them.
-SELECT array_length(quadbins(
+-- A diagonal crossing leaves a tile through a corner, over a chord that any
+-- sampling step long enough to be economical steps across. At zoom 5 a tile
+-- spans 11.25 degrees of longitude, so a trip from (10,10) to (40,40) spans four
+-- tile columns and four Mercator rows, and a monotone path across a four by
+-- four span visits four plus four minus one of them.
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
-    Point(40.0 40.0)@2024-01-02]', 5), 1) AS num_diagonal_tiles;
+    Point(40.0 40.0)@2024-01-02]', 5))) AS num_diagonal_tiles;
 
 -- A trajectory that states nothing between its instants covers the tiles
--- holding them, and the two instants below sit in one tile.
-SELECT array_length(quadbins(
+-- holding them: the two instants below sit in two tiles, while the path
+-- between them crosses four.
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01,
-    Point(170.0 10.0)@2024-01-02}', 3), 1) AS num_instant_tiles;
+    Point(170.0 10.0)@2024-01-02}', 3))) AS num_instant_tiles;
 
 -- The cover reaches every zoom of the QUADBIN grid. At zoom 20 a tile spans
 -- 360 / 2^20 degrees of longitude, so a trip along latitude 0.00005 from
@@ -645,35 +649,24 @@ SELECT array_length(quadbins(
 -- floor(180.0001 / 360 * 2^20) = 524288 to floor(180.0021 / 360 * 2^20) =
 -- 524294 within one row, seven tiles, and at zoom 26 the cover holds tiles of
 -- that zoom.
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;[Point(0.0001 0.00005)@2024-01-01,
-    Point(0.0021 0.00005)@2024-01-02]', 20), 1) AS num_zoom20_tiles;
-SELECT array_length(quadbins(
-  tgeompoint 'SRID=4326;{Point(0.0001 0.00005)@2024-01-01}', 26), 1)
+    Point(0.0021 0.00005)@2024-01-02]', 20))) AS num_zoom20_tiles;
+SELECT numValues(getValues(tquadbin(
+  tgeompoint 'SRID=4326;{Point(0.0001 0.00005)@2024-01-01}', 26)))
   AS num_zoom26_tiles;
 
 -- A zoom beyond the grid raises an error.
-SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 27);
+SELECT getValues(tquadbin(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 27));
 
 -- A trajectory states nothing across the gap between two of its sequences, so
 -- the cover crosses no tile there: at zoom 3 the sequence from 10E to 20E
 -- lies in one tile and the one from 160E to 170E in another, while the tiles
 -- between them, from 45E to 135E, are covered by no sequence.
-SELECT array_length(quadbins(
+SELECT numValues(getValues(tquadbin(
   tgeompoint 'SRID=4326;{[Point(10.0 10.0)@2024-01-01, Point(20.0 10.0)@2024-01-02],
-    [Point(160.0 10.0)@2024-01-03, Point(170.0 10.0)@2024-01-04]}', 3), 1)
+    [Point(160.0 10.0)@2024-01-03, Point(170.0 10.0)@2024-01-04]}', 3)))
   AS num_gap_tiles;
-
--- The cover answers cells of the QUADBIN grid, the ones tquadbin walks.
-WITH trip(t) AS (
-  SELECT tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
-    Point(40.0 40.0)@2024-01-02]')
-SELECT (SELECT bool_and(isValidIndex(c::quadbin))
-    FROM unnest(quadbins(t, 5)) c) AS valid_cells,
-  (SELECT array_agg(c::quadbin ORDER BY c) FROM unnest(quadbins(t, 5)) c) =
-    (SELECT array_agg(v ORDER BY v) FROM unnest(getValues(tquadbin(t, 5))) v)
-  AS same_cells
-FROM trip;
 
 -------------------------------------------------------------------------------
 -- rasterTileValueQuadbin
@@ -692,15 +685,16 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01
   '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
   2::integer,                  -- width
   2::integer,                  -- height
-  5194902170171867135::bigint, -- quadbin_tile_to_cell(1,0,1)
+  quadbin '4817ffffffffffff', -- quadbin_tile_to_cell(1,0,1)
   'UINT8', 0.0, false)::text AS result;
 
--- A tile key that is not a cell of the QUADBIN grid raises an error: the
--- Morton code of tile (1,0,1) without the bits below zoom 1 set to one.
+-- A tile key that is not a cell of the QUADBIN grid is no quadbin, so no tile
+-- is read or built from it: the Morton code of tile (1,0,1) without the bits
+-- below zoom 1 set to one.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01}',
-  '\x01020304'::bytea, 2::integer, 2::integer, 5193776270265024512::bigint,
+  '\x01020304'::bytea, 2::integer, 2::integer, quadbin '4814000000000000',
   'UINT8', 0.0, false);
-SELECT raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8');
+SELECT raquet('\x01'::bytea, 1, 1, quadbin '4814000000000000', 'UINT8');
 
 -- A pixel array too small for the declared width/height raises an error
 -- rather than sampling past the end of the buffer. Point(45 10) maps to
@@ -709,7 +703,7 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
   '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
   2::integer,                  -- width
   2::integer,                  -- height
-  5194902170171867135::bigint, -- quadbin_tile_to_cell(1,0,1)
+  quadbin '4817ffffffffffff', -- quadbin_tile_to_cell(1,0,1)
   'UINT8', 0.0, false);
 
 -- The dimensions reach the tile as an unsigned 16-bit width and height. A
@@ -718,13 +712,13 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
 -- 65535 pixel wide one.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
   '\x01020304'::bytea, 65538::integer, 2::integer,
-  5194902170171867135::bigint, 'UINT8', 0.0, false);
+  quadbin '4817ffffffffffff', 'UINT8', 0.0, false);
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
   '\x01020304'::bytea, 2::integer, -1::integer,
-  5194902170171867135::bigint, 'UINT8', 0.0, false);
+  quadbin '4817ffffffffffff', 'UINT8', 0.0, false);
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
   '\x01020304'::bytea, 0::integer, 2::integer,
-  5194902170171867135::bigint, 'UINT8', 0.0, false);
+  quadbin '4817ffffffffffff', 'UINT8', 0.0, false);
 
 -------------------------------------------------------------------------------
 -- raquet type: construction, WKB round-trip, and typed sampling
@@ -735,9 +729,9 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
 WITH t(traj) AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01, Point(135.0 75.0)@2024-01-02, Point(45.0 10.0)@2024-01-03, Point(-45.0 75.0)@2024-01-04}' )
 SELECT rasterTileValue(traj,
-         raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8'))::text
+         raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8'))::text
      = rasterTileValueQuadbin(traj, 
-         '\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8', 0.0, false)::text
+         '\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8', 0.0, false)::text
        AS typed_equals_untyped
 FROM t;
 
@@ -757,8 +751,8 @@ FROM t;
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(-45.0 75.0)@2024-01-01,
     Point(45.0 75.0)@2024-01-02, Point(135.0 75.0)@2024-01-03}' AS traj,
-    raquet('\x01020304'::bytea, 2, 2, 5193776270265024511::bigint, 'UINT8') AS west,
-    raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8') AS east
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4813ffffffffffff', 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east
 )
 SELECT rasterTileValue(traj, west)::text AS west_alone,
        rasterTileValue(traj, east)::text AS east_alone,
@@ -770,8 +764,8 @@ FROM t;
 -- the finer resolution, and the outcome does not depend on the array order.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(-45.0 75.0)@2024-01-01, Point(45.0 75.0)@2024-01-02, Point(135.0 75.0)@2024-01-03}' AS traj,
-    raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8') AS east,
-    raquet('\x01020304'::bytea, 2, 2, 5198561344869105663::bigint, 'UINT8') AS fine
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4824ffffffffffff', 'UINT8') AS fine
 )
 SELECT rasterTileValue(traj, fine)::text AS fine_alone,
   rasterTileValue(traj, ARRAY[east, fine])::text AS east_then_fine,
@@ -785,9 +779,9 @@ FROM t;
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;[Point(-45.0 75.0)@2024-01-01,
     Point(135.0 75.0)@2024-01-03]' AS traj,
-    raquet('\x01020304'::bytea, 2, 2, 5193776270265024511::bigint, 'UINT8') AS west,
-    raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8') AS east,
-    raquet('\x05060708'::bytea, 2, 2, 5198561344869105663::bigint, 'UINT8') AS fine
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4813ffffffffffff', 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east,
+    raquet('\x05060708'::bytea, 2, 2, quadbin '4824ffffffffffff', 'UINT8') AS fine
 )
 SELECT rasterTileValue(traj, ARRAY[west, east, fine])::text AS merged,
   rasterTileValue(traj, ARRAY[fine, east, west])::text =
@@ -800,8 +794,8 @@ FROM t;
 -- the trajectory never enters returns NULL.
 WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02}' AS traj,
-    raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8') AS east,
-    raquet('\x01020304'::bytea, 2, 2, 5193776270265024511::bigint, 'UINT8') AS west
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, quadbin '4813ffffffffffff', 'UINT8') AS west
 )
 SELECT rasterTileValue(traj, ARRAY[east])::text =
   rasterTileValue(traj, east)::text AS singleton_equals_scalar,
@@ -815,12 +809,12 @@ SELECT rasterTileValue(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02}',
 -- The HexWKB text representation round-trips through the raquet type's input
 -- and output functions (raquet::text uses raquet_out, text::raquet uses
 -- raquet_in).
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8')::text::raquet::text
-     = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8')::text
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text::raquet::text
+     = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text
        AS hexwkb_roundtrip_ok;
 
 -- The constructor rejects a pixel array too small for the given dimensions.
-SELECT raquet('\x0102'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+SELECT raquet('\x0102'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 -- A raquet large enough to be TOASTed (64 x 64 UINT8 = 4096 pixel bytes) must
 -- survive a store-and-read-back cycle: reading the stored value detoasts it, so
@@ -828,11 +822,11 @@ SELECT raquet('\x0102'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
 CREATE TEMP TABLE raquet_toast (rq raquet);
 INSERT INTO raquet_toast
   VALUES (raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
-    5194902170171867135::bigint, 'UINT8'));
+    quadbin '4817ffffffffffff', 'UINT8'));
 SELECT (
   SELECT rq FROM raquet_toast)::text = 
     raquet(decode(repeat('01', 4096), 'hex'), 64, 64, 
-      5194902170171867135::bigint, 'UINT8')::text AS toasted_roundtrip_ok;
+      quadbin '4817ffffffffffff', 'UINT8')::text AS toasted_roundtrip_ok;
 
 -------------------------------------------------------------------------------
 -- raquetRead: GDAL ingest of an in-memory raster file (bytea)
@@ -847,8 +841,8 @@ SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
 -- from the identical row-major pixel bytes 01 02 03 04.
 SELECT raquetRead(
          decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'),
-         5194902170171867135::bigint)::text
-     = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8')::text
+         quadbin '4817ffffffffffff')::text
+     = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text
        AS gdal_ingest_equals_constructor;
 
 -------------------------------------------------------------------------------
@@ -857,11 +851,11 @@ SELECT raquetRead(
 
 -- Omitting the quadbin argument reads the tile identifier from the raster's
 -- EPSG:3857 geotransform. This GeoTIFF georeferences Web-Mercator tile (1, 0)
--- at zoom 1, whose QUADBIN cell is 5194902170171867135, so raquetRead(bytes)
--- yields the same tile as raquetRead(bytes, 5194902170171867135).
+-- at zoom 1, whose QUADBIN cell is 4817ffffffffffff, so raquetRead(bytes)
+-- yields the same tile as raquetRead(bytes, quadbin '4817ffffffffffff').
 WITH t(bytes) AS (VALUES (decode('49492a00080000000f0000010300010000000200000001010300010000000200000002010300010000000800000003010300010000000100000006010300010000000100000011010400010000006b0100001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000e830c0003000000c200000082840c0006000000da000000af870300200000000a010000b1870200210000004a0100000000000093107c45f81b634193107c45f81b63410000000000000000000000000000000000000000000000000000000000000000000000000000000093107c45f81b734100000000000000000100010000000700000400000100010001040000010001000204b187190000000108b187070019000608000001008e23000c00000100110f040c000001002923574753203834202f2050736575646f2d4d65726361746f727c5747532038347c0001020304', 'hex')))
 SELECT raquetRead(bytes)::text
-     = raquetRead(bytes, 5194902170171867135::bigint)::text
+     = raquetRead(bytes, quadbin '4817ffffffffffff')::text
        AS derived_quadbin_equals_explicit
 FROM t;
 
@@ -923,8 +917,8 @@ SELECT rasterValue(t, 'raster_file_forms.tif')::text AS file_form,
 FROM rast, trip;
 
 -- raquetRead reads the file into the tile it decodes from the same bytes
-SELECT raquetRead('raquet_file_form.tif'::text, 5194902170171867135::bigint)::text
-     = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8')::text
+SELECT raquetRead('raquet_file_form.tif'::text, quadbin '4817ffffffffffff')::text
+     = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8')::text
        AS file_form_equals_constructor;
 
 -- The setting PostGIS states for a band stored outside the database decides
@@ -932,7 +926,7 @@ SELECT raquetRead('raquet_file_form.tif'::text, 5194902170171867135::bigint)::te
 SET postgis.enable_outdb_rasters = false;
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
   'raster_file_forms.tif'::text);
-SELECT raquetRead('raquet_file_form.tif'::text, 5194902170171867135::bigint);
+SELECT raquetRead('raquet_file_form.tif'::text, quadbin '4817ffffffffffff');
 SET postgis.enable_outdb_rasters = true;
 SET postgis.gdal_enabled_drivers = 'DISABLE_ALL';
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
@@ -951,22 +945,22 @@ SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
 -------------------------------------------------------------------------------
 
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
-         5194902170171867135::bigint, 'UINT8')))
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+         quadbin '4817ffffffffffff', 'UINT8')))
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x0102030405060708'::bytea, 2, 2,
-         5194902170171867135::bigint, 'INT16', -9999.0)))
-       = raquet('\x0102030405060708'::bytea, 2, 2, 5194902170171867135::bigint,
+         quadbin '4817ffffffffffff', 'INT16', -9999.0)))
+       = raquet('\x0102030405060708'::bytea, 2, 2, quadbin '4817ffffffffffff',
          'INT16', -9999.0);
 
 -- The endianness argument is accepted on both output forms.
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
-         5194902170171867135::bigint, 'UINT8'), 'XDR'))
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+         quadbin '4817ffffffffffff', 'UINT8'), 'XDR'))
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
-         5194902170171867135::bigint, 'UINT8'), 'NDR'))
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+         quadbin '4817ffffffffffff', 'UINT8'), 'NDR'))
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 -------------------------------------------------------------------------------
 -- raster (Hex)WKB round trip
@@ -1005,84 +999,84 @@ SELECT rasterFromHexWKB('0100');
 -- The accessors read back the georeferencing and layout the tile carries, so a
 -- packaged tile needs none of the loose columns it was built from.
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile), bandNoDataValue(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
         'UINT8') AS tile) t;
 
 -- Every pixel type name round-trips through the constructor and bandPixelType.
-SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5194902170171867135::bigint, 'UINT8')),
-       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5194902170171867135::bigint, 'INT16')),
-       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5194902170171867135::bigint, 'INT32')),
-       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5194902170171867135::bigint, 'FLOAT32')),
-       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', 'INT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', 'INT32')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', 'FLOAT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
          'FLOAT64')),
-       bandPixelType(raquet('\x01'::bytea, 1, 1, 5194902170171867135::bigint, 'INT8')),
-       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5194902170171867135::bigint, 'UINT16')),
-       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5194902170171867135::bigint, 'UINT32')),
-       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+       bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'INT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
          'INT64')),
-       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
          'UINT64')),
-       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5194902170171867135::bigint, 'FLOAT16'));
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', 'FLOAT16'));
 
 -- The pixel size of a type is the one the specification gives it, so a band of
 -- one pixel is exactly as many bytes wide.
-SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5194902170171867135::bigint,
+SELECT raquet('\x0102030405060708'::bytea, 2, 1, quadbin '4817ffffffffffff',
   'UINT32') IS NOT NULL AS uint32_two_pixels,
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'INT8')
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'INT8')
   IS NOT NULL AS int8_two_pixels,
-       raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+       raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
   'FLOAT16') IS NOT NULL AS float16_one_pixel_spare_bytes;
 
 -- The pixel type name is read without regard to case, so the lower-case
 -- spelling the RaQuet specification gives a tile's type field is accepted as
 -- it stands. The name reported back keeps the documented upper case.
-SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'uint8'));
 SELECT bandPixelType(raquet('\x0102030405060708'::bytea, 2, 1,
-  5194902170171867135::bigint, 'float32'));
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'uint8')
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+  quadbin '4817ffffffffffff', 'float32'));
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8')
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 -- A pixel type is also accepted under the name PostGIS raster gives it, so the
 -- band type an ST_BandPixelType call reports passes into the constructor as it
 -- stands. The tile reports the name of the RaQuet specification.
-SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5194902170171867135::bigint, '8BUI')),
-       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5194902170171867135::bigint, '16BSI')),
-       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5194902170171867135::bigint, '32BF')),
-       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', '8BUI')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', '16BSI')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff', '32BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
          '64BF')),
-       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5194902170171867135::bigint, '16BF')),
-       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5194902170171867135::bigint,
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, quadbin '4817ffffffffffff', '16BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, quadbin '4817ffffffffffff',
          '64BSI'));
 
 -- The band type of a PostGIS raster carries into the constructor unchanged.
-SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5194902170171867135::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, quadbin '4817ffffffffffff',
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
 
 -- The two spellings name the same tile.
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, '8BUI')
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'UINT8');
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '8BUI')
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'UINT8');
 
 -- A PostGIS pixel type bounded to less than a byte names a uint8 band, since
 -- PostGIS stores one a byte a pixel.
-SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, '1BB')),
-       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, '2BUI')),
-       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, '4BUI'));
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '1BB')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '2BUI')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '4BUI'));
 
 -- The bound is the only thing such a name adds, so the tile is the uint8 one.
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, '4BUI')
-       = raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'uint8');
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', '4BUI')
+       = raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
 
 -- A band type ST_BandPixelType reports for such a type carries in as it stands.
-SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '4BUI'), 1)));
 
 -- An unknown name is still rejected, whatever its case.
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint, 'uint12');
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint12');
 
 -- The nodata value supplied to the constructor is the one reported back.
 SELECT bandHasNoDataValue(tile), bandNoDataValue(tile)
-FROM (SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8',
+FROM (SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8',
   -9999.0) AS tile) t;
 
 -- A tile built without a nodata value states none, so its nodata value is NULL
@@ -1090,72 +1084,72 @@ FROM (SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8',
 SELECT bandHasNoDataValue(tile), bandNoDataValue(tile),
   raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
     bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
         'UINT8') AS tile) t;
 
 -- The pixel bytes are returned in the layout the constructor accepts, so a
 -- tile rebuilt from its own accessors equals the tile it came from.
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'UINT8'));
 
 SELECT raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
          bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
 FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
-        5194902170171867135::bigint, 'INT16', -9999.0) AS tile) t;
+        quadbin '4817ffffffffffff', 'INT16', -9999.0) AS tile) t;
 
 -- A wider pixel type returns the whole band, not the pixel count.
 SELECT length(pixels(raquet('\x0102030405060708'::bytea, 2, 1,
-  5194902170171867135::bigint, 'FLOAT32')));
+  quadbin '4817ffffffffffff', 'FLOAT32')));
 
 -------------------------------------------------------------------------------
 -- raquet comparison
 -------------------------------------------------------------------------------
 
 -- Tiles agreeing on cell, layout and pixels are equal; any difference orders.
-SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') =
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS eq,
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') <>
-       raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS ne;
+SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') =
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS eq,
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <>
+       raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS ne;
 
 -- The ordering is on the QUADBIN cell first, then pixel type, width, height and
 -- finally the pixel bytes.
-SELECT raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') <
-       raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS lt_pixels,
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') <=
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS le_equal,
-       raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') >
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS gt_pixels,
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') >=
-       raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8') AS ge_equal;
+SELECT raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <
+       raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS lt_pixels,
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') <=
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS le_equal,
+       raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') >
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS gt_pixels,
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') >=
+       raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8') AS ge_equal;
 
 -- cmp returns the three-way comparison the btree operator class uses.
-SELECT cmp(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8'),
-           raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')) AS lt,
-       cmp(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8'),
-           raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')) AS eq,
-       cmp(raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8'),
-           raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')) AS gt;
+SELECT cmp(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
+           raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')) AS lt,
+       cmp(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')) AS eq,
+       cmp(raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')) AS gt;
 
 -- Sorting and deduplication go through the btree and hash operator classes.
 WITH tiles(tile) AS (VALUES
-  (raquet('\x0103'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')),
-  (raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')),
-  (raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint, 'UINT8')))
+  (raquet('\x0103'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff', 'UINT8')))
 SELECT count(*) AS total, count(DISTINCT tile) AS distinct_tiles,
        (SELECT tile::text FROM tiles ORDER BY tile LIMIT 1) =
-         raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint,
+         raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
            'UINT8')::text AS smallest_sorts_first
 FROM tiles;
 
 -- Equal tiles hash equally, and the seeded hash varies with the seed.
-SELECT hash(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint,
+SELECT hash(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
          'UINT8')) =
-       hash(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint,
+       hash(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
          'UINT8')) AS equal_tiles_hash_equally,
        hashExtended(raquet('\x0102'::bytea, 2, 1,
-         5194902170171867135::bigint, 'UINT8'), 0) <>
+         quadbin '4817ffffffffffff', 'UINT8'), 0) <>
        hashExtended(raquet('\x0102'::bytea, 2, 1,
-         5194902170171867135::bigint, 'UINT8'), 1) AS seed_changes_hash;
+         quadbin '4817ffffffffffff', 'UINT8'), 1) AS seed_changes_hash;
 
 -------------------------------------------------------------------------------
 -- raquet conversion to stbox
@@ -1165,26 +1159,26 @@ SELECT hash(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint,
 -- cast carries the tile extent without the pixels. The latitude bound is the
 -- Web-Mercator limit, a transcendental value, so the box is rounded.
 SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
-  5194902170171867135::bigint, 'UINT8')), 6);
+  quadbin '4817ffffffffffff', 'UINT8')), 6);
 
 -- The cast form and the function form agree.
-SELECT raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
          'UINT8')::stbox =
-       stbox(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+       stbox(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
          'UINT8')) AS cast_equals_function;
 
 -- The footprint depends only on the QUADBIN cell: tiles differing in pixels,
 -- dimensions or pixel type share it.
-SELECT stbox(raquet('\x0102'::bytea, 2, 1, 5194902170171867135::bigint,
+SELECT stbox(raquet('\x0102'::bytea, 2, 1, quadbin '4817ffffffffffff',
          'UINT8')) =
-       stbox(raquet('\x01020304'::bytea, 2, 2, 5194902170171867135::bigint,
+       stbox(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
          'UINT8')) AS footprint_follows_the_cell;
 
 -- Distinct cells give distinct footprints, and the tile is contained in its
 -- own footprint envelope.
 WITH t(a, b) AS (VALUES (
-  raquet('\x01'::bytea, 1, 1, 5194902170171867135::bigint, 'UINT8'),
-  raquet('\x01'::bytea, 1, 1, 5202572363287232511::bigint, 'UINT8')))
+  raquet('\x01'::bytea, 1, 1, quadbin '4817ffffffffffff', 'UINT8'),
+  raquet('\x01'::bytea, 1, 1, quadbin '48333fffffffffff', 'UINT8')))
 SELECT stbox(a) <> stbox(b) AS distinct_cells_distinct_footprints,
        stbox(a) && stbox(a) AS overlaps_itself
 FROM t;
@@ -1197,8 +1191,8 @@ CREATE TABLE test_raquet_tiles (id integer, tile raquet);
 INSERT INTO test_raquet_tiles
 SELECT g, raquet('\x01020304'::bytea, 2, 2, c, 'UINT8')
 FROM (VALUES
-  (1, 5194902170171867135::bigint), (2, 5202572363287232511::bigint),
-  (3, 5203416788217364479::bigint), (4, 5203487156961542143::bigint)) v(g, c);
+  (1, quadbin '4817ffffffffffff'), (2, quadbin '48333fffffffffff'),
+  (3, quadbin '48363fffffffffff'), (4, quadbin '48367fffffffffff')) v(g, c);
 
 -- The footprint is indexable with the stbox operator classes, so a tile table
 -- is searched by spatial overlap rather than by an equality test on the cell.

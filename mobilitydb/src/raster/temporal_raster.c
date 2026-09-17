@@ -58,6 +58,7 @@
 #include "geo/stbox.h"        /* PG_RETURN_STBOX_P */
 #include "raster/raquet.h"    /* Raquet, PG_GETARG_RAQUET_P, raquet_pixtype_size */
 #include "raster/raster_quadbin.h"
+#include "quadbin/quadbin.h"  /* PG_GETARG_QUADBIN, PG_RETURN_QUADBIN */
 /* MobilityDB */
 #include "pg_geo/postgis.h"   /* PG_GETARG_GSERIALIZED_P */
 #include "pg_temporal/temporal.h"
@@ -1134,7 +1135,7 @@ Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
   bytea *pxbytea = PG_GETARG_BYTEA_PP(1);
   int32 width = PG_GETARG_INT32(2);
   int32 height = PG_GETARG_INT32(3);
-  int64 quadbin = PG_GETARG_INT64(4);
+  Quadbin quadbin = PG_GETARG_QUADBIN(4);
   text *pixtype_t = PG_GETARG_TEXT_PP(5);
   float8 nodata = PG_GETARG_FLOAT8(6);
   bool has_nd = PG_GETARG_BOOL(7);
@@ -1144,7 +1145,7 @@ Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
   MeosPixType pixtype = text_to_pixtype(pixtype_t);
 
   Temporal *result = raster_tile_value_quadbin(traj, pixels, pixels_size,
-    width, height, (uint64) quadbin, pixtype, nodata, has_nd);
+    width, height, quadbin, pixtype, nodata, has_nd);
 
   PG_FREE_IF_COPY(traj, 0);
   if (result == NULL)
@@ -1315,14 +1316,14 @@ Raquet_constructor(PG_FUNCTION_ARGS)
   bytea *pxbytea = PG_GETARG_BYTEA_PP(0);
   int32 width = PG_GETARG_INT32(1);
   int32 height = PG_GETARG_INT32(2);
-  int64 quadbin = PG_GETARG_INT64(3);
+  Quadbin quadbin = PG_GETARG_QUADBIN(3);
   text *pixtype_t = PG_GETARG_TEXT_PP(4);
   bool has_nd = ! PG_ARGISNULL(5);
   float8 nodata = has_nd ? PG_GETARG_FLOAT8(5) : 0.0;
   MeosPixType pixtype = text_to_pixtype(pixtype_t);
 
   const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
-  Raquet *result = raquet_make((uint64) quadbin, width, height, pixtype,
+  Raquet *result = raquet_make(quadbin, width, height, pixtype,
     nodata, has_nd, pixels, (size_t) VARSIZE_ANY_EXHDR(pxbytea));
   PG_RETURN_RAQUET_P(result);
 }
@@ -1348,7 +1349,7 @@ Raquet_read_bytes(PG_FUNCTION_ARGS)
   bytea *rasterfile = PG_GETARG_BYTEA_PP(0);
   /* A NULL quadbin requests deriving the tile identifier from the raster
    * geotransform; raquet_read_bytes treats 0 as that request */
-  uint64 quadbin = PG_ARGISNULL(1) ? 0 : (uint64) PG_GETARG_INT64(1);
+  Quadbin quadbin = PG_ARGISNULL(1) ? 0 : PG_GETARG_QUADBIN(1);
   const uint8_t *data = (const uint8_t *) VARDATA_ANY(rasterfile);
   size_t size = VARSIZE_ANY_EXHDR(rasterfile);
   Raquet *result = raquet_read_bytes(data, size, quadbin);
@@ -1377,7 +1378,7 @@ Raquet_read(PG_FUNCTION_ARGS)
   char *path = text_to_cstring(PG_GETARG_TEXT_PP(0));
   /* A NULL quadbin requests deriving the tile identifier from the raster
    * geotransform; raquet_read treats 0 as that request */
-  uint64 quadbin = PG_ARGISNULL(1) ? 0 : (uint64) PG_GETARG_INT64(1);
+  Quadbin quadbin = PG_ARGISNULL(1) ? 0 : PG_GETARG_QUADBIN(1);
   if (! ensure_raster_file_readable(path))
     PG_RETURN_NULL();
   Raquet *result = raquet_read(path, quadbin);
@@ -1437,43 +1438,6 @@ Raster_tile_value_array(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * trajectory_quadbins
- *****************************************************************************/
-
-PGDLLEXPORT Datum Trajectory_quadbins(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trajectory_quadbins);
-/**
- * @ingroup mobilitydb_raster
- * @brief Return the distinct QUADBIN cells at a zoom level covered by a
- * trajectory, for use as a WHERE-clause join key against a Raquet table
- * @param[in] traj  Trajectory (tgeompoint, SRID 4326)
- * @param[in] zoom  QUADBIN zoom level (0–15)
- * @sqlfn quadbins()
- */
-Datum
-Trajectory_quadbins(PG_FUNCTION_ARGS)
-{
-  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  int32     zoom = PG_GETARG_INT32(1);
-
-  int       ncells;
-  uint64   *cells = trajectory_quadbins(traj, (uint32_t) zoom, &ncells);
-
-  PG_FREE_IF_COPY(traj, 0);
-
-  /* Build int8[] (bigint[]) from the uint64 cell array */
-  Datum *elems = palloc(sizeof(Datum) * ncells);
-  for (int i = 0; i < ncells; i++)
-    elems[i] = Int64GetDatum((int64) cells[i]);
-  pfree(cells);
-
-  ArrayType *arr = construct_array(elems, ncells, INT8OID, 8, true, TYPALIGN_DOUBLE);
-  pfree(elems);
-
-  PG_RETURN_ARRAYTYPE_P(arr);
-}
-
-/*****************************************************************************
  * Raquet type: accessors
  *****************************************************************************/
 
@@ -1488,9 +1452,9 @@ Datum
 Raquet_quadbin(PG_FUNCTION_ARGS)
 {
   Raquet *rq = PG_GETARG_RAQUET_P(0);
-  uint64 result = raquet_quadbin(rq);
+  Quadbin result = raquet_quadbin(rq);
   PG_FREE_IF_COPY(rq, 0);
-  PG_RETURN_INT64((int64) result);
+  PG_RETURN_QUADBIN(result);
 }
 
 PGDLLEXPORT Datum Raquet_width(PG_FUNCTION_ARGS);

@@ -3045,9 +3045,6 @@
 				<listitem>
 					<para><link linkend="tcell_uncompact_cells"><varname>uncompactCells</varname></link>: Representación descompactada en la resolución dada, la inversa de <varname>compactCells</varname></para>
 				</listitem>
-				<listitem>
-					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

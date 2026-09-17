@@ -95,7 +95,8 @@ int main(void)
   Span *vspan = floatspan_in("[0, 10]");
   const char *path = "no_such_raster.tif";
   int ntiles = 0;
-  uint64 *tiles = trajectory_quadbins(geom, 8, &ntiles);
+  Temporal *ttiles = tgeompoint_to_tquadbin(geom, 8);
+  Quadbin *tiles = tquadbin_values(ttiles, &ntiles);
   assert(geom && geog && rast && vspan && tiles && ntiles > 0);
   uint8_t pixels[1] = { 7 };
   Raquet *rq = raquet_make(tiles[0], 1, 1, MEOS_PT_UINT8, 0.0, false, pixels,
@@ -112,7 +113,6 @@ int main(void)
   for (int i = 0; i < 2; i++)
   {
     char call[128];
-    int count = -1;
 #define CALL(name) (snprintf(call, sizeof(call), "%s(%s)", name, what[i]), call)
     refused(CALL("raster_value"),
       raster_value(bad[i], rast, 1, true, "nearest") == NULL, errnum[i]);
@@ -141,8 +141,6 @@ int main(void)
       raster_tile_value(bad[i], rq) == NULL, errnum[i]);
     refused(CALL("raster_tile_value_array"),
       raster_tile_value_array(bad[i], rqarr, 1) == NULL, errnum[i]);
-    refused(CALL("trajectory_quadbins"),
-      trajectory_quadbins(bad[i], 8, &count) == NULL, errnum[i]);
 #undef CALL
   }
 
@@ -157,11 +155,7 @@ int main(void)
     res ? "a value" : "NULL", meos_errno());
   assert(res != NULL && meos_errno() == 0);
   free(res);
-  printf("trajectory_quadbins(tgeompoint): %d tiles, errno %d\n", ntiles,
-    meos_errno());
-  assert(meos_errno() == 0);
-
-  free(tiles); free(rq); free(vspan); free(rast); free(geog); free(geom);
+  free(tiles); free(ttiles); free(rq); free(vspan); free(rast); free(geog); free(geom);
 
   /* Finalize MEOS */
   meos_finalize();

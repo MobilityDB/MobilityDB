@@ -137,8 +137,9 @@ CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometrie
 # vendored subtree is needed.
 option(QUADBIN "Set ON|OFF (default=OFF) to include the temporal QUADBIN index type (tquadbin)" OFF)
 # Option for sampling PostGIS raster bands along trajectories.
-# Requires the postgis_raster extension (ships with postgresql-N-postgis-3).
-option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF)
+# Requires the postgis_raster extension (ships with postgresql-N-postgis-3), and
+# QUADBIN, since a Raquet tile is identified by a quadbin cell.
+CMAKE_DEPENDENT_OPTION(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF "QUADBIN" OFF)
 # Option for including the temporal Google S2 index type (`ts2cell`).
 # S2 has no maintained C API, so its cell algebra is implemented first-party in
 # meos/src/s2cell/ (libm only) from the published cell-id specification, the same
