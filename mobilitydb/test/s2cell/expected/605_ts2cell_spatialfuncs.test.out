@@ -356,3 +356,15 @@ FROM trip, unnest(ts2cell(tp, 3)) u;
                    1 |                 10
 (1 row)
 
+WITH trip(tp) AS (
+  SELECT tgeogpoint '[Point(0 89.996498882)@2020-01-01, Point(-180 89.990887383)@2020-01-01 01:00:00]'
+)
+SELECT count(*) AS cells,
+  count(*) FILTER (WHERE (u).value = geoToS2Cell(valueAtTimestamp(tp,
+    lower(span((u).time)) + interval '1 microsecond'), 16)) AS cells_the_trip_holds
+FROM trip, unnest(ts2cell(tp, 16)) u;
+ cells | cells_the_trip_holds 
+-------+----------------------
+    12 |                   12
+(1 row)
+

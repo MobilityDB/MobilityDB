@@ -726,6 +726,30 @@ s2cell_arc_cell(const DggsArc *arc, double t, uint32_t level)
   return s2cell_point_to_cell(lon * 180.0 / M_PI, lat * 180.0 / M_PI, level);
 }
 
+/** @brief A path of a segment and the level its cells are read at, the state
+ * #dggs_crossing_param() reads a cell of the path from */
+typedef struct
+{
+  const DggsArc *arc;        /**< Path of a geodetic segment, or NULL */
+  const DggsLine *line;      /**< Path of a planar segment, or NULL */
+  uint32_t level;            /**< S2 level */
+} S2PathAt;
+
+/**
+ * @brief Return the S2 cell the path of a segment holds at a parameter, or 0
+ * when the position cannot be projected
+ */
+static uint64
+s2cell_path_cell_at(void *state, double t)
+{
+  const S2PathAt *path = (const S2PathAt *) state;
+  if (path->arc)
+    return (uint64) s2cell_arc_cell(path->arc, t, path->level);
+  double lon, lat;
+  dggs_line_point(path->line, t, &lon, &lat);
+  return (uint64) s2cell_point_to_cell(lon, lat, path->level);
+}
+
 /**
  * @brief Fill `cells` with every S2 cell a planar segment crosses, and `enter`
  * with the segment parameter at which it reaches each
@@ -750,8 +774,11 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
     return n;
 
   /* A position on a cell boundary belongs to the one cell its level assigns
-   * it, and a path starting there may move into the neighbouring cell at
-   * once: the walk leaves from the cell just past the start */
+   * it, and a path starting there moves into the neighbouring cell at once,
+   * through a crossing no search strictly ahead of the start states: the walk
+   * leaves from the cell just past the start, entered where the halving of
+   * #dggs_crossing_param() places the crossing */
+  S2PathAt path = { .arc = NULL, .line = &line, .level = level };
   double t = 0.0, verts[12], lon, lat;
   s2cell_cell_xyz_vertices(cur, verts);
   double t0 = s2cell_shortest_edge(verts) * 1e-4 / line.length;
@@ -761,7 +788,10 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
     S2CellId first = s2cell_point_to_cell(lon, lat, level);
     if (first != (S2CellId) 0 && first != cur && n < maxout)
     {
-      cells[n] = first; enter[n] = 0.0; n++;
+      cells[n] = first;
+      enter[n] = dggs_crossing_param(0.0, t0, cur, &s2cell_path_cell_at,
+        &path);
+      n++;
       cur = first;
       t = t0;
     }
@@ -776,7 +806,7 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
       break;                 /* the segment ends inside this cell */
     /* The nudge of the geodetic walk, measured along the line */
     double nudge = s2cell_shortest_edge(verts) * 1e-4 / line.length;
-    double tn = texit + nudge;
+    double tn = texit + nudge, tin = texit;
     S2CellId next = (S2CellId) 0;
     for (int k = 0; k < 8; k++)
     {
@@ -786,6 +816,7 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
       next = s2cell_point_to_cell(lon, lat, level);
       if (next == (S2CellId) 0 || next != cur || tn >= 1.0)
         break;
+      tin = tn;
       tn += nudge * (double) (1 << k);
     }
     if (next == (S2CellId) 0)
@@ -798,7 +829,13 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
       t = texit + nudge;
       continue;
     }
-    cells[n] = next; enter[n] = texit; n++;
+    /* A crossing the path is still in the cell past is one the rounding of an
+     * edge the path runs along places where the path is: the probes bracket
+     * the crossing, and halving the bracket closes on it */
+    cells[n] = next;
+    enter[n] = (tin > texit) ?
+      dggs_crossing_param(tin, tn, cur, &s2cell_path_cell_at, &path) : texit;
+    n++;
     cur = next;
     t = tn;
   }
@@ -850,8 +887,11 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
     return n;
 
   /* A position on a cell boundary belongs to the one cell its level assigns
-   * it, and a path starting there may move into the neighbouring cell at
-   * once: the walk leaves from the cell just past the start */
+   * it, and a path starting there moves into the neighbouring cell at once,
+   * through a crossing no search strictly ahead of the start states: the walk
+   * leaves from the cell just past the start, entered where the halving of
+   * #dggs_crossing_param() places the crossing */
+  S2PathAt path = { .arc = &arc, .line = NULL, .level = level };
   double t = 0.0, verts[12];
   s2cell_cell_xyz_vertices(cur, verts);
   double t0 = s2cell_shortest_edge(verts) * 1e-4 / arc.dist;
@@ -860,7 +900,10 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
     S2CellId first = s2cell_arc_cell(&arc, t0, level);
     if (first != (S2CellId) 0 && first != cur && n < maxout)
     {
-      cells[n] = first; enter[n] = 0.0; n++;
+      cells[n] = first;
+      enter[n] = dggs_crossing_param(0.0, t0, cur, &s2cell_path_cell_at,
+        &path);
+      n++;
       cur = first;
       t = t0;
     }
@@ -879,7 +922,7 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
      * far below the width of a neighbouring cell of the level and far above
      * the rounding of the crossing itself */
     double nudge = s2cell_shortest_edge(verts) * 1e-4 / arc.dist;
-    double tn = texit + nudge;
+    double tn = texit + nudge, tin = texit;
     S2CellId next = (S2CellId) 0;
     /* A nudge that lands back in the cell just left says the crossing sits
      * within its own rounding, so widen it rather than stall. A crossing
@@ -892,6 +935,7 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
       next = s2cell_arc_cell(&arc, tn, level);
       if (next == (S2CellId) 0 || next != cur || tn >= 1.0)
         break;
+      tin = tn;
       tn += nudge * (double) (1 << k);
     }
     if (next == (S2CellId) 0)
@@ -906,7 +950,13 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
       t = texit;
       continue;
     }
-    cells[n] = next; enter[n] = texit; n++;
+    /* A crossing the path is still in the cell past is one the rounding of an
+     * edge the path runs along places where the path is: the probes bracket
+     * the crossing, and halving the bracket closes on it */
+    cells[n] = next;
+    enter[n] = (tin > texit) ?
+      dggs_crossing_param(tin, tn, cur, &s2cell_path_cell_at, &path) : texit;
+    n++;
     cur = next;
     t = tn;
   }
