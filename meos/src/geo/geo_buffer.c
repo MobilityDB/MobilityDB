@@ -904,7 +904,7 @@ buffer_areal_contains_point(const LWGEOM *geom, double x, double y)
   Edge **edges = palloc(sizeof(Edge *) * nedges);
   for (int i = 0; i < nedges; i++)
     edges[i] = (Edge *) meos_array_get(arr, i);
-  if (relate_point_on_boundary(x, y, edges, nedges))
+  if (relate_point_on_boundary(x, y, edges, nedges, false))
   {
     pfree(edges);
     meos_array_destroy(arr);
@@ -1461,7 +1461,7 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
   }
   if (loc->re.nedges == 0)
     return 2;
-  return relate_point_in_area_index(x, y, &loc->re);
+  return relate_point_in_area_index(x, y, &loc->re, false);
 }
 
 /**

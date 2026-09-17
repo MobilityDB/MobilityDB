@@ -99,11 +99,17 @@ rtree_query_srid(const RTree *rtree)
  * @param[in] xmax Greatest x the edges reach, which bounds the ray
  * @param[in] results Array the index search collects its ids into, made by
  * #index_result_create, or @p NULL when @p rtree is @p NULL
+ * @param[in] vertex True if the point is an input vertex, which lies on an
+ * edge, and on either side of the crossing of a ray cast at its own height,
+ * exactly where its coordinates say so
  */
-static inline int
+static pg_attribute_always_inline int
 point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
-  const RTree *rtree, double xmax, MeosArray *results)
+  const RTree *rtree, double xmax, MeosArray *results, bool vertex)
 {
+  /* Every caller passes @p vertex as a constant, and the function is inlined
+   * into each, so a caller asking about a constructed point runs a loop that
+   * holds no test of an input vertex at all */
   int inside = 0;
   /* The height the ray is cast at. A ray at the height of a vertex meets the
    * two edges sharing it in the one point they share, and which of the two
@@ -120,6 +126,9 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
   {
     bool shared = false;
     inside = 0;
+    /* The ray is cast at the height of an input vertex, which places it
+     * against each crossing exactly */
+    const bool at_vertex = vertex && ry == y;
     int n = nedges;
     if (rtree)
     {
@@ -168,7 +177,12 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
       double tol = e->tol;
       if (e->etype == EDGE_POLYARC)
         tol = fmax(tol, MEOS_GEOM_TOLERANCE * e->radius);
-      if (fabs(e->y1 - ry) <= tol || fabs(e->y2 - ry) <= tol)
+      /* An input vertex is placed against a segment by the half-open rule
+       * below, read exactly, which gives a crossing at an end two segments
+       * share to one of them and only one, so for it the ray is moved only
+       * where an arc has an end on it */
+      if ((fabs(e->y1 - ry) <= tol || fabs(e->y2 - ry) <= tol) &&
+          (! at_vertex || e->etype == EDGE_POLYARC))
       {
         shared = true;
         /* The ray has to clear the end by more than that same distance, and
@@ -185,8 +199,12 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 
       if (e->etype == EDGE_POLYARC)
       {
-        /* Boundary check, which reads the point itself rather than the ray */
-        if (point_on_arc(x, y, e))
+        /* Boundary check, which reads the point itself rather than the ray.
+         * An input vertex lies on the circle of the arc exactly where its
+         * coordinates say so (#point_on_arc_circle) */
+        if (vertex ? (point_on_arc_circle(e, x, y) &&
+              arc_contains_angle(e, atan2(y - e->cy, x - e->cx))) :
+            point_on_arc(x, y, e))
           return 1;
         /* Cast a ray towards +x. The horizontal line at height ry meets the
          * supporting circle at cx +/- sqrt(r^2 - (ry - cy)^2); flip the parity
@@ -203,10 +221,28 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
           continue;
         const double h = sqrt(h2);
         const double xhit[2] = {e->cx - h, e->cx + h};
+        /* A ray cast at the height of an input vertex meets the circle right
+         * of the vertex past the centre where the vertex lies inside the
+         * circle, and before the centre where it lies outside it and left of
+         * the centre. Where a crossing, a constructed value, falls within the
+         * tolerance of the arc from the vertex, that side is decided exactly
+         * (#arc_circle_side), and read once for the edge; farther off, the
+         * comparison of the two decides it. The side of the centre is read
+         * from the constructed centre, which errs only where the ray grazes
+         * the circle */
+        int side = 2;
         for (int k = 0; k < 2; k++)
         {
           const double xi = xhit[k];
-          if (xi <= x)
+          if (at_vertex && fabs(xi - x) <= tol)
+          {
+            if (side == 2)
+              side = arc_circle_side(e, x, y);
+            if (k == 1 ? (x >= e->cx && side >= 0) :
+                (x >= e->cx || side <= 0))
+              continue;
+          }
+          else if (xi <= x)
             continue;
           const double phi = atan2(dyc, xi - e->cx);
           if (! arc_contains_angle(e, phi))
@@ -232,11 +268,22 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
        * cross and dot products are BOTH zero wherever the point is, and the
        * bounding-box rejection the shared test opens with is what keeps such
        * an edge from claiming every point of the plane as its own */
-      if (point_on_segment_within(x, y, x1, y1, e->x2, e->y2, e->tol))
+      if (vertex ? point_on_segment_exact(x, y, x1, y1, e->x2, e->y2) :
+          point_on_segment_within(x, y, x1, y1, e->x2, e->y2, e->tol))
         return 1;
 
-      /* Ray casting */
-      if ((y1 > ry) != ((y1 + dy) > ry))
+      /* Ray casting. At the height of an input vertex the side of the edge
+       * the vertex lies on is the sign of a cross product of input
+       * coordinates, decided exactly (#cross_product_sign) */
+      if (at_vertex)
+      {
+        if ((y1 > y) != (e->y2 > y))
+        {
+          int s = cross_product_sign(x1, y1, e->x2, e->y2, x1, y1, x, y);
+          inside ^= ((e->y2 > y1) ? (s > 0) : (s < 0));
+        }
+      }
+      else if ((y1 > ry) != ((y1 + dy) > ry))
       {
         const double rhs = dx * (ry - y1);
         const double lhs = dxp * dy;
@@ -258,7 +305,19 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 int
 point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
-  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL);
+  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL, false);
+}
+
+/**
+ * @brief Return true if an input vertex is located in a polygon, scanning
+ * every edge
+ * @details The vertex lies on an edge, and on either side of a crossing of the
+ * ray cast from it, exactly where its coordinates say so
+ */
+int
+point_in_polygon_vertex(double x, double y, Edge **edges, int nedges)
+{
+  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL, true);
 }
 
 /**
@@ -274,7 +333,7 @@ point_in_polygon_index(double x, double y, Edge **edges, int nedges,
   const RTree *rtree, double xmax)
 {
   if (! rtree)
-    return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL);
+    return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL, false);
   /* The ids are collected into an array this call owns. The per-thread array
    * of the clip context lives only as long as the context that makes it, and
    * the memory an array is allocated in may be released once the call that
@@ -282,7 +341,27 @@ point_in_polygon_index(double x, double y, Edge **edges, int nedges,
    * released */
   MeosArray *results = index_result_create();
   int result = point_in_polygon_impl(x, y, edges, nedges, rtree, xmax,
-    results);
+    results, false);
+  meos_array_destroy(results);
+  return result;
+}
+
+/**
+ * @brief Return true if an input vertex is located in a polygon, reading the
+ * edges the ray from it can meet out of an index
+ * @details The answer is the one #point_in_polygon_vertex gives, and the ids
+ * are collected into an array this call owns, as #point_in_polygon_index
+ * collects them
+ */
+int
+point_in_polygon_index_vertex(double x, double y, Edge **edges, int nedges,
+  const RTree *rtree, double xmax)
+{
+  if (! rtree)
+    return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL, true);
+  MeosArray *results = index_result_create();
+  int result = point_in_polygon_impl(x, y, edges, nedges, rtree, xmax,
+    results, true);
   meos_array_destroy(results);
   return result;
 }
@@ -651,7 +730,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     double x = ax + tm * rx;
     double y = ay + tm * ry;
     if (point_in_polygon_impl(x, y, all_edges, all_nedges, rtree, xmax,
-          rtree_results))
+          rtree_results, false))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
@@ -1977,7 +2056,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
   if (! result && edges_have_area(ctx->edge_ptrs, ctx->nedges))
     for (int i = 0; i < n && ! result; i++)
       if (point_in_polygon_impl(ptr[i]->x1, ptr[i]->y1, ctx->edge_ptrs,
-            ctx->nedges, ctx->rtree, ctx->box.xmax, rtree_results))
+            ctx->nedges, ctx->rtree, ctx->box.xmax, rtree_results, true))
         result = true;
   if (! result && edges_have_area(ptr, n))
     for (int i = 0; i < ctx->nedges && ! result; i++)
@@ -2539,7 +2618,7 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
         return true;
   }
   return point_in_polygon_impl(px, py, edges, nedges, rtree, xmax,
-    rtree_results) ? true : false;
+    rtree_results, false) ? true : false;
 }
 
 /**

@@ -275,6 +275,11 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     {
       Edge e;
       e.cx = mx; e.cy = my; e.radius = radius;
+      /* Both halves lie on the circle on the diameter between the two input
+       * points, which an exact question about it reads */
+      e.sx = pa->x; e.sy = pa->y; e.ex = pb->x; e.ey = pb->y;
+      e.mx = e.my = 0.0;
+      e.diameter = true;
       e.x1 = sx[i]; e.y1 = sy[i];
       e.x2 = ex[i]; e.y2 = ey[i];
       e.theta0 = t0[i]; e.theta1 = t1[i];
@@ -327,6 +332,11 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.radius = hypot(ax - e.cx, ay - e.cy);
   /* Carried back to where the points came from */
   e.cx += ox; e.cy += oy;
+  /* The three input points fix the circle, and an exact question about it
+   * reads them rather than the centre constructed from them */
+  e.sx = pa->x; e.sy = pa->y; e.mx = pb->x; e.my = pb->y;
+  e.ex = pc->x; e.ey = pc->y;
+  e.diameter = false;
   e.x1 = ax + ox; e.y1 = ay + oy;
   e.x2 = cx + ox; e.y2 = cy + oy;
   e.theta0 = atan2(e.y1 - e.cy, e.x1 - e.cx);
@@ -814,6 +824,289 @@ cross_product_exact(double ax, double ay, double bx, double by, double cx,
   for (int i = 0; i < elen; i++)
     sum += e[i];
   return sum;
+}
+
+/*****************************************************************************
+ * The circle of an arc, decided exactly on its input points
+ *****************************************************************************/
+
+/**
+ * @brief Split the sum of two doubles into its rounded value and the error of
+ * that rounding, which together are the sum exactly
+ */
+static inline void
+two_sum(double a, double b, double *x, double *y)
+{
+  *x = a + b;
+  double bv = *x - a;
+  double av = *x - bv;
+  *y = (a - av) + (b - bv);
+}
+
+/**
+ * @brief Multiply an expansion by a double exactly, and return the length of
+ * the product
+ * @details Each component times the double is its rounded value plus its
+ * error (#two_product), and the terms are carried through in increasing order
+ * of magnitude, so the product is again an expansion, its zero components
+ * dropped and its last component carrying its sign
+ * @param[out] h Room for 2 * elen components
+ */
+static int
+scale_expansion(int elen, const double *e, double b, double *h)
+{
+  int hlen = 0;
+  double q, hh;
+  two_product(e[0], b, &q, &hh);
+  if (hh != 0.0)
+    h[hlen++] = hh;
+  for (int i = 1; i < elen; i++)
+  {
+    double p1, p0, sum;
+    two_product(e[i], b, &p1, &p0);
+    two_sum(q, p0, &sum, &hh);
+    if (hh != 0.0)
+      h[hlen++] = hh;
+    two_sum(p1, sum, &q, &hh);
+    if (hh != 0.0)
+      h[hlen++] = hh;
+  }
+  if (q != 0.0 || hlen == 0)
+    h[hlen++] = q;
+  return hlen;
+}
+
+/**
+ * @brief Add two expansions exactly, and return the length of the sum
+ * @details Each component of the second is added into the first
+ * (#grow_expansion); the sum is left in @p h, which may be @p e itself
+ * @param[out] h Room for elen + flen components
+ * @param tmp Scratch of the same room
+ */
+static int
+expansion_sum(int elen, const double *e, int flen, const double *f,
+  double *h, double *tmp)
+{
+  double *cur = h, *nxt = tmp;
+  if (cur != e)
+    memcpy(cur, e, (size_t) elen * sizeof(double));
+  int len = elen;
+  for (int i = 0; i < flen; i++)
+  {
+    len = grow_expansion(len, cur, f[i], nxt);
+    double *swap = cur; cur = nxt; nxt = swap;
+  }
+  if (cur != h)
+    memcpy(h, cur, (size_t) len * sizeof(double));
+  return len;
+}
+
+/**
+ * @brief Multiply two expansions exactly, and return the length of the
+ * product
+ * @param[out] h Room for 2 * elen * flen components
+ * @param tmp,part Scratch of that room and of 2 * elen components
+ */
+static int
+expansion_product(int elen, const double *e, int flen, const double *f,
+  double *h, double *tmp, double *part)
+{
+  int hlen = 0;
+  for (int j = 0; j < flen; j++)
+  {
+    int plen = scale_expansion(elen, e, f[j], part);
+    if (hlen == 0)
+    {
+      memcpy(h, part, (size_t) plen * sizeof(double));
+      hlen = plen;
+    }
+    else
+      hlen = expansion_sum(hlen, h, plen, part, h, tmp);
+  }
+  return hlen;
+}
+
+/**
+ * @brief Return the sign of the incircle determinant of four points, computed
+ * exactly from their coordinates
+ * @details Each coordinate difference is its rounded value plus the error of
+ * the rounding (#two_diff), the three lifts and the three cross products are
+ * formed from those as expansions, and the three terms are added, so the last
+ * component of the sum carries the sign of the determinant
+ * @note Exact where no product of coordinate differences overflows or
+ * underflows
+ */
+static int
+incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  /* The differences A - D, B - D and C - D, x then y */
+  const double from[6] = {ax, ay, bx, by, cx, cy};
+  const double to[6] = {dx, dy, dx, dy, dx, dy};
+  double v[6][2];
+  int vl[6];
+  for (int i = 0; i < 6; i++)
+  {
+    double x, y;
+    two_diff(from[i], to[i], &x, &y);
+    vl[i] = 0;
+    if (y != 0.0)
+      v[i][vl[i]++] = y;
+    if (x != 0.0 || vl[i] == 0)
+      v[i][vl[i]++] = x;
+  }
+  double pa[8], pb[8], scratch[16], part[4];
+  /* The lifts |A - D|^2, |B - D|^2, |C - D|^2 */
+  double lift[3][16];
+  int liftl[3];
+  for (int k = 0; k < 3; k++)
+  {
+    const double *x = v[2 * k], *y = v[2 * k + 1];
+    int lx = vl[2 * k], ly = vl[2 * k + 1];
+    int l1 = expansion_product(lx, x, lx, x, pa, scratch, part);
+    int l2 = expansion_product(ly, y, ly, y, pb, scratch, part);
+    liftl[k] = expansion_sum(l1, pa, l2, pb, lift[k], scratch);
+  }
+  /* The cross products of (B, C), (C, A) and (A, B), each point taken from D */
+  static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
+  double cross[3][16];
+  int crossl[3];
+  for (int k = 0; k < 3; k++)
+  {
+    int u = cu[k], w = cv[k];
+    int l1 = expansion_product(vl[u], v[u], vl[w + 1], v[w + 1], pa, scratch,
+      part);
+    int l2 = expansion_product(vl[w], v[w], vl[u + 1], v[u + 1], pb, scratch,
+      part);
+    for (int i = 0; i < l2; i++)
+      pb[i] = - pb[i];
+    crossl[k] = expansion_sum(l1, pa, l2, pb, cross[k], scratch);
+  }
+  /* The determinant, the sum of each lift times the cross product of the
+   * other two points */
+  double term[512], tmp[512], part2[32], acc[1536], acc2[1536];
+  int accl = 0;
+  for (int k = 0; k < 3; k++)
+  {
+    int tl = expansion_product(liftl[k], lift[k], crossl[k], cross[k], term,
+      tmp, part2);
+    if (accl == 0)
+    {
+      memcpy(acc, term, (size_t) tl * sizeof(double));
+      accl = tl;
+    }
+    else
+      accl = expansion_sum(accl, acc, tl, term, acc, acc2);
+  }
+  double top = acc[accl - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief Return the sign of the incircle determinant of four points, decided
+ * exactly
+ * @details Positive where D lies inside the circle through A, B and C taken
+ * counterclockwise, negative where it lies outside, and 0 exactly where the
+ * four points lie on one circle. The determinant is evaluated in double and
+ * read against Shewchuk's bound for it, formed from its own terms; a filter,
+ * never a tolerance, since where the bound cannot tell the exact sign is
+ * computed (#incircle_sign_exact)
+ */
+static int
+incircle_sign(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  double adx = ax - dx, ady = ay - dy, bdx = bx - dx, bdy = by - dy;
+  double cdx = cx - dx, cdy = cy - dy;
+  double bdxcdy = bdx * cdy, cdxbdy = cdx * bdy;
+  double cdxady = cdx * ady, adxcdy = adx * cdy;
+  double adxbdy = adx * bdy, bdxady = bdx * ady;
+  double alift = adx * adx + ady * ady;
+  double blift = bdx * bdx + bdy * bdy;
+  double clift = cdx * cdx + cdy * cdy;
+  double det = alift * (bdxcdy - cdxbdy) + blift * (cdxady - adxcdy) +
+    clift * (adxbdy - bdxady);
+  double permanent = (fabs(bdxcdy) + fabs(cdxbdy)) * alift +
+    (fabs(cdxady) + fabs(adxcdy)) * blift +
+    (fabs(adxbdy) + fabs(bdxady)) * clift;
+  double bound = (10.0 + 96.0 * DBL_EPSILON) * DBL_EPSILON * permanent;
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return incircle_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
+}
+
+/**
+ * @brief Return true if a point lies exactly on the circle of an arc
+ * @details The circle is the one the arc's input points fix: its start, middle
+ * and end, or the two ends of the diameter of a half of a full circle. A point
+ * lies on the first where it is cocircular with the three (#incircle_sign),
+ * and on the second where it sees the diameter at a right angle, the vectors
+ * to its two ends then having a zero dot product (Thales), which is the sign
+ * of a cross product (#cross_product_sign). Either way an input point is put
+ * on the circle or off it exactly, at every scale, which the radial distance
+ * from a constructed centre cannot do
+ */
+bool
+point_on_arc_circle(const Edge *e, double qx, double qy)
+{
+  if ((qx == e->sx && qy == e->sy) || (qx == e->ex && qy == e->ey) ||
+      (! e->diameter && qx == e->mx && qy == e->my))
+    return true;
+  if (e->diameter)
+    /* (q - s) . (q - e), written as the cross product of q - s with the
+     * vector (e.y - q.y, q.x - e.x) */
+    return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx) ==
+      0;
+  return incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey, qx, qy) == 0;
+}
+
+/**
+ * @brief Return the side of the circle of an arc a point lies on, decided
+ * exactly: -1 inside it, 0 on it, 1 outside it
+ * @details The circle is the one #point_on_arc_circle reads. For a half of a
+ * full circle the side is the sign of the dot product of the vectors from the
+ * point to the two ends of the diameter, negative where the point sees the
+ * diameter at an obtuse angle, which is inside (Thales). For an arc given by
+ * three points it is the sign of #incircle_sign, positive inside the circle
+ * of three points turning counterclockwise, read against the turn they make
+ */
+int
+arc_circle_side(const Edge *e, double qx, double qy)
+{
+  if (e->diameter)
+    return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
+  int turn = cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy,
+    e->ex, e->ey);
+  return - turn * incircle_sign(e->sx, e->sy, e->mx, e->my, e->ex, e->ey,
+    qx, qy);
+}
+
+/**
+ * @brief Return true if two arcs lie on one circle, decided exactly
+ * @details Three input points fix a circle, so an arc defined by three lies on
+ * the circle of another exactly where its three points do
+ * (#point_on_arc_circle). Two halves of full circles lie on one circle where
+ * the ends of each diameter lie on the other. The portions of one arc carry
+ * its input points unchanged, which answers them without arithmetic
+ */
+bool
+arc_same_circle(const Edge *a, const Edge *b)
+{
+  if (a->diameter == b->diameter && a->sx == b->sx && a->sy == b->sy &&
+      a->ex == b->ex && a->ey == b->ey &&
+      (a->diameter || (a->mx == b->mx && a->my == b->my)))
+    return true;
+  const Edge *t = b->diameter ? a : b, *o = b->diameter ? b : a;
+  if (! t->diameter)
+    return point_on_arc_circle(o, t->sx, t->sy) &&
+      point_on_arc_circle(o, t->mx, t->my) &&
+      point_on_arc_circle(o, t->ex, t->ey);
+  return point_on_arc_circle(o, t->sx, t->sy) &&
+    point_on_arc_circle(o, t->ex, t->ey) &&
+    point_on_arc_circle(t, o->sx, o->sy) &&
+    point_on_arc_circle(t, o->ex, o->ey);
 }
 
 /*****************************************************************************
@@ -2635,9 +2928,11 @@ static bool relate_same_point(double x1, double y1, double x2, double y2);
 static bool
 meos_curve_edges_simple(Edge **edges, int nedges)
 {
+  /* The two ends are input vertices, so the curve is closed exactly when they
+   * are the same point */
   bool closed = nedges > 1 &&
-    relate_same_point(edges[0]->x1, edges[0]->y1,
-      edges[nedges - 1]->x2, edges[nedges - 1]->y2);
+    edges[0]->x1 == edges[nedges - 1]->x2 &&
+    edges[0]->y1 == edges[nedges - 1]->y2;
   for (int i = 0; i < nedges; i++)
     for (int j = i + 1; j < nedges; j++)
     {
@@ -3674,11 +3969,18 @@ ensure_circle_type(const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @brief Return true if a point lies on the boundary of a geometry
- * @details Uses the exact line/arc engine
+ * @brief Scan the boundary edges of an array for one that carries a point
+ * @details An input vertex lies on a boundary segment or on the circle of a
+ * boundary arc exactly where its coordinates say so (#point_on_segment_exact,
+ * #point_on_arc_circle); a constructed point is read within the rounding its
+ * edge carries
+ * @param[in] x,y Coordinates of the point
+ * @param[in] edges,nedges Edge array
+ * @param[in] vertex True if the point is an input vertex
  */
-bool
-relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
+static pg_attribute_always_inline bool
+relate_point_on_boundary_scan(double x, double y, Edge **edges, int nedges,
+  bool vertex)
 {
   for (int i = 0; i < nedges; i++)
   {
@@ -3686,12 +3988,17 @@ relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
     switch (e->etype)
     {
       case EDGE_POLYSEG:
-        if (point_on_segment_within(x, y, e->x1, e->y1, e->x2, e->y2,
+        if (vertex ?
+            point_on_segment_exact(x, y, e->x1, e->y1, e->x2, e->y2) :
+            point_on_segment_within(x, y, e->x1, e->y1, e->x2, e->y2,
               e->tol))
           return true;
         break;
       case EDGE_POLYARC:
-        if (point_on_arc(x, y, e))
+        if (vertex ?
+            (point_on_arc_circle(e, x, y) &&
+              arc_contains_angle(e, atan2(y - e->cy, x - e->cx))) :
+            point_on_arc(x, y, e))
           return true;
         break;
       case EDGE_POINT:
@@ -3704,18 +4011,40 @@ relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
 }
 
 /**
+ * @brief Return true if a point lies on the boundary of a geometry
+ * @details The scan over the edges (#relate_point_on_boundary_scan) is
+ * compiled once for an input vertex and once for a constructed point, and the
+ * one asked is chosen here, so neither loop tests which kind of point it reads
+ * @param[in] x,y Coordinates of the point
+ * @param[in] edges,nedges Edge array
+ * @param[in] vertex True if the point is an input vertex
+ */
+bool
+relate_point_on_boundary(double x, double y, Edge **edges, int nedges,
+  bool vertex)
+{
+  return vertex ?
+    relate_point_on_boundary_scan(x, y, edges, nedges, true) :
+    relate_point_on_boundary_scan(x, y, edges, nedges, false);
+}
+
+/**
  * @brief Classify a point with respect to an areal geometry
  * @details Return:
  *   0 = interior
  *   1 = boundary
  *   2 = exterior
+ * @param[in] vertex True if the point is an input vertex
+ * (#relate_point_on_boundary)
  */
 int
-relate_point_in_area(double x, double y, Edge **edges, int nedges)
+relate_point_in_area(double x, double y, Edge **edges, int nedges,
+  bool vertex)
 {
-  if (relate_point_on_boundary(x, y, edges, nedges))
+  if (relate_point_on_boundary(x, y, edges, nedges, vertex))
     return 1;
-  return point_in_polygon(x, y, edges, nedges) ? 0 : 2;
+  return (vertex ? point_in_polygon_vertex(x, y, edges, nedges) :
+    point_in_polygon(x, y, edges, nedges)) ? 0 : 2;
 }
 
 /* Indexing one edge array costs one insertion per edge, while walking it once
@@ -3807,10 +4136,11 @@ relate_edges_clear(RelateEdges *re)
  * answers are the ones the scan finds
  */
 static bool
-relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
+relate_point_on_boundary_index(double x, double y, const RelateEdges *re,
+  bool vertex)
 {
   if (! re->index)
-    return relate_point_on_boundary(x, y, re->edges, re->nedges);
+    return relate_point_on_boundary(x, y, re->edges, re->nedges, vertex);
   STBox query;
   stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
     y + re->tol, 0, 0, NULL, &query);
@@ -3820,7 +4150,7 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
   for (int c = 0; c < nc && ! result; c++)
   {
     Edge *one = re->edges[INDEX_RESULT_ID_N(candidates, c)];
-    result = relate_point_on_boundary(x, y, &one, 1);
+    result = relate_point_on_boundary(x, y, &one, 1, vertex);
   }
   meos_array_destroy(candidates);
   return result;
@@ -3834,14 +4164,19 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
  * point nor crosses the ray cast from it
  */
 int
-relate_point_in_area_index(double x, double y, const RelateEdges *re)
+relate_point_in_area_index(double x, double y, const RelateEdges *re,
+  bool vertex)
 {
-  if (relate_point_on_boundary_index(x, y, re))
+  if (relate_point_on_boundary_index(x, y, re, vertex))
     return 1;
   if (! re->index)
-    return point_in_polygon(x, y, re->edges, re->nedges) ? 0 : 2;
-  return point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
-    re->xmax) ? 0 : 2;
+    return (vertex ? point_in_polygon_vertex(x, y, re->edges, re->nedges) :
+      point_in_polygon(x, y, re->edges, re->nedges)) ? 0 : 2;
+  return (vertex ?
+    point_in_polygon_index_vertex(x, y, re->edges, re->nedges, re->index,
+      re->xmax) :
+    point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
+      re->xmax)) ? 0 : 2;
 }
 
 /**
@@ -3921,7 +4256,8 @@ static void relate_area_add_parameter(double t, double *params, int *nparams,
 static int relate_area_parameter_cmp(const void *a, const void *b);
 static int relate_area_edge_intersection(const Edge *a, const Edge *b,
   double ix[2], double iy[2], bool *overlap);
-static bool relate_point_on_edge(double x, double y, const Edge *e);
+static bool relate_point_on_edge(double x, double y, const Edge *e,
+  bool vertex);
 
 /**
  * @brief One operand of a relationship, together with the edges it draws
@@ -4273,12 +4609,42 @@ relate_dimension(const LWGEOM *geom)
  *****************************************************************************/
 
 /**
- * @brief Return true if two points are equal within the MEOS tolerance.
+ * @brief Return true if two coordinates of constructed points differ by at
+ * most #coordinate_rounding
+ * @details That rounding grows with the larger magnitude, which is at most the
+ * magnitude of the first coordinate plus their difference. A difference within
+ * the rounding of the first coordinate is therefore one coordinate, and a
+ * difference above twice that rounding is two. Only the narrow range between
+ * reads the magnitude of the second, so the answer to most calls, two
+ * coordinates far apart, costs a comparison with a value of the first alone
+ */
+static inline bool
+relate_same_coordinate(double c1, double c2)
+{
+  double d = fabs(c1 - c2);
+  double r1 = coordinate_rounding(c1, c1);
+  if (d > 2.0 * r1)
+    return false;
+  if (d <= r1)
+    return true;
+  return d <= coordinate_rounding(c1, c2);
+}
+
+/**
+ * @brief Return true if two points the engine constructed are one point
+ * @details A point constructed from input coordinates, such as the end of a
+ * boundary portion or an intersection, misses where it should land by the
+ * rounding of its coordinates (#coordinate_rounding), so two constructions of
+ * one point agree within that distance. The distance scales with the
+ * coordinates: an absolute one reads two distinct points as one once they
+ * stand closer than it, whatever the size of the geometry around them, and
+ * the same pair scaled by a power of two answers differently at two sizes.
+ * Two input vertices are compared exactly (#relate_points_equal).
  */
 static inline bool
 relate_same_point(double x1, double y1, double x2, double y2)
 {
-  return fabs(x1 - x2) <= MEOS_GEOM_TOLERANCE && fabs(y1 - y2) <= MEOS_GEOM_TOLERANCE;
+  return relate_same_coordinate(x1, x2) && relate_same_coordinate(y1, y2);
 }
 
 /**
@@ -4296,7 +4662,7 @@ relate_edge_nonempty(const Edge *e)
  * @brief Return true if two points are one point
  * @details Two input vertices are one point exactly where their coordinates
  * are equal. A constructed point is rounded, and reads as another point
- * within the MEOS tolerance
+ * within the rounding of their coordinates (#relate_same_point)
  * @param[in] x1,y1,x2,y2 Coordinates of the two points
  * @param[in] vertex True if both points are input vertices
  */
@@ -4606,7 +4972,8 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
    * it. A point geometry has an empty boundary, so its boundary row stays F */
   for (int i = 0; i < np; i++)
   {
-    switch (relate_point_in_area(points[i].x, points[i].y, edges, nedges))
+    switch (relate_point_in_area(points[i].x, points[i].y, edges, nedges,
+      true))
     {
       case 0:
         de9im_add(&m->ii, 0);
@@ -4827,16 +5194,6 @@ relate_add_parameter(double t, double *params, int *nparams, int maxparams)
     params[(*nparams)++] = t;
 }
 
-/**
- * @brief Return true if two arcs lie on the same supporting circle.
- */
-static bool
-relate_same_circle(const Edge *a, const Edge *b)
-{
-  return fabs(a->cx - b->cx) <= MEOS_GEOM_TOLERANCE &&
-         fabs(a->cy - b->cy) <= MEOS_GEOM_TOLERANCE &&
-         fabs(a->radius - b->radius) <= MEOS_GEOM_TOLERANCE;
-}
 
 /**
  * @brief Return true if two circular arcs overlap in a non-zero-length
@@ -4849,7 +5206,7 @@ relate_same_circle(const Edge *a, const Edge *b)
 static bool
 relate_arcs_overlap(const Edge *a, const Edge *b)
 {
-  if (!relate_same_circle(a, b))
+  if (! arc_same_circle(a, b))
     return false;
 
   /* Collect the four endpoint parameters of b with respect to a.
@@ -4929,15 +5286,9 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
   bool *overlap)
 {
   *overlap = false;
-  double dx = b->cx - a->cx;
-  double dy = b->cy - a->cy;
-  double d = hypot(dx, dy);
-
-  /* Coincident supporting circles */
-  if (d <= MEOS_GEOM_TOLERANCE)
+  /* One supporting circle */
+  if (arc_same_circle(a, b))
   {
-    if (fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE)
-      return 0;
     if (relate_arcs_overlap(a, b))
     {
       *overlap = true;
@@ -4961,16 +5312,22 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
     return n;
   }
 
-  /* Disjoint supporting circles */
-  if (d > a->radius + b->radius + MEOS_GEOM_TOLERANCE ||
-      d < fabs(a->radius - b->radius) - MEOS_GEOM_TOLERANCE)
+  double dx = b->cx - a->cx;
+  double dy = b->cy - a->cy;
+  double d = hypot(dx, dy);
+  /* Two circles about one centre never meet */
+  if (d == 0.0)
     return 0;
   double aa = (d * d + a->radius * a->radius - b->radius * b->radius) /
     (2.0 * d);
   double h2 = a->radius * a->radius - aa * aa;
-  if (h2 < 0.0)
-    h2 = 0.0;
-  double h = sqrt(h2);
+  /* The square of the half-chord read against the rounding of its own terms:
+   * below it the circles are separate or nested, within it tangent */
+  double bound = arc_half_chord_rounding(d, a->radius, b->radius, aa);
+  if (h2 < - bound)
+    return 0;
+  bool tangent = h2 <= bound;
+  double h = tangent ? 0.0 : sqrt(h2);
   double ux = dx / d;
   double uy = dy / d;
   double mx = a->cx + aa * ux;
@@ -4995,7 +5352,7 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
     x[n] = px;
     y[n] = py;
     n++;
-    if (h <= MEOS_GEOM_TOLERANCE)
+    if (tangent)
       break;
   }
   return n;
@@ -5150,7 +5507,7 @@ relate_linear_area_interval(const Edge *line, double t0, double t1,
   double tm = (t0 + t1) * 0.5;
   double x, y;
   relate_edge_point(line, tm, &x, &y);
-  int loc = relate_point_in_area(x, y, area_edges, narea);
+  int loc = relate_point_in_area(x, y, area_edges, narea, false);
   switch (loc)
   {
     case 0:
@@ -5256,7 +5613,7 @@ relate_intervals_cover(RelateInterval *intervals, int count)
 static int
 relate_arc_overlap_ranges(const Edge *a, const Edge *b, RelateInterval *out)
 {
-  if (! relate_same_circle(a, b))
+  if (! arc_same_circle(a, b))
     return 0;
 
   /* Candidate interval bounds: the ends of a, plus the ends of b that lie
@@ -5747,7 +6104,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       int lloc = relate_point_in_linear(x, y, lines, nl, true);
       if (lloc == 2)
         continue;
-      int aloc = relate_point_in_area(x, y, area_edges, na);
+      int aloc = relate_point_in_area(x, y, area_edges, na, true);
       if (lloc == 0)
       {
         /* Linear interior ∩ area. An endpoint contributes dimension 0, which
@@ -5810,7 +6167,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       {
         if (!relate_point_on_linear_boundary(x[k], y[k], lines, nl, true))
           continue;
-        int aloc = relate_point_in_area(x[k], y[k], area_edges, na);
+        int aloc = relate_point_in_area(x[k], y[k], area_edges, na, true);
         if (aloc == 2)
           m->be = 0;
       }
@@ -5982,6 +6339,10 @@ relate_area_edge_point(const Edge *e, double t, double *x, double *y)
 
 /**
  * @brief Return the parameter of a point on a polygon boundary edge.
+ * @details The parameter is read along the coordinate the edge advances most
+ * along. The ends of a segment are input vertices, so it has no direction
+ * exactly where they are equal, and any other segment, however short, gives
+ * each point along it a parameter of its own
  */
 static double
 relate_area_edge_parameter(const Edge *e, double x, double y)
@@ -5991,17 +6352,8 @@ relate_area_edge_parameter(const Edge *e, double x, double y)
     double dx = e->x2 - e->x1;
     double dy = e->y2 - e->y1;
     if (fabs(dx) >= fabs(dy))
-    {
-      if (fabs(dx) <= MEOS_GEOM_TOLERANCE)
-        return 0.0;
-      return (x - e->x1) / dx;
-    }
-    else
-    {
-      if (fabs(dy) <= MEOS_GEOM_TOLERANCE)
-        return 0.0;
-      return (y - e->y1) / dy;
-    }
+      return (dx == 0.0) ? 0.0 : (x - e->x1) / dx;
+    return (y - e->y1) / dy;
   }
   return relate_arc_parameter(e, x, y);
 }
@@ -6142,7 +6494,7 @@ relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
     /* Midpoint of the circular arc */
     relate_area_edge_point(edge, 0.5, &x, &y);
   }
-  return relate_point_in_area_index(x, y, area) == 0;
+  return relate_point_in_area_index(x, y, area, false) == 0;
 }
 
 /**
@@ -6197,13 +6549,13 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
       /* The two boundary edges share a one-dimensional portion. Add the
        * endpoints of that portion as split parameters. This is mainly needed
        * for the classification of the remaining portions. */
-      if (relate_point_on_edge(oedge->x1, oedge->y1, edge))
+      if (relate_point_on_edge(oedge->x1, oedge->y1, edge, false))
       {
         relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x1,
           oedge->y1), params, &nparams, maxparams);
       }
 
-      if (relate_point_on_edge(oedge->x2, oedge->y2, edge))
+      if (relate_point_on_edge(oedge->x2, oedge->y2, edge, false))
       {
         relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x2,
           oedge->y2), params, &nparams, maxparams);
@@ -6388,9 +6740,9 @@ relate_area_has_vertex_interior(const RelateEdges *self,
     const Edge *e = self->edges[i];
     if (!relate_area_boundary_edge(e))
       continue;
-    if (relate_point_in_area_index(e->x1, e->y1, other) == 0)
+    if (relate_point_in_area_index(e->x1, e->y1, other, false) == 0)
       return true;
-    if (relate_point_in_area_index(e->x2, e->y2, other) == 0)
+    if (relate_point_in_area_index(e->x2, e->y2, other, false) == 0)
       return true;
   }
   return false;
@@ -6464,7 +6816,7 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
     double eps = fmax(size * 1e-9, 10.0 * self->tol);
     double qx = px + eps * nx;
     double qy = py + eps * ny;
-    if (relate_point_in_area_index(qx, qy, self) == 0)
+    if (relate_point_in_area_index(qx, qy, self, false) == 0)
     {
       *x = qx;
       *y = qy;
@@ -6472,7 +6824,7 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
     }
     qx = px - eps * nx;
     qy = py - eps * ny;
-    if (relate_point_in_area_index(qx, qy, self) == 0)
+    if (relate_point_in_area_index(qx, qy, self, false) == 0)
     {
       *x = qx;
       *y = qy;
@@ -6505,7 +6857,7 @@ relate_area_interior_point_located(const RelateEdges *self,
     double x, y;
     if (! relate_area_edge_interior_point(self->edges[i], self, &x, &y))
       continue;
-    if (relate_point_in_area_index(x, y, other) == location)
+    if (relate_point_in_area_index(x, y, other, false) == location)
       return true;
   }
   return false;
@@ -6828,7 +7180,7 @@ static bool
 relate_in_area_union(double x, double y, const RelateComp *comps, int ncomp)
 {
   for (int i = 0; i < ncomp; i++)
-    if (relate_point_in_area_index(x, y, &comps[i].re) != 2)
+    if (relate_point_in_area_index(x, y, &comps[i].re, false) != 2)
       return true;
   return false;
 }
@@ -7022,9 +7374,7 @@ relate_same_portion(const Edge *a, const Edge *b)
     return false;
   if (a->etype == EDGE_POLYARC)
   {
-    if (fabs(a->cx - b->cx) > MEOS_GEOM_TOLERANCE ||
-        fabs(a->cy - b->cy) > MEOS_GEOM_TOLERANCE ||
-        fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE)
+    if (! arc_same_circle(a, b))
       return false;
     /* Two endpoints do not determine an arc of a circle: the two arcs a full
      * circle is read as carry the same pair and bow to opposite sides, so a
@@ -7035,11 +7385,16 @@ relate_same_portion(const Edge *a, const Edge *b)
     if (! relate_same_point(amx, amy, bmx, bmy))
       return false;
   }
-  /* The two components may traverse the portion in opposite directions */
-  return (relate_same_point(a->x1, a->y1, b->x1, b->y1) &&
-      relate_same_point(a->x2, a->y2, b->x2, b->y2)) ||
-    (relate_same_point(a->x1, a->y1, b->x2, b->y2) &&
-      relate_same_point(a->x2, a->y2, b->x1, b->y1));
+  /* The ends of a portion are constructed on the edge it comes from, so two
+   * ends are one point within the rounding those edges carry
+   * (#edge_set_tolerance). The two components may traverse the portion in
+   * opposite directions */
+  double tol = (a->tol > b->tol) ? a->tol : b->tol;
+  if (fabs(a->x1 - b->x1) <= tol && fabs(a->y1 - b->y1) <= tol &&
+      fabs(a->x2 - b->x2) <= tol && fabs(a->y2 - b->y2) <= tol)
+    return true;
+  return fabs(a->x1 - b->x2) <= tol && fabs(a->y1 - b->y2) <= tol &&
+    fabs(a->x2 - b->x1) <= tol && fabs(a->y2 - b->y1) <= tol;
 }
 
 /**
@@ -7124,10 +7479,10 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
         /* The two boundary edges run along one another. What splits this one
          * is where the other one starts and ends, not the two points an
          * intersection reports for a pair that merely crosses */
-        if (relate_point_on_edge(other->x1, other->y1, e))
+        if (relate_point_on_edge(other->x1, other->y1, e, false))
           relate_area_add_parameter(relate_area_edge_parameter(e, other->x1,
             other->y1), params, &nparams, maxparams);
-        if (relate_point_on_edge(other->x2, other->y2, e))
+        if (relate_point_on_edge(other->x2, other->y2, e, false))
           relate_area_add_parameter(relate_area_edge_parameter(e, other->x2,
             other->y2), params, &nparams, maxparams);
         continue;
@@ -7752,22 +8107,36 @@ meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
  * @brief Return true if a point lies on the curve an edge draws, whatever
  * part of a geometry that edge bounds
  * @details #relate_point_on_boundary answers the same question of an areal
- * boundary alone, and a shared point is a question about the curves
+ * boundary alone, and a shared point is a question about the curves. An input
+ * vertex lies on a point, a segment or the circle of an arc exactly where its
+ * coordinates say so (#relate_points_equal, #point_on_segment_exact,
+ * #point_on_arc_circle), and a constructed point
+ * within the rounding of its coordinates. The ends of an edge that another one
+ * runs along are read with the rounding the overlap was found with, as a
+ * constructed point is
+ * @param[in] x,y Coordinates of the point
+ * @param[in] e Edge
+ * @param[in] vertex True if the point is an input vertex
  */
 static bool
-relate_point_on_edge(double x, double y, const Edge *e)
+relate_point_on_edge(double x, double y, const Edge *e, bool vertex)
 {
   switch (e->etype)
   {
     case EDGE_POINT:
-      return fabs(x - e->x1) <= MEOS_GEOM_TOLERANCE &&
-        fabs(y - e->y1) <= MEOS_GEOM_TOLERANCE;
+      return relate_points_equal(x, y, e->x1, e->y1, vertex);
     case EDGE_LINEARC:
     case EDGE_POLYARC:
-      return point_on_arc(x, y, e);
+      /* Where on the circle an input vertex stands, the span decides */
+      return vertex ?
+        (point_on_arc_circle(e, x, y) &&
+          arc_contains_angle(e, atan2(y - e->cy, x - e->cx))) :
+        point_on_arc(x, y, e);
     case EDGE_LINESEG:
     case EDGE_POLYSEG:
-      return point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
+      return vertex ?
+        point_on_segment_exact(x, y, e->x1, e->y1, e->x2, e->y2) :
+        point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
   }
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Unknown edge type: %d", e->etype);
@@ -7884,10 +8253,20 @@ relate_edge_inside_area(const Edge *e, const RelateEdges *other)
   }
   else
     relate_edge_point(e, 0.5, &x, &y);
+  /* A point edge, and a segment of no length, whose middle is its vertex, is
+   * an input vertex, which lies in a surface exactly where its coordinates
+   * say so (#point_in_polygon_vertex); the middle of any other edge is a
+   * constructed point */
+  bool vertex = relate_edge_is_point(e);
   if (! other->index)
-    return point_in_polygon(x, y, other->edges, other->nedges) != 0;
-  return point_in_polygon_index(x, y, other->edges, other->nedges,
-    other->index, other->xmax) != 0;
+    return (vertex ?
+      point_in_polygon_vertex(x, y, other->edges, other->nedges) :
+      point_in_polygon(x, y, other->edges, other->nedges)) != 0;
+  return (vertex ?
+    point_in_polygon_index_vertex(x, y, other->edges, other->nedges,
+      other->index, other->xmax) :
+    point_in_polygon_index(x, y, other->edges, other->nedges,
+      other->index, other->xmax)) != 0;
 }
 
 /**
@@ -7956,8 +8335,8 @@ relate_edges_meet_any(const Edge *a, const RelateEdges *other)
 }
 
 /**
- * @brief Return true if a point stands on any edge of an array, reading the
- * edges that can carry it out of the array's index
+ * @brief Return true if an input vertex stands on any edge of an array,
+ * reading the edges that can carry it out of the array's index
  */
 static bool
 relate_point_on_any_edge(double x, double y, const RelateEdges *other)
@@ -7965,7 +8344,7 @@ relate_point_on_any_edge(double x, double y, const RelateEdges *other)
   if (! other->index)
   {
     for (int j = 0; j < other->nedges; j++)
-      if (relate_point_on_edge(x, y, other->edges[j]))
+      if (relate_point_on_edge(x, y, other->edges[j], true))
         return true;
     return false;
   }
@@ -7974,7 +8353,7 @@ relate_point_on_any_edge(double x, double y, const RelateEdges *other)
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
     result = relate_point_on_edge(x, y,
-      other->edges[INDEX_RESULT_ID_N(candidates, c)]);
+      other->edges[INDEX_RESULT_ID_N(candidates, c)], true);
   meos_array_destroy(candidates);
   return result;
 }
@@ -8073,14 +8452,18 @@ relate_edges_within(const RelateEdges *re1, const RelateEdges *re2,
  * @details That is, inside a surface the array bounds, or on one of its
  * curves or points. #point_in_polygon passes over every edge bounding no
  * surface, so an array mixing dimensions is read correctly
+ * @param[in] x,y Coordinates of the point
+ * @param[in] edges,nedges Edge array
+ * @param[in] vertex True if the point is an input vertex (#relate_point_on_edge)
  */
 static bool
-relate_point_in_edges(double x, double y, Edge **edges, int nedges)
+relate_point_in_edges(double x, double y, Edge **edges, int nedges,
+  bool vertex)
 {
   if (point_in_polygon(x, y, edges, nedges) != 0)
     return true;
   for (int i = 0; i < nedges; i++)
-    if (relate_point_on_edge(x, y, edges[i]))
+    if (relate_point_on_edge(x, y, edges[i], vertex))
       return true;
   return false;
 }
@@ -8115,7 +8498,7 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
     const Edge *e = e2[j];
     if (e->etype == EDGE_POINT)
     {
-      result = relate_point_in_edges(e->x1, e->y1, e1, n1);
+      result = relate_point_in_edges(e->x1, e->y1, e1, n1, true);
       continue;
     }
     int nparams = 0;
@@ -8138,10 +8521,10 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
        * the stretch they share ends at an end of the other edge */
       if (o->etype != EDGE_POINT)
       {
-        if (relate_point_on_edge(o->x1, o->y1, e))
+        if (relate_point_on_edge(o->x1, o->y1, e, false))
           relate_area_add_parameter(relate_any_edge_parameter(e, o->x1, o->y1),
             params, &nparams, maxparams);
-        if (relate_point_on_edge(o->x2, o->y2, e))
+        if (relate_point_on_edge(o->x2, o->y2, e, false))
           relate_area_add_parameter(relate_any_edge_parameter(e, o->x2, o->y2),
             params, &nparams, maxparams);
       }
@@ -8153,7 +8536,7 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
         continue;
       double x, y;
       relate_edge_point(e, (params[k] + params[k + 1]) * 0.5, &x, &y);
-      result = relate_point_in_edges(x, y, e1, n1);
+      result = relate_point_in_edges(x, y, e1, n1, false);
     }
   }
   pfree(params);
