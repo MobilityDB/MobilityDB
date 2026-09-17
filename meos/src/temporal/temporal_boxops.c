@@ -2026,12 +2026,49 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
+ * @brief Return the number of parts a temporal value is defined on: the sequences of a
+ * sequence set, the instants of a discrete sequence, and one part for anything else
+ */
+static int
+temporal_time_part_count(const Temporal *temp)
+{
+  if (temp->subtype == TSEQUENCESET)
+    return ((const TSequenceSet *) temp)->count;
+  if (temp->subtype == TSEQUENCE && MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+    return ((const TSequence *) temp)->count;
+  return 1;
+}
+
+/**
+ * @brief Return in the last argument the @p i-th part a temporal value is defined on,
+ * @p whole being its bounding span, which is the part itself where it has only one
+ */
+static void
+temporal_time_part_n(const Temporal *temp, int i, const Span *whole, Span *result)
+{
+  if (i >= temporal_time_part_count(temp))
+    return;
+  if (temp->subtype == TSEQUENCESET)
+    *result = TSEQUENCESET_SEQ_N((const TSequenceSet *) temp, i)->period;
+  else if (temp->subtype == TSEQUENCE && MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+  {
+    TimestampTz t = TSEQUENCE_INST_N((const TSequence *) temp, i)->t;
+    span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+      T_TIMESTAMPTZ, T_TSTZSPAN, result);
+  }
+  else
+    *result = *whole;
+  return;
+}
+
+/**
  * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time of two temporal values actually overlaps
  * @details Unlike @ref overlaps_temporal_temporal, which tests the bounding
- * spans, this walks the actual periods, so two values whose active parts fall
- * in each other's gaps do not count as overlapping. The periods are read in
- * place from the sequences, so there is no allocation.
+ * spans, this walks the parts each value is defined on, so two values whose
+ * active parts fall in each other's gaps do not count as overlapping, and
+ * neither do two sets of instants that interleave without sharing one. The
+ * periods are read in place from the sequences, so there is no allocation.
  * @param[in] temp1,temp2 Temporal values
  */
 bool
@@ -2046,24 +2083,24 @@ temporal_time_overlaps(const Temporal *temp1, const Temporal *temp2)
   temporal_set_tstzspan(temp2, &s2);
   if (! overlaps_span_span(&s1, &s2))
     return false;
-  if (temp1->subtype != TSEQUENCESET && temp2->subtype != TSEQUENCESET)
-    return true;
-  /* Walk the actual periods of the sequence set(s) in place. */
-  int n1 = (temp1->subtype == TSEQUENCESET) ?
-    ((const TSequenceSet *) temp1)->count : 1;
-  int n2 = (temp2->subtype == TSEQUENCESET) ?
-    ((const TSequenceSet *) temp2)->count : 1;
-  for (int i = 0; i < n1; i++)
+  /* Walk the parts each value is actually defined on, in the order it holds them: the
+   * periods of a sequence set, and the instants of a discrete sequence, which is a set of
+   * instants and holds nothing between them. Both lists ascend and neither overlaps
+   * itself, so one pass over the two answers the question */
+  int n1 = temporal_time_part_count(temp1), n2 = temporal_time_part_count(temp2);
+  int i = 0, j = 0;
+  Span p1, p2;
+  temporal_time_part_n(temp1, i, &s1, &p1);
+  temporal_time_part_n(temp2, j, &s2, &p2);
+  while (i < n1 && j < n2)
   {
-    const Span *p1 = (temp1->subtype == TSEQUENCESET) ?
-      &TSEQUENCESET_SEQ_N((const TSequenceSet *) temp1, i)->period : &s1;
-    for (int j = 0; j < n2; j++)
-    {
-      const Span *p2 = (temp2->subtype == TSEQUENCESET) ?
-        &TSEQUENCESET_SEQ_N((const TSequenceSet *) temp2, j)->period : &s2;
-      if (overlaps_span_span(p1, p2))
-        return true;
-    }
+    if (overlaps_span_span(&p1, &p2))
+      return true;
+    /* The part ending first can meet nothing further in the other value */
+    if (datum_le(p1.upper, p2.upper, p1.basetype))
+      temporal_time_part_n(temp1, ++i, &s1, &p1);
+    else
+      temporal_time_part_n(temp2, ++j, &s2, &p2);
   }
   return false;
 }
