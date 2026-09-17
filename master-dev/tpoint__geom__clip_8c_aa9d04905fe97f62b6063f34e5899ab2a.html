@@ -119,7 +119,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b">point_geom_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a42eb5b0c915dfc50f4aa4bbe51a2924d.html#a42eb5b0c915dfc50f4aa4bbe51a2924d">point_geom_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a7abf91c849b295acbd8567f156772650.html#a7abf91c849b295acbd8567f156772650">point_in_polygon_impl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_aa9d04905fe97f62b6063f34e5899ab2a.html#aa9d04905fe97f62b6063f34e5899ab2a">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a81fecab8510a75f4ddf23c95f5c98eea.html#a81fecab8510a75f4ddf23c95f5c98eea">point_on_poly_boundary</a></td></tr>
@@ -146,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7abf91c849b295acbd8567f156772650" name="a7abf91c849b295acbd8567f156772650"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7abf91c849b295acbd8567f156772650">&#9670;&#160;</a></span>point_in_polygon_impl()</h2>
+<a id="aa9d04905fe97f62b6063f34e5899ab2a" name="aa9d04905fe97f62b6063f34e5899ab2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9d04905fe97f62b6063f34e5899ab2a">&#9670;&#160;</a></span>point_in_polygon_impl()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -189,7 +189,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>xmax</em>&#160;</td>
+          <td class="paramname"><em>xmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>results</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -205,6 +211,16 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if a point is located in a polygon. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">x,y</td><td>Point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges of the polygon </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Greatest x the edges reach, which bounds the ray </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the index search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
