@@ -82,6 +82,11 @@ SELECT th3indexFromMFJSON(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00
 SELECT th3indexFromMFJSON(asMFJSON(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}'));
 SELECT th3indexFromMFJSON(asMFJSON(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]'));
 SELECT th3indexFromMFJSON(asMFJSON(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}'));
+-- A cell is written as its text form in a JSON string, and an integer is still
+-- read as the cell it encodes; the bounding box is the spatiotemporal box
+SELECT asMFJSON(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]', 1, 3, 6);
+SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
+  '"880326b885fffff"', '612544986753269759'));
 
 -------------------------------------------------------------------------------
 -- Typmod
@@ -156,7 +161,9 @@ CREATE TABLE tbl_th3index_assign(temp th3index);
 INSERT INTO tbl_th3index_assign VALUES (tbigint '42@2001-01-01');
 DROP TABLE tbl_th3index_assign;
 SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
-  '612544986753269759', '42'));
+  '"880326b885fffff"', '42'));
+SELECT th3indexFromMFJSON(replace(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'),
+  '"880326b885fffff"', '"2a"'));
 SELECT th3indexFromHexWKB(replace(asHexWKB(th3index '880326b885fffff@2012-01-01 08:00:00',
   'XDR'), '0880326B885FFFFF', '000000000000002A'));
 SELECT (th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02}')::tbigint;

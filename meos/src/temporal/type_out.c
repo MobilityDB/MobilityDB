@@ -250,6 +250,26 @@ int64_as_mfjson_sb(stringbuffer_t *sb, int64 i)
   return;
 }
 
+#if H3 || QUADBIN || S2CELL
+/**
+ * @brief Write into the buffer a cell of a cell-index type in the MF-JSON
+ * representation, which is its text form in a JSON string
+ * @details A cell is a 64-bit integer, which a JSON reader holding its numbers
+ * as IEEE 754 doubles reads with the low bits lost, so RFC 7493 recommends a
+ * JSON string for it, as the QUADBIN libraries do for JSON
+ */
+static bool
+cell_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType basetype)
+{
+  char *str = basetype_out(value, basetype, 0);
+  if (! str)
+    return false;
+  stringbuffer_aprintf(sb, "\"%s\"", str);
+  pfree(str);
+  return true;
+}
+#endif /* H3 || QUADBIN || S2CELL */
+
 /**
  * @brief Write into the buffer a double in the MF-JSON representation
  */
@@ -514,6 +534,8 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
       int32_as_mfjson_sb(sb, DatumGetInt32(value));
       break;
     case T_TBIGINT:
+      int64_as_mfjson_sb(sb, DatumGetInt64(value));
+      break;
 #if H3
     case T_TH3INDEX:
 #endif
@@ -523,8 +545,11 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 #if S2CELL
     case T_TS2CELL:
 #endif
-      int64_as_mfjson_sb(sb, DatumGetInt64(value));
+#if H3 || QUADBIN || S2CELL
+      if (! cell_as_mfjson_sb(sb, value, temptype_basetype(temptype)))
+        return false;
       break;
+#endif /* H3 || QUADBIN || S2CELL */
     case T_TFLOAT:
       double_as_mfjson_sb(sb, DatumGetFloat8(value), precision);
       break;
@@ -742,6 +767,9 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
     case T_TBIGINT:
     case T_TINT:
     case T_TFLOAT:
+      tbox_as_mfjson_sb(sb, (TBox *) box, precision);
+      break;
+    /* A temporal cell is bounded by the spatiotemporal box of its cells */
 #if H3
     case T_TH3INDEX:
 #endif
@@ -751,8 +779,6 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #if S2CELL
     case T_TS2CELL:
 #endif
-      tbox_as_mfjson_sb(sb, (TBox *) box, precision);
-      break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
     case T_TGEOMETRY:

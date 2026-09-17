@@ -78,6 +78,11 @@ SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:0
 SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
 SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]'));
 SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}'));
+-- A cell is written as its text form in a JSON string, and an integer is still
+-- read as the cell it encodes; the bounding box is the spatiotemporal box
+SELECT asMFJSON(tquadbin '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]', 1, 3, 6);
+SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '48a6227affffffff@2001-01-01'),
+  '"48a6227affffffff"', '5234909528541102079'));
 
 -------------------------------------------------------------------------------
 -- Typmod
@@ -133,7 +138,9 @@ SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
 /* Errors */
 SELECT (tbigint '[5192650370358181887@2001-01-01, 42@2001-01-02]')::tquadbin;
 SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'),
-  '5192650370358181887', '42'));
+  '"480fffffffffffff"', '42'));
+SELECT tquadbinFromMFJSON(replace(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'),
+  '"480fffffffffffff"', '"2a"'));
 SELECT tquadbinFromHexWKB(replace(asHexWKB(tquadbin '480fffffffffffff@2001-01-01',
   'XDR'), '480FFFFFFFFFFFFF', '000000000000002A'));
 SELECT quadbinsetFromHexWKB(replace(asHexWKB(quadbinset '{480fffffffffffff}',
