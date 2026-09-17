@@ -289,6 +289,23 @@ SELECT eIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Poi
 SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 SELECT eIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 
+-- Two temporal geometries sharing no instant are compared nowhere, so every
+-- relationship between them is unknown, whatever their positions are
+SELECT eIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aContains(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT aCovers(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+SELECT aTouches(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-01, Polygon((0 0,0 4,4 4,4 0,0 0))@2001-01-02]', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-05, Point(2 2)@2001-01-06]', 10);
+-- A static operand carries no time of its own, takes the temporal one's, and is answered
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
+SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
 SELECT eIntersects(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)');
