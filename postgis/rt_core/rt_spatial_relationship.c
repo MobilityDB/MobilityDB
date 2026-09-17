@@ -29,6 +29,8 @@
 
 #include "librtcore.h"
 #include "librtcore_internal.h"
+/* MEOS: the relationships this file asks are answered by the native engine */
+#include "geo/geo_funcs.h"
 
 /*
  * Return ES_ERROR if error occurred in function.
@@ -142,8 +144,10 @@ rt_errorstate rt_raster_geos_spatial_relationship(
 ) {
 	LWMPOLY *surface1 = NULL;
 	LWMPOLY *surface2 = NULL;
-	GEOSGeometry *geom1 = NULL;
-	GEOSGeometry *geom2 = NULL;
+	/* MEOS: the native engine answers the geometries themselves */
+	const LWGEOM *geom1 = NULL;
+	const LWGEOM *geom2 = NULL;
+	bool result = false;
 	int rtn = 0;
 	int flag = 0;
 
@@ -171,7 +175,7 @@ rt_errorstate rt_raster_geos_spatial_relationship(
 		return ES_ERROR;
 	}
 
-	initGEOS(rtinfo, lwgeom_geos_error);
+	/* MEOS: the relationships below reach no GEOS entry point, so none is started */
 
 	/* get LWMPOLY of each band */
 	if (rt_raster_surface(rast1, nband1, &surface1) != ES_NONE) {
@@ -191,53 +195,44 @@ rt_errorstate rt_raster_geos_spatial_relationship(
 		return ES_NONE;
 	}
 
-	/* convert LWMPOLY to GEOSGeometry */
-	geom1 = LWGEOM2GEOS(lwmpoly_as_lwgeom(surface1), 0);
-	lwmpoly_free(surface1);
-	if (geom1 == NULL) {
-		rterror("rt_raster_geos_spatial_relationship: Could not convert surface of the specified band from the first raster to a GEOSGeometry");
-		lwmpoly_free(surface2);
-		return ES_ERROR;
-	}
-
-	geom2 = LWGEOM2GEOS(lwmpoly_as_lwgeom(surface2), 0);
-	lwmpoly_free(surface2);
-	if (geom2 == NULL) {
-		rterror("rt_raster_geos_spatial_relationship: Could not convert surface of the specified band from the second raster to a GEOSGeometry");
-		return ES_ERROR;
-	}
+	/* MEOS: the native engine reads the geometries themselves, so the two surfaces
+	 * answer the relationship without being converted */
+	geom1 = lwmpoly_as_lwgeom(surface1);
+	geom2 = lwmpoly_as_lwgeom(surface2);
 
 	flag = 0;
 	switch (testtype) {
 		case GSR_OVERLAPS:
-			rtn = GEOSOverlaps(geom1, geom2);
+			/* MEOS: two surfaces overlap where their interiors meet and each holds a
+			 * point outside the other */
+			rtn = meos_relate_pattern(geom1, geom2, "T*T***T**", &result) ? result : 2;
 			break;
 		case GSR_TOUCHES:
-			rtn = GEOSTouches(geom1, geom2);
+			rtn = meos_spatialrel(geom1, geom2, TOUCHES, &result) ? result : 2;
 			break;
 		case GSR_CONTAINS:
-			rtn = GEOSContains(geom1, geom2);
+			rtn = meos_spatialrel(geom1, geom2, CONTAINS, &result) ? result : 2;
 			break;
 		case GSR_CONTAINSPROPERLY:
-			rtn = GEOSRelatePattern(geom1, geom2, "T**FF*FF*");
+			rtn = meos_relate_pattern(geom1, geom2, "T**FF*FF*", &result) ? result : 2;
 			break;
 		case GSR_COVERS:
-			rtn = GEOSRelatePattern(geom1, geom2, "******FF*");
+			rtn = meos_relate_pattern(geom1, geom2, "******FF*", &result) ? result : 2;
 			break;
 		case GSR_COVEREDBY:
-			rtn = GEOSRelatePattern(geom1, geom2, "**F**F***");
+			rtn = meos_relate_pattern(geom1, geom2, "**F**F***", &result) ? result : 2;
 			break;
 		default:
-			rterror("rt_raster_geos_spatial_relationship: Unknown or unsupported GEOS spatial relationship test");
+			rterror("rt_raster_geos_spatial_relationship: Unknown or unsupported spatial relationship test");
 			flag = -1;
 			break;
 	}
-	GEOSGeom_destroy(geom1);
-	GEOSGeom_destroy(geom2);
+	lwmpoly_free(surface1);
+	lwmpoly_free(surface2);
 
 	/* something happened in the spatial relationship test */
 	if (rtn == 2) {
-		rterror("rt_raster_geos_spatial_relationship: Could not run the appropriate GEOS spatial relationship test");
+		rterror("rt_raster_geos_spatial_relationship: Could not run the appropriate spatial relationship test");  /* MEOS */
 		flag = ES_ERROR;
 	}
 	/* spatial relationship test ran fine */
@@ -995,7 +990,8 @@ rt_raster_intersects(
 	int within = 0;
 
 	LWGEOM *hull[2] = {NULL};
-	GEOSGeometry *ghull[2] = {NULL};
+	/* MEOS: the native engine answers the hulls themselves */
+	bool result = false;
 
 	uint16_t width1;
 	uint16_t height1;
@@ -1062,48 +1058,34 @@ rt_raster_intersects(
 	do {
 		int rtn;
 
-		initGEOS(rtinfo, lwgeom_geos_error);
+		/* MEOS: the hull tests below reach no GEOS entry point, so none is started */
 
 		rtn = 1;
 
 		if ((rt_raster_get_convex_hull(rast1, &(hull[0])) != ES_NONE) || !hull[0]) {
 			break;
 		}
-		ghull[0] = (GEOSGeometry *) LWGEOM2GEOS(hull[0], 0);
-		if (!ghull[0]) {
-			lwgeom_free(hull[0]);
-			break;
-		}
 
 		if ((rt_raster_get_convex_hull(rast2, &(hull[1])) != ES_NONE) || !hull[1]) {
-			GEOSGeom_destroy(ghull[0]);
-			lwgeom_free(hull[0]);
-			break;
-		}
-		ghull[1] = (GEOSGeometry *) LWGEOM2GEOS(hull[1], 0);
-		if (!ghull[0]) {
-			GEOSGeom_destroy(ghull[0]);
-			lwgeom_free(hull[1]);
 			lwgeom_free(hull[0]);
 			break;
 		}
 
-		/* test to see if raster within the other */
+		/* MEOS: the native engine answers the hulls themselves, so neither is
+		 * converted. One hull lies within the other where the other contains it */
 		within = 0;
-		if (GEOSWithin(ghull[0], ghull[1]) == 1)
+		if (meos_spatialrel(hull[1], hull[0], CONTAINS, &result) && result)
 			within = -1;
-		else if (GEOSWithin(ghull[1], ghull[0]) == 1)
+		else if (meos_spatialrel(hull[0], hull[1], CONTAINS, &result) && result)
 			within = 1;
 
 		if (within != 0)
 			rtn = 1;
 		else
-			rtn = GEOSIntersects(ghull[0], ghull[1]);
+			rtn = meos_spatialrel(hull[0], hull[1], INTERSECTS, &result) ? result : 2;
 
-		for (i = 0; i < 2; i++) {
-			GEOSGeom_destroy(ghull[i]);
+		for (i = 0; i < 2; i++)
 			lwgeom_free(hull[i]);
-		}
 
 		if (rtn != 2) {
 			RASTER_DEBUGF(4, "convex hulls of rasters do %sintersect", rtn != 1 ? "NOT " : "");
@@ -1118,7 +1100,7 @@ rt_raster_intersects(
 			}
 		}
 		else {
-			RASTER_DEBUG(4, "GEOSIntersects() returned a 2!!!!");
+			RASTER_DEBUG(4, "the convex hulls answered no intersection test");  /* MEOS */
 		}
 	}
 	while (0);

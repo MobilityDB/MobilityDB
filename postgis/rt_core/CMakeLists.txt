@@ -16,6 +16,17 @@ add_library(librtcore OBJECT
 
 target_include_directories(librtcore PRIVATE ${GDAL_INCLUDE_DIR})
 
+# The spatial relationships the raster core asks are answered by the native
+# engine, whose entries it reads from meos/include. That header states its
+# geometry over the PostgreSQL and pgtypes definitions, the same set
+# meos/CMakeLists.txt puts in front of MEOS itself, and this directory is
+# configured before meos/ so it inherits none of them. /* MEOS */
+target_include_directories(librtcore SYSTEM PRIVATE
+  "${POSTGRESQL_INCLUDE_DIR}"
+  "${CMAKE_SOURCE_DIR}/pgtypes"
+  "${CMAKE_BINARY_DIR}/pgtypes")
+target_include_directories(librtcore PRIVATE "${CMAKE_SOURCE_DIR}/meos/include")
+
 # Hide the vendored raster core symbols from the shared library's dynamic table,
 # as postgis/liblwgeom/CMakeLists.txt does for liblwgeom. librttopo.so, which
 # PostgreSQL co-loads through postgis_raster's GDAL, also exports rtalloc,
