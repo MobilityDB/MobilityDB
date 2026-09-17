@@ -695,6 +695,20 @@ SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-0
 SELECT stbox(tgeompoint 'Point(1 1)@2001-01-01');
 SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
 
+-- The box of a geodetic temporal point holds the great circles it travels: a
+-- trip from Point(10 60) to Point(50 60) reaches latitude 61.518762, which
+-- neither of its positions states, and one whose positions lie more than half
+-- the globe apart in longitude crosses the antimeridian and spans them all
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+SELECT stbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]');
+SELECT stbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]')
+  && stbox 'SRID=4326;GEODSTBOX X((20 61),(40 62))' AS the_box_meets_what_the_trip_reaches;
+-- A step interpolation holds each position until the next, and a planar point
+-- travels the straight line in longitude and latitude, so each keeps the box
+-- of its positions
+SELECT stbox(tgeogpoint 'Interp=Step;[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+SELECT stbox(tgeompoint 'SRID=4326;[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]');
+
 SELECT ST_AsEWKT(getValue(tgeompoint 'Point(1 1)@2001-01-01'));
 SELECT ST_AsEWKT(getValue(tgeogpoint 'Point(1.5 1.5)@2001-01-01'));
 /* Errors */

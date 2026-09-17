@@ -41,6 +41,7 @@
  * the space and the time dimensions.
  */
 
+#include "temporal/tcellindex.h"
 #include "geo/tspatial_boxops.h"
 
 /* C */
@@ -241,6 +242,42 @@ tgeoinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 }
 
 /**
+ * @brief Extend a spatiotemporal box by the geodesics a temporal point travels
+ * between its instants
+ * @details A geodetic point moves along the great circle between two
+ * positions, so the box of the positions alone does not hold the path: a trip
+ * from `Point(10 60)` to `Point(50 60)` passes through latitude 61.518762, and
+ * one whose endpoints lie more than half the globe apart in longitude crosses
+ * the antimeridian. A box that does not hold the path answers no for a box the
+ * trip meets, which every operator and every index reading the box then
+ * answers too. A step interpolation holds each position until the next, so its
+ * box is the box of the positions.
+ * @param[in] instants Temporal instants
+ * @param[in] count Number of instants
+ * @param[inout] box Spatiotemporal box
+ */
+static void
+tgeoinstarr_extend_stbox_geodetic(TInstant **instants, int count, STBox *box)
+{
+  assert(instants); assert(box); assert(count > 0);
+  for (int i = 1; i < count; i++)
+  {
+    const GSERIALIZED *gs1 =
+      DatumGetGserializedP(tinstant_value_p(instants[i - 1]));
+    const GSERIALIZED *gs2 =
+      DatumGetGserializedP(tinstant_value_p(instants[i]));
+    if (gserialized_get_type(gs1) != POINTTYPE ||
+        gserialized_get_type(gs2) != POINTTYPE)
+      continue;
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
+    dggs_lonlat_segment_extend_box(p1->x, p1->y, p2->x, p2->y, &box->xmin,
+      &box->ymin, &box->xmax, &box->ymax);
+  }
+  return;
+}
+
+/**
  * @brief Set a bounding box from an array of spatiotemporal instant values
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
@@ -255,7 +292,12 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   MeosType temptype = instants[0]->temptype;
   assert(tspatial_type(temptype));
   if (tgeo_type_all(temptype))
+  {
     tgeoinstarr_set_stbox(instants, count, (STBox *) box);
+    if (count > 1 && interp == LINEAR &&
+        MEOS_FLAGS_GET_GEODETIC(instants[0]->flags))
+      tgeoinstarr_extend_stbox_geodetic(instants, count, (STBox *) box);
+  }
 #if CBUFFER
   else if (temptype == T_TCBUFFER)
     tcbufferinstarr_set_stbox(instants, count, (STBox *) box);
@@ -313,6 +355,17 @@ tgeoseq_expand_stbox(TSequence *seq, const TInstant *inst)
   STBox box;
   tgeoinst_set_stbox(inst, &box);
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  /* The instant adds the geodesic from the last position of the sequence to
+   * its own, which the box of the two positions does not hold */
+  if (seq->count > 0 && MEOS_FLAGS_LINEAR_INTERP(seq->flags) &&
+      MEOS_FLAGS_GET_GEODETIC(seq->flags))
+  {
+    TInstant *instants[2];
+    instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
+    instants[1] = (TInstant *) inst;
+    tgeoinstarr_extend_stbox_geodetic(instants, 2,
+      (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  }
   return;
 }
 
