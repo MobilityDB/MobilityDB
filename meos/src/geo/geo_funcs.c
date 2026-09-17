@@ -59,12 +59,41 @@
  *****************************************************************************/
 
 /**
+ * @brief Make room in an edge array for @p n more edges at once
+ * @details The array doubles as it fills, each doubling copying every edge
+ * already read, while a ring or a circular string knows how many edges it
+ * yields before it emits any. The room they need is taken in one step, at
+ * least doubling so that many small rings still grow the array geometrically,
+ * and an array holding no edge yet takes fresh room rather than copying slots
+ * nothing was written to
+ */
+static void
+edge_array_reserve(MeosArray *edges, size_t n)
+{
+  size_t need = edges->count + n;
+  if (need <= edges->capacity)
+    return;
+  size_t cap = Max(need, 2 * edges->capacity);
+  if (edges->count == 0)
+  {
+    pfree(edges->elems);
+    edges->elems = palloc(cap * edges->elem_size);
+  }
+  else
+    edges->elems = repalloc(edges->elems, cap * edges->elem_size);
+  edges->capacity = cap;
+  return;
+}
+
+/**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a ring
  */
 static void
 emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
 {
+  /* A ring of n points yields n - 1 edges */
+  edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i < (int) pa->npoints - 1; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
@@ -416,6 +445,9 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
+  /* Each arc of the string yields at most two edges, so no more than it has
+   * points */
+  edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i + 2 < np; i += 2)
   {
     emit_arc_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1),
@@ -7445,6 +7477,434 @@ relate_same_portion(const Edge *a, const Edge *b)
 }
 
 /**
+ * @brief An areal member of a collection, read in place from its rings
+ */
+typedef struct
+{
+  POINTARRAY * const *rings; /**< Rings of the member, the first its shell */
+  uint32_t nrings;           /**< Number of rings */
+  int orient;                /**< Orientation of the shell, 1 or -1 */
+  double xmin, ymin, xmax, ymax; /**< Extent of the vertices of the member */
+} RelateMember;
+
+/**
+ * @brief Return 1 if a ring runs counterclockwise, -1 if it runs clockwise,
+ * and 0 where the sum of doubles cannot be trusted to carry the sign
+ * @details The sign of the shoelace sum over the input vertices, each term
+ * read relative to the first vertex. A term carries a rounding error of at
+ * most 4 DBL_EPSILON times the magnitudes of its two products, and each
+ * addition at most DBL_EPSILON times the partial sum, so the sign holds
+ * wherever the sum exceeds (n + 8) DBL_EPSILON times the magnitudes of all
+ * the products
+ */
+static int
+ring_orientation_sign(const POINTARRAY *pa)
+{
+  if (pa->npoints < 4)
+    return 0;
+  const POINT2D *p0 = getPoint2d_cp(pa, 0);
+  double sum = 0.0, mag = 0.0;
+  for (uint32_t i = 1; i + 2 < pa->npoints; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    const POINT2D *q = getPoint2d_cp(pa, i + 1);
+    double left = (p->x - p0->x) * (q->y - p0->y);
+    double right = (p->y - p0->y) * (q->x - p0->x);
+    sum += left - right;
+    mag += fabs(left) + fabs(right);
+  }
+  double bound = ((double) pa->npoints + 8.0) * DBL_EPSILON * mag;
+  return (sum > bound) - (sum < - bound);
+}
+
+/**
+ * @brief Return 1 if an input vertex lies in the interior of the area some
+ * rings bound, 0 if it lies outside it, and -1 if it lies on one of the rings
+ * @details A ray cast to the right at the vertex's own height crosses an edge
+ * by the half-open rule, and the side of the edge the vertex lies on is the
+ * sign #cross_product_sign reads exactly, so the answer holds at every scale
+ */
+static int
+point_in_rings_exact(const POINT2D *pt, POINTARRAY * const *rings,
+  uint32_t nrings)
+{
+  bool inside = false;
+  for (uint32_t r = 0; r < nrings; r++)
+  {
+    const POINTARRAY *pa = rings[r];
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *a = getPoint2d_cp(pa, i);
+      const POINT2D *b = getPoint2d_cp(pa, i + 1);
+      bool up = a->y <= pt->y && pt->y < b->y;
+      bool down = b->y <= pt->y && pt->y < a->y;
+      if (! up && ! down)
+      {
+        /* An edge the ray does not cross carries the vertex at its start or,
+         * lying at the vertex's height, between its two ends */
+        if ((a->x == pt->x && a->y == pt->y) ||
+            (a->y == pt->y && b->y == pt->y && Min(a->x, b->x) <= pt->x &&
+              pt->x <= Max(a->x, b->x)))
+          return -1;
+        continue;
+      }
+      int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y,
+        pt->x, pt->y);
+      if (side == 0)
+        return -1;
+      if ((up && side > 0) || (down && side < 0))
+        inside = ! inside;
+    }
+  }
+  return inside ? 1 : 0;
+}
+
+/**
+ * @brief Return the sign of the turn from the ray v->u to the ray v->d
+ */
+static inline int
+ray_turn(const POINT2D *v, const POINT2D *u, const POINT2D *d)
+{
+  return cross_product_sign(v->x, v->y, u->x, u->y, v->x, v->y, d->x, d->y);
+}
+
+/**
+ * @brief Return true if two rays of one line from a vertex point the same way
+ * @note Read only where #ray_turn is exactly 0: the two products then share
+ * their sign, so their sum carries it
+ */
+static inline bool
+ray_same(const POINT2D *v, const POINT2D *u, const POINT2D *d)
+{
+  return (u->x - v->x) * (d->x - v->x) + (u->y - v->y) * (d->y - v->y) > 0;
+}
+
+/**
+ * @brief Return 1 if the ray from a vertex through a point lies strictly
+ * inside the wedge swept counterclockwise from the ray through @p u to the
+ * ray through @p w, 0 if it lies strictly outside it, and -1 if it runs along
+ * one of the two rays or the wedge has no angle
+ */
+static int
+ray_in_wedge(const POINT2D *v, const POINT2D *u, const POINT2D *w,
+  const POINT2D *d)
+{
+  int ud = ray_turn(v, u, d), dw = ray_turn(v, d, w), uw = ray_turn(v, u, w);
+  if ((ud == 0 && ray_same(v, u, d)) || (dw == 0 && ray_same(v, d, w)) ||
+      (uw == 0 && ray_same(v, u, w)))
+    return -1;
+  /* A wedge narrower than a half-plane holds what turns into it from both
+   * rays; a wider one holds what either ray turns into; a half-plane holds
+   * what turns left of its first ray */
+  if (uw > 0)
+    return ud > 0 && dw > 0;
+  if (uw < 0)
+    return ud > 0 || dw > 0;
+  return ud > 0;
+}
+
+/**
+ * @brief Read the interior wedge of a member at a vertex of one of its rings
+ * @details The interior lies to the left of a shell running counterclockwise
+ * and to the right of one running clockwise, and the other way round for a
+ * hole, so it is swept counterclockwise from one neighbour of the vertex to
+ * the other
+ * @return False where the wedge cannot be read: a ring whose orientation the
+ * filter does not settle, or a neighbour repeating the vertex
+ */
+static bool
+relate_member_wedge(const RelateMember *m, uint32_t r, uint32_t k,
+  const POINT2D **v, const POINT2D **u, const POINT2D **w)
+{
+  const POINTARRAY *pa = m->rings[r];
+  uint32_t n = pa->npoints;
+  /* The last point of a ring repeats its first */
+  if (k == n - 1)
+    k = 0;
+  const POINT2D *prev = getPoint2d_cp(pa, k == 0 ? n - 2 : k - 1);
+  const POINT2D *next = getPoint2d_cp(pa, k + 1);
+  *v = getPoint2d_cp(pa, k);
+  if ((prev->x == (*v)->x && prev->y == (*v)->y) ||
+      (next->x == (*v)->x && next->y == (*v)->y))
+    return false;
+  int orient = (r == 0) ? m->orient : - ring_orientation_sign(pa);
+  if (orient == 0)
+    return false;
+  *u = orient > 0 ? next : prev;
+  *w = orient > 0 ? prev : next;
+  return true;
+}
+
+/**
+ * @brief Return true if the interiors of two members stand apart about a
+ * vertex they share
+ * @details Two wedges about one vertex overlap exactly where a ray bounding
+ * one of them lies inside the other, so the four rays settle it
+ */
+static bool
+relate_members_wedges_apart(const RelateMember *a, uint32_t ra, uint32_t ia,
+  const RelateMember *b, uint32_t rb, uint32_t ib)
+{
+  const POINT2D *v, *vb, *au, *aw, *bu, *bw;
+  if (! relate_member_wedge(a, ra, ia, &v, &au, &aw) ||
+      ! relate_member_wedge(b, rb, ib, &vb, &bu, &bw))
+    return false;
+  return ray_in_wedge(v, au, aw, bu) == 0 && ray_in_wedge(v, au, aw, bw) == 0 &&
+    ray_in_wedge(v, bu, bw, au) == 0 && ray_in_wedge(v, bu, bw, aw) == 0;
+}
+
+/**
+ * @brief Return true if no ring of a member lies in the interior of another
+ * @details Where two members meet nowhere but at vertices they share, and
+ * their interiors stand apart about each of them, every ring of one lies
+ * outside the other except at those vertices, or inside it whole. A vertex of
+ * the ring off the boundary of the other member says which. A vertex on that
+ * boundary is one the two share, every other contact being refused before
+ * this is read, and the wedges about it read apart, so both edges of the ring
+ * leave it outside the other member: a ring every vertex of which is shared
+ * lies outside it
+ */
+static bool
+relate_member_rings_outside(const RelateMember *a, const RelateMember *b,
+  int64 *budget)
+{
+  for (uint32_t r = 0; r < a->nrings; r++)
+  {
+    const POINTARRAY *pa = a->rings[r];
+    for (uint32_t k = 0; k + 1 < pa->npoints; k++)
+    {
+      const POINT2D *p = getPoint2d_cp(pa, k);
+      if (p->x < b->xmin || p->x > b->xmax || p->y < b->ymin || p->y > b->ymax)
+        break;
+      for (uint32_t q = 0; q < b->nrings; q++)
+        *budget -= b->rings[q]->npoints;
+      if (*budget < 0)
+        return false;
+      int in = point_in_rings_exact(p, b->rings, b->nrings);
+      if (in == 1)
+        return false;
+      if (in == 0)
+        break;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if two members are known to meet nowhere but at vertices
+ * they share, with their interiors apart there and everywhere else
+ * @details Only the segments within the overlap of the two extents can meet.
+ * An end of one segment within the tolerance of the other is a contact the
+ * union has to read unless it is a vertex the two carry alike, and a crossing
+ * or an edge the two carry alike is one as well
+ */
+static bool
+relate_members_pair_apart(const RelateMember *a, const RelateMember *b,
+  double tol, int64 *budget)
+{
+  double ox0 = Max(a->xmin, b->xmin) - tol, ox1 = Min(a->xmax, b->xmax) + tol;
+  double oy0 = Max(a->ymin, b->ymin) - tol, oy1 = Min(a->ymax, b->ymax) + tol;
+  /* The segments of the second member within the overlap, gathered once so
+   * that each segment of the first reads those alone */
+  uint32_t nb = 0;
+  for (uint32_t rb = 0; rb < b->nrings; rb++)
+    nb += b->rings[rb]->npoints;
+  uint32_t *segs = palloc(sizeof(uint32_t) * 2 * nb);
+  uint32_t ns = 0;
+  for (uint32_t rb = 0; rb < b->nrings; rb++)
+  {
+    const POINTARRAY *pb = b->rings[rb];
+    for (uint32_t j = 0; j + 1 < pb->npoints; j++)
+    {
+      const POINT2D *r = getPoint2d_cp(pb, j);
+      const POINT2D *s = getPoint2d_cp(pb, j + 1);
+      if (Max(r->x, s->x) < ox0 || Min(r->x, s->x) > ox1 ||
+          Max(r->y, s->y) < oy0 || Min(r->y, s->y) > oy1 ||
+          (r->x == s->x && r->y == s->y))
+        continue;
+      segs[2 * ns] = rb;
+      segs[2 * ns + 1] = j;
+      ns++;
+    }
+  }
+
+  bool result = false;
+  for (uint32_t ra = 0; ra < a->nrings; ra++)
+  {
+    const POINTARRAY *pa = a->rings[ra];
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *p = getPoint2d_cp(pa, i);
+      const POINT2D *q = getPoint2d_cp(pa, i + 1);
+      if (Max(p->x, q->x) < ox0 || Min(p->x, q->x) > ox1 ||
+          Max(p->y, q->y) < oy0 || Min(p->y, q->y) > oy1 ||
+          (p->x == q->x && p->y == q->y))
+        continue;
+      for (uint32_t k = 0; k < ns; k++)
+      {
+        if (--(*budget) < 0)
+          goto done;
+        uint32_t rb = segs[2 * k], j = segs[2 * k + 1];
+        const POINT2D *r = getPoint2d_cp(b->rings[rb], j);
+        const POINT2D *s = getPoint2d_cp(b->rings[rb], j + 1);
+        if (Max(p->x, q->x) + tol < Min(r->x, s->x) ||
+            Max(r->x, s->x) + tol < Min(p->x, q->x) ||
+            Max(p->y, q->y) + tol < Min(r->y, s->y) ||
+            Max(r->y, s->y) + tol < Min(p->y, q->y))
+          continue;
+        bool pr = p->x == r->x && p->y == r->y;
+        bool ps = p->x == s->x && p->y == s->y;
+        bool qr = q->x == r->x && q->y == r->y;
+        bool qs = q->x == s->x && q->y == s->y;
+        /* An edge the two members carry alike */
+        if ((pr && qs) || (ps && qr))
+          goto done;
+        if ((! pr && ! ps &&
+              point_on_segment_within(p->x, p->y, r->x, r->y, s->x, s->y, tol)) ||
+            (! qr && ! qs &&
+              point_on_segment_within(q->x, q->y, r->x, r->y, s->x, s->y, tol)) ||
+            (! pr && ! qr &&
+              point_on_segment_within(r->x, r->y, p->x, p->y, q->x, q->y, tol)) ||
+            (! ps && ! qs &&
+              point_on_segment_within(s->x, s->y, p->x, p->y, q->x, q->y, tol)))
+          goto done;
+        /* A crossing, each segment's ends strictly on the two sides of the
+         * other */
+        int o1 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, r->x, r->y);
+        int o2 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, s->x, s->y);
+        if (o1 * o2 < 0)
+        {
+          int o3 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y, p->x, p->y);
+          int o4 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y, q->x, q->y);
+          if (o3 * o4 < 0)
+            goto done;
+        }
+        /* A vertex the two share ends two segments of each, so it turns up
+         * in four pairs of them, and the wedges about it are the same in
+         * each: they are read in the one pair both segments start at it */
+        if (pr && ! relate_members_wedges_apart(a, ra, i, b, rb, j))
+          goto done;
+      }
+    }
+  }
+  result = relate_member_rings_outside(a, b, budget) &&
+    relate_member_rings_outside(b, a, budget);
+
+done:
+  pfree(segs);
+  return result;
+}
+
+/**
+ * @brief Compare two members by the left side of their extents
+ */
+static int
+relate_member_xmin_cmp(const void *x, const void *y)
+{
+  double a = ((const RelateMember *) x)->xmin;
+  double b = ((const RelateMember *) y)->xmin;
+  return (a > b) - (a < b);
+}
+
+/**
+ * @brief Read an areal member of a collection in place
+ * @return False where the member is not one the check reads: a curved or
+ * nested surface, a ring too short to bound anything, or a shell whose
+ * orientation the filter does not settle or which encloses no area
+ */
+static bool
+relate_member_read(const LWGEOM *g, RelateMember *c)
+{
+  switch (g->type)
+  {
+    case POLYGONTYPE:
+      c->rings = ((const LWPOLY *) g)->rings;
+      c->nrings = ((const LWPOLY *) g)->nrings;
+      break;
+    case TRIANGLETYPE:
+      c->rings = &((const LWTRIANGLE *) g)->points;
+      c->nrings = 1;
+      break;
+    default:
+      return false;
+  }
+  c->xmin = c->ymin = DBL_MAX;
+  c->xmax = c->ymax = -DBL_MAX;
+  for (uint32_t r = 0; r < c->nrings; r++)
+  {
+    const POINTARRAY *pa = c->rings[r];
+    if (pa->npoints < 4)
+      return false;
+    for (uint32_t k = 0; k < pa->npoints; k++)
+    {
+      const POINT2D *p = getPoint2d_cp(pa, k);
+      c->xmin = Min(c->xmin, p->x); c->xmax = Max(c->xmax, p->x);
+      c->ymin = Min(c->ymin, p->y); c->ymax = Max(c->ymax, p->y);
+    }
+  }
+  c->orient = ring_orientation_sign(c->rings[0]);
+  return c->orient != 0 && ! ring_encloses_no_area(c->rings[0]);
+}
+
+/**
+ * @brief Return true if the areal members of a collection are known to meet
+ * nowhere but at vertices they share and to cover no part of one another
+ * @details The union of such members bounds exactly what they bound, so the
+ * edges of the collection are the edges of the union. That is what a valid
+ * multipolygon is under the simple feature rule, whose members' interiors do
+ * not meet and whose boundaries touch at finitely many points, and GEOS reads
+ * the rings of a multipolygon as they are for that reason. Here it is shown
+ * rather than assumed, from the input vertices read in place: the members are
+ * swept by their extents, so only two whose extents meet are compared, then
+ * their segments within the overlap of the extents, the interior wedges about
+ * each vertex they share, and one vertex of each ring against the other.
+ * @return False where any of this is not shown: a curved, nested or
+ * degenerate member, a contact the tests do not settle, or more work than an
+ * index would be worth (#RELATE_INDEX_MIN_PAIRS). The union is then computed
+ */
+static bool
+relate_members_apart(const LWGEOM *geom)
+{
+  const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+  RelateMember *m = palloc(sizeof(RelateMember) * Max(col->ngeoms, 1));
+  int n = 0;
+  bool result = false;
+  double extent = 0.0;
+  for (uint32_t i = 0; i < col->ngeoms; i++)
+  {
+    const LWGEOM *g = col->geoms[i];
+    /* A member of another dimension bounds no area of the union */
+    if (lwgeom_is_empty(g) || lwgeom_dimension(g) < 2)
+      continue;
+    RelateMember *c = &m[n];
+    if (! relate_member_read(g, c))
+      goto done;
+    extent = Max(extent, Max(Max(fabs(c->xmin), fabs(c->xmax)),
+      Max(fabs(c->ymin), fabs(c->ymax))));
+    n++;
+  }
+
+  /* Twice what an edge of the collection reads two points within, so no
+   * contact the union reads falls outside it */
+  double tol = 2.0 * coordinate_tolerance(extent, extent);
+  qsort(m, n, sizeof(RelateMember), relate_member_xmin_cmp);
+  int64 budget = RELATE_INDEX_MIN_PAIRS;
+  for (int i = 0; i < n; i++)
+    for (int j = i + 1; j < n && m[j].xmin <= m[i].xmax + tol; j++)
+    {
+      if (m[j].ymin > m[i].ymax + tol || m[i].ymin > m[j].ymax + tol)
+        continue;
+      if (! relate_members_pair_apart(&m[i], &m[j], tol, &budget))
+        goto done;
+    }
+  result = true;
+
+done:
+  pfree(m);
+  return result;
+}
+
+/**
  * @brief Return the edges of a collection, carrying the boundary of the union
  * of its areal components in place of the boundaries of the components
  * @details Two components of a collection may share an edge or overlap, and
@@ -7458,6 +7918,11 @@ relate_same_portion(const Edge *a, const Edge *b)
 static MeosArray *
 relate_union_edges(const LWGEOM *geom, MeosArray *all)
 {
+  /* Members meeting nowhere but at vertices they share bound together exactly
+   * what they bound apart, so their own edges are those of the union */
+  if (relate_members_apart(geom))
+    return all;
+
   int nall = (int) all->count;
   /* Every edge is located against every component, so a component is read
    * once for each edge and the two indexes below are worth what the same
