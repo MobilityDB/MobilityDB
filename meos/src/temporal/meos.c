@@ -759,6 +759,8 @@ meos_finalize(void)
   meos_finalize_timezone();
   /* Finalize PROJ SRS cache */
   meos_finalize_projsrs();
+  /* Finalize the cache holding the edges of the geometries asked about */
+  meos_finalize_relate();
   /* Finalize collation */
   meos_finalize_collation();
 #if JSON

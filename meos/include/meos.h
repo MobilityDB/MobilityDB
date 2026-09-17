@@ -514,6 +514,7 @@ extern void meos_initialize_collation(void);
 extern void meos_finalize_timezone(void);
 extern void meos_finalize_collation(void);
 extern void meos_finalize_projsrs(void);
+extern void meos_finalize_relate(void);
 extern void meos_finalize_ways(void);
 #if POINTCLOUD
 extern void meos_initialize_pointcloud(void);
