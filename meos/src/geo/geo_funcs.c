@@ -38,6 +38,7 @@
  */
 
 /* C */
+#include <limits.h>
 #include <math.h>
 /* PostgreSQL */
 #include "postgres.h"
@@ -4192,6 +4193,22 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
       re->tol = edges[i]->tol;
   }
   re->index = index ? relate_edges_index(edges, nedges) : NULL;
+  re->results = index ? index_result_create() : NULL;
+  return;
+}
+
+/**
+ * @brief Build the index an edge array set up without one
+ * @details The answers read through it are those the scan gives, so a caller
+ * builds it on the first question it answers
+ */
+static void
+relate_edges_index_build(RelateEdges *re)
+{
+  if (re->index)
+    return;
+  re->index = relate_edges_index(re->edges, re->nedges);
+  re->results = index_result_create();
   return;
 }
 
@@ -4203,7 +4220,10 @@ relate_edges_clear(RelateEdges *re)
 {
   if (re->index)
     rtree_free(re->index);
+  if (re->results)
+    meos_array_destroy(re->results);
   re->index = NULL;
+  re->results = NULL;
   return;
 }
 
@@ -4223,15 +4243,13 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re,
   STBox query;
   stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
     y + re->tol, 0, 0, NULL, &query);
-  MeosArray *candidates = index_result_create();
-  int nc = rtree_search(re->index, INDEX_OVERLAPS, &query, candidates);
+  int nc = rtree_search(re->index, INDEX_OVERLAPS, &query, re->results);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
   {
-    Edge *one = re->edges[INDEX_RESULT_ID_N(candidates, c)];
+    Edge *one = re->edges[INDEX_RESULT_ID_N(re->results, c)];
     result = relate_point_on_boundary(x, y, &one, 1, vertex);
   }
-  meos_array_destroy(candidates);
   return result;
 }
 
@@ -4251,11 +4269,8 @@ relate_point_in_area_index(double x, double y, const RelateEdges *re,
   if (! re->index)
     return (vertex ? point_in_polygon_vertex(x, y, re->edges, re->nedges) :
       point_in_polygon(x, y, re->edges, re->nedges)) ? 0 : 2;
-  return (vertex ?
-    point_in_polygon_index_vertex(x, y, re->edges, re->nedges, re->index,
-      re->xmax) :
-    point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
-      re->xmax)) ? 0 : 2;
+  return point_in_polygon_index_into(x, y, re->edges, re->nedges, re->index,
+    re->xmax, re->results, vertex) ? 0 : 2;
 }
 
 /**
@@ -4304,6 +4319,182 @@ typedef struct
 } MeosDE9IM;
 
 /**
+ * @brief The nine cells of a DE-9IM matrix as bits, in the order of its
+ * string, so a caller names the cells it reads
+ * @details A pattern reads the cells it does not mark `*`: `T********` reads
+ * the interiors alone, and a cell nobody reads needs no computing
+ */
+#define DE9IM_II  (1 << 0)
+#define DE9IM_IB  (1 << 1)
+#define DE9IM_IE  (1 << 2)
+#define DE9IM_BI  (1 << 3)
+#define DE9IM_BB  (1 << 4)
+#define DE9IM_BE  (1 << 5)
+#define DE9IM_EI  (1 << 6)
+#define DE9IM_EB  (1 << 7)
+#define DE9IM_EE  (1 << 8)
+#define DE9IM_ALL 0x1FF
+
+/**
+ * @brief Return the cells of the matrix of the reversed pair that answer the
+ * cells named for the pair
+ * @details Row @p r column @p c of the matrix is row @p c column @p r of the
+ * matrix of the reversed pair, which is its transpose
+ * @param[in] want Cells, as the #DE9IM_II bits
+ */
+static inline int
+de9im_transpose_cells(int want)
+{
+  int result = 0;
+  for (int r = 0; r < 3; r++)
+    for (int c = 0; c < 3; c++)
+      if (want & (1 << (3 * r + c)))
+        result |= 1 << (3 * c + r);
+  return result;
+}
+
+/**
+ * @brief The question a caller asks of a DE-9IM matrix: one or more patterns,
+ * any of which matching answers it
+ * @details A relationship reads a handful of the nine cells, and the patterns
+ * deciding it spell out which: `contains` is `T*****FF*`, `touches` holds when
+ * any of `FT*******`, `F**T*****` or `F***T****` does. The engine computes the
+ * cells the patterns name and stops once the answer is known, as the GEOS
+ * relate engine does, instead of computing all nine cells whatever the question
+ */
+typedef struct
+{
+  int count;              /**< Number of patterns */
+  char pattern[4][10];    /**< The patterns, any of which answers the question */
+  int cells;              /**< Cells some pattern reads, as #DE9IM_II bits */
+  int fcells[4];          /**< Cells each pattern reads as `F` */
+  int tcells[4];          /**< Cells each pattern reads as `T` */
+  int dcells[4];          /**< Cells each pattern reads as a dimension */
+} RelateQuery;
+
+/**
+ * @brief Set the cell masks of the patterns of a query
+ */
+static void
+relate_query_masks(RelateQuery *q)
+{
+  q->cells = 0;
+  for (int k = 0; k < q->count; k++)
+  {
+    q->fcells[k] = q->tcells[k] = q->dcells[k] = 0;
+    for (int i = 0; i < 9; i++)
+    {
+      char c = q->pattern[k][i];
+      if (c == '*')
+        continue;
+      q->cells |= 1 << i;
+      if (c == 'F')
+        q->fcells[k] |= 1 << i;
+      else if (c == 'T')
+        q->tcells[k] |= 1 << i;
+      else
+        q->dcells[k] |= 1 << i;
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Set a query from its patterns
+ * @param[out] q Query
+ * @param[in] patterns,count Patterns, at most four
+ */
+static void
+relate_query_init(RelateQuery *q, const char *const *patterns, int count)
+{
+  assert(count > 0 && count <= 4);
+  q->count = count;
+  for (int k = 0; k < count; k++)
+  {
+    memcpy(q->pattern[k], patterns[k], 9);
+    q->pattern[k][9] = '\0';
+  }
+  relate_query_masks(q);
+  return;
+}
+
+/**
+ * @brief Return the cells a query reads, every cell where there is no query
+ */
+static inline int
+relate_query_cells(const RelateQuery *q)
+{
+  return q ? q->cells : DE9IM_ALL;
+}
+
+/**
+ * @brief Set the query of the reversed pair, whose matrix is the transpose
+ */
+static void
+relate_query_transpose(const RelateQuery *q, RelateQuery *result)
+{
+  result->count = q->count;
+  for (int k = 0; k < q->count; k++)
+  {
+    for (int r = 0; r < 3; r++)
+      for (int c = 0; c < 3; c++)
+        result->pattern[k][3 * c + r] = q->pattern[k][3 * r + c];
+    result->pattern[k][9] = '\0';
+  }
+  relate_query_masks(result);
+  return;
+}
+
+/**
+ * @brief Return true if no pattern of a query reads a cell of an exterior
+ */
+static bool
+relate_query_reads_no_exterior(const RelateQuery *q)
+{
+  const int exterior = DE9IM_IE | DE9IM_BE | DE9IM_EI | DE9IM_EB | DE9IM_EE;
+  return q && ! (q->cells & exterior);
+}
+
+/**
+ * @brief Return true if the matrix being filled already answers a query
+ * @details A cell only ever rises (#de9im_add), so a pattern is known FALSE
+ * once a cell it reads as `F` holds a dimension or a cell exceeds the dimension
+ * it names, and a pattern reading only `T` and `*` is known TRUE once every
+ * cell it reads as `T` holds one. The query is answered when a
+ * pattern is known true or every pattern is known false. A matrix left
+ * unfinished at that point matches every pattern exactly as the finished one
+ * would, which is what lets a kernel stop there
+ * @param[in] q Query, NULL where the whole matrix is asked for
+ * @param[in] m Matrix being filled
+ */
+static bool
+relate_query_decided(const RelateQuery *q, const MeosDE9IM *m)
+{
+  if (! q)
+    return false;
+  const int8_t cell[9] = {m->ii, m->ib, m->ie, m->bi, m->bb, m->be, m->ei,
+    m->eb, m->ee};
+  int filled = 0;
+  for (int i = 0; i < 9; i++)
+    if (cell[i] != -1)
+      filled |= 1 << i;
+  int known_false = 0;
+  for (int k = 0; k < q->count; k++)
+  {
+    bool is_false = (q->fcells[k] & filled) != 0;
+    for (int i = 0; i < 9 && ! is_false; i++)
+      if (q->dcells[k] & (1 << i))
+        is_false = (cell[i] > q->pattern[k][i] - '0');
+    if (is_false)
+      known_false++;
+    else if (! q->fcells[k] && ! q->dcells[k] &&
+        (q->tcells[k] & ~filled) == 0)
+      return true;
+  }
+  return known_false == q->count;
+}
+
+/**
  * @brief Set all cells of a DE-9IM matrix to F
  */
 static inline void
@@ -4323,6 +4514,8 @@ de9im_init(MeosDE9IM *m)
 
 static POINT2D *relate_linear_boundary_points(Edge **edges, int nedges,
   int *count);
+static int relate_edges_candidates(const RelateEdges *re, double xmin,
+  double xmax, double ymin, double ymax, MeosArray *candidates);
 static MeosArray *relate_extract_edges(const LWGEOM *geom);
 static bool relate_reads_union(const LWGEOM *geom);
 static MeosArray *relate_union_edges(const LWGEOM *geom, MeosArray *all);
@@ -4793,6 +4986,124 @@ relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges,
     if (relate_points_equal(x, y, e->x2, e->y2, vertex))
       count++;
   }
+  return (count & 1) != 0;
+}
+
+/**
+ * @brief The endpoints of the curves of a linear geometry, sorted by their
+ * coordinates, so the endpoints a point equals are found by a binary search
+ * rather than by a scan of every edge
+ * @details The endpoints are those #relate_point_on_linear_boundary counts: both
+ * ends of every non-empty straight or circular linear edge. An endpoint with a
+ * coordinate that is not a number equals no point, so it is left out
+ */
+typedef struct
+{
+  Edge **edges;     /**< Edges of the linear geometry */
+  int nedges;       /**< Number of edges */
+  POINT2D *points;  /**< Endpoints, sorted by x then y, NULL until asked */
+  int count;        /**< Number of endpoints */
+} RelateLinearEnds;
+
+/**
+ * @brief Order two points by x, then by y
+ */
+static int
+relate_point2d_cmp(const void *a, const void *b)
+{
+  const POINT2D *p = (const POINT2D *) a, *q = (const POINT2D *) b;
+  if (p->x < q->x)
+    return -1;
+  if (p->x > q->x)
+    return 1;
+  if (p->y < q->y)
+    return -1;
+  if (p->y > q->y)
+    return 1;
+  return 0;
+}
+
+/**
+ * @brief Set the endpoints of a linear edge array, collected and sorted on the
+ * first question asked of them
+ * @param[out] ends Endpoints
+ * @param[in] edges,nedges Edges of the linear geometry
+ */
+static void
+relate_linear_ends_init(RelateLinearEnds *ends, Edge **edges, int nedges)
+{
+  ends->edges = edges;
+  ends->nedges = nedges;
+  ends->points = NULL;
+  ends->count = 0;
+  return;
+}
+
+/**
+ * @brief Collect and sort the endpoints of a linear edge array
+ */
+static void
+relate_linear_ends_sort(RelateLinearEnds *ends)
+{
+  Edge **edges = ends->edges;
+  int nedges = ends->nedges;
+  ends->points = palloc(sizeof(POINT2D) * (size_t) (2 * nedges + 1));
+  ends->count = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_LINESEG && e->etype != EDGE_LINEARC)
+      continue;
+    if (! relate_edge_nonempty(e))
+      continue;
+    if (! isnan(e->x1) && ! isnan(e->y1))
+    {
+      ends->points[ends->count].x = e->x1;
+      ends->points[ends->count++].y = e->y1;
+    }
+    if (! isnan(e->x2) && ! isnan(e->y2))
+    {
+      ends->points[ends->count].x = e->x2;
+      ends->points[ends->count++].y = e->y2;
+    }
+  }
+  qsort(ends->points, (size_t) ends->count, sizeof(POINT2D),
+    relate_point2d_cmp);
+  return;
+}
+
+/**
+ * @brief Return true if a point is on the Mod-2 boundary of a linear geometry,
+ * read from its sorted endpoints
+ * @details The answer is the one #relate_point_on_linear_boundary gives: the
+ * endpoints the point equals are counted, exactly for an input vertex and
+ * within the MEOS tolerance on each coordinate for a constructed point, and
+ * those endpoints lie in the run of x values the tolerance admits
+ * @param[in] ends Sorted endpoints
+ * @param[in] x,y Coordinates of the point
+ * @param[in] vertex True if the point is an input vertex
+ */
+static bool
+relate_linear_ends_boundary(RelateLinearEnds *ends, double x, double y,
+  bool vertex)
+{
+  if (! ends->points)
+    relate_linear_ends_sort(ends);
+  double tol = vertex ? 0.0 : MEOS_GEOM_TOLERANCE;
+  int lo = 0, hi = ends->count;
+  while (lo < hi)
+  {
+    int mid = lo + (hi - lo) / 2;
+    if (ends->points[mid].x < x - tol)
+      lo = mid + 1;
+    else
+      hi = mid;
+  }
+  int count = 0;
+  for (int i = lo; i < ends->count && ends->points[i].x <= x + tol; i++)
+    if (relate_points_equal(x, y, ends->points[i].x, ends->points[i].y,
+          vertex))
+      count++;
   return (count & 1) != 0;
 }
 
@@ -5579,14 +5890,14 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
  */
 static void
 relate_linear_area_interval(const Edge *line, double t0, double t1,
-  Edge **area_edges, int narea, MeosDE9IM *m)
+  const RelateEdges *ra, MeosDE9IM *m)
 {
   if (t1 - t0 <= MEOS_GEOM_TOLERANCE)
     return;
   double tm = (t0 + t1) * 0.5;
   double x, y;
   relate_edge_point(line, tm, &x, &y);
-  int loc = relate_point_in_area(x, y, area_edges, narea, false);
+  int loc = relate_point_in_area_index(x, y, ra, false);
   switch (loc)
   {
     case 0:
@@ -5778,32 +6089,24 @@ relate_linear_covered(Edge **edges, int nedges, Edge **others, int nothers)
 static POINT2D *
 relate_linear_boundary_points(Edge **edges, int nedges, int *count)
 {
+  /* Equal endpoints sit side by side once sorted, so each distinct endpoint is
+   * one run, on the boundary exactly where the run is odd */
+  RelateLinearEnds ends;
+  relate_linear_ends_init(&ends, edges, nedges);
+  relate_linear_ends_sort(&ends);
   POINT2D *result = palloc(sizeof(POINT2D) * (size_t) (2 * nedges + 1));
   *count = 0;
-  for (int i = 0; i < nedges; i++)
+  for (int i = 0; i < ends.count; )
   {
-    const Edge *e = edges[i];
-    if (e->etype != EDGE_LINESEG && e->etype != EDGE_LINEARC)
-      continue;
-    if (! relate_edge_nonempty(e))
-      continue;
-    for (int k = 0; k < 2; k++)
-    {
-      double x = (k == 0) ? e->x1 : e->x2;
-      double y = (k == 0) ? e->y1 : e->y2;
-      /* Keep a single entry per distinct point */
-      bool seen = false;
-      for (int j = 0; j < *count && ! seen; j++)
-        seen = relate_points_equal(x, y, result[j].x, result[j].y, true);
-      if (seen)
-        continue;
-      if (! relate_point_on_linear_boundary(x, y, edges, nedges, true))
-        continue;
-      result[*count].x = x;
-      result[*count].y = y;
-      (*count)++;
-    }
+    int j = i + 1;
+    while (j < ends.count && ends.points[j].x == ends.points[i].x &&
+        ends.points[j].y == ends.points[i].y)
+      j++;
+    if (((j - i) & 1) != 0)
+      result[(*count)++] = ends.points[i];
+    i = j;
   }
+  pfree(ends.points);
   return result;
 }
 
@@ -6043,13 +6346,64 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
 }
 
 /**
+ * @brief Return true if every cell a caller reads of the matrix of a linear
+ * geometry and an areal one already holds the largest dimension it can
+ * @details The interior of a linear geometry meets anything in at most one
+ * dimension and its boundary, a set of points, in at most zero. A cell only
+ * ever rises, so one holding its largest dimension is final
+ * @param[in] m Matrix being filled
+ * @param[in] want Cells the caller reads, as the #DE9IM_II bits
+ */
+static bool
+relate_linear_area_settled(const MeosDE9IM *m, int want)
+{
+  return (! (want & DE9IM_II) || m->ii == 1) &&
+    (! (want & DE9IM_IB) || m->ib == 1) &&
+    (! (want & DE9IM_IE) || m->ie == 1) &&
+    (! (want & DE9IM_BI) || m->bi == 0) &&
+    (! (want & DE9IM_BB) || m->bb == 0) &&
+    (! (want & DE9IM_BE) || m->be == 0);
+}
+
+/**
+ * @brief Return true if the walk over the linear edges can stop: every cell the
+ * query reads is settled, or the query is answered
+ * @details Both answers depend on the cells alone, so they are read again only
+ * where a cell has changed since the last reading, which a walk over many
+ * edges contributing nothing new never repeats
+ * @param[in] m Matrix being filled
+ * @param[in] want,q Cells and query the matrix answers
+ * @param[in,out] seen Cells at the last reading, all 127 before the first
+ * @param[in,out] stop Answer at the last reading
+ */
+static bool
+relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
+  MeosDE9IM *seen, bool *stop)
+{
+  if (memcmp(m, seen, sizeof(MeosDE9IM)) == 0)
+    return *stop;
+  *seen = *m;
+  *stop = relate_linear_area_settled(m, want) || relate_query_decided(q, m);
+  return *stop;
+}
+
+/**
  * @brief Compute the DE-9IM matrix for a linear geometry and an
  * areal geometry.
+ * @details Only the cells named in @p want are answered, and the walk over the
+ * edges of the linear geometry stops once each of them holds the largest
+ * dimension it can reach, so a pattern asking whether the interiors meet stops
+ * at the first stretch of the line inside the area
+ * @param[in] line_geom,area_geom Geometries
+ * @param[in] ops Operands of the relationship, NULL where there is none
+ * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in,out] m Matrix
  */
 static void
 relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
-  const RelateOperands *ops, MeosDE9IM *m)
+  const RelateOperands *ops, const RelateQuery *q, MeosDE9IM *m)
 {
+  int want = relate_query_cells(q);
   MeosArray *la = relate_borrow_edges(ops, line_geom);
   MeosArray *aa = relate_borrow_edges(ops, area_geom);
   int nl = (int) la->count;
@@ -6060,6 +6414,35 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
     lines[i] = (Edge *) meos_array_get(la, i);
   for (int i = 0; i < na; i++)
     area_edges[i] = (Edge *) meos_array_get(aa, i);
+  /* Whether an endpoint of a linear edge is on the boundary of the linear
+   * geometry is asked for every endpoint, and read from the endpoints sorted
+   * once rather than from a scan of every edge each time */
+  RelateLinearEnds ends;
+  relate_linear_ends_init(&ends, lines, nl);
+  /* Where a point stands against the area, and which boundary edges a linear
+   * edge meets, each read the areal edge array once per linear edge, so the
+   * array is indexed where that product dwarfs a pass over it, the gate the
+   * areal kernel reads */
+  RelateEdges ra;
+  bool index = ((int64) nl * (int64) na >= RELATE_INDEX_MIN_PAIRS);
+  /* The index is built on the first question it answers, so a linear geometry
+   * every edge of which lies apart from the areal extent builds none */
+  relate_edges_init(&ra, area_edges, na, false);
+  bool area_arcs = false;
+  for (int j = 0; j < na && ! area_arcs; j++)
+    area_arcs = (area_edges[j]->etype == EDGE_POLYARC);
+  MeosArray *candidates = NULL;
+  /* The extent of a straight areal geometry, grown by the widest tolerance any
+   * of its edges reads a point on it within */
+  double axmin = DBL_MAX, axmax = -DBL_MAX, aymin = DBL_MAX, aymax = -DBL_MAX;
+  for (int j = 0; j < na; j++)
+  {
+    axmin = fmin(axmin, area_edges[j]->xmin);
+    axmax = fmax(axmax, area_edges[j]->xmax);
+    aymin = fmin(aymin, area_edges[j]->ymin);
+    aymax = fmax(aymax, area_edges[j]->ymax);
+  }
+  double apad = ra.tol + MEOS_GEOM_TOLERANCE;
 
   /* Maximum number of split parameters:
    * - every area edge can contribute at most two intersection parameters;
@@ -6079,10 +6462,11 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
    * linear edges meet it and where they end, and the cell is answered by the
    * first portion found off them. Reading the whole boundary as outside
    * would report a geometry drawn over it as leaving a part uncovered */
+  if (want & DE9IM_EB)
   {
     int maxbparams = 2 * nl + 2;
     double *bparams = palloc(sizeof(double) * maxbparams);
-    for (int j = 0; j < na && m->eb == -1; j++)
+    for (int j = 0; j < na && m->eb == -1 && ! relate_query_decided(q, m); j++)
     {
       const Edge *boundary = area_edges[j];
       if (! relate_area_boundary_edge(boundary))
@@ -6134,23 +6518,75 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
     }
     pfree(bparams);
   }
-  for (int i = 0; i < nl; i++)
+  MeosDE9IM seen;
+  memset(&seen, 127, sizeof(MeosDE9IM));
+  bool stop = false;
+  for (int i = 0; i < nl && ! relate_linear_area_stop(m, want, q, &seen,
+       &stop); i++)
   {
     const Edge *line = lines[i];
     if (line->etype != EDGE_LINESEG && line->etype != EDGE_LINEARC)
       continue;
+    /* A straight edge whose box lies apart from the extent of a straight
+     * areal geometry meets none of its boundary edges, and every point of it
+     * lies in the exterior of a closed ring set, so the edge contributes what
+     * the steps below compute for it: its one open portion in the exterior,
+     * and an endpoint on the linear boundary in the exterior as well */
+    bool edge_apart = ! area_arcs && line->etype == EDGE_LINESEG &&
+      (line->xmax < axmin - apad || line->xmin > axmax + apad ||
+       line->ymax < aymin - apad || line->ymin > aymax + apad);
+    /* Its endpoints are read by parity only where they are input vertices the
+     * edge carries, the case the endpoint step below reads the same way */
+    bool ends_read = ! (want & DE9IM_BE) || (relate_edge_nonempty(line) &&
+      isfinite(line->x1) && isfinite(line->y1) && isfinite(line->x2) &&
+      isfinite(line->y2));
+    if (edge_apart && ends_read)
+    {
+      de9im_add(&m->ie, 1);
+      if ((want & DE9IM_BE) && ! relate_query_decided(q, m) &&
+          (relate_linear_ends_boundary(&ends, line->x1, line->y1, true) ||
+           relate_linear_ends_boundary(&ends, line->x2, line->y2, true)))
+        de9im_add(&m->be, 0);
+      continue;
+    }
+    if (index && ! ra.index)
+    {
+      relate_edges_index_build(&ra);
+      candidates = index_result_create();
+    }
     int nparams = 0;
     /* The edge endpoints delimit the complete edge. */
     params[nparams++] = 0.0;
     params[nparams++] = 1.0;
-    /* Intersect this linear edge with every area boundary edge. */
-    for (int j = 0; j < na; j++)
+    /* Intersect this linear edge with the area boundary edges. Two straight
+     * edges meet only where their boxes meet, as the exact segment kernel
+     * decides, so for a straight edge against straight boundary edges the ones
+     * the index answers are the ones the scan finds meeting it; the parameters
+     * are sorted below, so the order they are found in reads nothing */
+    int nc = (candidates && line->etype == EDGE_LINESEG && ! area_arcs) ?
+      relate_edges_candidates(&ra, line->xmin, line->xmax, line->ymin,
+        line->ymax, candidates) : INT_MAX;
+    if (nc != INT_MAX)
     {
-      const Edge *boundary = area_edges[j];
-      if (boundary->etype != EDGE_POLYSEG && boundary->etype != EDGE_POLYARC)
-        continue;
-      relate_linear_area_edge_intersection(line, boundary, lines, nl, m,
-        params, &nparams, maxparams);
+      for (int c = 0; c < nc; c++)
+      {
+        const Edge *boundary = area_edges[INDEX_RESULT_ID_N(candidates, c)];
+        if (boundary->etype != EDGE_POLYSEG)
+          continue;
+        relate_linear_area_edge_intersection(line, boundary, lines, nl, m,
+          params, &nparams, maxparams);
+      }
+    }
+    else
+    {
+      for (int j = 0; j < na; j++)
+      {
+        const Edge *boundary = area_edges[j];
+        if (boundary->etype != EDGE_POLYSEG && boundary->etype != EDGE_POLYARC)
+          continue;
+        relate_linear_area_edge_intersection(line, boundary, lines, nl, m,
+          params, &nparams, maxparams);
+      }
     }
 
     /* Sort and remove duplicate parameters. */
@@ -6168,8 +6604,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
      * intersections. */
     for (int j = 0; j < nuniq - 1; j++)
     {
-      relate_linear_area_interval(line, params[j], params[j + 1], area_edges,
-        na, m);
+      relate_linear_area_interval(line, params[j], params[j + 1], &ra, m);
     }
 
     /* Classify the two endpoints of the linear edge.
@@ -6180,10 +6615,23 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
     {
       double x = endpoint == 0 ? line->x1 : line->x2;
       double y = endpoint == 0 ? line->y1 : line->y2;
-      int lloc = relate_point_in_linear(x, y, lines, nl, true);
+      /* Where the endpoint stands against the area names the two cells it can
+       * feed, one for the interior and one for the boundary of the linear
+       * geometry, and its linear location is read only where the query reads
+       * either of them */
+      int aloc = relate_point_in_area_index(x, y, &ra, true);
+      static const int icell[3] = {DE9IM_II, DE9IM_IB, DE9IM_IE};
+      static const int bcell[3] = {DE9IM_BI, DE9IM_BB, DE9IM_BE};
+      if (! (want & (icell[aloc] | bcell[aloc])))
+        continue;
+      /* An input vertex lies on the straight edge it ends, exactly, so it is
+       * in the linear geometry and only its boundary parity is read */
+      int lloc = (line->etype == EDGE_LINESEG && relate_edge_nonempty(line) &&
+          isfinite(x) && isfinite(y)) ?
+        (relate_linear_ends_boundary(&ends, x, y, true) ? 1 : 0) :
+        relate_point_in_linear(x, y, lines, nl, true);
       if (lloc == 2)
         continue;
-      int aloc = relate_point_in_area(x, y, area_edges, na, true);
       if (lloc == 0)
       {
         /* Linear interior ∩ area. An endpoint contributes dimension 0, which
@@ -6212,23 +6660,27 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
   /* If the linear geometry has a non-empty boundary, its boundary
    * is zero-dimensional. We therefore also need to account for the
    * boundary's intersection with the area exterior when the boundary
-   * is not completely contained in the area closure. */
+   * is not completely contained in the area closure. A caller not reading
+   * that cell, or a cell already holding the one dimension it can reach, is
+   * spared the search */
   bool has_boundary = false;
-  for (int i = 0; i < nl && !has_boundary; i++)
+  for (int i = 0; (want & DE9IM_BE) && m->be != 0 &&
+       ! relate_query_decided(q, m) && i < nl && !has_boundary; i++)
   {
     const Edge *line = lines[i];
     if (line->etype != EDGE_LINESEG && line->etype != EDGE_LINEARC)
       continue;
     if (! relate_edge_nonempty(line))
       continue;
-    if (relate_point_on_linear_boundary(line->x1, line->y1, lines, nl,
-          true) ||
-        relate_point_on_linear_boundary(line->x2, line->y2, lines, nl, true))
+    if (relate_linear_ends_boundary(&ends, line->x1, line->y1, true) ||
+        relate_linear_ends_boundary(&ends, line->x2, line->y2, true))
       has_boundary = true;
   }
 
   if (has_boundary)
   {
+    if (index && ! ra.index)
+      relate_edges_index_build(&ra);
     /*
      * BE is present whenever a linear boundary point lies outside
      * the area.
@@ -6244,16 +6696,21 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       const double y[2] = {line->y1, line->y2};
       for (int k = 0; k < 2; k++)
       {
-        if (!relate_point_on_linear_boundary(x[k], y[k], lines, nl, true))
+        if (! relate_linear_ends_boundary(&ends, x[k], y[k], true))
           continue;
-        int aloc = relate_point_in_area(x[k], y[k], area_edges, na, true);
+        int aloc = relate_point_in_area_index(x[k], y[k], &ra, true);
         if (aloc == 2)
           m->be = 0;
       }
     }
   }
 
+  relate_edges_clear(&ra);
+  if (candidates)
+    meos_array_destroy(candidates);
   pfree(params); pfree(lines); pfree(area_edges);
+  if (ends.points)
+    pfree(ends.points);
   relate_return_edges(ops, la); relate_return_edges(ops, aa);
   return;
 }
@@ -6267,11 +6724,14 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
  */
 static void
 relate_area_linear(const LWGEOM *area_geom, const LWGEOM *line_geom,
-  const RelateOperands *ops, MeosDE9IM *m)
+  const RelateOperands *ops, const RelateQuery *q, MeosDE9IM *m)
 {
   MeosDE9IM tmp;
   de9im_init(&tmp);
-  relate_linear_area(line_geom, area_geom, ops, &tmp);
+  RelateQuery tq;
+  if (q)
+    relate_query_transpose(q, &tq);
+  relate_linear_area(line_geom, area_geom, ops, q ? &tq : NULL, &tmp);
 
   m->ii = tmp.ii;
   m->ib = tmp.bi;
@@ -7065,7 +7525,7 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
  */
 static void
 relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
-  const RelateOperands *ops, MeosDE9IM *m)
+  const RelateOperands *ops, const RelateQuery *q, MeosDE9IM *m)
 {
   MeosArray *a1 = relate_borrow_edges(ops, g1);
   MeosArray *a2 = relate_borrow_edges(ops, g2);
@@ -7092,6 +7552,11 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
   {
     m->ii = 2;
   }
+
+  /* Every pattern of TOUCHES reads the interiors as not meeting, so once they
+   * meet the query is answered and no other cell is read */
+  if (relate_query_decided(q, m))
+    goto done;
 
   /* Boundary(A) / Interior(B) and Interior(A) / Boundary(B) are determined by
    * splitting every boundary edge at the intersections with the other
@@ -7151,6 +7616,7 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
    * two-dimensional common exterior. */
   de9im_add(&m->ee, 2);
 
+done:
   relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
   relate_return_edges(ops, a1); relate_return_edges(ops, a2);
@@ -8414,7 +8880,7 @@ relate_count_comps(const LWGEOM *geom)
  */
 static void
 relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
-  const RelateOperands *ops, MeosDE9IM *m)
+  const RelateOperands *ops, const RelateQuery *q, MeosDE9IM *m)
 {
   if (mask1 == 1 && mask2 == 1)
     relate_point_point(g1, g2, m);
@@ -8429,11 +8895,11 @@ relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
   else if (mask1 == 2 && mask2 == 2)
     relate_linear_linear(g1, g2, ops, m);
   else if (mask1 == 2 && mask2 == 4)
-    relate_linear_area(g1, g2, ops, m);
+    relate_linear_area(g1, g2, ops, q, m);
   else if (mask1 == 4 && mask2 == 2)
-    relate_area_linear(g1, g2, ops, m);
+    relate_area_linear(g1, g2, ops, q, m);
   else
-    relate_area_area(g1, g2, ops, m);
+    relate_area_area(g1, g2, ops, q, m);
   return;
 }
 
@@ -8451,12 +8917,12 @@ relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  */
 static void
 relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
-  const RelateOperands *ops, MeosDE9IM *m)
+  const RelateOperands *ops, const RelateQuery *q, MeosDE9IM *m)
 {
   /* A single dimension on each side is answered directly */
   if ((mask1 & (mask1 - 1)) == 0 && (mask2 & (mask2 - 1)) == 0)
   {
-    relate_simple(g1, g2, mask1, mask2, ops, m);
+    relate_simple(g1, g2, mask1, mask2, ops, q, m);
     return;
   }
 
@@ -8483,7 +8949,12 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
       if (present[j][k])
       {
         de9im_init(&cells[j][k]);
-        relate_simple(s1[j], s2[k], 1 << j, 1 << k, ops, &cells[j][k]);
+        /* The strata merge their interior and boundary cells by the largest
+         * dimension and their exterior cells by the smallest, so a stratum
+         * may stop early only for a query reading no exterior: a cell it
+         * leaves short then lowers no merged cell a pattern reads */
+        relate_simple(s1[j], s2[k], 1 << j, 1 << k, ops,
+          relate_query_reads_no_exterior(q) ? q : NULL, &cells[j][k]);
       }
     }
 
@@ -8548,18 +9019,115 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
 }
 
 /**
+ * @brief Set the cells of the DE-9IM matrix of two geometries that share no
+ * point
+ * @details Neither geometry meets the other, so the interior and the boundary
+ * of each fall entirely in the exterior of the other, each keeping its own
+ * dimension, and the two exteriors meet in dimension 2. An empty geometry
+ * contributes nothing. Only the cells the query reads are set, and the two
+ * boundary cells last and only where the others leave the query undecided: the
+ * dimension of the boundary of a linear geometry reads the parity of all its
+ * endpoints, which a query answered by the interiors does not pay
+ * @param[in] g1,g2 Geometries
+ * @param[in] q Query, NULL for the whole matrix
+ * @param[in,out] m Matrix, initialized by the caller
+ */
+static void
+relate_matrix_apart(const LWGEOM *g1, const LWGEOM *g2, const RelateQuery *q,
+  MeosDE9IM *m)
+{
+  int want = relate_query_cells(q);
+  bool empty1 = lwgeom_is_empty(g1), empty2 = lwgeom_is_empty(g2);
+  de9im_add(&m->ee, 2);
+  if (! empty2 && (want & DE9IM_EI))
+    de9im_add(&m->ei, (int8_t) relate_dimension(g2));
+  if (! empty1 && (want & DE9IM_IE))
+    de9im_add(&m->ie, (int8_t) relate_dimension(g1));
+  if (relate_query_decided(q, m))
+    return;
+  /* Every cell but the two boundary ones is final here, so a query none of
+   * whose patterns can match whatever those two hold is answered already */
+  if (q)
+  {
+    char matrix[10];
+    de9im_to_string(m, matrix);
+    bool possible = false;
+    for (int k = 0; k < q->count && ! possible; k++)
+    {
+      char pattern[10];
+      memcpy(pattern, q->pattern[k], 10);
+      pattern[5] = pattern[7] = '*';
+      possible = de9im_match(matrix, pattern);
+    }
+    if (! possible)
+      return;
+  }
+  if (! empty2 && (want & DE9IM_EB))
+    de9im_add(&m->eb, relate_boundary_dimension(g2));
+  if (! empty1 && (want & DE9IM_BE))
+    de9im_add(&m->be, relate_boundary_dimension(g1));
+  return;
+}
+
+/**
+ * @brief Return true if the extents of two geometries lie apart by more than
+ * any tolerance the engine reads a meeting within
+ * @details The extent of a geometry drawn with straight edges is the minimum
+ * and maximum of its input coordinates, which are exact. The engine reads two
+ * points within the MEOS tolerance, and a point within the rounding of an
+ * edge's own coordinates, as meeting, so the extents are compared with a
+ * margin a thousand times the larger of the two: a pair the test separates is
+ * a pair the engine reads as sharing no point. An arc is read on its own
+ * circle within a tolerance that grows with its radius, which its extent does
+ * not bound, so a geometry carrying one is never separated here
+ * @param[in] g1,g2 Geometries, neither empty
+ */
+static bool
+relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
+{
+  if (lwgeom_has_arc(g1) || lwgeom_has_arc(g2))
+    return false;
+  /* The matrix of two geometries apart reads the dimension of each from
+   * #relate_dimension, while the kernels read it from what the geometry draws
+   * (#relate_dim_mask): a ring enclosing no area is a surface to the first and
+   * the linework it traces to the second. Only a geometry both read alike is
+   * answered here */
+  const LWGEOM *g[2] = {g1, g2};
+  for (int k = 0; k < 2; k++)
+  {
+    int mask = relate_dim_mask(g[k]);
+    int drawn = (mask & 4) ? 2 : (mask & 2) ? 1 : (mask & 1) ? 0 : -1;
+    if (drawn != relate_dimension(g[k]))
+      return false;
+  }
+  GBOX box1, box2;
+  if (lwgeom_calculate_gbox_cartesian(g1, &box1) != LW_SUCCESS ||
+      lwgeom_calculate_gbox_cartesian(g2, &box2) != LW_SUCCESS)
+    return false;
+  double extent = fmax(fmax(fabs(box1.xmin), fabs(box1.xmax)),
+    fmax(fabs(box1.ymin), fabs(box1.ymax)));
+  extent = fmax(extent, fmax(fmax(fabs(box2.xmin), fabs(box2.xmax)),
+    fmax(fabs(box2.ymin), fabs(box2.ymax))));
+  double margin = 1000.0 * coordinate_tolerance(extent, extent);
+  return box1.xmax + margin < box2.xmin || box2.xmax + margin < box1.xmin ||
+    box1.ymax + margin < box2.ymin || box2.ymax + margin < box1.ymin;
+}
+
+/**
  * @brief Compute the DE-9IM intersection matrix, reading the edges a
  * relationship has already extracted where it has any
  * @param[in] g1,g2 Geometries
  * @param[in] ops Operands of the relationship the matrix answers a step of,
  * NULL where the matrix is asked for on its own
- * @param[out] result The matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[out] result The matrix, which matches every pattern of @p q exactly
+ * as the whole matrix does; where @p q is NULL it is the whole matrix
  * @return true if the geometry pair is supported, which is what
  * #geom_meos_coverage answers 1 for each geometry
  */
 static bool
 relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
-  char result[10])
+  const RelateQuery *q, char result[10])
 {
   assert(g1); assert(g2); assert(result);
 
@@ -8571,31 +9139,20 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
   MeosDE9IM m;
   de9im_init(&m);
 
-  /* An empty operand meets nothing, so the interior and the boundary of the
-   * other operand fall entirely in its exterior, each keeping its own
-   * dimension. The two exteriors meet in dimension 2 */
-  bool empty1 = lwgeom_is_empty(g1);
-  bool empty2 = lwgeom_is_empty(g2);
-  if (empty1 || empty2)
+  /* An empty operand meets nothing, and neither do two geometries whose
+   * extents lie apart, which a handful of comparisons settles before a single
+   * edge is extracted */
+  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2) ||
+      relate_extents_apart(g1, g2))
   {
-    if (! empty2)
-    {
-      de9im_add(&m.ei, (int8_t) relate_dimension(g2));
-      de9im_add(&m.eb, relate_boundary_dimension(g2));
-    }
-    if (! empty1)
-    {
-      de9im_add(&m.ie, (int8_t) relate_dimension(g1));
-      de9im_add(&m.be, relate_boundary_dimension(g1));
-    }
-    de9im_add(&m.ee, 2);
+    relate_matrix_apart(g1, g2, q, &m);
     de9im_to_string(&m, result);
     return true;
   }
 
   int mask1 = relate_dim_mask(g1);
   int mask2 = relate_dim_mask(g2);
-  relate_dispatch(g1, g2, mask1, mask2, ops, &m);
+  relate_dispatch(g1, g2, mask1, mask2, ops, q, &m);
 
   de9im_to_string(&m, result);
   return true;
@@ -8612,7 +9169,7 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 bool
 meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
 {
-  return relate_matrix(g1, g2, NULL, result);
+  return relate_matrix(g1, g2, NULL, NULL, result);
 }
 
 /**
@@ -9226,8 +9783,20 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
       *result = false;
     else
     {
+      static const char *const contains[] = {"T*****FF*"};
+      static const char *const touches[] = {"FT*******", "F**T*****",
+        "F***T****"};
+      static const char *const covers[] = {"T*****FF*", "*T****FF*",
+        "***T**FF*", "****T*FF*"};
+      RelateQuery q;
+      if (rel == CONTAINS)
+        relate_query_init(&q, contains, 1);
+      else if (rel == TOUCHES)
+        relate_query_init(&q, touches, 3);
+      else
+        relate_query_init(&q, covers, 4);
       char m[10];
-      covered = relate_matrix(g1, g2, &ops, m);
+      covered = relate_matrix(g1, g2, &ops, &q, m);
       if (covered)
         switch (rel)
         {
@@ -9393,9 +9962,13 @@ bool
 meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern,
   bool *result)
 {
-  assert(result);
+  assert(g1); assert(g2); assert(pattern); assert(result);
+  /* A pattern reads the cells it does not mark `*`, and those are the cells
+   * the matrix is computed for */
+  RelateQuery q;
+  relate_query_init(&q, &pattern, 1);
   char matrix[10];
-  if (! meos_relate(g1, g2, matrix))
+  if (! relate_matrix(g1, g2, NULL, &q, matrix))
     return false;
   *result = de9im_match(matrix, pattern);
   return true;
