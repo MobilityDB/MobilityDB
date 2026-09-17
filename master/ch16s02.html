@@ -28,7 +28,7 @@ asEWKB(tcell,endian text='') → bytea
 asHexWKB(tcell,endian text='') → text
 asHexEWKB(tcell,endian text='') → text
 asMFJSON(tcell) → text
-</pre><p>The extended forms <code class="varname">asEWKT</code>, <code class="varname">asEWKB</code> and <code class="varname">asHexEWKB</code> state the SRID 4326 of a cell, which the other forms omit. The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <code class="varname">COPY</code>. In MF-JSON the cell payload renders as the int64 cell identifier in the <code class="varname">values</code> array, the same representation <code class="varname">tbigint</code> carries.</p><pre class="programlisting">
+</pre><p>The extended forms <code class="varname">asEWKT</code>, <code class="varname">asEWKB</code> and <code class="varname">asHexEWKB</code> state the SRID 4326 of a cell, which the other forms omit. The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <code class="varname">COPY</code>. In MF-JSON each cell of the <code class="varname">values</code> array is its text form in a JSON string, the hexadecimal index of H3 and QUADBIN and the token of S2, since a JSON reader holding its numbers as double precision numbers loses the low bits of a 64-bit cell identifier, and the <code class="varname">bbox</code> member states the spatiotemporal box of the cells.</p><pre class="programlisting">
 SELECT asEWKT(th3index '831c02fffffffff@2001-01-01');
 -- SRID=4326;831c02fffffffff@2001-01-01
 SELECT asHexEWKB(th3index '831c02fffffffff@2001-01-01');
@@ -39,6 +39,10 @@ SELECT asHexWKB(tquadbin '48a6227affffffff@2001-01-01');
 -- 01490001FFFFFFFF7A22A6480060885EC91C0000
 SELECT asHexWKB(ts2cell '47c3c@2001-01-01');
 -- 015700210000000000C0C3470060885EC91C0000
+SELECT asMFJSON(tquadbin '48a6227affffffff@2001-01-01');
+/* {"type":"MovingQuadbin","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},
+   "values":["48a6227affffffff"],"datetimes":["2001-01-01T00:00:00+00:00"],
+   "interpolation":"None"} */
 </pre></li><li class="listitem"><a name="tcell_frombinary"></a><a class="indexterm" name="id12475"></a><a class="indexterm" name="id12478"></a><a class="indexterm" name="id12481"></a><a class="indexterm" name="id12484"></a><a class="indexterm" name="id12487"></a><a class="indexterm" name="id12490"></a><a class="indexterm" name="id12493"></a><p>Reconstruct a temporal cell from its text, binary, hexadecimal, or MF-JSON representation</p><pre class="programlisting">
 tcellFromText(text) → tcell
 tcellFromEWKT(text) → tcell
@@ -47,12 +51,18 @@ tcellFromEWKB(bytea) → tcell
 tcellFromHexWKB(text) → tcell
 tcellFromHexEWKB(text) → tcell
 tcellFromMFJSON(text) → tcell
-</pre><p>An SRID stated by an extended input must be 4326, the SRID of a cell.</p><pre class="programlisting">
+</pre><p>An SRID stated by an extended input must be 4326, the SRID of a cell. The MF-JSON input reads a cell written as its text form in a JSON string, and a cell written as the JSON number of its 64-bit identifier.</p><pre class="programlisting">
 SELECT ts2cellFromText('47c3c@2001-01-01');
 -- 47c3c@2001-01-01
 SELECT th3indexFromEWKT('SRID=4326;831c02fffffffff@2001-01-01');
 -- 831c02fffffffff@2001-01-01
 SELECT tquadbinFromEWKB(asEWKB(tquadbin '48a6227affffffff@2001-01-01'));
+-- 48a6227affffffff@2001-01-01
+SELECT tquadbinFromMFJSON('{"type":"MovingQuadbin","values":["48a6227affffffff"],
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"}');
+-- 48a6227affffffff@2001-01-01
+SELECT tquadbinFromMFJSON('{"type":"MovingQuadbin","values":[5234909528541102079],
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"}');
 -- 48a6227affffffff@2001-01-01
 SELECT th3indexFromHexWKB(asHexWKB(th3index '831c02fffffffff@2001-01-01'));
 -- 831c02fffffffff@2001-01-01
