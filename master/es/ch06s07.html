@@ -103,30 +103,34 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 </pre></li><li class="listitem"><a name="tnumber_ln"></a><a class="indexterm" name="id4735"></a><a class="indexterm" name="id4738"></a><p>Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</p><pre class="programlisting">
 ln(tfloat) → tfloat
 log10(tfloat) → tfloat
-</pre><p>El número flotante temporal no puede ser cero o negativo</p><pre class="programlisting">
+</pre><p>El número flotante temporal no puede ser cero o negativo. Con interpolación lineal, el resultado tiene, en cada segmento, los instantes del segmento y el instante en el que la interpolación lineal más se aleja del logaritmo, y se interpola linealmente entre ellos</p><pre class="programlisting">
 SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 1@2001-01-05]}');
-/* {[0@2001-01-01, 2.302585092994046@2001-01-02, 1.6094379124341@2001-01-03], 
-   [0@2001-01-04, 0@2001-01-05]} */
+/* {[0@2001-01-01, 1.363192132076512@2001-01-01 07:45:23.043236,
+   2.302585092994046@2001-01-02, 1.975950833017318@2001-01-02 13:22:31.148467,
+   1.6094379124341@2001-01-03], [0@2001-01-04, 0@2001-01-05]} */
 SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 -- ERROR:  Cannot take logarithm of zero or a negative number
 </pre></li><li class="listitem"><a name="tnumber_exp"></a><a class="indexterm" name="id4746"></a><p>Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</p><pre class="programlisting">
 exp(tfloat) → tfloat
-</pre><pre class="programlisting">
+</pre><p>Con interpolación lineal, el resultado tiene, en cada segmento, los instantes del segmento y el instante en el que la interpolación lineal más se aleja de la exponencial, y se interpola linealmente entre ellos</p><pre class="programlisting">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}');
-/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02],
+/* {[2.718281828459045@2001-01-01, 2447.0830569101154@2001-01-01 18:08:25.45925,
+   22026.465794806718@2001-01-02],
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
 SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
-</pre></li><li class="listitem"><a name="tnumber_sin"></a><a class="indexterm" name="id4753"></a><a class="indexterm" name="id4756"></a><a class="indexterm" name="id4759"></a><p>Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_sin"></a><a class="indexterm" name="id4754"></a><a class="indexterm" name="id4757"></a><a class="indexterm" name="id4760"></a><p>Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</p><pre class="programlisting">
 sin(tfloat) → tfloat
 cos(tfloat) → tfloat
 tan(tfloat) → tfloat
-</pre><pre class="programlisting">
+</pre><p>Con interpolación lineal, el resultado de <code class="varname">sin</code> y <code class="varname">cos</code> tiene, en cada segmento, los instantes del segmento y los de los extremos de la función, el resultado de <code class="varname">tan</code> se refina por bisección donde la función es empinada, y el resultado se interpola linealmente entre sus instantes. El número flotante temporal de <code class="varname">tan</code> no puede alcanzar π/2 más un múltiplo de π, en un instante o a lo largo de un segmento con interpolación lineal</p><pre class="programlisting">
 SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
--- [0@2001-01-01, -0.000000@2001-01-02]
+-- [0@2001-01-01, 1@2001-01-01 06:00:00.000001, -1@2001-01-01 18:00:00.000002, 0@2001-01-02]
 SELECT round(cos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
 -- [1@2001-01-01, -1@2001-01-02]
 SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
 -- {0@2001-01-01, 1@2001-01-02}
+SELECT tan(tfloat '[0@2001-01-01, 3@2001-01-02]');
+-- ERROR:  Cannot take the tangent of pi/2 plus a multiple of pi
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch06s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones booleanas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de texto</td></tr></table></div></body></html>
