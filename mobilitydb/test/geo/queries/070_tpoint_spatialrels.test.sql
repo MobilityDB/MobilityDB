@@ -271,6 +271,10 @@ SELECT eIntersects(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '{[Point(1 1)@
 SELECT eIntersects(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 SELECT eIntersects(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 SELECT eIntersects(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+-- A piece lying where the other value has no position decides neither
+-- quantifier: the two never meet, so they are always disjoint
+SELECT aDisjoint(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02], [Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '{[Point(0 5)@2001-01-04, Point(1 5)@2001-01-07]}');
+SELECT eIntersects(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02], [Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '{[Point(0 5)@2001-01-04, Point(1 5)@2001-01-07]}');
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2001-01-01');

@@ -3065,9 +3065,11 @@ eafunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     int res = eafunc_tcontseq_tcontseq(seq1, seq, lfinfo);
+    /* A piece sharing no time with the sequence (-1) decides neither
+     * quantifier */
     if (lfinfo->ever && res == 1)
       return 1;
-    else if (! lfinfo->ever && res != 1)
+    else if (! lfinfo->ever && res == 0)
       return 0;
     int cmp = timestamptz_cmp_internal(upper,
       DatumGetTimestampTz(seq1->period.upper));
@@ -3118,9 +3120,10 @@ eafunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, j);
     int res = eafunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+    /* Two pieces sharing no time (-1) decide neither quantifier */
     if (lfinfo->ever && res == 1)
       return 1;
-    else if (! lfinfo->ever && res != 1)
+    else if (! lfinfo->ever && res == 0)
       return 0;
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
       DatumGetTimestampTz(seq2->period.upper));
