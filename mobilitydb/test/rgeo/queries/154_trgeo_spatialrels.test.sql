@@ -266,4 +266,32 @@ SELECT aDwithin(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(3 0),0)@2001-01-01',
   3.0);
 
+-- Two rigid geometries sharing no instant are compared nowhere: the placements
+-- each passes through hold at times the other never holds
+SELECT eContains(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+SELECT aContains(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+SELECT aTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+-- Two sets of instants interleaving without sharing one hold no instant in common
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-03}',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));{Pose(Point(0 0),0)@2001-01-02, Pose(Point(0 0),0)@2001-01-04}');
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-03}',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(1 0),0)@2001-01-02, Pose(Point(1 0),0)@2001-01-04}');
+
 -------------------------------------------------------------------------------

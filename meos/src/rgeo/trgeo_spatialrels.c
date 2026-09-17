@@ -215,6 +215,11 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
+  /* Common-time gate: the placements below hold where each body passes and carry no time,
+   * so two rigid geometries sharing no instant would be related through positions they
+   * never hold together */
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
   GSERIALIZED *places1 = trgeo_placements(temp1);
   GSERIALIZED *places2 = trgeo_placements(temp2);
   bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
@@ -372,6 +377,9 @@ int
 ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return -1;
+  /* Common-time gate, as in #ea_contains_trgeo_trgeo: the placements carry no time */
+  if (! temporal_time_overlaps(temp1, temp2))
     return -1;
   GSERIALIZED *places1 = trgeo_placements(temp1);
   GSERIALIZED *places2 = trgeo_placements(temp2);
@@ -657,6 +665,9 @@ int
 ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return -1;
+  /* Common-time gate, as in #ea_contains_trgeo_trgeo: the placements carry no time */
+  if (! temporal_time_overlaps(temp1, temp2))
     return -1;
   GSERIALIZED *places1 = trgeo_placements(temp1);
   GSERIALIZED *places2 = trgeo_placements(temp2);

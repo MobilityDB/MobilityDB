@@ -426,3 +426,67 @@ SELECT aDwithin(
  f
 (1 row)
 
+SELECT eContains(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT aContains(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+ acontains 
+-----------
+ 
+(1 row)
+
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+ acovers 
+---------
+ 
+(1 row)
+
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+ etouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-03}',
+  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));{Pose(Point(0 0),0)@2001-01-02, Pose(Point(0 0),0)@2001-01-04}');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-03}',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(1 0),0)@2001-01-02, Pose(Point(1 0),0)@2001-01-04}');
+ etouches 
+----------
+ 
+(1 row)
+
