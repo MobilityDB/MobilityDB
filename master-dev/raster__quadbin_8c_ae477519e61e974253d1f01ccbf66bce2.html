@@ -164,7 +164,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Close a run at a timestamp and append it to the answer. </p>
-<p >The last value of the run holds up to <code>t</code>. A run whose upper bound is exclusive ends on the value it holds before <code>t</code>, so a value the trip reaches at <code>t</code> itself, which it holds for no time before the run ends, is not part of the run. </p>
+<p >The last value of the run holds up to <code>t</code>. A run whose upper bound is exclusive ends on the value it holds before <code>t</code>, so a value the trip reaches at <code>t</code> itself, which it holds for no time before the run ends, is not part of the run, and a run holding only such a value holds no time at all and is not part of the answer. </p>
 
 </div>
 </div>
