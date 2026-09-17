@@ -347,6 +347,31 @@ point_in_polygon_index(double x, double y, Edge **edges, int nedges,
 }
 
 /**
+ * @brief Return true if a point is located in a polygon, reading the edges the
+ * ray from it can meet out of an index into an array the caller owns
+ * @details The answer is the one #point_in_polygon_index gives, or
+ * #point_in_polygon_index_vertex for an input vertex. A caller asking many
+ * points of one index holds one array for all of them, made and released with
+ * the index
+ * @param[in] x,y Point
+ * @param[in] edges,nedges Edges the index is built over, in its own order
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] xmax Greatest x the edges reach, which bounds the ray
+ * @param[in] results Array the search collects its ids into, made by
+ * #index_result_create, or @p NULL when @p rtree is @p NULL
+ * @param[in] vertex True if the point is an input vertex
+ */
+int
+point_in_polygon_index_into(double x, double y, Edge **edges, int nedges,
+  const RTree *rtree, double xmax, MeosArray *results, bool vertex)
+{
+  if (! rtree)
+    return point_in_polygon_impl(x, y, edges, nedges, NULL, 0.0, NULL, vertex);
+  return point_in_polygon_impl(x, y, edges, nedges, rtree, xmax, results,
+    vertex);
+}
+
+/**
  * @brief Return true if an input vertex is located in a polygon, reading the
  * edges the ray from it can meet out of an index
  * @details The answer is the one #point_in_polygon_vertex gives, and the ids

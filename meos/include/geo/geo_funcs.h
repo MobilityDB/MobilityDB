@@ -192,6 +192,9 @@ extern int point_in_polygon_index(double x, double y, Edge **edges,
   int nedges, const RTree *rtree, double xmax);
 extern int point_in_polygon_index_vertex(double x, double y, Edge **edges,
   int nedges, const RTree *rtree, double xmax);
+extern int point_in_polygon_index_into(double x, double y, Edge **edges,
+  int nedges, const RTree *rtree, double xmax, MeosArray *results,
+  bool vertex);
 /**
  * @brief Return true if a polygon ring turns the same way at every vertex,
  * which is what makes it convex
@@ -251,6 +254,8 @@ typedef struct
   Edge **edges;   /**< Edges the array holds */
   int nedges;     /**< Number of edges */
   RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
+  MeosArray *results; /**< Array a search of the index collects ids into,
+                           made and released with the index, NULL without it */
   double xmax;    /**< Greatest x the edges reach */
   double tol;     /**< Widest tolerance any of the edges asks for */
 } RelateEdges;
