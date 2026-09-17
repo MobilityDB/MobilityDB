@@ -33,14 +33,13 @@
  * from the native engines for a build carrying no GEOS
  * @details The raster core is the one part of the vendored PostGIS that calls
  * GEOS directly rather than through the geometry library, so leaving out the
- * geometry library's GEOS files does not free it: three of its sources still
- * ask GEOS for a spatial relationship, a union, or a conversion between the
- * two geometry models. Rewriting them would mean editing vendored code, which
- * every PostGIS release would then conflict with, so the entry points they
- * call are answered here instead and the vendored sources stay as they came.
+ * geometry library's GEOS files does not free it. The relationships it asks
+ * are answered where it asks them, by the native engine those sources name
+ * themselves. What is left here is the union the polygonizing path computes
+ * over a set of polygons, and the conversion between the two geometry models
+ * that union is stated over.
  *
- * What answers them is what MEOS already carries. A spatial relationship is
- * the DE-9IM matrix #meos_relate() computes exactly, a union is the dissolve
+ * What answers them is what MEOS already carries: a union is the dissolve
  * #geom_unary_union() reads from the boundaries, and the conversion between
  * the two geometry models is a copy: a @p GEOSGeometry is an @p LWGEOM here,
  * so nothing is serialized and no round trip is paid.
@@ -215,98 +214,6 @@ char
 GEOSisValid(const GEOSGeometry *geom)
 {
   return geom ? 1 : 0;
-}
-
-/*****************************************************************************
- * Spatial relationships
- * Each is the DE-9IM matrix the native engine computes, matched against the
- * pattern the standard gives the relationship
- *****************************************************************************/
-
-/**
- * @brief Return whether two geometries stand in the relationship a DE-9IM
- * pattern gives, reporting 2 where the relationship is not answered, as the
- * GEOS one does
- */
-static char
-geos_none_pattern(const GEOSGeometry *geom1, const GEOSGeometry *geom2,
-  const char *pattern)
-{
-  char matrix[10];
-  if (! geom1 || ! geom2)
-    return 2;
-  if (! meos_relate((const LWGEOM *) geom1, (const LWGEOM *) geom2, matrix))
-    return 2;
-  return de9im_match(matrix, pattern) ? 1 : 0;
-}
-
-char
-GEOSRelatePattern(const GEOSGeometry *geom1, const GEOSGeometry *geom2,
-  const char *pattern)
-{
-  return geos_none_pattern(geom1, geom2, pattern);
-}
-
-char
-GEOSContains(const GEOSGeometry *geom1, const GEOSGeometry *geom2)
-{
-  return geos_none_pattern(geom1, geom2, "T*****FF*");
-}
-
-char
-GEOSWithin(const GEOSGeometry *geom1, const GEOSGeometry *geom2)
-{
-  return geos_none_pattern(geom1, geom2, "T*F**F***");
-}
-
-char
-GEOSIntersects(const GEOSGeometry *geom1, const GEOSGeometry *geom2)
-{
-  char matrix[10];
-  if (! geom1 || ! geom2)
-    return 2;
-  if (! meos_relate((const LWGEOM *) geom1, (const LWGEOM *) geom2, matrix))
-    return 2;
-  /* Two geometries intersect where they are not disjoint */
-  return de9im_match(matrix, "FF*FF****") ? 0 : 1;
-}
-
-char
-GEOSTouches(const GEOSGeometry *geom1, const GEOSGeometry *geom2)
-{
-  char matrix[10];
-  if (! geom1 || ! geom2)
-    return 2;
-  if (! meos_relate((const LWGEOM *) geom1, (const LWGEOM *) geom2, matrix))
-    return 2;
-  /* The interiors do not meet, and a boundary meets the other geometry */
-  return (de9im_match(matrix, "FT*******") ||
-    de9im_match(matrix, "F**T*****") ||
-    de9im_match(matrix, "F***T****")) ? 1 : 0;
-}
-
-char
-GEOSOverlaps(const GEOSGeometry *geom1, const GEOSGeometry *geom2)
-{
-  char matrix[10];
-  if (! geom1 || ! geom2)
-    return 2;
-  const LWGEOM *g1 = (const LWGEOM *) geom1;
-  const LWGEOM *g2 = (const LWGEOM *) geom2;
-  if (! meos_relate(g1, g2, matrix))
-    return 2;
-  /* Two geometries overlap where they are of the same dimension, each holds a
-   * point the other does not, and their interiors meet in that dimension. The
-   * pattern the standard gives it differs for the linear geometries, whose
-   * interiors meeting in a point is not them overlapping */
-  int dim1 = lwgeom_dimension(g1), dim2 = lwgeom_dimension(g2);
-  if (dim1 != dim2)
-    return 0;
-  if (dim1 == 1)
-    return de9im_match(matrix, "1*T***T**") ? 1 : 0;
-  if (dim1 == 0 || dim1 == 2)
-    return de9im_match(matrix, "T*T***T**") ? 1 : 0;
-  return 0;
 }
 
 /*****************************************************************************/
