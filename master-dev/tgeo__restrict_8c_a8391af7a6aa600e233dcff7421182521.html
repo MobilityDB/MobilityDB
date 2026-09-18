@@ -87,7 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_acfa2640db44de30a53e9f638e1236571.html#acfa2640db44de30a53e9f638e1236571">INSIDE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a08e9e19b88c4004c6d1daa0ed765c569.html#a08e9e19b88c4004c6d1daa0ed765c569">LEFT</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a4a8c91a9bcb0dd29bd55c8f2edd8bc73.html#a4a8c91a9bcb0dd29bd55c8f2edd8bc73">liangBarskyClip</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a8391af7a6aa600e233dcff7421182521.html#a8391af7a6aa600e233dcff7421182521">liangBarskyClip</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a7d80c775b22e454a0f7b4c444c289efb.html#a7d80c775b22e454a0f7b4c444c289efb">point_force2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a088fe0153a918af361dc8f4e775d020e.html#a088fe0153a918af361dc8f4e775d020e">RIGHT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_adc2aba61bbfdfe04d473bce5f7db5dd4.html#adc2aba61bbfdfe04d473bce5f7db5dd4">stbox_holds_lonlat</a></td></tr>
@@ -146,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4a8c91a9bcb0dd29bd55c8f2edd8bc73" name="a4a8c91a9bcb0dd29bd55c8f2edd8bc73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4a8c91a9bcb0dd29bd55c8f2edd8bc73">&#9670;&#160;</a></span>liangBarskyClip()</h2>
+<a id="a8391af7a6aa600e233dcff7421182521" name="a8391af7a6aa600e233dcff7421182521"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8391af7a6aa600e233dcff7421182521">&#9670;&#160;</a></span>liangBarskyClip()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -207,7 +207,19 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>p4_inc</em>&#160;</td>
+          <td class="paramname"><em>p4_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>param3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>param4</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -231,6 +243,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">point3,point4</td><td>Output points </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">p3_inc,p4_inc</td><td>Are the points included or not in the box? These are only written/returned when <code>border_inc</code> is false </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">param3,param4</td><td>Parameters in [0,1] at which the segment takes <code>point3</code> and <code>point4</code>. The clip solves the border in this parameter, so it states the crossing to digits the coordinates of the clipped point no longer carry </td></tr>
   </table>
   </dd>
 </dl>
