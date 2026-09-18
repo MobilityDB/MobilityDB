@@ -328,9 +328,8 @@ bbox_overlaps_stbox(const void *box1, const void *box2)
   if (MEOS_FLAGS_GET_Z(b1->flags) && MEOS_FLAGS_GET_Z(b2->flags) &&
       (b1->zmax < b2->zmin || b1->zmin > b2->zmax))
     return false;
-  if (MEOS_FLAGS_GET_T(b1->flags) && MEOS_FLAGS_GET_T(b2->flags) && (
-      datum_lt(b1->period.upper, b2->period.lower, T_TIMESTAMPTZ) ||
-      datum_gt(b1->period.lower, b2->period.upper, T_TIMESTAMPTZ)))
+  if (MEOS_FLAGS_GET_T(b1->flags) && MEOS_FLAGS_GET_T(b2->flags) &&
+      ! bbox_overlaps_span(&b1->period, &b2->period))
     return false;
   return true;
 }
