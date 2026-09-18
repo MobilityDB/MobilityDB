@@ -1196,7 +1196,7 @@ tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @errval NULL
  */
 static Temporal *
-tspatialrel_tcbuffer_cbuffer_int(const Temporal *temp, const Cbuffer *cb,
+tspatialrel_tcbuffer_cbuffer_intl(const Temporal *temp, const Cbuffer *cb,
   Datum param, varfunc func, int numparam, bool invert)
 {
   assert(temp); assert(cb); assert(temp->temptype == T_TCBUFFER);
@@ -1229,7 +1229,7 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tspatialrel_tcbuffer_cbuffer_int(temp, cb, (Datum) NULL,
+  return tspatialrel_tcbuffer_cbuffer_intl(temp, cb, (Datum) NULL,
     (varfunc) func, 0, invert);
 }
 

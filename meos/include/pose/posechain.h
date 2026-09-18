@@ -124,7 +124,7 @@ extern Datum datum_posechain_pose(Datum pc);
 
 /* Spatial reference system functions */
 
-extern void posechain_set_srid_int(PoseChain *pc, int32_t srid);
+extern void posechain_set_srid_intl(PoseChain *pc, int32_t srid);
 extern PoseChain *posechain_transf_pj(const PoseChain *pc, int32_t srid_to,
   const LWPROJ *pj);
 

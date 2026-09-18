@@ -1031,7 +1031,7 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
   MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  pose_set_srid_int(result, srid);
+  pose_set_srid_intl(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = theta;
@@ -1065,7 +1065,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
   MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-  pose_set_srid_int(result, gserialized_get_srid(gs));
+  pose_set_srid_intl(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
   result->data[2] = theta;
@@ -1118,7 +1118,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
   MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  pose_set_srid_int(result, srid);
+  pose_set_srid_intl(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = z;
@@ -1895,7 +1895,7 @@ pose_srid(const Pose *pose)
  * @csqlfn #Pose_set_srid()
  */
 void
-pose_set_srid_int(Pose *pose, int32_t srid)
+pose_set_srid_intl(Pose *pose, int32_t srid)
 {
   assert(pose);
   /* 0 is our internal unknown value.
@@ -1922,7 +1922,7 @@ pose_set_srid(const Pose *pose, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   Pose *result = pose_copy(pose);
-  pose_set_srid_int(result, srid);
+  pose_set_srid_intl(result, srid);
   return result;
 }
 
@@ -2099,7 +2099,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
   /* The result's SRID must match the target frame so downstream code
    * (and the orientation correction below, which dispatches on the
    * source/target SRID pair) sees the right value. */
-  pose_set_srid_int(result, srid_to);
+  pose_set_srid_intl(result, srid_to);
 
   /* Apply the orientation correction. For the
    * geographic ↔ ECEF case the rotation depends on the lat/lon of the

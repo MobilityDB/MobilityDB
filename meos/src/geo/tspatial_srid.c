@@ -193,15 +193,15 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
       return true;
 #if CBUFFER
     case T_CBUFFER:
-      cbuffer_set_srid_int(DatumGetCbufferP(d), srid);
+      cbuffer_set_srid_intl(DatumGetCbufferP(d), srid);
       return true;
 #endif
 #if POSE
     case T_POSE:
-      pose_set_srid_int(DatumGetPoseP(d), srid);
+      pose_set_srid_intl(DatumGetPoseP(d), srid);
       return true;
     case T_POSECHAIN:
-      posechain_set_srid_int(DatumGetPoseChainP(d), srid);
+      posechain_set_srid_intl(DatumGetPoseChainP(d), srid);
       return true;
 #endif
 #if NPOINT

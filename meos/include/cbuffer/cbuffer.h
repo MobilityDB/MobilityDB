@@ -106,7 +106,7 @@ extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPR
 
 /* Spatial reference system functions */
 
-extern void cbuffer_set_srid_int(Cbuffer *cb, int32_t srid);
+extern void cbuffer_set_srid_intl(Cbuffer *cb, int32_t srid);
 
 /* Distance function */
 
