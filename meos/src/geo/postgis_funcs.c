@@ -1967,6 +1967,20 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
   {
     if (gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
       return false;
+    /* A geometry contains or covers another only where its extent covers the
+     * other's, which is how GEOS decides these two before reading an edge
+     * (RelateNG, requireCovers) and how PostGIS short-circuits ST_Contains.
+     * A box read from the serialized value is rounded outward to float and a
+     * box peeked from a point is not, so both are rounded the same way first:
+     * rounding keeps the order of the bounds, so a cover of the exact extents
+     * is a cover of the rounded ones and no true answer is lost */
+    if (rel == CONTAINS || rel == COVERS)
+    {
+      gbox_float_round(&box1);
+      gbox_float_round(&box2);
+      if (gbox_contains_2d(&box1, &box2) == LW_FALSE)
+        return false;
+    }
   }
 
   /*
