@@ -163,8 +163,7 @@ if(POINTCLOUD)
 
   find_package(LibXml2 REQUIRED)
   find_package(ZLIB REQUIRED)
-  # stringbuffer.c is deliberately omitted here — see the pc_stringbuffer_shim.c
-  # note below.
+  # stringbuffer.c is compiled on its own below.
   set(POINTCLOUD_LIBPC_SRCS
     pc_bytes.c pc_dimstats.c pc_filter.c pc_mem.c pc_patch.c
     pc_patch_dimensional.c pc_patch_uncompressed.c pc_patch_lazperf.c
@@ -178,26 +177,27 @@ if(POINTCLOUD)
   # over a byte-identical stringbuffer_t layout. Linking both objects duplicates
   # those symbols — a clash only GNU ld tolerates, via --allow-multiple-definition;
   # Apple ld64 rejects it outright ("duplicate symbols"), which breaks every
-  # -DALL build on macOS. So libpc drops its stringbuffer.c: PostGIS's copy
-  # resolves the shared symbols (exactly what GNU ld already picks by link
-  # order), and pc_stringbuffer_shim.c supplies the two symbols PostGIS does not
-  # export but libpc needs — stringbuffer_release_string and stringbuffer_append
-  # (PostGIS provides the latter only as a header static-inline). One definition
-  # each, so no linker hack is required on any platform.
+  # -DALL build on macOS. So libpc's stringbuffer.c keeps only the two symbols
+  # PostGIS does not export but libpc needs — stringbuffer_release_string and
+  # stringbuffer_append (PostGIS provides the latter only as a header
+  # static-inline) — and guards the others with #ifndef MEOS, marked /* MEOS */,
+  # so that PostGIS's copy resolves the shared symbols while pgPointCloud's own
+  # build, which defines no MEOS, keeps them all. One definition each, so no linker hack is
+  # required on any platform.
   #
-  # The shim is an object library of its own so that its symbols can be hidden
-  # from the shared library's dynamic table without hiding libpc's, which MEOS
-  # consumers call directly. librttopo.so, which PostgreSQL co-loads through
+  # stringbuffer.c is an object library of its own so that its symbols can be
+  # hidden from the shared library's dynamic table without hiding libpc's, which
+  # MEOS consumers call directly. librttopo.so, which PostgreSQL co-loads through
   # postgis_raster's GDAL, also exports stringbuffer_append, so an exported
   # definition would be open to the ELF interposition that
   # postgis/liblwgeom/CMakeLists.txt describes.
-  add_library(pointcloud_libpc_shim OBJECT
-    ${CMAKE_CURRENT_SOURCE_DIR}/pc_stringbuffer_shim.c)
-  set_target_properties(pointcloud_libpc_shim PROPERTIES
+  add_library(pointcloud_libpc_stringbuffer OBJECT
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/stringbuffer.c)
+  set_target_properties(pointcloud_libpc_stringbuffer PROPERTIES
     C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE ON)
-  target_include_directories(pointcloud_libpc_shim PRIVATE
+  target_include_directories(pointcloud_libpc_stringbuffer PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)
-  target_compile_options(pointcloud_libpc_shim PRIVATE "-w")
+  target_compile_options(pointcloud_libpc_stringbuffer PRIVATE "-w")
   # Compile libpc once as an object library, then assemble the archive from it —
   # SIBLING-FROM postgis/CMakeLists.txt (liblwgeom/ryu/librtcore OBJECT libraries
   # collected into POSTGIS_OBJECTS, then `add_library(postgis STATIC …)`). The
@@ -220,7 +220,7 @@ if(POINTCLOUD)
   target_compile_options(pointcloud_libpc_objects PRIVATE "-w")
 
   add_library(pointcloud_libpc STATIC $<TARGET_OBJECTS:pointcloud_libpc_objects>
-    $<TARGET_OBJECTS:pointcloud_libpc_shim>)
+    $<TARGET_OBJECTS:pointcloud_libpc_stringbuffer>)
   set_target_properties(pointcloud_libpc PROPERTIES
     POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
   target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)

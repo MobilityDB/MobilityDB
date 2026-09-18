@@ -218,7 +218,7 @@ elseif(MEOS)
   set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:ryu>")
   if(POINTCLOUD)
     set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_objects>")
-    set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_shim>")
+    set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_stringbuffer>")
   endif()
   add_library(${MEOS_LIB_NAME} STATIC ${MEOS_STATIC_OBJECTS})
   message(STATUS "Building MEOS as self-contained STATIC library")
@@ -273,9 +273,9 @@ if(POINTCLOUD)
   # libpc.a and PostGIS's liblwgeom both once defined stringbuffer.c's symbols
   # (shared upstream origin). That duplication needed a GNU-ld-only
   # --allow-multiple-definition hack that Apple ld64 rejects; it is now resolved
-  # at the source level (meos/src/pointcloud/CMakeLists.txt drops libpc's
-  # stringbuffer.c and supplies the two symbols PostGIS does not export via
-  # pc_stringbuffer_shim.c), so the link carries one definition of every symbol
+  # at the source level (meos/src/pointcloud/CMakeLists.txt compiles libpc's
+  # stringbuffer.c reduced to the two symbols PostGIS does not export), so the
+  # link carries one definition of every symbol
   # and needs no such flag — which is what lets the -DALL build link under Apple
   # ld64, not just GNU ld.
   target_link_libraries(${MEOS_LIB_NAME}

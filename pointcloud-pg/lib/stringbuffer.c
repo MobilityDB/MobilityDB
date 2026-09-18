@@ -38,6 +38,9 @@
 
 #include "stringbuffer.h"
 
+/* MEOS: MobilityDB links PostGIS's liblwgeom/stringbuffer.c, which defines
+   these functions over the same stringbuffer_t */
+#ifndef MEOS
 /**
  * Allocate a new stringbuffer_t. Use stringbuffer_destroy to free.
  */
@@ -82,6 +85,7 @@ void stringbuffer_clear(stringbuffer_t *s)
   s->str_start[0] = '\0';
   s->str_end = s->str_start;
 }
+#endif /* MEOS */
 
 /**
  * If necessary, expand the stringbuffer_t internal buffer to accomodate the
@@ -107,6 +111,9 @@ static inline void stringbuffer_makeroom(stringbuffer_t *s, size_t size_to_add)
   }
 }
 
+/* MEOS: MobilityDB links PostGIS's liblwgeom/stringbuffer.c, which defines
+   these functions over the same stringbuffer_t */
+#ifndef MEOS
 /**
  * Return the last character in the buffer.
  */
@@ -117,6 +124,7 @@ char stringbuffer_lastchar(stringbuffer_t *s)
 
   return *(s->str_end - 1);
 }
+#endif /* MEOS */
 
 /**
  * Append the specified string to the stringbuffer_t.
@@ -130,12 +138,16 @@ void stringbuffer_append(stringbuffer_t *s, const char *a)
   s->str_end += alen;
 }
 
+/* MEOS: MobilityDB links PostGIS's liblwgeom/stringbuffer.c, which defines
+   these functions over the same stringbuffer_t */
+#ifndef MEOS
 /**
  * Returns a reference to the internal string being managed by
  * the stringbuffer. The current string will be null-terminated
  * within the internal string.
  */
 const char *stringbuffer_getstring(stringbuffer_t *s) { return s->str_start; }
+#endif /* MEOS */
 
 /**
  * Transfer ownership of the internal string to caller,
@@ -149,6 +161,9 @@ char *stringbuffer_release_string(stringbuffer_t *s)
   return ret;
 }
 
+/* MEOS: MobilityDB links PostGIS's liblwgeom/stringbuffer.c, which defines
+   these functions over the same stringbuffer_t */
+#ifndef MEOS
 /**
  * Returns a newly allocated string large enough to contain the
  * current state of the string. Caller is responsible for
@@ -354,3 +369,4 @@ int stringbuffer_trim_trailing_zeroes(stringbuffer_t *s)
   s->str_end = ptr;
   return dist;
 }
+#endif /* MEOS */
