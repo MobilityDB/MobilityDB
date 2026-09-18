@@ -1142,6 +1142,47 @@ spnode_region_overlaps(const STboxNode *n, const STBox *query, bool x, bool z,
 }
 
 /**
+ * @brief Return true if the first spatiotemporal box contains the second one
+ * on the axes both carry
+ * @details The test #stbox_contains makes, with the axes decided once for the
+ * whole search
+ */
+static inline bool
+spnode_stbox_contains(const STBox *b1, const STBox *b2, bool x, bool z, bool t)
+{
+  if (x && (b2->xmin < b1->xmin || b2->xmax > b1->xmax ||
+      b2->ymin < b1->ymin || b2->ymax > b1->ymax))
+    return false;
+  if (z && (b2->zmin < b1->zmin || b2->zmax > b1->zmax))
+    return false;
+  if (t && ! span_contains(&b1->period, &b2->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if a region can hold a box containing a query
+ * @details The test #contain8D makes, read on the axes both the query and the
+ * stored boxes carry
+ */
+static inline bool
+spnode_region_contains(const STboxNode *n, const STBox *query, bool x, bool z,
+  bool t)
+{
+  if (x && ! (n->right.xmax >= query->xmax && n->left.xmin <= query->xmin &&
+      n->right.ymax >= query->ymax && n->left.ymin <= query->ymin))
+    return false;
+  if (z && ! (n->right.zmax >= query->zmax && n->left.zmin <= query->zmin))
+    return false;
+  if (t && ! (DatumGetTimestampTz(n->right.period.upper) >=
+        DatumGetTimestampTz(query->period.upper) &&
+      DatumGetTimestampTz(n->left.period.lower) <=
+        DatumGetTimestampTz(query->period.lower)))
+    return false;
+  return true;
+}
+
+/**
  * @brief Search a node of a tree of spatiotemporal boxes for the boxes
  * overlapping a query
  * @details The search #spnode_search makes for #INDEX_OVERLAPS, with the
@@ -1189,6 +1230,57 @@ spnode_search_overlaps_stbox(const SPTree *sptree, const SPNode *node,
 }
 
 /**
+ * @brief Search a node of a tree of spatiotemporal boxes for the boxes
+ * containing a query, or contained by it
+ * @details The search #spnode_search makes for #INDEX_CONTAINS and
+ * #INDEX_CONTAINED_BY, read as #spnode_search_overlaps_stbox reads overlaps.
+ * A region can hold a box containing the query only where it can contain the
+ * query, and a box contained by the query only where it overlaps the query
+ * @param[in] sptree The SPTree
+ * @param[in] node The node being visited
+ * @param[in] nodebox The region covered by @p node
+ * @param[in] query The query box
+ * @param[in] contains True for the boxes containing the query, false for the
+ * boxes it contains
+ * @param[in] level The depth of @p node (drives the k-d tree dimension)
+ * @param[in] x,z,t The axes both the query and the stored boxes carry
+ * @param[out] result MeosArray collecting the matching ids
+ */
+static void
+spnode_search_contain_stbox(const SPTree *sptree, const SPNode *node,
+  const STboxNode *nodebox, const STBox *query, bool contains, int level,
+  bool x, bool z, bool t, MeosArray *result)
+{
+  const STBox *centroid = (const STBox *) node->centroid;
+  if (contains ? spnode_stbox_contains(centroid, query, x, z, t) :
+      spnode_stbox_contains(query, centroid, x, z, t))
+  {
+    int64 id = node->id;
+    meos_array_add(result, &id);
+  }
+  if (! node->children)
+    return;
+  bool quad = (sptree->kind == SPTREE_QUADTREE);
+  for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
+  {
+    const SPNode *child = node->children[quadrant];
+    if (! child)
+      continue;
+    STboxNode next;
+    if (quad)
+      stboxnode_quadtree_next(nodebox, centroid, (uint8) quadrant, &next);
+    else
+      stboxnode_kdtree_next(nodebox, centroid, (uint8) quadrant, level,
+        &next);
+    if (contains ? spnode_region_contains(&next, query, x, z, t) :
+        spnode_region_overlaps(&next, query, x, z, t))
+      spnode_search_contain_stbox(sptree, child, &next, query, contains,
+        level + 1, x, z, t, result);
+  }
+  return;
+}
+
+/**
  * @ingroup meos_internal_box_index
  * @brief Search an SPTree with a bounding box, collecting matching ids into
  * a MeosArray, for a caller that has validated the arguments
@@ -1220,7 +1312,8 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
     return 0;
   char rootbox[SPTREE_NODEBOX_MAXSIZE];
   sptree->nodebox_init(rootbox, sptree->root->centroid, sptree);
-  if (op == INDEX_OVERLAPS && sptree->bboxtype == T_STBOX)
+  if (sptree->bboxtype == T_STBOX && (op == INDEX_OVERLAPS ||
+      op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
   {
     /* The stored boxes share their axes, which the root carries, so the
      * axes both sides have are read once here rather than once per box;
@@ -1230,8 +1323,13 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
     bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
       z = MEOS_FLAGS_GET_Z(q->flags) && MEOS_FLAGS_GET_Z(f),
       t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
-    spnode_search_overlaps_stbox(sptree, sptree->root,
-      (const STboxNode *) rootbox, q, 0, x, z, t, result);
+    if (op == INDEX_OVERLAPS)
+      spnode_search_overlaps_stbox(sptree, sptree->root,
+        (const STboxNode *) rootbox, q, 0, x, z, t, result);
+    else
+      spnode_search_contain_stbox(sptree, sptree->root,
+        (const STboxNode *) rootbox, q, op == INDEX_CONTAINS, 0, x, z, t,
+        result);
   }
   else
     spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);

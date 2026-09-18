@@ -93,20 +93,38 @@ int main(void)
       n++;
     }
 
-  RTree *rtree = rtree_create_stbox();
-  for (int i = 0; i < NUM_PERIODS; i++)
-    rtree_insert(rtree, tboxes[i], i);
+  /* One tree of each kind over the boxes of each kind, the T boxes and the
+   * XT boxes */
+  RTree *rtree[2];
+  SPTree *quad[2], *kd[2];
+  for (int x = 0; x < 2; x++)
+  {
+    rtree[x] = rtree_create_stbox();
+    quad[x] = sptree_create_stbox(SPTREE_QUADTREE);
+    kd[x] = sptree_create_stbox(SPTREE_KDTREE);
+    for (int i = 0; i < NUM_PERIODS; i++)
+    {
+      STBox *box = x ? xtboxes[i] : tboxes[i];
+      rtree_insert(rtree[x], box, i);
+      sptree_insert(quad[x], box, i);
+      sptree_insert(kd[x], box, i);
+    }
+  }
   MeosArray *result = index_result_create();
 
   for (int i = 0; i < NUM_PERIODS; i++)
   {
-    int expected = 0;
+    /* The entries a search answers: overlapping the query, containing it and
+     * contained by it */
+    int expected[3] = {0, 0, 0};
     for (int j = 0; j < NUM_PERIODS; j++)
     {
       bool ov = overlaps_span_span(periods[i], periods[j]);
       bool co = contains_span_span(periods[i], periods[j]);
       bool eq = span_eq(periods[i], periods[j]);
-      expected += ov;
+      expected[0] += ov;
+      expected[1] += contains_span_span(periods[j], periods[i]);
+      expected[2] += co;
       for (int x = 0; x < 2; x++)
       {
         STBox *b1 = x ? xtboxes[i] : tboxes[i];
@@ -121,8 +139,28 @@ int main(void)
         check(what, i, j, same_stbox_stbox(b1, b2), eq);
       }
     }
-    int count = rtree_search(rtree, INDEX_OVERLAPS, tboxes[i], result);
-    check("R-tree overlaps count", i, -1, count == expected, true);
+    static const IndexSearchOp ops[3] =
+      {INDEX_OVERLAPS, INDEX_CONTAINS, INDEX_CONTAINED_BY};
+    static const char *opnames[3] = {"overlaps", "contains", "contained by"};
+    for (int x = 0; x < 2; x++)
+    {
+      const STBox *query = x ? xtboxes[i] : tboxes[i];
+      const char *kind = x ? "XT" : "T";
+      for (int o = 0; o < 3; o++)
+      {
+        char what[64];
+        snprintf(what, sizeof(what), "R-tree %s %s count", opnames[o], kind);
+        check(what, i, -1, rtree_search(rtree[x], ops[o], query, result) ==
+          expected[o], true);
+        snprintf(what, sizeof(what), "quad-tree %s %s count", opnames[o],
+          kind);
+        check(what, i, -1, sptree_search(quad[x], ops[o], query, result) ==
+          expected[o], true);
+        snprintf(what, sizeof(what), "k-d tree %s %s count", opnames[o], kind);
+        check(what, i, -1, sptree_search(kd[x], ops[o], query, result) ==
+          expected[o], true);
+      }
+    }
   }
 
   for (int i = 0; i < NUM_PERIODS; i++)
@@ -131,7 +169,10 @@ int main(void)
   }
   free(point);
   meos_array_destroy(result);
-  rtree_free(rtree);
+  for (int x = 0; x < 2; x++)
+  {
+    rtree_free(rtree[x]); sptree_free(quad[x]); sptree_free(kd[x]);
+  }
 
   if (failures == 0)
     printf("STBox period test: all tests passed\n");
