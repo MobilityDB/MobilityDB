@@ -450,8 +450,9 @@ meos_pc_schema_xml(uint32_t pcid)
       char *rendered = pc_schema_as_xml(cache_buf[i].schema);
       /* The cache outlives the call, so the document is copied the way a
        * parsed one is. ⛔ The stringbuffer symbols the link resolves are
-       * PostGIS's, not pgPointCloud's (see pc_stringbuffer_shim.c), so the
-       * buffer comes from lwalloc and is released with pfree, never free */
+       * PostGIS's, not pgPointCloud's (see pointcloud-pg/lib/stringbuffer.c),
+       * so the buffer comes from lwalloc and is released with pfree, never
+       * free */
       cache_buf[i].xml_text = copy_xml_long_lived(rendered);
       pfree(rendered);
     }
