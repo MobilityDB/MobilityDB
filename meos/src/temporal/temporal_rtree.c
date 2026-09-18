@@ -54,6 +54,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
+#include "geo/stbox.h"
 #include "temporal/temporal_rtree.h"
 
 /*****************************************************************************
@@ -1426,16 +1427,33 @@ ensure_valid_rtree_box(const RTree *rtree, const void *box)
 {
   if (! rtree->root)
     return true;
+  /* A box is compared with every stored box, which share the SRID, the
+   * geodetic flag and the axes the extent of the tree carries, so the checks
+   * the external test makes on each pair are made here once. A query sharing
+   * no axis with them is refused rather than answered: the overlap test the
+   * descent reads compares no axis for it and accepts every box */
   if (rtree->bboxtype == T_STBOX)
-    return ensure_same_srid(((const STBox *) rtree->box)->srid,
-      ((const STBox *) box)->srid);
+  {
+    const STBox *extent = (const STBox *) rtree->box;
+    const STBox *query = (const STBox *) box;
+    return ensure_valid_stbox_stbox(extent, query) &&
+      ensure_common_dimension(extent->flags, query->flags);
+  }
+  if (rtree->bboxtype == T_TBOX)
+  {
+    const TBox *extent = (const TBox *) rtree->box;
+    const TBox *query = (const TBox *) box;
+    return ensure_valid_tbox_tbox(extent, query) &&
+      ensure_common_dimension(extent->flags, query->flags);
+  }
 #if POINTCLOUD
   if (rtree->bboxtype == T_TPCBOX)
   {
     STBox s1, s2;
     tpcbox_set_stbox((const TPCBox *) rtree->box, &s1);
     tpcbox_set_stbox((const TPCBox *) box, &s2);
-    return ensure_same_srid(s1.srid, s2.srid);
+    return ensure_valid_stbox_stbox(&s1, &s2) &&
+      ensure_common_dimension(s1.flags, s2.flags);
   }
 #endif /* POINTCLOUD */
   return true;

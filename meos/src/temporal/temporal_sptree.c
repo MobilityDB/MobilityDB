@@ -53,7 +53,9 @@
 #endif
 #include "temporal/temporal.h"
 #include "temporal/span_index.h"
+#include "temporal/tbox.h"
 #include "temporal/tbox_index.h"
+#include "geo/stbox.h"
 #include "geo/stbox_index.h"
 #include "geo/geo_funcs.h"
 #include "temporal/temporal_sptree.h"
@@ -664,18 +666,34 @@ ensure_valid_sptree_box(const SPTree *sptree, const void *box)
 {
   if (! sptree->root)
     return true;
+  /* A box is compared with every stored box, which share the SRID, the
+   * geodetic flag and the axes the root carries, so the checks the external
+   * test makes on each pair are made here once, and the descent compares the
+   * boxes with the internal test */
   if (sptree->bboxtype == T_STBOX)
-    return ensure_same_srid(((const STBox *) sptree->root->centroid)->srid,
-      ((const STBox *) box)->srid);
+  {
+    const STBox *root = (const STBox *) sptree->root->centroid;
+    const STBox *query = (const STBox *) box;
+    return ensure_valid_stbox_stbox(root, query) &&
+      ensure_common_dimension(root->flags, query->flags);
+  }
+  if (sptree->bboxtype == T_TBOX)
+  {
+    const TBox *root = (const TBox *) sptree->root->centroid;
+    const TBox *query = (const TBox *) box;
+    return ensure_valid_tbox_tbox(root, query) &&
+      ensure_common_dimension(root->flags, query->flags);
+  }
 #if POINTCLOUD
   if (sptree->bboxtype == T_TPCBOX)
   {
     /* A tpcbox tree holds its centroids already projected to STBox, so only
      * the incoming box is projected here */
+    const STBox *root = (const STBox *) sptree->root->centroid;
     STBox s;
     tpcbox_set_stbox((const TPCBox *) box, &s);
-    return ensure_same_srid(((const STBox *) sptree->root->centroid)->srid,
-      s.srid);
+    return ensure_valid_stbox_stbox(root, &s) &&
+      ensure_common_dimension(root->flags, s.flags);
   }
 #endif /* POINTCLOUD */
   return true;
