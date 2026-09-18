@@ -28,6 +28,14 @@ subtypes:
     # tempspatialrels (364) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
     files: [compops, posops, topops, spatialrels, gist, spgist]
+    details:
+      spatialrels: &cell_spatialrels |-
+        A `{TEMP}` value holds one cell per instant, and a relationship
+        is that of the cell's boundary polygon rather than of its centre. Each
+        function converts its operand through `{BOUNDARY}({TEMP})::tgeometry`
+        and delegates to the ever/always spatial relationship of the temporal
+        geometry. The boundary is in SRID 4326 and the cast keeps its
+        coordinates, so an operand in another SRID is transformed beforehand.
 
   # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
   - temp:  th3index
@@ -45,6 +53,8 @@ subtypes:
     # tempspatialrels (264) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
     files: [compops, posops, topops, spatialrels, gist, spgist]
+    details:
+      spatialrels: *cell_spatialrels
 
   # ---- s2: the third cell index, geodetic like h3 ----
   - temp:  ts2cell
@@ -70,6 +80,8 @@ subtypes:
     # `indexes` form, whose template declares a KNN ordering operator this
     # family has no distance function to back.
     files: [compops, posops, topops, spatialrels, gist, spgist]
+    details:
+      spatialrels: *cell_spatialrels
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer
@@ -132,26 +144,22 @@ subtypes:
     # compressed-band collision.
     positions:
       spatialrels:     20
-    doc:
+    details:
       spatialrels: |-
-        /*
-         * Ever/always spatial relationships for temporal network points.
-         *
-         * A temporal network point ({TEMP}) is defined over the road/rail
-         * network's position space (route identifier + fractional position
-         * along the route), not over free geographical space. Each function
-         * converts its network-point operand(s) to a temporal geometry point
-         * via the standard tnpoint::tgeompoint cast (the point resolved along
-         * its route) and delegates to the temporal geometry point ever/always
-         * spatial relationship, so a sequence keeps the interpolation it
-         * carries.
-         *
-         * Two temporal network points whose routes belong to different
-         * networks, or to different connected components of the same
-         * network, cannot be related through network distance; the free-space
-         * relationship computed here is still well defined and is the
-         * documented behaviour for that case.
-         */
+        A temporal network point ({TEMP}) is defined over the road/rail
+        network's position space (route identifier + fractional position
+        along the route), not over free geographical space. Each function
+        converts its network-point operand(s) to a temporal geometry point
+        via the standard tnpoint::tgeompoint cast (the point resolved along
+        its route) and delegates to the temporal geometry point ever/always
+        spatial relationship, so a sequence keeps the interpolation it
+        carries.
+
+        Two temporal network points whose routes belong to different
+        networks, or to different connected components of the same
+        network, cannot be related through network distance; the free-space
+        relationship computed here is still well defined and is the
+        documented behaviour for that case.
     files: [compops, posops, topops, spatialrels, indexes]
 
   - temp:  tpose
@@ -165,8 +173,8 @@ subtypes:
     # A temporal pose delegates its spatial relationships (114) to tgeometry via
     # the tgeompoint cast chain, from the `impl: cast` entry in
     # manifest.d/tempspatialrel_families.yaml (not a cell-boundary function, and
-    # not a cell index, so that entry overrides the conversion expression and the
-    # file doc block). The ever/always spatial relationships are a hybrid (the
+    # not a cell index, so that entry overrides the conversion expression). The
+    # ever/always spatial relationships are a hybrid (the
     # ever intersects/dwithin are native C with index support), so
     # 112_tpose_spatialrels stays hand-written.
     files: [compops, topops, posops, indexes]
@@ -205,8 +213,7 @@ subtypes:
     # rgeo delegates its temporal spatial relationships (172) to tgeometry via the
     # single tgeometry(trgeometry) cast (2D-only, so no geography branch), from the
     # `impl: cast` entry in manifest.d/tempspatialrel_families.yaml (not a cell
-    # index, so that entry overrides the conversion expression and the file doc
-    # block). The ever/always ones are native C wrappers (170_trgeo_spatialrels)
+    # index, so that entry overrides the conversion expression). The ever/always ones are native C wrappers (170_trgeo_spatialrels)
     # that stay hand-written.
     # rgeo follows the tgeo-aligned layout, where the position files sit at their
     # tgeo offsets (topops +11 -> 161, posops +12 -> 162, the combined index file
@@ -241,18 +248,12 @@ subtypes:
     positions:
       compops: 33
       spatialrels: 43
-    doc:
+    details:
       spatialrels: |-
-        /**
-         * @file
-         * @brief Ever/always spatial relationships for temporal pgpointcloud
-         *   points
-         *
-         * Each function converts its point cloud operand to the temporal
-         * geometry point its positions resolve to, through the standard
-         * tpcpoint::tgeompoint cast, and delegates to the temporal geometry
-         * point ever/always spatial relationship.
-         */
+        Each function converts its point cloud operand to the temporal
+        geometry point its positions resolve to, through the standard
+        tpcpoint::tgeompoint cast, and delegates to the temporal geometry
+        point ever/always spatial relationship.
     files: [compops, spatialrels]
 
   - temp:  tpcpatch
@@ -277,16 +278,10 @@ subtypes:
       # the next band, so the ever/always file sits above the temporal one it
       # does not depend on.
       spatialrels: 49
-    doc:
+    details:
       spatialrels: |-
-        /**
-         * @file
-         * @brief Ever/always spatial relationships for temporal pgpointcloud
-         *   patches
-         *
-         * Each function converts its patch operand to the temporal geometry of
-         * the multipoints its patches occupy, through the standard
-         * tpcpatch::tgeometry cast, and delegates to the temporal geometry
-         * ever/always spatial relationship.
-         */
+        Each function converts its patch operand to the temporal geometry
+        of the multipoints its patches occupy, through the standard
+        tpcpatch::tgeometry cast, and delegates to the temporal geometry
+        ever/always spatial relationship.
     files: [compops, spatialrels]

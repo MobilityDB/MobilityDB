@@ -91,7 +91,7 @@ tempspatialrel_families:
   - family:  tpoint
     impl:    native
     file:    mobilitydb/sql/geo/072_tpoint_tempspatialrels.in.sql
-    brief:   "temporal geometries/geographies"
+    brief:   "temporal points"
     predicates:
       - name: tContains
         directions:
@@ -127,11 +127,17 @@ tempspatialrel_families:
   # expression (cast-only spatial uniformization; no family below has
   # spatial-relationship logic of its own). Every direction is `geometry`
   # (raw, the delegation target) x the family's own type (converted, both
-  # ways) plus the own-type x own-type direction. `doc` omitted falls back to
-  # the shared cell-index prose (tempspatialrels.doc.tmpl) below. ----
+  # ways) plus the own-type x own-type direction. The three cell index
+  # families share their `details` through the anchor on the first. ----
   - family:  tquadbin
     impl:    cast
     file:    mobilitydb/sql/quadbin/364_tquadbin_tempspatialrels.in.sql
+    brief:   "temporal QUADBIN cells"
+    details: &cell_tempspatialrels |-
+      Each function returns a tbool whose value at an instant is the
+      static spatial relationship applied to the cell boundary at that
+      instant: it casts the cell boundary to tgeometry and delegates to the
+      temporal spatial relationship of the temporal geometry.
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry, r: tquadbin}
@@ -142,6 +148,8 @@ tempspatialrel_families:
   - family:  ts2cell
     impl:    cast
     file:    mobilitydb/sql/s2cell/614_ts2cell_tempspatialrels.in.sql
+    brief:   "temporal S2 cells"
+    details: *cell_tempspatialrels
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry, r: ts2cell}
@@ -152,6 +160,8 @@ tempspatialrel_families:
   - family:  th3index
     impl:    cast
     file:    mobilitydb/sql/h3/264_th3index_tempspatialrels.in.sql
+    brief:   "temporal H3 cells"
+    details: *cell_tempspatialrels
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry,  r: th3index}
@@ -160,11 +170,11 @@ tempspatialrel_families:
     convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
 
   # tpose/trgeometry are not cell indexes, so `convert` chains a direct cast
-  # (or, for tpose, the tgeompoint cast chain) instead of a boundary function,
-  # and each supplies its own file doc block rather than the cell-index prose.
+  # (or, for tpose, the tgeompoint cast chain) instead of a boundary function.
   - family:  tpose
     impl:    cast
     file:    mobilitydb/sql/pose/114_tpose_tempspatialrels.in.sql
+    brief:   "temporal poses"
     predicates:
       - name: tContains
         directions:
@@ -192,11 +202,6 @@ tempspatialrel_families:
           - {l: tpose, r: geometry}
           - {l: tpose, r: tpose}
     convert: "@N@::@extschema@.tgeompoint"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal poses
-       */
 
   # A tpcpoint carries the Z its schema declares, and tContains, tCovers and
   # tTouches are planar DE-9IM relationships that refuse a Z dimension, so the
@@ -205,6 +210,7 @@ tempspatialrel_families:
   - family:  tpcpoint
     impl:    cast
     file:    mobilitydb/sql/pointcloud/444_tpcpoint_tempspatialrels.in.sql
+    brief:   "temporal pgpointcloud points"
     predicates:
       - name: tContains
         directions:
@@ -232,11 +238,6 @@ tempspatialrel_families:
           - {l: tpcpoint, r: geometry}
           - {l: tpcpoint, r: tpcpoint}
     convert: "@N@::@extschema@.tgeompoint"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal pgpointcloud points
-       */
 
   # A tpcpatch reaches the geometry engine as the multipoint of the positions
   # its points occupy, so the temporal geometry is its cast target and it
@@ -247,21 +248,18 @@ tempspatialrel_families:
   - family:  tpcpatch
     impl:    cast
     file:    mobilitydb/sql/pointcloud/448_tpcpatch_tempspatialrels.in.sql
+    brief:   "temporal pgpointcloud patches"
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry, r: tpcpatch}
       - {l: tpcpatch, r: geometry}
       - {l: tpcpatch, r: tpcpatch}
     convert: "@N@::@extschema@.tgeometry"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal pgpointcloud patches
-       */
 
   - family:  tposechain
     impl:    cast
     file:    mobilitydb/sql/posechain/564_tposechain_tempspatialrels.in.sql
+    brief:   "temporal pose chains"
     predicates:
       - name: tContains
         directions:
@@ -289,26 +287,17 @@ tempspatialrel_families:
           - {l: tposechain, r: geometry}
           - {l: tposechain, r: tposechain}
     convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal pose chains
-       */
 
   - family:  trgeometry
     impl:    cast
     file:    mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql
+    brief:   "temporal rigid geometries"
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry,   r: trgeometry}
       - {l: trgeometry, r: geometry}
       - {l: trgeometry, r: trgeometry}
     convert: "@N@::@extschema@.tgeometry"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal rigid geometries
-       */
 
   # tnpoint is point-like, not a cell index, so `convert` chains the same
   # tgeompoint cast chain as tpose (its own cast target is tgeompoint, not
@@ -316,6 +305,7 @@ tempspatialrel_families:
   - family:  tnpoint
     impl:    cast
     file:    mobilitydb/sql/npoint/322_tnpoint_tempspatialrels.in.sql
+    brief:   "temporal network points"
     predicates:
       - name: tContains
         directions:
@@ -343,8 +333,3 @@ tempspatialrel_families:
           - {l: tnpoint, r: geometry}
           - {l: tnpoint, r: tnpoint}
     convert: "@N@::@extschema@.tgeompoint"
-    doc: |-
-      /**
-       * @file
-       * @brief Temporal spatial relationships for temporal network points
-       */

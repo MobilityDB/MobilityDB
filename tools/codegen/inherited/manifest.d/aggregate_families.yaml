@@ -477,10 +477,10 @@ aggregate_families:
 - family: pointcloud
   file: mobilitydb/sql/pointcloud/441_tpc_aggfuncs.in.sql
   reference: true
-  begin: "@brief Aggregate functions for the pgPointCloud temporal types."
+  begin: "@brief Aggregate functions for the pgPointCloud temporal types"
   whole_file: true
   blocks:
-  - lit: "/**\n * @file\n * @brief Aggregate functions for the pgPointCloud temporal types.\n */\n\n"
+  - lit: "/**\n * @file\n * @brief Aggregate functions for the pgPointCloud temporal types\n */\n\n"
   - fns:
     - {sig: "tpcbox_extent_transfn(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_transfn", strict: false}
   - lit: "\n"
