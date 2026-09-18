@@ -448,6 +448,10 @@ clipt(double p, double q, double *t0, double *t1)
  * @param[out] point3,point4 Output points
  * @param[out] p3_inc,p4_inc Are the points included or not in the box?
  * These are only written/returned when @p border_inc is false
+ * @param[out] param3,param4 Parameters in [0,1] at which the segment takes
+ * @p point3 and @p point4. The clip solves the border in this parameter, so it
+ * states the crossing to digits the coordinates of the clipped point no longer
+ * carry
  * @return True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise.
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
@@ -457,8 +461,9 @@ clipt(double p, double q, double *t0, double *t1)
  */
 static bool
 liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2, 
-  const STBox *box, bool hasz, bool border_inc, GSERIALIZED **point3, 
-  GSERIALIZED **point4, bool *p3_inc, bool *p4_inc)
+  const STBox *box, bool hasz, bool border_inc, GSERIALIZED **point3,
+  GSERIALIZED **point4, bool *p3_inc, bool *p4_inc, double *param3,
+  double *param4)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
   assert(! geopoint_eq(point1, point2));
@@ -552,6 +557,11 @@ liangBarskyClip(const GSERIALIZED *point1, const GSERIALIZED *point2,
         {
           *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
           *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);
+        }
+        if (param3 && param4)
+        {
+          *param3 = t0;
+          *param4 = t1;
         }
         return true;
       }
@@ -1027,8 +1037,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     {
       /* Clip the segment */
       bool p3_inc = true, p4_inc = true;
+      double param3, param4;
       bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
-        &p3_inc, &p4_inc);
+        &p3_inc, &p4_inc, &param3, &param4);
       if (found)
       {
         TInstant *inst1_2d, *inst2_2d;
@@ -1036,12 +1047,13 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
          * so end the previous sequence and start a new one */
         if (! geopoint_eq(p2, p4) || ! p4_inc)
           makeseq = true;
-        /* To reduce roundoff errors, (1) find the timestamps at which the
-         * segment take the points returned by the clipping function and
-         * (2) project the temporal points to the timestamps instead  */
+        /* The clip states each crossing as the parameter at which the segment
+         * reaches the border, which dates it as the cell walks date theirs.
+         * Reading the parameter back out of the clipped point instead loses
+         * the border's low digits to the coordinates that carry it, and the
+         * crossing then falls a microsecond before the instant it happens */
         TimestampTz t1, t2;
-        Datum d3 = PointerGetDatum(p3);
-        Datum d4 = PointerGetDatum(p4);
+        TimestampTz duration = inst2->t - inst1->t;
         if (hasz_seq && ! hasz)
         {
           /* Force the computation at 2D */
@@ -1056,24 +1068,14 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else if (geopoint_eq(p2, p3))
           t1 = inst2->t;
         else /* inst1->t < t1(p3) < inst2->t */
-        {
-          if (hasz_seq && ! hasz)
-            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
-          else
-            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
-        }
+          t1 = inst1->t + (TimestampTz) ((double) duration * param3);
         /* Compute timestamp t2 of point p4  */
         if (geopoint_eq(p2, p4))
           t2 = inst2->t;
         else if (geopoint_eq(p3, p4))
           t2 = t1;
         else /* inst1->t < t2(p4) < inst2->t */
-        {
-          if (hasz_seq && ! hasz)
-            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
-          else
-            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
-        }
+          t2 = inst1->t + (TimestampTz) ((double) duration * param4);
         if (hasz_seq && ! hasz)
         {
           pfree(inst1_2d); pfree(inst2_2d);
@@ -1520,7 +1522,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
       /* Keep the segment if intersects the bounding box in the spatial
        * dimension */
       if (liangBarskyClip(p1, p2, box, hasz, border_inc, NULL, NULL, NULL,
-          NULL))
+          NULL, NULL, NULL))
         inter = true;
     }
     if (inter)
