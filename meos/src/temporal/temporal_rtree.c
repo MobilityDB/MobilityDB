@@ -65,6 +65,21 @@
  *****************************************************************************/
 
 /**
+ * @brief Return a bound of a span as a double
+ * @details The bound is read through its base type: the Datum of a float is
+ * the bit pattern of the double, and the Datum of a negative integer or
+ * timestamp is a huge unsigned value, so a bare cast reads neither
+ * @param[in] d Bound
+ * @param[in] basetype Base type of the span
+ */
+static inline double
+span_bound_double(Datum d, MeosType basetype)
+{
+  return (basetype == T_TIMESTAMPTZ) ? (double) DatumGetTimestampTz(d) :
+    datum_double(d, basetype);
+}
+
+/**
  * @brief Return the lower or upper bound from a span as a double
  * @param[in] box Span
  * @param[in] axis Axis to retrieve, it is always 0 for spans since there is
@@ -76,8 +91,8 @@ static double
 get_axis_span(const void *box, int axis UNUSED, bool upper)
 {
   assert(box);
-  Span *span = (Span *) box;
-  return upper ? (double) span->upper : (double) span->lower;
+  const Span *span = (const Span *) box;
+  return span_bound_double(upper ? span->upper : span->lower, span->basetype);
 }
 
 /**
@@ -93,12 +108,13 @@ static double
 get_axis_tbox(const void *box, int axis, bool upper)
 {
   assert(box); assert(axis == 0 || axis == 1);
-  TBox *tbox = (TBox *) box;
+  const TBox *tbox = (const TBox *) box;
   if (axis == 0)
-    return upper ? (double) tbox->span.upper : (double) tbox->span.lower;
+    return span_bound_double(upper ? tbox->span.upper : tbox->span.lower,
+      tbox->span.basetype);
   else /* axis == 1 */
-    return upper ? (double)((int64) tbox->period.upper) :
-      (double)((int64) tbox->period.lower);
+    return (double) DatumGetTimestampTz(upper ? tbox->period.upper :
+      tbox->period.lower);
 }
 
 /**
