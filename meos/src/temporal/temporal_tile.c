@@ -218,10 +218,11 @@ interval_units(const Interval *interval)
 }
 
 /**
- * @brief To bin by day we get the year and month of a date and convert
- * that to the nth month since origin. This allows us to treat month bining
- * similar to int bining. During this process we ignore the day component and
- * therefore only support bining by full months.
+ * @brief To bin by day we get the year and month of a date and convert that to
+ * the nth month since origin
+ * @details This allows us to treat month bining similar to int bining. During
+ * this process we ignore the day component and therefore only support bining by
+ * full months.
  */
 static DateADT
 date_bin_start(DateADT d, int32 ndays, DateADT origin)

@@ -140,7 +140,7 @@ Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Increase @p box1 to include @p box2.
+ * @brief Increase @p box1 to include @p box2
  * @details Same as stbox_adjust on the binary-compatible prefix.  The
  * pcid field is left untouched: the GiST opclass is per-type, not
  * per-schema, so all entries in one index already share a pcid.
@@ -183,7 +183,7 @@ Tpcbox_gist_union(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Volume of a TPCBox for penalty calculation.
+ * @brief Volume of a TPCBox for penalty calculation
  */
 static double
 tpcbox_size(const TPCBox *box)
@@ -217,7 +217,7 @@ tpcbox_size(const TPCBox *box)
 }
 
 /**
- * @brief Increase in TPCBox volume from inserting @p bbox2 into @p bbox1.
+ * @brief Increase in TPCBox volume from inserting @p bbox2 into @p bbox1
  */
 double
 tpcbox_penalty(void *bbox1, void *bbox2)

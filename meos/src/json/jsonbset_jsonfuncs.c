@@ -710,7 +710,8 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
 /**
  * @ingroup meos_json_set_json
  * @brief Extract the first item specified by a JSON path expression from a
- * JSONB set. If there are no items, return NULL.
+ * JSONB set
+ * @details If there are no items, return NULL.
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables, may be NULL

@@ -299,7 +299,7 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
 }
 
 /**
- * @brief Parse a temporal rigid geometry from the buffer.
+ * @brief Parse a temporal rigid geometry from the buffer
  * @param[in,out] str Input string, advanced past what is read
  * @param[in] temptype Temporal type
  */

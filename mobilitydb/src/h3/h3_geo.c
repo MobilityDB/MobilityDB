@@ -77,8 +77,7 @@ PG_FUNCTION_INFO_V1(Geo_to_h3indexset);
 /**
  * @ingroup mobilitydb_h3_conversion
  * @brief Set of H3 cells covering a static geometry at the given resolution
- *
- * Accepts POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
+ * @details Accepts POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
  * combinations.  Returns NULL when the geometry produces no valid cells.
  *
  * @sqlfn geoToH3IndexSet()

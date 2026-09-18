@@ -927,9 +927,10 @@ tcbufferseq_shortestline(const TSequence *seq, const DistGeom *g,
 
 /**
  * @brief Shortest line between a temporal circular buffer and a geometry,
- * arc-exact for circular-arc input. Returns NULL when the analytic path does
- * not apply (an unsupported geometry type), so the caller can fall back to the
- * traversed-area shortest line.
+ * arc-exact for circular-arc input
+ * @details Returns NULL when the analytic path does not apply (an unsupported
+ * geometry type), so the caller can fall back to the traversed-area shortest
+ * line.
  */
 static GSERIALIZED *
 shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
@@ -1289,7 +1290,8 @@ tcbuffer_double_cmp(const void *a, const void *b)
 /**
  * @brief Return the within-distance sub-intervals of one linear moving disc
  * segment as normalized [0,1] time ranges in @p outlo / @p outhi, returning
- * their count. The crossing candidates come from the per-edge roots and each
+ * their count
+ * @details The crossing candidates come from the per-edge roots and each
  * sub-interval is classified with the exact interior-aware unit distance.
  */
 int
@@ -2083,7 +2085,7 @@ cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,
 }
 
 /**
- * @brief Plane-sweep over two cbuffer sequences.
+ * @brief Plane-sweep over two cbuffer sequences
  */
 static double
 mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
@@ -2171,7 +2173,7 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
 }
 
 /**
- * @brief Subtype dispatch.
+ * @brief Subtype dispatch
  */
 static double
 mindist_tcbuffer_tcbuffer_threshold(const Temporal *temp1,

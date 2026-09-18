@@ -352,7 +352,7 @@ static TSequence * tsequence_ext_kalman_filter(const TSequence *seq,
 
 /**
  * @ingroup meos_temporal_analytics_simplify
- * @brief EKF-based outlier filtering for temporal floats/points.
+ * @brief EKF-based outlier filtering for temporal floats/points
  * @csqlfn #Temporal_ext_kalman_filter()
  */
 Temporal *

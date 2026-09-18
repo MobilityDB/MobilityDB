@@ -271,7 +271,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
 
 /**
  * @ingroup meos_rgeo_constructor
- * @brief Construct a temporal sequence from an array of temporal instants.
+ * @brief Construct a temporal sequence from an array of temporal instants
  * @param[in] geom Reference geometry
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
@@ -288,8 +288,8 @@ trgeometryseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
 }
 
 /**
- * @brief Construct a temporal sequence from an array of temporal instants
- * and free the array and the instants after the creation.
+ * @brief Construct a temporal sequence from an array of temporal instants and
+ * free the array and the instants after the creation
  * @param[in] geom Reference geometry
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

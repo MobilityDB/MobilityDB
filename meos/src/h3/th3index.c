@@ -77,10 +77,10 @@
  *****************************************************************************/
 
 /**
- * @brief Ensure that a (th3index, th3index) pair is valid — both are
- * the right temptype and share a meaningful time axis. The sync
- * check itself happens later in `tfunc_temporal_temporal`; we only
- * handle the null / temptype fences here.
+ * @brief Ensure that a (th3index, th3index) pair is valid — both are the right
+ * temptype and share a meaningful time axis
+ * @details The sync check itself happens later in `tfunc_temporal_temporal`; we
+ * only handle the null / temptype fences here.
  */
 bool
 ensure_valid_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
@@ -91,13 +91,11 @@ ensure_valid_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Ensure that a (th3index, H3Index) pair is valid.
- *
- * The cell argument carries h3 semantics: a value of 0 is the
- * conventional "invalid" sentinel (what `isValidCell(0)`
- * returns `false` for). We reject it up front so callers cannot
- * e.g. test a temporal trajectory for "ever equal to the invalid
- * sentinel" without noticing.
+ * @brief Ensure that a (th3index, H3Index) pair is valid
+ * @details The cell argument carries h3 semantics: a value of 0 is the
+ * conventional "invalid" sentinel (what `isValidCell(0)` returns `false` for).
+ * We reject it up front so callers cannot e.g. test a temporal trajectory for
+ * "ever equal to the invalid sentinel" without noticing.
  */
 bool
 ensure_valid_th3index_h3index(const Temporal *temp, H3Index cell)
@@ -114,7 +112,7 @@ ensure_valid_th3index_h3index(const Temporal *temp, H3Index cell)
 }
 
 /**
- * @brief Ensure that a (th3index, tgeogpoint) pair is valid.
+ * @brief Ensure that a (th3index, tgeogpoint) pair is valid
  */
 bool
 ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
@@ -135,8 +133,7 @@ ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_h3_inout
- * @brief Parse a temporal H3 cell index from its Well-Known Text
- * representation.
+ * @brief Parse a temporal H3 cell index from its Well-Known Text representation
  * @csqlfn #Temporal_in()
  */
 Temporal *
@@ -150,7 +147,7 @@ th3index_in(const char *str)
 /**
  * @ingroup meos_h3_inout
  * @brief Parse a temporal H3 cell instant from its Well-Known Text
- * representation.
+ * representation
  */
 TInstant *
 th3indexinst_in(const char *str)
@@ -167,7 +164,7 @@ th3indexinst_in(const char *str)
 /**
  * @ingroup meos_h3_inout
  * @brief Parse a temporal H3 cell sequence from its Well-Known Text
- * representation.
+ * representation
  * @details th3index sequences always carry step interpolation (h3 cells are
  * discrete); the `interp` argument is accepted for signature
  * parity with the generic API and discarded.
@@ -189,7 +186,7 @@ th3indexseq_in(const char *str, interpType interp)
 /**
  * @ingroup meos_h3_inout
  * @brief Parse a temporal H3 cell sequence set from its Well-Known Text
- * representation.
+ * representation
  */
 TSequenceSet *
 th3indexseqset_in(const char *str)
@@ -228,7 +225,7 @@ th3index_out(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_constructor
- * @brief Build a temporal H3 cell instant.
+ * @brief Build a temporal H3 cell instant
  * @param[in] value The H3 cell value
  * @param[in] t The instant's timestamp
  */
@@ -240,8 +237,8 @@ th3indexinst_make(H3Index value, TimestampTz t)
 
 /**
  * @ingroup meos_h3_constructor
- * @brief Build a temporal H3 cell sequence (step interpolation only
- * — h3 cells are discrete, never interpolated).
+ * @brief Build a temporal H3 cell sequence (step interpolation only — h3 cells
+ * are discrete, never interpolated)
  * @param[in] values Array of H3 cell values
  * @param[in] times Array of timestamps, same length as `values`
  * @param[in] count Number of elements in the arrays
@@ -271,7 +268,7 @@ th3indexseq_make(const H3Index *values, const TimestampTz *times,
 
 /**
  * @ingroup meos_h3_constructor
- * @brief Build a temporal H3 cell sequence set from an array of sequences.
+ * @brief Build a temporal H3 cell sequence set from an array of sequences
  * @param[in] sequences Array of sequences (step interpolation)
  * @param[in] count Number of sequences
  */
@@ -287,8 +284,8 @@ th3indexseqset_make(const TSequence **sequences, int count)
 
 /**
  * @ingroup meos_h3_constructor
- * @brief Shorthand constructor: the single-instant temporal H3 cell.
- * Alias for `th3indexinst_make` — matches the cbuffer convention.
+ * @brief Shorthand constructor: the single-instant temporal H3 cell
+ * @details Alias for `th3indexinst_make` — matches the cbuffer convention.
  */
 Temporal *
 th3index_make(H3Index value, TimestampTz t)
@@ -302,7 +299,7 @@ th3index_make(H3Index value, TimestampTz t)
 
 /**
  * @ingroup meos_h3_accessor
- * @brief Return the H3 cell value at the first instant of `temp`.
+ * @brief Return the H3 cell value at the first instant of `temp`
  * @csqlfn #Temporal_start_value()
  */
 H3Index
@@ -315,7 +312,7 @@ th3index_start_value(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_accessor
- * @brief Return the H3 cell value at the last instant of `temp`.
+ * @brief Return the H3 cell value at the last instant of `temp`
  * @csqlfn #Temporal_end_value()
  */
 H3Index
@@ -329,7 +326,7 @@ th3index_end_value(const Temporal *temp)
 /**
  * @ingroup meos_h3_accessor
  * @brief Return the H3 cell value at the `n`-th distinct value of `temp`.
- * 1-indexed, following the cbuffer convention.
+ * 1-indexed, following the cbuffer convention
  * @param[in] temp Temporal value
  * @param[in] n Number
  * @param[out] result Value
@@ -352,8 +349,8 @@ th3index_value_n(const Temporal *temp, int n, H3Index *result)
 
 /**
  * @ingroup meos_h3_accessor
- * @brief Return the distinct H3 cell values that `temp` takes, in
- * ascending order.
+ * @brief Return the distinct H3 cell values that `temp` takes, in ascending
+ * order
  * @param[in] temp Temporal H3 cell
  * @param[out] count Number of distinct values
  * @return Allocated array of `count` H3Index values. Caller owns.
@@ -413,7 +410,7 @@ th3index_unnest(const Temporal *temp, H3Index **values, int *count)
 
 /**
  * @ingroup meos_h3_accessor
- * @brief Return the H3 cell value of `temp` at timestamp `t`.
+ * @brief Return the H3 cell value of `temp` at timestamp `t`
  * @param[in] temp Temporal H3 cell
  * @param[in] t Timestamp
  * @param[in] strict True to require an exact instant match; false
@@ -461,7 +458,8 @@ datum_h3index_identity(Datum d)
 
 /**
  * @ingroup meos_h3_conversion
- * @brief Convert a `tbigint` to a `th3index`. Caller owns the result.
+ * @brief Convert a `tbigint` to a `th3index`
+ * @details Caller owns the result.
  * @csqlfn #Tbigint_to_th3index()
  */
 Temporal *
@@ -482,7 +480,8 @@ tbigint_to_th3index(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_conversion
- * @brief Convert a `th3index` to a `tbigint`. Caller owns the result.
+ * @brief Convert a `th3index` to a `tbigint`
+ * @details Caller owns the result.
  * @csqlfn #Th3index_to_tbigint()
  */
 Temporal *

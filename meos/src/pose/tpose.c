@@ -631,7 +631,8 @@ tpose_inverse(const Temporal *temp)
 
 /**
  * @brief Lift a pose-to-double Datum function through a temporal pose,
- * returning a temporal float. Shared backend for the @p yaw / @p pitch /
+ * returning a temporal float
+ * @details Shared backend for the @p yaw / @p pitch /
  * @p roll accessors below.
  * @details The interpolation of the result follows the dimension. A 2D pose
  * interpolates its stored angle linearly and that angle is its yaw, so the
@@ -722,9 +723,9 @@ tpose_speed(const Temporal *temp)
 
 /**
  * @brief Per-segment angular speed for a TSequence of tpose with linear
- * interpolation. Builds a step-interpolation TSequence of tfloat where
- * each instant carries the constant @p |omega| of the segment that
- * starts at it.
+ * interpolation
+ * @details Builds a step-interpolation TSequence of tfloat where each instant
+ * carries the constant @p |omega| of the segment that starts at it.
  */
 static TSequence *
 tposeseq_angular_speed(const TSequence *seq)
@@ -761,7 +762,7 @@ tposeseq_angular_speed(const TSequence *seq)
 }
 
 /**
- * @brief Per-sequenceset angular speed.
+ * @brief Per-sequenceset angular speed
  */
 static TSequenceSet *
 tposeseqset_angular_speed(const TSequenceSet *ss)
@@ -811,9 +812,9 @@ tpose_angular_speed(const Temporal *temp)
 }
 
 /**
- * @brief Per-sequence builder of @p applyPose: applies the rigid-body
- * transform of each instant's pose to the body geometry, producing a
- * tgeompoint sequence with the same temporal shape as the input.
+ * @brief Per-sequence builder of @p applyPose: applies the rigid-body transform
+ * of each instant's pose to the body geometry, producing a tgeompoint sequence
+ * with the same temporal shape as the input
  */
 static TSequence *
 tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)

@@ -87,7 +87,7 @@ nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * @brief Return true if a is strictly to the right of b, false otherwise.
+ * @brief Return true if a is strictly to the right of b, false otherwise
  */
 static bool
 nd_box_right(const ND_BOX *a, const ND_BOX *b)

@@ -115,11 +115,10 @@ segment_pair(char *seg, size_t segsz, char *dense, size_t densesz,
 }
 
 /**
- * @brief Return how many cells of the dense walk the th3index cover of the
- * same segment does not hold, or -1 where a conversion answers nothing
- *
- * A conversion that fails answers NULL, and counting that as "no cell is
- * missing" reports a cover that was never built as a sound one, so it is
+ * @brief Return how many cells of the dense walk the th3index cover of the same
+ * segment does not hold, or -1 where a conversion answers nothing
+ * @details A conversion that fails answers NULL, and counting that as "no cell
+ * is missing" reports a cover that was never built as a sound one, so it is
  * carried back as its own answer rather than folded into the count.
  */
 static long

@@ -284,8 +284,7 @@ PGDLLEXPORT Datum Tbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for temporal numbers
- *
- * It splits a list of boxes into quadrants by choosing a central 4D
+ * @details It splits a list of boxes into quadrants by choosing a central 4D
  * point as the median of the coordinates of the boxes.
  */
 Datum

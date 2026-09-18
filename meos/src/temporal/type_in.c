@@ -747,8 +747,7 @@ parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
 #if NPOINT
 /**
  * @brief Return a network point from its MF-JSON value
- *
- * The expected payload shape (matching the asMFJSON output side) is
+ * @details The expected payload shape (matching the asMFJSON output side) is
  * @code {"route":<route>,"position":<position>} @endcode.  The position
  * must be in [0, 1] and the route id must be present in the loaded ways
  * cache; both are validated by @c npoint_make.  The @p srid argument is
@@ -1851,9 +1850,10 @@ text_from_wkb_state(meos_wkb_parse_state *s)
 
 #if POINTCLOUD
 /**
- * @brief Read a pgPointCloud pcpoint or pcpatch varlena and advance the
- * parse state. The encoding is int32 body length + body bytes; we wrap
- * the body in a varlena header.
+ * @brief Read a pgPointCloud pcpoint or pcpatch varlena and advance the parse
+ * state
+ * @details The encoding is int32 body length + body bytes; we wrap the body in
+ * a varlena header.
  */
 static void *
 pcvarlena_from_wkb_state(meos_wkb_parse_state *s)
@@ -1875,7 +1875,7 @@ pcvarlena_from_wkb_state(meos_wkb_parse_state *s)
 
 /**
  * @brief Structure used in PostGIS for passing the parse state between the
- * parsing functions.
+ * parsing functions
  */
 typedef struct
 {

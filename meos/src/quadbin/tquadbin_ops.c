@@ -165,7 +165,7 @@ datum_quadbin_cell_area(Datum d)
  *****************************************************************************/
 
 /**
- * @brief Quadbin operations descriptor consumed by `dggs_cellops()`.
+ * @brief Quadbin operations descriptor consumed by `dggs_cellops()`
  */
 const DggsCellOps quadbin_cellops =
 {
@@ -194,7 +194,7 @@ const DggsCellOps quadbin_cellops =
 
 /**
  * @ingroup meos_cellindex
- * @brief Return the temporal quadkey (ttext) of a temporal quadbin cell.
+ * @brief Return the temporal quadkey (ttext) of a temporal quadbin cell
  * @csqlfn #Tquadbin_cell_to_quadkey()
  */
 Temporal *

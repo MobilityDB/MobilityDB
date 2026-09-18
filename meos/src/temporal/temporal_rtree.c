@@ -171,7 +171,7 @@ bbox_expand_stbox(const void *box1, void *box2)
 
 #if POINTCLOUD
 /**
- * @brief Expand the second TPCBox with the first one.
+ * @brief Expand the second TPCBox with the first one
  */
 static inline void
 bbox_expand_tpcbox(const void *box1, void *box2)
@@ -208,8 +208,8 @@ bbox_contains_tbox(const void *box1, const void *box2)
 }
 
 /**
- * @brief Return `true` if the first spatiotemporal box contains the second
- * one, `false` otherwise.
+ * @brief Return `true` if the first spatiotemporal box contains the second one,
+ * `false` otherwise
  * @param[in] box1,box2 Spatiotemporal boxes
  */
 static inline bool
@@ -220,7 +220,7 @@ bbox_contains_stbox(const void *box1, const void *box2)
 
 #if POINTCLOUD
 /**
- * @brief Return `true` if the first TPCBox contains the second.
+ * @brief Return `true` if the first TPCBox contains the second
  */
 static inline bool
 bbox_contains_tpcbox(const void *box1, const void *box2)
@@ -686,7 +686,7 @@ box_largest_axis(const RTree *rtree, const void *box)
 }
 
 /**
- * @brief Moves a bounding box from one RTree node to another.
+ * @brief Moves a bounding box from one RTree node to another
  * @details Changes the information from one node into another.
  * @param[in] from Pointer to the node from which the bounding box is
  * being moved.
@@ -718,7 +718,8 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
 }
 
 /**
- * @brief Swaps two bounding boxes and their associated data within an RTree node.
+ * @brief Swaps two bounding boxes and their associated data within an RTree
+ * node
  * @details The function exchanges the positions of two bounding boxes within a
  * single RTree node. If the node is a leaf, it also swaps the associated IDs.
  * For internal nodes, it swaps the pointers to child nodes. The function is
@@ -1124,7 +1125,7 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
 }
 
 /**
- * @brief Creates an RTree index.
+ * @brief Creates an RTree index
  * @param[in] bboxtype The MeosType of the elements to index.
  * @return RTree initialized.
  */
@@ -1487,7 +1488,7 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
 
 /**
  * @ingroup meos_temporal_box_index
- * @brief Insert a bounding box into the RTree index.
+ * @brief Insert a bounding box into the RTree index
  * @note The parameter `id` is used for the search function, when a match
  * is found the id will be returned. The bounding box will be copied into the
  * RTRee.

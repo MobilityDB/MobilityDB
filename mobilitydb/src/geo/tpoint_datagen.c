@@ -57,7 +57,7 @@
 PGDLLEXPORT Datum Create_trip(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Create_trip);
 /**
- * @brief Create a trip using the BerlinMOD data generator.
+ * @brief Create a trip using the BerlinMOD data generator
  *
  * @note This function is equivalent to the PL/pgSQL function
  * CreateTrip in the BerlinMOD generator but is written in C

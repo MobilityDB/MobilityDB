@@ -77,7 +77,7 @@ typedef enum
 } EndCapStyle;
 
 /**
- * @brief Type of a buffer boundary piece.
+ * @brief Type of a buffer boundary piece
  */
 typedef enum
 {
@@ -86,7 +86,7 @@ typedef enum
 } BufferPieceType;
 
 /**
- * @brief A piece of a buffer boundary.
+ * @brief A piece of a buffer boundary
  */
 typedef struct
 {
@@ -109,7 +109,7 @@ typedef struct
 } BufferPiece;
 
 /**
- * @brief Add a point to a local parameterized node array.
+ * @brief Add a point to a local parameterized node array
  */
 typedef struct
 {
@@ -119,7 +119,7 @@ typedef struct
 
 /**
  * @brief Classification of a split buffer boundary piece with respect to
- * another buffer.
+ * another buffer
  */
 typedef enum
 {
@@ -129,7 +129,7 @@ typedef enum
 } BufferPieceLocation;
 
 /**
- * @brief Topological classification of a closed buffer boundary ring.
+ * @brief Topological classification of a closed buffer boundary ring
  * @details
  * - ring Boundary ring
  * - pieces The ordered pieces used to construct the ring. The ring owns the
@@ -609,7 +609,7 @@ buffer_curvepoly_add_ring(LWCURVEPOLY *poly, LWCOMPOUND *ring)
  *****************************************************************************/
 
 /**
- * @brief Return true if two buffer geometries have overlapping interiors.
+ * @brief Return true if two buffer geometries have overlapping interiors
  * @details This is used to determine whether individual line buffers can
  * be returned independently or whether an overlay/union operation is needed.
  *
@@ -755,7 +755,7 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
  *****************************************************************************/
 
 /**
- * @brief Return true if two buffer boundary edges intersect.
+ * @brief Return true if two buffer boundary edges intersect
  * @details Uses the line and circular-arc intersection engines.
  */
 static bool
@@ -796,7 +796,7 @@ buffer_edges_intersect(const Edge *e1, const Edge *e2)
 }
 
 /**
- * @brief Return true if two sets of buffer edges intersect.
+ * @brief Return true if two sets of buffer edges intersect
  * @details The edges are extracted from the two geometries and tested pairwise
  * using the line/arc intersection functions.
  */
@@ -846,7 +846,7 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
  *****************************************************************************/
 
 /**
- * @brief Return a representative point of an areal geometry.
+ * @brief Return a representative point of an areal geometry
  * @details The returned point is taken from the first boundary edge.
  * It is only used for containment tests and is therefore subsequently
  * verified against the complete geometry.
@@ -886,7 +886,7 @@ buffer_areal_representative_point(const LWGEOM *geom, double *x, double *y)
 }
 
 /**
- * @brief Return true if an areal geometry contains a point in its interior.
+ * @brief Return true if an areal geometry contains a point in its interior
  * @details This function deliberately treats boundary points as not being
  * interior. It is therefore suitable for determining strict containment.
  */
@@ -916,8 +916,8 @@ buffer_areal_contains_point(const LWGEOM *geom, double x, double y)
 }
 
 /**
- * @brief Return true if an areal geometry completely contains another
- * areal geometry.
+ * @brief Return true if an areal geometry completely contains another areal
+ * geometry
  * @details This is an exact containment test for the supported geometry
  * representation. The boundary intersection test is performed first so
  * that touching geometries are not classified as containment.
@@ -941,7 +941,7 @@ buffer_areal_contains(const LWGEOM *outer, const LWGEOM *inner)
 }
 
 /**
- * @brief Construct a MULTISURFACE from two disjoint areal geometries.
+ * @brief Construct a MULTISURFACE from two disjoint areal geometries
  */
 static LWGEOM *
 buffer_areal_collection(const LWGEOM *geom1, const LWGEOM *geom2)
@@ -959,7 +959,7 @@ buffer_areal_collection(const LWGEOM *geom1, const LWGEOM *geom2)
 }
 
 /**
- * @brief Union two crossing buffer geometries while preserving circular arcs.
+ * @brief Union two crossing buffer geometries while preserving circular arcs
  * @details The implementation is defined later in this file.
  */
 static LWGEOM *
@@ -1036,8 +1036,8 @@ buffer_outer_without_filled_holes(const LWGEOM *outer, const LWGEOM *inner,
 }
 
 /**
- * @brief Return the union of two areal geometries for the
- * disjoint/containment cases.
+ * @brief Return the union of two areal geometries for the disjoint/containment
+ * cases
  * @details The following cases are handled exactly:
  *   A disjoint B: MULTISURFACE(A, B)
  *   A contains B: A
@@ -1086,7 +1086,7 @@ buffer_areal_union_simple(const LWGEOM *geom1, const LWGEOM *geom2,
  *****************************************************************************/
 
 /**
- * @brief Return true if an edge belongs to a buffer boundary.
+ * @brief Return true if an edge belongs to a buffer boundary
  * @details Buffer boundaries can contain both straight segments and exact
  * circular arcs. The existing buffer implementation represents round joins
  * and caps using CircularStrings, which are exposed by geom_extract_edges()
@@ -1100,7 +1100,7 @@ buffer_is_boundary_edge(const Edge *edge)
 }
 
 /**
- * @brief Return the dimension of an intersection between two buffer edges.
+ * @brief Return the dimension of an intersection between two buffer edges
  * @return Return 0 if the intersection is a point, 1 if the intersection is a
  * curve, -1 if there is no intersection.
  */
@@ -1211,7 +1211,7 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
  *****************************************************************************/
 
 /**
- * @brief Return the parametric position of a point on a straight piece.
+ * @brief Return the parametric position of a point on a straight piece
  * @details The returned parameter is approximately in [0,1].
  */
 static double
@@ -1236,7 +1236,7 @@ buffer_segment_parameter(const BufferPiece *piece, double x, double y)
  *****************************************************************************/
 
 /**
- * @brief Return a representative point on a buffer boundary.
+ * @brief Return a representative point on a buffer boundary
  * @details The returned point is guaranteed to lie on the first usable
  * boundary edge. For a circular arc, the midpoint of the arc is used.
  * For a straight segment, its midpoint is used.
@@ -1288,7 +1288,7 @@ buffer_boundary_representative_point(const LWGEOM *geom, double *x, double *y)
 }
 
 /**
- * @brief Return a small displacement suitable for probing around a boundary.
+ * @brief Return a small displacement suitable for probing around a boundary
  */
 static double
 buffer_containment_epsilon(const LWGEOM *geom)
@@ -1307,7 +1307,7 @@ buffer_containment_epsilon(const LWGEOM *geom)
 }
 
 /**
- * @brief Return the normal direction of a buffer boundary edge.
+ * @brief Return the normal direction of a buffer boundary edge
  * @details The function returns both possible normals because the
  * orientation of an arbitrary buffer boundary cannot be assumed here.
  */
@@ -1465,7 +1465,7 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
 }
 
 /**
- * @brief Determine whether one buffer is completely contained in another.
+ * @brief Determine whether one buffer is completely contained in another
  * @details This function assumes that the two buffer boundaries do not
  * intersect.
  * Since the boundary of a connected buffer is a closed curve, if its
@@ -1608,7 +1608,7 @@ buffer_extents_apart(const BufferExtent *ext1, const BufferExtent *ext2)
 }
 
 /**
- * @brief Classify the relationship between two buffer surfaces.
+ * @brief Classify the relationship between two buffer surfaces
  * @return
  *   0 = disjoint
  *   1 = boundary intersection
@@ -1667,7 +1667,7 @@ buffer_node_tolerance(double x, double y)
 }
 
 /**
- * @brief Add an intersection point to an array.
+ * @brief Add an intersection point to an array
  * @details Duplicate points are ignored. This is important because
  * adjacent buffer segments may report the same topological node.
  */
@@ -1690,7 +1690,7 @@ buffer_intersections_add(MeosArray *array, double x, double y)
 }
 
 /**
- * @brief Add an intersection point to an array if it is not already present.
+ * @brief Add an intersection point to an array if it is not already present
  */
 static void
 buffer_add_intersection_point(MeosArray *points, double x, double y)
@@ -1710,7 +1710,7 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
 }
 
 /**
- * @brief Collect intersections between two straight buffer edges.
+ * @brief Collect intersections between two straight buffer edges
  */
 static void
 buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
@@ -1738,7 +1738,7 @@ buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
 }
 
 /**
- * @brief Collect intersections between a straight edge and an arc.
+ * @brief Collect intersections between a straight edge and an arc
  * @details arcsegm_intersect() returns parameters along the straight segment.
  * Therefore the exact intersection coordinates can be reconstructed
  * directly without approximating the circular arc.
@@ -1760,7 +1760,7 @@ buffer_collect_line_arc_intersections(const Edge *line, const Edge *arc,
 }
 
 /**
- * @brief Collect intersections between two circular arcs.
+ * @brief Collect intersections between two circular arcs
  * @details This is the same geometric construction already used by
  * #arcarc_intersect(), but instead of returning only a Boolean,
  * this function records the actual intersection coordinates.
@@ -1818,7 +1818,7 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
 }
 
 /**
- * @brief Test whether a point lies on a circular buffer arc.
+ * @brief Test whether a point lies on a circular buffer arc
  * @details The radial distance is the caller's question, since what it is read
  * against depends on the coordinates the point is built from; this answers the
  * angular half through #arc_span_contains(), the one statement of it
@@ -1837,7 +1837,7 @@ buffer_point_on_arc(const BufferPiece *arc, double x, double y)
 
 /**
  * @brief Return true if two scalar values are equal within the geometric
- * tolerance used by the buffer overlay.
+ * tolerance used by the buffer overlay
  */
 static bool
 buffer_values_equal(double a, double b)
@@ -1846,7 +1846,7 @@ buffer_values_equal(double a, double b)
 }
 
 /**
- * @brief Return true if two points are equal within the geometric tolerance.
+ * @brief Return true if two points are equal within the geometric tolerance
  */
 static bool
 buffer_piece_points_equal(double x1, double y1, double x2, double y2)
@@ -1855,8 +1855,8 @@ buffer_piece_points_equal(double x1, double y1, double x2, double y2)
 }
 
 /**
- * @brief Return true if two straight buffer pieces represent the same
- * geometric segment, independently of orientation.
+ * @brief Return true if two straight buffer pieces represent the same geometric
+ * segment, independently of orientation
  */
 static bool
 buffer_segments_equal(const BufferPiece *a, const BufferPiece *b)
@@ -1873,7 +1873,7 @@ buffer_segments_equal(const BufferPiece *a, const BufferPiece *b)
 }
 
 /**
- * @brief Return true if two circular buffer pieces lie on the same circle.
+ * @brief Return true if two circular buffer pieces lie on the same circle
  */
 static bool
 buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
@@ -1888,8 +1888,8 @@ buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
 }
 
 /**
- * @brief Return true if two circular arcs represent the same geometric
- * arc, independently of traversal direction.
+ * @brief Return true if two circular arcs represent the same geometric arc,
+ * independently of traversal direction
  */
 static bool
 buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
@@ -1922,8 +1922,7 @@ buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
 }
 
 /**
- * @brief Return true if two buffer pieces represent the same
- * geometric locus.
+ * @brief Return true if two buffer pieces represent the same geometric locus
  * @details The orientation of the pieces is ignored.
  */
 static bool
@@ -1940,7 +1939,7 @@ buffer_pieces_equal(const BufferPiece *a, const BufferPiece *b)
 }
 
 /**
- * @brief Return true if a piece is already present in an array.
+ * @brief Return true if a piece is already present in an array
  */
 static bool
 buffer_piece_array_contains(const MeosArray *pieces, const BufferPiece *piece)
@@ -1961,7 +1960,7 @@ buffer_piece_array_contains(const MeosArray *pieces, const BufferPiece *piece)
 
 /**
  * @brief Add a piece to an array unless an equivalent geometric piece is
- * already present.
+ * already present
  */
 static void
 buffer_pieces_add_unique(MeosArray *pieces, BufferPiece *piece)
@@ -1972,7 +1971,7 @@ buffer_pieces_add_unique(MeosArray *pieces, BufferPiece *piece)
 }
 
 /**
- * @brief Return the directed angular parameter of a point on an arc.
+ * @brief Return the directed angular parameter of a point on an arc
  * @details The returned value is an angular distance from the start of the 
  * arc, measured in the direction of travel.
  * - For a CCW arc: parameter = angle - theta1
@@ -1990,7 +1989,7 @@ buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
 }
 
 /**
- * @brief Return the total angular sweep of an arc.
+ * @brief Return the total angular sweep of an arc
  */
 static double
 buffer_arc_sweep(const BufferPiece *piece)
@@ -2002,7 +2001,7 @@ buffer_arc_sweep(const BufferPiece *piece)
 }
 
 /**
- * @brief Return true if a point belongs to a buffer piece.
+ * @brief Return true if a point belongs to a buffer piece
  * @details This is a geometric test rather than an intersection test.
  * It is used to determine which collected nodes belong to a particular
  * boundary piece before splitting it.
@@ -2039,7 +2038,7 @@ buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
 }
 
 /**
- * @brief Sort split points according to their position on a boundary piece.
+ * @brief Sort split points according to their position on a boundary piece
  */
 static int
 buffer_split_point_cmp(const void *a, const void *b)
@@ -2055,7 +2054,7 @@ buffer_split_point_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Add a split point if it is not already present.
+ * @brief Add a split point if it is not already present
  */
 static void
 buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
@@ -2087,7 +2086,7 @@ buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
 }
 
 /**
- * @brief Split a linear buffer piece at the supplied intersection nodes.
+ * @brief Split a linear buffer piece at the supplied intersection nodes
  */
 static void
 buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
@@ -2140,7 +2139,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
 }
 
 /**
- * @brief Split a circular buffer piece at supplied intersection nodes.
+ * @brief Split a circular buffer piece at supplied intersection nodes
  */
 static void
 buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
@@ -2272,7 +2271,7 @@ buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
 }
 
 /**
- * @brief Split all pieces of a buffer boundary at intersection nodes.
+ * @brief Split all pieces of a buffer boundary at intersection nodes
  * @details Every resulting piece is either a straight segment or an exact
  * circular arc. A circular arc stays an arc, never a chord approximating it.
  */
@@ -2298,7 +2297,7 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
  *****************************************************************************/
 
 /**
- * @brief Compute a representative point in the interior of a buffer piece.
+ * @brief Compute a representative point in the interior of a buffer piece
  * @details For a segment the midpoint is used. For a circular arc the angular
  * midpoint is used. The returned point is therefore exactly on the supporting
  * circle and does not approximate the arc by a chord.
@@ -2331,7 +2330,7 @@ buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
 }
 
 /**
- * @brief Classify one split boundary piece with respect to a geometry.
+ * @brief Classify one split boundary piece with respect to a geometry
  * @details The representative point is located against the complete other
  * buffer. This is a classification of the boundary itself:
  * - EXTERIOR  -> the piece lies outside the other buffer and may belong
@@ -2367,7 +2366,7 @@ buffer_classify_piece(const BufferPiece *piece, BufferLocator *other)
  *****************************************************************************/
 
 /**
- * @brief Compute a point on the left/right side of a buffer piece.
+ * @brief Compute a point on the left/right side of a buffer piece
  * @details The piece orientation determines the tangent direction.
  * For a circular arc, the tangent is evaluated at the angular midpoint.
  * The returned points are very close to the boundary. They are used only to
@@ -2429,7 +2428,7 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
 }
 
 /**
- * @brief Determine which side of a boundary piece is inside a geometry.
+ * @brief Determine which side of a boundary piece is inside a geometry
  * @return Return values:
  *   -1 : neither side is interior
  *    0 : left side is interior
@@ -2483,8 +2482,8 @@ buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
 }
 
 /**
- * @brief Determine whether a coincident boundary piece is an exterior
- * boundary of the union.
+ * @brief Determine whether a coincident boundary piece is an exterior boundary
+ * of the union
  * @details This is based on the side occupied by the other geometry.
  * - If the other geometry occupies the same side as this buffer, the common
  *   boundary is external to the union.
@@ -2515,7 +2514,7 @@ buffer_classify_coincident_piece(const BufferPiece *piece, BufferLocator *owner,
 }
 
 /**
- * @brief Resolve coincident pieces belonging to one buffer.
+ * @brief Resolve coincident pieces belonging to one buffer
  * @details If the coincident piece is external to the union, it is retained.
  * If it is internal, it is discarded.
  * @note The caller is responsible for preventing the same geometric piece
@@ -2552,7 +2551,7 @@ buffer_resolve_coincident_piece(BufferPiece *piece, BufferLocator *owner,
 
 /**
  * @brief Collect all exact boundary intersection nodes into the intersection
- * array.
+ * array
  * @details The existing low-level intersection routines operate on MeosArray,
  * so the points of one edge pair are collected into a scratch array and
  * transferred. That array is built ONCE for the whole walk and reset per pair:
@@ -2759,7 +2758,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
  *****************************************************************************/
 
 /**
- * @brief Test whether two points represent the same topological node.
+ * @brief Test whether two points represent the same topological node
  */
 static bool
 buffer_points_equal(POINT2D p1, POINT2D p2)
@@ -2778,7 +2777,7 @@ buffer_points_equal(POINT2D p1, POINT2D p2)
 }
 
 /**
- * @brief Return the start point of a buffer piece.
+ * @brief Return the start point of a buffer piece
  */
 static POINT2D
 buffer_piece_start(const BufferPiece *piece)
@@ -2791,7 +2790,7 @@ buffer_piece_start(const BufferPiece *piece)
 }
 
 /**
- * @brief Return the end point of a buffer piece.
+ * @brief Return the end point of a buffer piece
  */
 static POINT2D
 buffer_piece_end(const BufferPiece *piece)
@@ -2804,7 +2803,7 @@ buffer_piece_end(const BufferPiece *piece)
 }
 
 /**
- * @brief Reverse the orientation of a buffer piece.
+ * @brief Reverse the orientation of a buffer piece
  * @details Reversing an arc also reverses its direction of traversal.
  * Therefore theta1/theta2 are exchanged and ccw is inverted.
  */
@@ -2829,7 +2828,7 @@ buffer_piece_reverse(BufferPiece *piece)
 }
 
 /**
- * @brief Append one buffer piece to a compound curve.
+ * @brief Append one buffer piece to a compound curve
  * @details The orientation of the piece is assumed to be the desired traversal
  * direction.
  */
@@ -3015,7 +3014,7 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
 }
 
 /**
- * @brief Chain one connected boundary component and retain its ordered pieces.
+ * @brief Chain one connected boundary component and retain its ordered pieces
  * @details The returned piece array contains copies of the pieces in exactly
  * the traversal order used to construct the compound curve.
  * The input array is never modified.
@@ -3081,7 +3080,7 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
 }
 
 /**
- * @brief Chain all selected boundary pieces into closed rings.
+ * @brief Chain all selected boundary pieces into closed rings
  * @details The resulting BufferRingInfo objects retain both the geometric
  * ring and the ordered boundary pieces used to construct it.
  */
@@ -3148,7 +3147,7 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
 }
 
 /**
- * @brief Construct a temporary CURVEPOLYGON containing one ring.
+ * @brief Construct a temporary CURVEPOLYGON containing one ring
  * @details The returned geometry owns the supplied ring.
  */
 static LWGEOM *
@@ -3163,7 +3162,7 @@ buffer_make_single_ring_polygon(LWCOMPOUND *ring, int32_t srid)
 }
 
 /**
- * @brief Find a point strictly inside a closed boundary ring.
+ * @brief Find a point strictly inside a closed boundary ring
  * @details A candidate point is generated close to the midpoint of a
  * boundary edge and displaced toward the interior. The candidate is
  * verified with the existing strict point-in-areal test.
@@ -3270,7 +3269,7 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
 }
 
 /**
- * @brief Compute a representative point strictly inside a boundary ring.
+ * @brief Compute a representative point strictly inside a boundary ring
  * @details The point is obtained from a boundary edge and verified using
  * strict interior containment.
  */
@@ -3283,7 +3282,7 @@ buffer_ring_representative_point(LWCOMPOUND *ring, int32_t srid,
 }
 
 /**
- * @brief Test whether one boundary ring contains another ring.
+ * @brief Test whether one boundary ring contains another ring
  * @details The representative point of the inner ring is tested against
  * the areal region bounded by the outer ring. The boundary is excluded
  * from the interior test.
@@ -3365,7 +3364,7 @@ buffer_ring_infos_free(BufferRingInfo *infos, uint32_t count)
 }
 
 /**
- * @brief Build the containment hierarchy of closed boundary rings.
+ * @brief Build the containment hierarchy of closed boundary rings
  * @details For every ring, the immediate containing ring is identified
  * using the containment relation between rings. No ring orientation or
  * area calculation is required.
@@ -3538,7 +3537,7 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
 }
 
 /**
- * @brief Compute the signed area contribution of a straight buffer piece.
+ * @brief Compute the signed area contribution of a straight buffer piece
  * @details The contribution is one half of the line integral
  *   x dy - y dx
  * along the segment.
@@ -3552,7 +3551,7 @@ buffer_segment_signed_area(const BufferPiece *piece)
 }
 
 /**
- * @brief Compute the signed area contribution of a circular buffer arc.
+ * @brief Compute the signed area contribution of a circular buffer arc
  * @details The arc contribution is obtained from the line integral
  *   1/2 * integral(x dy - y dx)
  * along the directed circular arc. The sign of the angular sweep follows
@@ -3584,7 +3583,7 @@ buffer_arc_signed_area(const BufferPiece *piece)
 }
 
 /**
- * @brief Compute the signed area of an ordered buffer ring.
+ * @brief Compute the signed area of an ordered buffer ring
  * @details The ring may contain both straight segments and exact circular
  * arcs. A positive value means counter-clockwise traversal and a negative
  * value means clockwise traversal.
@@ -3608,7 +3607,7 @@ buffer_ring_signed_area(const MeosArray *pieces)
 }
 
 /**
- * @brief Reverse the traversal direction of a complete boundary ring.
+ * @brief Reverse the traversal direction of a complete boundary ring
  * @details The piece order is reversed and every individual piece is
  * reversed. The resulting sequence represents exactly the same geometric
  * ring with the opposite orientation.
@@ -3637,7 +3636,7 @@ buffer_reverse_ring_pieces(const MeosArray *pieces)
 }
 
 /**
- * @brief Construct a compound curve from an ordered buffer-piece sequence.
+ * @brief Construct a compound curve from an ordered buffer-piece sequence
  */
 static LWCOMPOUND *
 buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
@@ -3662,7 +3661,7 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
 }
 
 /**
- * @brief Normalize the orientation of one classified boundary ring.
+ * @brief Normalize the orientation of one classified boundary ring
  * @details Shells are normalized to counter-clockwise traversal and holes
  * to clockwise traversal.
  * If the current orientation already matches the desired orientation,
@@ -3703,7 +3702,7 @@ buffer_normalize_ring_orientation(BufferRingInfo *info, int32_t srid)
 }
 
 /**
- * @brief Normalize the orientation of all classified boundary rings.
+ * @brief Normalize the orientation of all classified boundary rings
  */
 static bool
 buffer_normalize_ring_orientations(MeosArray *classified, int32_t srid)
@@ -3721,7 +3720,7 @@ buffer_normalize_ring_orientations(MeosArray *classified, int32_t srid)
 }
 
 /**
- * @brief Construct polygonal surfaces from classified boundary rings.
+ * @brief Construct polygonal surfaces from classified boundary rings
  * @details The topology stage has already classified every ring as either
  * a shell or a hole and assigned every hole to its immediate shell.
  * This function therefore performs no further geometric reasoning.
@@ -3824,7 +3823,7 @@ fail:
 }
 
 /**
- * @brief Construct polygonal surfaces from closed boundary rings.
+ * @brief Construct polygonal surfaces from closed boundary rings
  * @details Rings are classified according to their containment depth.
  * Even-depth rings are shells and odd-depth rings are holes.
  * Each hole is assigned to its immediate containing shell.
@@ -3865,7 +3864,7 @@ buffer_build_surfaces_from_rings(MeosArray *rings, int32_t srid)
 }
 
 /**
- * @brief Construct a CURVEPOLYGON from selected boundary pieces.
+ * @brief Construct a CURVEPOLYGON from selected boundary pieces
  * @details The selected pieces may form several disconnected boundary
  * components. Each component is first chained into a closed ring.
  * Shell/hole classification is handled by a later topology stage.
@@ -4286,7 +4285,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
 }
 
 /**
- * @brief Union two crossing buffer surfaces while preserving circular arcs.
+ * @brief Union two crossing buffer surfaces while preserving circular arcs
  * @details The caller asks whether the two surfaces MERGE into one, so only
  * the proper crossing case answers it: a pair whose boundaries stay apart, or
  * one of which contains the other, is left to the caller to assemble.
@@ -4307,7 +4306,7 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
  *****************************************************************************/
 
 /**
- * @brief Return the signed area of a ring.
+ * @brief Return the signed area of a ring
  * @details A positive value means counter-clockwise orientation and a
  * negative value means clockwise orientation.
  */
@@ -4328,7 +4327,7 @@ buffer_ring_area(const POINTARRAY *pa)
 }
 
 /**
- * @brief Return the effective outward side of a polygon ring.
+ * @brief Return the effective outward side of a polygon ring
  * @details For a counter-clockwise ring the interior is on the left and
  * therefore the exterior is on the right. For a clockwise ring the interior
  * is on the right and therefore the exterior is on the left.
@@ -6318,7 +6317,7 @@ meos_buffer_line(const LWLINE *line, double radius, JoinStyle join_style,
  *****************************************************************************/
 
 /**
- * @brief Buffer a MULTILINESTRING.
+ * @brief Buffer a MULTILINESTRING
  * @details Each LINESTRING component is buffered independently.
  * Disjoint component buffers are returned as a MULTISURFACE.
  * Overlapping component buffers are also preserved as a MULTISURFACE
@@ -6425,7 +6424,7 @@ buffer_ring_encloses_no_area(const LWCOMPOUND *ring, int32_t srid)
 }
 
 /**
- * @brief Buffer a POLYGON.
+ * @brief Buffer a POLYGON
  * @details The exterior ring is expanded and interior rings are contracted.
  * Round joins are represented using exact circular arcs.
  *
@@ -6554,7 +6553,7 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
  *****************************************************************************/
 
 /**
- * @brief Buffer a MULTIPOLYGON.
+ * @brief Buffer a MULTIPOLYGON
  * @details Each polygon component is buffered independently.
  * If the resulting components are disjoint, the result is returned as a
  * MULTISURFACE. If two component buffers overlap, they must be unioned
@@ -6626,7 +6625,7 @@ meos_buffer_mpoly(const LWMPOLY *mpoly, double radius, JoinStyle join_style,
  *****************************************************************************/
 
 /**
- * @brief Buffer a GEOMETRYCOLLECTION.
+ * @brief Buffer a GEOMETRYCOLLECTION
  * @details Each component is buffered recursively. Nested geometry
  * collections are therefore handled transparently.
  *
@@ -6809,7 +6808,7 @@ meos_erode_mpoly(const LWMPOLY *mpoly, double radius, JoinStyle join_style,
 }
 
 /**
- * @brief Native MEOS implementation of ST_Buffer.
+ * @brief Native MEOS implementation of ST_Buffer
  * @details Currently supported:
  * - POINT
  * - MULTIPOINT

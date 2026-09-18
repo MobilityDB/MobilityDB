@@ -58,9 +58,10 @@
  *****************************************************************************/
 
 /**
- * @brief Return a quadbinset from a freshly-allocated Quadbin buffer of
- * size `count`. The input buffer is pfree'd. On empty result, returns
- * NULL after raising a meos_error (set_make requires count >= 1).
+ * @brief Return a quadbinset from a freshly-allocated Quadbin buffer of size
+ * `count`
+ * @details The input buffer is pfree'd. On empty result, returns NULL after
+ * raising a meos_error (set_make requires count >= 1).
  */
 static Set *
 quadbinset_from_buffer(Quadbin *cells, int count)

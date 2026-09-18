@@ -289,9 +289,8 @@ tboxnode_quadtree_next(const TboxNode *nodebox, const TBox *centroid,
 }
 
 /**
- * @brief Compute the next traversal value for a k-d tree given the bounding
- * box and the centroid of the current node, the half number (0 or 1) and the
- * level.
+ * @brief Compute the next traversal value for a k-d tree given the bounding box
+ * and the centroid of the current node, the half number (0 or 1) and the level
  */
 void
 tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,

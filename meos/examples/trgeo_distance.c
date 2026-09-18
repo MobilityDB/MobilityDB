@@ -114,7 +114,7 @@ typedef struct {
  *==========================================================================*/
 
 /**
- * @brief Parse an AIS timestamp (`DD/MM/YYYY HH:MM:SS`) into TimestampTz.
+ * @brief Parse an AIS timestamp (`DD/MM/YYYY HH:MM:SS`) into TimestampTz
  */
 static int
 parse_ais_timestamp(const char *s, TimestampTz *out)
@@ -130,8 +130,8 @@ parse_ais_timestamp(const char *s, TimestampTz *out)
 }
 
 /**
- * @brief In-place split a CSV line into NUL-terminated fields. Returns the
- * field count.
+ * @brief In-place split a CSV line into NUL-terminated fields
+ * @details Returns the field count.
  */
 static int
 csv_split(char *line, char **fields, int max_fields)
@@ -153,9 +153,10 @@ csv_split(char *line, char **fields, int max_fields)
  *==========================================================================*/
 
 /**
- * @brief Write the hull WKT for a ship with antenna offsets A B C D into
- * the per-trip slot. The pentagon is in EPSG:25832 metric units; SRID is
- * applied by the caller when re-parsing it.
+ * @brief Write the hull WKT for a ship with antenna offsets A B C D into the
+ * per-trip slot
+ * @details The pentagon is in EPSG:25832 metric units; SRID is applied by the
+ * caller when re-parsing it.
  */
 static void
 build_hull_wkt(trip_t *trip, int A, int B, int C, int D)

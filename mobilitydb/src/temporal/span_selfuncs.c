@@ -148,9 +148,8 @@ time_oper_sel(MeosOper oper UNUSED, MeosType ltype,
 
 /**
  * @brief Binary search on an array of span bounds
- *
- * Return the greatest index of span bound in array which is less (less or
- * equal) than given span bound. If all span bounds in array are greater or
+ * @details Return the greatest index of span bound in array which is less (less
+ * or equal) than given span bound. If all span bounds in array are greater or
  * equal (greater) than given span bound, return -1. When "equal" flag is set,
  * the conditions in parenthesis are used.
  *
@@ -206,10 +205,10 @@ span_position(const SpanBound *value, const SpanBound *hist1,
 /*****************************************************************************/
 /**
  * @brief Binary search on length histogram
- *
- * Return greatest index of period length in histogram which is less than (less
- * than or equal) the given length value. If all lengths in the histogram are
- * greater than (greater than or equal) the given length, returns -1.
+ * @details Return greatest index of period length in histogram which is less
+ * than (less than or equal) the given length value. If all lengths in the
+ * histogram are greater than (greater than or equal) the given length, returns
+ * -1.
  * @note Function copied from file rangetypes_selfuncs.c snce it is not exported
  */
 int
@@ -424,10 +423,9 @@ span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
 
 /**
  * @brief Calculate the selectivity of "var && const" operator, i.e., estimate
- * the fraction of spans that overlap the constant lower and upper bounds
- * using the histograms of span lower and upper bounds
- *
- * Note that A && B <=> NOT (A <<# B OR A #>> B).
+ * the fraction of spans that overlap the constant lower and upper bounds using
+ * the histograms of span lower and upper bounds
+ * @details Note that A && B <=> NOT (A <<# B OR A #>> B).
  *
  * Since A <<# B and A #>> B are mutually exclusive events we can
  * sum their probabilities to find probability of (A <<# B OR A #>> B).
@@ -467,9 +465,8 @@ span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
 /**
  * @brief Calculate selectivity of "var <@ const" operator, i.e., estimate the
  * fraction of spans that fall within the constant lower and upper bounds
- *
- * This uses the histograms of span lower bounds and span lengths, on the
- * assumption that the span lengths are independent of the lower bounds.
+ * @details This uses the histograms of span lower bounds and span lengths, on
+ * the assumption that the span lengths are independent of the lower bounds.
  */
 static double
 span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
@@ -568,9 +565,8 @@ span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
 /**
  * @brief Calculate selectivity of "var @> const" operator, i.e., estimate the
  * fraction of spans that contain the constant lower and upper bounds
- *
- * This uses the histograms of span lower bounds and span lengths, on the
- * assumption that the span lengths are independent of the lower bounds.
+ * @details This uses the histograms of span lower bounds and span lengths, on
+ * the assumption that the span lengths are independent of the lower bounds.
  */
 static double
 span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
@@ -1496,10 +1492,9 @@ PGDLLEXPORT Datum Span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
  * @brief Join selectivity for spans
- *
- * The selectivity is the ratio of the number of rows we think will be returned
- * divided the maximum number of rows the join could possibly return (the full
- * combinatoric join), that is
+ * @details The selectivity is the ratio of the number of rows we think will be
+ * returned divided the maximum number of rows the join could possibly return
+ * (the full combinatoric join), that is
  *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
  *
  * This function is inspired from function eqjoinsel in file selfuncs.c

@@ -126,10 +126,9 @@ tbox_index_leaf_consistent(const TBox *key, const TBox *query,
 
 /**
  * @brief GiST inner consistent method for temporal numbers
- *
- * Return false if for all data items x below entry, the predicate
- * x op query must be false, where op is the oper corresponding to
- * strategy in the pg_amop table.
+ * @details Return false if for all data items x below entry, the predicate x op
+ * query must be false, where op is the oper corresponding to strategy in the
+ * pg_amop table.
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index

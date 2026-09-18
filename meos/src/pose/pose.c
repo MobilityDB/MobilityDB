@@ -782,7 +782,7 @@ pose_parse(const char **str, bool end)
 
 /**
  * @ingroup meos_pose_base_inout
- * @brief Return a pose from its string representation.
+ * @brief Return a pose from its string representation
  * @param[in] str String
  * @csqlfn #Pose_in()
  */
@@ -1654,9 +1654,9 @@ pose_apply_geo(const Pose *pose, const GSERIALIZED *body)
 }
 
 /**
- * @brief Datum-typed wrapper used by the temporal lifting infrastructure.
- * Captures the body geometry as a parameter via @p LiftedFunctionInfo's
- * argument (Datum) array.
+ * @brief Datum-typed wrapper used by the temporal lifting infrastructure
+ * @details Captures the body geometry as a parameter via @p
+ * LiftedFunctionInfo's argument (Datum) array.
  */
 Datum
 datum_pose_apply_geo(Datum pose, Datum body)
@@ -1940,7 +1940,7 @@ pose_set_srid(const Pose *pose, int32_t srid)
 #define POSE_SRID_WGS84_ECEF       4978   /* X/Y/Z geocentric Cartesian */
 
 /**
- * @brief Compose two unit quaternions: out = a * b (Hamilton convention).
+ * @brief Compose two unit quaternions: out = a * b (Hamilton convention)
  */
 void
 pose_quaternion_mul(double aw, double ax, double ay, double az,

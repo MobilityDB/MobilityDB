@@ -917,10 +917,11 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @brief Ensure that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second
- * temporal instant. Moreover, ensures that the values are the same
- * if the timestamps are equal
+ * @brief Ensure that the timestamp of the first temporal instant is smaller (or
+ * equal if the merge parameter is true) than the one of the second temporal
+ * instant
+ * @details Moreover, ensures that the values are the same if the timestamps are
+ * equal
  */
 bool
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,

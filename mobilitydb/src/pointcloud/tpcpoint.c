@@ -71,7 +71,7 @@ PGDLLEXPORT Datum Tpcpoint_pcid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_pcid);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the pgpointcloud schema id (pcid) of a tpcpoint.
+ * @brief Return the pgpointcloud schema id (pcid) of a tpcpoint
  * @details All instants of a tpcpoint must share the same pcid — the
  *   set_make_exp same-pcid check guarantees this at construction
  *   time. This function just reads the first instant's pcid.
@@ -104,7 +104,7 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Per-dimension extractor signature used by the projection helper.
+ * @brief Per-dimension extractor signature used by the projection helper
  * @param[in] pt PCPOINT to read from
  * @param[in] extra Optional context (e.g. dimension name as @c const char *)
  * @param[out] out Extracted scalar value
@@ -186,7 +186,7 @@ tpcpointseqset_project_with_schema(const TSequenceSet *ss,
 }
 
 /**
- * @brief Dispatch to the right per-subtype walker.
+ * @brief Dispatch to the right per-subtype walker
  * @pre Schema must be pre-resolved by the caller. See the per-wrapper
  *   comment on why the schema lookup is hoisted all the way up.
  */
@@ -287,7 +287,7 @@ Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict (or remove) a tpcpoint by a TPCBox.
+ * @brief Restrict (or remove) a tpcpoint by a TPCBox
  * @details PCID mismatch yields the @p atfunc empty / minus identity.
  * @return Newly-palloc'd Temporal, or @p NULL when the result is empty.
  */
@@ -345,7 +345,7 @@ PGDLLEXPORT Datum Tpcpoint_at_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_at_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpoint to the spatial / temporal extent of a tpcbox.
+ * @brief Restrict a tpcpoint to the spatial / temporal extent of a tpcbox
  * @sqlfn atTpcbox()
  */
 Datum
@@ -364,7 +364,7 @@ PGDLLEXPORT Datum Tpcpoint_minus_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_minus_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Remove from a tpcpoint the part covered by a tpcbox.
+ * @brief Remove from a tpcpoint the part covered by a tpcbox
  * @sqlfn minusTpcbox()
  */
 Datum

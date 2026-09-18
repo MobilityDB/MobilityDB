@@ -75,8 +75,8 @@ quiet_error_handler(int errlevel, int errcode, const char *errmsg)
   } while (0)
 
 /**
- * @brief A valid WKT string must parse to a non-NULL geometry whose
- * output representation is non-empty.
+ * @brief A valid WKT string must parse to a non-NULL geometry whose output
+ * representation is non-empty
  */
 static void
 check_valid_geom(const char *wkt)
@@ -95,7 +95,7 @@ check_valid_geom(const char *wkt)
 }
 
 /**
- * @brief A valid WKT string must parse to a non-NULL geography.
+ * @brief A valid WKT string must parse to a non-NULL geography
  */
 static void
 check_valid_geog(const char *wkt)
@@ -112,7 +112,7 @@ check_valid_geog(const char *wkt)
 
 /**
  * @brief A malformed WKT string must be rejected (geom_in returns NULL),
- * confirming the parser's error path still works after any change.
+ * confirming the parser's error path still works after any change
  */
 static void
 check_invalid_geom(const char *wkt)

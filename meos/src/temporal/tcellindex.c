@@ -78,7 +78,7 @@ extern const DggsCellOps s2_cellops;
  *****************************************************************************/
 
 /**
- * @brief Return true if @p type is a temporal DGGS cell-index type.
+ * @brief Return true if @p type is a temporal DGGS cell-index type
  */
 bool
 tcellindex_type(MeosType type UNUSED)
@@ -97,7 +97,7 @@ tcellindex_type(MeosType type UNUSED)
 }
 
 /**
- * @brief Ensure that @p type is a temporal DGGS cell-index type.
+ * @brief Ensure that @p type is a temporal DGGS cell-index type
  */
 bool
 ensure_tcellindex_type(MeosType type)
@@ -110,7 +110,7 @@ ensure_tcellindex_type(MeosType type)
 }
 
 /**
- * @brief Return the operations descriptor for a temporal cell-index type.
+ * @brief Return the operations descriptor for a temporal cell-index type
  */
 const DggsCellOps *
 dggs_cellops(MeosType temptype)
@@ -234,7 +234,7 @@ ensure_valid_tcell(const Temporal *temp, MeosType temptype)
  *****************************************************************************/
 
 /**
- * @brief Lift a unary Datum-convention cell function over a temporal value.
+ * @brief Lift a unary Datum-convention cell function over a temporal value
  */
 static Temporal *
 tcellindex_lift_unary(const Temporal *temp, Datum (*func)(Datum),
@@ -260,7 +260,7 @@ tcellindex_lift_unary(const Temporal *temp, Datum (*func)(Datum),
 
 /**
  * @brief Lift a one-parameter Datum-convention cell function over a temporal
- * value.
+ * value
  */
 static Temporal *
 tcellindex_lift_param1(const Temporal *temp, Datum (*func)(Datum, Datum),
@@ -291,7 +291,7 @@ tcellindex_lift_param1(const Temporal *temp, Datum (*func)(Datum, Datum),
 
 /**
  * @ingroup meos_cellindex
- * @brief Return the temporal resolution (tint) of a temporal cell index.
+ * @brief Return the temporal resolution (tint) of a temporal cell index
  * @csqlfn #Tquadbin_get_resolution(), #Th3index_get_resolution(), #Ts2cell_get_resolution()
  */
 Temporal *
@@ -308,7 +308,7 @@ tcellindex_get_resolution(const Temporal *temp)
 /**
  * @ingroup meos_cellindex
  * @brief Return a tbool stating at each instant whether the value is a valid
- * cell.
+ * cell
  * @csqlfn #Tquadbin_is_valid_cell(), #Th3index_is_valid_cell(), #Ts2cell_is_valid_cell()
  */
 Temporal *
@@ -324,7 +324,7 @@ tcellindex_is_valid_cell(const Temporal *temp)
 
 /**
  * @ingroup meos_cellindex
- * @brief Return the temporal parent cell at the given resolution.
+ * @brief Return the temporal parent cell at the given resolution
  * @csqlfn #Tquadbin_cell_to_parent(), #Th3index_cell_to_parent(), #Ts2cell_cell_to_parent()
  */
 Temporal *
@@ -341,7 +341,7 @@ tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal cell centroid as a temporal point (geodetic for
- * H3/S2, Web-Mercator for quadbin).
+ * H3/S2, Web-Mercator for quadbin)
  * @csqlfn #Tquadbin_cell_to_point(), #Ts2cell_cell_to_point()
  */
 Temporal *
@@ -357,7 +357,7 @@ tcellindex_cell_to_point(const Temporal *temp)
 
 /**
  * @ingroup meos_cellindex
- * @brief Return the temporal cell boundary as a temporal (multi)polygon.
+ * @brief Return the temporal cell boundary as a temporal (multi)polygon
  * @csqlfn #Tquadbin_cell_to_boundary(), #Th3index_cell_to_boundary(), #Ts2cell_cell_to_boundary()
  */
 Temporal *
@@ -375,7 +375,7 @@ tcellindex_cell_to_boundary(const Temporal *temp)
 
 /**
  * @ingroup meos_cellindex
- * @brief Return the temporal cell area in square meters (tfloat).
+ * @brief Return the temporal cell area in square meters (tfloat)
  * @csqlfn #Tquadbin_cell_area(), #Th3index_cell_area(), #Ts2cell_cell_area()
  */
 Temporal *

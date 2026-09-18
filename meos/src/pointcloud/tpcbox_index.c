@@ -170,7 +170,7 @@ tpcbox_gist_inner_consistent(const TPCBox *key, const TPCBox *query,
 }
 
 /**
- * @brief Determine whether a recheck is necessary depending on the strategy.
+ * @brief Determine whether a recheck is necessary depending on the strategy
  * @details Same conventions as stbox_index_recheck — bbox-only predicates
  * (position ops on closed boxes) are exact; predicates that depend on
  * inclusive/exclusive bounds (overlap, contains, same, before/after) are

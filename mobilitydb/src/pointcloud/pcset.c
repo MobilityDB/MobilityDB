@@ -220,7 +220,7 @@ PGDLLEXPORT Datum Pcpoint_get_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_get_x);
 /**
  * @ingroup mobilitydb_pointcloud_base_accessor
- * @brief Return the X dimension of a pcpoint (schema-aware).
+ * @brief Return the X dimension of a pcpoint (schema-aware)
  * @sqlfn getX()
  */
 Datum
@@ -239,7 +239,7 @@ PGDLLEXPORT Datum Pcpoint_get_y(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_get_y);
 /**
  * @ingroup mobilitydb_pointcloud_base_accessor
- * @brief Return the Y dimension of a pcpoint (schema-aware).
+ * @brief Return the Y dimension of a pcpoint (schema-aware)
  * @sqlfn getY()
  */
 Datum
@@ -258,7 +258,7 @@ PGDLLEXPORT Datum Pcpoint_get_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_get_z);
 /**
  * @ingroup mobilitydb_pointcloud_base_accessor
- * @brief Return the Z dimension of a pcpoint (NULL if schema has no Z).
+ * @brief Return the Z dimension of a pcpoint (NULL if schema has no Z)
  * @sqlfn getZ()
  */
 Datum
@@ -277,7 +277,7 @@ PGDLLEXPORT Datum Pcpoint_get_dim(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_get_dim);
 /**
  * @ingroup mobilitydb_pointcloud_base_accessor
- * @brief Return an arbitrary dimension of a pcpoint by name.
+ * @brief Return an arbitrary dimension of a pcpoint by name
  * @sqlfn getDim()
  */
 Datum

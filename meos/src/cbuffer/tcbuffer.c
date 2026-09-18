@@ -1614,13 +1614,12 @@ tcbuffer_minus_cbuffer(const Temporal *temp, const Cbuffer *cb)
 /**
  * @brief Return true when some unit of a temporal circular buffer can reach the
  * space of the box @p box
- *
- * A disk meets a box exactly when its centre lies within the radius of it, so a
- * unit whose centre box stands farther than the larger of its two radii from
- * the box reaches it at no instant. The box of the value cannot express this:
- * it is widened by the radius and spans the whole trajectory, so it overlaps
- * wherever the disks reach anywhere, and on a spatial join it passes nearly
- * every pair into the running relationship below.
+ * @details A disk meets a box exactly when its centre lies within the radius of
+ * it, so a unit whose centre box stands farther than the larger of its two
+ * radii from the box reaches it at no instant. The box of the value cannot
+ * express this: it is widened by the radius and spans the whole trajectory, so
+ * it overlaps wherever the disks reach anywhere, and on a spatial join it
+ * passes nearly every pair into the running relationship below.
  *
  * Reading the centre against a radius-widened threshold, rather than a
  * radius-widened box against the box, keeps the radius from being removed on

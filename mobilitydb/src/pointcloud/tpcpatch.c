@@ -93,7 +93,7 @@ PGDLLEXPORT Datum Tpcpatch_pcid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_pcid);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the pgpointcloud schema id (pcid) of a tpcpatch.
+ * @brief Return the pgpointcloud schema id (pcid) of a tpcpatch
  * @details All instants share the same pcid — enforced at construction
  *   time by set_make_exp's same-pcid check. This is just a first-
  *   instant read.
@@ -114,7 +114,7 @@ PGDLLEXPORT Datum Tpcpatch_start_npoints(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_start_npoints);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the number of points in the first instant's pcpatch.
+ * @brief Return the number of points in the first instant's pcpatch
  * @sqlfn startNumPoints()
  */
 Datum
@@ -132,7 +132,7 @@ PGDLLEXPORT Datum Tpcpatch_end_npoints(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_end_npoints);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the number of points in the last instant's pcpatch.
+ * @brief Return the number of points in the last instant's pcpatch
  * @sqlfn endNumPoints()
  */
 Datum
@@ -241,13 +241,11 @@ pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
 }
 
 /**
- * @brief Patch-level @c at / @c minus restriction by @c TPCBox.
- *
- * Walks every instant of @p temp, collects the timestamps whose
- * patch passes the @c PCBOUNDS-overlap + timestamp-in-period
- * predicate, then defers to @c temporal_restrict_tstzset for the
- * actual restriction. Granularity is patch-level — surviving
- * instants keep their pcpatch payload verbatim.
+ * @brief Patch-level @c at / @c minus restriction by @c TPCBox
+ * @details Walks every instant of @p temp, collects the timestamps whose patch
+ * passes the @c PCBOUNDS-overlap + timestamp-in-period predicate, then defers
+ * to @c temporal_restrict_tstzset for the actual restriction. Granularity is
+ * patch-level — surviving instants keep their pcpatch payload verbatim.
  *
  * @param temp        Source tpcpatch.
  * @param box         Filtering @c TPCBox.
@@ -350,7 +348,7 @@ tpcpatch_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
  *****************************************************************************/
 
 /**
- * @brief Filter one instant of a tpcpatch through @p pred.
+ * @brief Filter one instant of a tpcpatch through @p pred
  * @param inst             Source instant.
  * @param pred             Per-point predicate.
  * @param extra            Caller-supplied state for @p pred.
@@ -424,9 +422,8 @@ tpcpatch_seq_filter(const TSequence *seq, pcpatch_pointpred_fn pred,
 }
 
 /**
- * @brief Per-point @c at / @c minus restriction driver.
- *
- * Shared backend for atTpcboxFine, minusTpcboxFine, atGeometry, and
+ * @brief Per-point @c at / @c minus restriction driver
+ * @details Shared backend for atTpcboxFine, minusTpcboxFine, atGeometry, and
  * minusGeometry on tpcpatch. Switches on subtype, calls
  * @c tpcpatch_seq_filter where applicable, repackages survivors into
  * a result of the same subtype shape (or a TSequenceSet when a
@@ -535,7 +532,7 @@ PGDLLEXPORT Datum Tpcpatch_minus_tpcbox_fine(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_minus_tpcbox_fine);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to the points outside the supplied TPCBox.
+ * @brief Restrict a tpcpatch to the points outside the supplied TPCBox
  * @details Mirror of atTpcboxFine; instants whose every point is inside
  *   the box are dropped.
  * @sqlfn minusTpcboxFine()
@@ -715,9 +712,8 @@ typedef struct
 } TpcpatchPointsState;
 
 /**
- * @brief Build the materialized state backing the @c points(tpcpatch) SRF.
- *
- * Walks every instant of @p temp, decompresses each patch via
+ * @brief Build the materialized state backing the @c points(tpcpatch) SRF
+ * @details Walks every instant of @p temp, decompresses each patch via
  * @c MEOS_PC_PATCH_DESERIALIZE, materializes a flat array of
  * (timestamp, serialized-Pcpoint) pairs in the SRF's
  * @c multi_call_memory_ctx so subsequent @c SRF_PERCALL invocations

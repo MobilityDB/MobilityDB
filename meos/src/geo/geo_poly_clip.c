@@ -89,7 +89,7 @@ clip_empty_areal(int32_t srid)
 }
 
 /**
- * @brief Clip the two polygons using the given Boolean operation.
+ * @brief Clip the two polygons using the given Boolean operation
  * @param subj  Subject geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param clip  Clipping geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param oper  Operation selector (#CL_INTERSECTION, #CL_UNION,

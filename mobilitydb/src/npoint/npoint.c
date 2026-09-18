@@ -130,8 +130,7 @@ PG_FUNCTION_INFO_V1(Npoint_in);
 /**
  * @ingroup mobilitydb_npoint_base_inout
  * @brief Return a network point from its Well-Known Text (WKT) representation
- *
- * Example of input:
+ * @details Example of input:
  * @code
  *    (1, 0.5)
  * @endcode
@@ -375,10 +374,8 @@ PGDLLEXPORT Datum Nsegment_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_in);
 /**
  * @ingroup mobilitydb_npoint_base_inout
- * @brief Return a network segment from its Well-Known Text (WKT)
- * representation
- *
- * Example of input:
+ * @brief Return a network segment from its Well-Known Text (WKT) representation
+ * @details Example of input:
  * @code
  *    (1, 0.5, 0.6)
  * @endcode

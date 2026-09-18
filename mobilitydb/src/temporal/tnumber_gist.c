@@ -167,8 +167,8 @@ PGDLLEXPORT Datum Tbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_union);
 /**
  * @brief GiST union method for temporal numbers
- *
- * Return the minimal bounding box that encloses all the entries in entryvec
+ * @details Return the minimal bounding box that encloses all the entries in
+ * entryvec
  */
 Datum
 Tbox_gist_union(PG_FUNCTION_ARGS)
@@ -514,11 +514,10 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
 
 /**
  * @brief Double sorting split algorithm
- *
- * The algorithm finds split of boxes by considering splits along each axis.
- * Each entry is first projected as an interval on the X-axis, and different
- * ways to split the intervals into two groups are considered, trying to
- * minimize the overlap of the groups. Then the same is repeated for the
+ * @details The algorithm finds split of boxes by considering splits along each
+ * axis. Each entry is first projected as an interval on the X-axis, and
+ * different ways to split the intervals into two groups are considered, trying
+ * to minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis, and the overall best split is chosen. The quality of a split is
  * determined by overlap along that axis and some other criteria (see
  * bbox_gist_consider_split).

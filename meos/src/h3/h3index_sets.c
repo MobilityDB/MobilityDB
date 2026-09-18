@@ -61,8 +61,9 @@
  *****************************************************************************/
 
 /**
- * @brief Pack a possibly-padded H3Index array into a Datum array,
- * dropping any zero entries. The input buffer is pfree'd.
+ * @brief Pack a possibly-padded H3Index array into a Datum array, dropping any
+ * zero entries
+ * @details The input buffer is pfree'd.
  */
 static Datum *
 h3index_array_compact(H3Index *cells, int64_t max, int *count_out)
@@ -81,10 +82,11 @@ h3index_array_compact(H3Index *cells, int64_t max, int *count_out)
 }
 
 /**
- * @brief Return an h3indexset from a freshly-allocated H3Index
- * buffer of size `max`. Zero entries are dropped. The input
- * buffer is pfree'd. On empty result, returns NULL after raising
- * a meos_error (set_make requires count >= 1).
+ * @brief Return an h3indexset from a freshly-allocated H3Index buffer of size
+ * `max`
+ * @details Zero entries are dropped. The input buffer is pfree'd. On empty
+ * result, returns NULL after raising a meos_error (set_make requires count >=
+ * 1).
  */
 static Set *
 h3index_set_from_buffer(H3Index *cells, int64_t max)

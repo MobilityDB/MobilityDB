@@ -227,8 +227,8 @@ geopose_frame(int32_t frame_id)
 }
 
 /**
- * @brief Return true if @p srid names the WGS-84 geographic frame the
- * GeoPose classes require, or is unknown.
+ * @brief Return true if @p srid names the WGS-84 geographic frame the GeoPose
+ * classes require, or is unknown
  */
 static bool
 geopose_srid_is_geographic(int32_t srid)
@@ -238,7 +238,7 @@ geopose_srid_is_geographic(int32_t srid)
 }
 
 /**
- * @brief Look up a JSON object member case-insensitively.
+ * @brief Look up a JSON object member case-insensitively
  * @details Locally duplicated from the equivalent helper in
  * `meos/src/temporal/type_in.c` (which is `static`) so this module
  * doesn't need to lift that helper into a public header.
@@ -268,8 +268,8 @@ geopose_find_member(json_object *obj, const char *name)
 }
 
 /**
- * @brief Read a numeric JSON member (`int` or `double`); set @p found
- * if the member existed and `*out` was filled.
+ * @brief Read a numeric JSON member (`int` or `double`); set @p found if the
+ * member existed and `*out` was filled
  */
 static bool
 geopose_get_number(json_object *obj, const char *name, double *out)
@@ -319,7 +319,7 @@ geopose_interp_from_string(const char *str)
 
 /**
  * @brief Return the value of @p key in a `key=value&key=value` parameter
- * string, or @p NULL if the key is absent.
+ * string, or @p NULL if the key is absent
  */
 static const char *
 geopose_param_find(const char *params, const char *key)
@@ -339,7 +339,7 @@ geopose_param_find(const char *params, const char *key)
 
 /**
  * @brief Read a bracketed list of @p n numbers, as emitted for the
- * `translation` and `rotation` parameters.
+ * `translation` and `rotation` parameters
  */
 static bool
 geopose_param_list(const char *str, int n, double *out)
@@ -372,7 +372,7 @@ geopose_param_list(const char *str, int n, double *out)
 
 /**
  * @brief Read a single number parameter, as emitted for the outer frame's
- * `longitude`, `latitude` and `height`.
+ * `longitude`, `latitude` and `height`
  */
 static bool
 geopose_param_number(const char *str, double *out)
@@ -386,8 +386,8 @@ geopose_param_number(const char *str, double *out)
 
 /**
  * @brief Extract the position and orientation of a pose in the form every
- * GeoPose encoding needs: longitude, latitude and height in degrees and
- * metres, and a unit quaternion in Hamilton convention.
+ * GeoPose encoding needs: longitude, latitude and height in degrees and metres,
+ * and a unit quaternion in Hamilton convention
  * @details Every class the standard defines places its pose in a topocentric
  * frame on the surface of the Earth, so this is where the frame of the pose
  * is checked. A pose with SRID 0 is treated as geographic.
@@ -432,7 +432,7 @@ geopose_pose_components(const Pose *pose, double *lon, double *lat, double *h,
 }
 
 /**
- * @brief Build a JSON double with a caller-controlled precision.
+ * @brief Build a JSON double with a caller-controlled precision
  * @details Uses `json_object_new_double_s` so the serializer emits the
  * pre-formatted representation rather than json-c's default 17-digit
  * lossless form. A negative @p precision keeps the default.
@@ -455,7 +455,7 @@ geopose_new_double(double v, int precision)
 
 /**
  * @brief Read the `quaternion` member shared by the Basic-Quaternion and
- * Advanced classes.
+ * Advanced classes
  * @errval false
  */
 static bool
@@ -473,9 +473,9 @@ geopose_quaternion_from_json(json_object *jq, double *W, double *X, double *Y,
 }
 
 /**
- * @brief Return whether a `crs` frame parameter names a WGS-84 geographic
- * CRS, in the `EPSG:<code>` form the frames of this module carry and the
- * form the Moving Features encoding names a CRS by.
+ * @brief Return whether a `crs` frame parameter names a WGS-84 geographic CRS,
+ * in the `EPSG:<code>` form the frames of this module carry and the form the
+ * Moving Features encoding names a CRS by
  */
 static bool
 geopose_crs_is_geographic(const char *crs)
@@ -488,7 +488,7 @@ geopose_crs_is_geographic(const char *crs)
 }
 
 /**
- * @brief Build a pose from a parsed Advanced-class GeoPose JSON object.
+ * @brief Build a pose from a parsed Advanced-class GeoPose JSON object
  * @details An Advanced document names its outer frame explicitly and has no
  * `position` member, so the pose is placed by the frame: it sits at the
  * tangent point the frame's `parameters` give. Requirement 9 leaves those
@@ -575,7 +575,7 @@ pose_from_geopose_advanced(json_object *frame, json_object *root)
 }
 
 /**
- * @brief Build a pose from a parsed Basic-class GeoPose JSON object.
+ * @brief Build a pose from a parsed Basic-class GeoPose JSON object
  * @details Used internally by @p pose_from_geopose (single-pose entry
  * point) and by the temporal-GeoPose entry points which iterate an
  * envelope's @p instants array. The caller owns the @p root and is
@@ -729,7 +729,7 @@ pose_from_geopose(const char *json)
 static json_object *pose_to_geopose_advanced(const Pose *pose, int precision);
 
 /**
- * @brief Build the GeoPose JSON object for a single pose.
+ * @brief Build the GeoPose JSON object for a single pose
  * @details Used internally by @p pose_as_geopose (single-pose entry
  * point) and by the temporal-GeoPose entry points which embed the
  * per-instant object into an envelope's @p instants array. The caller
@@ -845,8 +845,8 @@ pose_as_geopose(const Pose *pose, int conformance, int precision)
 #define GEOPOSE_WGS84_E2  (GEOPOSE_WGS84_F * (2.0 - GEOPOSE_WGS84_F))
 
 /**
- * @brief Convert WGS-84 geographic coordinates to Earth-Centred
- * Earth-Fixed Cartesian coordinates.
+ * @brief Convert WGS-84 geographic coordinates to Earth-Centred Earth-Fixed
+ * Cartesian coordinates
  */
 static void
 geopose_geodetic_to_ecef(double lat_rad, double lon_rad, double h,
@@ -860,7 +860,7 @@ geopose_geodetic_to_ecef(double lat_rad, double lon_rad, double h,
 }
 
 /**
- * @brief Recover the ellipsoidal height once the latitude is known.
+ * @brief Recover the ellipsoidal height once the latitude is known
  * @details Uses whichever of the two equivalent expressions is better
  * conditioned: @p p / cos φ degenerates at the poles, @p Z / sin φ at the
  * equator. The switch is at |φ| = 45°, where both are equally conditioned.
@@ -876,7 +876,7 @@ geopose_ecef_height(double p, double Z, double lat_rad, double N)
 
 /**
  * @brief Convert Earth-Centred Earth-Fixed Cartesian coordinates to WGS-84
- * geographic coordinates.
+ * geographic coordinates
  * @details Fixed-point iteration on (φ, h) seeded with the spherical
  * approximation. The iteration count is fixed rather than
  * convergence-tested so that every language binding computes exactly the
@@ -914,9 +914,8 @@ geopose_ecef_to_geodetic(double X, double Y, double Z,
 }
 
 /**
- * @brief The outer frame of a Composite Sequence: an LTP-ENU frame
- * anchored at a tangent point, cached with everything the per-instant
- * conversions need.
+ * @brief The outer frame of a Composite Sequence: an LTP-ENU frame anchored at
+ * a tangent point, cached with everything the per-instant conversions need
  */
 typedef struct
 {
@@ -928,7 +927,7 @@ typedef struct
 } GeoPoseAnchor;
 
 /**
- * @brief Initialize the outer-frame anchor at a geographic tangent point.
+ * @brief Initialize the outer-frame anchor at a geographic tangent point
  * @details What the anchor holds is the rotation that takes ECEF components
  * to ENU components at the tangent point, which is the conjugate of the one
  * @p pose_enu_to_ecef_quaternion builds, both being unit.
@@ -950,8 +949,8 @@ geopose_anchor_set(GeoPoseAnchor *anchor, double lat_rad, double lon_rad,
 }
 
 /**
- * @brief Return the translation of a geographic point in the anchor's
- * LTP-ENU frame, in metres.
+ * @brief Return the translation of a geographic point in the anchor's LTP-ENU
+ * frame, in metres
  */
 static void
 geopose_anchor_translation(const GeoPoseAnchor *anchor, double lat_rad,
@@ -968,8 +967,9 @@ geopose_anchor_translation(const GeoPoseAnchor *anchor, double lat_rad,
 }
 
 /**
- * @brief Return the geographic coordinates of a translation expressed in
- * the anchor's LTP-ENU frame. Inverse of @p geopose_anchor_translation.
+ * @brief Return the geographic coordinates of a translation expressed in the
+ * anchor's LTP-ENU frame
+ * @details Inverse of @p geopose_anchor_translation.
  */
 static void
 geopose_anchor_position(const GeoPoseAnchor *anchor, double e, double n,
@@ -985,7 +985,7 @@ geopose_anchor_position(const GeoPoseAnchor *anchor, double e, double n,
 
 /**
  * @brief Return the rotation that re-expresses an orientation given in the
- * local ENU basis at (@p lat_rad, @p lon_rad) in the anchor's ENU basis.
+ * local ENU basis at (@p lat_rad, @p lon_rad) in the anchor's ENU basis
  * @details A Basic-class pose orients its body frame against the ENU basis
  * at its *own* position, while a Composite Sequence inner frame orients it
  * against the *outer* frame's basis. The two differ by the convergence of
@@ -1030,7 +1030,7 @@ geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
   (((int64) DELTA_UNIX_POSTGRES_EPOCH) * 1000)
 
 /**
- * @brief Convert a timestamp to a GeoPose_Instant (Unix milliseconds).
+ * @brief Convert a timestamp to a GeoPose_Instant (Unix milliseconds)
  * @details Rounds towards negative infinity so that the sub-millisecond
  * remainder of a pre-2000 timestamp is dropped the same way as that of a
  * post-2000 one, keeping the mapping monotonic.
@@ -1046,7 +1046,7 @@ geopose_instant_out(TimestampTz t)
 }
 
 /**
- * @brief Convert a GeoPose_Instant (Unix milliseconds) to a timestamp.
+ * @brief Convert a GeoPose_Instant (Unix milliseconds) to a timestamp
  */
 static TimestampTz
 geopose_instant_in(int64 instant)
@@ -1055,8 +1055,8 @@ geopose_instant_in(int64 instant)
 }
 
 /**
- * @brief Format a double into @p buf with the module's precision
- * convention: @p precision significant digits, or lossless if negative.
+ * @brief Format a double into @p buf with the module's precision convention: @p
+ * precision significant digits, or lossless if negative
  */
 static void
 geopose_str_double(char *buf, size_t size, double v, int precision)
@@ -1065,8 +1065,9 @@ geopose_str_double(char *buf, size_t size, double v, int precision)
 }
 
 /**
- * @brief Build a FrameSpecification object. All three members are required
- * by the schema, so @p parameters is emitted even when empty.
+ * @brief Build a FrameSpecification object
+ * @details All three members are required by the schema, so @p parameters is
+ * emitted even when empty.
  */
 static json_object *
 geopose_frame_spec(const char *id, const char *parameters)
@@ -1081,7 +1082,7 @@ geopose_frame_spec(const char *id, const char *parameters)
 }
 
 /**
- * @brief Build the TransitionModel for a MobilityDB interpolation.
+ * @brief Build the TransitionModel for a MobilityDB interpolation
  * @details Requirement 35 asks for an instance of the TransitionModel
  * enumeration, whose literals `interpolate` and `none` are the ones the
  * encoding examples of the standard attest. Linear interpolation is
@@ -1106,7 +1107,7 @@ geopose_transition_model(interpType interp)
 }
 
 /**
- * @brief Recover a MobilityDB interpolation from a TransitionModel object.
+ * @brief Recover a MobilityDB interpolation from a TransitionModel object
  * @details The `parameters` string is authoritative when it names an
  * interpolation, since the two enumeration literals cannot distinguish step
  * from discrete interpolation on their own. A document from another
@@ -1136,9 +1137,9 @@ geopose_transition_model_interp(json_object *tm)
 }
 
 /**
- * @brief Build the inner FrameSpecification of a pose relative to the
- * outer frame, in the `translation=[…]&rotation=[…]` form used by the
- * encoding examples of the standard.
+ * @brief Build the inner FrameSpecification of a pose relative to the outer
+ * frame, in the `translation=[…]&rotation=[…]` form used by the encoding
+ * examples of the standard
  * @details The rotation list is ordered w, x, y, z, the order in which
  * Requirement 15 lists the components of a GeoPose quaternion.
  * @errval NULL
@@ -1177,8 +1178,8 @@ geopose_inner_frame(const char *id, const GeoPoseAnchor *anchor,
 }
 
 /**
- * @brief Build the outer FrameSpecification: the LTP-ENU frame at the
- * anchor's tangent point.
+ * @brief Build the outer FrameSpecification: the LTP-ENU frame at the anchor's
+ * tangent point
  */
 static json_object *
 geopose_outer_frame(const char *id, const GeoPoseAnchor *anchor,
@@ -1202,7 +1203,7 @@ geopose_outer_frame(const char *id, const GeoPoseAnchor *anchor,
 }
 
 /**
- * @brief Build the Advanced-class GeoPose JSON object for a single pose.
+ * @brief Build the Advanced-class GeoPose JSON object for a single pose
  * @details Requirement 17, titled *Expression of outer frame*, makes
  * `Advanced.frameSpecification` an explicit outer frame, and the class has no
  * `position` member of its own, so the placement travels in that frame. The
@@ -1236,7 +1237,7 @@ pose_to_geopose_advanced(const Pose *pose, int precision)
 
 /**
  * @brief Set the tangent point of a composite from the pose of its first
- * instant.
+ * instant
  * @details Requirements 26 and 31 make the outer frame the first frame of a
  * series, and Requirement 34 the first frame of a stream, so one instant
  * fixes the frame that every later pose is expressed against.
@@ -1254,7 +1255,7 @@ geopose_anchor_from_instant(const TInstant *inst, GeoPoseAnchor *anchor)
 }
 
 /**
- * @brief Build a SeriesHeader or SeriesTrailer `poseCount` bearing object.
+ * @brief Build a SeriesHeader or SeriesTrailer `poseCount` bearing object
  * @details `integrityCheck` is optional in both and is not emitted: the
  * standard leaves the digest input undefined, so any value this
  * implementation chose would not be checkable by another one.
@@ -1284,8 +1285,8 @@ geopose_series_header(int count, TimestampTz start, TimestampTz stop,
 
 /**
  * @brief Return the constant inter-pose duration of @p instants in
- * milliseconds, or -1 if the instants are not equally spaced by a whole
- * number of milliseconds.
+ * milliseconds, or -1 if the instants are not equally spaced by a whole number
+ * of milliseconds
  * @details A Regular Series states the spacing once, as an integer number
  * of milliseconds (Requirement 25), and carries no per-pose time. It can
  * therefore only represent instants that are equally spaced *and* whose
@@ -1385,7 +1386,7 @@ tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
 
 /**
  * @brief Return the `parameters` string of a FrameSpecification object,
- * checking that the object carries the three members the schema requires.
+ * checking that the object carries the three members the schema requires
  * @errval NULL
  */
 static const char *
@@ -1408,7 +1409,7 @@ geopose_frame_parameters(json_object *frame, const char *what)
 }
 
 /**
- * @brief Build the outer-frame anchor from a series' `outerFrame` member.
+ * @brief Build the outer-frame anchor from a series' `outerFrame` member
  * @errval false
  */
 static bool
@@ -1433,7 +1434,7 @@ geopose_anchor_from_json(json_object *root, GeoPoseAnchor *anchor)
 }
 
 /**
- * @brief Build the pose of an inner FrameSpecification of a series.
+ * @brief Build the pose of an inner FrameSpecification of a series
  * @errval NULL
  */
 static Pose *
@@ -1611,7 +1612,7 @@ tpose_from_geopose_series(json_object *root, json_object *elements,
 
 
 /**
- * @brief Build the single-pose document of a temporal instant.
+ * @brief Build the single-pose document of a temporal instant
  * @details The Basic classes carry no time, so the instant's own is added
  * under the name `validTime` that the Advanced, Chain, Graph, Series and
  * Stream classes all use, and with the type they all give it: a
@@ -1891,9 +1892,10 @@ tposeinst_from_geopose_object(json_object *obj)
 }
 
 /**
- * @brief Parse a JSON instants array into a heap-allocated array of
- * TInstant pointers. Returns the count or -1 on error; on success the
- * caller owns @p *out_instants and must free it with @p pfree_array.
+ * @brief Parse a JSON instants array into a heap-allocated array of TInstant
+ * pointers
+ * @details Returns the count or -1 on error; on success the caller owns @p
+ * *out_instants and must free it with @p pfree_array.
  */
 static int
 tpose_parse_instants(json_object *instants_arr, TInstant ***out_instants)

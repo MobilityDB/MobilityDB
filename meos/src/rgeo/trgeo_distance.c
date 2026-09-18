@@ -338,9 +338,10 @@ rel_pose_interpolate_2d(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
 }
 
 /**
- * @brief Return the pose of the first rigid geometry in the moving frame of
- * the second one at @p ratio (see @ref rel_pose_interpolate_2d); the caller
- * owns the result. When @p pose2_s is @p NULL this is
+ * @brief Return the pose of the first rigid geometry in the moving frame of the
+ * second one at @p ratio (see @ref rel_pose_interpolate_2d); the caller owns
+ * the result
+ * @details When @p pose2_s is @p NULL this is
  * @ref posesegm_interpolate on the first pose.
  */
 static Pose *

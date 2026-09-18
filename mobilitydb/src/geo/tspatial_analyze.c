@@ -95,19 +95,18 @@
 #define STATISTIC_SLOT_2D 1
 
 /**
- * @brief The SD factor restricts the side of the statistics histogram
- * based on the standard deviation of the extent of the data.
- *
- * SDFACTOR is the number of standard deviations from the mean
- * the histogram will extend.
+ * @brief The SD factor restricts the side of the statistics histogram based on
+ * the standard deviation of the extent of the data
+ * @details SDFACTOR is the number of standard deviations from the mean the
+ * histogram will extend.
  */
 #define SDFACTOR 3.25
 
 /**
- * @brief Minimum width of a dimension that we'll bother trying to
- * compute statistics on. Bearing in mind we have no control
- * over units, but noting that for geographics, 10E-5 is in the
- * range of meters, we go lower than that.
+ * @brief Minimum width of a dimension that we'll bother trying to compute
+ * statistics on
+ * @details Bearing in mind we have no control over units, but noting that for
+ * geographics, 10E-5 is in the range of meters, we go lower than that.
  */
 #define MIN_DIMENSION_WIDTH 0.000000001
 
@@ -360,8 +359,8 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 }
 
 /**
- * @brief Expand an #ND_BOX ever so slightly. Expand parameter is the
- * proportion of total width to add.
+ * @brief Expand an #ND_BOX ever so slightly
+ * @details Expand parameter is the proportion of total width to add.
  */
 static int
 nd_box_expand(ND_BOX *nd_box, float expansion_factor)
@@ -378,8 +377,8 @@ nd_box_expand(ND_BOX *nd_box, float expansion_factor)
 }
 
 /**
- * @brief Given a position in the n-d histogram (i,j,k), return the
- * position in the 1-d values array.
+ * @brief Given a position in the n-d histogram (i,j,k), return the position in
+ * the 1-d values array
  */
 int
 nd_stats_value_index(const ND_STATS *stats, const int *indexes)
@@ -490,7 +489,7 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes,
 /**
  * @brief Given that geodetic boxes are X/Y/Z regardless of the underlying
  * geometry dimensionality and other boxes are guided by HAS_Z/HAS_M in their
- * dimesionality, we have a little utility function to make it easy.
+ * dimesionality, we have a little utility function to make it easy
  */
 static int
 gbox_ndims(const GBOX* gbox)
@@ -507,9 +506,11 @@ gbox_ndims(const GBOX* gbox)
 
 /**
  * @brief Function `gserialized_analyze_nd` sets this function as a callback on
- * the stats object when called by the ANALYZE command. ANALYZE then gathers
- * the requisite number of sample rows and then calls this function.
- * @details We could also pass stats->extra_data in from
+ * the stats object when called by the ANALYZE command
+ * @details ANALYZE then gathers the requisite number of sample rows and then
+ * calls this function.
+ *
+ * We could also pass stats->extra_data in from
  * `gserialized_analyze_nd` (things like the column type or other stuff from the
  * system catalogs) but so far we don't use that capability.
  *

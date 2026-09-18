@@ -53,7 +53,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Decompose @p pa, apply @p pred per point, rebuild a survivor patch.
+ * @brief Decompose @p pa, apply @p pred per point, rebuild a survivor patch
  * @details See @ref pcpatch_filter_per_point in @c pcpatch_decompose.h for the
  * full parameter and return-value contract.
  */
@@ -125,7 +125,7 @@ pcpatch_filter_per_point(const Pcpatch *pa, pcpatch_pointpred_fn pred,
  *****************************************************************************/
 
 /**
- * @brief Test whether at least one point of @p pa satisfies @p pred.
+ * @brief Test whether at least one point of @p pa satisfies @p pred
  * @details See @ref pcpatch_any_point_matches in @c pcpatch_decompose.h for
  * the full contract.
  */
@@ -165,7 +165,7 @@ pcpatch_any_point_matches(const Pcpatch *pa, pcpatch_pointpred_fn pred,
  *****************************************************************************/
 
 /**
- * @brief Predicate: keep points inside a @c TPCBox.
+ * @brief Predicate: keep points inside a @c TPCBox
  * @details See @ref pcpoint_in_tpcbox in @c pcpatch_decompose.h for the
  * @c extra argument shape and the strict-vs-inclusive border
  * semantics.

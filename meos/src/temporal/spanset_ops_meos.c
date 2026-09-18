@@ -498,7 +498,7 @@ after_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the right of an integer.
+ * @brief Return true if a span set is to the right of an integer
  * @param[in] ss Span set
  * @param[in] i Value
  * @csqlfn #Right_spanset_value()
@@ -691,7 +691,7 @@ overleft_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_pos
- * @brief Return true if a date is not after a span set.
+ * @brief Return true if a date is not after a span set
  * @param[in] d Value
  * @param[in] ss Span set
  * @csqlfn #Overbefore_value_spanset()

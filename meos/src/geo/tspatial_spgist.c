@@ -266,8 +266,8 @@ stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
 }
 
 /**
- * @brief Compute the next traversal value for a k-d tree given the bounding
- * box and the centroid of the current node, and the level.
+ * @brief Compute the next traversal value for a k-d tree given the bounding box
+ * and the centroid of the current node, and the level
  */
 void
 stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,

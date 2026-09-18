@@ -494,8 +494,7 @@ temporal_oper_sel_family(MeosOper oper UNUSED, MeosType ltype,
 /**
  * @brief Return an estimate of the selectivity of the search period and the
  * operator for columns of temporal values
- *
- * For the traditional comparison operators (<, <=, ...), we follow the
+ * @details For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function computes the
  * selectivity for <, <=, >, and >=, while the selectivity functions for = and
  * <> are eqsel and neqsel, respectively.
@@ -539,11 +538,10 @@ temporal_sel_tstzspan(VariableStatData *vardata, Span *s, MeosOper oper)
 /**
  * @brief Return an estimate of the selectivity of the temporal search box and
  * the operator for columns of temporal numbers
- *
- * For the traditional comparison operators (<, <=, ...) we follow the approach
- * for span types in PostgreSQL, this function computes the selectivity for <,
- * <=, >, and >=, while the selectivity functions for = and <> are eqsel and
- * neqsel, respectively.
+ * @details For the traditional comparison operators (<, <=, ...) we follow the
+ * approach for span types in PostgreSQL, this function computes the selectivity
+ * for <, <=, >, and >=, while the selectivity functions for = and <> are eqsel
+ * and neqsel, respectively.
  */
 Selectivity
 tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
@@ -922,8 +920,7 @@ tspatial_joinsel_components(MeosOper oper, MeosType oprleft,
 /**
  * @brief Return an estimate of the join selectivity for columns of temporal
  * values
- *
- * For the traditional comparison operators (<, <=, ...), we follow the
+ * @details For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function  computes the
  * selectivity for <, <=, >, and >=, while the selectivity functions for
  * = and <> are eqsel and neqsel, respectively.

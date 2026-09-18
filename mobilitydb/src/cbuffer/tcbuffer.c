@@ -63,7 +63,8 @@
 
 /**
  * @brief Check the consistency of the metadata specified in the typmod: SRID,
- * type, and dimensionality. If things are inconsistent, shut down the query.
+ * type, and dimensionality
+ * @details If things are inconsistent, shut down the query.
  */
 static Temporal *
 tcbuffer_valid_typmod(Temporal *temp, int32_t typmod)
