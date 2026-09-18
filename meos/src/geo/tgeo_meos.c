@@ -569,7 +569,8 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
     return NULL;
   MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
@@ -591,7 +592,7 @@ tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_empty(gs))
     return NULL;
   MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
