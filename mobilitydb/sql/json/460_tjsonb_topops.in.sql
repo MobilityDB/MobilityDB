@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Topological operators pour tjsonb
+ * @brief Topological operators for temporal JSONB
  */
 
 /*****************************************************************************

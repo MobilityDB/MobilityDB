@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Routine that pre-computes the type and operator Oid cache and store
- * them in a global array and a hash table
+ * @brief Precomputation of the cache of type and operator Oids
+ * @details The cache is stored in a global array and a hash table.
  */
 
 CREATE TABLE mobilitydb_opcache (

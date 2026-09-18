@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Static `s2cell` SQL type — the base type of `ts2cell`
+ * @brief Static `s2cell` type, the base type of `ts2cell`
  * @details Defines the static Google S2 cell value type with its parser,
  * output, send
  * and receive, the six comparison operators, the btree and hash operator

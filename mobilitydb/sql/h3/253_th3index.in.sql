@@ -29,8 +29,7 @@
 
 /**
  * @file
- * @brief Type plumbing for `th3index`, a temporal type carrying H3 cell
- * indices as a function of time
+ * @brief Temporal type `th3index` of H3 cell indices
  * @details On-disk representation is the same Temporal structure used by
  * every other temporal type; the basetype is the dedicated
  * `h3index`, not `int8`, and the catalog entry
