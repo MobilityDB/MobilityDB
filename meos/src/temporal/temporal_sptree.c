@@ -74,8 +74,9 @@
  * descent is PostgreSQL's, so the order it walks is fixed and this side adapts.
  *****************************************************************************/
 
-/* lower, upper */
-static const uint8 SPAN_KD_BITS[2] = {1, 0};
+/* upper, lower: #spannode_kdtree_next narrows an even level on the upper
+ * bound and an odd one on the lower bound */
+static const uint8 SPAN_KD_BITS[2] = {0, 1};
 /* span.lower, span.upper, period.lower, period.upper */
 static const uint8 TBOX_KD_BITS[4] = {3, 2, 1, 0};
 /* xmin, xmax, ymin, ymax, zmin, zmax, period.lower, period.upper */

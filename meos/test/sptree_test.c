@@ -131,6 +131,60 @@ compare(const char *label, const SPTree *sptree, IndexSearchOp op,
   meos_array_destroy(result);
 }
 
+/* Number of stored spans used as queries against their own tree */
+#define NUM_SPAN_QUERIES 256
+
+/*
+ * Query a span tree with each of its first spans and compare the answers of
+ * the three operators against brute force. A single query rarely reaches the
+ * subtree a wrongly stored span sits in; querying with the stored spans makes
+ * every level of the tree answer.
+ */
+static void
+compare_span_queries(const SPTree *sptree, Span **spans)
+{
+  static const IndexSearchOp ops[3] =
+    {INDEX_OVERLAPS, INDEX_CONTAINS, INDEX_CONTAINED_BY};
+  static const char *names[3] = {"overlaps", "contains", "contained by"};
+  MeosArray *result = index_result_create();
+  bool *in_index = malloc(NUM_BOXES * sizeof(bool));
+  for (int o = 0; o < 3; o++)
+  {
+    int missed = 0, extra = 0;
+    for (int q = 0; q < NUM_SPAN_QUERIES; q++)
+    {
+      const Span *query = spans[q];
+      memset(in_index, 0, NUM_BOXES * sizeof(bool));
+      int count = sptree_search(sptree, ops[o], query, result);
+      for (int i = 0; i < count; i++)
+      {
+        int64 id;
+        index_result_id(result, i, &id);
+        in_index[id] = true;
+      }
+      for (int i = 0; i < NUM_BOXES; i++)
+      {
+        bool truth = (o == 0) ? overlaps_span_span(spans[i], query) :
+          ((o == 1) ? contains_span_span(spans[i], query) :
+            contains_span_span(query, spans[i]));
+        if (truth && ! in_index[i])
+          missed++;
+        if (! truth && in_index[i])
+          extra++;
+      }
+    }
+    char name[128];
+    snprintf(name, sizeof(name), "  %s with stored spans, no false negatives",
+      names[o]);
+    check(name, missed == 0);
+    snprintf(name, sizeof(name), "  %s with stored spans, no false positives",
+      names[o]);
+    check(name, extra == 0);
+  }
+  free(in_index);
+  meos_array_destroy(result);
+}
+
 /*****************************************************************************
  * Integer span
  *****************************************************************************/
@@ -163,6 +217,7 @@ test_intspan(SPTreeKind kind, const char *kindname)
   compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
   compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
   compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
+  compare_span_queries(sptree, spans);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(spans[i]);
@@ -202,6 +257,7 @@ test_floatspan(SPTreeKind kind, const char *kindname)
   compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
   compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
   compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
+  compare_span_queries(sptree, spans);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(spans[i]);
