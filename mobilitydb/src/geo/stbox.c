@@ -1573,8 +1573,8 @@ PGDLLEXPORT Datum Stbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
 /**
  * @brief Transition function for extent aggregation of spatiotemporal boxes
-  * @sqlaggfn extent()
-*/
+ * @sqlaggfn extent()
+ */
 Datum
 Stbox_extent_transfn(PG_FUNCTION_ARGS)
 {
@@ -1605,8 +1605,8 @@ PGDLLEXPORT Datum Stbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
 /**
  * @brief Combine function for extent aggregation of spatiotemporal boxes
-  * @sqlaggfn extent()
-*/
+ * @sqlaggfn extent()
+ */
 Datum
 Stbox_extent_combinefn(PG_FUNCTION_ARGS)
 {

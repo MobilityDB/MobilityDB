@@ -633,8 +633,8 @@ h3index_is_valid_input(H3Index index)
 
 /**
  * @ingroup meos_h3_base_inout
- * @brief Parse a string into an H3Index. See header for the accepted
- * input shapes.
+ * @brief Parse a string into an H3Index
+ * @details See header for the accepted input shapes.
  * @sqlfn h3index_in()
  */
 #if MEOS
@@ -734,9 +734,9 @@ meos_h3index_in(const char *str)
 
 /**
  * @ingroup meos_h3_base_inout
- * @brief Format an H3Index as its canonical hex string. Matches
- * h3-pg's `h3index_out` output: lowercase, no "0x" prefix, no
- * leading zeros.
+ * @brief Format an H3Index as its canonical hex string
+ * @details The output matches h3-pg's `h3index_out` output: lowercase, no
+ * "0x" prefix, no leading zeros.
  * @sqlfn h3index_out()
  */
 #if MEOS
@@ -979,9 +979,9 @@ meos_h3index_cmp(H3Index a, H3Index b)
 
 /**
  * @ingroup meos_h3_base_accessor
- * @brief Return the 32-bit hash value of an h3index — matches the
- * result `hashint8` would produce on the same bit pattern, which is
- * what the SQL hash opclass was previously delegating to.
+ * @brief Return the 32-bit hash value of an h3index
+ * @details The value matches the result `hashint8` would produce on the same
+ * bit pattern.
  * @sqlfn hash()
  */
 #if MEOS

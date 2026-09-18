@@ -658,8 +658,9 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
 
 /**
  * @brief Set the last argument to the four vertices of an S2 cell as unit
- * vectors, three coordinates each, in the order #s2cell_cell_vertices states
- * them
+ * vectors
+ * @details Each vertex has three coordinates, and the vertices are in the
+ * order #s2cell_cell_vertices states them.
  */
 static void
 s2cell_cell_xyz_vertices(S2CellId cell, double *verts)
@@ -675,8 +676,9 @@ s2cell_cell_xyz_vertices(S2CellId cell, double *verts)
 
 /**
  * @brief Set the last two arguments to the longitudes and latitudes in
- * radians of four cell vertices given by their `(x, y, z)` coordinates, as
- * #s2cell_xyz_to_lonlat reads them in degrees
+ * radians of four cell vertices given by their `(x, y, z)` coordinates
+ * @details The conversion is the one #s2cell_xyz_to_lonlat performs in
+ * degrees.
  */
 static void
 s2cell_xyz_vertices_to_lonlat(const double *verts, double *lons,

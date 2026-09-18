@@ -740,10 +740,11 @@ datum_exp(Datum d)
 }
 
 /**
- * @brief Return 1 if the chord-error maximum of exp lies strictly inside
- * (@p lower, @p upper) on the linear segment [start@lower, end@upper],
- * 0 otherwise
- * @details Solves the slope-matching equation
+ * @brief Return 1 if the chord-error maximum of exp lies strictly inside a
+ * linear segment, 0 otherwise
+ * @details The maximum is sought strictly inside (@p lower, @p upper) on the
+ * linear segment [start@lower, end@upper]. The function solves the
+ * slope-matching equation
  * @p e^(x*) = (e^@p end - e^@p start) / (@p end - @p start)
  * for @p x*, the unique point where the slope of @p exp equals the chord
  * slope.  Inserting one instant there reduces the piecewise-linear
@@ -810,9 +811,9 @@ datum_ln(Datum d)
 
 /**
  * @brief Return 1 if the chord-error maximum of ln lies strictly inside
- * (@p lower, @p upper) on the linear segment [start@lower, end@upper],
- * 0 otherwise
- * @details The slope-matching point is the logarithmic mean
+ * (@p lower, @p upper) on a linear segment, 0 otherwise
+ * @details The linear segment is [start@lower, end@upper]. The slope-matching
+ * point is the logarithmic mean
  * @p x* = (@p end - @p start) / ln(@p end / @p start), which always lies
  * strictly between @p start and @p end for unequal positive values; the
  * in-range guard is defensive against floating-point rounding.
@@ -1101,9 +1102,9 @@ float_interval_has_tan_pole(double lo, double hi)
 }
 
 /**
- * @brief Return true if a temporal float reaches a pole of the tangent, that
- * is, if one of its values is π/2 + kπ for an integer k, or if a segment of
- * a sequence with linear interpolation passes through one
+ * @brief Return true if a temporal float reaches a pole of the tangent
+ * @details This is the case if one of its values is π/2 + kπ for an integer k,
+ * or if a segment of a sequence with linear interpolation passes through one.
  * @param[in] temp Temporal float
  */
 static bool

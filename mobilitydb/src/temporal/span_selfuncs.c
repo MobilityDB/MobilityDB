@@ -241,9 +241,10 @@ get_len_position(double value, double hist1, double hist2)
 }
 
 /**
- * @brief Calculate the average of function P(x), in the interval
- * [length1, length2], where P(x) is the fraction of tuples with length < x
- * (or length <= x if 'equal' is true)
+ * @brief Calculate the average of function P(x) in the interval
+ * [length1, length2]
+ * @details P(x) is the fraction of tuples with length < x (or length <= x if
+ * 'equal' is true).
  * @note Function derived from PostgreSQL file rangetypes_selfuncs.c.
  */
 double
@@ -422,10 +423,10 @@ span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
 }
 
 /**
- * @brief Calculate the selectivity of "var && const" operator, i.e., estimate
- * the fraction of spans that overlap the constant lower and upper bounds using
- * the histograms of span lower and upper bounds
- * @details Note that A && B <=> NOT (A <<# B OR A #>> B).
+ * @brief Calculate the selectivity of "var && const" operator
+ * @details The selectivity estimates the fraction of spans that overlap the
+ * constant lower and upper bounds using the histograms of span lower and upper
+ * bounds. Note that A && B <=> NOT (A <<# B OR A #>> B).
  *
  * Since A <<# B and A #>> B are mutually exclusive events we can
  * sum their probabilities to find probability of (A <<# B OR A #>> B).

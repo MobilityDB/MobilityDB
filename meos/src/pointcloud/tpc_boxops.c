@@ -68,8 +68,8 @@
  *****************************************************************************/
 
 /**
- * @brief Populate the spatial bounds of @p box from a pcpoint, using
- *   the schema cache to read X / Y / Z dimensions.
+ * @brief Populate the spatial bounds of @p box from a pcpoint, using the schema
+ * cache to read X / Y / Z dimensions
  */
 static void
 pcpoint_fill_tpcbox_spatial(const Pcpoint *pt, TPCBox *box)
@@ -273,7 +273,8 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
 /**
  * @ingroup meos_pointcloud_box_constructor
  * @brief Transition function for the extent aggregate over tpcpoint /
- *   tpcpatch values. Folds @p temp's bounding box into @p state.
+ * tpcpatch values
+ * @details The function folds @p temp's bounding box into @p state.
  * @return @p state (mutated) when both inputs are non-NULL and comparable;
  *   a freshly-palloc'd TPCBox when @p state is NULL and @p temp is non-NULL;
  *   @p NULL when both are NULL, or when the two boxes name different schemas

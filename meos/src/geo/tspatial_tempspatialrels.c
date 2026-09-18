@@ -163,8 +163,8 @@ tinterrel_tspatialseq_discstep_base(const TSequence *seq, Datum base,
 
 /**
  * @brief Return an array of temporal Boolean sequences that state whether a
- * temporal point sequence with linear interpolation that is simple and a
- * geometry intersect or are disjoint
+ * temporal point sequence and a geometry intersect or are disjoint
+ * @details The temporal point sequence has linear interpolation and is simple.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the base value
@@ -317,10 +317,11 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @brief Return an array of temporal Boolean sequences that state whether a
- * temporal point sequence with linear interpolation and a geometry intersect
- * or are disjoint (iterator function)
- * @details The function splits the temporal geo in an array of fragments that
- * are simple (that is, not self-intersecting) and loops for each fragment
+ * temporal point sequence and a geometry intersect or are disjoint
+ * @details The temporal point sequence has linear interpolation. This is an
+ * iterator function. The function splits the temporal geo in an array of
+ * fragments that are simple (that is, not self-intersecting) and loops for
+ * each fragment
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the base value
@@ -1081,7 +1082,7 @@ ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   tgeompoint '[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02]', 1)
   -- "{[t@2000-01-01, t@2000-01-02]}"
 
-  * Parallel (a == 0) but not within distance
+ * Parallel (a == 0) but not within distance
 
   SELECT tdwithin(
   tgeompoint '[POINT(0 2)@2000-01-01, POINT(1 3)@2000-01-02]',

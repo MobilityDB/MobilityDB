@@ -136,9 +136,9 @@ DestroyWaysCache(WaysCache *ways_cache)
 }
 
 /**
- * @brief Get the ways cache variable from the global variable if one exists.
- * If it doesn't exist, make a new blank one and return it.
-*/
+ * @brief Get the ways cache variable from the global variable
+ * @details If it does not exist, a new blank one is made and returned.
+ */
 static WaysCache *
 GetWaysCache()
 {

@@ -2272,9 +2272,10 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal float/point sequence simplified using a single-pass
- * implementation of the Douglas-Peucker line simplification algorithm that
- * checks whether the provided distance threshold is exceeded
+ * @brief Return a temporal float/point sequence simplified using the
+ * Douglas-Peucker line simplification algorithm
+ * @details The implementation is single-pass and checks whether the provided
+ * distance threshold is exceeded.
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
  * @param[in] syncdist True when computing the Synchronized Euclidean

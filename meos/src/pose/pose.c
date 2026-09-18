@@ -419,9 +419,10 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
 }
 
 /**
- * @brief Return a float in (0,1) if a network point segment intersects a 
- * network point, return -1.0 if the network point is not located in the
- * segment or if it is approximately equal to the start or the end valuess
+ * @brief Return the location of a pose in a pose segment
+ * @details The location is a float in (0,1) if the segment intersects the
+ * pose. The function returns -1.0 if the pose is not located in the segment or
+ * if it is approximately equal to the start or the end values.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @note The function returns -1.0 if the network point is approximately equal 
@@ -1955,9 +1956,10 @@ pose_quaternion_mul(double aw, double ax, double ay, double az,
 
 /**
  * @brief Build the unit quaternion representing the rotation from the
- * East-North-Up basis at geographic point (@p lat_rad, @p lon_rad) to the
- * WGS-84 ECEF basis. The columns of the matrix are the East, North and Up
- * axes written in the ECEF basis, which is what carries an ENU vector into
+ * East-North-Up basis to the WGS-84 ECEF basis
+ * @details The East-North-Up basis is taken at geographic point
+ * (@p lat_rad, @p lon_rad). The columns of the matrix are the East, North and
+ * Up axes written in the ECEF basis, which is what carries an ENU vector into
  * ECEF:
  *   [ -sin λ     -sin φ · cos λ      cos φ · cos λ ]
  *   [  cos λ     -sin φ · sin λ      cos φ · sin λ ]
@@ -2012,7 +2014,8 @@ pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
 
 /**
  * @brief Apply the orientation correction for a frame change between two
- * SRIDs. The new orientation @p (q_new) re-expresses the same physical
+ * SRIDs
+ * @details The new orientation @p (q_new) re-expresses the same physical
  * body→world rotation in the *target* frame's basis at the (transformed)
  * point. The correction is defined for the canonical OGC GeoPose case
  * (WGS-84 geographic ↔ ECEF); for any other SRID pair the orientation is

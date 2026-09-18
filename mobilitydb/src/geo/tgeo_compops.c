@@ -334,7 +334,6 @@ PG_FUNCTION_INFO_V1(Tne_geo_tgeo);
  * @ingroup mobilitydb_geo_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal geo is
  * different from a geometry/geography
- * geometry/geography
  * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */

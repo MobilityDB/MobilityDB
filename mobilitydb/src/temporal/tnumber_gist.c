@@ -968,9 +968,9 @@ PGDLLEXPORT Datum Tbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
  * @brief GiST same method for temporal numbers
- * Return true only when boxes are exactly the same.  We can't use fuzzy
- * comparisons here without breaking index consistency; therefore, this isn't
- * equivalent to box_same().
+ * @details Return true only when boxes are exactly the same. Fuzzy comparisons
+ * cannot be used here without breaking index consistency; therefore, this is
+ * not equivalent to box_same().
  */
 Datum
 Tbox_gist_same(PG_FUNCTION_ARGS)

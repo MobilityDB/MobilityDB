@@ -170,7 +170,7 @@ bigintspan_out(const Span *s)
  * @param[in] maxdd Maximum number of decimal digits
  * @errval NULL
  * @csqlfn #Span_out(), #Span_as_text()
-*/
+ */
 char *
 floatspan_out(const Span *s, int maxdd)
 {

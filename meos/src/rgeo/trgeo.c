@@ -504,14 +504,13 @@ trgeometry_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup meos_rgeo_transf
- * @brief Return the rows of a temporal rigid geometry, one per distinct pose,
- * each pairing the reference geometry with that pose applied with the span set
- * on which the pose is taken
- * @details The pose is applied to the reference geometry in every row: the
- * geometry is rotated by the pose's orientation, then translated to its
- * position, the rigid-body transform #trgeometry_start_value applies. A
- * reference geometry that a rotation maps onto itself yields rows with equal
- * geometries, one per pose
+ * @brief Return the rows of a temporal rigid geometry, one per distinct pose
+ * @details Each row pairs the reference geometry with that pose applied with
+ * the span set on which the pose is taken. The pose is applied to the
+ * reference geometry in every row: the geometry is rotated by the pose's
+ * orientation, then translated to its position, the rigid-body transform
+ * #trgeometry_start_value applies. A reference geometry that a rotation maps
+ * onto itself yields rows with equal geometries, one per pose
  * @param[in] temp Temporal value
  * @param[out] values Array of the reference geometry with each distinct pose
  * applied

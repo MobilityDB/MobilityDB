@@ -411,10 +411,11 @@ raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadbin)
  *****************************************************************************/
 
 /**
- * @brief Per-call state of the GDAL grid callbacks: the raster band to read,
- * the geotransform placing the grid lines and its inverse mapping a
- * geographic point to a pixel (col, row), the band size, the nodata sentinel,
- * and whether a pixel of the band could not be read
+ * @brief Per-call state of the GDAL grid callbacks
+ * @details The state holds the raster band to read, the geotransform placing
+ * the grid lines and its inverse mapping a geographic point to a pixel
+ * (col, row), the band size, the nodata sentinel, and whether a pixel of the
+ * band could not be read.
  */
 typedef struct
 {

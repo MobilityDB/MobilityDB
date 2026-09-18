@@ -148,9 +148,9 @@ tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
 
 /**
  * @brief Return 1 or 2 if two temporal circular buffer segments are within a
- * distance during the period defined by the output timestampos, return 0
- * otherwise
- * @details These are the turning points when computing the temporal distance.
+ * distance during the output period, return 0 otherwise
+ * @details The period is defined by the output timestamps. These are the
+ * turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance
@@ -407,19 +407,19 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @brief Return 1 or 2 if the first temporal circular buffer segment contains
- * (@p strict) or covers the second one during a sub-period of the segment,
- * return 0 otherwise
- * @details A moving disk (P1, R1) contains a moving disk (P2, R2) when
- * dist(P1, P2) + R2 <= R1, that is when the clearance
- * g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the distance
- * of the centres minus the radius DIFFERENCE, so this mirrors
+ * @brief Return 1 or 2 if a temporal circular buffer segment contains or
+ * covers another one during a sub-period of the segment, 0 otherwise
+ * @details The first segment contains the second one when @p strict is true
+ * and covers it otherwise. A moving disk (P1, R1) contains a moving disk
+ * (P2, R2) when dist(P1, P2) + R2 <= R1, that is when the clearance
+ * g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the
+ * distance of the centres minus the radius DIFFERENCE, so this mirrors
  * #tcbuffersegm_tdwithin_turnpt with the radius sum replaced by the difference
  * and the distance set to zero. It returns the sub-interval [t1, t2] of
  * [lower, upper] during which the relation holds, so the temporal contains and
  * covers Boolean is true on a continuous interval rather than only at the
- * clearance minimum. With @p strict true an isolated tangency (g = 0 at a single
- * instant) does not count, matching the strict interior of contains.
+ * clearance minimum. With @p strict true an isolated tangency (g = 0 at a
+ * single instant) does not count, matching the strict interior of contains.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
@@ -557,9 +557,9 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
 
 /**
  * @brief Return 1 or 2 if two temporal circular buffer segments are at a
- * minimum distance during the period defined by the output timestamps, return
- * 0 otherwise
- * @details These are the turning points when computing the temporal distance.
+ * minimum distance during the period defined by the output timestamps
+ * @details The function returns 0 otherwise. These are the turning points
+ * when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance, unused parameter
@@ -673,9 +673,10 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 /*****************************************************************************/
 
 /**
- * @brief Return 1 or 2 if a temporal circular buffer segment and a circular
- * buffer intersect during the period defined by the output timestamps, return
- * 0 otherwise
+ * @brief Return whether a temporal circular buffer segment and a circular
+ * buffer intersect
+ * @details Return 1 or 2 if they intersect during the period defined by the
+ * output timestamps, return 0 otherwise.
  * @param[in] start,end Temporal instants defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments

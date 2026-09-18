@@ -222,7 +222,6 @@ PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Moving-Features JSON (MF-JSON) representation of a
  * temporal value
- * representation
  * @sqlfn asMFJSON()
  */
 Datum

@@ -174,8 +174,8 @@ pc_patch_stats_serialize(uint8_t *buf, const PCSCHEMA *schema,
 }
 
 /**
- * @brief Reconstruct a @c PCSTATS triplet from the leading bytes of
- *   a serialized patch's data area.
+ * @brief Reconstruct a @c PCSTATS triplet from the leading bytes of a
+ * serialized patch's data area
  */
 static PCSTATS *
 pc_patch_stats_deserialize(const PCSCHEMA *schema, const uint8_t *buf)
@@ -371,8 +371,8 @@ meos_pc_patch_serialize(const PCPATCH *patch_in, void *userdata)
 }
 
 /**
- * @brief Serialize a @c PCPATCH to its uncompressed @c PC_NONE form,
- *   regardless of the schema's nominal compression target.
+ * @brief Serialize a @c PCPATCH to its uncompressed @c PC_NONE form, regardless
+ * of the schema's nominal compression target
  * @param patch_in Source in-memory patch.
  * @return Newly allocated @c SERIALIZED_PATCH carrying compression
  *   @c PC_NONE. Caller owns the result.

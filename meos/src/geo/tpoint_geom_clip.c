@@ -2608,16 +2608,16 @@ point_edge_dist2(double px, double py, const Edge *e)
 }
 
 /**
- * @brief Return true if a point is within @p dist of the geometry, taking the
- * polygon interior into account (a point inside a polygon is at distance 0),
- * pruning both tests with an R-tree over the edges when one is given
- * @details Only an edge whose bounding box meets the square of side 2 * @p dist
- * centred on the point can be within that distance of it; querying the R-tree
- * for those instead of scanning every edge turns the O(nedges) test into
- * O(log nedges + candidates). An excluded edge is farther than @p dist from the
- * point along one axis alone, so it cannot satisfy the distance test and the
- * result is identical to the full scan. The interior test inherits the same
- * pruning from #point_in_polygon_impl
+ * @brief Return true if a point is within @p dist of the geometry
+ * @details The polygon interior is taken into account (a point inside a
+ * polygon is at distance 0), and both tests are pruned with an R-tree over the
+ * edges when one is given. Only an edge whose bounding box meets the square of
+ * side 2 * @p dist centred on the point can be within that distance of it;
+ * querying the R-tree for those instead of scanning every edge turns the
+ * O(nedges) test into O(log nedges + candidates). An excluded edge is farther
+ * than @p dist from the point along one axis alone, so it cannot satisfy the
+ * distance test and the result is identical to the full scan. The interior
+ * test inherits the same pruning from #point_in_polygon_impl
  */
 static bool
 point_geom_within(double px, double py, Edge **edges, int nedges,
@@ -2758,8 +2758,9 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
 
 /**
  * @brief Collect into the interval array the [0,1] sub-intervals of one
- * trajectory segment along which the moving point is within @p dist of the
- * geometry
+ * trajectory segment within @p dist of the geometry
+ * @details These are the sub-intervals along which the moving point is within
+ * @p dist of the geometry.
  * @param[in] a,b Endpoints of the trajectory segment
  * @param[in] sel_edges,sel_nedges Edges to gather crossing candidates from
  * (possibly R-tree filtered)
@@ -3152,9 +3153,9 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
  *****************************************************************************/
 
 /**
- * @brief Return the exact distance from a point to the whole geometry, taking
- * the polygon interior into account (a point inside a filled polygon is at
- * distance zero)
+ * @brief Return the exact distance from a point to the whole geometry
+ * @details The distance takes the polygon interior into account: a point
+ * inside a filled polygon is at distance zero.
  */
 static double
 point_geom_dist(double px, double py, Edge **edges, int nedges)

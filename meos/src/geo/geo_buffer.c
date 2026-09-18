@@ -6898,9 +6898,10 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
 
 /**
  * @ingroup meos_geo_base_spatial
- * @brief Return a @p POLYGON or a @p MULTIPOLYGON that represents all points
- * whose distance from a geometry/geography is less than or equal to a given
- * distance
+ * @brief Return the buffer of a geometry/geography at a given distance
+ * @details The result is a @p POLYGON or a @p MULTIPOLYGON that represents all
+ * points whose distance from the geometry/geography is less than or equal to
+ * the given distance.
  * @param[in] gs Geometry
  * @param[in] size Distance
  * @param[in] params Buffer style parameters

@@ -176,8 +176,9 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
 
 /**
  * @brief Return a float in (0,1) if a float segment intersects a float with
- * respect to an epsilon value, return -1.0 if the value is not located in the
- * segment or if it is approximately equal to the start or the end value
+ * respect to an epsilon value
+ * @details The function returns -1.0 if the value is not located in the
+ * segment or if it is approximately equal to the start or the end value.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @return The function returns -1.0 if the value is approximately equal to the
@@ -917,11 +918,11 @@ tsequence_make_exp1(TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @brief Ensure that the timestamp of the first temporal instant is smaller (or
- * equal if the merge parameter is true) than the one of the second temporal
- * instant
- * @details Moreover, ensures that the values are the same if the timestamps are
- * equal
+ * @brief Ensure that the timestamp of the first temporal instant is smaller
+ * than the one of the second temporal instant
+ * @details The timestamps may also be equal if the merge parameter is true.
+ * Moreover, the function ensures that the values are the same if the
+ * timestamps are equal.
  */
 bool
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,

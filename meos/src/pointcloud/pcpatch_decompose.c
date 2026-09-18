@@ -218,8 +218,7 @@ pcpoint_in_tpcbox(const PCPOINT *pt, void *extra)
 }
 
 /**
- * @brief Predicate: keep points whose XY projection intersects a 2D
- *   geometry.
+ * @brief Predicate: keep points whose XY projection intersects a 2D geometry
  * @details See @ref pcpoint_intersects_geometry in @c pcpatch_decompose.h for
  * the @c extra argument shape and SRID-handling notes.
  */

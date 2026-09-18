@@ -57,9 +57,10 @@
 
 /**
  * @brief Return 1 or 3 if a temporal circular buffer segment and a geometry
- * point are at the minimum distance during the period defined by the output
- * timestamps, return 0 otherwise
- * @details These are the turning points when computing the temporal distance.
+ * point are at the minimum distance, return 0 otherwise
+ * @details The minimum distance is reached during the period defined by the
+ * output timestamps. These are the turning points when computing the temporal
+ * distance.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestampts defining the segment
@@ -203,8 +204,9 @@ tcbuffer_add_dist_turnpts(double A, double B, double C, double DR,
 
 /**
  * @brief Append the [0,1] candidate turning parameters of the moving disc
- * distance to a straight edge, mirroring the endpoint/perpendicular feature
- * split of #dist_segm_edge_mindist
+ * distance to a straight edge
+ * @details The candidates mirror the endpoint/perpendicular feature split of
+ * #dist_segm_edge_mindist.
  * @param[in] cx1,cy1,cx2,cy2 Centre of the disc at the segment bounds
  * @param[in] r1,r2 Radius of the disc at the segment bounds
  * @param[in] e Edge
@@ -259,8 +261,9 @@ tcbuffersegm_edge_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
 
 /**
  * @brief Append the [0,1] candidate turning parameters of the moving disc
- * distance to a circular-arc edge, mirroring the on-span/off-span split of
- * #dist_segm_arc_mindist
+ * distance to a circular-arc edge
+ * @details The computation mirrors the on-span/off-span split of
+ * #dist_segm_arc_mindist.
  * @param[in] cx1,cy1,cx2,cy2 Centre of the disc at the segment bounds
  * @param[in] r1,r2 Radius of the disc at the segment bounds
  * @param[in] e Edge
@@ -821,8 +824,9 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
 
 /**
  * @brief Update the running minimum with one temporal circular buffer
- * sequence (linear interpolation walks consecutive segments; discrete or
- * step interpolation treats each instant as a stationary disk)
+ * sequence
+ * @details Linear interpolation walks consecutive segments; discrete or step
+ * interpolation treats each instant as a stationary disk.
  */
 static void
 tcbufferseq_nad(const TSequence *seq, const DistGeom *g, double *best)
@@ -996,9 +1000,10 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 #define TCBUF_CTX_DISC 1
 
 /**
- * @brief Reusable geometry context that owns the boundary segments and the
- * bucket hierarchy, so many discs and segments can be tested against one
- * geometry without reparsing it
+ * @brief Reusable geometry context owning the boundary segments and the
+ * bucket hierarchy
+ * @details Many discs and segments can thus be tested against one geometry
+ * without reparsing it.
  */
 typedef struct
 {
@@ -1008,9 +1013,9 @@ typedef struct
 } TcbufferGeoCtx;
 
 /**
- * @brief Reusable disc context that owns a single static circular buffer, so
- * the contains/covers scan kernels test a moving disk against it exactly (disc
- * in disc, no polygon approximation of the boundary)
+ * @brief Reusable disc context that owns a single static circular buffer
+ * @details The contains/covers scan kernels test a moving disk against it
+ * exactly (disc in disc, no polygon approximation of the boundary).
  */
 typedef struct
 {
@@ -1022,10 +1027,11 @@ typedef struct
 } TcbufferDiscCtx;
 
 /**
- * @brief Build the reusable geometry context for the native within kernel from
- * the straight and circular-arc edges of the boundary, or return NULL for a
- * geometry that has no edge decomposition, that is, a TIN or a polyhedral
- * surface (the caller then uses the traversed-area path)
+ * @brief Build the reusable geometry context for the native within kernel
+ * @details The context is built from the straight and circular-arc edges of
+ * the boundary. The function returns NULL for a geometry that has no edge
+ * decomposition, that is, a TIN or a polyhedral surface, and the caller then
+ * uses the traversed-area path.
  */
 void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
@@ -1107,9 +1113,9 @@ tcbuffer_disc_ctx_free(void *ctx)
 }
 
 /**
- * @brief Return the number of boundary segments in a context, used to size the
- * per-segment root output (a disc boundary yields at most the two roots of the
- * quadratic clearance equation)
+ * @brief Return the number of boundary segments in a context
+ * @details The number is used to size the per-segment root output (a disc
+ * boundary yields at most the two roots of the quadratic clearance equation).
  */
 int
 tcbuffer_geo_ctx_nsegs(const void *ctxv)
@@ -1133,10 +1139,12 @@ tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
 
 /**
  * @brief Append to @p cand the normalized times in [lo,hi] at which the moving
- * disc distance to a region equals @p dist, i.e. the roots of
+ * disc distance to a region equals @p dist
+ * @details These times are the roots of
  * (A - DR^2) t^2 + (B - 2 R0 DR) t + (C - R0^2) = 0 with R0 = r1 + dist
  * @note The bounds are inclusive. The caller splits a segment into
- * perpendicular/endpoint sub-regions at breakpoints (#tcbuffersegm_edge_within_roots);
+ * perpendicular/endpoint sub-regions at breakpoints
+ * (#tcbuffersegm_edge_within_roots);
  * when the moving centre crosses the geometry exactly at a polygon vertex, the
  * crossing time coincides exactly with the breakpoint shared by the two
  * adjacent sub-regions, and is a genuine root of BOTH regions' equations
@@ -1175,8 +1183,9 @@ tcbuffer_region_within_roots(double A, double B, double C, double R0,
 
 /**
  * @brief Append the within-distance crossing times of one moving disc segment
- * against one geometry edge, mirroring the perpendicular/endpoint region split
- * of #dist_segm_edge_mindist
+ * against one geometry edge
+ * @details The computation mirrors the perpendicular/endpoint region split of
+ * #dist_segm_edge_mindist.
  */
 static void
 tcbuffersegm_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
@@ -1242,13 +1251,14 @@ tcbuffersegm_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
 
 /**
  * @brief Append the within-distance crossing times of one moving disc segment
- * against one circular-arc edge, the temporal analogue of the on-span circle /
- * off-span endpoint split of #dist_segm_arc_mindist
- * @details On the arc's angular span the distance to the disc is
+ * against one circular-arc edge
+ * @details This is the temporal analogue of the on-span circle / off-span
+ * endpoint split of #dist_segm_arc_mindist. On the arc's angular span the
+ * distance to the disc is
  * | sqrt(Q(t)) - R | - r(t); setting it equal to @p dist gives
  * sqrt(Q) = R + r(t) + dist (disc outside the circle) or
- * sqrt(Q) = R - r(t) - dist (disc inside), each a region-crossing quadratic with
- * the arc radius folded into R0. Off the span the nearest arc point is an
+ * sqrt(Q) = R - r(t) - dist (disc inside), each a region-crossing quadratic
+ * with the arc radius folded into R0. Off the span the nearest arc point is an
  * endpoint, so the two endpoint region crossings are added as well. The result
  * is a superset of the true crossings; each candidate sub-interval is then
  * classified exactly by the arc-aware unit distance (#dist_segm_nad), so
@@ -1288,11 +1298,12 @@ tcbuffer_double_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Return the within-distance sub-intervals of one linear moving disc
- * segment as normalized [0,1] time ranges in @p outlo / @p outhi, returning
- * their count
- * @details The crossing candidates come from the per-edge roots and each
- * sub-interval is classified with the exact interior-aware unit distance.
+ * @brief Return the number of within-distance sub-intervals of one linear
+ * moving disc segment
+ * @details The sub-intervals are returned as normalized [0,1] time ranges in
+ * @p outlo / @p outhi. The crossing candidates come from the per-edge roots
+ * and each sub-interval is classified with the exact interior-aware unit
+ * distance.
  */
 int
 tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
@@ -1395,10 +1406,11 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 #define TCBUFFER_TOUCH_EPS 1e-9
 
 /**
- * @brief Signed nearest boundary distance of a stationary disk: the minimum
- * over the geometry boundary edges of dist(centre, edge) - radius, without the
- * interior-overlap clamp of #dist_segm_nad, and set @p inside to whether
- * the centre lies strictly inside a polygon of the geometry
+ * @brief Return the signed nearest boundary distance of a stationary disk
+ * @details The distance is the minimum over the geometry boundary edges of
+ * dist(centre, edge) - radius, without the interior-overlap clamp of
+ * #dist_segm_nad. The function also sets @p inside to whether the centre lies
+ * strictly inside a polygon of the geometry.
  */
 static double
 tcbuffer_disc_signed_boundary(double cx, double cy, double r,
@@ -1435,9 +1447,10 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 }
 
 /**
- * @brief Return true if a stationary circular buffer touches the geometry, 
- * i.e., its boundary meets the geometry boundary with disjoint interiors (the
- * signed boundary distance vanishes and the centre is not inside a polygon)
+ * @brief Return true if a stationary circular buffer touches the geometry
+ * @details The circular buffer touches the geometry when its boundary meets
+ * the geometry boundary with disjoint interiors, i.e., the signed boundary
+ * distance vanishes and the centre is not inside a polygon.
  */
 bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
@@ -1493,14 +1506,15 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 
 /**
  * @brief Append to @p outt the normalized times in (0,1) at which the signed
- * boundary distance of a linearly moving disk vanishes, keeping only the
- * contacts made from outside the geometry when @p outside_only is true
- * @details The candidate crossing times are the same region roots the within
- * kernel uses (#tcbuffersegm_edge_within_roots / #tcbuffersegm_arc_within_roots
- * at distance 0, where dist(centre, edge) == radius). Each is kept only when the
- * exact signed boundary distance vanishes there — not an interior penetration
- * where a nearer edge makes the signed minimum negative, nor a spurious root of
- * the squared equation where it stays positive. Returns the number of times
+ * boundary distance of a linearly moving disk vanishes
+ * @details Only the contacts made from outside the geometry are kept when
+ * @p outside_only is true. The candidate crossing times are the same region
+ * roots the within kernel uses (#tcbuffersegm_edge_within_roots /
+ * #tcbuffersegm_arc_within_roots at distance 0, where
+ * dist(centre, edge) == radius). Each is kept only when the exact signed
+ * boundary distance vanishes there — not an interior penetration where a
+ * nearer edge makes the signed minimum negative, nor a spurious root of the
+ * squared equation where it stays positive. Returns the number of times
  * written (at most @p maxout)
  */
 static int
@@ -1592,10 +1606,12 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
  * (at most @p maxout)
  */
 /**
- * @brief Append to @p outt the interior times in (0,1) at which a linearly
- * moving disk starts or stops containing/covering (or being contained/covered
- * by) the static disk of a disc context
- * @details Over the segment the moving disk is P(t)=(x0+t dx, y0+t dy),
+ * @brief Append the interior times at which a moving disk starts or stops
+ * containing or covering the static disk of a disc context
+ * @details The times are appended to @p outt and lie in (0,1). They are the
+ * times at which a linearly moving disk starts or stops containing/covering
+ * (or being contained/covered by) the static disk of the disc context.
+ * Over the segment the moving disk is P(t)=(x0+t dx, y0+t dy),
  * R(t)=r0+t dr. Containment flips where the clearance g(t)=||P(t)-C||-thr(t)
  * vanishes, thr(t)=m+s t being R(t)-rc (temporal container) or rc-R(t) (static
  * container). Squaring the non-negative ||P(t)-C|| gives the quadratic
@@ -1866,16 +1882,20 @@ tcbuffersegbox_cmp_minx(const void *a, const void *b)
 }
 
 /**
- * @brief Append candidate value of f(s,t) on edge s=0 (in t) given:
- *   e = |E|^2 with E = A - C
- *   q = E . V
- *   v = |V|^2
- *   dr2 = r_D - r_C
- *   r_sum = r_A + r_C  (radius offset at t=0)
- * Computes the critical point of g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2
+ * @brief Update @p best with the candidate value of f(s,t) on edge s=0 (in t)
+ * @details The inputs are:
+ * - e = |E|^2 with E = A - C
+ * - q = E . V
+ * - v = |V|^2
+ * - dr2 = r_D - r_C
+ * - r_sum = r_A + r_C  (radius offset at t=0)
+ *
+ * The function computes the critical point of
+ * g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2
  * via the quadratic v(v - dr2^2) t^2 - 2 q (v - dr2^2) t + (q^2 - dr2^2 e) = 0.
  * Only v > dr2^2 yields a local minimum; the v == dr2^2 inflection case is
- * skipped (covered by corners).
+ * skipped (covered by corners). The value at a critical point replaces
+ * @p best when it is smaller.
  */
 static void
 cbuffersegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_sum,
@@ -1912,7 +1932,8 @@ cbuffersegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_su
 }
 
 /**
- * @brief Append candidate value of f(s,t) on edge t=0 (in s) given:
+ * @brief Append the candidate value of f(s,t) on edge t=0 (in s)
+ * @details The inputs are:
  *   e = |E|^2 with E = A - C
  *   p = E . U
  *   u = |U|^2
@@ -1959,12 +1980,15 @@ cbuffersegm_edge_crit_in_s(double e, double p, double u, double dr1,
 }
 
 /**
- * @brief Exact min spatial distance between two cbuffer segments,
+ * @brief Return the exact minimum spatial distance between two circular
+ * buffer segments
+ * @details The segments are
  *   c1(s) = A + s(B-A), r1(s) = r_A + s(r_B - r_A), s in [0,1]
  *   c2(t) = C + t(D-C), r2(t) = r_C + t(r_D - r_C), t in [0,1]
- * Returns max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)),
- * capped above at @p best_so_far (caller's running threshold).  The
- * function never raises @p best_so_far above its input value.
+ * The function returns
+ * max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)),
+ * capped above at @p best_so_far (caller's running threshold). The function
+ * never raises @p best_so_far above its input value.
  */
 static double
 cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,

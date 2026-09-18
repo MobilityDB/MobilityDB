@@ -585,8 +585,8 @@ Tjson_array_element_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Extract an array element from a temporal JSONB value
  * @sqlfn tjsonbArrayElement(), tjsonbArrayElementOpr()
-  * @sqlop @p ->
-*/
+ * @sqlop @p ->
+ */
 Datum
 Tjsonb_array_element_common(FunctionCallInfo fcinfo, bool astext)
 {

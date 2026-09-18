@@ -84,8 +84,8 @@ h3_directed_edge_to_gs_boundary(H3Index edge)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return a temporal boolean stating whether two temporal cells are
- * grid neighbours at each instant.
+ * @brief Return a temporal boolean stating whether two temporal cells are grid
+ * neighbours at each instant
  * @csqlfn #Th3index_are_neighbor_cells()
  */
 Temporal *
@@ -113,7 +113,7 @@ th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return a temporal directed-edge index from two temporal cells.
+ * @brief Return a temporal directed-edge index from two temporal cells
  * @csqlfn #Th3index_cells_to_directed_edge()
  */
 Temporal *
@@ -141,8 +141,8 @@ th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return a temporal boolean stating at each instant whether the
- * value is a valid H3 directed edge.
+ * @brief Return a temporal boolean stating at each instant whether the value is
+ * a valid H3 directed edge
  * @csqlfn #Th3index_is_valid_directed_edge()
  */
 Temporal *
@@ -169,7 +169,7 @@ th3index_is_valid_directed_edge(const Temporal *edge)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return the temporal origin cell of a temporal directed edge.
+ * @brief Return the temporal origin cell of a temporal directed edge
  * @csqlfn #Th3index_get_directed_edge_origin()
  */
 Temporal *
@@ -196,7 +196,7 @@ th3index_get_directed_edge_origin(const Temporal *edge)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return the temporal destination cell of a temporal directed edge.
+ * @brief Return the temporal destination cell of a temporal directed edge
  * @csqlfn #Th3index_get_directed_edge_destination()
  */
 Temporal *
@@ -223,8 +223,8 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 
 /**
  * @ingroup meos_h3_edges
- * @brief Return the per-instant polygon boundary of a temporal directed
- * edge as a temporal geography.
+ * @brief Return the per-instant polygon boundary of a temporal directed edge as
+ * a temporal geography
  * @details Depends on the `h3_directed_edge_to_gs_boundary` adapter
  * (opt-out list).
  * @csqlfn #Th3index_directed_edge_to_boundary()

@@ -44,17 +44,17 @@
 /*****************************************************************************/
 
 /**
-* The maximum number of dimensions our code can handle.
-* We'll use this to statically allocate a bunch of
-* arrays below.
-*/
+ * The maximum number of dimensions our code can handle.
+ * We'll use this to statically allocate a bunch of
+ * arrays below.
+ */
 #define ND_DIMS 4
 
 /**
-* N-dimensional box type for calculations, to avoid doing
-* explicit axis conversions from GBOX in all calculations
-* at every step.
-*/
+ * N-dimensional box type for calculations, to avoid doing
+ * explicit axis conversions from GBOX in all calculations
+ * at every step.
+ */
 typedef struct ND_BOX_T
 {
   float4 min[ND_DIMS];
@@ -62,8 +62,8 @@ typedef struct ND_BOX_T
 } ND_BOX;
 
 /**
-* N-dimensional box index type
-*/
+ * N-dimensional box index type
+ */
 typedef struct ND_IBOX_T
 {
   int min[ND_DIMS];
@@ -71,11 +71,11 @@ typedef struct ND_IBOX_T
 } ND_IBOX;
 
 /**
-* N-dimensional statistics structure. Well, actually
-* four-dimensional, but set up to handle arbirary dimensions
-* if necessary (really, we just want to get the 2,3,4-d cases
-* into one shared piece of code).
-*/
+ * N-dimensional statistics structure. Well, actually
+ * four-dimensional, but set up to handle arbirary dimensions
+ * if necessary (really, we just want to get the 2,3,4-d cases
+ * into one shared piece of code).
+ */
 typedef struct ND_STATS_T
 {
     /* Dimensionality of the histogram. */

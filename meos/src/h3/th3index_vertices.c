@@ -77,8 +77,8 @@ h3_vertex_to_gs_point(H3Index vertex)
 
 /**
  * @ingroup meos_h3_vertex
- * @brief Return the temporal H3 vertex at the given vertex number of a
- * temporal H3 cell.
+ * @brief Return the temporal H3 vertex at the given vertex number of a temporal
+ * H3 cell
  * @csqlfn #Th3index_cell_to_vertex()
  */
 Temporal *
@@ -106,8 +106,8 @@ th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 
 /**
  * @ingroup meos_h3_vertex
- * @brief Return the temporal geodetic point at each instant of a temporal
- * H3 vertex.
+ * @brief Return the temporal geodetic point at each instant of a temporal H3
+ * vertex
  * @csqlfn #Th3index_vertex_to_latlng()
  */
 Temporal *
@@ -134,8 +134,8 @@ th3index_vertex_to_latlng(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_vertex
- * @brief Return a temporal boolean stating at each instant whether the
- * value is a valid H3 vertex.
+ * @brief Return a temporal boolean stating at each instant whether the value is
+ * a valid H3 vertex
  * @csqlfn #Th3index_is_valid_vertex()
  */
 Temporal *

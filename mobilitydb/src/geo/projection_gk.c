@@ -116,7 +116,11 @@ HelmertTransformation(double x, double y, double z)
 }
 
 /**
- *
+ * @brief Return the latitude of the next iteration of the conversion of
+ * geocentric coordinates to geographic ones in #BLRauenberg
+ * @details The new latitude is computed from the latitude @p f of the previous
+ * iteration, the coordinates @p x and @p y, and the ratio @p p between the z
+ * coordinate and the distance to the polar axis.
  */
 static double
 newF(double f, double x, double y, double p)
@@ -129,7 +133,12 @@ newF(double f, double x, double y, double p)
 }
 
 /**
- *
+ * @brief Return the geodetic latitude, longitude, and height on the Bessel
+ * ellipsoid of a point given by its geocentric Cartesian coordinates
+ * @details The latitude is computed by iterating #newF until two successive
+ * values differ by less than 10E-10. The result holds the latitude in @p x,
+ * the longitude in @p y, and the ellipsoidal height in @p z, with the angles
+ * in radians.
  */
 static POINT3D
 BLRauenberg (double x, double y, double z)

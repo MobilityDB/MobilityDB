@@ -2946,9 +2946,10 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 
 #if POINTCLOUD
 /**
- * @brief Return the size in bytes of the temporal-prefix pgPointCloud
- *   schema header (pcid + xml_len + xml_bytes), or 0 when no XML is
- *   registered for the temporal's pcid.
+ * @brief Return the size in bytes of the temporal-prefix pgPointCloud schema
+ * header
+ * @details The header is composed of pcid + xml_len + xml_bytes. The size is 0
+ * when no XML is registered for the temporal's pcid.
  */
 static size_t
 pcschema_header_to_wkb_size(const Temporal *temp)
@@ -2977,7 +2978,8 @@ pcschema_header_to_wkb_size(const Temporal *temp)
 
 /**
  * @brief Write the temporal-prefix pgPointCloud schema header
- *   (pcid + xml_len + xml_bytes). No-op when no XML is registered.
+ * @details The header is pcid + xml_len + xml_bytes. The function is a no-op
+ * when no XML is registered.
  */
 static uint8_t *
 pcschema_header_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)

@@ -412,7 +412,6 @@ PG_FUNCTION_INFO_V1(Cbuffer_tstzspan_to_stbox);
  * @ingroup mobilitydb_cbuffer_base_box
  * @brief Construct a spatiotemporal box from a circular buffer and a
  * timestamptz span
- * box
  * @sqlfn stbox()
  */
 Datum

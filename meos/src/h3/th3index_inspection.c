@@ -57,7 +57,7 @@
 
 /**
  * @ingroup meos_h3_inspection
- * @brief Return the temporal base-cell number (int32) of a temporal H3 cell.
+ * @brief Return the temporal base-cell number (int32) of a temporal H3 cell
  * @csqlfn #Th3index_get_base_cell_number()
  */
 Temporal *
@@ -89,7 +89,7 @@ th3index_get_base_cell_number(const Temporal *temp)
 /**
  * @ingroup meos_h3_inspection
  * @brief Return a temporal boolean stating whether the cell has Class-III
- * orientation at each instant.
+ * orientation at each instant
  * @csqlfn #Th3index_is_res_class_iii()
  */
 Temporal *
@@ -116,8 +116,8 @@ th3index_is_res_class_iii(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_inspection
- * @brief Return a temporal boolean stating whether the cell is a pentagon
- * at each instant.
+ * @brief Return a temporal boolean stating whether the cell is a pentagon at
+ * each instant
  * @csqlfn #Th3index_is_pentagon()
  */
 Temporal *

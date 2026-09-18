@@ -1326,8 +1326,7 @@ adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if the temporal circular buffers are ever/always disjoint,
- * 0 if not, and -1 on error or if the temporal circular buffers do not
- * intersect in time
+ * 0 if not, and -1 on error or if they do not intersect in time
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Edisjoint_tcbuffer_tcbuffer(), #Adisjoint_tcbuffer_tcbuffer()
@@ -1373,9 +1372,9 @@ edisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_cbuffer_rel_ever
- * @brief Return 1 if the temporal circular buffers are always disjoint, 0 if
- * not, and -1 on error or if the temporal circular buffers do not intersect
- * in time
+ * @brief Return whether two temporal circular buffers are always disjoint
+ * @details The result is 1 if they are always disjoint, 0 if not, and -1 on
+ * error or if the temporal circular buffers do not intersect in time.
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Adisjoint_tcbuffer_tcbuffer()
  */
@@ -2012,9 +2011,10 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
 
 /**
  * @ingroup meos_internal_cbuffer_spatial_rel_ever
- * @brief Return 1 if two temporal circular buffers are ever/always within a
- * distance, 0 if not, -1 on error or if the temporal circular buffers do not
- * intersect on time
+ * @brief Return whether two temporal circular buffers are ever/always within
+ * a distance
+ * @details The function returns 1 if they are, 0 if not, and -1 on error or
+ * if the temporal circular buffers do not intersect on time.
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -2082,9 +2082,10 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_cbuffer_rel_ever
- * @brief Return 1 if two temporal circular buffers are ever within a distance,
- * 0 if not, -1 on error or if the temporal circular buffers do not intersect
- * on time
+ * @brief Return whether two temporal circular buffers are ever within a
+ * distance
+ * @details The result is 1 if they are, 0 if not, -1 on error or if the
+ * temporal circular buffers do not intersect on time.
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_tcbuffer()
@@ -2099,8 +2100,7 @@ edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if two temporal circular buffers are always within a
- * distance, 0 if not, -1 on error or if the temporal circular buffers do not
- * intersect on time
+ * distance, 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_tcbuffer()

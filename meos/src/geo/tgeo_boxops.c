@@ -557,9 +557,9 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 /**
  * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal geo sequence, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * of a temporal geo sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  */
@@ -608,8 +608,9 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 /**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal geo, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * of a temporal geo
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal geo
  * @param[out] count Number of values of the output array
  * @errval NULL
@@ -733,9 +734,9 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
 /**
  * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the instants or
- * segments of a temporal geo sequence, where the choice between instants or
- * segments depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * segments of a temporal geo sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
@@ -841,9 +842,9 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 /**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of N spatiotemporal boxes obtained by merging
- * consecutive instants or segments of a temporal geo, where the choice
- * between instants or segments depends, respectively, on whether the
- * interpolation is discrete or continuous
+ * consecutive instants or segments of a temporal geo
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal geo
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
@@ -880,8 +881,7 @@ tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 
 /**
  * @brief Return an array of spatiotemporal boxes obtained by merging
- * consecutive instants of a temporal geo sequence with discrete
- * interpolation 
+ * consecutive instants of a temporal geo sequence with discrete interpolation
  * @param[in] seq Temporal sequence
  * @param[in] elems_per_box Number of input instants merged into an output box
  * @param[out] count Number of elements in the output array
@@ -915,8 +915,8 @@ tgeoseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
 
 /**
  * @brief Return an array of spatiotemporal boxes obtained by merging
- * consecutive segments of a temporal geo sequence with continuous
- * interpolation (iterator function)
+ * consecutive segments of a temporal geo sequence (iterator function)
+ * @details The sequence has continuous interpolation.
  * @param[in] seq Temporal sequence
  * @param[in] elems_per_box Number of input segments merged into an output box
  * @param[out] result Array of boxes
@@ -951,9 +951,9 @@ tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
 /**
  * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes obtained by merging
- * consecutive instants or segments of a temporal geo sequence, where the
- * choice between instants or segments depends, respectively, on whether the
- * interpolation is discrete or continuous
+ * consecutive instants or segments of a temporal geo sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[in] elems_per_box Number of input segments merged into an output box
  * @param[out] count Number of elements in the output array
@@ -1010,9 +1010,9 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
 /**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes obtained by merging
- * consecutive instants or segments of a temporal geo, where the choice between
- * instants or segments depends, respectively, on whether the interpolation is
- * discrete or continuous
+ * consecutive instants or segments of a temporal geo
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal value
  * @param[in] elems_per_box Number of input instants or segments merged into an
  * output box

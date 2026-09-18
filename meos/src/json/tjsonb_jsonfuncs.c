@@ -877,9 +877,10 @@ tjsonb_exists(const Temporal *temp, const text *key)
 /**
  * @ingroup meos_json_json
  * @brief Return a temporal boolean that states if any or all of the keys in
- * a text array exist as top-level keys or array elements within a temporal
- * JSONB value, common to the #tjsonb_exists_any() and #tjsonb_exists_all()
- * functions
+ * a text array exist within a temporal JSONB value
+ * @details The keys are searched as top-level keys or array elements. The
+ * function is common to the #tjsonb_exists_any() and #tjsonb_exists_all()
+ * functions.
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
@@ -909,8 +910,9 @@ tjsonb_exists_array(const Temporal *temp, text **keys, int count, bool any)
 /**
  * @ingroup meos_json_json
  * @brief Return a temporal boolean that states if any of the keys in a text
- * array exist as top-level keys or array elements within a temporal JSONB
- * value
+ * array exist in a temporal JSONB value
+ * @details The keys are searched as top-level keys or array elements within
+ * the temporal JSONB value.
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
@@ -925,8 +927,9 @@ tjsonb_exists_any(const Temporal *temp, text **keys, int count)
 /**
  * @ingroup meos_json_json
  * @brief Return a temporal boolean that states if all of the keys in a text
- * array exist as top-level keys or array elements within a temporal JSONB
- * value
+ * array exist within a temporal JSONB value
+ * @details The keys exist when they are top-level keys or array elements of
+ * the value.
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
@@ -1360,7 +1363,7 @@ tjsonb_pretty(const Temporal *temp)
 }
 
 /*****************************************************************************
-* Path functions
+ * Path functions
  *****************************************************************************/
 
 /**
@@ -1542,9 +1545,8 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
 
 /**
  * @ingroup meos_json_json
- * @brief Extract an item specified by a JSON path expression from a temporal
- * JSONB value
- * predicate
+ * @brief Return the result of a JSON path predicate check of a temporal JSONB
+ * value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables, may be NULL

@@ -293,9 +293,9 @@ typedef struct
 } H3SegmentPath;
 
 /**
- * @brief Return the length in degrees of the path between two positions: of
- * the straight line in longitude and latitude for a planar point, of the
- * great-circle arc for a geodetic one
+ * @brief Return the length in degrees of the path between two positions
+ * @details The path is the straight line in longitude and latitude for a
+ * planar point and the great-circle arc for a geodetic one.
  * @param[in] lon1,lat1,lon2,lat2 Positions in degrees
  * @param[in] geodetic True when the positions are geodetic
  */

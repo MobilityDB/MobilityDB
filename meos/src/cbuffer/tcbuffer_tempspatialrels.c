@@ -239,8 +239,8 @@ tinterrel_tcbufferinst_geom(const TInstant *inst, const GSERIALIZED *gs,
 
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
- * buffer sequence with discrete interpolation and a geometry intersect or are
- * disjoint
+ * buffer sequence and a geometry intersect or are disjoint
+ * @details The sequence has discrete interpolation.
  * @param[in] seq Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
@@ -328,8 +328,8 @@ tinterrel_tcbufferseq_disc_geom(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
- * buffer sequence with step interpolation and a geometry intersect or are
- * disjoint
+ * buffer sequence and a geometry intersect or are disjoint
+ * @details The sequence has step interpolation.
  * @param[in] seq Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
@@ -726,8 +726,8 @@ tinterrel_tcbufferseq_disc_geo_native(const TSequence *seq, bool tinter,
 
 /**
  * @brief Build the intersects/disjoint temporal Boolean of a sequence from the
- * spanset @p ss of intersecting sub-periods (shared by the step and linear
- * native paths)
+ * spanset @p ss of intersecting sub-periods
+ * @details The function is shared by the step and linear native paths.
  */
 static Temporal *
 tinterrel_tcbufferseq_from_spanset(const TSequence *seq, const SpanSet *ss,
@@ -759,8 +759,11 @@ tinterrel_tcbufferseq_from_spanset(const TSequence *seq, const SpanSet *ss,
 
 /**
  * @brief Return the spanset of sub-periods during which a step-interpolated
- * temporal circular buffer sequence intersects (is within distance 0 of) the
- * geometry (NULL if it never intersects)
+ * temporal circular buffer sequence intersects the geometry
+ * @details The sub-periods are those during which the sequence is within
+ * @p dist of the geometry, which for a distance of 0 means that they
+ * intersect. The function returns NULL if the sequence never intersects the
+ * geometry.
  * @note Shared by the temporal-relationship tbool builder and the ever/always
  * coverage projection
  */
@@ -825,8 +828,10 @@ tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
 
 /**
  * @brief Return the spanset of sub-periods during which a linear temporal
- * circular buffer sequence intersects (is within distance 0 of) the geometry,
- * from the exact swept-capsule kernel (NULL if it never intersects)
+ * circular buffer sequence intersects the geometry
+ * @details Intersecting means being within distance 0 of the geometry. The
+ * spanset is computed from the exact swept-capsule kernel; the result is NULL
+ * if the sequence never intersects the geometry.
  * @note Shared by the temporal-relationship tbool builder and the
  * ever/always coverage projection, so both use the identical crossing kernel
  */
@@ -962,8 +967,9 @@ tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
 
 /**
  * @brief Return true if a temporal circular buffer sequence is ever disjoint
- * from the geometry, that is, the intersecting sub-periods do not cover the
- * whole sequence period
+ * from the geometry
+ * @details This is the case when the intersecting sub-periods do not cover
+ * the whole sequence period.
  */
 static bool
 tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
@@ -1004,9 +1010,11 @@ tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
 
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
- * @brief Return 1 if a temporal circular buffer is ever disjoint from a
- * geometry, 0 if it always intersects, and -1 for a geometry that has no edge
- * decomposition (the caller then uses the traversed-area path)
+ * @brief Return whether a temporal circular buffer is ever disjoint from a
+ * geometry
+ * @details The result is 1 if it is ever disjoint, 0 if it always intersects,
+ * and -1 for a geometry that has no edge decomposition (the caller then uses
+ * the traversed-area path).
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  */
@@ -1324,9 +1332,11 @@ tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
- * buffer contains (@p strict) or covers another one, splitting each synchronized
- * segment at the clearance crossings so the result holds on a continuous
- * interval rather than only at the clearance minimum
+ * buffer contains or covers another one
+ * @details The relation is contains when @p strict is true and covers
+ * otherwise. Each synchronized segment is split at the clearance crossings so
+ * that the result holds on a continuous interval rather than only at the
+ * clearance minimum.
  */
 static Temporal *
 tcontains_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -1720,10 +1730,12 @@ ttouches_tcbufferseq_disc_geo_native(const TSequence *seq, const void *ctx)
 }
 
 /**
- * @brief Return the spanset of sub-periods during which a step- or
- * linear-interpolated temporal circular buffer sequence touches the geometry
- * (NULL if it never touches): the touching sub-periods for step interpolation,
- * the isolated contact instants for linear
+ * @brief Return the spanset of sub-periods during which a temporal circular
+ * buffer sequence touches the geometry
+ * @details The sequence has step or linear interpolation. The result is NULL
+ * if the sequence never touches the geometry. It holds the touching
+ * sub-periods for step interpolation, the isolated contact instants for
+ * linear.
  */
 static SpanSet *
 tcbufferseq_touch_spanset(const TSequence *seq, const void *ctx)
@@ -1930,8 +1942,10 @@ tcontains_tcbufferseq_disc_geo_native(const TSequence *seq, const void *ctx,
 
 /**
  * @brief Return the spanset of sub-periods during which the geometry contains
- * (@p strict) or covers a step- or linear-interpolated temporal circular buffer
- * sequence (NULL if never)
+ * or covers a temporal circular buffer sequence
+ * @details The geometry contains the sequence when @p strict is true and
+ * covers it otherwise. The sequence has step or linear interpolation. The
+ * result is NULL if the relationship never holds.
  */
 static SpanSet *
 tcbufferseq_contains_spanset(const TSequence *seq, const void *ctx, bool strict)
@@ -2174,8 +2188,9 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @brief Return true if a temporal circular buffer sequence ever touches the
- * geometry, scanning the instants and (for linear interpolation) the per-segment
- * contact roots with early exit
+ * geometry
+ * @details The function scans the instants and (for linear interpolation) the
+ * per-segment contact roots with early exit.
  */
 static bool
 tcbufferseq_ever_touches_native(const TSequence *seq, const void *ctx)
@@ -2228,9 +2243,11 @@ tcbufferseq_always_touches_native(const TSequence *seq, const void *ctx)
 
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
- * @brief Return 1 if a temporal circular buffer ever/always touches a geometry,
- * 0 if not, and -1 for a geometry that has no edge decomposition (the caller
- * then uses the traversed-area path)
+ * @brief Return whether a temporal circular buffer ever/always touches a
+ * geometry
+ * @details The function returns 1 if it does, 0 if not, and -1 for a geometry
+ * that has no edge decomposition, in which case the caller uses the
+ * traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -2280,8 +2297,9 @@ eatouches_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @brief Return true if the geometry ever contains (@p strict) or covers a
- * temporal circular buffer sequence, scanning the instants and (for linear
- * interpolation) the per-segment sub-intervals with early exit
+ * temporal circular buffer sequence
+ * @details The function scans the instants and (for linear interpolation) the
+ * per-segment sub-intervals with early exit.
  */
 static bool
 tcbufferseq_ever_contains_native(const TSequence *seq, const void *ctx,
@@ -2354,9 +2372,11 @@ tcbufferseq_ever_contains_native(const TSequence *seq, const void *ctx,
 }
 
 /**
- * @brief Return true if the geometry always contains (@p strict) or covers a
- * temporal circular buffer sequence, that is, the holding sub-periods cover the
- * whole sequence period
+ * @brief Return true if the geometry always contains or covers a temporal
+ * circular buffer sequence
+ * @details The geometry contains the sequence when @p strict is true and
+ * covers it otherwise. The relationship always holds when the holding
+ * sub-periods cover the whole sequence period.
  */
 static bool
 tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
@@ -2389,10 +2409,11 @@ tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
  * @param[in] strict True for contains, false for covers
  */
 /**
- * @brief Return 1 if a context (@p strict) ever/always contains or covers a
- * temporal circular buffer, 0 if not, scanning the instants and per-segment
- * sub-intervals; the context abstracts either a geometry boundary or a static
- * disc
+ * @brief Return 1 if a context ever/always contains or covers a temporal
+ * circular buffer, 0 if not
+ * @details The choice between contains and covers is given by @p strict. The
+ * function scans the instants and per-segment sub-intervals; the context
+ * abstracts either a geometry boundary or a static disc.
  */
 static int
 eacontains_tcbuffer_ctx_native(const Temporal *temp, const void *ctx,
@@ -2529,9 +2550,11 @@ eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
- * @brief Return 1 if a temporal circular buffer ever/always contains (@p strict)
- * or covers a static circular buffer, or the static circular buffer the
- * temporal one, 0 if not
+ * @brief Return whether a temporal and a static circular buffer ever/always
+ * satisfy a containment or covering relationship
+ * @details The result is 1 if the temporal circular buffer ever/always
+ * contains (@p strict) or covers the static circular buffer, or the static
+ * circular buffer the temporal one, 0 if not.
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Static circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics

@@ -504,8 +504,9 @@ static const srid_ellipsoid MEOS_SRID_ELLIPSOIDS[] =
 
 /**
  * @brief Return 1 if the SRID is a geographic coordinate system with a
- * built-in reference ellipsoid, and in that case set the semi-major axis and
- * the inverse flattening, return 0 otherwise
+ * built-in reference ellipsoid, return 0 otherwise
+ * @details When the result is 1, the function sets the semi-major axis and the
+ * inverse flattening.
  */
 int
 srid_builtin_ellipsoid(int32_t srid, double *a, double *rf)

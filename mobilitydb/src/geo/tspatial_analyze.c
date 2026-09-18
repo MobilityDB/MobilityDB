@@ -332,9 +332,9 @@ range_quintile(int *vals, int nvals)
 }
 
 /**
- * @brief Given an n-d index array (counter), and a domain to increment it
- * in (ibox) increment it by one, unless it's already at the max of
- * the domain, in which case return false
+ * @brief Increment an n-d index array (counter) by one in a domain (ibox)
+ * @details The function returns false if the counter is already at the max of
+ * the domain.
  */
 int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
@@ -403,17 +403,16 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 
 /**
  * @brief Calculate how much a set of boxes is homogenously distributed or
- * contentrated within one dimension, returning the range_quintile of the
- * overlap counts per cell in a uniform partition of the extent of the
- * dimension
- * @details A uniform distribution of counts will have a small range and will
- * require few cells in a selectivity histogram. A diverse distribution of
- * counts will have a larger range and require more cells in a selectivity
- * histogram (to distinguish between areas of feature density and areas of
- * feature sparseness. This measurement should help us identify cases like
- * like X/Y/Z data where there is lots of variability in density in X/Y 
- * (diversely in a multi-kilometer range) and far less in Z (in a few-hundred
- * meter range).
+ * concentrated within one dimension
+ * @details The function returns the range_quintile of the overlap counts per
+ * cell in a uniform partition of the extent of the dimension. A uniform
+ * distribution of counts will have a small range and will require few cells
+ * in a selectivity histogram. A diverse distribution of counts will have a
+ * larger range and require more cells in a selectivity histogram (to
+ * distinguish between areas of feature density and areas of feature
+ * sparseness). This measurement helps identify cases like X/Y/Z data where
+ * there is lots of variability in density in X/Y (diversely in a
+ * multi-kilometer range) and far less in Z (in a few-hundred meter range).
  */
 static int
 nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes,
@@ -487,9 +486,10 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes,
 }
 
 /**
- * @brief Given that geodetic boxes are X/Y/Z regardless of the underlying
- * geometry dimensionality and other boxes are guided by HAS_Z/HAS_M in their
- * dimesionality, we have a little utility function to make it easy
+ * @brief Return the number of dimensions of a box
+ * @details Geodetic boxes are X/Y/Z regardless of the underlying geometry
+ * dimensionality, and other boxes are guided by HAS_Z/HAS_M in their
+ * dimensionality.
  */
 static int
 gbox_ndims(const GBOX* gbox)

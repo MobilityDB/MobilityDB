@@ -711,9 +711,9 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 }
 
 /**
-* @brief Pull the stats object from the PgSQL system catalogs. Used
-* by the selectivity functions and the debugging functions.
-*/
+ * @brief Pull the stats object from the PgSQL system catalogs
+ * @details Used by the selectivity functions and the debugging functions.
+ */
 ND_STATS *
 pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_parent)
 {
@@ -736,17 +736,17 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
 }
 
 /**
-* @brief Given two statistics histograms, what is the selectivity
-* of a join driven by the && operator?
-* @details Join selectivity is defined as the number of rows returned by the
-* join operator divided by the number of rows that an unconstrained join
-* would return (nrows1*nrows2).
-*
-* To get the estimate of join rows, we walk through the cells
-* of one histogram, and multiply the cell value by the
-* proportion of the cells in the other histogram the cell
-* overlaps: val += val1 * ( val2 * overlap_ratio )
-*/
+ * @brief Given two statistics histograms, what is the selectivity
+ * of a join driven by the && operator?
+ * @details Join selectivity is defined as the number of rows returned by the
+ * join operator divided by the number of rows that an unconstrained join
+ * would return (nrows1*nrows2).
+ *
+ * To get the estimate of join rows, we walk through the cells
+ * of one histogram, and multiply the cell value by the
+ * proportion of the cells in the other histogram the cell
+ * overlaps: val += val1 * ( val2 * overlap_ratio )
+ */
 float8
 geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
 {

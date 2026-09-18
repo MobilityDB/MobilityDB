@@ -1490,7 +1490,6 @@ tgeo_centroid(const Temporal *temp)
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the k-means algorithm
- * contains a geometry
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
@@ -1541,12 +1540,11 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the DBSCAN algorithm
- * contains a geometry
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
  * @param[in] minpoints Minimum number of points
-  * @param[out] count Number of elements in the output array
+ * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterDBSCAN(PG_FUNCTION_ARGS)
  */
 uint32_t *
@@ -1611,16 +1609,16 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
 }
 
 /**
-  * @ingroup meos_geo_base_spatial
-  * @brief Return an array of GeometryCollections partitioning the input
-  * geometries into connected clusters that are disjoint
-  * @details Each geometry in a cluster intersects at least one other geometry
-  * in the cluster, and does not intersect any geometry in other clusters
-  * @param[in] geoms Geometries
-  * @param[in] ngeoms Number of elements in the input array
-  * @param[out] count Number of elements in the output array
-  * @note PostGIS function: @p ST_ClusterIntersectingWin(PG_FUNCTION_ARGS)
-  */
+ * @ingroup meos_geo_base_spatial
+ * @brief Return an array of GeometryCollections partitioning the input
+ * geometries into connected clusters that are disjoint
+ * @details Each geometry in a cluster intersects at least one other geometry
+ * in the cluster, and does not intersect any geometry in other clusters
+ * @param[in] geoms Geometries
+ * @param[in] ngeoms Number of elements in the input array
+ * @param[out] count Number of elements in the output array
+ * @note PostGIS function: @p ST_ClusterIntersectingWin(PG_FUNCTION_ARGS)
+ */
 GSERIALIZED ** 
 geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   int *count)
@@ -1671,13 +1669,14 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
 
 /**
  * @ingroup meos_geo_base_spatial
-  * @brief Return an array of GeometryCollections partitioning the input
-  * geometries into clusters in which each geometry is within the specified
-  * distance of at least one other geometry in the same cluster.
+ * @brief Return an array of GeometryCollections clustering the input
+ * geometries by distance
+ * @details Each geometry of a cluster is within the specified distance of at
+ * least one other geometry of the same cluster.
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
-  * @param[out] count Number of elements in the output array
+ * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterWithin(PG_FUNCTION_ARGS)
  */
 GSERIALIZED **

@@ -57,10 +57,10 @@
  *****************************************************************************/
 
 /**
- * @brief Emit a planar (SRID 0, non-geodetic) point carrying the H3
- * local-IJ coordinates as `x = I`, `y = J`. H3 local coordinates
- * have no geodesic interpretation, so a planar carrier is the right
- * fit for downstream `tgeompoint` lifting.
+ * @brief Emit a planar (SRID 0, non-geodetic) point carrying the H3 local-IJ
+ * coordinates as `x = I`, `y = J`
+ * @details H3 local coordinates have no geodesic interpretation, so a planar
+ * carrier is the right fit for downstream `tgeompoint` lifting.
  */
 GSERIALIZED *
 h3_cell_to_local_ij_meos(H3Index origin, H3Index cell)
@@ -98,8 +98,7 @@ h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
 
 /**
  * @ingroup meos_h3_traversal
- * @brief Return the temporal grid-hop distance between two temporal H3
- * cells.
+ * @brief Return the temporal grid-hop distance between two temporal H3 cells
  * @details Shared with the `<->` operator on th3index (grid-hop distance,
  * not the arithmetic distance that tnumber's `<->` would give).
  * @csqlfn #Th3index_grid_distance()
@@ -129,8 +128,8 @@ th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 
 /**
  * @ingroup meos_h3_traversal
- * @brief Return the temporal local (I, J) pair of a cell anchored on
- * another cell, carried as a temporal planar point.
+ * @brief Return the temporal local (I, J) pair of a cell anchored on another
+ * cell, carried as a temporal planar point
  * @csqlfn #Th3index_cell_to_local_ij()
  */
 Temporal *
@@ -158,8 +157,8 @@ th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 
 /**
  * @ingroup meos_h3_traversal
- * @brief Return the temporal H3 cell at a temporal local (I, J) coord
- * anchored on a temporal origin cell.
+ * @brief Return the temporal H3 cell at a temporal local (I, J) coord anchored
+ * on a temporal origin cell
  * @csqlfn #Th3index_local_ij_to_cell()
  */
 Temporal *

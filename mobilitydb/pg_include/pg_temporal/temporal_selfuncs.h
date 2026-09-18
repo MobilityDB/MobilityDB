@@ -50,8 +50,8 @@
 #define BTREE_AM_OID   403
 
 /**
-* Default temporal selectivity factor
-*/
+ * Default temporal selectivity factor
+ */
 #define DEFAULT_TEMP_SEL 0.0001
 #define DEFAULT_TEMP_JOINSEL 0.001
 

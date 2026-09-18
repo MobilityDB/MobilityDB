@@ -812,9 +812,10 @@ tpose_angular_speed(const Temporal *temp)
 }
 
 /**
- * @brief Per-sequence builder of @p applyPose: applies the rigid-body transform
- * of each instant's pose to the body geometry, producing a tgeompoint sequence
- * with the same temporal shape as the input
+ * @brief Apply the rigid-body transform of the pose of each instant of a
+ * sequence to the body geometry
+ * @details This is the per-sequence builder of @p applyPose, producing a
+ * tgeompoint sequence with the same temporal shape as the input.
  */
 static TSequence *
 tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)

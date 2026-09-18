@@ -234,9 +234,10 @@ cells_adjacent(H3Index a, H3Index b)
 
 /**
  * @brief Return how many cells of the dense walk along a geodetic segment its
- * th3index cover does not hold, adding to the last argument the cover cells
- * that neither the walk reaches nor border a cell it reaches, or -1 where a
- * conversion answers nothing
+ * th3index cover does not hold
+ * @details The function adds to the last argument the cover cells that neither
+ * the walk reaches nor border a cell it reaches. It returns -1 where a
+ * conversion answers nothing.
  */
 static long
 h3_geodetic_missing(const char *seg_wkt, const char *dense_wkt,
@@ -274,15 +275,16 @@ h3_geodetic_missing(const char *seg_wkt, const char *dense_wkt,
 }
 
 /**
- * @brief Count the timestamps at which the temporal quadbin cell of a linear
- * segment holds a cell other than the one holding the position of the segment
- * then, and the cells it holds that no such position reaches nor borders
- * @details The position at each timestamp is read from the temporal point
- * itself and its cell through the static adapter, which shares the encoder
- * with the value under test. An entry time is a crossing rounded to whole
- * microseconds, so the segment spans an hour: a sampled timestamp then falls
- * within a microsecond of a crossing with a chance far below one in a
- * million.
+ * @brief Count where the temporal quadbin cell of a linear segment departs
+ * from the positions of the segment
+ * @details The counts are the timestamps at which the temporal quadbin cell
+ * holds a cell other than the one holding the position of the segment then,
+ * and the cells it holds that no such position reaches nor borders. The
+ * position at each timestamp is read from the temporal point itself and its
+ * cell through the static adapter, which shares the encoder with the value
+ * under test. An entry time is a crossing rounded to whole microseconds, so
+ * the segment spans an hour: a sampled timestamp then falls within a
+ * microsecond of a crossing with a chance far below one in a million.
  */
 static void
 tquadbin_check(double lon0, double lat0, double lon1, double lat1,
@@ -348,15 +350,16 @@ tquadbin_check(double lon0, double lat0, double lon1, double lat1,
 }
 
 /**
- * @brief Count the timestamps at which the temporal S2 cell of a linear
- * geodetic segment holds a cell other than the one holding the position of the
- * segment then, and the cells it holds that no such position reaches nor
- * borders
- * @details As for #tquadbin_check, the position at each timestamp is read from
- * the temporal point itself and its cell through the static adapter, and the
- * segment spans an hour. A held cell the sampled positions do not reach is one
- * the path crosses between two of them, so it shares an edge with a cell they
- * reach.
+ * @brief Count the timestamps and cells at which the temporal S2 cell of a
+ * linear geodetic segment departs from the path of the segment
+ * @details The counted timestamps are those at which the temporal S2 cell of
+ * the segment holds a cell other than the one holding the position of the
+ * segment then; the counted cells are those it holds that no such position
+ * reaches nor borders. As for #tquadbin_check, the position at each timestamp
+ * is read from the temporal point itself and its cell through the static
+ * adapter, and the segment spans an hour. A held cell the sampled positions do
+ * not reach is one the path crosses between two of them, so it shares an edge
+ * with a cell they reach.
  */
 static void
 ts2cell_check(double lon0, double lat0, double lon1, double lat1,

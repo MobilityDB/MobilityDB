@@ -180,8 +180,9 @@ raster_from_hexwkb(const char *hexwkb)
 
 /**
  * @brief Return true when a Well-Known Binary variant asks for the
- * little-endian byte order, the order of the machine when it names neither
- * order or both, as #datum_as_wkb() reads it
+ * little-endian byte order
+ * @details The order of the machine is taken when the variant names neither
+ * order or both, as #datum_as_wkb() reads it.
  * @param[in] variant Output variant
  */
 static bool
@@ -1961,11 +1962,11 @@ raster_to_stbox(const Raster *rast)
  *****************************************************************************/
 
 /**
- * @brief State a raster sampling call keeps for the length of a trajectory:
- * the deserialized raster, the band the values are read from, the geotransform
- * and its inverse, computed once and handed to every crossing and every point
- * conversion, whether a nodata pixel carries no value, and whether a pixel of
- * the band could not be read
+ * @brief State a raster sampling call keeps for the length of a trajectory
+ * @details The state holds the deserialized raster, the band the values are
+ * read from, the geotransform and its inverse, computed once and handed to
+ * every crossing and every point conversion, whether a nodata pixel carries no
+ * value, and whether a pixel of the band could not be read.
  */
 typedef struct
 {
@@ -1979,10 +1980,10 @@ typedef struct
 
 /**
  * @brief Raster grid callback converting a position to the raster
- * coordinates of a PostGIS raster with its inverse geotransform, as
- * `rt_raster_geopoint_to_rasterpoint` converts one
- * @details `GDALApplyGeoTransform` takes a writable geotransform, so it reads
- * a copy of the one the state holds
+ * coordinates of a PostGIS raster with its inverse geotransform
+ * @details The position is converted as `rt_raster_geopoint_to_rasterpoint`
+ * converts one. `GDALApplyGeoTransform` takes a writable geotransform, so it
+ * reads a copy of the one the state holds.
  */
 static void
 raster_value_grid(const void *ctxp, double x, double y, double *col,

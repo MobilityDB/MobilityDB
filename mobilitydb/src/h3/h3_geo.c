@@ -98,13 +98,11 @@ PGDLLEXPORT Datum Ever_eq_h3indexset_th3index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ever_eq_h3indexset_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
- * @brief True iff the th3index value sequence ever lies in any cell of
- *        the candidate set
- *
- * Cross-platform spatial prefilter consumer: typical use is
+ * @brief Return true if the th3index value sequence ever lies in any cell of
+ * the candidate set
+ * @details Cross-platform spatial prefilter consumer: typical use is
  * `geoToH3IndexSet(p.geom, 7) ?= t.trip_h3`
  * before the exact spatial predicate.
- *
  * @sqlfn eEqual()
  * @sqlop @p ?=
  */

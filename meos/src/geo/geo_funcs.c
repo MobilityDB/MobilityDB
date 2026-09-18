@@ -3870,9 +3870,9 @@ lwpointarr_sort(LWPOINT **points, int count)
 }
 
 /**
- * @brief Return a long double between 0 and 1 representing the location of the
- * closest point on the 2D segment to the given point, as a fraction of total
- * segment length
+ * @brief Return the location of the closest point on a 2D segment to a point,
+ * as a fraction of the total segment length
+ * @details The location is a long double between 0 and 1.
  * @note Function derived from the PostGIS function @p closest_point_on_segment
  */
 long double
@@ -3925,9 +3925,9 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 }
 
 /**
- * @brief Return a long double between 0 and 1 representing the location of the
- * closest point on the 3D segment to the given point, as a fraction of total
- * segment length
+ * @brief Return the location of the closest point on a 3D segment to a point
+ * @details The result is a long double between 0 and 1 representing the
+ * location as a fraction of total segment length.
  * @note Function derived from the PostGIS function @p closest_point_on_segment
  */
 long double
@@ -4747,13 +4747,13 @@ de9im_to_string(const MeosDE9IM *m, char result[10])
 
 /**
  * @brief Return true if a DE-9IM matrix satisfies a pattern
- * @details Pattern characters:
- *   T = any non-empty intersection
- *   F = empty intersection
- *   0 = point
- *   1 = line
- *   2 = area
- *   * = don't care
+ * @details The characters of a pattern are:
+ * - T, any non-empty intersection
+ * - F, an empty intersection
+ * - 0, a point
+ * - 1, a line
+ * - 2, an area
+ * - *, any intersection
  */
 bool
 de9im_match(const char matrix[10], const char pattern[10])
@@ -5057,11 +5057,12 @@ relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges,
 
 /**
  * @brief The endpoints of the curves of a linear geometry, sorted by their
- * coordinates, so the endpoints a point equals are found by a binary search
- * rather than by a scan of every edge
- * @details The endpoints are those #relate_point_on_linear_boundary counts:
- * both ends of every non-empty straight or circular linear edge. An endpoint
- * with a coordinate that is not a number equals no point, so it is left out
+ * coordinates
+ * @details The sort lets the endpoints a point equals be found by a binary
+ * search rather than by a scan of every edge. The endpoints are those
+ * #relate_point_on_linear_boundary counts: both ends of every non-empty
+ * straight or circular linear edge. An endpoint with a coordinate that is not
+ * a number equals no point, so it is left out
  */
 typedef struct
 {
@@ -8110,10 +8111,12 @@ ray_same(const POINT2D *v, const POINT2D *u, const POINT2D *d)
 }
 
 /**
- * @brief Return 1 if the ray from a vertex through a point lies strictly
- * inside the wedge swept counterclockwise from the ray through @p u to the
- * ray through @p w, 0 if it lies strictly outside it, and -1 if it runs along
- * one of the two rays or the wedge has no angle
+ * @brief Return whether the ray from a vertex through a point lies inside a
+ * wedge
+ * @details The wedge is swept counterclockwise from the ray through @p u to
+ * the ray through @p w. The function returns 1 if the ray lies strictly inside
+ * the wedge, 0 if it lies strictly outside it, and -1 if it runs along one of
+ * the two rays or the wedge has no angle.
  */
 static int
 ray_in_wedge(const POINT2D *v, const POINT2D *u, const POINT2D *w,

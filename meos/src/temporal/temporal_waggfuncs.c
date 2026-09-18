@@ -493,7 +493,7 @@ tintseqset_transform_wavg(const TSequenceSet *ss, const Interval *interv,
  * @param[in] interv Interval
  * @param[out] count Number of elements in the output array
  * @note There is no equivalent function for temporal float types
-*/
+ */
 TSequence **
 tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
   int *count)
