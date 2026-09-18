@@ -44,6 +44,7 @@
 #include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/memutils.h>  /* TopMemoryContext */
 #include <varatt.h>
 #include <pgtypes.h>
 /* PostGIS */
@@ -1219,10 +1220,25 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, 0.0);
-  lwgeom_free(geom1); lwgeom_free(geom2);
+  void *ent1, *ent2;
+  LWGEOM *made1, *made2;
+  const LWGEOM *geom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
+  const LWGEOM *geom2 = relate_ctx_borrow_geom(gs2, &ent2, &made2);
+#if ! MEOS
+  /* A kept geometry is read in the context that keeps it, as a relationship
+   * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
+   * it measures and to its parts, and they must live as long as the entry */
+  MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+  double mindist = (geom1 && geom2) ?
+    lwgeom_mindistance3d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2, 0.0) :
+    DBL_MAX;
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif
+  relate_ctx_return_geom(ent1); relate_ctx_return_geom(ent2);
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
   /* empty geometries cases should be right handled since return from
      underlying functions should be DBL_MAX which causes false as answer */
   return (mindist == 0.0);
@@ -1247,10 +1263,28 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
     return false;
 
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  double mindist = lwgeom_mindistance2d_tolerance(geom1, geom2, tolerance);
-  lwgeom_free(geom1); lwgeom_free(geom2);
+  /* The geometry a distance reads is the one a relationship has already read,
+   * where it has: these routines take an LWGEOM and never look at an edge, so
+   * they borrow the READING and leave the edges unbuilt */
+  void *ent1, *ent2;
+  LWGEOM *made1, *made2;
+  const LWGEOM *geom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
+  const LWGEOM *geom2 = relate_ctx_borrow_geom(gs2, &ent2, &made2);
+#if ! MEOS
+  /* A kept geometry is read in the context that keeps it, as a relationship
+   * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
+   * it measures and to its parts, and they must live as long as the entry */
+  MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+  double mindist = (geom1 && geom2) ?
+    lwgeom_mindistance2d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2,
+      tolerance) : DBL_MAX;
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif
+  relate_ctx_return_geom(ent1); relate_ctx_return_geom(ent2);
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
   /* empty geometries cases should be right handled since return from
    underlying functions should be DBL_MAX which causes false as answer */
   return (tolerance >= mindist);
@@ -1862,6 +1896,39 @@ geo_error_unsupported_type(const char *what, uint8_t type)
 }
 
 /**
+ * @brief Borrow the edges of both operands of a relationship
+ * @details The cache is asked on the serialized value, so a hit answers
+ * without reading anything out of a geometry. Two callers share this because
+ * they share the rule below.
+ * TWO OPERANDS ARE NEVER THE SAME CONTEXT: where both sides hold the same
+ * value the cache answers both with one entry, and the nested calls tell the
+ * operands apart by the identity of the geometry they carry
+ * (#relate_borrow_edges matches `ops->op[i].geom == geom`), so one entry
+ * standing for both makes a pair read as a geometry against itself.
+ * @param[in] gs1,gs2 The two geometries
+ * @param[out] ctx1,ctx2 Their contexts, NULL where the engine covers neither
+ * @param[out] ent1,ent2 Entries holding them, NULL where none does
+ * @param[out] made1,made2 Geometries read for this call, which it releases
+ */
+static void
+relate_ctx_borrow_pair(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  void **ctx1, void **ctx2, void **ent1, void **ent2, LWGEOM **made1,
+  LWGEOM **made2)
+{
+  *made1 = *made2 = NULL;
+  *ctx1 = relate_ctx_borrow(gs1, ent1, made1);
+  *ctx2 = relate_ctx_borrow(gs2, ent2, made2);
+  if (*ctx1 && *ctx1 == *ctx2)
+  {
+    relate_ctx_return(*ctx2, *ent2);
+    *ent2 = NULL;
+    *made2 = lwgeom_from_gserialized(gs2);
+    *ctx2 = *made2 ? relate_ctx_make(*made2) : NULL;
+  }
+  return;
+}
+
+/**
  * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries satisfy a given spatial relationship,
  * where the function called depend on the third argument
@@ -1923,26 +1990,34 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
    * linearization would put in its place */
   assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
     rel == COVERS);
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  /* A geometry asked about many times is read as edges once: what that
-   * reading produced is held for the calls that follow, and a geometry
-   * recognised by its serialized value reads it rather than building it */
-  void *ent1, *ent2;
-  void *ctx1 = relate_ctx_borrow(gs1, geom1, &ent1);
-  void *ctx2 = relate_ctx_borrow(gs2, geom2, &ent2);
+  /* A geometry asked about many times is read as edges ONCE: the cache is
+   * asked on the serialized value first, so a hit answers without reading
+   * anything out of either operand. The geometries below exist only where a
+   * reading was genuinely needed, and only those are released. */
+  void *ent1, *ent2, *ctx1, *ctx2;
+  LWGEOM *made1, *made2;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
   bool result;
   bool answered = ctx1 && ctx2 &&
     meos_spatialrel_ctx(ctx1, ctx2, rel, &result);
   relate_ctx_return(ctx1, ent1);
   relate_ctx_return(ctx2, ent2);
-  uint8_t badtype = answered ? 0 : geo_unsupported_type(geom1, geom2);
-  lwgeom_free(geom1); lwgeom_free(geom2);
   if (! answered)
   {
+    /* The type report needs the geometries themselves, and this is the only
+     * path that does, so a reading the cache spared is taken just here */
+    LWGEOM *g1 = made1 ? made1 : lwgeom_from_gserialized(gs1);
+    LWGEOM *g2 = made2 ? made2 : lwgeom_from_gserialized(gs2);
+    uint8_t badtype = geo_unsupported_type(g1, g2);
+    if (g1 != made1) lwgeom_free(g1);
+    if (g2 != made2) lwgeom_free(g2);
+    if (made1) lwgeom_free(made1);
+    if (made2) lwgeom_free(made2);
     geo_error_unsupported_type("spatial relationship", badtype);
     return false;
   }
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
   return result;
 }
 
@@ -2042,11 +2117,18 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return NULL;
 
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  /* The matrix reads the edges a geometry has already been read as, exactly
+   * as a predicate does: what is kept here is the reading, not a prepared
+   * form that only a predicate could use */
+  void *ent1, *ent2, *ctx1, *ctx2;
+  LWGEOM *made1, *made2;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
   char matrix[10];
-  bool covered = meos_relate(geom1, geom2, matrix);
-  lwgeom_free(geom1); lwgeom_free(geom2);
+  bool covered = ctx1 && ctx2 && meos_relate_ctx(ctx1, ctx2, matrix);
+  relate_ctx_return(ctx1, ent1);
+  relate_ctx_return(ctx2, ent2);
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
   if (! covered)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -2085,17 +2167,31 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
     if ( p[i] == 'f' ) p[i] = 'F';
   }
 
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  /* A pattern is one of the entries PostGIS prepares its operands for, so it
+   * reads the edges a geometry has already been read as rather than building
+   * them again */
+  void *ent1, *ent2, *ctx1, *ctx2;
+  LWGEOM *made1, *made2;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
   bool result;
-  bool covered = meos_relate_pattern(geom1, geom2, p, &result);
-  uint8_t badtype = covered ? 0 : geo_unsupported_type(geom1, geom2);
-  lwgeom_free(geom1); lwgeom_free(geom2);
+  bool covered = ctx1 && ctx2 &&
+    meos_relate_pattern_ctx(ctx1, ctx2, p, &result);
+  relate_ctx_return(ctx1, ent1);
+  relate_ctx_return(ctx2, ent2);
   if (! covered)
   {
+    LWGEOM *g1 = made1 ? made1 : lwgeom_from_gserialized(gs1);
+    LWGEOM *g2 = made2 ? made2 : lwgeom_from_gserialized(gs2);
+    uint8_t badtype = geo_unsupported_type(g1, g2);
+    if (g1 != made1) lwgeom_free(g1);
+    if (g2 != made2) lwgeom_free(g2);
+    if (made1) lwgeom_free(made1);
+    if (made2) lwgeom_free(made2);
     geo_error_unsupported_type("relationship", badtype);
     return false;
   }
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
   return result;
 }
 
@@ -4463,13 +4559,31 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   if (! use_spheroid)
     s.a = s.b = s.radius;
 
-  LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
-  double distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
+  /* The geodetic distance reads an LWGEOM and never an edge, so it borrows the
+   * READING a relationship has already taken of these geometries. The spheroid
+   * above is per call and per SRID, and is not what a geometry keeps. */
+  void *ent1, *ent2;
+  LWGEOM *made1, *made2;
+  const LWGEOM *lwgeom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
+  const LWGEOM *lwgeom2 = relate_ctx_borrow_geom(gs2, &ent2, &made2);
+#if ! MEOS
+  /* A kept geometry is read in the context that keeps it, as a relationship
+   * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
+   * it measures and to its parts, and they must live as long as the entry */
+  MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+  double distance = (lwgeom1 && lwgeom2) ?
+    lwgeom_distance_spheroid((LWGEOM *) lwgeom1, (LWGEOM *) lwgeom2, &s,
+      tolerance) : -1.0;
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif
 
   /* Clean up */
-  lwgeom_free(lwgeom1);
-  lwgeom_free(lwgeom2);
+  relate_ctx_return_geom(ent1);
+  relate_ctx_return_geom(ent2);
+  if (made1) lwgeom_free(made1);
+  if (made2) lwgeom_free(made2);
 
   /* Something went wrong... should already be eloged, return FALSE */
   if (distance < 0.0)
