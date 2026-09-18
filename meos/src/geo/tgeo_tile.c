@@ -502,7 +502,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 void
 stbox_tile_state_set(double x, double y, double z, TimestampTz t, double xsize,
   double ysize, double zsize, int64 tunits, bool hasx, bool hasz, bool hast,
-  int32_t srid, STBox *result)
+  bool geodetic, int32_t srid, STBox *result)
 {
   assert(hasx || hast);
 
@@ -526,7 +526,9 @@ stbox_tile_state_set(double x, double y, double z, TimestampTz t, double xsize,
     span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
       false, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   }
-  stbox_set(hasx, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+  /* A tile of a grid laid on a geodetic value is itself geodetic, so that the
+   * restriction of the value to the tile reads two values of one kind */
+  stbox_set(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
     hast ? &p : NULL, result);
   return;
 }
@@ -640,7 +642,8 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
   }
   stbox_tile_state_set(state->x, state->y, state->z, state->t, state->xsize,
     state->ysize, state->zsize, state->tunits, state->hasx, state->hasz,
-    state->hast, state->box.srid, box);
+    state->hast, MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
+    box);
   return true;
 }
 
@@ -767,7 +770,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   {
     stbox_tile_state_set(state->x, state->y, state->z, state->t, state->xsize,
       state->ysize, state->zsize, state->tunits, hasx, hasz, hast,
-      state->box.srid, &result[i]);
+      MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid, &result[i]);
     stbox_tile_state_next(state);
   }
   *count = count1;
@@ -890,8 +893,11 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   }
   TimestampTz tmin = hast ? timestamptz_bin_start(t, tunits, torigin) : 0;
   STBox *result = palloc0(sizeof(STBox));
+  /* A time only tile is given no point, so it states planar coordinates as it
+   * states no coordinate at all */
   stbox_tile_state_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits,
-    hasx, hasz, hast, srid, result);
+    hasx, hasz, hast,
+    hasx ? (bool) FLAGS_GET_GEODETIC(point->gflags) : false, srid, result);
   return result;
 }
 
@@ -1326,7 +1332,10 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
       (xsize && (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
-      (xsize && ! ensure_same_geodetic(temp->flags, sorigin->gflags)) ||
+      /* The temporal value states its geodetic flag in the MEOS flags and the
+       * origin states it in the PostGIS ones, which keep it in another bit, so
+       * the two are read by the function that takes a value of each kind */
+      (xsize && ! ensure_same_geodetic_tspatial_geo(temp, sorigin)) ||
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) &&
         ! ensure_has_not_Z(temp->temptype, temp->flags)))
@@ -1344,11 +1353,17 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   }
 
   /* Disable the usage of bitmatrix for instantaneous temporal values, for
-   * time only bins, or for a value covering a region: the matrix is filled
-   * from the segments a POINT traverses, which is not what such a value
-   * occupies */
+   * time only bins, for a value covering a region, or for a geodetic point:
+   * the matrix is filled from the segments a POINT traverses in longitude and
+   * latitude, which is not what such a value occupies. A geodetic point
+   * travels the great circle between two positions, and that circle leaves
+   * the straight line the matrix is filled from, so the matrix holds fewer
+   * tiles than the trajectory enters. The bounding box of a geodetic value
+   * holds the great circles it travels, so every tile the box spans is read
+   * and the restriction to each tile states what the trajectory does there */
   if (! xsize || temporal_num_instants(temp) == 1 ||
-      tspatial_body_type(temp->temptype))
+      tspatial_body_type(temp->temptype) ||
+      MEOS_FLAGS_GET_GEODETIC(temp->flags))
       bitmatrix = false;
 
   /* Zero-init at declaration: when xsize == 0 the if-block below is
@@ -1434,7 +1449,7 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
       (MEOS_FLAGS_GET_Z(temp->flags) &&
         ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
       ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
-      ! ensure_same_geodetic(temp->flags, sorigin->gflags) ||
+      ! ensure_same_geodetic_tspatial_geo(temp, sorigin) ||
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) &&
         ! ensure_has_not_Z(temp->temptype, temp->flags)))

@@ -270,3 +270,45 @@ WITH t AS (
 SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, 5.0, interval '1 day');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A geodetic point laid on a space grid. A geodetic trip travels the great
+-- circle between its positions, which leaves the straight line in longitude
+-- and latitude, so the tiles it enters are the tiles that circle crosses.
+-------------------------------------------------------------------------------
+
+-- Both ends sit at latitude 61 and the great circle between them reaches
+-- latitude 62.485889, so on a grid of 2 degrees the trip enters the row north
+-- of the one the straight line in longitude and latitude stays in
+SELECT count(DISTINCT ST_Y(s.point::geometry)) AS rows_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]',
+  2.0) s;
+SELECT count(DISTINCT ST_Y(p.point)) AS rows_of_tiles
+FROM spaceSplit(tgeompoint
+  'SRID=4326;[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0) p;
+
+-- Every fragment is the trip restricted to the fragment's own period
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tp, getTime(s.tpoint)) <> s.tpoint)
+  AS fragments_stating_another_value
+FROM (SELECT tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]' AS tp) t,
+  LATERAL spaceSplit(t.tp, 2.0) s;
+
+-- An arc across the antimeridian takes its short way, so it stays in the tiles
+-- of the last and the first columns of the grid
+SELECT count(DISTINCT ST_X(s.point::geometry)) AS columns_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]',
+  2.0) s;
+
+-- The space and time grid answers the tile, the time bin and the fragment
+SELECT count(*) AS fragments
+FROM spaceTimeSplit(tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0,
+  interval '1 day') s;
+
+-- A grid is laid on a value of its own kind, so a geography origin is required
+SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
+  geography 'SRID=4326;Point(0.5 0.5)');
+
+-------------------------------------------------------------------------------

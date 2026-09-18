@@ -660,3 +660,54 @@ SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, 5.0, interval '1 day');
    270
 (1 row)
 
+SELECT count(DISTINCT ST_Y(s.point::geometry)) AS rows_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]',
+  2.0) s;
+ rows_of_tiles 
+---------------
+             2
+(1 row)
+
+SELECT count(DISTINCT ST_Y(p.point)) AS rows_of_tiles
+FROM spaceSplit(tgeompoint
+  'SRID=4326;[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0) p;
+ rows_of_tiles 
+---------------
+             1
+(1 row)
+
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tp, getTime(s.tpoint)) <> s.tpoint)
+  AS fragments_stating_another_value
+FROM (SELECT tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]' AS tp) t,
+  LATERAL spaceSplit(t.tp, 2.0) s;
+ fragments | fragments_stating_another_value 
+-----------+---------------------------------
+        22 |                               0
+(1 row)
+
+SELECT count(DISTINCT ST_X(s.point::geometry)) AS columns_of_tiles
+FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]',
+  2.0) s;
+ columns_of_tiles 
+------------------
+               10
+(1 row)
+
+SELECT count(*) AS fragments
+FROM spaceTimeSplit(tgeogpoint
+  '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0,
+  interval '1 day') s;
+ fragments 
+-----------
+        23
+(1 row)
+
+SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
+  geography 'SRID=4326;Point(0.5 0.5)');
+                                                               spacesplit                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ (0101000020E6100000000000000000E03F000000000000E03F,"0101000020E6100000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST")
+(1 row)
+
