@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tnpoint instants
- * in order to test the ways cache
- *
- * The program can be build as follows
+ * @brief A simple program that generates a given number of tnpoint instants in
+ * order to test the ways cache
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tnpoint_cache tnpoint_cache.c -L/usr/local/lib -lmeos
  * @endcode

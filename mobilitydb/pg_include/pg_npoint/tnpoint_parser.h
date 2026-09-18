@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing static and temporal network points.
+ * @file
+ * @brief Functions for parsing static and temporal network points
  */
 
 #ifndef __TNPOINT_PARSER_H__

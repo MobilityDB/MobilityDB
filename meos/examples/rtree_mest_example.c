@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A program that demonstrates the multi-entry (MEST) RTree selectivity
- * gain for wiggly, high-extent temporal points.
- *
- * The program generates a deterministic set of zig-zag random-walk
+ * gain for wiggly, high-extent temporal points
+ * @details The program generates a deterministic set of zig-zag random-walk
  * tgeompoint sequences whose per-trip minimum bounding box is loose (the
  * documented BerlinMOD / AIS-style scenario where a single MBR covers a large
  * empty rectangle while every segment stays small). It builds one single-box

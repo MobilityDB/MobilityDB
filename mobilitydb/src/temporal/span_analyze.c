@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Functions for gathering statistics from span type columns
- *
- * These functions are based on those of the file rangetypes_typanalyze.c.
+ * @details These functions are based on those of the file
+ * rangetypes_typanalyze.c.
  * For a span type column, histograms of lower and upper bounds, and
  * the fraction of NULL spans are collected.
  *

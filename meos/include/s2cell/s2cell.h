@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Internal header for the first-party S2 cell kernel.
- *
- * Re-exports the public API in meos_s2cell.h to the implementation files in
+ * @brief Internal header for the first-party S2 cell kernel
+ * @details Re-exports the public API in meos_s2cell.h to the implementation
+ * files in
  * meos/src/s2cell/, mirroring the meos/include/quadbin/ internal-header layout.
  */
 

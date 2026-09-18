@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the typed constructors of the cell index sets.
- *
- * Each set type is built from an array of its values through a typed public
+ * @brief A program that tests the typed constructors of the cell index sets
+ * @details Each set type is built from an array of its values through a typed
+ * public
  * function that tests its arguments, as intset_make does for an integer set.
  * The program verifies that quadbinset_make, s2cellset_make and
  * h3indexset_make answer the set their text reads, ordered and with each cell

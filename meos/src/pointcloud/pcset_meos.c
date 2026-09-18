@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Set types over pgpointcloud pcpoint / pcpatch base values.
- *
- * Mirrors the structure of @p geoset_meos.c and @p cbufferset_meos.c.
+ * @brief Set types over pgpointcloud pcpoint / pcpatch base values
+ * @details Mirrors the structure of @p geoset_meos.c and @p cbufferset_meos.c.
  * Both set types enforce @c pcid uniformity across their elements —
  * values with different schemas cannot coexist because their byte
  * layouts are incomparable at the MEOS layer (dimension-level access

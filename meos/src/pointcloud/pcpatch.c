@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Opaque byte-level helpers for the pgpointcloud `pcpatch` base type.
- * Mirrors pcpoint.c — see that file for the design rationale.
+ * @brief Opaque byte-level helpers for the pgpointcloud `pcpatch` base type
+ * @details Mirrors pcpoint.c — see that file for the design rationale.
  */
 
 #include "pointcloud/pcpatch.h"

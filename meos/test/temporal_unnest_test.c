@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the typed unnest functions of the temporal
- * types.
- *
- * Each temporal type gives its distinct values, and the span set on which it
+ * @brief A program that tests the typed unnest functions of the temporal types
+ * @details Each temporal type gives its distinct values, and the span set on
+ * which it
  * takes each of them, through a typed public function that returns the span
  * sets and hands the values back in a parallel array, as tint_value_split does
  * for its bins. The program verifies that the values come in the order of the

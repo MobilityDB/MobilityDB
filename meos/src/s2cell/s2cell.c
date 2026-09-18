@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief First-party implementation of the Google S2 cell algebra.
- *
- * S2 is a quadtree Discrete Global Grid System on the sphere. This file is the
+ * @brief First-party implementation of the Google S2 cell algebra
+ * @details S2 is a quadtree Discrete Global Grid System on the sphere. This
+ * file is the
  * MobilityDB-owned counterpart of libh3: it provides the static-cell kernel
  * that the temporal `ts2cell` layer lifts over time. It links only libm.
  *
@@ -45,15 +45,15 @@
  * lookup tables the C++ library precomputes.
  *
  * Cell layout (most-significant bit first):
- *   bits 61..63 : cube face (0..5)
- *   bits 1..60  : position along the Hilbert curve, two bits per level
- *   bit  0..    : a single trailing set bit at position `2 * (30 - level)`
- *                 that records the level of the cell
+ * bits 61..63 : cube face (0..5)
+ * bits 1..60  : position along the Hilbert curve, two bits per level
+ * bit  0..    : a single trailing set bit at position `2 * (30 - level)`
+ * that records the level of the cell
  *
  * Five coordinate systems connect a cell id to a geodetic position:
- *   (lon,lat) <-> (x,y,z) on the unit sphere <-> (face,u,v) on the cube
- *             <-> (face,s,t) in the unit square <-> (face,i,j) leaf indices
- *             <-> cell id along the Hilbert curve
+ * (lon,lat) <-> (x,y,z) on the unit sphere <-> (face,u,v) on the cube
+ * <-> (face,s,t) in the unit square <-> (face,i,j) leaf indices
+ * <-> cell id along the Hilbert curve
  */
 
 #include "s2cell/s2cell.h"

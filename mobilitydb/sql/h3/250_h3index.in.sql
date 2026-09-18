@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Static `h3index` SQL type — the base type of `th3index`.
- *
- * The h3index type itself, its parser / output / send / receive, the
+ * @brief Static `h3index` SQL type — the base type of `th3index`
+ * @details The h3index type itself, its parser / output / send / receive, the
  * six comparison operators, the btree and hash operator classes and
  * the casts to and from `bigint` all come from the **h3 PostgreSQL
  * extension** (h3-pg), which mobilitydb requires when built with
@@ -58,11 +57,11 @@
  * Which bindings those are follows one rule: a base type the host
  * already provides is DEFERRED to the host's own extension, and
  * emitted from the MEOS catalog where the host provides nothing.
- *   - PostgreSQL — h3-pg provides h3index  ⇒ DEFER (this file)
- *   - DuckDB     — duckdb-h3 provides it   ⇒ DEFER
- *   - MobilitySpark, Flink StreamSQL, NebulaStream — no h3 extension
- *     exists for them ⇒ they must carry the whole surface, shaped
- *     like these blocks
+ * - PostgreSQL — h3-pg provides h3index  ⇒ DEFER (this file)
+ * - DuckDB     — duckdb-h3 provides it   ⇒ DEFER
+ * - MobilitySpark, Flink StreamSQL, NebulaStream — no h3 extension
+ * exists for them ⇒ they must carry the whole surface, shaped
+ * like these blocks
  *
  * The same rule decides the sibling cell families, and h3index is the
  * only one of the three it sends to DEFER — PostgreSQL ships no

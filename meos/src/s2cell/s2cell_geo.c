@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Geometry adapters between an S2 cell and PostGIS geometries.
- *
- * These typed wrappers keep the geometry construction inside MEOS so the SQL
+ * @brief Geometry adapters between an S2 cell and PostGIS geometries
+ * @details These typed wrappers keep the geometry construction inside MEOS so
+ * the SQL
  * cell/geometry conversions are pure catalog projections and the PG V1
  * wrappers stay thin. The pure cell kernel meos/src/s2cell/s2cell.c carries no
  * geometry dependency; the lon/lat coupling lives here, mirroring the quadbin

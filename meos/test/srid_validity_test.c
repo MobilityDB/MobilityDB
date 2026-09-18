@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief A program that tests how the constructors and the SRID setters
- * report an invalid SRID under the noexit error handler.
- *
- * A public MEOS function that refuses an argument raises an error before it
+ * @brief A program that tests how the constructors and the SRID setters report
+ * an invalid SRID under the noexit error handler
+ * @details A public MEOS function that refuses an argument raises an error
+ * before it
  * returns its sentinel, so a binding calling it can tell an erroneous
  * argument from a missing value. The SRID_INVALID a failed SRID getter
  * returns is the value a binding most readily passes on by mistake.

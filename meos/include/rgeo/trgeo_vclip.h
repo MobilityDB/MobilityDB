@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal rigid geometries.
+ * @brief Distance functions for temporal rigid geometries
  */
 
 #ifndef __TRGEO_VCLIP_H__

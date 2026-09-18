@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief PG wrappers for the tpcpatch lifted temporal type.
- *
- * Structural mirror of mobilitydb/src/pointcloud/tpcpoint.c. The generic
+ * @brief PG wrappers for the tpcpatch lifted temporal type
+ * @details Structural mirror of mobilitydb/src/pointcloud/tpcpoint.c. The
+ * generic
  * Temporal_* dispatch tables already handle @c T_TPCPATCH via the
  * base-type wiring; this file holds only the per-type pcid accessor
  * (and will grow a per-instant points-count accessor later).

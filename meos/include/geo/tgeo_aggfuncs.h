@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Aggregate functions for temporal geos.
+ * @file
+ * @brief Aggregate functions for temporal geos
  */
 
 #ifndef __TGEO_AGGFUNCS_H__

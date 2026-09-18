@@ -30,22 +30,21 @@
 /**
  * @file
  * @brief Internal declarations shared across the `h3index.c` and the
- * `th3index_*.c` topic files.
+ * `th3index_*.c` topic files
+ * @details Contains three groups:
  *
- * Contains three groups:
- *
- *   1. Datum-calling-convention wrappers (`datum_h3_*`) plugged into
- *      `LiftedFunctionInfo.func` by the lifted temporal functions;
- *      bodies live in `meos/src/h3/h3index.c` (cbuffer convention —
- *      the base-type file owns all Datum wrappers).
- *   2. Hand-written static h3 adapters (GSERIALIZED conversions,
- *      next-resolution conveniences, unit-string dispatch) that
- *      live alongside their primary consumer in the matching
- *      `th3index_<topic>.c` file.
- *   3. The `H3Unit` enum shared between `th3index_metrics.c` (where
- *      it is produced from the user-supplied string) and
- *      `h3index.c` (where the `datum_h3_*` metric wrappers consume
- *      it).
+ * 1. Datum-calling-convention wrappers (`datum_h3_*`) plugged into
+ * `LiftedFunctionInfo.func` by the lifted temporal functions;
+ * bodies live in `meos/src/h3/h3index.c` (cbuffer convention —
+ * the base-type file owns all Datum wrappers).
+ * 2. Hand-written static h3 adapters (GSERIALIZED conversions,
+ * next-resolution conveniences, unit-string dispatch) that
+ * live alongside their primary consumer in the matching
+ * `th3index_<topic>.c` file.
+ * 3. The `H3Unit` enum shared between `th3index_metrics.c` (where
+ * it is produced from the user-supplied string) and
+ * `h3index.c` (where the `datum_h3_*` metric wrappers consume
+ * it).
  *
  * None of these symbols are part of the public MEOS API.
  */

@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that applies multidimensional tiling to a temporal
- * point according to value and/or time bins.
- *
- * The program can be build as follows
+ * point according to value and/or time bins
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tpoint_tile tpoint_tile.c -L/usr/local/lib -lmeos
  * @endcode

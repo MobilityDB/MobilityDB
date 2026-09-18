@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Sort support for the bottom-up GiST index build
  * @details PostgreSQL builds a GiST index by sorting the leaf entries whenever
  * the operator class supplies a `sortsupport` support function
@@ -39,10 +40,10 @@
  * The key is a 64-bit index on a Hilbert curve, composed from the vendored
  * PostGIS primitives rather than computed by a curve of our own:
  * - the spatial half is #gbox_get_sortable_hash(), which is what PostGIS
- *   itself sorts a geometry column by,
+ * itself sorts a geometry column by,
  * - the temporal half is a rank of the period, and
  * - the two are combined with #uint32_hilbert(), the same primitive a second
- *   time, so that neither dimension leads the other.
+ * time, so that neither dimension leads the other.
  *
  * A value carrying only one of the two dimensions contributes zero for the
  * other, which keeps the order well defined for every box the types admit.

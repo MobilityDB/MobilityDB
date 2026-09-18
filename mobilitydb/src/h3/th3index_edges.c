@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for th3index directed-edge functions.
+ * @brief PG V1 wrappers for th3index directed-edge functions
  */
 
 /* PostgreSQL */

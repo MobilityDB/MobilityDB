@@ -29,11 +29,11 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal pose objects.
- *
- * These operators test the bounding boxes of temporal poses, which are
+ * @brief Bounding box operators for temporal pose objects
+ * @details These operators test the bounding boxes of temporal poses, which
+ * are
  * STBox boxes. The following operators are defined:
- *    overlaps, contains, contained, same
+ * overlaps, contains, contained, same
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the space dimension, only the time dimension, or both
  * the space and the time dimensions.

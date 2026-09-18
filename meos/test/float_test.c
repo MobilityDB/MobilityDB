@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that tests the float functions exposed by the
- * PostgreSQL types embedded in MEOS.
- *
- * The program can be build as follows
+ * PostgreSQL types embedded in MEOS
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o float_test float_test.c -L/usr/local/lib -lmeos
  * @endcode

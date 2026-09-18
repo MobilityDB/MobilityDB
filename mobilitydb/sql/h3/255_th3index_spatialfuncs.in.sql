@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal H3 cells.
- *
- * The point-to-cell and cell-to-point/boundary conversions, the temporal
+ * @brief Spatial functions for temporal H3 cells
+ * @details The point-to-cell and cell-to-point/boundary conversions, the
+ * temporal
  * value accessors, and the `h3indexset` ⇄ `th3index` ever-equal prefilter
  * for the `th3index` type. The cell-to-boundary function declared here
  * (`cellToBoundary`) is the boundary provider consumed by the generated

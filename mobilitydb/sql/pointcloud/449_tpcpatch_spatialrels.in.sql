@@ -31,10 +31,9 @@
 
 /**
  * @file
- * @brief Ever/always spatial relationships for temporal pgpointcloud
- *   patches
- *
- * Each function converts its patch operand to the temporal geometry of
+ * @brief Ever/always spatial relationships for temporal pgpointcloud patches
+ * @details Each function converts its patch operand to the temporal geometry
+ * of
  * the multipoints its patches occupy, through the standard
  * tpcpatch::tgeometry cast, and delegates to the temporal geometry
  * ever/always spatial relationship.

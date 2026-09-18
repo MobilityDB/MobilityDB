@@ -30,17 +30,16 @@
 /**
  * @file
  * @brief A simple program that a CSV file containing temporal points and
- * applies a function to the temporal points.
- *
- * The corresponding SQL query would be
+ * applies a function to the temporal points
+ * @details The corresponding SQL query would be
  * @code
  * SELECT k, numInstants(douglasPeuckerSimplify(temp, 5, true))
-   FROM tbl_tgeompoint;
+ * FROM tbl_tgeompoint;
  * @endcode
  *
  * The program can be tested with several functions such as simplification
  * with Douglas-Peucker ... reduction such as `tsample`, `tprecision`, ...
- * 
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_tpoint tbl_tpoint.c -L/usr/local/lib -lmeos

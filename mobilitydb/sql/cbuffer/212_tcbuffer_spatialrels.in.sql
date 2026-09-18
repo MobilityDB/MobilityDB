@@ -34,8 +34,8 @@
  * the "ever" and "always" semantics, and return a Boolean.
  *
  * The following relationships are supported:
- *    `eContains`, `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`,
- *    `aIntersects`, `eTouches`, `aTouches`, `eDwithin`, and `aDwithin`
+ * `eContains`, `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`,
+ * `aIntersects`, `eTouches`, `aTouches`, `eDwithin`, and `aDwithin`
  * All these relationships, excepted `eDisjoint`, will automatically perform
  * a bounding box comparison that will make use of any spatial, temporal, or
  * spatiotemporal indexes that are available.

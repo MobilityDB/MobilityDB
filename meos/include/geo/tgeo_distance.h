@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal points.
+ * @file
+ * @brief Distance functions for temporal points
  */
 
 #ifndef __TGEO_DISTANCE_H__

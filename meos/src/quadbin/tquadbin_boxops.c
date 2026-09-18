@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Bounding box functions for temporal quadbin cell indices.
- *
- * Quadbin cells are square Web-Mercator slippy tiles emitted as planar
+ * @brief Bounding box functions for temporal quadbin cell indices
+ * @details Quadbin cells are square Web-Mercator slippy tiles emitted as
+ * planar
  * lon/lat. The bounding box of a tquadbin value is therefore a planar STBox
  * (X/Y set, GEODETIC flag clear, no Z, T set from the time span), matching the
  * pattern of tgeompoint and tnpoint.

@@ -37,17 +37,17 @@
  * the reference project applies to that operation:
  * - a convex hull is an exact answer, so the result must equal the assertion;
  * - the GEOS suite asserts no oriented envelope, so that operation is checked
- *   against the answer of GEOS itself, exactly, both being rectangles that no
- *   approximation stands between;
+ * against the answer of GEOS itself, exactly, both being rectangles that no
+ * approximation stands between;
  * - a buffer is an approximation, and this implementation answers it with
- *   exact circular arcs where GEOS polygonizes them, so the two results
- *   necessarily differ vertex by vertex. The criterion is therefore the one
- *   @p BufferResultMatcher of the GEOS test runner applies: the symmetric
- *   difference covers less than @p MAX_RELATIVE_AREA_DIFFERENCE of the
- *   expected area, and the oriented discrete Hausdorff distance between the
- *   two boundaries stays under a hundredth of the buffer distance. The arcs of
- *   the native answer are stroked before the comparison, since an area and a
- *   Hausdorff distance are defined on the polygonal representation.
+ * exact circular arcs where GEOS polygonizes them, so the two results
+ * necessarily differ vertex by vertex. The criterion is therefore the one
+ * @p BufferResultMatcher of the GEOS test runner applies: the symmetric
+ * difference covers less than @p MAX_RELATIVE_AREA_DIFFERENCE of the
+ * expected area, and the oriented discrete Hausdorff distance between the
+ * two boundaries stays under a hundredth of the buffer distance. The arcs of
+ * the native answer are stroked before the comparison, since an area and a
+ * Hausdorff distance are defined on the polygonal representation.
  *
  * Usage:
  * @code
@@ -65,10 +65,10 @@
  * directory
  * @code
  * gcc -Wall -g -DMEOS=1 -I$SRC/meos/include -isystem $SRC/pgtypes \
- *   -isystem $BLD/pgtypes -isystem $SRC/postgis -isystem $BLD/postgis \
- *   -isystem $SRC/postgis/liblwgeom -isystem $BLD/postgis/liblwgeom \
- *   -o geo_op_diff geo_op_diff.c -lmeos $BLD/postgis/libpostgis.a \
- *   -lgeos_c -lproj -ljson-c -lm
+ * -isystem $BLD/pgtypes -isystem $SRC/postgis -isystem $BLD/postgis \
+ * -isystem $SRC/postgis/liblwgeom -isystem $BLD/postgis/liblwgeom \
+ * -o geo_op_diff geo_op_diff.c -lmeos $BLD/postgis/libpostgis.a \
+ * -lgeos_c -lproj -ljson-c -lm
  * @endcode
  */
 

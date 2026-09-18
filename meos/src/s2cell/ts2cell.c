@@ -29,22 +29,22 @@
 
 /**
  * @file
- * @brief Type-inheritance boilerplate for `ts2cell`.
- *
- * The analogue of `meos/src/quadbin/tquadbin.c`. Every temporal type carries
+ * @brief Type-inheritance boilerplate for `ts2cell`
+ * @details The analogue of `meos/src/quadbin/tquadbin.c`. Every temporal type
+ * carries
  * this layer to specialise the generic `Temporal` machinery for its own value
  * type:
  *
- *   * argument validators for every supported operand pair,
- *   * type-specific input parsers that delegate to the generic int-8 parser
- *     but tag the result with `T_TS2CELL`,
- *   * type-specific constructors (`ts2cell_make`, `ts2cellinst_make`,
- *     `ts2cellseq_make`, `ts2cellseqset_make`),
- *   * type-specific accessors (`ts2cell_start_value`, `ts2cell_end_value`,
- *     `ts2cell_value_n`, `ts2cell_values`, `ts2cell_value_at_timestamptz`)
- *     that hide the Datum-packing convention from callers,
- *   * MEOS-level conversions to and from `tbigint` for callers that want the
- *     bit-identical representation without a SQL round trip.
+ * * argument validators for every supported operand pair,
+ * * type-specific input parsers that delegate to the generic int-8 parser
+ * but tag the result with `T_TS2CELL`,
+ * * type-specific constructors (`ts2cell_make`, `ts2cellinst_make`,
+ * `ts2cellseq_make`, `ts2cellseqset_make`),
+ * * type-specific accessors (`ts2cell_start_value`, `ts2cell_end_value`,
+ * `ts2cell_value_n`, `ts2cell_values`, `ts2cell_value_at_timestamptz`)
+ * that hide the Datum-packing convention from callers,
+ * * MEOS-level conversions to and from `tbigint` for callers that want the
+ * bit-identical representation without a SQL round trip.
  *
  * S2 cells are geodetic, so the temporal point bridge uses `tgeogpoint`.
  */

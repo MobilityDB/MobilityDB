@@ -29,21 +29,21 @@
 
 /**
  * @file
- * @brief TPCBox — bounding-box type for pgpointcloud temporal values.
- *
- * Mirrors STBox but carries an additional @c pcid (pgpointcloud schema id)
+ * @brief TPCBox — bounding-box type for pgpointcloud temporal values
+ * @details Mirrors STBox but carries an additional @c pcid (pgpointcloud
+ * schema id)
  * because values from different schemas have incompatible dimensions and
  * cannot share a bbox. Provides the base set of operators used by
  * downstream temporal types (tpcpoint, tpcpatch).
  *
  * Scope notes:
- *   * @c pcpatch → @c TPCBox is implemented here and is a free conversion
- *     (pgpointcloud's @c SERIALIZED_PATCH already carries a 2D @c PCBOUNDS
- *     header — no schema lookup required; no Z).
- *   * @c pcpoint → @c TPCBox lives in the PG wrapper layer: extracting
- *     X/Y/Z from a pcpoint byte blob requires the schema XML (loaded
- *     from @c pointcloud_formats by pcid), which only the PG layer can
- *     do.
+ * * @c pcpatch → @c TPCBox is implemented here and is a free conversion
+ * (pgpointcloud's @c SERIALIZED_PATCH already carries a 2D @c PCBOUNDS
+ * header — no schema lookup required; no Z).
+ * * @c pcpoint → @c TPCBox lives in the PG wrapper layer: extracting
+ * X/Y/Z from a pcpoint byte blob requires the schema XML (loaded
+ * from @c pointcloud_formats by pcid), which only the PG layer can
+ * do.
  */
 
 #include "pointcloud/tpcbox.h"

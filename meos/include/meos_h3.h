@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Public MEOS API for the temporal H3 index type (th3index).
- *
- * Implementations live in meos/src/h3/. The PG V1 wrappers in
+ * @brief Public MEOS API for the temporal H3 index type (th3index)
+ * @details Implementations live in meos/src/h3/. The PG V1 wrappers in
  * mobilitydb/src/h3/ call these symbols.
  */
 

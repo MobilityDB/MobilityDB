@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the OGC GeoPose encoding of poses and temporal
- * poses.
- *
- * MobilityDB implements four of the eight conformance classes of OGC GeoPose
+ * poses
+ * @details MobilityDB implements four of the eight conformance classes of OGC
+ * GeoPose
  * v1.0 (OGC 21-056r11): Basic-YPR and Basic-Quaternion for a pose, and the
  * Regular and Irregular Composite Sequence Series for a temporal pose. The
  * program exercises each of them through the four functions the C API exposes,

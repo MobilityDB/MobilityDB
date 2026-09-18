@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal pose objects.
+ * @brief Spatial functions for temporal pose objects
  */
 
 /* C */

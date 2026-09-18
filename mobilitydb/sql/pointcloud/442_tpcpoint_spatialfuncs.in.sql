@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Spatial functions for temporal pcpoint
- *
- * The spatial component of a tpcpoint is its XY (or XYZ) point trajectory,
+ * @details The spatial component of a tpcpoint is its XY (or XYZ) point
+ * trajectory,
  * accessible via the tgeompoint cast. Functions that return geometric
  * aggregates delegate to the corresponding tgeompoint overload.
  *

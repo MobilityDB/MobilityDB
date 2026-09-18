@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal network points.
+ * @brief Spatial functions for temporal network points
  */
 
 /* PostgreSQL */

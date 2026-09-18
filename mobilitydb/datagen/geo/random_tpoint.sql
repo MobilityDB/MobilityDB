@@ -27,12 +27,12 @@
  *
  *****************************************************************************/
 
-/*
- * random_tpoint.sql
- * Basic synthetic data generator functions for geometry/geography types
- * and temporal point types.
- *
- * These functions use lower and upper bounds for the generated values:
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for geometry/geography types
+ * and temporal point types
+ * @details These functions use lower and upper bounds for the generated
+ * values:
  * lowx/lowy/lowz and highx/highy/highz for coordinates, lowtime and hightime
  * for timestamps. When generating series of values, the maxdelta argument
  * states the maximum difference between two consecutive coordinate values,

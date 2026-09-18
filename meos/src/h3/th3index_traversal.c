@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief MEOS lifting for grid-traversal functions, plus the two
- * static local-IJ adapters that back them.
- *
- * `h3_grid_distance_meos` is auto-generated (see `h3_generated.h`);
+ * @brief MEOS lifting for grid-traversal functions, plus the two static
+ * local-IJ adapters that back them
+ * @details `h3_grid_distance_meos` is auto-generated (see `h3_generated.h`);
  * the local-IJ pair is hand-written because h3-pg uses PG `Point`
  * varlenas that we trade for planar (SRID 0, non-geodetic)
  * GSERIALIZED carriers so the lifted `datum_h3_cell_to_local_ij`

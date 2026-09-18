@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief C-level implementation of raster_value() — PostGIS raster band
- * sampling along tgeompoint trajectories.
+ * sampling along tgeompoint trajectories
  */
 
 #ifndef TEMPORAL_RASTER_H

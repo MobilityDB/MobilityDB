@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Ever spatial relationships for temporal poses
- *
- * These functions dispatch to the temporal geometry point implementation
+ * @details These functions dispatch to the temporal geometry point
+ * implementation
  * through the lossless conversion of a temporal pose into a temporal geometry
  * point. They are defined as C functions (rather than SQL wrappers casting to
  * `tgeompoint`) so that the planner support function `tspatial_supportfn`

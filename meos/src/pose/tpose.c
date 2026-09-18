@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for temporal pose objects.
+ * @file
+ * @brief General functions for temporal pose objects
  */
 
 /* C */

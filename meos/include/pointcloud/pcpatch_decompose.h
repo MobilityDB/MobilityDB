@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Per-point decomposition primitive for pcpatch.
- *
- * Provides a single C-side entry point that other MEOS pointcloud
+ * @brief Per-point decomposition primitive for pcpatch
+ * @details Provides a single C-side entry point that other MEOS pointcloud
  * operations (per-point @c atTpcbox, @c eIntersects, fast
  * @c points(tpcpatch) SRF, …) delegate into. Decomposes a serialized
  * @c Pcpatch into its constituent points, applies a caller-supplied

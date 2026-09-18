@@ -29,11 +29,10 @@
 
 /**
  * @file
- * @brief A program that tests how the compaction and the uncompaction of a
- * set of H3 cells report an erroneous argument under the noexit error
- * handler.
- *
- * A public MEOS function tests the conditions its internal form asserts, so a
+ * @brief A program that tests how the compaction and the uncompaction of a set
+ * of H3 cells report an erroneous argument under the noexit error handler
+ * @details A public MEOS function tests the conditions its internal form
+ * asserts, so a
  * binding calling it with a null or mistyped set receives an error it can
  * raise in its host language, and receives the same error its sibling
  * functions report for the same condition.

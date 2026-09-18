@@ -27,10 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * Function generating a set of test tables for temporal geo types.
- *
- * These functions use the random generator for these types that are in the
+/**
+ * @file
+ * @brief Function generating a set of test tables for temporal geo types
+ * @details These functions use the random generator for these types that are
+ * in the
  * file random_geo.sql. Refer to that file for the meaning of the
  * parameters used in the function calls of this file.
  */

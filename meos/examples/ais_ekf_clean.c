@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Example: read AIS CSV, build TSEQUENCE per MMSI, clean with EKF.
- *
- * Input CSV columns, first row is a header:
+ * @brief Example: read AIS CSV, build TSEQUENCE per MMSI, clean with EKF
+ * @details Input CSV columns, first row is a header:
  * Timestamp,Type of mobile,MMSI,Latitude,Longitude, ... (other columns ignored)
  * Example timestamp format: "01/03/2024 00:00:00" (DD/MM/YYYY HH:MM:SS)
  *
@@ -40,11 +39,11 @@
  * and apply an EKF via temporal_ext_kalman_filter().
  *
  * Build:
- *  gcc -Wall -O2 -I/usr/local/include -o ais_ekf_clean meos/examples/ais_ekf_clean.c \
- *    -L/usr/local/lib -lmeos
+ * gcc -Wall -O2 -I/usr/local/include -o ais_ekf_clean meos/examples/ais_ekf_clean.c \
+ * -L/usr/local/lib -lmeos
  *
  * Run:
- *  ./ais_ekf_clean input.csv [output.csv] [drop|fill] [gate_sigma] [q=...] [r=...]
+ * ./ais_ekf_clean input.csv [output.csv] [drop|fill] [gate_sigma] [q=...] [r=...]
  */
 
 #include <stdio.h>

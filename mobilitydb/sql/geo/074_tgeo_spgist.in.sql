@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Quad-tree and k-d tree SP-GiST index for temporal 
+ * @brief Quad-tree and k-d tree SP-GiST index for temporal
  * geometries/geographies
  */
 

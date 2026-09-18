@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Spatiotemporal relationships for temporal points.
+ * @file
+ * @brief Spatiotemporal relationships for temporal points
  */
 
 #ifndef __TCBUFFER_TEMPSPATIALRELS_H__

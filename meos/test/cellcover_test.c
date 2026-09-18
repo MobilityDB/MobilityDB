@@ -30,7 +30,6 @@
 /**
  * @file
  * @brief A trajectory's cell cover holds every cell the trajectory crosses
- *
  * @details The property under test is a SUPERSET one, and the truth it reads
  * against is the SAME entry point over a DISCRETE sequence of many positions
  * along the identical segment. A discrete sequence takes the
@@ -57,7 +56,7 @@
  *
  * @code
  * gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include
- *   -o cellcover_test cellcover_test.c -L/usr/local/lib -lmeos -lm
+ * -o cellcover_test cellcover_test.c -L/usr/local/lib -lmeos -lm
  * @endcode
  */
 

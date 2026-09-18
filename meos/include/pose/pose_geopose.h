@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief OGC GeoPose JSON I/O — Basic-YPR and Basic-Quaternion conformance.
+ * @file
+ * @brief OGC GeoPose JSON I/O — Basic-YPR and Basic-Quaternion conformance
  */
 
 #ifndef __POSE_GEOPOSE_H__

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for the TPCBox bounding-box type.
+ * @brief R-tree GiST index for the TPCBox bounding-box type
  * @details Mirrors mobilitydb/src/geo/tspatial_gist.c — same five
  * support functions (consistent / union / penalty / picksplit / same),
  * specialized to TPCBox.  picksplit reuses the generic

@@ -29,33 +29,32 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from temporal alphanumeric
- * columns
- *
- * Various kind of statistics are collected for both the value and the time
+ * @brief Functions for gathering statistics from temporal alphanumeric columns
+ * @details Various kind of statistics are collected for both the value and the
+ * time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
  * for more information about the statistics collected.
  *
  * - Slot 1
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM`.
- *     - `staop` contains the "<" operator of the value dimension.
- *     - `stavalues` stores the histogram of spans for the value dimension.
- *     - `numvalues` contains the number of buckets in the histogram.
+ * - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM`.
+ * - `staop` contains the "<" operator of the value dimension.
+ * - `stavalues` stores the histogram of spans for the value dimension.
+ * - `numvalues` contains the number of buckets in the histogram.
  * - Slot 2
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM`.
- *     - `staop` contains the "<" operator to the value dimension.
- *     - `stavalues` stores the length of the histogram of spans for the value dimension.
- *     - `numvalues` contains the number of buckets in the histogram.
+ * - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM`.
+ * - `staop` contains the "<" operator to the value dimension.
+ * - `stavalues` stores the length of the histogram of spans for the value dimension.
+ * - `numvalues` contains the number of buckets in the histogram.
  * - Slot 3
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM`.
- *     - `staop` contains the "<" operator of the time dimension.
- *     - `stavalues` stores the histogram of periods for the time dimension.
- *     - `numvalues` contains the number of buckets in the histogram.
+ * - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM`.
+ * - `staop` contains the "<" operator of the time dimension.
+ * - `stavalues` stores the histogram of periods for the time dimension.
+ * - `numvalues` contains the number of buckets in the histogram.
  * - Slot 4
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_LENGTH_HISTOGRAM`.
- *     - `staop` contains the "<" operator of the time dimension.
- *     - `stavalues` stores the length of the histogram of periods for the time dimension.
- *     - `numvalues` contains the number of buckets in the histogram.
+ * - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_LENGTH_HISTOGRAM`.
+ * - `staop` contains the "<" operator of the time dimension.
+ * - `stavalues` stores the length of the histogram of periods for the time dimension.
+ * - `numvalues` contains the number of buckets in the histogram.
  *
  * In the case of temporal types having a timestamptz span as bounding box,
  * that is, tbool and ttext, no statistics are collected for the value

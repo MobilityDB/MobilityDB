@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the pluggable allocator hook of the MEOS API.
- *
- * It installs a counting allocator via #meos_initialize_allocator, builds and
+ * @brief A program that tests the pluggable allocator hook of the MEOS API
+ * @details It installs a counting allocator via #meos_initialize_allocator,
+ * builds and
  * frees a temporal value, and verifies that (a) the custom allocator was
  * actually invoked (interposition) and (b) the tracked live bytes return to
  * zero after freeing (no leak, so free routes through the hook too). Finally it

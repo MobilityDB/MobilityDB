@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief Ever/always and temporal comparisons for the temporal pgpointcloud
- *   types
- *
- * Mirrors @c meos/src/cbuffer/tcbuffer_compops.c and
+ * types
+ * @details Mirrors @c meos/src/cbuffer/tcbuffer_compops.c and
  * @c meos/src/quadbin/tquadbin_compops.c: every flavour is a thin typed
  * wrapper over the generic @c eacomp_* / @c tcomp_* kernels, so the temporal
  * pgpointcloud types carry the same orthogonal comparison grid as the other

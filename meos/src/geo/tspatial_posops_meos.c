@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief Position operators for temporal geometry points
- *
- * The following operators are defined for the spatial dimension:
+ * @details The following operators are defined for the spatial dimension:
  * left, overleft, right, overright, below, overbelow, above,
  * overabove, front, overfront, back, overback.
  * There are no equivalent operators for the temporal geography points since

@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief `s2cellset` SQL type — set of s2cell values, mirrors
- * the bigintset structure over the s2cell base type.
- *
- * Every C call routes to a generic `Set_*` symbol. The dispatch
+ * @brief `s2cellset` SQL type — set of s2cell values, mirrors the bigintset
+ * structure over the s2cell base type
+ * @details Every C call routes to a generic `Set_*` symbol. The dispatch
  * arms in `type_in.c` / `type_out.c` (the basetype_in and
  * basetype_out cases for T_S2CELL) make the generic Set parser
  * and formatter read and write an element with s2cell_parse and

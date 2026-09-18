@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief PostgreSQL wrappers for the static-geometry → H3 cell helpers
- * declared in meos/include/meos_h3.h.
- *
- * Calls geo_to_h3index_set() and ever_eq_h3indexset_th3index() in
+ * declared in meos/include/meos_h3.h
+ * @details Calls geo_to_h3index_set() and ever_eq_h3indexset_th3index() in
  * the MEOS core; thin shims for argument extraction and result return.
  */
 

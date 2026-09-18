@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief MEOS lifting for inspection functions.
- *
- * Every entry in this file has a ready static helper in
+ * @brief MEOS lifting for inspection functions
+ * @details Every entry in this file has a ready static helper in
  * `meos/src/h3/h3_generated.c`; the lifting is a straight call to
  * `tfunc_temporal` with a `LiftedFunctionInfo` populated for a
  * `unary_scalar` shape.

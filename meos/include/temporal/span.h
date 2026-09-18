@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Basic routines for spans (a.k.a. ranges) composed of two `Datum`
- * values and two Boolean values stating whether the bounds are inclusive.
+ * values and two Boolean values stating whether the bounds are inclusive
  */
 
 #ifndef __SPAN_H__

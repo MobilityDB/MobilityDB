@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief External API of the Mobility Engine Open Source (MEOS) library
  */
 

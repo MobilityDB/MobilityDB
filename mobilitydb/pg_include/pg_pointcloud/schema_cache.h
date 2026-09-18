@@ -28,9 +28,9 @@
  *****************************************************************************/
 
 /**
- * @brief Per-backend cache of pgpointcloud `PCSCHEMA` keyed by pcid.
- *
- * Loads the XML from @c pointcloud_formats via SPI on first miss,
+ * @file
+ * @brief Per-backend cache of pgpointcloud `PCSCHEMA` keyed by pcid
+ * @details Loads the XML from @c pointcloud_formats via SPI on first miss,
  * parses via libpc.a's @c pc_schema_from_xml, stashes the result in
  * @c CacheMemoryContext so it survives the SPI transaction. Subsequent
  * lookups are O(1) hashtable hits. Same-session only — if a user

@@ -27,12 +27,12 @@
  *
  *****************************************************************************/
 
-/*
- * random_tnpoint.sql
- * Basic synthetic data generator functions FOR network point types
- * and temporal network point types.
- *
- * All randomly generated values reference the routes of the table ways.
+/**
+ * @file
+ * @brief Basic synthetic data generator functions FOR network point types and
+ * temporal network point types
+ * @details All randomly generated values reference the routes of the table
+ * ways.
  * The synthetic road network (100 random linestring routes with identifiers
  * 1 to 100) is materialized on demand via @ref ensure_random_ways().
  */

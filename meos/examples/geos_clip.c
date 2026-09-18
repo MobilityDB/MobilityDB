@@ -29,8 +29,10 @@
 
 /**
  * @file
- * @brief A program that shows the connection of MEOS and GEOS. It computes the
+ * @brief A program that shows the connection of MEOS and GEOS
+ * @details It computes the
  * the intersection of a MEOS temporal point and a prepared GEOS polygon
+ *
  * @note This program is based on the GEOS C API example 2 at the address
  * https://github.com/libgeos/geos/blob/main/examples/capi_prepared.c
  *
@@ -38,7 +40,7 @@
  * @code
  * gcc -Wall -g -I/usr/local/include -o geos_clip geos_clip.c -L/usr/local/lib -lmeos -lgeos_c
  * @endcode
-*/
+ */
 
 /* To print to stdout */
 #include <stdio.h>

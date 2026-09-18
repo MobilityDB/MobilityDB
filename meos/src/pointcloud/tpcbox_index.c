@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST strategies for the TPCBox bounding-box type.
+ * @brief R-tree GiST strategies for the TPCBox bounding-box type
  * @details Mirrors meos/src/geo/stbox_index.c — same dispatch surface,
  * but tpcbox_*_tpcbox predicates additionally enforce same-pcid.
  */

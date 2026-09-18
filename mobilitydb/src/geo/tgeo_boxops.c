@@ -32,7 +32,7 @@
  * @brief Bounding box operators for spatiotemporal values
  * @details These operators test the bounding box of spatiotemporal values,
  * which is an`STBox`, where the *x*, *y*, and optional *z* coordinates are
- * or the space (value) dimension and the *t* coordinate is for the time 
+ * or the space (value) dimension and the *t* coordinate is for the time
  * dimension. The following operators are defined: `overlaps`, `contains`,
  * `contained`, and `same`.
  *

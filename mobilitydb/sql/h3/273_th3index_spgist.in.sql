@@ -31,9 +31,9 @@
 
 /**
  * @file
- * @brief SP-GiST quadtree and kdtree operator classes for `th3index`.
- *
- * H3 cells are geographic hexagons on the WGS84 sphere — always geodetic,
+ * @brief SP-GiST quadtree and kdtree operator classes for `th3index`
+ * @details H3 cells are geographic hexagons on the WGS84 sphere — always
+ * geodetic,
  * always lat/lon. The bounding box of a `th3index` value is therefore a
  * geodetic `stbox`, matching the `tgeogpoint` / `tcbuffer` pattern. Both
  * opclasses mirror `tcbuffer_quadtree_ops` / `tcbuffer_kdtree_ops` from

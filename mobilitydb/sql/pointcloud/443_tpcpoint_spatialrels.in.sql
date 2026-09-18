@@ -31,10 +31,8 @@
 
 /**
  * @file
- * @brief Ever/always spatial relationships for temporal pgpointcloud
- *   points
- *
- * Each function converts its point cloud operand to the temporal
+ * @brief Ever/always spatial relationships for temporal pgpointcloud points
+ * @details Each function converts its point cloud operand to the temporal
  * geometry point its positions resolve to, through the standard
  * tpcpoint::tgeompoint cast, and delegates to the temporal geometry
  * point ever/always spatial relationship.

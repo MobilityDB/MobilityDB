@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Clipper2-backed polygon Boolean engine for MEOS.
- *
- * Replaces the bespoke Martinez-Rueda port with vendored Clipper2 v2.0.1.
+ * @brief Clipper2-backed polygon Boolean engine for MEOS
+ * @details Replaces the bespoke Martinez-Rueda port with vendored Clipper2
+ * v2.0.1.
  * Public C entry point used by the intersection, geoUnion, difference and
  * symDifference SQL functions
  * (and ultimately by the temporal-point clipping path in

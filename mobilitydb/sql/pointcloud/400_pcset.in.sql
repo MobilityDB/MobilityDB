@@ -29,16 +29,15 @@
 
 /**
  * @file
- * @brief Sets over pgpointcloud pcpoint / pcpatch base types.
- *
- * The pcpoint and pcpatch SQL types are owned by the upstream
+ * @brief Sets over pgpointcloud pcpoint / pcpatch base types
+ * @details The pcpoint and pcpatch SQL types are owned by the upstream
  * pgpointcloud extension — MobilityDB reuses them the way it reuses
  * PostGIS `geometry`, not the way it defines its own types. This file
  * adds:
  *
- *   * a `pcid(pcpoint)` / `pcid(pcpatch)` SQL accessor, and
- *   * set types `pcpointset` / `pcpatchset` over those base values,
- *     with strict same-pcid enforcement on every constructor path.
+ * * a `pcid(pcpoint)` / `pcid(pcpatch)` SQL accessor, and
+ * * set types `pcpointset` / `pcpatchset` over those base values,
+ * with strict same-pcid enforcement on every constructor path.
  *
  * Most set-level SQL bindings delegate to the generic `Set_*` C wrappers
  * in `mobilitydb/src/temporal/set.c`, which dispatch on settype → base

@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Per-point spatial predicates for the tpcpoint temporal type.
- *
- * Provides the two per-event streaming entry-points (e.g. MobilityNebula NES
+ * @brief Per-point spatial predicates for the tpcpoint temporal type
+ * @details Provides the two per-event streaming entry-points (e.g.
+ * MobilityNebula NES
  * operators): @ref nad_tpcpoint_geo and @ref eintersects_tpcpoint_geo. The
  * instant constructor @ref tpcpointinst_make lives with the rest of the
  * Temporal<T> value surface in @ref tpcpoint.c.

@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the typed text input and output of the temporal
- * cell index and point cloud types.
- *
- * Each temporal type gives its text form through a typed public function
+ * cell index and point cloud types
+ * @details Each temporal type gives its text form through a typed public
+ * function
  * that tests its argument, as tint_out does for a temporal integer. The
  * program verifies that th3index_out, tquadbin_out, ts2cell_out,
  * tpcpoint_out and tpcpatch_out answer the text their input reads back with

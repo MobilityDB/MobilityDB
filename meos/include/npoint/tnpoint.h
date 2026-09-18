@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal network points.
+ * @file
+ * @brief Functions for temporal network points
  */
 
 #ifndef __TNPOINT_H__

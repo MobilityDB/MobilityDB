@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Geometry adapters between a QUADBIN cell and PostGIS geometries.
- *
- * These typed wrappers keep the geometry construction inside MEOS so the
+ * @brief Geometry adapters between a QUADBIN cell and PostGIS geometries
+ * @details These typed wrappers keep the geometry construction inside MEOS so
+ * the
  * SQL cell/geometry conversions are pure catalog projections (the PG V1
  * wrappers in mobilitydb/src/quadbin/quadbin_ops.c are thin). The cover of a
  * geometry by the cells it meets, and the test of a temporal cell against

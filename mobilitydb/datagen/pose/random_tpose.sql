@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Basic synthetic data generator functions for pose and
- * temporal pose types
+ * @brief Basic synthetic data generator functions for pose and temporal pose
+ * types
  */
 
 ------------------------------------------------------------------------------

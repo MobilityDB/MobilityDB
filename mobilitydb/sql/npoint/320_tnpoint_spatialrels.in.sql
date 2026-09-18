@@ -29,10 +29,10 @@
  *
  *****************************************************************************/
 
-/*
- * Ever/always spatial relationships for temporal network points.
- *
- * A temporal network point (tnpoint) is defined over the road/rail
+/**
+ * @file
+ * @brief Ever/always spatial relationships for temporal network points
+ * @details A temporal network point (tnpoint) is defined over the road/rail
  * network's position space (route identifier + fractional position
  * along the route), not over free geographical space. Each function
  * converts its network-point operand(s) to a temporal geometry point

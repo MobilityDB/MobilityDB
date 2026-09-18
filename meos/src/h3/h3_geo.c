@@ -29,18 +29,18 @@
 
 /**
  * @file
- * @brief Public API: static GSERIALIZED geometry → set of H3 cells.
+ * @brief Public API: static GSERIALIZED geometry → set of H3 cells
+ * @details The cover of a geometry is the set of the cells that hold a point
+ * of it:
  *
- * The cover of a geometry is the set of the cells that hold a point of it:
- *
- *   POINT             — the cell holding it.
- *   LINESTRING        — the cells its segments pass through.
- *   POLYGON           — the cells its rings pass through, together with the
- *                       cells whose centre it holds.
- *   MULTIPOINT        — union of per-component POINTs.
- *   MULTILINESTRING   — union of per-component LINESTRINGs.
- *   MULTIPOLYGON      — union of per-component POLYGONs.
- *   GEOMETRYCOLLECTION — recursive union of per-component geometries.
+ * POINT             — the cell holding it.
+ * LINESTRING        — the cells its segments pass through.
+ * POLYGON           — the cells its rings pass through, together with the
+ * cells whose centre it holds.
+ * MULTIPOINT        — union of per-component POINTs.
+ * MULTILINESTRING   — union of per-component LINESTRINGs.
+ * MULTIPOLYGON      — union of per-component POLYGONs.
+ * GEOMETRYCOLLECTION — recursive union of per-component geometries.
  *
  * The companion `ever_eq_h3indexset_th3index` predicate enables the
  * cross-platform spatial prefilter: a th3index trip path ever-touches a

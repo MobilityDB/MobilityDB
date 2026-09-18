@@ -43,18 +43,18 @@
  * quadrants in 8D space.  It is easier to imagine it as splitting space
  * four times into four:
  * @code
- *              |      |                        |      |
- *              |      |                        |      |
- *              | -----+-----                   | -----+-----
- *              |      |                        |      |
- *              |      |                        |      |
+ * |      |                        |      |
+ * |      |                        |      |
+ * | -----+-----                   | -----+-----
+ * |      |                        |      |
+ * |      |                        |      |
  * -------------+------------- -+- -------------+-------------
- *              |                               |
- *              |                               |
- *              |                               |
- *              |                               |
- *              |                               |
- *            FRONT                           BACK
+ * |                               |
+ * |                               |
+ * |                               |
+ * |                               |
+ * |                               |
+ * FRONT                           BACK
  * @endcode
  * We are using STBox data type as the prefix, but we are treating them
  * as points in 8-dimensional space, because 4D boxes are not enough
@@ -69,9 +69,9 @@
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *  1. the traversal value of the parent
- *  2. the quadrant of the current node
- *  3. the prefix of the current node
+ * 1. the traversal value of the parent
+ * 2. the quadrant of the current node
+ * 3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing above);
  * transferred boundaries of (1) would be the outer axis, relevant part

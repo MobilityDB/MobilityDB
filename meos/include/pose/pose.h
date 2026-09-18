@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for static pose objects.
+ * @file
+ * @brief Basic functions for static pose objects
  */
 
 #ifndef __POSE_H__

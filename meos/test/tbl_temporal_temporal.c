@@ -31,18 +31,17 @@
  * @file
  * @brief A simple program that reads a CSV files containing temporal values
  * and performs a "self join" by applying to them an operation
- *
- * The corresponding SQL query would be
+ * @details The corresponding SQL query would be
  * @code
  * SELECT t1.k, t2.k, numInstants(t1.temp <-> t2.temp))
-   FROM tbl_tfloat t1, tbl_tfloat t2
-   WHERE t1.temp <-> t2.temp IS NOT NULL;
+ * FROM tbl_tfloat t1, tbl_tfloat t2
+ * WHERE t1.temp <-> t2.temp IS NOT NULL;
  * @endcode
  *
- * The program can be tested with several functions such as ever/alwayas and 
+ * The program can be tested with several functions such as ever/alwayas and
  * temporal comparisons `ever_eq`, `always_eq`, `teq_`, ..., `ever_lt`,
  * `always_lt`, `tlt_`, ...
- * 
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_temporal_temporal tbl_temporal_temporal.c -L/usr/local/lib -lmeos

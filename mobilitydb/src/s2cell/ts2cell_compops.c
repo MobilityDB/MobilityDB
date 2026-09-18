@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the ts2cell comparison operators.
- *
- * Each wrapper unpacks an S2 cell identifier or a Temporal from its
+ * @brief PG V1 wrappers for the ts2cell comparison operators
+ * @details Each wrapper unpacks an S2 cell identifier or a Temporal from its
  * Datum, calls the ts2cell-specific MEOS function declared in
  * `meos_s2cell.h`, and returns the result.
  */

@@ -31,8 +31,7 @@
  * @file
  * @brief A simple program that creates integer and float spanset values and
  * converts them between float and integer spansets
- *
- * The program can be build as follows
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o spanset_conv spanset_conv.c -L/usr/local/lib -lmeos
  * @endcode

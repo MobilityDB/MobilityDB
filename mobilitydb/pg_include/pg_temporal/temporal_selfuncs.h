@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Selectivity functions for temporal types
  */
 

@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal points.
+ * @file
+ * @brief Functions for parsing temporal points
  */
 
 #ifndef __TSPATIAL_PARSER_H__

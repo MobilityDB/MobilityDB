@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief General functions for the Raquet raster-tile value type.
- *
- * A Raquet value is a GDAL-free, self-describing Web-Mercator raster chip
+ * @brief General functions for the Raquet raster-tile value type
+ * @details A Raquet value is a GDAL-free, self-describing Web-Mercator raster
+ * chip
  * identified by a CARTO QUADBIN cell and carrying a row-major packed pixel
  * array. Serialization goes through the central MEOS WKB machinery keyed by
  * the ::T_RAQUET catalog type; the trajectory-sampling kernel in

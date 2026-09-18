@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Ever spatial relationships for temporal QUADBIN cell indices
- *
- * These functions dispatch to the temporal geometry implementation through the
+ * @details These functions dispatch to the temporal geometry implementation
+ * through the
  * conversion of a temporal cell index into the temporal geometry of its cell
  * boundary. They are defined as C functions (rather than SQL wrappers casting
  * to `tgeometry`) so that the planner support function `tspatial_supportfn`

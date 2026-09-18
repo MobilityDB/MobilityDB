@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Set-returning static helpers on `h3index`.
- *
- * These are the MobilityDB ports of the nine h3-pg SETOF-returning
+ * @brief Set-returning static helpers on `h3index`
+ * @details These are the MobilityDB ports of the nine h3-pg SETOF-returning
  * functions. Each call returns a finite collection of H3 cells
  * (or icosahedron face indexes), packaged as the right
  * MobilityDB set type — `h3indexset` for cell collections, `intset`
@@ -45,7 +44,7 @@
  * libh3 is the ultimate authority for semantics; this file is a
  * thin allocate / call / wrap layer:
  *
- *   size-query → palloc → libh3 fill → filter zeros → set_make_free.
+ * size-query → palloc → libh3 fill → filter zeros → set_make_free.
  */
 
 #ifndef __H3INDEX_SETS_H__

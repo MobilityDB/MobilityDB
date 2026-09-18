@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Aggregate functions for temporal geos
- *
- * The only functions currently provided are extent and temporal centroid.
+ * @details The only functions currently provided are extent and temporal
+ * centroid.
  */
 
 #include "geo/tgeo_aggfuncs.h"

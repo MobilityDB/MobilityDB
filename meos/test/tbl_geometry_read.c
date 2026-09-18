@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that reads a CSV file containig geometries and
- * compute the total number of points in all geometries.
- *
- * The program can be build as follows
+ * compute the total number of points in all geometries
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_geometry_read tbl_geometry_read.c -L/usr/local/lib -lmeos
  * @endcode

@@ -30,13 +30,13 @@
 /**
  * @file
  * @brief MEOS implementations of the set-returning S2 functions, returning
- * `s2cellset`.
+ * `s2cellset`
  * @details Shape of every function below:
- *   1. Ask the S2 kernel for the cell array (palloc'd).
- *   2. Pack the array into a Datum array.
- *   3. `set_make_free` the Datum array — the constructor copies into its own
- *      storage and frees the input.
- *   4. Return the Set.
+ * 1. Ask the S2 kernel for the cell array (palloc'd).
+ * 2. Pack the array into a Datum array.
+ * 3. `set_make_free` the Datum array — the constructor copies into its own
+ * storage and frees the input.
+ * 4. Return the Set.
  *
  * These are the quadtree-on-the-sphere counterpart of the quadbin set
  * helpers, keeping the operations an S2 cell answers — the four cells sharing

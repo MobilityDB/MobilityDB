@@ -29,10 +29,8 @@
 
 /**
  * @file
- * @brief Internal declarations for the th3index type-inheritance
- * boilerplate.
- *
- * This header is the analogue of `meos/include/cbuffer/tcbuffer.h`.
+ * @brief Internal declarations for the th3index type-inheritance boilerplate
+ * @details This header is the analogue of `meos/include/cbuffer/tcbuffer.h`.
  * It carries the extern decls for the static helpers in `th3index.c`
  * that do not belong in the public `meos_h3.h`. The validity macro
  * `VALIDATE_TH3INDEX(temp, ret)`, used in every lifted function and

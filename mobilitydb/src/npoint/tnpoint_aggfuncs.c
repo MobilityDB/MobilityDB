@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal network points.
+ * @brief Aggregate functions for temporal network points
  * @note The only function currently provided is temporal centroid.
  */
 

@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal circular buffers.
+ * @file
+ * @brief Temporal distance for temporal circular buffers
  */
 
 #ifndef __TNPOINT_DISTANCE_H__

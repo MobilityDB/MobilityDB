@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Internal header for QUADBIN-keyed raster chip sampling.
+ * @brief Internal header for QUADBIN-keyed raster chip sampling
  */
 
 #ifndef __RASTER_QUADBIN_H__

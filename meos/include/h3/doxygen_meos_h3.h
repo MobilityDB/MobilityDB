@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief Sections for the documentation of the MEOS API: temporal H3 cell
- * indices.
- *
- * Mirrors the section layout of `doxygen_meos_cbuffer.h`. The
+ * indices
+ * @details Mirrors the section layout of `doxygen_meos_cbuffer.h`. The
  * grouping follows the chapter divisions of the user manual
  * (`doc/temporal_cell_index.xml`).
  */

@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Internal declarations for the TPCBox bounding-box type.
+ * @file
+ * @brief Internal declarations for the TPCBox bounding-box type
  */
 
 #ifndef __TPCBOX_H__

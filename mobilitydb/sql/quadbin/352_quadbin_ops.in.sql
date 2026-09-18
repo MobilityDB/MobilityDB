@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Static `quadbin` cell operations.
- *
- * The square-grid subset of the DGGS surface: resolution, hierarchy
+ * @brief Static `quadbin` cell operations
+ * @details The square-grid subset of the DGGS surface: resolution, hierarchy
  * (parent / children / sibling), point ↔ cell, boundary, bounding
  * box, area, and the quadbin-unique slippy-tile (x / y / z) and
  * quadkey conversions. The hexagon-only families (directed edges,

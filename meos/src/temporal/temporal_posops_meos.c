@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief Position operators for temporal types
- *
- * The following operators are defined:
+ * @details The following operators are defined:
  * - @p left, @p overleft, @p right, @p overright for the value dimension
  * - @p before, @p overbefore, @p after, @p overafter for the time dimension
  */

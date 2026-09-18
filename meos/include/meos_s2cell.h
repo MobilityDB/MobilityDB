@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief Public MEOS API for the temporal Google S2 index type (ts2cell) and
- * its static `s2cell` cell type.
- *
- * S2 has no maintained C API and its C++ library is a heavy Abseil-dependent
+ * its static `s2cell` cell type
+ * @details S2 has no maintained C API and its C++ library is a heavy
+ * Abseil-dependent
  * blob, so the cell algebra is implemented FIRST-PARTY in meos/src/s2cell/ from
  * the public S2 cell-id specification — cube-face projection plus a Hilbert
  * space-filling curve — exactly as the quadbin family is first-partied from

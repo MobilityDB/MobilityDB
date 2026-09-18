@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for temporal pose objects.
+ * @file
+ * @brief Spatial functions for temporal pose objects
  */
 
 #ifndef __TPOSE_SPATIALFUNCS_H__

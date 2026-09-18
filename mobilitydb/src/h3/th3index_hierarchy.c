@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for th3index hierarchy functions.
+ * @brief PG V1 wrappers for th3index hierarchy functions
  */
 
 /* PostgreSQL */

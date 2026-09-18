@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief PostGIS definitions that are needed in MobilityDB but are not
  * exported in PostGIS headers
  */

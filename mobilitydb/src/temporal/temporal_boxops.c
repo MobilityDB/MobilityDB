@@ -30,11 +30,10 @@
 /**
  * @file
  * @brief Bounding box functions for temporal types
- *
- * The bounding box of temporal values are
+ * @details The bounding box of temporal values are
  * - a `Span` for temporal Boolean and temporal text values
  * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
- *   the value dimension and the *t* coordinate is for the time dimension.
+ * the value dimension and the *t* coordinate is for the time dimension.
  * The following functions are defined: `overlaps`, `contains`, `contained`,
  * `same`, and `adjacent`.
  *

@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Internal declarations for pcpatch — binary-compatible with
- * pgpointcloud's SERIALIZED_PATCH varlena.
+ * pgpointcloud's SERIALIZED_PATCH varlena
  */
 
 #ifndef __PCPATCH_H__

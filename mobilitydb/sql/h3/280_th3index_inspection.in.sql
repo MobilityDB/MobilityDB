@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Index-inspection functions for `th3index`.
- *
- * All entries are `unary_scalar` lifts of the corresponding h3-pg
+ * @brief Index-inspection functions for `th3index`
+ * @details All entries are `unary_scalar` lifts of the corresponding h3-pg
  * functions. Each returns a Temporal of the base scalar type,
  * preserving the time axis of the input.
  */

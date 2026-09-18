@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief PostgreSQL functions of the raster sampling operators.
- *
- * The wrappers pass their arguments to MEOS, which samples a PostGIS raster
+ * @brief PostgreSQL functions of the raster sampling operators
+ * @details The wrappers pass their arguments to MEOS, which samples a PostGIS
+ * raster
  * through the vendored raster core: a `raster` column is detoasted into the
  * serialized form the MEOS functions take, so the operators answer the same
  * values to every binding of the library and not to PostgreSQL alone.

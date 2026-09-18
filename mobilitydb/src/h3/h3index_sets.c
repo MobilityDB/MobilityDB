@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static set-returning h3 helpers.
- *
- * Every wrapper unpacks arguments via `PG_GETARG_H3INDEX` /
+ * @brief PG V1 wrappers for the static set-returning h3 helpers
+ * @details Every wrapper unpacks arguments via `PG_GETARG_H3INDEX` /
  * `PG_GETARG_SET_P` / `PG_GETARG_INT32`, delegates to the
  * MEOS-layer implementation in `meos/src/h3/h3index_sets.c`, and
  * returns the resulting `Set *` as a SET Datum.

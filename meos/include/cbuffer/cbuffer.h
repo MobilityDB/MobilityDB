@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal buffers.
+ * @file
+ * @brief Functions for temporal buffers
  */
 
 #ifndef __CBUFFER_H__

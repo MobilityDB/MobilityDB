@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Hierarchical-grid functions for `th3index`.
- *
- * The two-arg forms (parent / center_child / child_pos with an
+ * @brief Hierarchical-grid functions for `th3index`
+ * @details The two-arg forms (parent / center_child / child_pos with an
  * explicit target resolution) lift via `lift_with_const` — the
  * integer resolution is constant across the time axis. The no-arg
  * forms drop to the next-coarser / next-finer resolution and are

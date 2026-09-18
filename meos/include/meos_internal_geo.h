@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Internal API of the Mobility Engine Open Source(MEOS) library.
+ * @file
+ * @brief Internal API of the Mobility Engine Open Source(MEOS) library
  */
 
 #ifndef __MEOS_INTERNAL_GEO_H__

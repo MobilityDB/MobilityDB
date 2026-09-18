@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Analytic functions for temporal poses
- *
- * All functions simplify the point trajectory (cast to tgeompoint) and then
+ * @details All functions simplify the point trajectory (cast to tgeompoint)
+ * and then
  * delete from the original tpose the instants the simplification dropped,
  * preserving the orientation channel at each surviving instant.
  *

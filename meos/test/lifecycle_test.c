@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the idempotency of the MEOS setup lifecycle.
- *
- * Every finalize function in the #meos_finalize chain nulls the slot it
+ * @brief A program that tests the idempotency of the MEOS setup lifecycle
+ * @details Every finalize function in the #meos_finalize chain nulls the slot
+ * it
  * released, so the chain is safe to run twice and a cycle can be started
  * again on the same thread. A host that drives the lifecycle per unit of work
  * (a stream query, a worker task) relies on both properties.

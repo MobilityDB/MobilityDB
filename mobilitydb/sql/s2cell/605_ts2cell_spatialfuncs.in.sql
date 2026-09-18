@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Temporal `ts2cell` cell operations.
- *
- * The six operations every DGGS shares, lifted over a temporal value:
+ * @brief Temporal `ts2cell` cell operations
+ * @details The six operations every DGGS shares, lifted over a temporal value:
  * resolution, validity, the ancestor at a coarser level, the centre,
  * the boundary and the area. Each binds a wrapper in
  * `mobilitydb/src/s2cell/ts2cell_ops.c` that delegates to the generic

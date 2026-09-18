@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Clipper2-backed polygon Boolean engine.
- *
- * GSERIALIZED ↔ Clipper2 Paths64 round-trip with full POLYGON / MULTIPOLYGON
+ * @brief Clipper2-backed polygon Boolean engine
+ * @details GSERIALIZED ↔ Clipper2 Paths64 round-trip with full POLYGON /
+ * MULTIPOLYGON
  * (with holes) support and the four Boolean operations
  * (intersection, union, difference, xor).
  *
@@ -42,7 +42,7 @@
  * becomes an LWPOLY exterior, its level-2 children become inner rings of that
  * polygon, and any level-3 ring (an island enclosed by a hole) starts a new
  * LWPOLY exterior — this is how Clipper2 represents nested polygon hierarchies.
- *****************************************************************************/
+ */
 
 /* PostgreSQL's win32_port.h defines its own `struct stat` (to get a 64-bit
  * st_size on Windows) after neutralising the UCRT one with

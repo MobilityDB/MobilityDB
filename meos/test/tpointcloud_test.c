@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief A program that tests the temporal point cloud types in a program
- * that has no pgPointCloud schema for the pcid its values name.
- *
- * A pcpoint and a pcpatch carry a pcid and nothing else about their layout,
+ * @brief A program that tests the temporal point cloud types in a program that
+ * has no pgPointCloud schema for the pcid its values name
+ * @details A pcpoint and a pcpatch carry a pcid and nothing else about their
+ * layout,
  * and the schema that pcid resolves to lives in a catalog table only a
  * PostgreSQL backend can scan. A standalone program has neither that catalog
  * nor, until it registers one, any schema at all, which is the state every

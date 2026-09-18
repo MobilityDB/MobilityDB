@@ -29,16 +29,16 @@
 
 /**
  * @file
- * @brief Typmod plumbing for tpcpoint and tpcpatch — column-level pcid
- *   pinning. Mirrors the tgeompoint(Point, SRID) typmod pattern in
- *   mobilitydb/src/geo/tgeo.c, but the only constrainable field is the
- *   pcid (positive int32). Typmod -1 means unconstrained; a non-negative
- *   value is the required pcid for every value stored in the column.
+ * @brief Typmod plumbing for tpcpoint and tpcpatch — column-level pcid pinning
+ * @details Mirrors the tgeompoint(Point, SRID) typmod pattern in
+ * mobilitydb/src/geo/tgeo.c, but the only constrainable field is the
+ * pcid (positive int32). Typmod -1 means unconstrained; a non-negative
+ * value is the required pcid for every value stored in the column.
  *
  * @code
- *   CREATE TABLE scans (id int, traj tpcpoint(1));   -- pinned to pcid 1
- *   INSERT INTO scans VALUES (1, tpcpoint(pcpoint(2, ...), '...'));
- *   -- ERROR: tpcpoint pcid 2 does not match column typmod pcid 1
+ * CREATE TABLE scans (id int, traj tpcpoint(1));   -- pinned to pcid 1
+ * INSERT INTO scans VALUES (1, tpcpoint(pcpoint(2, ...), '...'));
+ * -- ERROR: tpcpoint pcid 2 does not match column typmod pcid 1
  * @endcode
  */
 

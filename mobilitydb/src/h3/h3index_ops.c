@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `h3index` cell operations.
- *
- * Each wrapper unpacks its arguments, delegates to the first-party H3
+ * @brief PG V1 wrappers for the static `h3index` cell operations
+ * @details Each wrapper unpacks its arguments, delegates to the first-party H3
  * kernel declared in `meos_h3.h`, and returns the result. The file holds
  * the faces the `DggsCellOps` descriptor shares across every DGGS family
  * — resolution, hierarchy, cell centroid and boundary, area — spelled

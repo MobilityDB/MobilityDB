@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests how the temporal JSON and JSONB set functions of
- * the MEOS API report an invalid argument under the noexit error handler.
- *
- * A public MEOS function tests the conditions its internal form asserts, so a
+ * the MEOS API report an invalid argument under the noexit error handler
+ * @details A public MEOS function tests the conditions its internal form
+ * asserts, so a
  * binding calling it with a null pointer or a value of the wrong type receives
  * an error it can raise in its host language. An assertion cannot carry that
  * contract: it is compiled out under NDEBUG, which leaves the release build a

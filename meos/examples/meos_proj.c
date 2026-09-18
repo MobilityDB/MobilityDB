@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief A simple program that shows the connection of MEOS and PROJ
- *
- * The program can be build as follows
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o meos_proj meos_proj.c -L/usr/lib -lproj -L/usr/local/lib -lmeos
  * @endcode

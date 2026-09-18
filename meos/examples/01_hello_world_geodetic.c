@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that uses the MEOS library for creating some
- * temporal geography point values and output them in MF-JSON format.
- *
- * The program can be build as follows
+ * temporal geography point values and output them in MF-JSON format
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o 01_hello_world_geodetic 01_hello_world_geodetic.c -L/usr/local/lib -lmeos
  * @endcode

@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal text functions: `textcat`, `lower`, `upper`.
+ * @file
+ * @brief Temporal text functions: `textcat`, `lower`, `upper`
  */
 
 #ifndef __TTEXT_TEXTFUNCS_H__

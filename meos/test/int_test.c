@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A simple program that tests the integer functions exposed by the
- * PostgreSQL types embedded in MEOS.
- *
- * It reads <meos.h> and <pg_int.h> in one translation unit, which is the pair
+ * PostgreSQL types embedded in MEOS
+ * @details It reads <meos.h> and <pg_int.h> in one translation unit, which is
+ * the pair
  * the installed base-type header exists to keep consistent, so compiling it
  * against the installed headers is what keeps that pair honest.
  *

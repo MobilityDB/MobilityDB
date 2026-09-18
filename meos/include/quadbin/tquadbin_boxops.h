@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Internal declarations for the tquadbin bounding box functions.
+ * @brief Internal declarations for the tquadbin bounding box functions
  */
 
 #ifndef __TQUADBIN_BOXOPS_H__

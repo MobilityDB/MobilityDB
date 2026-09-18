@@ -27,10 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * GeoPose frame metadata registry.
- *
- * The OGC GeoPose v1.0 standard distinguishes the *outer frame* (the global
+/**
+ * @file
+ * @brief GeoPose frame metadata registry
+ * @details The OGC GeoPose v1.0 standard distinguishes the *outer frame* (the
+ * global
  * reference frame in which the pose's position lives) from the *inner frame*
  * (the body frame of the object being posed). The Basic conformance classes
  * mandate WGS-84 geographic for the outer frame and an implicit body-axes

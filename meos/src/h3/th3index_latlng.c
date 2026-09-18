@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief MEOS lifting for lat/lng conversions, plus the static
- * adapter bodies that back them.
- *
- * The static h3 conversions `geo_to_h3index_cell`,
+ * @brief MEOS lifting for lat/lng conversions, plus the static adapter bodies
+ * that back them
+ * @details The static h3 conversions `geo_to_h3index_cell`,
  * `h3index_cell_to_point`, and `h3index_cell_to_boundary` live here
  * alongside the lifted entries that consume them. Point reads use
  * the MobilityDB peek macro `GSERIALIZED_POINT2D_P` rather than

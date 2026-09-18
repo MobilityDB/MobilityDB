@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests reading a timezone abbreviation in one timezone
- * after another.
- *
- * An abbreviation the session timezone defines means what that timezone says
+ * after another
+ * @details An abbreviation the session timezone defines means what that
+ * timezone says
  * it means, so the same abbreviation read under each timezone
  * #meos_initialize_timezone sets takes the meaning of that timezone. LMT, the
  * local mean time a zone keeps before its first standard time, has a different

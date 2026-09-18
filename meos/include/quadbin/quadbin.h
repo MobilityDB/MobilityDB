@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Internal header for the first-party quadbin cell kernel.
- *
- * Re-exports the public API in meos_quadbin.h to the implementation files in
+ * @brief Internal header for the first-party quadbin cell kernel
+ * @details Re-exports the public API in meos_quadbin.h to the implementation
+ * files in
  * meos/src/quadbin/, mirroring the meos/include/h3/ internal-header layout.
  */
 

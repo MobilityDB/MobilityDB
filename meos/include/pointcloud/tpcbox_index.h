@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief R-tree GiST / SP-GiST strategies for the TPCBox bounding-box type
  */
 

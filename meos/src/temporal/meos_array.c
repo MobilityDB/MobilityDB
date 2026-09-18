@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for expandable arrays.
+ * @brief Functions for expandable arrays
  */
 
 

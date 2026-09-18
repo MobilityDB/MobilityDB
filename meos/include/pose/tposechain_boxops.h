@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal pose chains
  */
 

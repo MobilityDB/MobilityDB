@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal types.
+ * @file
+ * @brief Functions for parsing temporal types
  */
 
 #ifndef __TYPE_PARSER_H__

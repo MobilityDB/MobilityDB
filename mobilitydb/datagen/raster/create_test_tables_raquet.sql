@@ -27,9 +27,10 @@
  *
  *****************************************************************************/
 
-/*
- * create_test_tables_raquet.sql
- * Build the test table for the Raquet raster tile type. This is the OFFLINE
+/**
+ * @file
+ * @brief Build the test table for the Raquet raster tile type
+ * @details This is the OFFLINE
  * regeneration job that produces the frozen pg_dump fixture
  * test/raster/data/load_raquet.sql.xz; it is NOT part of the
  * mobilitydb_datagen extension (only the random_* helpers are).

@@ -29,11 +29,11 @@
 
 /**
  * @file
- * @brief Route identifier operators for temporal network points.
- *
- * These operators test the set of routes of temporal network points, which are
+ * @brief Route identifier operators for temporal network points
+ * @details These operators test the set of routes of temporal network points,
+ * which are
  * bigint values. The following operators are defined:
- *    overlaps, contains, contained, same
+ * overlaps, contains, contained, same
  */
 
 /* PostgreSQL */

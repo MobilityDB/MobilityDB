@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `quadbin` cell operations.
- *
- * Each wrapper unpacks its arguments, delegates to the first-party
+ * @brief PG V1 wrappers for the static `quadbin` cell operations
+ * @details Each wrapper unpacks its arguments, delegates to the first-party
  * quadbin kernel declared in `meos_quadbin.h`, and returns the result.
  * The square subset shared with every DGGS family (resolution,
  * hierarchy, k-ring, point/boundary/bbox, area) plus the

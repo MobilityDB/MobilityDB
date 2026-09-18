@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief PG wrappers for the TPCBox bounding-box type.
- *
- * Fixed-size struct (no varlena), so @c recv / @c send simply shuttle the
+ * @brief PG wrappers for the TPCBox bounding-box type
+ * @details Fixed-size struct (no varlena), so @c recv / @c send simply shuttle
+ * the
  * bytes through. @c in / @c out delegate to MEOS-layer @c tpcbox_in /
  * @c tpcbox_out, which read and write the WKT text form.
  */

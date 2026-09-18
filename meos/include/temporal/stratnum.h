@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Strategy numbers for MEOS indexes
  * @note Definitions borrowed from startnum.h
  */

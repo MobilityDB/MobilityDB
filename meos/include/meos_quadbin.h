@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief Public MEOS API for the temporal CARTO QUADBIN index type
- * (tquadbin) and its static `quadbin` cell type.
- *
- * Unlike the temporal H3 index (which links the vendored libh3 / h3-pg), the
+ * @brief Public MEOS API for the temporal CARTO QUADBIN index type (tquadbin)
+ * and its static `quadbin` cell type
+ * @details Unlike the temporal H3 index (which links the vendored libh3 /
+ * h3-pg), the
  * quadbin cell algebra is implemented FIRST-PARTY in meos/src/quadbin/ from the
  * public CARTO quadbin bit-specification — no vendored code, no external link
  * dependency, libm only. The static-cell kernel below is the analogue of what

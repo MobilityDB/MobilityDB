@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A program that tests the WKT input functions of the geo API on
- * malformed input, and the text representation of the PostGIS @p box3d type.
- *
- * A parse failure is only observable once
+ * malformed input, and the text representation of the PostGIS @p box3d type
+ * @details A parse failure is only observable once
  * #meos_initialize_noexit_error_handler is installed — the handler every
  * language binding uses, since a binding must return an exception to its host
  * rather than terminate it. Under it the parse-failure branch of the input

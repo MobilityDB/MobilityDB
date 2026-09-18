@@ -28,9 +28,9 @@
  *****************************************************************************/
 
 /**
- * @brief Process-global pgPointCloud schema cache, owned by MEOS.
- *
- * MEOS-layer code (e.g. tpcbox bbox computation, pcpoint accessor
+ * @file
+ * @brief Process-global pgPointCloud schema cache, owned by MEOS
+ * @details MEOS-layer code (e.g. tpcbox bbox computation, pcpoint accessor
  * helpers) needs the parsed @c PCSCHEMA for a given @c pcid to read
  * coordinates from a pcpoint blob.  The schema XML lives in
  * pgpointcloud's @c pointcloud_formats catalog table — only the PG
@@ -41,14 +41,14 @@
  *
  * The two entry points:
  *
- *   * @ref meos_pc_schema_register — populate the cache by hand
- *     (standalone use case).  The PG-side @c mobilitydb_pc_schema
- *     hook impl also calls it after a catalog scan.
+ * * @ref meos_pc_schema_register — populate the cache by hand
+ * (standalone use case).  The PG-side @c mobilitydb_pc_schema
+ * hook impl also calls it after a catalog scan.
  *
- *   * @ref meos_pc_schema — fast lookup with hook fallback.  On miss,
- *     defers to @c meos_pc_schema_fn (installed by the PG extension's
- *     @c mobilitydb_init) which does the catalog scan; the result is
- *     then registered automatically.
+ * * @ref meos_pc_schema — fast lookup with hook fallback.  On miss,
+ * defers to @c meos_pc_schema_fn (installed by the PG extension's
+ * @c mobilitydb_init) which does the catalog scan; the result is
+ * then registered automatically.
  *
  * The cache implementation is a small dynamic array (linear scan).
  * Real-world workloads rarely have more than a handful of pcids

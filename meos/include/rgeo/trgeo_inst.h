@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal rigid instant geometries.
+ * @file
+ * @brief Functions for temporal rigid instant geometries
  */
 
 #ifndef __TRGEO_INST_H__

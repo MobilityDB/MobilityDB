@@ -35,8 +35,8 @@
  * filtering purposes before applying the corresponding spatiotemporal
  * relationship.
  *
- * The following relationships are supported: `econtains`, `acontains`, 
- * `ecovers`, `acovers`, `edisjoint`, `adisjoint`, `eintersects`, 
+ * The following relationships are supported: `econtains`, `acontains`,
+ * `ecovers`, `acovers`, `edisjoint`, `adisjoint`, `eintersects`,
  * `aintersects`, `etouches`, atouches`,  `edwithin`, and `adwithin`.
  */
 

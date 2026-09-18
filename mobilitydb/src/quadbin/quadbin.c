@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `quadbin` SQL type.
+ * @brief PG V1 wrappers for the static `quadbin` SQL type
  */
 
 /* PostgreSQL */

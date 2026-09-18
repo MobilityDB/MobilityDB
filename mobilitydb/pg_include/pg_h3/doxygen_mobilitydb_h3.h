@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief Sections for the documentation of the MobilityDB API: temporal
- * H3 cell indices.
- *
- * Mirrors `doxygen_mobilitydb_cbuffer.h`. Each PG V1 wrapper in
+ * @brief Sections for the documentation of the MobilityDB API: temporal H3
+ * cell indices
+ * @details Mirrors `doxygen_mobilitydb_cbuffer.h`. Each PG V1 wrapper in
  * `mobilitydb/src/h3/*.c` is attached to one of these subgroups via
  * an `@ingroup mobilitydb_h3_<section>` line in its Doxygen header.
  */

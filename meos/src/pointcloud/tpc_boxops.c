@@ -29,12 +29,13 @@
 
 /**
  * @file
- * @brief TPCBox bounding-box helpers for temporal pointcloud types
- *   (tpcpoint, tpcpatch). Mirrors the tspatial_boxops.c implementation
- *   for the STBox case but reads its spatial dimensions differently:
- *   pcpoint via the schema-aware libpc.a dimension readers, pcpatch
- *   via the embedded @c PCBOUNDS (2D only — per-point Z is inside the
- *   compressed data block and cannot be summarised without decoding).
+ * @brief TPCBox bounding-box helpers for temporal pointcloud types (tpcpoint,
+ * tpcpatch)
+ * @details Mirrors the tspatial_boxops.c implementation
+ * for the STBox case but reads its spatial dimensions differently:
+ * pcpoint via the schema-aware libpc.a dimension readers, pcpatch
+ * via the embedded @c PCBOUNDS (2D only — per-point Z is inside the
+ * compressed data block and cannot be summarised without decoding).
  */
 
 #include "pointcloud/tpc_boxops.h"

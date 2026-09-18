@@ -30,13 +30,13 @@
 /**
  * @file
  * @brief MEOS implementations of the set-returning quadbin functions,
- * returning `quadbinset`.
+ * returning `quadbinset`
  * @details Shape of every function below:
- *   1. Ask the quadbin kernel for the cell array (palloc'd).
- *   2. Pack the array into a Datum array.
- *   3. `set_make_free` the Datum array — the constructor copies into its
- *      own storage and frees the input.
- *   4. Return the Set.
+ * 1. Ask the quadbin kernel for the cell array (palloc'd).
+ * 2. Pack the array into a Datum array.
+ * 3. `set_make_free` the Datum array — the constructor copies into its
+ * own storage and frees the input.
+ * 4. Return the Set.
  */
 
 #include "quadbin/quadbinset.h"

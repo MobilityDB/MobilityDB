@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief PG wrappers for the tpcpoint lifted temporal type.
- *
- * Most SQL bindings delegate to the generic @c Temporal_* PG wrappers in
+ * @brief PG wrappers for the tpcpoint lifted temporal type
+ * @details Most SQL bindings delegate to the generic @c Temporal_* PG wrappers
+ * in
  * @c mobilitydb/src/temporal/temporal.c — the generic parser / output /
  * constructor / accessor path dispatches through @c MeosType and works
  * correctly for @c T_TPCPOINT because the base type is wired into

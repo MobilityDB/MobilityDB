@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for temporal instants.
+ * @file
+ * @brief Basic functions for temporal instants
  */
 
 #ifndef __PG_TINSTANT_H__

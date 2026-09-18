@@ -31,7 +31,6 @@
  * @file
  * @brief Reading a raster along a moving trajectory holds every pixel the
  * trajectory crosses, each from the instant the trajectory reaches it
- *
  * @details The truth is the SAME entry point over a DISCRETE sequence of many
  * positions along the identical segment. A discrete sequence is read at its
  * instants, one pixel per position, through the grid the value under test is
@@ -39,8 +38,8 @@
  * Two properties are held:
  * - every value the dense read meets is a value of the trajectory's answer;
  * - at every dense instant the answer holds the value of the pixel under the
- *   position, except within two microseconds of an instant of the answer,
- *   which is the rounding of a crossing time to whole microseconds.
+ * position, except within two microseconds of an instant of the answer,
+ * which is the rounding of a crossing time to whole microseconds.
  *
  * Every pixel carries a distinct value, so a pixel the answer passes over
  * shows as a missing value and a change read late as a wrong one. The
@@ -51,7 +50,7 @@
  *
  * @code
  * gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include
- *   -o rasterwalk_test rasterwalk_test.c -L/usr/local/lib -lmeos -lm
+ * -o rasterwalk_test rasterwalk_test.c -L/usr/local/lib -lmeos -lm
  * @endcode
  */
 

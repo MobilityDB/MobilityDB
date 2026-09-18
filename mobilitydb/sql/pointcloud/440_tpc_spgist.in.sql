@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Quad-tree and k-d tree SP-GiST indexes for point cloud boxes and
- *   temporal point clouds
+ * temporal point clouds
  */
 
 CREATE FUNCTION tpcbox_spgist_compress(internal)

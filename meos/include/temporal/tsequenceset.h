@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for temporal sequence sets.
+ * @file
+ * @brief Basic functions for temporal sequence sets
  */
 
 #ifndef __TSEQUENCESET_H__

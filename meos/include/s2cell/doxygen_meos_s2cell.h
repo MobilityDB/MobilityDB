@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief MEOS Developer's Documentation: Functions for temporal Google S2
- * cell indices
+ * @brief MEOS Developer's Documentation: Functions for temporal Google S2 cell
+ * indices
  */
 
 /*****************************************************************************

@@ -30,16 +30,17 @@
 /**
  * @file
  * @brief PG wrappers for TPCBox-based bounding-box operators on the
- *   pgPointCloud temporal types. Mirrors the stbox / tspatial bbox
- *   surface in @c mobilitydb/src/geo/tgeo_boxops.c.
+ * pgPointCloud temporal types
+ * @details Mirrors the stbox / tspatial bbox
+ * surface in @c mobilitydb/src/geo/tgeo_boxops.c.
  *
  * The five topological families exposed are overlaps (&&), contains
  * (\@>), contained (<\@), same (~=) and adjacent (-|-), and the sixteen
  * position operators: strictly left, right, below, above, front, back,
  * before and after, and their overlapping variants. Each is wired to:
- *   * tpcbox vs (tpcpoint | tpcpatch)        via @c Boxop_tpcbox_tpointcloud
- *   * (tpcpoint | tpcpatch) vs tpcbox        via @c Boxop_tpointcloud_tpcbox
- *   * tpointcloud vs tpointcloud             via @c Boxop_tpointcloud_tpointcloud
+ * * tpcbox vs (tpcpoint | tpcpatch)        via @c Boxop_tpcbox_tpointcloud
+ * * (tpcpoint | tpcpatch) vs tpcbox        via @c Boxop_tpointcloud_tpcbox
+ * * tpointcloud vs tpointcloud             via @c Boxop_tpointcloud_tpointcloud
  *
  * tstzspan-based variants (tpcpoint vs tstzspan, etc.) are not
  * registered here — the generic @c Boxop_temporal_tstzspan in

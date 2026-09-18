@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial restriction functions for temporal rigid geometries.
+ * @file
+ * @brief Spatial restriction functions for temporal rigid geometries
  */
 
 #ifndef __TRGEO_SPATIALFUNCS_H__

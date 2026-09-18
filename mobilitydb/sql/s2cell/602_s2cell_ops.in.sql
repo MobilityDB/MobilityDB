@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Static `s2cell` cell operations.
- *
- * The subset of the DGGS surface every family shares — resolution,
+ * @brief Static `s2cell` cell operations
+ * @details The subset of the DGGS surface every family shares — resolution,
  * hierarchy, cell ↔ point, boundary and area — under the names the
  * `DggsCellOps` descriptor in `meos/include/temporal/tcellindex.h`
  * fixes, together with the operations that are S2's own: the cube

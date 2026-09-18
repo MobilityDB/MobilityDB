@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for th3index lat/lng conversions.
+ * @brief PG V1 wrappers for th3index lat/lng conversions
  */
 
 /* PostgreSQL */

@@ -30,15 +30,15 @@
 /**
  * @file
  * @brief MEOS kernel for sampling Raquet raster chips along tgeompoint
- * trajectories.
- *
- * Each Raquet tile is identified by a CARTO QUADBIN cell (uint64) whose
+ * trajectories
+ * @details Each Raquet tile is identified by a CARTO QUADBIN cell (uint64)
+ * whose
  * Morton-encoded x/y/z coordinates define the Web-Mercator bounding box and
  * pixel grid without any external metadata.  The pixel-to-coordinate mapping
  * uses the standard slippy-tile Mercator transform:
  *
- *   col = floor((lon − xmin) / (xmax − xmin) × width)
- *   row = floor((top_merc − merc(lat)) / (top_merc − bot_merc) × height)
+ * col = floor((lon − xmin) / (xmax − xmin) × width)
+ * row = floor((top_merc − merc(lat)) / (top_merc − bot_merc) × height)
  *
  * where merc(lat) = ln(tan(π/4 + lat·π/360)) in radians.
  *

@@ -29,8 +29,9 @@
 
 /**
  * @file
- * @brief Thread-local-storage qualifier macro used by MEOS to mark
- * per-thread state. Kept in a stand-alone header so that vendored
+ * @brief Thread-local-storage qualifier macro used by MEOS to mark per-thread
+ * state
+ * @details Kept in a stand-alone header so that vendored
  * PostgreSQL headers (e.g. pgtime.h) can pick it up without pulling in
  * the full meos.h.
  */

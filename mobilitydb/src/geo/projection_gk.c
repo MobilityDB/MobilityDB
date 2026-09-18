@@ -29,8 +29,7 @@
 
 /**
  * @file
- * @brief Implementation of the Gauss-Krueger projection used in Secondo.
- *
+ * @brief Implementation of the Gauss-Krueger projection used in Secondo
  * @note This projection does not correspond to any standard projection in
  * http://www.epsg.org/. This projection is provided to enable the comparison
  * of MobilityDB and Secondo.

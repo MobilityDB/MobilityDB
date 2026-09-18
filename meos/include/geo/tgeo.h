@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal geos.
+ * @file
+ * @brief Functions for temporal geos
  */
 
 #ifndef __TGEO_H__
