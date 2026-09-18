@@ -844,7 +844,7 @@ cbuffer_srid(const Cbuffer *cb)
  * @csqlfn #Cbuffer_set_srid()
  */
 void
-cbuffer_set_srid_int(Cbuffer *cb, int32_t srid)
+cbuffer_set_srid_intl(Cbuffer *cb, int32_t srid)
 {
   assert(cb); assert(srid != SRID_INVALID);
   cb->srid = srid;

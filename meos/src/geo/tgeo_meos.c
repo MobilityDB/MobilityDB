@@ -657,7 +657,7 @@ tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
  * @param[in] ispoint True for temporal points, false for temporal geos
  */
 Temporal *
-tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp, 
+tgeo_from_base_temp_intl(const GSERIALIZED *gs, const Temporal *temp, 
   bool ispoint)
 {
   /* Ensure the validity of the arguments */
@@ -682,7 +682,7 @@ tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp,
 Temporal *
 tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tgeo_from_base_temp_int(gs, temp, true);
+  return tgeo_from_base_temp_intl(gs, temp, true);
 }
 
 /**
@@ -695,7 +695,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tgeo_from_base_temp_int(gs, temp, false);
+  return tgeo_from_base_temp_intl(gs, temp, false);
 }
 
 /*****************************************************************************

@@ -126,7 +126,7 @@ posechain_alloc(int count, bool hasz, bool geodetic, int32_t srid)
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, hasz);
   MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  posechain_set_srid_int(result, srid);
+  posechain_set_srid_intl(result, srid);
   result->count = count;
   return result;
 }
@@ -326,7 +326,7 @@ posechain_parse(const char **str, bool end)
 
   /* An SRID written before the chain applies to its outer frame */
   if (srid != SRID_UNKNOWN && pose_srid(poses[0]) == SRID_UNKNOWN)
-    pose_set_srid_int(poses[0], srid);
+    pose_set_srid_intl(poses[0], srid);
 
   PoseChain *result = posechain_make((const Pose **) poses, count);
   pfree_array((void **) poses, count);
@@ -962,7 +962,7 @@ posechain_srid(const PoseChain *pc)
  * @param[in] srid SRID
  */
 void
-posechain_set_srid_int(PoseChain *pc, int32_t srid)
+posechain_set_srid_intl(PoseChain *pc, int32_t srid)
 {
   assert(pc);
   /* 0 is our internal unknown value.
@@ -989,7 +989,7 @@ posechain_set_srid(const PoseChain *pc, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   PoseChain *result = posechain_copy(pc);
-  posechain_set_srid_int(result, srid);
+  posechain_set_srid_intl(result, srid);
   return result;
 }
 
@@ -1016,7 +1016,7 @@ posechain_transf_pj(const PoseChain *pc, int32_t srid_to, const LWPROJ *pj)
     (size_t) POSECHAIN_LINK_SIZE(pc) * sizeof(double));
   MEOS_FLAGS_SET_GEODETIC(result->flags,
     MEOS_FLAGS_GET_GEODETIC(transf->flags));
-  posechain_set_srid_int(result, srid_to);
+  posechain_set_srid_intl(result, srid_to);
   pfree(transf);
   return result;
 }

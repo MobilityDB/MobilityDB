@@ -665,7 +665,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @param[out] newcount Number of values in the output array
  */
 static Temporal **
-temporal_time_split_int(const Temporal *temp, TimestampTz start,
+temporal_time_split_intl(const Temporal *temp, TimestampTz start,
   TimestampTz end, int64 tunits, TimestampTz torigin, int count,
   TimestampTz **bins, int *newcount)
 {
@@ -720,7 +720,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   int64 tunits = interval_units(duration);
   int nbins = span_num_bins(&s, Int64GetDatum(tunits),
     TimestampTzGetDatum(torigin), &start_bin, &end_bin);
-  return temporal_time_split_int(temp, DatumGetTimestampTz(start_bin),
+  return temporal_time_split_intl(temp, DatumGetTimestampTz(start_bin),
     DatumGetTimestampTz(end_bin), tunits, torigin, nbins, bins, count);
 }
 
@@ -1317,7 +1317,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
     {
       int num_time_splits;
       TimestampTz *times;
-      Temporal **time_splits = temporal_time_split_int(atspan, start_time,
+      Temporal **time_splits = temporal_time_split_intl(atspan, start_time,
         end_time, tunits, torigin, time_count, &times, &num_time_splits);
       for (int i = 0; i < num_time_splits; i++)
       {

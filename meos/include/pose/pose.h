@@ -133,7 +133,7 @@ extern Pose *pose_transf_pj(const Pose *pose, int32_t srid_to,
 
 /* Spatial reference system functions */
 
-extern void pose_set_srid_int(Pose *pose, int32_t srid);
+extern void pose_set_srid_intl(Pose *pose, int32_t srid);
 
 /* Distance */
 

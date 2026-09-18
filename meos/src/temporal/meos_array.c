@@ -51,25 +51,6 @@ array_slot(const MeosArray *array, int n)
   return (char *) array->elems + ((size_t)n * array->elem_size);
 }
 
-/**
- * @brief Reset the array
- * @param[in] array Array
- * @param[in] free_elems If true and the array is varlength, pfree each stored
- * pointer before resetting
- */
-static void
-meos_array_reset_int(MeosArray *array, bool free_elems)
-{
-  if (! array)
-    return;
-  if (free_elems && array->varlength)
-  {
-    for (size_t i = 0; i < array->count; i++)
-      pfree(meos_array_get(array, (int) i));
-  }
-  array->count = 0;
-}
-
 /*****************************************************************************
  * Public functions
  *****************************************************************************/
@@ -153,7 +134,7 @@ meos_array_destroy_free(MeosArray *array)
 {
   if (! array)
     return;
-  meos_array_reset_int(array, true);
+  meos_array_reset_free(array);
   pfree(array->elems);
   pfree(array);
 }
@@ -230,6 +211,25 @@ meos_array_count(const MeosArray *array)
 }
 
 /**
+ * @brief Reset the array
+ * @param[in] array Array
+ * @param[in] free_elems If true and the array is varlength, pfree each stored
+ * pointer before resetting
+ */
+static void
+meos_array_reset_intl(MeosArray *array, bool free_elems)
+{
+  if (! array)
+    return;
+  if (free_elems && array->varlength)
+  {
+    for (size_t i = 0; i < array->count; i++)
+      pfree(meos_array_get(array, (int) i));
+  }
+  array->count = 0;
+}
+
+/**
  * @ingroup meos_misc
  * @brief Reset the array, keeping the allocated memory for reuse
  * @details For varlength arrays, the caller is responsible for freeing the
@@ -240,7 +240,7 @@ meos_array_count(const MeosArray *array)
 void
 meos_array_reset(MeosArray *array)
 {
-  meos_array_reset_int(array, false);
+  meos_array_reset_intl(array, false);
 }
 
 /**
@@ -253,7 +253,7 @@ meos_array_reset(MeosArray *array)
 void
 meos_array_reset_free(MeosArray *array)
 {
-  meos_array_reset_int(array, true);
+  meos_array_reset_intl(array, true);
 }
 
 /*****************************************************************************/
