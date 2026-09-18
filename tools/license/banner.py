@@ -55,9 +55,12 @@ with open(BANNER_FILE, encoding="utf-8") as fh:
 
 KEY = "This MobilityDB code is provided under The PostgreSQL License."
 
-# The source files carrying a banner: the first-party trees and extensions
-TREES = ("meos", "mobilitydb", "tools")
-EXTENSIONS = (".c", ".h", ".cpp", ".sql", ".py", ".in")
+# The source files that may carry a banner, wherever they live: a file of one
+# of these kinds is stamped when it carries the banner's first line
+EXTENSIONS = (".c", ".h", ".cpp", ".sql", ".py", ".sh", ".in", ".tmpl")
+# Vendored trees carry the notices of their upstream, never this banner
+VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "clipper2/", "pointcloud-pg/")
+HASH_EXTENSIONS = (".py", ".sh")
 
 
 def body_lines():
@@ -74,7 +77,8 @@ def style_of(path):
     # "--" line, so a SQL test carries the banner as "--" lines
     if path.startswith("mobilitydb/test/") and path.endswith(".sql"):
         return "sql"
-    return "hash" if path.endswith(".py") else "c"
+    base = path.rsplit("/", 1)[-1]
+    return "hash" if path.endswith(HASH_EXTENSIONS) or "." not in base else "c"
 
 
 def render(style):
@@ -204,9 +208,19 @@ def stamp(text, path):
 
 
 def tracked(root):
-    out = subprocess.run(["git", "-C", root, "ls-files", *TREES],
+    out = subprocess.run(["git", "-C", root, "ls-files"],
       capture_output=True, text=True, check=True).stdout.split()
-    return [f for f in out if f.endswith(EXTENSIONS)]
+    def script(f):
+        # An extensionless file is a source when it opens with a shebang
+        if "." in f.rsplit("/", 1)[-1]:
+            return False
+        try:
+            with open(os.path.join(root, f), "rb") as fh:
+                return fh.read(2) == b"#!"
+        except OSError:
+            return False
+    return [f for f in out if not f.startswith(VENDORED) and
+            (f.endswith(EXTENSIONS) or script(f))]
 
 
 def main(argv):
@@ -220,14 +234,18 @@ def main(argv):
     for f in files:
         p = os.path.join(root, f)
         try:
-            text = open(p, encoding="utf-8").read()
+            with open(p, encoding="utf-8", newline="") as fh:
+                text = fh.read()
         except (OSError, UnicodeDecodeError):
             continue
-        new = stamp(text, f)
+        # A file keeps its own line endings
+        eol = "\r\n" if "\r\n" in text else "\n"
+        new = stamp(text.replace("\r\n", "\n"), f).replace("\n", eol)
         if new != text:
             differ.append(f)
             if not check:
-                open(p, "w", encoding="utf-8").write(new)
+                with open(p, "w", encoding="utf-8", newline="") as fh:
+                    fh.write(new)
     if check:
         for f in differ:
             print("banner differs: %s" % f)
