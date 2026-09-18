@@ -42,7 +42,7 @@ var searchData=
   ['spanset_2eh_39',['spanset.h',['../meos_2include_2temporal_2spanset_8h.html',1,'(Global Namespace)'],['../mobilitydb_2pg__include_2pg__temporal_2spanset_8h.html',1,'(Global Namespace)']]],
   ['spanset_5fconv_2ec_40',['spanset_conv.c',['../spanset__conv_8c.html',1,'']]],
   ['spanset_5fmeos_2ec_41',['spanset_meos.c',['../spanset__meos_8c.html',1,'']]],
-  ['spanset_5fops_2ec_42',['spanset_ops.c',['../mobilitydb_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)'],['../meos_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)']]],
+  ['spanset_5fops_2ec_42',['spanset_ops.c',['../meos_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)']]],
   ['spanset_5fops_5fmeos_2ec_43',['spanset_ops_meos.c',['../spanset__ops__meos_8c.html',1,'']]],
   ['spatialset_2ec_44',['spatialset.c',['../spatialset_8c.html',1,'']]],
   ['sptree_5fjoin_5ftest_2ec_45',['sptree_join_test.c',['../sptree__join__test_8c.html',1,'']]],
@@ -53,6 +53,7 @@ var searchData=
   ['stbox_2eh_50',['stbox.h',['../stbox_8h.html',1,'']]],
   ['stbox_5findex_2ec_51',['stbox_index.c',['../stbox__index_8c.html',1,'']]],
   ['stbox_5findex_2eh_52',['stbox_index.h',['../stbox__index_8h.html',1,'']]],
-  ['stbox_5ftile_2ec_53',['stbox_tile.c',['../stbox__tile_8c.html',1,'']]],
-  ['stratnum_2eh_54',['stratnum.h',['../stratnum_8h.html',1,'']]]
+  ['stbox_5fperiod_5ftest_2ec_53',['stbox_period_test.c',['../stbox__period__test_8c.html',1,'']]],
+  ['stbox_5ftile_2ec_54',['stbox_tile.c',['../stbox__tile_8c.html',1,'']]],
+  ['stratnum_2eh_55',['stratnum.h',['../stratnum_8h.html',1,'']]]
 ];
