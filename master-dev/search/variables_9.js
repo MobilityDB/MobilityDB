@@ -20,5 +20,5 @@ var searchData=
   ['hi_17',['hi',['../structLinearStretch_af2adbcb95529fe91debc30857fd776c1.html#af2adbcb95529fe91debc30857fd776c1',1,'LinearStretch']]],
   ['histogram_5fcells_18',['histogram_cells',['../structND__STATS__T_a98c76a230859d3c610d7e2146605d5be.html#a98c76a230859d3c610d7e2146605d5be',1,'ND_STATS_T']]],
   ['histogram_5ffeatures_19',['histogram_features',['../structND__STATS__T_a34fb0ed535391a37ccbdd14a72b1adf0.html#a34fb0ed535391a37ccbdd14a72b1adf0',1,'ND_STATS_T']]],
-  ['hits_20',['hits',['../structstruct__PROJSRSCacheItem_a379313ea31d58641e45849000bacc8e9.html#a379313ea31d58641e45849000bacc8e9',1,'struct_PROJSRSCacheItem::hits()'],['../structstruct__WaysCacheEntry_af6d99409f0b4c52b7c3dca69f433da28.html#af6d99409f0b4c52b7c3dca69f433da28',1,'struct_WaysCacheEntry::hits()']]]
+  ['hits_20',['hits',['../structRelateCtxCacheEntry_a1df448b7883b9f3d7ef6d54e26cd5bd1.html#a1df448b7883b9f3d7ef6d54e26cd5bd1',1,'RelateCtxCacheEntry::hits()'],['../structstruct__PROJSRSCacheItem_a379313ea31d58641e45849000bacc8e9.html#a379313ea31d58641e45849000bacc8e9',1,'struct_PROJSRSCacheItem::hits()'],['../structstruct__WaysCacheEntry_af6d99409f0b4c52b7c3dca69f433da28.html#af6d99409f0b4c52b7c3dca69f433da28',1,'struct_WaysCacheEntry::hits()']]]
 ];

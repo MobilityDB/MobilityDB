@@ -90,11 +90,13 @@ $(function() {
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &quot;postgres.h&quot;</code><br />
 <code>#include &lt;utils/float.h&gt;</code><br />
+<code>#include &lt;utils/memutils.h&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &quot;liblwgeom.h&quot;</code><br />
 <code>#include &quot;liblwgeom_internal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos_8h_source.html">meos.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="meos__tls_8h_source.html">meos_tls.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis__funcs_8h_source.html">geo/postgis_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__transform_8h_source.html">geo/meos_transform.h</a>&quot;</code><br />
@@ -126,6 +128,12 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRelateCtx.html">RelateCtx</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The edges of one geometry, kept for every relationship asked about it.  <a href="structRelateCtx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRelateCtxCache.html">RelateCtxCache</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The edges kept for the geometries asked about.  <a href="structRelateCtxCache.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRelateCtxCacheEntry.html">RelateCtxCacheEntry</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An entry holding the edges one geometry is read as.  <a href="structRelateCtxCacheEntry.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRelateInterval.html">RelateInterval</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure keeping a parameter interval of an edge.  <a href="structRelateInterval.html#details">More...</a><br /></td></tr>
@@ -169,6 +177,10 @@ Macros</h2></td></tr>
 <tr class="memitem:a97037dae96777ffc7c6902f8199319e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a97037dae96777ffc7c6902f8199319e0.html#a97037dae96777ffc7c6902f8199319e0">DE9IM_II</a>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
 <tr class="memdesc:a97037dae96777ffc7c6902f8199319e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The nine cells of a DE-9IM matrix as bits, in the order of its string, so a caller names the cells it reads.  <a href="meos_2src_2geo_2geo__funcs_8c_a97037dae96777ffc7c6902f8199319e0.html#a97037dae96777ffc7c6902f8199319e0">More...</a><br /></td></tr>
 <tr class="separator:a97037dae96777ffc7c6902f8199319e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf1f2defae6216190394aecc4d2ddb3d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_aaf1f2defae6216190394aecc4d2ddb3d.html#aaf1f2defae6216190394aecc4d2ddb3d">RELATE_CTX_CACHE_MIN_BYTES</a>&#160;&#160;&#160;512</td></tr>
+<tr class="separator:aaf1f2defae6216190394aecc4d2ddb3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a903a381362313cb8cceb7dd3f7804a16"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a903a381362313cb8cceb7dd3f7804a16.html#a903a381362313cb8cceb7dd3f7804a16">RELATE_CTX_CACHE_SIZE</a>&#160;&#160;&#160;8</td></tr>
+<tr class="separator:a903a381362313cb8cceb7dd3f7804a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -586,6 +598,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a13c410e369fef2f82daa1968b5e1ed76"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a13c410e369fef2f82daa1968b5e1ed76.html#a13c410e369fef2f82daa1968b5e1ed76">meos_curves_meet_at_ends</a> (<a class="el" href="structEdge.html">Edge</a> **ea, int na, <a class="el" href="structEdge.html">Edge</a> **eb, int nb)</td></tr>
 <tr class="memdesc:a13c410e369fef2f82daa1968b5e1ed76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the curves two members draw meet only at points that end them both.  <a href="meos_2src_2geo_2geo__funcs_8c_a13c410e369fef2f82daa1968b5e1ed76.html#a13c410e369fef2f82daa1968b5e1ed76">More...</a><br /></td></tr>
 <tr class="separator:a13c410e369fef2f82daa1968b5e1ed76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3f95c517416710e62671e60a541a8e7b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setup_ga3f95c517416710e62671e60a541a8e7b.html#ga3f95c517416710e62671e60a541a8e7b">meos_finalize_relate</a> (void)</td></tr>
+<tr class="memdesc:ga3f95c517416710e62671e60a541a8e7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the cache holding the edges of the geometries asked about.  <a href="group__meos__setup_ga3f95c517416710e62671e60a541a8e7b.html#ga3f95c517416710e62671e60a541a8e7b">More...</a><br /></td></tr>
+<tr class="separator:ga3f95c517416710e62671e60a541a8e7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a040c4f12501344e1625c980e371e2eec"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a040c4f12501344e1625c980e371e2eec.html#a040c4f12501344e1625c980e371e2eec">meos_intersects</a> (const <a class="el" href="structRelateOperands.html">RelateOperands</a> *ops, bool *result)</td></tr>
 <tr class="memdesc:a040c4f12501344e1625c980e371e2eec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether two geometries share a point.  <a href="meos_2src_2geo_2geo__funcs_8c_a040c4f12501344e1625c980e371e2eec.html#a040c4f12501344e1625c980e371e2eec">More...</a><br /></td></tr>
 <tr class="separator:a040c4f12501344e1625c980e371e2eec"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -772,12 +787,24 @@ Functions</h2></td></tr>
 <tr class="memitem:aef66fd76c31e15636e33b7ccd7716653"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_aef66fd76c31e15636e33b7ccd7716653.html#aef66fd76c31e15636e33b7ccd7716653">relate_count_points</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
 <tr class="memdesc:aef66fd76c31e15636e33b7ccd7716653"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the points of a point geometry.  <a href="meos_2src_2geo_2geo__funcs_8c_aef66fd76c31e15636e33b7ccd7716653.html#aef66fd76c31e15636e33b7ccd7716653">More...</a><br /></td></tr>
 <tr class="separator:aef66fd76c31e15636e33b7ccd7716653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53b88b03003beeece316a1a87e9a3247"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a53b88b03003beeece316a1a87e9a3247.html#a53b88b03003beeece316a1a87e9a3247">relate_ctx_borrow</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, void **entry)</td></tr>
+<tr class="memdesc:a53b88b03003beeece316a1a87e9a3247"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the context holding the edges of a serialized geometry, and the entry it belongs to where one holds it.  <a href="meos_2src_2geo_2geo__funcs_8c_a53b88b03003beeece316a1a87e9a3247.html#a53b88b03003beeece316a1a87e9a3247">More...</a><br /></td></tr>
+<tr class="separator:a53b88b03003beeece316a1a87e9a3247"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4321f93d8a08f74679fdaf35777c3fd6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4321f93d8a08f74679fdaf35777c3fd6.html#a4321f93d8a08f74679fdaf35777c3fd6">relate_ctx_cache_clear_entry</a> (<a class="el" href="structRelateCtxCacheEntry.html">RelateCtxCacheEntry</a> *e)</td></tr>
+<tr class="memdesc:a4321f93d8a08f74679fdaf35777c3fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release the context and the key an entry holds.  <a href="meos_2src_2geo_2geo__funcs_8c_a4321f93d8a08f74679fdaf35777c3fd6.html#a4321f93d8a08f74679fdaf35777c3fd6">More...</a><br /></td></tr>
+<tr class="separator:a4321f93d8a08f74679fdaf35777c3fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab546415b4b53073423af20aebdd98155"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_ab546415b4b53073423af20aebdd98155.html#ab546415b4b53073423af20aebdd98155">relate_ctx_free</a> (void *ctxv)</td></tr>
 <tr class="memdesc:ab546415b4b53073423af20aebdd98155"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release a context <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f" title="Read the edges of a geometry once, for a caller that asks about it more than once.">relate_ctx_make</a> answered.  <a href="meos_2src_2geo_2geo__funcs_8c_ab546415b4b53073423af20aebdd98155.html#ab546415b4b53073423af20aebdd98155">More...</a><br /></td></tr>
 <tr class="separator:ab546415b4b53073423af20aebdd98155"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a233a6be8421102c31ba191861b90209f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f">relate_ctx_make</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
 <tr class="memdesc:a233a6be8421102c31ba191861b90209f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the edges of a geometry once, for a caller that asks about it more than once.  <a href="meos_2src_2geo_2geo__funcs_8c_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f">More...</a><br /></td></tr>
 <tr class="separator:a233a6be8421102c31ba191861b90209f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37d09ac06b8797db8429dc6bc7dc72c2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a37d09ac06b8797db8429dc6bc7dc72c2.html#a37d09ac06b8797db8429dc6bc7dc72c2">relate_ctx_return</a> (void *ctx, void *entry)</td></tr>
+<tr class="memdesc:a37d09ac06b8797db8429dc6bc7dc72c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Give back a context <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a53b88b03003beeece316a1a87e9a3247.html#a53b88b03003beeece316a1a87e9a3247" title="Return the context holding the edges of a serialized geometry, and the entry it belongs to where one ...">relate_ctx_borrow</a> answered.  <a href="meos_2src_2geo_2geo__funcs_8c_a37d09ac06b8797db8429dc6bc7dc72c2.html#a37d09ac06b8797db8429dc6bc7dc72c2">More...</a><br /></td></tr>
+<tr class="separator:a37d09ac06b8797db8429dc6bc7dc72c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d2a39262d2bd78b61b18958c23bebb4"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4d2a39262d2bd78b61b18958c23bebb4.html#a4d2a39262d2bd78b61b18958c23bebb4">relate_ctx_same</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *g1, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *g2)</td></tr>
+<tr class="memdesc:a4d2a39262d2bd78b61b18958c23bebb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two serialized geometries are the same one.  <a href="meos_2src_2geo_2geo__funcs_8c_a4d2a39262d2bd78b61b18958c23bebb4.html#a4d2a39262d2bd78b61b18958c23bebb4">More...</a><br /></td></tr>
+<tr class="separator:a4d2a39262d2bd78b61b18958c23bebb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedaa1fc1d8b92f4e55f5a0e05cc99c8c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_aedaa1fc1d8b92f4e55f5a0e05cc99c8c.html#aedaa1fc1d8b92f4e55f5a0e05cc99c8c">relate_dim_mask</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
 <tr class="memdesc:aedaa1fc1d8b92f4e55f5a0e05cc99c8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the bitmask of the topological dimensions occurring in a geometry.  <a href="meos_2src_2geo_2geo__funcs_8c_aedaa1fc1d8b92f4e55f5a0e05cc99c8c.html#aedaa1fc1d8b92f4e55f5a0e05cc99c8c">More...</a><br /></td></tr>
 <tr class="separator:aedaa1fc1d8b92f4e55f5a0e05cc99c8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1114,6 +1141,8 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a44a39890b167e46e2438172cd37b2ba7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> <a class="el" href="structRelateCtxCache.html">RelateCtxCache</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a44a39890b167e46e2438172cd37b2ba7.html#a44a39890b167e46e2438172cd37b2ba7">MEOS_RELATE_CTX_CACHE</a> = NULL</td></tr>
+<tr class="separator:a44a39890b167e46e2438172cd37b2ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7683aa676554dd56b6cd0c6a497c2a3"><td class="memItemLeft" align="right" valign="top">enum  { ... } &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_ab7683aa676554dd56b6cd0c6a497c2a3.html#ab7683aa676554dd56b6cd0c6a497c2a3">MEOS_SEG_INTER_TYPE</a></td></tr>
 <tr class="separator:ab7683aa676554dd56b6cd0c6a497c2a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
