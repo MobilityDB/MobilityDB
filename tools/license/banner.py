@@ -36,10 +36,12 @@ and the comment describing the file, with its @file tag.
 This script re-stamps the banner of every tracked source file from that file,
 so that a change of year is an edit of banner.txt followed by one run.
 
-usage: python3 tools/license/banner.py [--check] [file ...]
-  With no file, every tracked source file carrying the banner is processed.
+usage: python3 tools/license/banner.py [--check | --list] [file ...]
+  With no file, every tracked source file is processed: one carrying the
+  banner is re-stamped, one without it receives it at its top.
   --check writes nothing and lists the files whose banner differs from the
   rendered one, exiting 1 when there is any.
+  --list writes nothing and lists the files that carry the banner.
 """
 
 import os
@@ -55,12 +57,22 @@ with open(BANNER_FILE, encoding="utf-8") as fh:
 
 KEY = "This MobilityDB code is provided under The PostgreSQL License."
 
-# The source files that may carry a banner, wherever they live: a file of one
-# of these kinds is stamped when it carries the banner's first line
-EXTENSIONS = (".c", ".h", ".cpp", ".sql", ".py", ".sh", ".in", ".tmpl")
-# Vendored trees carry the notices of their upstream, never this banner
+# The source files that carry the banner, wherever they live
+EXTENSIONS = (".c", ".h", ".cpp", ".sql", ".py", ".sh", ".in", ".tmpl", ".cmake")
+NAMES = ("CMakeLists.txt",)
+# Vendored trees carry the notices of their upstream. A file there is
+# MobilityDB's when it declares so by carrying this banner: its banner is
+# refreshed, and no file there ever receives one
 VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "clipper2/", "pointcloud-pg/")
-HASH_EXTENSIONS = (".py", ".sh")
+# The files of the first-party trees that state another project's licence
+OTHER_PROJECTS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+  "..", "scripts", "license_other_projects.txt")
+# A generator template opens with the @LICENSE@ line standing for the banner
+FRAGMENTS = (".tmpl",)
+# A file of one of these kinds without the banner is left as it is, since its
+# kind admits no comment where the banner would stand
+KEEP_WITHOUT = (".in",)
+HASH_EXTENSIONS = (".py", ".sh", ".cmake") + NAMES
 
 
 def body_lines():
@@ -175,15 +187,26 @@ def split_dash(lines, a, b):
 
 
 def stamp(text, path):
-    """Return a text with its banner replaced by the rendered one, and any
-    further banner the file carries after it removed with the blank line
-    following it"""
+    """Return a text with its banner replaced by the rendered one, or placed at
+    its top when it carries none, and any further banner the file carries after
+    it removed with the blank line following it"""
     lines = text.split("\n")
     styles = ("hash",) if style_of(path) == "hash" else ("c", "sql")
     found = find(lines, 0, styles)
     if not found:
-        return text
+        if path.endswith(FRAGMENTS + KEEP_WITHOUT):
+            return text
+        # The banner opens the file, after the shebang of a script
+        top = 1 if lines and lines[0].startswith("#!") else 0
+        lines = lines[:top] + [""] + lines[top:]
+        found = (style_of(path), top, top)
     style, a, b = found
+    # Nothing but the shebang of a script precedes the banner
+    top = 1 if lines and lines[0].startswith("#!") else 0
+    if a > top and not any(l.strip() for l in lines[top:a]):
+        del lines[top:a]
+        b -= a - top
+        a = top
     new = render(style_of(path)).rstrip("\n").split("\n")
     if style == "sql":
         _, rest = split_dash(lines, a, b)
@@ -207,9 +230,16 @@ def stamp(text, path):
     return "\n".join(lines)
 
 
+def other_projects():
+    with open(OTHER_PROJECTS, encoding="utf-8") as fh:
+        return {l.strip() for l in fh if l.strip() and not l.startswith("#")}
+
+
 def tracked(root):
+    """Return the tracked source files that carry the banner"""
     out = subprocess.run(["git", "-C", root, "ls-files"],
       capture_output=True, text=True, check=True).stdout.split()
+    other = other_projects()
     def script(f):
         # An extensionless file is a source when it opens with a shebang
         if "." in f.rsplit("/", 1)[-1]:
@@ -219,15 +249,42 @@ def tracked(root):
                 return fh.read(2) == b"#!"
         except OSError:
             return False
-    return [f for f in out if not f.startswith(VENDORED) and
-            (f.endswith(EXTENSIONS) or script(f))]
+    def ours(f):
+        # A file of a vendored tree is MobilityDB's when it carries the banner
+        try:
+            with open(os.path.join(root, f), encoding="utf-8", errors="ignore") as fh:
+                return KEY in fh.read(4000)
+        except OSError:
+            return False
+    return [f for f in out if f not in other and
+            (f.endswith(EXTENSIONS) or f.rsplit("/", 1)[-1] in NAMES or script(f)) and
+            (not f.startswith(VENDORED) or ours(f))]
+
+
+def carrying(root):
+    """Return the tracked source files that carry the banner once stamped: a
+    fragment stands for it, and a kind admitting no comment keeps its absence"""
+    out = []
+    for f in tracked(root):
+        if f.endswith(FRAGMENTS):
+            continue
+        if f.endswith(KEEP_WITHOUT):
+            with open(os.path.join(root, f), encoding="utf-8",
+                      errors="ignore") as fh:
+                if KEY not in fh.read():
+                    continue
+        out.append(f)
+    return out
 
 
 def main(argv):
     check = "--check" in argv
-    files = [a for a in argv if a != "--check"]
+    files = [a for a in argv if a not in ("--check", "--list")]
     root = subprocess.run(["git", "rev-parse", "--show-toplevel"],
       capture_output=True, text=True, check=True).stdout.strip()
+    if "--list" in argv:
+        print("\n".join(carrying(root)))
+        return 0
     if not files:
         files = tracked(root)
     differ = []
