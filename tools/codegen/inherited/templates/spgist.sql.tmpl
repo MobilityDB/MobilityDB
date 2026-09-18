@@ -2,18 +2,13 @@
 
 /**
  * @file
- * @brief SP-GiST quadtree and kdtree operator classes for `{TEMP}`.
- *
- * H3 cells are geographic hexagons on the WGS84 sphere — always geodetic,
- * always lat/lon. The bounding box of a `{TEMP}` value is therefore a
- * geodetic `stbox`, matching the `tgeogpoint` / `tcbuffer` pattern. Both
- * opclasses mirror `tcbuffer_quadtree_ops` / `tcbuffer_kdtree_ops` from
- * `mobilitydb/sql/cbuffer/166_tcbuffer_indexes.in.sql`.
- *
- * Every support function has an `(internal, internal)` signature, so no
- * {TEMP}-typed wrappers are needed — we reference the existing
- * `stbox_spgist_config`, `stbox_quadtree_*`, `stbox_kdtree_*`,
- * `stbox_spgist_leaf_consistent`, and `tspatial_spgist_compress` symbols
+ * @brief SP-GiST quadtree and kdtree operator classes for `{TEMP}`
+ * @details The bounding box of a `{TEMP}` value is the spatiotemporal box of
+ * its cell, and both operator classes mirror `tcbuffer_quadtree_ops` and
+ * `tcbuffer_kdtree_ops` of `mobilitydb/sql/cbuffer/216_tcbuffer_indexes.in.sql`.
+ * Every support function takes `(internal, internal)`, so the operator classes
+ * name the `stbox_spgist_config`, `stbox_quadtree_*`, `stbox_kdtree_*`,
+ * `stbox_spgist_leaf_consistent` and `tspatial_spgist_compress` functions
  * directly.
  */
 

@@ -2,16 +2,13 @@
 
 /**
  * @file
- * @brief GiST operator class for `{TEMP}`.
- *
- * The bounding box of a `{TEMP}` value is the cell's spatiotemporal `stbox`, so
- * the opclass is STORAGE stbox and indexes the topological / positional / time
- * operators through that box (the tgeompoint / tcbuffer pattern).
- *
- * The consistent / compress support functions are the generic
- * `Stbox_gist_consistent` and `tspatial_gist_compress` symbols; all four
- * stbox-level helpers (`stbox_gist_union` / `penalty` / `picksplit` / `same`)
- * are reused directly. No new C symbols are introduced.
+ * @brief GiST operator class for `{TEMP}`
+ * @details The bounding box of a `{TEMP}` value is the spatiotemporal box of
+ * its cell, so the operator class stores an `stbox` and indexes the
+ * topological, position and time operators through that box, as the operator
+ * classes of `tgeompoint` and `tcbuffer` do. The consistent and compress
+ * support functions are `Stbox_gist_consistent` and `tspatial_gist_compress`,
+ * and the union, penalty, picksplit and same functions are those of `stbox`.
  */
 
 /******************************************************************************

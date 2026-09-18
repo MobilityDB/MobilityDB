@@ -175,6 +175,19 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   (`templates/posops.c.tmpl`) carry the operations of the axes it lists in
   `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its axis).
 
+**Every whole-file template opens the same way**, so every generated file does:
+- its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
+  `tools/license/banner.txt`, the single source every generator copies;
+- `generated()` places the generated-file note right after that banner;
+- the template carries the file's `/** @file @brief */` comment itself, and the
+  family enters only through its tokens: `{BRIEF}` (the `brief` of the entry) or
+  `{TEMP}`, and `{DETAILS}`, which `details_lines` lays out as the `@details` lines
+  from the manifest key `details` (per behaviour on a `subtypes:` entry, per family on
+  a `tempspatialrel_families:` entry) and leaves empty when the family states none.
+
+No manifest entry carries a comment block of its own. The three cell index families
+state their `details` once, through a YAML anchor on the first of them.
+
 **A `positions:` entry only means a slot is reserved** (`manifest.d/positions.yaml`:
 compops, spatialfuncs, topops, posops, distance, aggfuncs, spatialrels, indexes,
 gist, spgist). **A behaviour is *generated* for a given family only if the family
