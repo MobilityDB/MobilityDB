@@ -29,11 +29,9 @@
 
 /**
  * @file
- * @brief Swept-edge-polygon clip primitive for trgeometry (M1 + M2)
- * @details Internal helper exposed for testing the kernel from SQL.
- * Builds on top will wire `trgeometry_at_geom`, `trgeometry_traversed_area`,
- * and `tgeo_restrict_stbox` through this primitive once M2
- * (rotational case) lands.
+ * @brief Time intervals during which an edge of a moving rigid geometry
+ * intersects a polygon
+ * @details The primitive is exposed in SQL to test the kernel on its own.
  */
 
 /**

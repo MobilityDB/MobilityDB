@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief SQL definitions for spans of values, which are fixed-size version of
+ * @brief Functions for spans of values, which are fixed-size versions of
  * PostgreSQL ranges
  */
 

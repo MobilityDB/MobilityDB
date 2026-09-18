@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for spatial and spatiotemporal tiles
+ * @brief Tile functions for temporal points
  */
 
 /******************************************************************************

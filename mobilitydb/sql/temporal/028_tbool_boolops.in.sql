@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal Boolean function and operators
+ * @brief Temporal Boolean functions and operators
  */
 
 /*****************************************************************************

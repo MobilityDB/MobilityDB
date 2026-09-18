@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal geometries/gepgraphies
+ * @brief Spatial functions for temporal geometries/geographies
  */
 
 /*****************************************************************************/

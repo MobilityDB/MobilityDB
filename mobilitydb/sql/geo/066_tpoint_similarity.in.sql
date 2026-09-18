@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Similarity distance for temporal values
+ * @brief Similarity distance for temporal points
  * @note Currently, the discrete Hausdorff distance, the discrete Frechet
  * distance and the Dynamic Time Warping (DTW) distance are implemented
  */

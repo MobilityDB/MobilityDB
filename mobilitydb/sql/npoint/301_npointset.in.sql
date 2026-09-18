@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for set of network point values
+ * @brief Functions for sets of network point values
  */
 
 /******************************************************************************

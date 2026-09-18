@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for set of spans of values, which are fixed-size versions
+ * @brief Functions for sets of spans of values, which are fixed-size versions
  * of PostgreSQL multiranges
  */
 
