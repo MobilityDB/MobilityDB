@@ -29,8 +29,9 @@
 
 /**
  * @file
- * @brief Nearest-approach-distance operator (|=|) for tpcbox / tpcpoint /
- * tpcpatch — supports KNN ordering with GiST
+ * @brief Nearest-approach distance operator of the point cloud boxes and
+ * temporal point clouds
+ * @details It supports KNN ordering with GiST.
  */
 
 CREATE FUNCTION nearestApproachDistance(tpcbox, tpcbox) RETURNS float

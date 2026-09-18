@@ -29,8 +29,7 @@
 
 /**
  * @file
- * @brief Type plumbing for `ts2cell`, a temporal type carrying Google S2 cell
- * indices as a function of time
+ * @brief Temporal type `ts2cell` of Google S2 cell indices
  * @details On-disk representation is the same Temporal structure used by
  * every other temporal type; the basetype is the dedicated
  * `s2cell`, not `int8`, and the catalog entry

@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief `quadbinset` SQL type — set of quadbin values, mirrors the bigintset
- * structure over the quadbin base type
- * @details Every C call routes to a generic `Set_*` symbol. The dispatch
+ * @brief Set type `quadbinset` of `quadbin` values
+ * @details It mirrors the structure of bigintset over the quadbin base type.
+ * Every C call routes to a generic `Set_*` symbol. The dispatch
  * arms in `type_in.c` / `type_out.c` (basetype_in / basetype_out
  * cases for T_QUADBIN) make the generic Set parser and formatter
  * use quadbin_parse / quadbin_index_to_string for elements.

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Relative position operators pour tjsonb
+ * @brief Relative position operators for temporal JSONB
  */
 
 -----------------------------------------------------------------------------

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Static `quadbin` SQL type — the base type of `tquadbin`
+ * @brief Static `quadbin` type, the base type of `tquadbin`
  * @details Defines the static quadbin CARTO cell value type with parser /
  * output / send / receive, the six comparison operators, the btree
  * and hash operator classes, and the explicit (ASSIGNMENT) casts to

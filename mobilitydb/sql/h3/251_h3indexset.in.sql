@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief `h3indexset` SQL type — set of h3index values, sharing bigintset's
- * structure with h3index as the basetype
- * @details Every C call routes to a generic `Set_*` symbol. The dispatch
+ * @brief Set type `h3indexset` of `h3index` values
+ * @details It shares the structure of bigintset, with h3index as its base
+ * type.
+ * Every C call routes to a generic `Set_*` symbol. The dispatch
  * arms in `type_in.c` / `type_out.c` (basetype_in / basetype_out
  * cases for T_H3INDEX) make the generic Set parser and formatter
  * use h3index_in / h3index_out for elements.

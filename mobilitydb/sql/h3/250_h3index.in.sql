@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Static `h3index` SQL type — the base type of `th3index`
+ * @brief Static `h3index` type, the base type of `th3index`
  * @details The h3index type itself, its parser / output / send / receive, the
  * six comparison operators, the btree and hash operator classes and
  * the casts to and from `bigint` all come from the **h3 PostgreSQL
