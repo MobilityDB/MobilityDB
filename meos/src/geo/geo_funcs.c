@@ -7632,23 +7632,37 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
    * splitting every boundary edge at the intersections with the other
    * boundary. Where the step above has settled the interiors exactly, each
    * portion is read against that answer */
-  for (int i = 0; i < n1; i++)
+  /* A cell only ever rises, so the query is asked again after every edge: a
+   * pattern a cell has already contradicted is answered there, as GEOS stops
+   * at the first cell that contradicts it (RelateNG, IMPatternMatcher), and
+   * the edges left are never split */
+  /* The boundary of A fills the cells BI and BE, that of B the cells IB and
+   * EB, so a query reading only the latter -- `contains` is `T*****FF*` -- is
+   * answered by walking B first, and never by walking A at all */
+  bool b_first = q && (q->cells & (DE9IM_IB | DE9IM_EB)) &&
+    ! (q->cells & (DE9IM_BI | DE9IM_BE));
+  for (int pass = 0; pass < 2; pass++)
   {
-    if (!relate_area_boundary_edge(e1[i]))
-      continue;
-    relate_area_edge_intervals(e1[i], &re2, m, true);
-  }
-  for (int i = 0; i < n2; i++)
-  {
-    if (!relate_area_boundary_edge(e2[i]))
-      continue;
-    relate_area_edge_intervals(e2[i], &re1, m, false);
+    bool first = (pass == 0) != b_first;
+    Edge **edges = first ? e1 : e2;
+    int nedges = first ? n1 : n2;
+    const RelateEdges *other = first ? &re2 : &re1;
+    for (int i = 0; i < nedges; i++)
+    {
+      if (!relate_area_boundary_edge(edges[i]))
+        continue;
+      relate_area_edge_intervals(edges[i], other, m, first);
+      if (relate_query_decided(q, m))
+        goto done;
+    }
   }
 
   /* Boundary / Boundary.
    * Point intersections give dimension 0.
    * Coincident/overlapping boundary portions give dimension 1. */
   relate_area_boundary_points(&re1, &re2, m);
+  if (relate_query_decided(q, m))
+    goto done;
 
   /* Interior / Exterior, of dimension 2 because a non-empty open region is
    * two-dimensional. Two independent sources answer it, and either one alone
