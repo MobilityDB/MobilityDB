@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
