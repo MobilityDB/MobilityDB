@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Static h3index SQL type — parser, output, comparison /
+ * @brief Static h3index type and its Datum wrappers
+ * @details Static h3index SQL type — parser, output, comparison /
  * hash helpers, plus every `datum_h3_*` Datum-calling-convention
  * wrapper consumed by the th3index lifting layer.
  *

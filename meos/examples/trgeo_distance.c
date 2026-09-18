@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A tutorial program that reads one full day of AIS data from a CSV
+ * @brief Compute distances between ships modelled as temporal rigid geometries
+ * @details A tutorial program that reads one full day of AIS data from a CSV
  * file provided by the Danish Maritime Authority in https://web.ais.dk/aisdata/
  * and constructs for each ship a temporal rigid geometry (`trgeometry`),
  * where the reference geometry is the pentagon-shaped hull derived from
@@ -44,11 +45,11 @@
  * x-axis pointing forward (bow) and y-axis pointing to the left (port) — the
  * convention used by the maritime dataset. The pentagon has corners
  *
- *     1. (-B,  D)            stern-port
- *     2. (-B, -C)            stern-starboard
- *     3. ((3A-B)/4, -C)      bow-rectangle-starboard
- *     4. (A, D - C/2)        bow tip
- *     5. ((3A-B)/4,  D)      bow-rectangle-port
+ * 1. (-B,  D)            stern-port
+ * 2. (-B, -C)            stern-starboard
+ * 3. ((3A-B)/4, -C)      bow-rectangle-starboard
+ * 4. (A, D - C/2)        bow tip
+ * 5. ((3A-B)/4,  D)      bow-rectangle-port
  *
  * which is a rectangle whose forward quarter narrows into a triangle so
  * that the bow can be visually distinguished from the stern.
@@ -68,17 +69,17 @@
  * The program is intentionally short (single C file, only public MEOS API)
  * so that the canonical pipeline
  *
- *      AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach
+ * AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach
  *
  * fits in one read.
  *
  * Build:
- *   gcc -Wall -O2 -I/usr/local/include -o trgeo_distance \
- *       trgeo_distance.c -L/usr/local/lib -lmeos -lm
+ * gcc -Wall -O2 -I/usr/local/include -o trgeo_distance \
+ * trgeo_distance.c -L/usr/local/lib -lmeos -lm
  *
  * Run:
- *   ./trgeo_distance [max_trips] [max_instants_per_trip]
- *   defaults: max_trips = 8, max_instants_per_trip = 500
+ * ./trgeo_distance [max_trips] [max_instants_per_trip]
+ * defaults: max_trips = 8, max_instants_per_trip = 500
  */
 
 #include <stdio.h>

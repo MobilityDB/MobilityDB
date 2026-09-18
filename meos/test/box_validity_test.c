@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests how the bounding box operators of two
+ * @brief Test how the bounding box operators report an erroneous operand
+ * @details A program that tests how the bounding box operators of two
  * spatiotemporal values, and of a temporal point cloud, report an erroneous
  * operand under the noexit error handler.
  *

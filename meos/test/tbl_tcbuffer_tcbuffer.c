@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that reads a CSV files containing temporal circular
+ * @brief Join the temporal circular buffers of a CSV file with themselves
+ * @details A simple program that reads a CSV files containing temporal
+ * circular
  * buffers and performs a "self join" by restricting couples of temporal
  * circular buffers.
  *
@@ -42,7 +44,7 @@
  * The program can be tested with several predicates such as spatiotemporal
  * relationships `eIntersects`, `eDwithin`, ..., `aIntersects`, `aDwithin`,
  * ..., `tIntersects`, `tDwithin`, ..., temporal `distance` ...
- * 
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos

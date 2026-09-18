@@ -29,10 +29,12 @@
 
 /**
  * @file
- * @brief PG wrappers for TPCBox-based aggregate functions over the
- *   pgPointCloud temporal types — currently @c extent for tpcpoint /
- *   tpcpatch / tpcbox. Mirrors the stbox / tspatial extent surface in
- *   @c mobilitydb/src/geo/tgeo_aggfuncs.c.
+ * @brief Extent aggregate of the temporal pgpointcloud types
+ * @details PG wrappers for TPCBox-based aggregate functions over the
+ * pgPointCloud temporal types — currently @c extent for tpcpoint /
+ * tpcpatch / tpcbox. Mirrors the stbox / tspatial extent surface in
+ *
+ * @c mobilitydb/src/geo/tgeo_aggfuncs.c.
  */
 
 /* PostgreSQL */

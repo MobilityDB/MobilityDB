@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests how the functions giving the cell of a point in
+ * @brief Test how the functions giving the cell of a point report an error
+ * @details A program that tests how the functions giving the cell of a point
+ * in
  * the H3, QUADBIN and S2 grids report an erroneous argument under the noexit
  * error handler.
  *

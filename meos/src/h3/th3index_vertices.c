@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief MEOS lifting for vertex functions, plus the static
+ * @brief Lifting of the H3 vertex functions to temporal cells
+ * @details MEOS lifting for vertex functions, plus the static
  * `h3_vertex_to_gs_point` adapter that backs the
  * `th3index_vertex_to_latlng` entry.
  *

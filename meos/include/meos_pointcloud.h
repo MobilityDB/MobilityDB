@@ -28,7 +28,10 @@
  *****************************************************************************/
 
 /**
- * @brief API of the Mobility Engine Open Source (MEOS) library — pgpointcloud
+ * @file
+ * @brief API of the MEOS library for the pgpointcloud types
+ * @details API of the Mobility Engine Open Source (MEOS) library —
+ * pgpointcloud
  * base types (pcpoint, pcpatch), set types (pcpointset, pcpatchset), the
  * TPCBox bounding box, and the lifted temporal types tpcpoint / tpcpatch.
  */

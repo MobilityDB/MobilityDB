@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief MEOS error handling inspired by GEOS and Proj
+ * @brief Error handling of the MEOS library
+ * @details MEOS error handling inspired by GEOS and Proj
  * https://github.com/libgeos/geos/blob/main/capi/geos_c.h.in
  * https://github.com/OSGeo/PROJ/blob/master/src/4D_api.cpp
  */

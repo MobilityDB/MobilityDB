@@ -29,21 +29,18 @@
 
 /**
  * @file
- * @brief A simple program that reads a CSV files containing temporal circular
- * buffers and performs a "self join" by restricting couples of temporal
- * circular buffers.
- *
- * The corresponding SQL query would be
+ * @brief Join the temporal points of a CSV file with themselves
+ * @details The corresponding SQL query would be
  * @code
  * SELECT t1.k, t2.k, numInstants(tIntersects(t1.temp, t2.temp))
-   FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-   WHERE tIntersects(t1.temp, t2.temp) IS NOT NULL;
+ * FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+ * WHERE tIntersects(t1.temp, t2.temp) IS NOT NULL;
  * @endcode
  *
  * The program can be tested with several functions such as spatiotemporal
  * relationships `eIntersects`, `eDwithin`, ..., `aIntersects`, `aDwithin`,
  * ..., `tIntersects`, `tDwithin`, ..., temporal `distance` ...
- * 
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_tpoint_tpoint tbl_tpoint_tpoint.c -L/usr/local/lib -lmeos

@@ -29,11 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that tests the funtions for the temporal geometry
- * types in MEOS, that is, geometry, geography, stbox, tgeometry, tgeography,
- * tgeompoint, tgeogpoint.
- *
- * The program can be build as follows
+ * @brief Test the functions of the network point types
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
  * @endcode

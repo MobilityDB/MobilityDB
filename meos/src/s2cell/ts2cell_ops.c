@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Datum-convention wrappers for the S2 static kernel and the
+ * @brief Datum wrappers and cell operations of the S2 index
+ * @details Datum-convention wrappers for the S2 static kernel and the
  * `s2_cellops` descriptor that plugs S2 into the shared temporal cell-index
  * machinery (meos/src/temporal/tcellindex.c).
  *

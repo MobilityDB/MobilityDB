@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads from a CSV file a set of records
+ * @brief Aggregate by union the text sets of a CSV file grouped by key
+ * @details A simple program that reads from a CSV file a set of records
  * containing text sets, group them by the key % 10, and at the end apply a
  * union aggregate to the groups.
  *

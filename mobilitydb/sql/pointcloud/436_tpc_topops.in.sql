@@ -29,10 +29,11 @@
 
 /**
  * @file
- * @brief Bounding-box operators for tpcpoint and tpcpatch — overlaps
- *   (&&), contains (\@>), contained (<\@), same (~=), and adjacent
- *   (-|-) — paired against tpcbox, tstzspan, and the temporal type
- *   itself. Mirrors the cbuffer / npoint topops surface.
+ * @brief Bounding box operators of the temporal pgpointcloud types
+ * @details Bounding-box operators for tpcpoint and tpcpatch — overlaps
+ * (&&), contains (\@>), contained (<\@), same (~=), and adjacent
+ * (-|-) — paired against tpcbox, tstzspan, and the temporal type
+ * itself. Mirrors the cbuffer / npoint topops surface.
  *
  * tstzspan-paired variants reuse the generic `Overlaps_tstzspan_temporal`
  * et al. PG functions (already exist for every temporal type); only

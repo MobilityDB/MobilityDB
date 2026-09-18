@@ -29,23 +29,24 @@
 
 /**
  * @file
- * @brief Concurrent stress test combining the GEOS spatial-relationship
+ * @brief Stress the GEOS-backed functions of MEOS from concurrent threads
+ * @details Concurrent stress test combining the GEOS spatial-relationship
  * surface, WKT parsing of temporal points, WKB roundtrip, temporal
  * accessors, and per-thread geometry distance calls.
  *
  * Each worker thread independently runs the full lifecycle:
- *   meos_initialize() →
- *   parse a unique polygon + point pair and a unique tgeompoint trajectory →
- *   hot loop:
- *     geom_intersects2d / geom_contains / geom_covers / geom_distance2d
- *       on the polygon/point pair (per-thread GEOS context handle),
- *     tgeompoint_in WKT parse (lwgeom flex/bison TLS state),
- *     temporal_as_wkb + temporal_from_wkb roundtrip (binary IO path),
- *     temporal_num_instants / temporal_start_instant accessors,
- *     tpoint_trajectory extracts the polyline (exercises the temporal →
- *       GEOS conversion path),
- *     meos_errno round-trip (thread-local errno) →
- *   meos_finalize()
+ * meos_initialize() →
+ * parse a unique polygon + point pair and a unique tgeompoint trajectory →
+ * hot loop:
+ * geom_intersects2d / geom_contains / geom_covers / geom_distance2d
+ * on the polygon/point pair (per-thread GEOS context handle),
+ * tgeompoint_in WKT parse (lwgeom flex/bison TLS state),
+ * temporal_as_wkb + temporal_from_wkb roundtrip (binary IO path),
+ * temporal_num_instants / temporal_start_instant accessors,
+ * tpoint_trajectory extracts the polyline (exercises the temporal →
+ * GEOS conversion path),
+ * meos_errno round-trip (thread-local errno) →
+ * meos_finalize()
  *
  * Verifies that the per-thread GEOS context handle, lwgeom WKT/parser
  * state, GMT bootstrap, and meos_errno are all isolated:
@@ -55,7 +56,7 @@
  * Build (Linux, after `cmake --install` to a prefix):
  * @code
  * gcc -Wall -g -O2 -I<prefix>/include -pthread \
- *     -o threaded_geos_test threaded_geos_test.c -L<prefix>/lib -lmeos
+ * -o threaded_geos_test threaded_geos_test.c -L<prefix>/lib -lmeos
  * ./threaded_geos_test 16 20000   # 16 threads, 20000 iterations each
  * @endcode
  */

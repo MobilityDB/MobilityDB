@@ -29,14 +29,15 @@
 
 /**
  * @file
- * @brief A simple program that get the SRID of the geometries stored in the 
- * file `ways.csv` that has the content of the PostgreSQL table ways defined
- * as follows
+ * @brief Test whether a route identifier exists in the road network of
+ * ways.csv
+ * @details The file `ways.csv` has the content of the PostgreSQL table ways
+ * defined as follows
  * @code
  * CREATE TABLE public.ways (
- *   gid bigint NOT NULL,
- *   the_geom public.geometry NOT NULL,
- *   length double precision NOT NULL
+ * gid bigint NOT NULL,
+ * the_geom public.geometry NOT NULL,
+ * length double precision NOT NULL
  * );
  * @endcode
  *

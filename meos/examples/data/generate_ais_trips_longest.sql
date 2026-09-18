@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Sample program that reads AIS data from the file
+ * @brief Write the ten longest AIS trips of a day to a CSV file
+ * @details Sample program that reads AIS data from the file
  * `aisdk-2025-03-01.csv` provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, assembles the observations in a table trips
  * and outputs in the file `ais_trips_longest.csv` the temporal values for

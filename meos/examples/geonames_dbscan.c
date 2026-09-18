@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads from a CSV file obtained from geonames
+ * @brief Cluster the GeoNames places of the United States with DBSCAN
+ * @details A simple program that reads from a CSV file obtained from geonames
  * https://download.geonames.org/export/dump/US.zip
  * and applies the PostGIS function `ST_DBSCAN` to the entire file.
  *
@@ -37,12 +38,12 @@
  * https://www.crunchydata.com/blog/postgis-clustering-with-k-means
  * Therefore, the program corresponds to the following SQL query
  * @code
-   DROP TABLE IF EXISTS geonames_sch;
-   CREATE TABLE geonames_sch AS
-   SELECT *, ST_ClusterDBScan(geom, 2000, 5)
-     OVER (PARTITION BY admin1) AS cluster
-   FROM geonames
-   WHERE fcode = 'SCH';
+ * DROP TABLE IF EXISTS geonames_sch;
+ * CREATE TABLE geonames_sch AS
+ * SELECT *, ST_ClusterDBScan(geom, 2000, 5)
+ * OVER (PARTITION BY admin1) AS cluster
+ * FROM geonames
+ * WHERE fcode = 'SCH';
  * @endcode
  *
  * The program can be build as follows
@@ -53,16 +54,16 @@
  * above is located in the subdirecttory `data\'.
  *
  * @code
-   DROP TABLE IF EXISTS geonames_meos;
-   CREATE TABLE geonames_meos (
-     geonameid int,
-     name text,
-     admin1 text,
-     geom geometry(Point, 5070),
-     cluster integer);
-   COPY geonames_meos
-     FROM '/home/esteban/src/MobilityDB/meos/examples/data/geonames_new.csv'
-     DELIMITER ',' CSV HEADER;
+ * DROP TABLE IF EXISTS geonames_meos;
+ * CREATE TABLE geonames_meos (
+ * geonameid int,
+ * name text,
+ * admin1 text,
+ * geom geometry(Point, 5070),
+ * cluster integer);
+ * COPY geonames_meos
+ * FROM '/home/esteban/src/MobilityDB/meos/examples/data/geonames_new.csv'
+ * DELIMITER ',' CSV HEADER;
  * @endcode
  */
 

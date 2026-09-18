@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads AIS data from a CSV file containing one
+ * @brief Build one full day of ship trips by expanding sequences
+ * @details A simple program that reads AIS data from a CSV file containing one
  * full day of observations provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, constructs for each ship temporal values for
  * the trip and the SOG, and outputs for each ship the MMSI, the number
@@ -46,9 +47,9 @@
  * with minimal error correction, that is,
  * - It supposes that the observations have increasing timestamp values
  * - It verifies that the latitude, longitude, and SOG values read are in
- *   specified ranges, and
+ * specified ranges, and
  * - It takes only the first observation when there are two or more
- *   observations for the same ship with equal timestamp values.
+ * observations for the same ship with equal timestamp values.
  *
  * The program can be build as follows
  * @code

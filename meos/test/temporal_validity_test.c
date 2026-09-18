@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests how the temporal restrictions to the instants
+ * @brief Test how temporal restrictions and time overlaps report a null
+ * argument
+ * @details A program that tests how the temporal restrictions to the instants
  * before or after a timestamptz, and the test of whether the time of two
  * temporal values overlaps, report a null argument under the noexit error
  * handler.

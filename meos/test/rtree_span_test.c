@@ -29,15 +29,16 @@
 
 /**
  * @file
- * @brief A program that tests the in-memory RTree index for the numeric span
+ * @brief Test the in-memory RTree index for numeric spans
+ * @details A program that tests the in-memory RTree index for the numeric span
  * bounding box types, i.e., the indexes built with rtree_create_intspan and
  * rtree_create_floatspan, against an exact brute-force oracle.
  *
  * For each span type a set of random spans is inserted, an overlap search is
  * run for a query span, and the candidate id set is compared with the exact
  * set of spans that overlap the query. Two properties are asserted per type:
- *  (i)  no false negatives: every span overlapping the query is a candidate;
- *  (ii) no false positives: every candidate overlaps the query.
+ * (i)  no false negatives: every span overlapping the query is a candidate;
+ * (ii) no false positives: every candidate overlaps the query.
  *
  * The program can be built as follows
  * @code

@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the @ref meos_typeof_hexwkb type discriminator,
+ * @brief Test the type discriminator of hex-encoded WKB strings
+ * @details A program that tests the @ref meos_typeof_hexwkb type
+ * discriminator,
  * which peeks the MeosType tag from the header of a hex-encoded Well-Known
  * Binary (WKB) string of a set, span, span set, or temporal value.
  *

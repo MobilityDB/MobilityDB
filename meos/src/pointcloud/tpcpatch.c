@@ -29,10 +29,11 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud patch value surface, the Temporal<T> value
- *   bridge (input and output, constructors, accessors, restrictions),
- *   generated from the tjsonb reference by
- *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
+ * @brief Temporal pgpointcloud patch type
+ * @details Temporal pgpointcloud patch value surface, the Temporal<T> value
+ * bridge (input and output, constructors, accessors, restrictions),
+ * generated from the tjsonb reference by
+ * tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
  */
 
 /* C */

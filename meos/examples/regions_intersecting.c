@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads from the regions.csv file obtained from
+ * @brief Cluster the BerlinMOD regions by intersection or distance
+ * @details A simple program that reads from the regions.csv file obtained from
  * the BerlinMOD benchmark
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  * and applies one of the PostGIS functions `ST_ClusterIntersecting`
@@ -37,23 +38,23 @@
  *
  * The program corresponds to one of the following SQL queries
  * @code
-   DROP TABLE IF EXISTS RegionsIntersecting;
-   CREATE TABLE RegionsIntersecting AS
-   WITH Temp1 AS (
-     SELECT unnest(ST_ClusterIntersecting(geom)) geom FROM Regions ),
-   Temp2 AS (
-     SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
-   SELECT cluster, (rec).geom FROM Temp2;
+ * DROP TABLE IF EXISTS RegionsIntersecting;
+ * CREATE TABLE RegionsIntersecting AS
+ * WITH Temp1 AS (
+ * SELECT unnest(ST_ClusterIntersecting(geom)) geom FROM Regions ),
+ * Temp2 AS (
+ * SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
+ * SELECT cluster, (rec).geom FROM Temp2;
  * @endcode
  * or
  * @code
-   DROP TABLE IF EXISTS RegionsWithin;
-   CREATE TABLE RegionsWithin AS
-   WITH Temp1 AS (
-     SELECT unnest(ST_ClusterWithin(geom, 1000)) geom FROM Regions ),
-   Temp2 AS (
-     SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
-   SELECT cluster, (rec).geom FROM Temp2;
+ * DROP TABLE IF EXISTS RegionsWithin;
+ * CREATE TABLE RegionsWithin AS
+ * WITH Temp1 AS (
+ * SELECT unnest(ST_ClusterWithin(geom, 1000)) geom FROM Regions ),
+ * Temp2 AS (
+ * SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
+ * SELECT cluster, (rec).geom FROM Temp2;
  * @endcode
  *
  * The program can be build as follows
@@ -66,14 +67,14 @@
  * This file can be input in PostgreSQL using the following SQL command, after
  * which it can be visualized with QGIS.
  * @code
-   DROP TABLE IF EXISTS regions_meos;
-   CREATE TABLE regions_meos (
-     regionid int,
-     geom geometry,
-     cluster integer);
-   COPY regions_meos
-     FROM '/home/esteban/src/MobilityDB/meos/examples/data/regions_new.csv'
-     DELIMITER ',' CSV HEADER;
+ * DROP TABLE IF EXISTS regions_meos;
+ * CREATE TABLE regions_meos (
+ * regionid int,
+ * geom geometry,
+ * cluster integer);
+ * COPY regions_meos
+ * FROM '/home/esteban/src/MobilityDB/meos/examples/data/regions_new.csv'
+ * DELIMITER ',' CSV HEADER;
  * @endcode
  */
 

@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief Sample program that reads AIS data from the file
+ * @brief Assemble the AIS observations of a day into trips written to a CSV
+ * file
+ * @details Sample program that reads AIS data from the file
  * `aisdk-2025-03-01.csv` provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, assembles the observations in a table trips
  * and outputs in the file `ais_trips.csv` the temporal values for trip and

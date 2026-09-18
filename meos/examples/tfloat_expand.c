@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tfloat instants,
+ * @brief Build a temporal float sequence by expanding it with generated
+ * instants
+ * @details A simple program that generates a given number of tfloat instants,
  * appends each generated instant into an output sequence, automatically
  * expanding the sequence if no more free space is available, and at the end
  * outputs the number of instants and the time-weighted average.

@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the bulk build of the in-memory RTree index,
+ * @brief Test the bulk build of the in-memory RTree index
+ * @details A program that tests the bulk build of the in-memory RTree index,
  * i.e., rtree_load, against a tree of the same entries built one at a time by
  * rtree_insert.
  *
@@ -39,27 +40,27 @@
  * therefore the oracle, and the two trees are required to agree exactly.
  *
  * Five properties are asserted:
- *  (i)   same answers: over a spread of query windows the two trees return
- *        identical id sets, compared as sorted sequences so that a difference
- *        in traversal order is not mistaken for a difference in results;
- *  (ii)  the comparison is not vacuous: those windows must match a substantial
- *        number of entries, since two trees that both answer nothing agree on
- *        nothing;
- *  (iii) completeness: a window covering the whole extent returns every id, so
- *        no entry is dropped by the packing;
- *  (iv)  the ids survive: they are spread beyond 2^31, so a build carrying them
- *        at a narrower width would return different numbers;
- *  (v)   the degenerate counts are handled: loading no entries leaves a tree
- *        that answers nothing, and loading one returns that one;
- *  (vi)  a load leaves the tree holding exactly the entries it is given,
- *        whatever it holds when it is called, so an index is rebuilt from the
- *        entries a caller keeps;
- *  (vii) the entries a tree holds are released whatever the number given, so a
- *        load of no entries empties a tree rather than leaving the ones it
- *        held. This is the case that tells releasing the nodes apart from
- *        assigning the root over them: wherever entries follow, the two answer
- *        alike and differ only in what the run leaks, which valgrind reports
- *        and an assertion cannot.
+ * (i)   same answers: over a spread of query windows the two trees return
+ * identical id sets, compared as sorted sequences so that a difference
+ * in traversal order is not mistaken for a difference in results;
+ * (ii)  the comparison is not vacuous: those windows must match a substantial
+ * number of entries, since two trees that both answer nothing agree on
+ * nothing;
+ * (iii) completeness: a window covering the whole extent returns every id, so
+ * no entry is dropped by the packing;
+ * (iv)  the ids survive: they are spread beyond 2^31, so a build carrying them
+ * at a narrower width would return different numbers;
+ * (v)   the degenerate counts are handled: loading no entries leaves a tree
+ * that answers nothing, and loading one returns that one;
+ * (vi)  a load leaves the tree holding exactly the entries it is given,
+ * whatever it holds when it is called, so an index is rebuilt from the
+ * entries a caller keeps;
+ * (vii) the entries a tree holds are released whatever the number given, so a
+ * load of no entries empties a tree rather than leaving the ones it
+ * held. This is the case that tells releasing the nodes apart from
+ * assigning the root over them: wherever entries follow, the two answer
+ * alike and differ only in what the run leaks, which valgrind reports
+ * and an assertion cannot.
  *
  * The program can be built as follows
  * @code

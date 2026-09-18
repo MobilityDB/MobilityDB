@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the ever/always set-set relationships over
+ * @brief Test the ever and always set-set relationships of temporal geos
+ * @details A program that tests the ever/always set-set relationships over
  * arrays of temporal geos, i.e., the `*_tgeoarr_tgeoarr` functions, against
  * the scalar relationship applied to every pair.
  *

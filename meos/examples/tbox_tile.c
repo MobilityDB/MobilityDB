@@ -29,11 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tgeompoint instants,
- * assembles the instants into a sequence at the end of the generation process,
- * and outputs the number of instants and the distance travelled.
- *
- * The program can be build as follows
+ * @brief Split a temporal box into value tiles or value-time tiles
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbox_tile tbox_tile.c -L/usr/local/lib -lmeos
  * @endcode

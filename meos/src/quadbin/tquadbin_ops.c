@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Datum-convention wrappers for the quadbin static kernel and the
+ * @brief Datum wrappers and cell operations of the QUADBIN index
+ * @details Datum-convention wrappers for the quadbin static kernel and the
  * `quadbin_cellops` descriptor that plugs quadbin into the shared temporal
  * cell-index machinery (meos/src/temporal/tcellindex.c).
  *

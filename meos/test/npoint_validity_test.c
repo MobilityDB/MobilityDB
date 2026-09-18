@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests how the temporal network point instant
+ * @brief Test how the temporal network point functions report an error
+ * @details A program that tests how the temporal network point instant
  * constructor and the route accessor report an erroneous argument under the
  * noexit error handler.
  *

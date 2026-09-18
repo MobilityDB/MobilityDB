@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tfloat instants,
+ * @brief Assemble a temporal float sequence from generated instants
+ * @details A simple program that generates a given number of tfloat instants,
  * accumulates each generated instants into an array, and at the end assembles
  * the sequence from the input instants and outputs the number of instants and
  * the last value of the sequence.

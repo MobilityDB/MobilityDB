@@ -29,15 +29,16 @@
 
 /**
  * @file
- * @brief A simple program that reads two CSV files, the first one containing
+ * @brief Restrict the temporal points of a CSV file to geometries
+ * @details A simple program that reads two CSV files, the first one containing
  * temporal points and the second containing geometries and restricts the
  * temporal point to the geometries.
  *
  * The corresponding SQL query would be
  * @code
  * SELECT t1.k, t2.k, numInstants(atGeometry(temp, g))
-   FROM tbl_tgeompoint t1, tbl_geom t2
-   WHERE atGeometry(temp, g) IS NOT NULL;
+ * FROM tbl_tgeompoint t1, tbl_geom t2
+ * WHERE atGeometry(temp, g) IS NOT NULL;
  * @endcode
  *
  * The program can be build as follows

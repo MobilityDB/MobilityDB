@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that reads AIS data from the file `ais_trips_longest.csv`
+ * @brief Generalize the ten longest AIS trips of a day
+ * @details A program that reads AIS data from the file `ais_trips_longest.csv`
  * containing the temporal values for trip and SOG for the longest 10 trips of
  * ships extracted from one day of observations (aisdk-2025-03-01.csv) provided
  * by the Danish Maritime Authority in https://web.ais.dk/aisdata/, and outputs

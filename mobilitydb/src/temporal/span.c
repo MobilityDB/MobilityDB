@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief General functions for span types (a.k.a. ranges) composed of two
+ * @brief General functions for span types
+ * @details General functions for span types (a.k.a. ranges) composed of two
  * `Datum` values and two Boolean values stating whether the bounds are
  * inclusive or not
  */
