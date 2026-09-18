@@ -37,6 +37,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -1049,6 +1052,56 @@ node_search(const RTree *rtree, const RTreeNode *node, IndexSearchOp op,
 }
 
 /**
+ * @brief Return true if two spatiotemporal boxes overlap on the axes named
+ * @details The test #bbox_overlaps_stbox makes, with the axes decided once
+ * for the whole search
+ */
+static inline bool
+stbox_overlaps_axes(const STBox *b1, const STBox *b2, bool x, bool z, bool t)
+{
+  if (x && (b1->xmax < b2->xmin || b1->xmin > b2->xmax ||
+      b1->ymax < b2->ymin || b1->ymin > b2->ymax))
+    return false;
+  if (z && (b1->zmax < b2->zmin || b1->zmin > b2->zmax))
+    return false;
+  if (t && ! bbox_overlaps_span(&b1->period, &b2->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Search a node of a tree of spatiotemporal boxes for the entries
+ * overlapping a query
+ * @details The search #node_search makes for #INDEX_OVERLAPS, which both the
+ * leaf and the inner test answer by overlap, with the test read inline
+ * instead of through the tree's function pointer and the operation's switch
+ * @param[in] node The node to be searched
+ * @param[in] query The query box
+ * @param[in] x,z,t The axes both the query and the entries carry
+ * @param[out] result MeosArray to collect matching IDs
+ */
+static void
+node_search_overlaps_stbox(const RTreeNode *node, const STBox *query, bool x,
+  bool z, bool t, MeosArray *result)
+{
+  bool leaf = (node->node_type == RTREE_LEAF);
+  for (int i = 0; i < node->count; ++i)
+  {
+    if (! stbox_overlaps_axes((const STBox *) RTREE_NODE_BBOX_N(node, i),
+        query, x, z, t))
+      continue;
+    if (leaf)
+    {
+      int64 id = node->ids[i];
+      meos_array_add(result, &id);
+    }
+    else
+      node_search_overlaps_stbox(node->nodes[i], query, x, z, t, result);
+  }
+  return;
+}
+
+/**
  * @brief Report the qualifying entry pairs of two nodes, descending both trees
  * @details A node does not store its own bounding box, so each node is visited
  * together with the box its parent holds for it; the roots are visited with a
@@ -1562,7 +1615,20 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
     return -1;
 
   meos_array_reset(result);
-  if (rtree->root)
+  if (! rtree->root)
+    return 0;
+  if (op == INDEX_OVERLAPS && rtree->bboxtype == T_STBOX)
+  {
+    /* The boxes of a tree share their axes, which its extent carries, so the
+     * axes both sides have are read once here rather than once per entry */
+    const STBox *q = (const STBox *) query;
+    int16 f = ((const STBox *) rtree->box)->flags;
+    node_search_overlaps_stbox(rtree->root, q,
+      MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
+      MEOS_FLAGS_GET_Z(f) && MEOS_FLAGS_GET_Z(q->flags),
+      MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags), result);
+  }
+  else
     node_search(rtree, rtree->root, op, query, result);
   return meos_array_count(result);
 }
