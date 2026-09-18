@@ -326,6 +326,19 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
   bool order)
 {
   assert(values); assert(count > 0); assert(count <= maxcount);
+  /* Ensure that no float value, and no coordinate of a geometry, is NaN */
+  if (basetype == T_FLOAT8)
+  {
+    for (int i = 0; i < count; i++)
+      if (! ensure_not_nan(DatumGetFloat8(values[i])))
+        return NULL;
+  }
+  else if (geo_basetype(basetype))
+  {
+    for (int i = 0; i < count; i++)
+      if (! ensure_not_nan_geo(DatumGetGserializedP(values[i])))
+        return NULL;
+  }
   bool hasz = false;
   bool geodetic = false;
 #if POINTCLOUD

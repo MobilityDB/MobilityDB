@@ -243,6 +243,9 @@ bigint_to_spanset(int i)
 SpanSet *
 float_to_spanset(double d)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   return value_spanset(d, T_FLOAT8);
 }
 

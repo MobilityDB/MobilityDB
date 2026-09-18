@@ -39,6 +39,7 @@
 #include <float.h>
 #include <geos_c.h>
 #include <limits.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>

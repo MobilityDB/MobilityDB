@@ -488,7 +488,7 @@ GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -505,7 +505,7 @@ GSERIALIZED *
 geogpoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -523,7 +523,8 @@ GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
+      ! ensure_not_nan(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -540,7 +541,8 @@ GSERIALIZED *
 geogpoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
+      ! ensure_not_nan(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);

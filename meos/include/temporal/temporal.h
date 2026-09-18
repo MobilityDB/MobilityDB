@@ -34,6 +34,8 @@
 #ifndef __TEMPORAL_H__
 #define __TEMPORAL_H__
 
+/* C */
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -474,6 +476,21 @@ extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal
 extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
+/**
+ * @brief Ensure that a number is not NaN
+ * @details A NaN has no position among the numbers, so a value, a span bound
+ * or a coordinate holding one cannot be compared, bounded or indexed, and
+ * MEOS refuses it where a number enters it. Every temporal float instant is
+ * tested, so the test is expanded where it is called
+ */
+static inline bool
+ensure_not_nan(double d)
+{
+  if (! isnan(d))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The value cannot be NaN");
+  return false;
+}
 extern bool not_negative_datum(Datum size, MeosType basetype);
 extern bool ensure_not_negative_datum(Datum size, MeosType basetype);
 extern bool positive_datum(Datum size, MeosType basetype);

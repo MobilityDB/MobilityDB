@@ -94,6 +94,8 @@
 
 #define GSERIALIZED_POINT2D_P(gs)  ( (POINT2D *) GS_POINT_PTR((gs)) )
 #define GSERIALIZED_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR((gs)) )
+#define GSERIALIZED_POINT3DM_P(gs) ( (POINT3DM *) GS_POINT_PTR((gs)) )
+#define GSERIALIZED_POINT4D_P(gs)  ( (POINT4D *) GS_POINT_PTR((gs)) )
 
 /*****************************************************************************
  * Internal function accessing the PROJ library

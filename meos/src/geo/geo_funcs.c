@@ -3735,16 +3735,80 @@ ensure_mline_type(const GSERIALIZED *gs)
     "Only (multi)line geometries accepted");
   return false;
 }
+
 /**
  * @brief Ensure that the geometry/geography is not empty
+ * @details A point, the value of every temporal point instant, is read in
+ * place: its number of points is the word before its coordinates, so the test
+ * a temporal instant makes does not walk the geometry
  */
 bool
 ensure_not_empty(const GSERIALIZED *gs)
 {
-  if (! gserialized_is_empty(gs))
+  const uint32_t *words = (const uint32_t *) (GS_POINT_PTR(gs) - 8);
+  if ((words[0] == POINTTYPE) ? words[1] != 0 : ! gserialized_is_empty(gs))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Only non-empty geometries accepted");
+  return false;
+}
+
+/**
+ * @brief Return true if a coordinate of a geometry/geography is NaN, walking
+ * its points as #lwgeom_isfinite walks them
+ * @details Kept out of line: inlined, it makes the caller save the registers
+ * it uses on every call, which the test of a point never needs
+ */
+static pg_noinline bool
+geo_walk_has_nan(const GSERIALIZED *gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool hasz = lwgeom_has_z(geom), hasm = lwgeom_has_m(geom);
+  bool nan = false;
+  LWPOINTITERATOR *it = lwpointiterator_create(geom);
+  while (! nan && lwpointiterator_has_next(it))
+  {
+    POINT4D p;
+    lwpointiterator_next(it, &p);
+    nan = isnan(p.x) || isnan(p.y) || (hasz && isnan(p.z)) ||
+      (hasm && isnan(p.m));
+  }
+  lwpointiterator_destroy(it);
+  lwgeom_free(geom);
+  return nan;
+}
+
+/**
+ * @brief Ensure that no coordinate of a geometry/geography is NaN
+ * @details A NaN coordinate has no position, so the point holding it cannot
+ * be bounded, compared or indexed. An infinite coordinate, which
+ * #lwgeom_isfinite also refuses, is accepted
+ */
+bool
+ensure_not_nan_geo(const GSERIALIZED *gs)
+{
+  /* A point, the value of every temporal point instant, is read in place: a
+   * temporal instant is made by every operation that produces one, so the
+   * test neither deserializes the geometry nor calls into it. The type and
+   * the number of points of a serialized geometry are the two words before
+   * the coordinates of its first point, and an empty point has none */
+  const uint32_t *words = (const uint32_t *) (GS_POINT_PTR(gs) - 8);
+  bool nan;
+  if (words[0] == POINTTYPE)
+  {
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+    bool z = FLAGS_GET_Z(gs->gflags), m = FLAGS_GET_M(gs->gflags);
+    nan = words[1] != 0 && (isnan(pt->x) || isnan(pt->y) ||
+      (z && isnan(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
+      (m && isnan(z ? GSERIALIZED_POINT4D_P(gs)->m :
+        GSERIALIZED_POINT3DM_P(gs)->m)));
+  }
+  else
+    nan = geo_walk_has_nan(gs);
+  if (! nan)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The coordinates of a geometry cannot be NaN");
   return false;
 }
 
