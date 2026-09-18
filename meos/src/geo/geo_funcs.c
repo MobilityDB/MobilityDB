@@ -9967,7 +9967,7 @@ typedef struct
  * THERE IS NO SIZE FLOOR: what decides whether keeping a reading pays is
  * whether the geometry COMES BACK, never how large it is, and a floor refuses
  * exactly the small-geometry corpora whose reuse is highest. */
-#define RELATE_CTX_CACHE_SIZE 64
+#define RELATE_CTX_CACHE_SIZE 256
 
 /**
  * @brief The edges kept for the geometries asked about
