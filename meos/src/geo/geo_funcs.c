@@ -9889,13 +9889,15 @@ typedef struct
   int busy;          /**< Calls reading these edges right now */
 } RelateCtxCacheEntry;
 
-/* Entries the cache holds. A relationship reads two geometries and a walk
- * repeats one of them, so a handful carries every shape of walk */
-#define RELATE_CTX_CACHE_SIZE 8
-
-/* Bytes below which reading a geometry is not what a call costs, so keeping
- * the reading saves nothing and the entry displaces one that pays */
-#define RELATE_CTX_CACHE_MIN_BYTES 512
+/* Entries the cache holds. The working set of a walk is the DISTINCT
+ * geometries it asks about, so the count is sized to hold one: a corpus of
+ * 1444 areal pairs asks about 38 of them, a real join of 670 natural pairs
+ * about 255. An entry holds a geometry only while it keeps being asked about,
+ * so the cost of a spare slot is one that stays empty.
+ * THERE IS NO SIZE FLOOR: what decides whether keeping a reading pays is
+ * whether the geometry COMES BACK, never how large it is, and a floor refuses
+ * exactly the small-geometry corpora whose reuse is highest. */
+#define RELATE_CTX_CACHE_SIZE 64
 
 /**
  * @brief The edges kept for the geometries asked about
@@ -9903,6 +9905,8 @@ typedef struct
  */
 typedef struct
 {
+  /* The geometries asked about recently, keyed by their SERIALIZED value, so a
+   * hit is decided without reading anything out of them. Few enough to scan. */
   RelateCtxCacheEntry entries[RELATE_CTX_CACHE_SIZE];
   uint32_t count;
 } RelateCtxCache;
@@ -9977,34 +9981,194 @@ meos_finalize_relate(void)
  * caller owns what it is given
  */
 void *
-relate_ctx_borrow(const GSERIALIZED *gs, const LWGEOM *geom, void **entry)
+relate_ctx_borrow(const GSERIALIZED *gs, void **entry, LWGEOM **made)
 {
   *entry = NULL;
+  *made = NULL;
+
+  /* THE CACHE IS ASKED ON THE SERIALIZED VALUE, BEFORE ANYTHING IS READ OUT OF
+   * IT. The edges of a geometry are what a relate call spends itself on, and
+   * they do not change between the calls that ask about it, so they are read
+   * ONCE and answered from thereafter. A caller that deserializes its operands
+   * first pays that reading on every call the cache exists to save. */
+  RelateCtxCache *cache = MEOS_RELATE_CTX_CACHE;
+  RelateCtxCacheEntry *seen = NULL;
+  if (cache)
+    for (uint32_t i = 0; i < cache->count; i++)
+    {
+      RelateCtxCacheEntry *e = &cache->entries[i];
+      if (e->key && relate_ctx_same(e->key, gs))
+      {
+        seen = e;
+        break;
+      }
+    }
+  if (seen && seen->ctx)
+  {
+    seen->hits++;
+    seen->busy++;
+    *entry = seen;
+    return seen->ctx;
+  }
+
+  /* An entry may hold the GEOMETRY without its edges, where a distance
+   * predicate asked for the geometry alone. The edges are read into that same
+   * entry, from the geometry it already holds, so nothing is read or copied a
+   * second time. */
+  if (seen && seen->geom && ! seen->busy)
+  {
+#if ! MEOS
+    MemoryContext oldc = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+    void *c = seen->ctx = relate_ctx_make(seen->geom);
+#if ! MEOS
+    MemoryContextSwitchTo(oldc);
+#endif
+    if (c)
+    {
+      seen->hits++;
+      seen->busy++;
+      *entry = seen;
+      return c;
+    }
+  }
+
+#if ! MEOS
+  MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+  if (! cache)
+  {
+    cache = palloc0(sizeof(RelateCtxCache));
+    MEOS_RELATE_CTX_CACHE = cache;
+  }
+
+  /* FILL ON FIRST USE. The edges are read to answer THIS call whatever the
+   * cache does, so keeping what the reading produced costs nothing beyond the
+   * entry: one reading per geometry rather than one per pair it appears in.
+   * This is not the eager cache that loses 16.8x on well-separated data --
+   * that one built every geometry's context UP FRONT, outside the call path,
+   * so the bounding-box test in front of the relationship saved nothing. The
+   * box short-circuit sits BEFORE this borrow, so a pair that never computes
+   * never reaches it, and filling on first use stays at or below the
+   * extraction count of a cache-less engine in every regime. */
+  RelateCtxCacheEntry *e = seen;
+  if (! e)
+  {
+    if (cache->count < RELATE_CTX_CACHE_SIZE)
+      e = &cache->entries[cache->count++];
+    else
+    {
+      /* An entry a call is READING is never displaced; the least asked-about
+       * of the rest gives way */
+      for (uint32_t i = 0; i < RELATE_CTX_CACHE_SIZE; i++)
+      {
+        RelateCtxCacheEntry *c = &cache->entries[i];
+        if (c->busy)
+          continue;
+        if (! e || c->hits < e->hits)
+          e = c;
+      }
+      if (e)
+        relate_ctx_cache_clear_entry(e);
+    }
+  }
+
+  void *ctx = NULL;
+  if (e && ! e->busy)
+  {
+    /* THE ENTRY READS ITS OWN COPY OF THE SERIALIZED VALUE, and that is what
+     * makes one copy enough. #lwgeom_from_gserialized does not copy the
+     * coordinates: a ring is `ptarray_construct_reference_data(..., ptr)`, a
+     * VIEW over the bytes it was read from. A geometry read from the CALLER'S
+     * value is therefore a view over memory the caller reuses on its next row,
+     * and keeping it hands the edges a buffer that changes underneath them --
+     * measured, 13 of 1444 areal answers and 3 of 54 adversarial ones.
+     * The entry already keeps the serialized value, to recognise the geometry
+     * by it. Reading from THAT copy makes the view point into memory the entry
+     * owns and releases together with it, so the deep clone this used to take
+     * is unnecessary: one copy, not two, and no per-ring copy at all. */
+    if (! e->key)
+    {
+      e->key = palloc(VARSIZE(gs));
+      memcpy(e->key, gs, VARSIZE(gs));
+    }
+    if (! e->geom)
+      e->geom = lwgeom_from_gserialized(e->key);
+    ctx = e->ctx = e->geom ? relate_ctx_make(e->geom) : NULL;
+    if (ctx)
+    {
+      e->hits++;
+      e->busy++;
+      *entry = e;
+    }
+    else
+      relate_ctx_cache_clear_entry(e);
+  }
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif
+
+  if (*entry)
+    return ctx;
+  /* No entry holds this reading, so the caller is handed its own and releases
+   * it; that one may view the caller's value, which outlives this call */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  if (! geom)
+    return NULL;
+  *made = geom;
+  return relate_ctx_make(geom);
+}
+
+/**
+ * @brief Borrow the GEOMETRY a serialized value reads as, without reading its
+ * edges
+ * @details A distance predicate -- dwithin, its 3D form, the geodetic pair --
+ * hands an LWGEOM to a liblwgeom routine and never looks at an edge, so the
+ * edges an entry may hold are of no use to it while the READING is. The entry
+ * keeps the geometry either way, so a caller that wants the geometry alone
+ * takes it and leaves the edges unbuilt; a later relationship on the same
+ * geometry reads them into the entry it already has.
+ * THE CALLER READS IT UNDER THE CONTEXT THAT KEEPS IT, as #relate_ctx_borrow
+ * builds the edges: liblwgeom attaches boxes to a geometry it measures and to
+ * its parts (`measures.c` #lw_dist2d_recursive, `lwgeodetic.c`
+ * #lwcollection_calculate_gbox_geodetic), and a box read into the per-tuple
+ * context is freed under the entry that still points at it.
+ * @param[in] gs Serialized geometry
+ * @param[out] entry Entry holding it, NULL where none does
+ * @param[out] made Geometry read for this call, which the caller releases
+ * @return The geometry, or NULL where it cannot be read
+ */
+const LWGEOM *
+relate_ctx_borrow_geom(const GSERIALIZED *gs, void **entry, LWGEOM **made)
+{
+  *entry = NULL;
+  *made = NULL;
+
   RelateCtxCache *cache = MEOS_RELATE_CTX_CACHE;
   if (cache)
     for (uint32_t i = 0; i < cache->count; i++)
     {
       RelateCtxCacheEntry *e = &cache->entries[i];
-      if (e->key && e->ctx && relate_ctx_same(e->key, gs))
+      if (e->key && e->geom && relate_ctx_same(e->key, gs))
       {
         e->hits++;
         e->busy++;
         *entry = e;
-        return e->ctx;
+        return e->geom;
       }
     }
 
-  /* A geometry the reading of which is not what its call costs is answered
-   * without an entry */
-  if (VARSIZE(gs) < RELATE_CTX_CACHE_MIN_BYTES)
-    return relate_ctx_make(geom);
-
-  /* The entries outlive the call that fills them, so what they hold is
-   * allocated where it survives it: the extension resets the context a call
-   * runs in, while a standalone build allocates from the heap */
 #if ! MEOS
   MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
 #endif
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  if (! geom)
+  {
+#if ! MEOS
+    MemoryContextSwitchTo(oldctx);
+#endif
+    return NULL;
+  }
   if (! cache)
   {
     cache = palloc0(sizeof(RelateCtxCache));
@@ -10014,8 +10178,6 @@ relate_ctx_borrow(const GSERIALIZED *gs, const LWGEOM *geom, void **entry)
   if (cache->count < RELATE_CTX_CACHE_SIZE)
     e = &cache->entries[cache->count++];
   else
-  {
-    /* An entry a call is READING is never the one displaced */
     for (uint32_t i = 0; i < RELATE_CTX_CACHE_SIZE; i++)
     {
       RelateCtxCacheEntry *c = &cache->entries[i];
@@ -10024,28 +10186,47 @@ relate_ctx_borrow(const GSERIALIZED *gs, const LWGEOM *geom, void **entry)
       if (! e || c->hits < e->hits)
         e = c;
     }
-    if (e)
-      relate_ctx_cache_clear_entry(e);
-  }
-  void *ctx = NULL;
-  if (e)
+  if (e && ! e->busy)
   {
+    /* Read from the entry's OWN copy, for the reason #relate_ctx_borrow
+     * states: a geometry is a view over the bytes it was read from */
+    if (e->key || e->ctx || e->geom)
+      relate_ctx_cache_clear_entry(e);
     e->key = palloc(VARSIZE(gs));
     memcpy(e->key, gs, VARSIZE(gs));
-    /* The context states the edges of the geometry it is made from, so the
-     * entry keeps that geometry for as long as it keeps the context */
-    e->geom = lwgeom_clone_deep((LWGEOM *) geom);
-    ctx = e->ctx = e->geom ? relate_ctx_make(e->geom) : NULL;
+    lwgeom_free(geom);
+    e->geom = lwgeom_from_gserialized(e->key);
     e->hits = 1;
     e->busy = 1;
-    *entry = ctx ? e : NULL;
-    if (! ctx)
-      relate_ctx_cache_clear_entry(e);
+    *entry = e;
+#if ! MEOS
+    /* EVERY exit restores the caller's context. The one that did not left the
+     * backend allocating into TopMemoryContext for the rest of the query, so
+     * the next per-tuple reset freed chunks that were never in it */
+    MemoryContextSwitchTo(oldctx);
+#endif
+    return e->geom;
   }
 #if ! MEOS
   MemoryContextSwitchTo(oldctx);
 #endif
-  return *entry ? ctx : (ctx ? ctx : relate_ctx_make(geom));
+  if (*entry)
+    return geom;
+  *made = geom;
+  return geom;
+}
+
+/**
+ * @brief Give back the geometry #relate_ctx_borrow_geom answered
+ * @details An entry holds its geometry for the calls that follow; a geometry
+ * no entry holds belongs to the caller, which releases it
+ */
+void
+relate_ctx_return_geom(void *entry)
+{
+  if (entry)
+    ((RelateCtxCacheEntry *) entry)->busy--;
+  return;
 }
 
 /**
@@ -10186,6 +10367,73 @@ meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern,
 /*****************************************************************************
  * Union of the linear and point components of a geometry
  *****************************************************************************/
+
+/**
+ * @brief Compute the DE-9IM matrix of two geometries from the edges already
+ * read for them
+ * @details PostGIS caches no prepared geometry for `ST_Relate`, and its
+ * reason does not carry over: what it keeps is a prepared INDEX, and GEOS
+ * prepares predicates only -- there is no prepared form that answers a
+ * matrix, so there is nothing for its matrix entry to reuse. What MEOS keeps
+ * is the EDGES, which the matrix reads exactly as a predicate does. A join
+ * asking for the matrix of every pair reads one geometry once per pair it
+ * appears in without this.
+ * @param[in] ctx1,ctx2 Contexts of the two geometries
+ * @param[out] result The matrix
+ * @return true if the pair is one the engine covers
+ */
+bool
+meos_relate_ctx(const void *ctx1, const void *ctx2, char result[10])
+{
+  assert(result);
+  const struct RelateCtx *c1 = (const struct RelateCtx *) ctx1;
+  const struct RelateCtx *c2 = (const struct RelateCtx *) ctx2;
+  if (! c1 || ! c2)
+    return false;
+  RelateOperands ops;
+  ops.op[0] = c1->op;
+  ops.op[1] = c2->op;
+  return relate_matrix(c1->op.geom, c2->op.geom, &ops, NULL, result);
+}
+
+/**
+ * @brief Return whether a DE-9IM pattern holds of two geometries, from the
+ * edges already read for them
+ * @details The twin of #meos_spatialrel_ctx for the pattern entry. PostGIS
+ * caches the prepared geometry of `relate_pattern` as it does of the
+ * predicates (`GetPrepGeomCache(fcinfo, shared_geom1, shared_geom2)`), so the
+ * entry that answers a pattern reads the kept edges rather than building its
+ * own. `ST_Relate` returning the whole matrix caches in neither engine: it
+ * asks for every cell, so there is no step it answers on behalf of.
+ * @param[in] ctx1,ctx2 Contexts of the two geometries
+ * @param[in] pattern DE-9IM pattern
+ * @param[out] result Whether the pattern holds
+ * @return true if the pair is one the engine covers
+ */
+bool
+meos_relate_pattern_ctx(const void *ctx1, const void *ctx2,
+  const char *pattern, bool *result)
+{
+  assert(pattern); assert(result);
+  const struct RelateCtx *c1 = (const struct RelateCtx *) ctx1;
+  const struct RelateCtx *c2 = (const struct RelateCtx *) ctx2;
+
+  /* A geometry the engine does not cover carries no context, and the pair is
+   * uncovered exactly as #meos_relate_pattern reports it */
+  if (! c1 || ! c2)
+    return false;
+
+  RelateQuery q;
+  relate_query_init(&q, &pattern, 1);
+  RelateOperands ops;
+  ops.op[0] = c1->op;
+  ops.op[1] = c2->op;
+  char matrix[10];
+  if (! relate_matrix(c1->op.geom, c2->op.geom, &ops, &q, matrix))
+    return false;
+  *result = de9im_match(matrix, pattern);
+  return true;
+}
 
 /**
  * @brief Return true if a type is one the linear union answers for

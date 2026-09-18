@@ -182,11 +182,18 @@ extern bool arc_same_circle(const Edge *a, const Edge *b);
  * engine does not cover, which is what #meos_spatialrel answers false for */
 extern void *relate_ctx_make(const LWGEOM *geom);
 extern void relate_ctx_free(void *ctx);
-extern void *relate_ctx_borrow(const GSERIALIZED *gs, const LWGEOM *geom,
-  void **entry);
+extern void *relate_ctx_borrow(const GSERIALIZED *gs, void **entry,
+  LWGEOM **made);
 extern void relate_ctx_return(void *ctx, void *entry);
+extern const LWGEOM *relate_ctx_borrow_geom(const GSERIALIZED *gs,
+  void **entry, LWGEOM **made);
+extern void relate_ctx_return_geom(void *entry);
 extern bool meos_spatialrel_ctx(const void *ctx1, const void *ctx2,
   spatialRel rel, bool *result);
+extern bool meos_relate_pattern_ctx(const void *ctx1, const void *ctx2,
+  const char *pattern, bool *result);
+extern bool meos_relate_ctx(const void *ctx1, const void *ctx2,
+  char result[10]);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
 extern int point_in_polygon_vertex(double x, double y, Edge **edges,
