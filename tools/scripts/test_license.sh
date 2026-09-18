@@ -41,6 +41,9 @@ missing=$(printf '%s\n' "${sources}" | xargs -r licensecheck -l 30 --tail 0 |
   grep "No copyright\|UNKNOWN")
 missing1=$(mylicensecheck ${DOC_EXCLUDE_LIST} doc | grep "No copyright")
 missing2=$(find doc -type f -name "*.xml" -exec grep -H -i -c 'Creative Commons' {} \; | grep :0$ | cut -d':' -f1)
+# Every banner is the one tools/license/banner.py renders, so a year, a frame or
+# a wording that drifts in one file is a finding rather than a variant
+drift=$(python3 tools/license/banner.py --check)
 popd > /dev/null || exit
 
 error=0
@@ -75,6 +78,14 @@ if [[ $missing2 ]]; then
  echo " ****************************************************"
  echo "$missing2"
  error=1
+fi
+if [[ $drift ]]; then
+  echo " ****************************************************"
+  echo " *** Found source files whose banner is not the one of"
+  echo " *** tools/license/banner.py: run it to stamp them"
+  echo " ****************************************************"
+  echo "$drift"
+  error=1
 fi
 exit $error
 
