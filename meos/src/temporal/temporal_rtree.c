@@ -530,6 +530,23 @@ node_make(RTreeNodeType node_type, size_t bboxsize)
 }
 
 /**
+ * @brief Return the lower or upper bound of a box on one of the axes the
+ * boxes of a tree carry
+ * @details The axes of a tree are those its boxes carry (#rtree_set_axes), so
+ * a spatial box is never measured on a time axis it does not have, nor a
+ * temporal one on X and Y
+ * @param[in] rtree The RTree
+ * @param[in] box The box
+ * @param[in] axis Axis of the tree, from 0 to @p dims - 1
+ * @param[in] upper True for the upper bound, false for the lower one
+ */
+static inline double
+rtree_axis(const RTree *rtree, const void *box, int axis, bool upper)
+{
+  return rtree->get_axis(box, rtree->axes[axis], upper);
+}
+
+/**
  * @brief Return the length of a bounding box along a given axis as a double
  * @param[in] rtree Pointer to the RTree structure containing the function to
  * retrieve axis values
@@ -541,7 +558,8 @@ node_make(RTreeNodeType node_type, size_t bboxsize)
 static inline double
 get_axis_length(const RTree *rtree, const void *box, int axis)
 {
-  return rtree->get_axis(box, axis, true) - rtree->get_axis(box, axis, false);
+  return rtree_axis(rtree, box, axis, true) -
+    rtree_axis(rtree, box, axis, false);
 }
 
 /**
@@ -601,16 +619,19 @@ node_choose_least_enlargement(const RTree *rtree, const RTreeNode *node,
   const void *box)
 {
   int result = 0;
-  double previous_enlargement = INFINITY;
+  double previous_enlargement = INFINITY, previous_area = INFINITY;
   for (int i = 0; i < node->count; ++i)
   {
     double union_area = unioned_area(rtree, RTREE_NODE_BBOX_N(node, i), box);
     double area = box_area(rtree, RTREE_NODE_BBOX_N(node, i));
     double enlarge_area = union_area - area;
-    if (enlarge_area < previous_enlargement)
+    /* Equal enlargements go to the smaller box, as Guttman's choice does */
+    if (enlarge_area < previous_enlargement ||
+        (enlarge_area == previous_enlargement && area < previous_area))
     {
       result = i;
       previous_enlargement = enlarge_area;
+      previous_area = area;
     }
   }
   return result;
@@ -634,12 +655,24 @@ node_choose_least_enlargement(const RTree *rtree, const RTreeNode *node,
 static int
 node_choose(const RTree *rtree, const void *box, const RTreeNode *node)
 {
-  /* Check if the bounding box can be added without expanding any rectangle */
+  /* A box some child already contains goes to the smallest such child, which
+   * needs no enlargement and overlaps its siblings the least */
+  int result = -1;
+  double smallest = INFINITY;
   for (int i = 0; i < node->count; ++i)
   {
     if (rtree->bbox_contains(RTREE_NODE_BBOX_N(node, i), box))
-      return i;
+    {
+      double area = box_area(rtree, RTREE_NODE_BBOX_N(node, i));
+      if (area < smallest)
+      {
+        result = i;
+        smallest = area;
+      }
+    }
   }
+  if (result >= 0)
+    return result;
   /* Fallback to "least enlargement" */
   return node_choose_least_enlargement(rtree, node, box);
 }
@@ -792,8 +825,8 @@ node_qsort(const RTree *rtree, RTreeNode *node, int index, bool upper, int s,
   node_swap(rtree, node, s + pivot, s + right);
   for (int i = 0; i < num_boxes; ++i)
   {
-    if (rtree->get_axis(RTREE_NODE_BBOX_N(node, right + s), index, upper) >
-        rtree->get_axis(RTREE_NODE_BBOX_N(node, s + i), index, upper))
+    if (rtree_axis(rtree, RTREE_NODE_BBOX_N(node, right + s), index, upper) >
+        rtree_axis(rtree, RTREE_NODE_BBOX_N(node, s + i), index, upper))
     {
       node_swap(rtree, node, s + i, s + left);
       left++;
@@ -849,11 +882,11 @@ node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
   for (int i = 0; i < node->count; ++i)
   {
     double min_dist =
-      rtree->get_axis(RTREE_NODE_BBOX_N(node, i), largest_axis, false) -
-      rtree->get_axis(box, largest_axis, false);
+      rtree_axis(rtree, RTREE_NODE_BBOX_N(node, i), largest_axis, false) -
+      rtree_axis(rtree, box, largest_axis, false);
     double max_dist =
-      rtree->get_axis(box, largest_axis, true) -
-      rtree->get_axis(RTREE_NODE_BBOX_N(node, i), largest_axis, true);
+      rtree_axis(rtree, box, largest_axis, true) -
+      rtree_axis(rtree, RTREE_NODE_BBOX_N(node, i), largest_axis, true);
     /* Move to the right */
     if (max_dist < min_dist)
       node_move_box_at_index_into(node, i--, right);
@@ -1237,6 +1270,33 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
 }
 
 /**
+ * @brief Set the axes of a tree of spatiotemporal boxes from the flags of the
+ * boxes it holds
+ * @details The axes are those the boxes carry, in the numbering of
+ * #get_axis_stbox: X and Y, then Z, then time. A box lacking an axis has a
+ * zero length on it, so measuring it there makes every area zero and every
+ * choice of subtree the first one
+ * @param[in] rtree The RTree
+ * @param[in] flags Flags of a box of the tree
+ */
+static void
+rtree_set_axes(RTree *rtree, int16 flags)
+{
+  int n = 0;
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    rtree->axes[n++] = 0;
+    rtree->axes[n++] = 1;
+  }
+  if (MEOS_FLAGS_GET_Z(flags))
+    rtree->axes[n++] = 3;
+  if (MEOS_FLAGS_GET_T(flags))
+    rtree->axes[n++] = 2;
+  rtree->dims = n;
+  return;
+}
+
+/**
  * @brief Creates an RTree index
  * @param[in] bboxtype The MeosType of the elements to index.
  * @return RTree initialized.
@@ -1254,6 +1314,7 @@ rtree_create(MeosType bboxtype)
   if (span_type(bboxtype))
   {
     rtree->dims = 1;
+    rtree->axes[0] = 0;
     rtree->get_axis = &get_axis_span;
     rtree->bbox_expand = &bbox_expand_span;
     rtree->bbox_contains = &bbox_contains_span;
@@ -1264,6 +1325,7 @@ rtree_create(MeosType bboxtype)
   else if (bboxtype == T_TBOX)
   {
     rtree->dims = 2;
+    rtree->axes[0] = 0; rtree->axes[1] = 1;
     rtree->get_axis = &get_axis_tbox;
     rtree->bbox_expand = &bbox_expand_tbox;
     rtree->bbox_contains = &bbox_contains_tbox;
@@ -1417,10 +1479,10 @@ str_cmp(const void *a, const void *b, void *arg)
   const STRCtx *c = (const STRCtx *) arg;
   const STRItem *ia = (const STRItem *) a;
   const STRItem *ib = (const STRItem *) b;
-  double ca = (c->tree->get_axis(ia->box, c->axis, false) +
-               c->tree->get_axis(ia->box, c->axis, true)) / 2.0;
-  double cb = (c->tree->get_axis(ib->box, c->axis, false) +
-               c->tree->get_axis(ib->box, c->axis, true)) / 2.0;
+  double ca = (rtree_axis(c->tree, ia->box, c->axis, false) +
+               rtree_axis(c->tree, ia->box, c->axis, true)) / 2.0;
+  double cb = (rtree_axis(c->tree, ib->box, c->axis, false) +
+               rtree_axis(c->tree, ib->box, c->axis, true)) / 2.0;
   return (ca > cb) - (ca < cb);
 }
 
@@ -1573,7 +1635,7 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
   /* A box type whose dimension count depends on the data carries -1 until the
    * first box arrives, which for a tree grown by insertion is the first insert */
   if (rtree->dims < 0)
-    rtree->dims = 3 + MEOS_FLAGS_GET_Z(((const STBox *) boxes)->flags);
+    rtree_set_axes(rtree, ((const STBox *) boxes)->flags);
 
   STRItem *items = palloc(sizeof(STRItem) * (size_t) count);
   for (int i = 0; i < count; i++)
@@ -1639,7 +1701,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
     {
       RTreeNode *new_root = node_make(RTREE_LEAF, rtree->bboxsize);
       if (rtree->dims < 0)
-        rtree->dims = 3 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
+        rtree_set_axes(rtree, ((const STBox *) box)->flags);
       rtree->root = new_root;
       memcpy(rtree->box, box, rtree->bboxsize);
     }
