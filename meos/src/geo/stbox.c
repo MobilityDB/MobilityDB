@@ -1898,10 +1898,8 @@ stbox_contains(const STBox *box1, const STBox *box2)
       return false;
   if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
       return false;
-  if (hast && (
-    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
-      return false;
+  if (hast && ! span_contains(&box1->period, &box2->period))
+    return false;
   return true;
 }
 
@@ -1972,9 +1970,7 @@ stbox_overlaps(const STBox *box1, const STBox *box2)
     return false;
   if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
     return false;
-  if (hast && (
-    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+  if (hast && ! span_overlaps(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -2014,8 +2010,7 @@ stbox_same(const STBox *box1, const STBox *box2)
     return false;
   if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
-  if (hast && (box1->period.lower != box2->period.lower ||
-               box1->period.upper != box2->period.upper))
+  if (hast && ! span_eq(&box1->period, &box2->period))
     return false;
   return true;
 }
