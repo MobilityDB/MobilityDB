@@ -1607,6 +1607,45 @@ rtree_insert(RTree *rtree, void *box, int64 id)
 }
 
 /**
+ * @ingroup meos_internal_box_index
+ * @brief Search an RTree with a bounding box, collecting matching IDs into
+ * a MeosArray, for a caller that has validated the arguments
+ * @details The search #rtree_search makes once it has checked the query
+ * against the tree, for the callers inside MEOS that ask an index many times
+ * with query boxes they build themselves
+ * @param[in] rtree The RTree to query
+ * @param[in] op The search operation
+ * @param[in] query The bounding box that serves as query
+ * @param[out] result Array collecting the matching ids, made by
+ * #index_result_create
+ * @return Number of matching IDs
+ */
+int
+rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
+  MeosArray *result)
+{
+  assert(rtree); assert(query); assert(result);
+  assert(ensure_valid_rtree_box(rtree, query));
+  meos_array_reset(result);
+  if (! rtree->root)
+    return 0;
+  if (op == INDEX_OVERLAPS && rtree->bboxtype == T_STBOX)
+  {
+    /* The boxes of a tree share their axes, which its extent carries, so the
+     * axes both sides have are read once here rather than once per entry */
+    const STBox *q = (const STBox *) query;
+    int16 f = ((const STBox *) rtree->box)->flags;
+    node_search_overlaps_stbox(rtree->root, q,
+      MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
+      MEOS_FLAGS_GET_Z(f) && MEOS_FLAGS_GET_Z(q->flags),
+      MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags), result);
+  }
+  else
+    node_search(rtree, rtree->root, op, query, result);
+  return (int) result->count;
+}
+
+/**
  * @ingroup meos_temporal_box_index
  * @brief Search an RTree with a bounding box, collecting matching IDs into
  * a MeosArray
@@ -1631,24 +1670,7 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_valid_rtree_box(rtree, query) || ! ensure_index_result(result))
     return -1;
-
-  meos_array_reset(result);
-  if (! rtree->root)
-    return 0;
-  if (op == INDEX_OVERLAPS && rtree->bboxtype == T_STBOX)
-  {
-    /* The boxes of a tree share their axes, which its extent carries, so the
-     * axes both sides have are read once here rather than once per entry */
-    const STBox *q = (const STBox *) query;
-    int16 f = ((const STBox *) rtree->box)->flags;
-    node_search_overlaps_stbox(rtree->root, q,
-      MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
-      MEOS_FLAGS_GET_Z(f) && MEOS_FLAGS_GET_Z(q->flags),
-      MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags), result);
-  }
-  else
-    node_search(rtree, rtree->root, op, query, result);
-  return meos_array_count(result);
+  return rtree_search_intl(rtree, op, query, result);
 }
 
 /**
