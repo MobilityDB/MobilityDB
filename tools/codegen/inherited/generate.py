@@ -6,7 +6,7 @@
 #
 # MobilityDB includes portions of PostGIS version 3 source code released
 # under the GNU General Public License (GPLv2 or later).
-# Copyright (c) 2001-2025, PostGIS contributors
+# Copyright (c) 2001-2026, PostGIS contributors
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose, without fee, and without a written
@@ -53,6 +53,15 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 MANIFEST_DIR = HERE / "manifest.d"
 TEMPLATES = HERE / "templates"
+
+# The licence banner, copied from tools/license/banner.txt
+LICENSE_BANNER = (ROOT / "tools" / "license" / "banner.txt").read_text()
+
+
+def read_template(name: str) -> str:
+    """Return a template, its @LICENSE@ line replaced by the licence banner."""
+    return (TEMPLATES / name).read_text().replace("@LICENSE@\n",
+                                                  LICENSE_BANNER)
 
 
 # The two presence classes the gated surfaces select on are CATALOG classes, not
@@ -213,7 +222,7 @@ def render(behaviour: str, sub: dict) -> str:
         # `compops_families:` entries (temporal, tgeo, tpoint) use.
         return BANNER.format(tmpl="compops.sql.tmpl") + render_compops_body(
             _compops_spec_from_subtype(sub))
-    tmpl = apply_conditionals((TEMPLATES / f"{behaviour}.sql.tmpl").read_text(), sub)
+    tmpl = apply_conditionals(read_template(f"{behaviour}.sql.tmpl"), sub)
     # `cellToBoundary` is a slot of the DggsCellOps descriptor, so it is one bare
     # polymorphic name overloaded by argument type across every cell-index family.
     boundary = "cellToBoundary"
@@ -237,7 +246,7 @@ def render(behaviour: str, sub: dict) -> str:
     # a cell index) overrides it per behaviour via `doc`.
     doc = (sub.get("doc") or {}).get(behaviour)
     if doc is None and "{DOC}" in tmpl:
-        doc = (TEMPLATES / f"{behaviour}.doc.tmpl").read_text().rstrip("\n")
+        doc = read_template(f"{behaviour}.doc.tmpl").rstrip("\n")
     # {DOC} is substituted first so the doc block's own {TEMP}/{BOUNDARY}
     # placeholders are then resolved by the substitutions that follow.
     body = (tmpl.replace("{DOC}", doc or "")
@@ -280,7 +289,7 @@ def _boxops_markers(box: str):
 def _boxops_blocks():
     """boxops.c.tmpl split on blank lines: [header], 3 dispatchers (kinds 0/1/2),
     then per op [banner, wrap0, wrap1, wrap2], [trailer]. Roundtrips exactly."""
-    blocks = (TEMPLATES / "boxops.c.tmpl").read_text().split("\n\n")
+    blocks = read_template("boxops.c.tmpl").split("\n\n")
     header, trailer = blocks[0], blocks[-1]
     dispatch = blocks[1:4]
     ops = [(blocks[4 + i * 4], blocks[5 + i * 4:8 + i * 4]) for i in range(5)]
@@ -364,7 +373,7 @@ def _posops_c_blocks():
     # BINDING-HEADER-PARSE-OK: reads the generator's own posops.c.tmpl template, as
     # _boxops_blocks reads boxops.c.tmpl; this is the inherited generator emitting
     # MobilityDB C regions, not a catalog-consuming binding."""
-    blocks = (TEMPLATES / "posops.c.tmpl").read_text().split("\n\n")
+    blocks = read_template("posops.c.tmpl").split("\n\n")
     return blocks[0], [(blocks[1 + 2 * k], blocks[2 + 2 * k]) for k in range(3)], blocks[-1]
 
 
@@ -641,7 +650,7 @@ def _wrap_brief(text: str, width: int = 80) -> str:
 def render_spatialrels(fam: dict) -> str:
     """Render the ever/always PG wrapper region for one family: per predicate a
     banner + wrapper blocks (one per direction x ever/always). Roundtrips exactly."""
-    banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
+    banner_t, block_t = read_template("spatialrels.c.tmpl").split("\n\n")
     block_t = block_t.rstrip("\n")
     # A family whose type is not tgeo (e.g. tcbuffer) overrides the geo defaults:
     # its own @ingroup (mobilitydb_<fam>_rel_ever), its own direction order (the
@@ -743,9 +752,9 @@ def render_dwithin(fam: dict) -> str:
     its kernel either as a single `ea_` function taking `ever` as its last
     argument (`ever_arg: true`, rgeo) or as an `ever ? e... : a...` ternary over
     separate kernels (cbuffer)."""
-    banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
+    banner_t, block_t = read_template("spatialrels.c.tmpl").split("\n\n")
     block_t = block_t.rstrip("\n")
-    disp_t = (TEMPLATES / "dwithin_dispatcher.c.tmpl").read_text().rstrip("\n")
+    disp_t = read_template("dwithin_dispatcher.c.tmpl").rstrip("\n")
     ingroup = fam.get("ingroup", "mobilitydb_geo_rel_ever")
     out = [banner_t.replace("{BANNER}", fam["banner"])]
     for direc in fam["order"]:
@@ -890,7 +899,7 @@ def render_tempspatialrels(fam: dict) -> str:
     (default 'native') — see the module comment above."""
     impl = fam.get("impl", "native")
     tmpl_name = "tempspatialrels.sql.tmpl" if impl == "cast" else "tempspatialrels_native.sql.tmpl"
-    tmpl = (TEMPLATES / tmpl_name).read_text()
+    tmpl = read_template(tmpl_name)
     banner = ("/*****************************************************************************\n"
               " * {PRED}\n"
               " *****************************************************************************/")
@@ -926,7 +935,7 @@ def render_tempspatialrels(fam: dict) -> str:
         # through to cast's cell-index wording.
         doc = (f"/**\n * @file\n * @brief Temporal spatial relationships for {fam['brief']}\n */"
                if impl != "cast"
-               else (TEMPLATES / "tempspatialrels.doc.tmpl").read_text().rstrip("\n"))
+               else read_template("tempspatialrels.doc.tmpl").rstrip("\n"))
     return (BANNER.format(tmpl=tmpl_name)
             + tmpl.replace("{DOC}", doc).replace("{BODY}", body))
 
@@ -972,7 +981,7 @@ def render_accessors(fam: dict) -> str:
                                   "baseset": fam.get("baseset", "")}]
     pools = presence_pools(types)
     groups = []
-    for comment, fns, name in _accessor_blocks((TEMPLATES / "accessors.sql.tmpl").read_text()):
+    for comment, fns, name in _accessor_blocks(read_template("accessors.sql.tmpl")):
         groups.append(_render_group(comment, fns, types))
         for gname in _GATED_AFTER.get(name, []):
             groups.append(_render_group("", _GATED[gname], pools[_GATED_PRESENCE[gname]]))
@@ -1165,7 +1174,7 @@ def render_io_type(fam: dict) -> str:
         return render_spanfile(fam)
     types = fam.get("types") or [{"temp": fam["temp"]}]
     blocks = []
-    for blk in (TEMPLATES / "io_type.sql.tmpl").read_text().strip("\n").split("\n\n"):
+    for blk in read_template("io_type.sql.tmpl").strip("\n").split("\n\n"):
         if "{TEMP}" in blk:
             blocks.append("\n".join(_io_sub(blk, t) for t in types))
         else:
@@ -1374,7 +1383,7 @@ def set_missing_e_twins(fam: dict) -> list:
 def _repr_skeleton(sig: str, ret: str, sym: str) -> str:
     """One representation CREATE FUNCTION from the shared skeleton (no trailing
     newline, so groups/blocks can be joined with explicit blank-line control)."""
-    tmpl = (TEMPLATES / "representations.sql.tmpl").read_text()
+    tmpl = read_template("representations.sql.tmpl")
     return (tmpl.replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym).rstrip("\n"))
 
@@ -1551,7 +1560,7 @@ def _ctor_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
     so ops/blocks can be joined with explicit blank-line control). `pre` is a leading
     comment line (the `-- The function is not strict` marker, or the tpcpoint interp
     note) or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "constructors.sql.tmpl").read_text()
+    tmpl = read_template("constructors.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -1747,7 +1756,7 @@ def _xform_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str
     """One transformation CREATE FUNCTION from the shared skeleton (no trailing
     newline). `pre` is a leading comment line (the `-- The function is not strict`
     marker) or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "transformations.sql.tmpl").read_text()
+    tmpl = read_template("transformations.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -1891,7 +1900,7 @@ def _accessor_names() -> set:
     # BINDING-HEADER-PARSE-OK: reads the SQL accessors.sql.tmpl template (not a C
     # header), exactly as render_accessors/_accessor_blocks already do; this is the
     # inherited SQL-region generator, not a catalog-consuming binding."""
-    tmpl = (TEMPLATES / "accessors.sql.tmpl").read_text()
+    tmpl = read_template("accessors.sql.tmpl")
     return set(re.findall(r"CREATE FUNCTION (\w+)\(", tmpl)) | set(_GATED)
 
 
@@ -2048,7 +2057,7 @@ def _cmp_funcs(types, ops=_CMP_OPS) -> str:
     blank line, no blank within a group). The block ends with the trailing newline
     of the last function; the blank line that separates it from the following
     operators is part of the surrounding `lit` block."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     if isinstance(types, str):
         types = [types]
     groups = ["\n".join(tmpl.replace("{SIG}", f"{name}({t}, {t})")
@@ -2166,7 +2175,7 @@ def _hash_funcs(types, ops=_HASH_OPS) -> str:
     _cmp_funcs: one type token (packed) or a token list (op-outer / type-inner,
     op groups separated by one blank line). `ops` selects the kernel table
     (Set_* by default, Temporal_* for the temporal families)."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     if isinstance(types, str):
         types = [types]
     groups = ["\n".join(tmpl.replace("{SIG}", sig.format(t=t))
@@ -2308,7 +2317,7 @@ _SETOP_OPERATOR = ("CREATE OPERATOR {op} (\n"
 def _setop_fns(op: str, pairs: list) -> str:
     """The three CREATE FUNCTIONs of one operation for every (value, set) pair:
     a pair's functions packed, consecutive pairs separated by one blank line."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     groups = ["\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
                             .replace("{RET}", ret.format(v=v, s=s))
                             .replace("{SYM}", sym)
@@ -2441,7 +2450,7 @@ def _topop_sel(fam: dict, idx: int) -> str:
 
 def _topop_fns(op: str, pairs: list) -> str:
     """The predicate's CREATE FUNCTIONs for every (value, set) pair, all packed."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     return _with_span_support(
         "\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
                       .replace("{RET}", "boolean").replace("{SYM}", sym)
@@ -2573,7 +2582,7 @@ def _posop_name(fam: dict, pos: str) -> str:
 def _posop_fns(pos: str, fam: dict) -> str:
     """The position's CREATE FUNCTIONs: the value-spelling name over the value
     pairs then the time-spelling name over the time pairs, all packed."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     vpos, tpos = _POSOP_TABLE[pos][0], _POSOP_TABLE[pos][1]
     out = []
     for p, pairs in ((vpos, fam["pairs"]), (tpos, fam["time_pairs"])):
@@ -2698,7 +2707,7 @@ _DIST_DIRS = (("{v}", "{s}", "Distance_value_set"),
 def _dist_fns(fam: dict) -> str:
     """The three setDistance CREATE FUNCTIONs for every (value, set) pair: a
     pair's functions packed, consecutive pairs separated by one blank line."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     groups = []
     for (v, s), ret in zip(fam["pairs"], fam["rets"]):
         rets = ret if isinstance(ret, list) else [ret] * 3
@@ -2822,7 +2831,7 @@ def _conv_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
     """One conversion CREATE FUNCTION from the shared skeleton (no trailing newline, so
     blocks can be joined with explicit newline control). `pre` is a leading comment line
     or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "conversions.sql.tmpl").read_text()
+    tmpl = read_template("conversions.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -2934,7 +2943,7 @@ def _restr_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str
     """One restriction CREATE FUNCTION from the shared skeleton (no trailing newline, so
     blocks can be joined with explicit newline control). `pre` is a leading comment line
     or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "restrictions.sql.tmpl").read_text()
+    tmpl = read_template("restrictions.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -3066,7 +3075,7 @@ def _modif_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str
     """One modification CREATE FUNCTION from the shared skeleton (no trailing newline,
     so blocks can be joined with explicit newline control). `pre` is a leading comment
     line or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "modifications.sql.tmpl").read_text()
+    tmpl = read_template("modifications.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -3189,7 +3198,7 @@ def _mathfuncs_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) ->
     """One mathematical-function CREATE FUNCTION from the shared skeleton (no
     trailing newline, so blocks can be joined with explicit newline control). `pre`
     is a leading comment line or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "mathfuncs.sql.tmpl").read_text()
+    tmpl = read_template("mathfuncs.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -3330,7 +3339,7 @@ def _with_span_support(text: str) -> str:
 
 def _spanfile_fns(blk: dict, fam: dict) -> str:
     """One CREATE FUNCTION template emitted per instantiation, packed."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     out = []
     for key in blk.get("only") or blk.get("order") or fam["order"]:
         spec = {"sig": blk["sig"], "ret": blk["ret"], "sym": blk["sym"]}
@@ -3347,7 +3356,7 @@ def _spanfile_group(blk: dict, fam: dict) -> str:
     emitted together for each instantiation in turn — the shape of the I/O and
     cast sections, where every type carries its _in/_out/_recv/_send (or cast)
     cluster before the next type starts."""
-    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     clusters = []
     for key in blk.get("only") or blk.get("order") or fam["order"]:
         tok = fam["insts"][key]
@@ -3472,7 +3481,7 @@ def _agg_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
     """One aggregate-machinery CREATE FUNCTION from the shared skeleton (no trailing
     newline, so blocks can be joined with explicit newline control). `pre` is a
     leading comment line or ""; `strict` toggles the ` STRICT` keyword."""
-    tmpl = (TEMPLATES / "aggregates.sql.tmpl").read_text()
+    tmpl = read_template("aggregates.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
@@ -3609,10 +3618,10 @@ def _tiling_skeleton(f: dict, fam: dict = None) -> str:
     LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` for every family, the one
     order the deployed SQL uses."""
     if "body" in f:
-        tmpl = (TEMPLATES / "tiling_delegate.sql.tmpl").read_text()
+        tmpl = read_template("tiling_delegate.sql.tmpl")
         return (tmpl.replace("{SIG}", f["sig"]).replace("{RET}", f["ret"])
                     .replace("{BODY}", f["body"]).rstrip("\n"))
-    tmpl = (TEMPLATES / "tiling.sql.tmpl").read_text()
+    tmpl = read_template("tiling.sql.tmpl")
     if "sym" in f:
         asx, lang = f"'MODULE_PATHNAME', '{f['sym']}'", "C"
     else:
@@ -3805,7 +3814,7 @@ def _compops_lr(direction: str, pair: dict, basesym: str, tempsym: str):
 
 
 def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
-    tmpl = (TEMPLATES / "compops_func.sql.tmpl").read_text()
+    tmpl = read_template("compops_func.sql.tmpl")
     sup = f"  SUPPORT {support}\n" if support else ""
     return (tmpl.replace("{SIG}", sig).replace("{RET}", ret).replace("{SYM}", sym)
                 .replace("{SUPPORT}", sup).rstrip("\n"))
@@ -3813,14 +3822,14 @@ def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
 
 def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str, rest: str,
                     join: str) -> str:
-    tmpl = (TEMPLATES / "compops_op_evalways.sql.tmpl").read_text()
+    tmpl = read_template("compops_op_evalways.sql.tmpl")
     return (tmpl.replace("{OP}", op).replace("{L}", l).replace("{R}", r)
                 .replace("{PROC}", proc).replace("{NEG}", neg)
                 .replace("{REST}", rest).replace("{JOIN}", join).rstrip("\n"))
 
 
 def _compops_op_t(op: str, proc: str, l: str, r: str, comm: str) -> str:
-    tmpl = (TEMPLATES / "compops_op_temporal.sql.tmpl").read_text()
+    tmpl = read_template("compops_op_temporal.sql.tmpl")
     return (tmpl.replace("{OP}", op).replace("{PROC}", proc).replace("{L}", l)
                 .replace("{R}", r).replace("{COMM}", comm).rstrip("\n"))
 
@@ -3892,7 +3901,7 @@ def render_compops_body(spec: dict) -> str:
     note = ""
     if spec.get("note"):
         note = "\n * @note " + spec["note"].replace("\n", "\n * ")
-    header = (TEMPLATES / "compops.sql.tmpl").read_text()
+    header = read_template("compops.sql.tmpl")
     out = header.replace("{BRIEF}", spec["brief"]).replace("{NOTE}", note)
     if spec.get("support"):
         s = spec["support"]
