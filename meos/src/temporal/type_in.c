@@ -193,7 +193,7 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     case T_FLOAT8:
     {
       double d = float8_in(str);
-      if (d == DBL_MAX)
+      if (d == DBL_MAX || ! ensure_not_nan(d))
         return false;
       *result = Float8GetDatum(d);
       return true;
@@ -1799,6 +1799,9 @@ double_from_wkb_state(meos_wkb_parse_state *s)
 {
   double d = 0;
   read_wkb_value(s, &d, MEOS_WKB_DOUBLE_SIZE);
+  /* A NaN is refused as #wkb_parse_state_check refuses a short buffer: the
+   * error is raised and the reader goes on */
+  ensure_not_nan(d);
   return d;
 }
 

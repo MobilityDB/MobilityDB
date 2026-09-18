@@ -282,6 +282,9 @@ bigint_timestamptz_to_tbox(int64 i, TimestampTz t)
 TBox *
 float_timestamptz_to_tbox(double d, TimestampTz t)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
 
@@ -345,6 +348,8 @@ float_tstzspan_to_tbox(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -503,6 +508,9 @@ float_set_tbox(double d, TBox *box)
 TBox *
 float_to_tbox(double d)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   return result;
@@ -1464,8 +1472,8 @@ tfloatbox_expand(const TBox *box, const double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_has_X(T_TBOX, box->flags) || 
-      ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
+  if (! ensure_has_X(T_TBOX, box->flags) ||
+      ! ensure_span_isof_type(&box->span, T_FLOATSPAN) || ! ensure_not_nan(d))
     return NULL;
   /* When the value is negative, ensure that its absolute value is less than
    * the width of the span */ 

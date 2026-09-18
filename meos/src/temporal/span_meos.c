@@ -259,6 +259,9 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 Span *
 floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(lower) || ! ensure_not_nan(upper))
+    return NULL;
   /* Note: zero-fill is done in the span_set function */
   Span *s = palloc(sizeof(Span));
   span_set(Float8GetDatum(lower), Float8GetDatum(upper), lower_inc, upper_inc,
@@ -345,6 +348,9 @@ bigint_to_span(int i)
 Span *
 float_to_span(double d)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   Span *result = palloc(sizeof(Span));
   span_set(Float8GetDatum(d), Float8GetDatum(d), true, true, T_FLOAT8,
     T_FLOATSPAN, result);

@@ -329,6 +329,7 @@ extern bool ensure_has_not_M_geo(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
 extern bool ensure_mline_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
+extern bool ensure_not_nan_geo(const GSERIALIZED *gs);
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
   const POINT2D *A, const POINT2D *B, POINT2D *closest);
 extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,

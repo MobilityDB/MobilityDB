@@ -232,11 +232,16 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
       if (srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
         return NULL;
     }
-    /* Ensure that a geometry/geography is not empty */
-    if (tgeo_type_all(temptype) && 
-        ! ensure_not_empty(DatumGetGserializedP(value)))
+    /* Ensure that a geometry/geography is not empty and has no NaN
+     * coordinate */
+    if (tgeo_type_all(temptype) &&
+        (! ensure_not_empty(DatumGetGserializedP(value)) ||
+         ! ensure_not_nan_geo(DatumGetGserializedP(value))))
       return NULL;
   }
+  /* Ensure that a float value is not NaN */
+  if (temptype == T_TFLOAT && ! ensure_not_nan(DatumGetFloat8(value)))
+    return NULL;
 
   size_t value_offset = offsetof(TInstant, value);
   size_t size = value_offset;

@@ -418,6 +418,10 @@ Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   MeosType basetype)
 {
+  /* Ensure that a float bound is not NaN */
+  if (basetype == T_FLOAT8 && (! ensure_not_nan(DatumGetFloat8(lower)) ||
+      ! ensure_not_nan(DatumGetFloat8(upper))))
+    return NULL;
   Span *s = palloc(sizeof(Span));
   MeosType spantype = basetype_spantype(basetype);
   span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, s);
@@ -1149,6 +1153,9 @@ bigintspan_expand(const Span *s, int64 i)
 Span *
 floatspan_expand(const Span *s, double d)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   return numspan_expand(s, Float8GetDatum(d));
 }
 
