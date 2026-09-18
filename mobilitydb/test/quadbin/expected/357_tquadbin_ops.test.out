@@ -232,6 +232,47 @@ FROM trip, unnest(tquadbin(tp, 2)) u;
                    0 |                  2
 (1 row)
 
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]', 2);
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [4829ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 482cffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
+ cells_of_an_instant | cells_holding_time 
+---------------------+--------------------
+                   1 |                  1
+(1 row)
+
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2);
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH trips(tp) AS (VALUES
+  (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]'),
+  (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
+  (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]')
+), zooms(z) AS (VALUES (2), (4), (6))
+SELECT count(*) AS cells,
+  count(*) FILTER (WHERE (u).time <> getTime(atStbox(tp,
+    stbox(cellToBoundary((u).value)), duration((u).time) = interval '0')))
+  AS cells_stating_another_period
+FROM trips, zooms, unnest(tquadbin(tp, z)) u;
+ cells | cells_stating_another_period 
+-------+------------------------------
+   164 |                            0
+(1 row)
+
 SELECT numSequences(tquadbin(tgeompoint
   'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
   [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
