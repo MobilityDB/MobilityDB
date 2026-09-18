@@ -58,6 +58,21 @@ typedef struct
 } STboxNode;
 
 /**
+ * @brief Bound of a spatiotemporal box an index partitions on
+ */
+typedef enum
+{
+  STBOX_XMIN,
+  STBOX_XMAX,
+  STBOX_YMIN,
+  STBOX_YMAX,
+  STBOX_ZMIN,
+  STBOX_ZMAX,
+  STBOX_TMIN,
+  STBOX_TMAX
+} STboxDim;
+
+/**
  * @brief Structure to sort the temporal boxes of an inner node
  */
 typedef struct SortedSTbox
@@ -75,6 +90,9 @@ extern bool stbox_gist_inner_consistent(const STBox *key, const STBox *query,
 extern bool stbox_index_recheck(StrategyNumber strategy);
 
 extern STboxNode *stboxnode_copy(const STboxNode *box);
+extern int stbox_index_dims(int16 flags);
+extern STboxDim stbox_kd_dim(int16 flags, int level);
+extern int stbox_quadrant_bit(int16 flags, STboxDim dim);
 extern uint8 getQuadrant8D(const STBox *centroid, const STBox *inBox);
 extern void stboxnode_init(const STBox *centroid, STboxNode *nodebox);
 extern void stboxnode_quadtree_next(const STboxNode *nodebox,

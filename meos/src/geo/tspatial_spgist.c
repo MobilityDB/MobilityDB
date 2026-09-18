@@ -132,43 +132,125 @@ stboxnode_copy(const STboxNode *box)
 }
 
 /**
+ * @brief Return the number of dimensions a spatiotemporal box is partitioned
+ * on: the bounds of the axes the box carries
+ * @details Four for X (xmin, xmax, ymin, ymax), two more for Z and two for T.
+ * An index over boxes lacking an axis never splits on it: a quad-tree node has
+ * one child per combination of the bounds present, and a k-d tree cycles over
+ * those bounds only. The axes of a node are those of its centroid.
+ * @param[in] flags Flags of the box
+ */
+int
+stbox_index_dims(int16 flags)
+{
+  return (MEOS_FLAGS_GET_X(flags) ? 4 : 0) + (MEOS_FLAGS_GET_Z(flags) ? 2 : 0) +
+    (MEOS_FLAGS_GET_T(flags) ? 2 : 0);
+}
+
+/**
+ * @brief Return the bound a k-d tree level of spatiotemporal boxes splits on
+ * @details The levels cycle over the bounds of the axes the box carries in the
+ * order xmin, xmax, ymin, ymax, zmin, zmax, lower and upper period bound
+ * @param[in] flags Flags of the centroid of the level
+ * @param[in] level Level
+ */
+STboxDim
+stbox_kd_dim(int16 flags, int level)
+{
+  STboxDim dims[8];
+  int n = 0;
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    dims[n++] = STBOX_XMIN; dims[n++] = STBOX_XMAX;
+    dims[n++] = STBOX_YMIN; dims[n++] = STBOX_YMAX;
+  }
+  if (MEOS_FLAGS_GET_Z(flags))
+  {
+    dims[n++] = STBOX_ZMIN; dims[n++] = STBOX_ZMAX;
+  }
+  if (MEOS_FLAGS_GET_T(flags))
+  {
+    dims[n++] = STBOX_TMIN; dims[n++] = STBOX_TMAX;
+  }
+  assert(n > 0);
+  return dims[level % n];
+}
+
+/**
+ * @brief Return the quadrant bit carrying a bound of a spatiotemporal box
+ * @details The bounds present are packed from the lowest bit: the upper and
+ * lower period bound, then xmax, xmin, ymax, ymin, then zmax, zmin. A box
+ * carrying X and T, or X, Z and T, keeps the numbering of the full layout
+ * @param[in] flags Flags of the centroid
+ * @param[in] dim Bound
+ */
+int
+stbox_quadrant_bit(int16 flags, STboxDim dim)
+{
+  int base = 0;
+  if (MEOS_FLAGS_GET_T(flags))
+  {
+    if (dim == STBOX_TMAX)
+      return 0;
+    if (dim == STBOX_TMIN)
+      return 1;
+    base = 2;
+  }
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    switch (dim)
+    {
+      case STBOX_XMAX: return base;
+      case STBOX_XMIN: return base + 1;
+      case STBOX_YMAX: return base + 2;
+      case STBOX_YMIN: return base + 3;
+      default: break;
+    }
+    base += 4;
+  }
+  assert(MEOS_FLAGS_GET_Z(flags) && (dim == STBOX_ZMAX || dim == STBOX_ZMIN));
+  return (dim == STBOX_ZMAX) ? base : base + 1;
+}
+
+/**
  * @brief Calculate the quadrant
- * @details The quadrant is an 8-bit unsigned integer with all bits in use.
- * This function accepts 2 STBox as input.  All 8 bits are set by comparing a
- * corner of the box. This makes 256 quadrants in total.
+ * @details One bit per bound of the axes the centroid carries, set where the
+ * box is above the centroid on that bound, packed as #stbox_quadrant_bit
+ * states: 16 quadrants for X, 4 for T, 64 for X and T, 256 for X, Z and T
  */
 uint8
 getQuadrant8D(const STBox *centroid, const STBox *inBox)
 {
   uint8 quadrant = 0;
-
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
+  int16 flags = centroid->flags;
+  int b = 0;
+  if (MEOS_FLAGS_GET_T(flags))
   {
-    if (inBox->zmin > centroid->zmin)
-      quadrant |= 0x80;
-
-    if (inBox->zmax > centroid->zmax)
-      quadrant |= 0x40;
+    if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
+      quadrant |= 0x01;
+    if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
+      quadrant |= 0x02;
+    b = 2;
   }
-
-  if (inBox->ymin > centroid->ymin)
-    quadrant |= 0x20;
-
-  if (inBox->ymax > centroid->ymax)
-    quadrant |= 0x10;
-
-  if (inBox->xmin > centroid->xmin)
-    quadrant |= 0x08;
-
-  if (inBox->xmax > centroid->xmax)
-    quadrant |= 0x04;
-
-  if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
-    quadrant |= 0x02;
-
-  if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
-    quadrant |= 0x01;
-
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    if (inBox->xmax > centroid->xmax)
+      quadrant |= (uint8) (1 << b);
+    if (inBox->xmin > centroid->xmin)
+      quadrant |= (uint8) (1 << (b + 1));
+    if (inBox->ymax > centroid->ymax)
+      quadrant |= (uint8) (1 << (b + 2));
+    if (inBox->ymin > centroid->ymin)
+      quadrant |= (uint8) (1 << (b + 3));
+    b += 4;
+  }
+  if (MEOS_FLAGS_GET_Z(flags))
+  {
+    if (inBox->zmax > centroid->zmax)
+      quadrant |= (uint8) (1 << b);
+    if (inBox->zmin > centroid->zmin)
+      quadrant |= (uint8) (1 << (b + 1));
+  }
   return quadrant;
 }
 
@@ -218,50 +300,51 @@ stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 quadrant, STboxNode *next_nodebox)
 {
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
+  int16 flags = centroid->flags;
+  int b = 0;
+  if (MEOS_FLAGS_GET_T(flags))
   {
-    if (quadrant & 0x80)
-      next_nodebox->left.zmin = centroid->zmin;
+    if (quadrant & 0x01)
+      next_nodebox->right.period.lower = centroid->period.upper;
     else
-      next_nodebox->left.zmax = centroid->zmin;
-
-    if (quadrant & 0x40)
+      next_nodebox->right.period.upper = centroid->period.upper;
+    if (quadrant & 0x02)
+      next_nodebox->left.period.lower = centroid->period.lower;
+    else
+      next_nodebox->left.period.upper = centroid->period.lower;
+    b = 2;
+  }
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    if (quadrant & (1 << b))
+      next_nodebox->right.xmin = centroid->xmax;
+    else
+      next_nodebox->right.xmax = centroid->xmax;
+    if (quadrant & (1 << (b + 1)))
+      next_nodebox->left.xmin = centroid->xmin;
+    else
+      next_nodebox->left.xmax = centroid->xmin;
+    if (quadrant & (1 << (b + 2)))
+      next_nodebox->right.ymin = centroid->ymax;
+    else
+      next_nodebox->right.ymax = centroid->ymax;
+    if (quadrant & (1 << (b + 3)))
+      next_nodebox->left.ymin = centroid->ymin;
+    else
+      next_nodebox->left.ymax = centroid->ymin;
+    b += 4;
+  }
+  if (MEOS_FLAGS_GET_Z(flags))
+  {
+    if (quadrant & (1 << b))
       next_nodebox->right.zmin = centroid->zmax;
     else
       next_nodebox->right.zmax = centroid->zmax;
+    if (quadrant & (1 << (b + 1)))
+      next_nodebox->left.zmin = centroid->zmin;
+    else
+      next_nodebox->left.zmax = centroid->zmin;
   }
-
-  if (quadrant & 0x20)
-    next_nodebox->left.ymin = centroid->ymin;
-  else
-    next_nodebox->left.ymax = centroid->ymin;
-
-  if (quadrant & 0x10)
-    next_nodebox->right.ymin = centroid->ymax;
-  else
-    next_nodebox->right.ymax = centroid->ymax;
-
-  if (quadrant & 0x08)
-    next_nodebox->left.xmin = centroid->xmin;
-  else
-    next_nodebox->left.xmax = centroid->xmin;
-
-  if (quadrant & 0x04)
-    next_nodebox->right.xmin = centroid->xmax;
-  else
-    next_nodebox->right.xmax = centroid->xmax;
-
-  if (quadrant & 0x02)
-    next_nodebox->left.period.lower = centroid->period.lower;
-  else
-    next_nodebox->left.period.upper = centroid->period.lower;
-
-  if (quadrant & 0x01)
-    next_nodebox->right.period.lower = centroid->period.upper;
-  else
-    next_nodebox->right.period.upper = centroid->period.upper;
-
   return;
 }
 
@@ -273,72 +356,59 @@ void
 stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 node, int level, STboxNode *next_nodebox)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-  int mod = hasz ? level % 8 : level % 6 ;
-  if (mod == 0)
+  /* Node 0 holds the boxes below the centroid on the bound of the level, node
+   * 1 those above it */
+  switch (stbox_kd_dim(centroid->flags, level))
   {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.xmin = centroid->xmin;
-    else
-      next_nodebox->left.xmin = centroid->xmin;
-  }
-  else if (mod == 1)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.xmax = centroid->xmax;
-    else
-      next_nodebox->left.xmax = centroid->xmax;
-  }
-  else if (mod == 2)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.ymin = centroid->ymin;
-    else
-      next_nodebox->left.ymin = centroid->ymin;
-  }
-  else if (mod == 3)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.ymax = centroid->ymax;
-    else
-      next_nodebox->left.ymax = centroid->ymax;
-  }
-  else if (hasz && mod == 4)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.zmin = centroid->zmin;
-    else
-      next_nodebox->left.zmin = centroid->zmin;
-  }
-  else if (hasz && mod == 5)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.zmax = centroid->zmax;
-    else
-      next_nodebox->left.zmax = centroid->zmax;
-  }
-  else if (mod == (hasz ? 6 : 4))
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.period.lower = centroid->period.lower;
-    else
-      next_nodebox->left.period.lower = centroid->period.lower;
-  }
-  else /* mod == (hasz ? 7 : 5) */
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.period.upper = centroid->period.upper;
-    else
-      next_nodebox->left.period.upper = centroid->period.upper;
+    case STBOX_XMIN:
+      if (node == 0)
+        next_nodebox->right.xmin = centroid->xmin;
+      else
+        next_nodebox->left.xmin = centroid->xmin;
+      break;
+    case STBOX_XMAX:
+      if (node == 0)
+        next_nodebox->right.xmax = centroid->xmax;
+      else
+        next_nodebox->left.xmax = centroid->xmax;
+      break;
+    case STBOX_YMIN:
+      if (node == 0)
+        next_nodebox->right.ymin = centroid->ymin;
+      else
+        next_nodebox->left.ymin = centroid->ymin;
+      break;
+    case STBOX_YMAX:
+      if (node == 0)
+        next_nodebox->right.ymax = centroid->ymax;
+      else
+        next_nodebox->left.ymax = centroid->ymax;
+      break;
+    case STBOX_ZMIN:
+      if (node == 0)
+        next_nodebox->right.zmin = centroid->zmin;
+      else
+        next_nodebox->left.zmin = centroid->zmin;
+      break;
+    case STBOX_ZMAX:
+      if (node == 0)
+        next_nodebox->right.zmax = centroid->zmax;
+      else
+        next_nodebox->left.zmax = centroid->zmax;
+      break;
+    case STBOX_TMIN:
+      if (node == 0)
+        next_nodebox->right.period.lower = centroid->period.lower;
+      else
+        next_nodebox->left.period.lower = centroid->period.lower;
+      break;
+    case STBOX_TMAX:
+      if (node == 0)
+        next_nodebox->right.period.upper = centroid->period.upper;
+      else
+        next_nodebox->left.period.upper = centroid->period.upper;
+      break;
   }
   return;
 }
@@ -372,38 +442,30 @@ overlap8D(const STboxNode *nodebox, const STBox *query)
 bool
 overlapKD(const STboxNode *nodebox, const STBox *query, int level)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
+  /* The result is read only on the dimensions of the query */
+  int16 q = query->flags;
+  switch (stbox_kd_dim(nodebox->left.flags, level))
   {
-    if (mod == 0)
-      result &= nodebox->left.xmin <= query->xmax;
-    else if (mod == 1)
-      result &= nodebox->right.xmax >= query->xmin;
-    else if (mod == 2)
-      result &= nodebox->left.ymin <= query->ymax;
-    else if (mod == 3)
-      result &= nodebox->right.ymax >= query->ymin;
+    case STBOX_XMIN:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->left.xmin <= query->xmax;
+    case STBOX_XMAX:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->right.xmax >= query->xmin;
+    case STBOX_YMIN:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->left.ymin <= query->ymax;
+    case STBOX_YMAX:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->right.ymax >= query->ymin;
+    case STBOX_ZMIN:
+      return ! MEOS_FLAGS_GET_Z(q) || nodebox->left.zmin <= query->zmax;
+    case STBOX_ZMAX:
+      return ! MEOS_FLAGS_GET_Z(q) || nodebox->right.zmax >= query->zmin;
+    case STBOX_TMIN:
+      return ! MEOS_FLAGS_GET_T(q) || datum_le(nodebox->left.period.lower,
+        query->period.upper, T_TIMESTAMPTZ);
+    case STBOX_TMAX:
+      return ! MEOS_FLAGS_GET_T(q) || datum_ge(nodebox->right.period.upper,
+        query->period.lower, T_TIMESTAMPTZ);
   }
-  if (MEOS_FLAGS_GET_Z(query->flags))
-  {
-    if (hasz && mod == 4)
-      result &= nodebox->left.zmin <= query->zmax;
-    else if (hasz && mod == 5)
-      result &= nodebox->right.zmax >= query->zmin;
-  }
-  if (MEOS_FLAGS_GET_T(query->flags))
-  {
-    if (mod == (hasz ? 6 : 4))
-      result &= datum_le(nodebox->left.period.lower, query->period.upper,
-        T_TIMESTAMPTZ);
-    else /* mod == (hasz ? 7 : 5) */
-      result &= datum_ge(nodebox->right.period.upper, query->period.lower,
-        T_TIMESTAMPTZ);
-  }
-  return result;
+  return true;
 }
 
 /**
@@ -435,38 +497,30 @@ contain8D(const STboxNode *nodebox, const STBox *query)
 bool
 containKD(const STboxNode *nodebox, const STBox *query, int level)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
+  /* The result is read only on the dimensions of the query */
+  int16 q = query->flags;
+  switch (stbox_kd_dim(nodebox->left.flags, level))
   {
-    if (mod == 0)
-      result &= nodebox->left.xmin <= query->xmin;
-    else if (mod == 1)
-      result &= nodebox->right.xmax >= query->xmax;
-    else if (mod == 2)
-      result &= nodebox->left.ymin <= query->ymin;
-    else if (mod == 3)
-      result &= nodebox->right.ymax >= query->ymax;
+    case STBOX_XMIN:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->left.xmin <= query->xmin;
+    case STBOX_XMAX:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->right.xmax >= query->xmax;
+    case STBOX_YMIN:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->left.ymin <= query->ymin;
+    case STBOX_YMAX:
+      return ! MEOS_FLAGS_GET_X(q) || nodebox->right.ymax >= query->ymax;
+    case STBOX_ZMIN:
+      return ! MEOS_FLAGS_GET_Z(q) || nodebox->left.zmin <= query->zmin;
+    case STBOX_ZMAX:
+      return ! MEOS_FLAGS_GET_Z(q) || nodebox->right.zmax >= query->zmax;
+    case STBOX_TMIN:
+      return ! MEOS_FLAGS_GET_T(q) || datum_le(nodebox->left.period.lower,
+        query->period.lower, T_TIMESTAMPTZ);
+    case STBOX_TMAX:
+      return ! MEOS_FLAGS_GET_T(q) || datum_ge(nodebox->right.period.upper,
+        query->period.upper, T_TIMESTAMPTZ);
   }
-  if (MEOS_FLAGS_GET_Z(query->flags))
-  {
-    if (hasz && mod == 4)
-      result &= nodebox->left.zmin <= query->zmin;
-    else if (hasz && mod == 5)
-      result &= nodebox->right.zmax >= query->zmax;
-  }
-  if (MEOS_FLAGS_GET_T(query->flags))
-  {
-    if (mod == (hasz ? 6 : 4))
-      result &= datum_le(nodebox->left.period.lower, query->period.lower,
-        T_TIMESTAMPTZ);
-    else /* mod == (hasz ? 7 : 5) */
-      result &= datum_ge(nodebox->right.period.upper, query->period.upper,
-        T_TIMESTAMPTZ);
-  }
-  return result;
+  return true;
 }
 
 /**

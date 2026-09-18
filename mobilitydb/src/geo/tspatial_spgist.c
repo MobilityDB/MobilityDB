@@ -301,27 +301,35 @@ stbox_tmax_cmp(const STBox *box1, const STBox *box2)
 
 /*****************************************************************************/
 
+/**
+ * @brief Return the comparator of spatiotemporal boxes on a bound
+ */
+static qsort_comparator
+stbox_dim_cmp(STboxDim dim)
+{
+  switch (dim)
+  {
+    case STBOX_XMIN: return (qsort_comparator) &stbox_xmin_cmp;
+    case STBOX_XMAX: return (qsort_comparator) &stbox_xmax_cmp;
+    case STBOX_YMIN: return (qsort_comparator) &stbox_ymin_cmp;
+    case STBOX_YMAX: return (qsort_comparator) &stbox_ymax_cmp;
+    case STBOX_ZMIN: return (qsort_comparator) &stbox_zmin_cmp;
+    case STBOX_ZMAX: return (qsort_comparator) &stbox_zmax_cmp;
+    case STBOX_TMIN: return (qsort_comparator) &stbox_tmin_cmp;
+    case STBOX_TMAX: return (qsort_comparator) &stbox_tmax_cmp;
+  }
+  return NULL;
+}
+
+/**
+ * @brief Compare a box with the centroid of a k-d tree level on the bound the
+ * level splits on (#stbox_kd_dim)
+ */
 static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
-  int mod = hasz ? level % 8 : level % 6;
-  if (mod == 0)
-    return stbox_xmin_cmp(query, centroid);
-  else if (mod == 1)
-    return stbox_xmax_cmp(query, centroid);
-  else if (mod == 2)
-    return stbox_ymin_cmp(query, centroid);
-  else if (mod == 3)
-    return stbox_ymax_cmp(query, centroid);
-  else if (hasz && mod == 4)
-    return stbox_zmin_cmp(query, centroid);
-  else if (hasz && mod == 5)
-    return stbox_zmax_cmp(query, centroid);
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
-    return stbox_tmin_cmp(query, centroid);
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
-    return stbox_tmax_cmp(query, centroid);
+  qsort_comparator cmp = stbox_dim_cmp(stbox_kd_dim(centroid->flags, level));
+  return cmp(query, centroid);
 }
 
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
@@ -428,7 +436,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
-  out->nNodes = hasz ? 256 : 128;
+  /* One node per combination of the bounds the centroid carries */
+  out->nNodes = 1 << stbox_index_dims(centroid->flags);
   out->nodeLabels = NULL;    /* We don't need node labels. */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
@@ -477,25 +486,10 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     memcpy(&sorted[i].box, DatumGetSTboxP(in->datums[i]), sizeof(STBox));
     sorted[i].i = i;
   }
-  bool hasz = MEOS_FLAGS_GET_Z(sorted[0].box.flags);
-  int mod = hasz ? in->level % 8 : in->level % 6;
-  qsort_comparator qsortfn;
-  if (mod == 0)
-    qsortfn = (qsort_comparator) &stbox_xmin_cmp;
-  else if (mod == 1)
-    qsortfn = (qsort_comparator) &stbox_xmax_cmp;
-  else if (mod == 2)
-    qsortfn = (qsort_comparator) &stbox_ymin_cmp;
-  else if (mod == 3)
-    qsortfn = (qsort_comparator) &stbox_ymax_cmp;
-  else if (hasz && mod == 4)
-    qsortfn = (qsort_comparator) &stbox_zmin_cmp;
-  else if (hasz && mod == 5)
-    qsortfn = (qsort_comparator) &stbox_zmax_cmp;
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
-    qsortfn = (qsort_comparator) &stbox_tmin_cmp;
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
-    qsortfn = (qsort_comparator) &stbox_tmax_cmp;
+  /* The boxes are ordered on the bound the level splits on, read from the
+   * axes they carry (#stbox_kd_dim) */
+  qsort_comparator qsortfn =
+    stbox_dim_cmp(stbox_kd_dim(sorted[0].box.flags, in->level));
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
   STBox *centroid = stbox_copy(&sorted[median].box);
