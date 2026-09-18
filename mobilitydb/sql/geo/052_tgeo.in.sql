@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Basic functions for temporal geometry/geographies
+ * @brief Basic functions for temporal geometries/geographies
  */
 
 -- GENERATED-IO-BEGIN geo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;

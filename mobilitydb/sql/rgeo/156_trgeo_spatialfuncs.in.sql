@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal poses
+ * @brief Spatial functions for temporal rigid geometries
  */
 
 /*****************************************************************************

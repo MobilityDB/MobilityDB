@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal JSON functions derived from the PostgreSQL JSON functions
+ * @brief JSON functions for sets of JSONB values
  */
 
 /*****************************************************************************

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for set of circular buffers
+ * @brief Functions for sets of poses
  */
 
 /******************************************************************************

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for set of geometry/geography values
+ * @brief Functions for sets of geometry/geography values
  */
 
 /******************************************************************************

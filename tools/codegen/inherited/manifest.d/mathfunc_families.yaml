@@ -2,10 +2,10 @@ mathfunc_families:
 - family: tnumber
   file: mobilitydb/sql/temporal/026_tnumber_mathfuncs.in.sql
   reference: true
-  begin: "@brief Temporal mathematic functions"
+  begin: "@brief Temporal mathematical functions"
   whole_file: true
   blocks:
-  - lit: "/**\n * @file\n * @brief Temporal mathematic functions and operators\n */\n\n/*****************************************************************************\n * Temporal addition\n *****************************************************************************/\n\n/* integer + <TYPE> */\n\n"
+  - lit: "/**\n * @file\n * @brief Temporal mathematical functions and operators\n */\n\n/*****************************************************************************\n * Temporal addition\n *****************************************************************************/\n\n/* integer + <TYPE> */\n\n"
   - fns:
     - {sig: "tAdd(bigint, tbigint)", ret: "tbigint", sym: "Add_number_tnumber"}
     - {sig: "tAdd(integer, tint)", ret: "tint", sym: "Add_number_tnumber"}

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for set of JSONB values
+ * @brief Functions for sets of JSONB values
  */
 
 /******************************************************************************

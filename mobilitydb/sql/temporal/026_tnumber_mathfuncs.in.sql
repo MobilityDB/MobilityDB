@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal mathematic functions and operators
+ * @brief Temporal mathematical functions and operators
  */
 
 /*****************************************************************************
