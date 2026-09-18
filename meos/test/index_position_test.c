@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests the position search operations of the in-memory
+ * @brief Test the position search operations of the in-memory indexes
+ * @details A program that tests the position search operations of the
+ * in-memory
  * indexes, i.e., the operations that order a dimension, against the exact
  * answer and across both index structures, together with the equality
  * operation, which orders no dimension but is pruned the way containment is,
@@ -45,11 +47,11 @@
  * computed without any index, and the three structures — the R-tree, the
  * quad-tree and the k-d tree — are required to agree with it and with each
  * other. Two properties are asserted per operation:
- *  (i)   exactness: the index returns every box satisfying the operation and
- *        no other;
- *  (ii)  the comparison is not vacuous: over the query set the operation must
- *        match a substantial number of entries, since an operation that
- *        matches nothing is satisfied by an index that answers nothing.
+ * (i)   exactness: the index returns every box satisfying the operation and
+ * no other;
+ * (ii)  the comparison is not vacuous: over the query set the operation must
+ * match a substantial number of entries, since an operation that
+ * matches nothing is satisfied by an index that answers nothing.
  *
  * The fixture spreads the entries over both spatial dimensions independently
  * and holds the time span of every box and every query equal, so that an index

@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads two CSV files, the first one containing
+ * @brief Restrict the temporal circular buffers of a CSV file to geometries
+ * @details A simple program that reads two CSV files, the first one containing
  * temporal circular buffers and the second containing geometries and restricts
  * the temporal circular buffers to the geometries.
  *

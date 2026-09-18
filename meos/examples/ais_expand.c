@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads AIS data from a CSV file, constructs
+ * @brief Build ship trips by expanding sequences with AIS observations
+ * @details A simple program that reads AIS data from a CSV file, constructs
  * trips from these records, and outputs for each trip the MMSI, the number of
  * instants, and the distance travelled.
  *

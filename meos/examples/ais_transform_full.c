@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads AIS data from a CSV file containing one
+ * @brief Transform one full day of AIS observations to SRID 25832
+ * @details A simple program that reads AIS data from a CSV file containing one
  * full day of observations provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, and transform it from SRID 4326 to SRID 25832
  * writing the result in an output CSV file.

@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the nearest-neighbour cursor of the in-memory
+ * @brief Test the nearest-neighbour cursor of the in-memory RTree index
+ * @details A program that tests the nearest-neighbour cursor of the in-memory
  * RTree index, i.e., rtree_nn_cursor_open, rtree_nn_cursor_next and
  * rtree_nn_cursor_close, against an exact brute-force oracle.
  *
@@ -41,14 +42,14 @@
  * a direct scan.
  *
  * Five properties are asserted per box type:
- *  (i)   completeness: a full drain yields every inserted id exactly once;
- *  (ii)  monotonicity: the reported distances are non-decreasing;
- *  (iii) correct distance: each reported distance equals the box distance
- *        between the query and that id's box;
- *  (iv)  correct order: the drained distance sequence equals the sorted
- *        brute-force distances element by element (tie-robust);
- *  (v)   early stop: taking only the first k results matches the first k of
- *        the full drain, so a LIMIT k caller reads the true k neighbours.
+ * (i)   completeness: a full drain yields every inserted id exactly once;
+ * (ii)  monotonicity: the reported distances are non-decreasing;
+ * (iii) correct distance: each reported distance equals the box distance
+ * between the query and that id's box;
+ * (iv)  correct order: the drained distance sequence equals the sorted
+ * brute-force distances element by element (tie-robust);
+ * (v)   early stop: taking only the first k results matches the first k of
+ * the full drain, so a LIMIT k caller reads the true k neighbours.
  * What the cursor refuses to open on is asserted separately.
  *
  * The program can be built as follows

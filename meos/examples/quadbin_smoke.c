@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that exercises the temporal CARTO QUADBIN cell-index
+ * @brief Exercise the temporal QUADBIN cell-index type
+ * @details A simple program that exercises the temporal CARTO QUADBIN
+ * cell-index
  * type: it parses a temporal quadbin literal, then lifts the shared DGGS
  * cell-index operations (resolution, centroid point) and the quadbin-unique
  * quadkey accessor over time, printing each temporal result.

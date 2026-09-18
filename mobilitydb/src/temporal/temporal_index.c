@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief R-tree GiST index and Quad-tree SP-GiST index for temporal types
+ * @brief GiST and SP-GiST indexes for the temporal types indexed by time only
+ * @details R-tree GiST index and Quad-tree SP-GiST index for temporal types
  * where only the time dimension is taken into account for indexing, currently,
  * `tbool` and `ttext`
  */

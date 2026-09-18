@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief MEOS lifting for directed-edge functions, plus the static
+ * @brief Lifting of the H3 directed-edge functions to temporal cells
+ * @details MEOS lifting for directed-edge functions, plus the static
  * `h3_directed_edge_to_gs_boundary` adapter that backs the one
  * boundary-returning entry.
  *

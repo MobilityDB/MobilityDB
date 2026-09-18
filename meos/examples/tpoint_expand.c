@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tpoint instants,
+ * @brief Build a temporal point sequence by expanding it with generated
+ * instants
+ * @details A simple program that generates a given number of tpoint instants,
  * appends the instant into a sequence at each generation, and outputs the
  * number of instants and the distance travelled at the end.
  *

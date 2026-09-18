@@ -29,8 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that compares the execution time to create a given
- * number of temporal integer instants using two different methods 
+ * @brief Compare two ways of creating temporal integer instants
+ * @details A simple program that compares the execution time to create a given
+ * number of temporal integer instants using two different methods
  * - using the `temporal_in(string)` function
  * - using the `tinstant_make(value, timestamp)` function
  *

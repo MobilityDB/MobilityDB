@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the in-memory space-partitioning index
+ * @brief Test the in-memory space-partitioning index
+ * @details A program that tests the in-memory space-partitioning index
  * (quad-tree and k-d tree), i.e., sptree_create_*, sptree_insert and
  * sptree_search, against an exact brute-force oracle.
  *
@@ -38,8 +39,8 @@
  * inserted and the overlaps, contains and contained-by searches are compared
  * with the exact set of boxes satisfying the operator. Two properties are
  * asserted per configuration and operator:
- *  (i)  no false negatives: every box satisfying the operator is a candidate;
- *  (ii) no false positives: every candidate satisfies the operator.
+ * (i)  no false negatives: every box satisfying the operator is a candidate;
+ * (ii) no false positives: every candidate satisfies the operator.
  * What the nearest-neighbour cursor refuses to open on is asserted separately.
  *
  * The program can be built as follows

@@ -29,21 +29,23 @@
 
 /**
  * @file
- * @brief A program that tests the multi-entry (MEST) temporal functions of the
+ * @brief Test the multi-entry temporal functions of the in-memory RTree index
+ * @details A program that tests the multi-entry (MEST) temporal functions of
+ * the
  * in-memory RTree index, i.e., rtree_insert_temporal_split and
  * rtree_search_temporal_dedup, against the single-box temporal functions
  * rtree_insert_temporal and rtree_search_temporal and against an exact
  * brute-force oracle.
  *
  * Four properties are asserted:
- *  (i)   no false negatives: every trip whose per-segment box decomposition
- *        overlaps the query's per-segment box decomposition (exact
- *        brute-force oracle over the identical decomposition the index
- *        encodes) is in the MEST candidate set;
- *  (ii)  deduplication: each surviving id appears exactly once;
- *  (iii) selectivity: on deliberately wiggly, high-extent tgeompoint trips the
- *        MEST candidate set is no larger than the single-box candidate set;
- *  (iv)  degeneracy: maxboxes <= 1 yields exactly the single-box result.
+ * (i)   no false negatives: every trip whose per-segment box decomposition
+ * overlaps the query's per-segment box decomposition (exact
+ * brute-force oracle over the identical decomposition the index
+ * encodes) is in the MEST candidate set;
+ * (ii)  deduplication: each surviving id appears exactly once;
+ * (iii) selectivity: on deliberately wiggly, high-extent tgeompoint trips the
+ * MEST candidate set is no larger than the single-box candidate set;
+ * (iv)  degeneracy: maxboxes <= 1 yields exactly the single-box result.
  *
  * The program can be built as follows
  * @code

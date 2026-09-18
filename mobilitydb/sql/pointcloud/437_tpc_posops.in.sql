@@ -29,11 +29,12 @@
 
 /**
  * @file
- * @brief Position operators (strictly left / right / below / above /
- *   front / back / before / after, and their "overlaps-or-X"
- *   variants) for tpcpoint / tpcpatch paired against tpcbox,
- *   tstzspan, and the temporal type itself. Mirrors the cbuffer /
- *   npoint posops surface.
+ * @brief Position operators of the temporal pgpointcloud types
+ * @details Position operators (strictly left / right / below / above /
+ * front / back / before / after, and their "overlaps-or-X"
+ * variants) for tpcpoint / tpcpatch paired against tpcbox,
+ * tstzspan, and the temporal type itself. Mirrors the cbuffer /
+ * npoint posops surface.
  */
 
 /******************************************************************************

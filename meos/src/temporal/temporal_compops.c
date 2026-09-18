@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Ever comparison operators (?=, ?<>, ?<, ?>, ?<=, ?>=),
+ * @brief Ever, always and temporal comparison operators
+ * @details Ever comparison operators (?=, ?<>, ?<, ?>, ?<=, ?>=),
  * always comparison operators (%=, %<>, %<, %>, %<=, %>=), and
  * temporal comparison operators (#=, #<>, #<, #>, #<=, #>=)
  */

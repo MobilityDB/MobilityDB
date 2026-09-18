@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of ttext instants,
+ * @brief Build a temporal text sequence set by expanding it with generated
+ * instants
+ * @details A simple program that generates a given number of ttext instants,
  * appends the instant into a sequence set where each sequence of the sequence
  * set has a fixed number of instants defined by a compiler constant.
  * The program outputs the number of sequences and, for the last sequence,

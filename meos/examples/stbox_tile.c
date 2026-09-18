@@ -29,14 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tgeompoint instants,
- * assembles the instants into a sequence at the end of the generation process,
- * and outputs the number of instants and the distance travelled.
- *
- * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence.
- *
- * The program can be build as follows
+ * @brief Split a spatiotemporal box into space tiles or space-time tiles
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o stbox_tile stbox_tile.c -L/usr/local/lib -lmeos
  * @endcode

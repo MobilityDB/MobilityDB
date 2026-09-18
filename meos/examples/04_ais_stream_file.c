@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that reads AIS data from a CSV file, accumulates the
+ * @brief Stream AIS observations read from a CSV file into an output file
+ * @details A simple program that reads AIS data from a CSV file, accumulates
+ * the
  * observations in main memory and send the temporal values to an output file
  * when they reach a given number of instants in order to free the memory and
  * ingest the newest observations.

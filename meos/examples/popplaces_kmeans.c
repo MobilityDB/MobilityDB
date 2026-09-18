@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that reads from a CSV file obtained from 
+ * @brief Cluster the Natural Earth populated places with k-means
+ * @details A simple program that reads from a CSV file obtained from
  * 1:10M populated places from Natural Earth.
  * https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/
  * https://www.naturalearthdata.com/
@@ -40,7 +41,7 @@
  * Therefore, the program corresponds to the following SQL query
  * @code
  * SELECT name, pop_max, geom,
- *   ST_ClusterKMeans(geom, 10) OVER () AS cluster
+ * ST_ClusterKMeans(geom, 10) OVER () AS cluster
  * FROM popplaces;
  * @endcode
  *
@@ -50,14 +51,14 @@
  * @endcode
  *
  * @code
-   CREATE TABLE popplaces_geographic_meos (
-     name text,
-    pop_max int,
-    geom geometry(Point, 4326),
-    cluster integer);
-   COPY popplaces_geographic_meos
-     FROM '/home/esteban/src/MobilityDB/meos/examples/data/popplaces_new.csv'
-     DELIMITER ',' CSV HEADER;
+ * CREATE TABLE popplaces_geographic_meos (
+ * name text,
+ * pop_max int,
+ * geom geometry(Point, 4326),
+ * cluster integer);
+ * COPY popplaces_geographic_meos
+ * FROM '/home/esteban/src/MobilityDB/meos/examples/data/popplaces_new.csv'
+ * DELIMITER ',' CSV HEADER;
  * @endcode
  */
 

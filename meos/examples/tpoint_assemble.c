@@ -29,7 +29,9 @@
 
 /**
  * @file
- * @brief A simple program that generates a given number of tgeompoint instants,
+ * @brief Assemble a temporal point sequence from generated instants
+ * @details A simple program that generates a given number of tgeompoint
+ * instants,
  * assembles the instants into a sequence at the end of the generation process,
  * and outputs the number of instants and the distance travelled.
  *

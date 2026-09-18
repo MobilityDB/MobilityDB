@@ -29,15 +29,16 @@
 
 /**
  * @file
- * @brief A simple program that reads two CSV files, the first one containing
+ * @brief Apply a function to the temporal and static values of two CSV files
+ * @details A simple program that reads two CSV files, the first one containing
  * temporal values and the second containing non-temporal values and apply
  * a function to them.
  *
  * The corresponding SQL query would be
  * @code
  * SELECT t1.k, t2.k, numInstants(atTime(temp, t))
-   FROM tbl_tfloat t1, tbl_tstzspan t2
-   WHERE atTime(temp, t) IS NOT NULL;
+ * FROM tbl_tfloat t1, tbl_tstzspan t2
+ * WHERE atTime(temp, t) IS NOT NULL;
  * @endcode
  *
  * The program can be build as follows
