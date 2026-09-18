@@ -4612,6 +4612,9 @@ typedef struct
   MeosArray *own;      /**< Its own edges, ending at the input vertices: the
                             array #arr is cut from for a value
                             #relate_reads_union names, #arr itself otherwise */
+  RTree **index;       /**< Where the index over #arr is kept for the calls
+                            that follow, NULL for an operand read for one
+                            call, which indexes by the size of the pair */
 } RelateOperand;
 
 /**
@@ -4642,6 +4645,7 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
     ops->op[k].own = geom_extract_edges(g[k]);
     ops->op[k].arr = relate_reads_union(g[k]) ?
       relate_union_edges(g[k], ops->op[k].own) : ops->op[k].own;
+    ops->op[k].index = NULL;
   }
   return;
 }
@@ -7591,6 +7595,50 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
 }
 
 /**
+ * @brief Set up a matrix operand's edges through the index its context keeps
+ * @details A matrix reads each array once per edge of the other, so an index
+ * pays wherever the call runs long, and loses where the query is answered
+ * after a few edges: building it is a pass over the whole array, paid in full
+ * in front of a walk that stops almost at once. An index a context keeps is
+ * built once for the geometry, by the first call that needs it, and every
+ * call after reads it for nothing, as GEOS reads the index of a prepared
+ * geometry (RelateNG). An operand read for one call has no context and
+ * indexes by the size of the pair, as before.
+ * @return True if the index is the context's, which the caller must not free
+ */
+static bool
+relate_edges_init_kept(RelateEdges *re, Edge **edges, int nedges,
+  const RelateOperands *ops, const MeosArray *arr, bool index)
+{
+  RTree **kept = NULL;
+  if (ops)
+    for (int k = 0; k < 2 && ! kept; k++)
+      if (ops->op[k].arr == arr)
+        kept = ops->op[k].index;
+  if (! kept)
+  {
+    relate_edges_init(re, edges, nedges, index);
+    return false;
+  }
+  relate_edges_init(re, edges, nedges, false);
+  if (! *kept)
+  {
+    /* The index lives as long as the context, so it is read into the memory
+     * that keeps the context, never into the caller's */
+#if ! MEOS
+    MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+#endif
+    *kept = relate_edges_index(edges, nedges);
+#if ! MEOS
+    MemoryContextSwitchTo(oldctx);
+#endif
+  }
+  re->index = *kept;
+  re->results = index_result_create();
+  return true;
+}
+
+/**
  * @brief Compute the DE-9IM matrix for two areal geometries
  */
 static void
@@ -7614,8 +7662,8 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
    * indexes are therefore built ONCE here and read by every step below */
   RelateEdges re1, re2;
   bool index = ((int64) n1 * (int64) n2 >= RELATE_INDEX_MIN_PAIRS);
-  relate_edges_init(&re1, e1, n1, index);
-  relate_edges_init(&re2, e2, n2, index);
+  bool kept1 = relate_edges_init_kept(&re1, e1, n1, ops, a1, index);
+  bool kept2 = relate_edges_init_kept(&re2, e2, n2, ops, a2, index);
 
   /* Two-dimensional interior/interior intersection. */
   if (relate_area_interiors_intersect(&re1, &re2))
@@ -7701,6 +7749,11 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
   de9im_add(&m->ee, 2);
 
 done:
+  /* A kept index belongs to its context and outlives this call */
+  if (kept1)
+    re1.index = NULL;
+  if (kept2)
+    re2.index = NULL;
   relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
   relate_return_edges(ops, a1); relate_return_edges(ops, a2);
@@ -9914,6 +9967,8 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
 struct RelateCtx
 {
   RelateOperand op;  /**< The geometry and the edges it draws */
+  RTree *index;      /**< Index over the edges #op reads, built by the first
+                          call that needs it and kept with them */
 };
 
 /**
@@ -9939,6 +9994,8 @@ relate_ctx_make(const LWGEOM *geom)
   ctx->op.own = geom_extract_edges(geom);
   ctx->op.arr = relate_reads_union(geom) ?
     relate_union_edges(geom, ctx->op.own) : ctx->op.own;
+  ctx->index = NULL;
+  ctx->op.index = &ctx->index;
   return ctx;
 }
 
@@ -10339,6 +10396,8 @@ relate_ctx_free(void *ctxv)
   struct RelateCtx *ctx = (struct RelateCtx *) ctxv;
   if (! ctx)
     return;
+  if (ctx->index)
+    rtree_free(ctx->index);
   if (ctx->op.own != ctx->op.arr)
     meos_array_destroy(ctx->op.own);
   meos_array_destroy(ctx->op.arr);
