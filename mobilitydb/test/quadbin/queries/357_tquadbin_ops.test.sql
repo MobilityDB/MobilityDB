@@ -188,6 +188,39 @@ SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_
   count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
 FROM trip, unnest(tquadbin(tp, 2)) u;
 
+-- A trajectory ending exactly where four tiles meet reaches the cell of that
+-- corner at its last instant and holds it there, as the space split gives the
+-- tile of a last corner a fragment of one instant
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]', 2);
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'
+)
+SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_instant,
+  count(*) FILTER (WHERE duration((u).time) > interval '0') AS cells_holding_time
+FROM trip, unnest(tquadbin(tp, 2)) u;
+
+-- A trajectory starting where four tiles meet states the cell it travels into
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2);
+
+-- The cover and the restriction of the trajectory to a cell's own box state
+-- the same period for every cell. A cell held over an interval is left where
+-- the path crosses out of the box, which is the exclusive upper border; a cell
+-- reached at the last instant is held there, which is the inclusive border the
+-- space split gives the tile of a last corner
+WITH trips(tp) AS (VALUES
+  (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]'),
+  (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
+  (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]')
+), zooms(z) AS (VALUES (2), (4), (6))
+SELECT count(*) AS cells,
+  count(*) FILTER (WHERE (u).time <> getTime(atStbox(tp,
+    stbox(cellToBoundary((u).value)), duration((u).time) = interval '0')))
+  AS cells_stating_another_period
+FROM trips, zooms, unnest(tquadbin(tp, z)) u;
+
 -- A sequence set yields one sequence per sequence
 SELECT numSequences(tquadbin(tgeompoint
   'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
