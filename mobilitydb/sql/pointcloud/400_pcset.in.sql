@@ -35,8 +35,8 @@
  * PostGIS `geometry`, not the way it defines its own types. This file
  * adds:
  *
- * * a `pcid(pcpoint)` / `pcid(pcpatch)` SQL accessor, and
- * * set types `pcpointset` / `pcpatchset` over those base values,
+ * - a `pcid(pcpoint)` / `pcid(pcpatch)` SQL accessor, and
+ * - set types `pcpointset` / `pcpatchset` over those base values,
  * with strict same-pcid enforcement on every constructor path.
  *
  * Most set-level SQL bindings delegate to the generic `Set_*` C wrappers

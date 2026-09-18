@@ -36,11 +36,11 @@
  * compound payload (it is a 64-bit integer cell identifier), so
  * the helpers here are minimal:
  *
- * * an input parser that reads the canonical hexadecimal cell literal,
+ * - an input parser that reads the canonical hexadecimal cell literal,
  * with an optional "0x" prefix and at most 16 significant digits, and
  * that requires the value to denote a cell, a directed edge or a vertex,
- * * an output formatter (canonical form is hex, matching h3-pg),
- * * comparison / ordering / hashing helpers — exposed at the MEOS
+ * - an output formatter (canonical form is hex, matching h3-pg),
+ * - comparison / ordering / hashing helpers — exposed at the MEOS
  * layer so MobilityDuck and other consumers can reuse them
  * without re-implementing the int64 bit-compare logic.
  */

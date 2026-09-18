@@ -37,7 +37,7 @@
  * CSV file named "berlinmod_instants.csv" ordered by timestamp.
  *
  * The input file is
- * * - `trips.csv`: 154 trips from 5 cars during 11 days obtained from the
+ * - `trips.csv`: 154 trips from 5 cars during 11 days obtained from the
  * generator at scale factor 0.1. The input file has been generated with
  * the following SQL command on the database containing the generated data
  * @code
