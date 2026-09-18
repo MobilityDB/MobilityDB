@@ -209,7 +209,7 @@ trgeoseqset_make1_exp(const GSERIALIZED *geom, TSequence **sequences,
 
 /**
  * @ingroup meos_internal_rgeo_constructor
- * @brief Construct a temporal sequence set from an array of temporal sequences.
+ * @brief Construct a temporal sequence set from an array of temporal sequences
  * @param[in] geom Reference geometry
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -296,8 +296,8 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
 /**
  * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal instants
- * introducing a gap when two consecutive instants are separated from each
- * other by at least the given distance or the given time interval.
+ * introducing a gap when two consecutive instants are separated from each other
+ * by at least the given distance or the given time interval
  * @param[in] geom Geometry
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

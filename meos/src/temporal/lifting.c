@@ -435,19 +435,18 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 
 /**
  * @brief Adaptive sub-sampling tolerances for densifying a non-analytic unary
- * lifted function (tan) over a linear segment.
- *
- * Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH
- * in the trgeometry distance kernel. @p MEOS_ADAPTIVE_TOL is the argument-span
- * tolerance in the input space: a segment is subdivided while its float
- * argument spans more than this many units. For tan the argument is radians, so
- * the same 0.05 rad (~2.86 deg) tolerance the trgeometry kernels use bounds the
- * per-segment chord error away from a pole to about tol^2/8 ~ 3e-4. @p
- * MEOS_ADAPTIVE_MAX_DEPTH bounds the recursion so a pathological segment (one
- * straddling very many periods, or approaching a tan pole) cannot subdivide
- * without end: a single segment yields at most 2^depth sub-samples, but the
- * adaptive test stops far earlier wherever the argument span is already below
- * the tolerance.
+ * lifted function (tan) over a linear segment
+ * @details Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL /
+ * TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH in the trgeometry distance kernel. @p
+ * MEOS_ADAPTIVE_TOL is the argument-span tolerance in the input space: a
+ * segment is subdivided while its float argument spans more than this many
+ * units. For tan the argument is radians, so the same 0.05 rad (~2.86 deg)
+ * tolerance the trgeometry kernels use bounds the per-segment chord error away
+ * from a pole to about tol^2/8 ~ 3e-4. @p MEOS_ADAPTIVE_MAX_DEPTH bounds the
+ * recursion so a pathological segment (one straddling very many periods, or
+ * approaching a tan pole) cannot subdivide without end: a single segment yields
+ * at most 2^depth sub-samples, but the adaptive test stops far earlier wherever
+ * the argument span is already below the tolerance.
  */
 #define MEOS_ADAPTIVE_TOL       0.05
 #define MEOS_ADAPTIVE_MAX_DEPTH 16
@@ -525,9 +524,9 @@ tfunc_adaptive_bisect(Datum value1, Datum value2, TimestampTz t1,
 /**
  * @brief Apply a unary lifted function to a temporal sequence with adaptive
  * densification
- * @details The fallback path for unary lifts whose critical points are not known
- * analytically (tan, whose curvature grows without bound near its poles): each
- * non-constant input segment is densified by adaptive recursive bisection
+ * @details The fallback path for unary lifts whose critical points are not
+ * known analytically (tan, whose curvature grows without bound near its poles):
+ * each non-constant input segment is densified by adaptive recursive bisection
  * (#tfunc_adaptive_bisect), reusing the trgeometry distance kernel's method.
  * Constant segments are passed through unchanged. Mirrors the structure of
  * #tfunc_tlinearseq_turnpt, but with an unbounded (depth-capped) rather than a

@@ -143,7 +143,7 @@ datum_s2_cell_to_token(Datum d)
  *****************************************************************************/
 
 /**
- * @brief S2 operations descriptor consumed by `dggs_cellops()`.
+ * @brief S2 operations descriptor consumed by `dggs_cellops()`
  */
 const DggsCellOps s2_cellops =
 {

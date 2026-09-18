@@ -66,8 +66,8 @@
  *****************************************************************************/
 
 /**
- * @brief Return `true` if a temporal H3 cell and a bare H3 cell satisfy
- * the ever/always comparison.
+ * @brief Return `true` if a temporal H3 cell and a bare H3 cell satisfy the
+ * ever/always comparison
  * @param[in] temp Temporal H3 cell
  * @param[in] cell Bare H3 cell
  * @param[in] func Per-instant comparison primitive
@@ -85,7 +85,7 @@ eacomp_th3index_h3index(const Temporal *temp, H3Index cell,
 
 /**
  * @brief Return `true` if two temporal H3 cells satisfy the ever/always
- * comparison.
+ * comparison
  */
 static int
 eacomp_th3index_th3index(const Temporal *temp1, const Temporal *temp2,
@@ -103,7 +103,7 @@ eacomp_th3index_th3index(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a temporal H3 cell is ever equal to a bare H3 cell.
+ * @brief Return `true` if a temporal H3 cell is ever equal to a bare H3 cell
  * @csqlfn #Ever_eq_th3index_h3index()
  */
 int
@@ -114,7 +114,7 @@ ever_eq_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a bare H3 cell is ever equal to a temporal H3 cell.
+ * @brief Return `true` if a bare H3 cell is ever equal to a temporal H3 cell
  * @csqlfn #Ever_eq_h3index_th3index()
  */
 int
@@ -125,8 +125,8 @@ ever_eq_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a temporal H3 cell is ever not equal to a bare
- * H3 cell.
+ * @brief Return `true` if a temporal H3 cell is ever not equal to a bare H3
+ * cell
  * @csqlfn #Ever_ne_th3index_h3index()
  */
 int
@@ -137,8 +137,8 @@ ever_ne_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a bare H3 cell is ever not equal to a temporal
- * H3 cell.
+ * @brief Return `true` if a bare H3 cell is ever not equal to a temporal H3
+ * cell
  * @csqlfn #Ever_ne_h3index_th3index()
  */
 int
@@ -149,8 +149,7 @@ ever_ne_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a temporal H3 cell is always equal to a bare
- * H3 cell.
+ * @brief Return `true` if a temporal H3 cell is always equal to a bare H3 cell
  * @csqlfn #Always_eq_th3index_h3index()
  */
 int
@@ -161,8 +160,7 @@ always_eq_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a bare H3 cell is always equal to a temporal
- * H3 cell.
+ * @brief Return `true` if a bare H3 cell is always equal to a temporal H3 cell
  * @csqlfn #Always_eq_h3index_th3index()
  */
 int
@@ -173,8 +171,8 @@ always_eq_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a temporal H3 cell is always not equal to a bare
- * H3 cell.
+ * @brief Return `true` if a temporal H3 cell is always not equal to a bare H3
+ * cell
  * @csqlfn #Always_ne_th3index_h3index()
  */
 int
@@ -185,8 +183,8 @@ always_ne_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if a bare H3 cell is always not equal to a temporal
- * H3 cell.
+ * @brief Return `true` if a bare H3 cell is always not equal to a temporal H3
+ * cell
  * @csqlfn #Always_ne_h3index_th3index()
  */
 int
@@ -201,8 +199,8 @@ always_ne_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if two temporal H3 cells are ever equal at some
- * shared instant.
+ * @brief Return `true` if two temporal H3 cells are ever equal at some shared
+ * instant
  * @csqlfn #Ever_eq_th3index_th3index()
  */
 int
@@ -213,8 +211,8 @@ ever_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if two temporal H3 cells are ever unequal at some
- * shared instant.
+ * @brief Return `true` if two temporal H3 cells are ever unequal at some shared
+ * instant
  * @csqlfn #Ever_ne_th3index_th3index()
  */
 int
@@ -225,8 +223,8 @@ ever_ne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if two temporal H3 cells are always equal across
- * their shared time axis.
+ * @brief Return `true` if two temporal H3 cells are always equal across their
+ * shared time axis
  * @csqlfn #Always_eq_th3index_th3index()
  */
 int
@@ -237,8 +235,8 @@ always_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_h3_comp_ever
- * @brief Return `true` if two temporal H3 cells are always unequal across
- * their shared time axis.
+ * @brief Return `true` if two temporal H3 cells are always unequal across their
+ * shared time axis
  * @csqlfn #Always_ne_th3index_th3index()
  */
 int
@@ -254,8 +252,9 @@ always_ne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Internal dispatcher for per-instant temporal comparisons against a
- * bare H3 cell. Equality / inequality are commutative, so the (cell, temp)
- * and (temp, cell) entry points share a single implementation.
+ * bare H3 cell
+ * @details Equality / inequality are commutative, so the (cell, temp) and
+ * (temp, cell) entry points share a single implementation.
  */
 static Temporal *
 tcomp_th3index_h3index(const Temporal *temp, H3Index cell,
@@ -282,8 +281,8 @@ tcomp_h3index_th3index(H3Index cell, const Temporal *temp,
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal equality between a temporal H3 cell and a
- * bare H3 cell.
+ * @brief Return the temporal equality between a temporal H3 cell and a bare H3
+ * cell
  * @csqlfn #Teq_th3index_h3index()
  */
 Temporal *
@@ -294,8 +293,8 @@ teq_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal equality between a bare H3 cell and a
- * temporal H3 cell.
+ * @brief Return the temporal equality between a bare H3 cell and a temporal H3
+ * cell
  * @csqlfn #Teq_h3index_th3index()
  */
 Temporal *
@@ -306,8 +305,8 @@ teq_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal inequality between a temporal H3 cell and a
- * bare H3 cell.
+ * @brief Return the temporal inequality between a temporal H3 cell and a bare
+ * H3 cell
  * @csqlfn #Tne_th3index_h3index()
  */
 Temporal *
@@ -318,8 +317,8 @@ tne_th3index_h3index(const Temporal *temp, H3Index cell)
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal inequality between a bare H3 cell and a
- * temporal H3 cell.
+ * @brief Return the temporal inequality between a bare H3 cell and a temporal
+ * H3 cell
  * @csqlfn #Tne_h3index_th3index()
  */
 Temporal *
@@ -330,8 +329,8 @@ tne_h3index_th3index(H3Index cell, const Temporal *temp)
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal equality of two temporal H3 cells across
- * their shared time axis.
+ * @brief Return the temporal equality of two temporal H3 cells across their
+ * shared time axis
  * @csqlfn #Teq_th3index_th3index()
  */
 Temporal *
@@ -345,8 +344,8 @@ teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_h3_comp_temp
- * @brief Return the temporal inequality of two temporal H3 cells across
- * their shared time axis.
+ * @brief Return the temporal inequality of two temporal H3 cells across their
+ * shared time axis
  * @csqlfn #Tne_th3index_th3index()
  */
 Temporal *

@@ -61,8 +61,7 @@ PG_FUNCTION_INFO_V1(Tbox_in);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Return a temporal box from its Well-Known Text (WKT) representation
- *
- * Examples of input:
+ * @details Examples of input:
  * @code
  * TBOX XT([1.0, 3.0), [2020-01-01, 2020-01-03])   -- Both X and T dimensions
  * TBOXINT X([1, 3))     -- Only X dimension, integer span

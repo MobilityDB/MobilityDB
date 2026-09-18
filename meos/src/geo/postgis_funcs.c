@@ -301,10 +301,10 @@ box3d_in(const char *str)
  *****************************************************************************/
 
 /**
- * @brief A point must be fully inside (not on boundary) of
- * a polygon to be contained. A multipoint must have
- * at least one fully contained member and no members
- * outside the polygon to be contained.
+ * @brief A point must be fully inside (not on boundary) of a polygon to be
+ * contained
+ * @details A multipoint must have at least one fully contained member and no
+ * members outside the polygon to be contained.
  */
 bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
@@ -348,8 +348,8 @@ bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
 }
 
 /**
- * @brief If any point in the point/multipoint is outside
- * the polygon, then the polygon does not cover the point/multipoint.
+ * @brief If any point in the point/multipoint is outside the polygon, then the
+ * polygon does not cover the point/multipoint
  */
 bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
@@ -382,8 +382,8 @@ bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 
 /**
  * @brief A.touches(B) implies that the point/multipoint meets the polygons
- * without any member reaching their interior, that is, at least one member
- * lies on the boundary and none inside.
+ * without any member reaching their interior, that is, at least one member lies
+ * on the boundary and none inside
  */
 bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
@@ -427,8 +427,8 @@ bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
 }
 
 /**
- * @brief A.intersects(B) implies if any member of the point/multipoint
- * is not outside, then they intersect.
+ * @brief A.intersects(B) implies if any member of the point/multipoint is not
+ * outside, then they intersect
  */
 bool itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
@@ -1870,9 +1870,9 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
 /**
  * @brief Return the type that keeps a pair of geometries from the native engine
- * @details The native engine answers every type #geom_meos_coverage() answers 1 for,
- * which is every type the edge decomposition reaches, and a type it declines is
- * answered by nobody.
+ * @details The native engine answers every type #geom_meos_coverage() answers 1
+ * for, which is every type the edge decomposition reaches, and a type it
+ * declines is answered by nobody.
  * @param[in] geom1,geom2 Geometries the operation is asked about
  */
 static uint8_t
@@ -2198,7 +2198,7 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
 }
 
 /**
- * @brief Return @c true iff @p gs is a 2D POLYGON or MULTIPOLYGON.
+ * @brief Return @c true iff @p gs is a 2D POLYGON or MULTIPOLYGON
  * @internal Used by #geom_intersection2d / #geom_difference2d to decide
  * whether to fast-path through the Clipper2-backed @c clip_poly_poly.
  * Geography and 3D inputs fall through to the GEOS path
@@ -3862,8 +3862,8 @@ geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  *****************************************************************************/
 
 /**
- * @brief Utility method to call the serialization and then set the
- * PgSQL varsize header appropriately with the serialized size.
+ * @brief Utility method to call the serialization and then set the PgSQL
+ * varsize header appropriately with the serialized size
  */
 GSERIALIZED *
 geom_serialize(LWGEOM *lwgeom)
@@ -3875,8 +3875,8 @@ geom_serialize(LWGEOM *lwgeom)
 }
 
 /**
- * @brief Utility method to call the serialization and then set the
- * PgSQL varsize header appropriately with the serialized size.
+ * @brief Utility method to call the serialization and then set the PgSQL
+ * varsize header appropriately with the serialized size
  */
 GSERIALIZED *
 geog_serialize(LWGEOM *lwgeom)
@@ -4129,7 +4129,7 @@ geography_centroid_from_mline(const LWMLINE* mline, SPHEROID *s)
 
 /**
  * @brief Split polygons into triangles and use centroid of the triangle with
- * the triangle area as weight to calculate the centroid of a (multi)polygon.
+ * the triangle area as weight to calculate the centroid of a (multi)polygon
  */
 LWPOINT *
 geography_centroid_from_mpoly(const LWMPOLY* mpoly, bool use_spheroid,
@@ -5284,10 +5284,10 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  *****************************************************************************/
 
 /**
- * @brief Ensure that the geography type is valid
- * The geography type only support POINT, LINESTRING, POLYGON, MULTI* variants
- * of same, and GEOMETRYCOLLECTION. If the input type is not one of those, shut
- * down the query.
+ * @brief Ensure that the geography type is valid The geography type only
+ * support POINT, LINESTRING, POLYGON, MULTI* variants of same, and
+ * GEOMETRYCOLLECTION
+ * @details If the input type is not one of those, shut down the query.
  */
 void
 geography_valid_type(uint8_t type)

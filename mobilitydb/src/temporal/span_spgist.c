@@ -210,9 +210,8 @@ Span_quadtree_choose(PG_FUNCTION_ARGS)
 /**
  * @brief Determine which half a 2D-mapped span falls into, relative to the
  * centroid and the level number
- *
- * Halves are numbered 0 and 1, and depending on whether the level number is
- * even or odd, respectively, they will be as follows:
+ * @details Halves are numbered 0 and 1, and depending on whether the level
+ * number is even or odd, respectively, they will be as follows:
  * @code
  * ----+----
  *  0  |  1
@@ -276,9 +275,8 @@ PGDLLEXPORT Datum Span_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for span types
- *
- * It splits a list of span types into quadrants by choosing a central 4D
- * point as the median of the coordinates of the span types.
+ * @details It splits a list of span types into quadrants by choosing a central
+ * 4D point as the median of the coordinates of the span types.
  */
 Datum
 Span_quadtree_picksplit(PG_FUNCTION_ARGS)

@@ -122,8 +122,8 @@ Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants
- * over T_TINT where each instant carries the pcpatch's npoints.
+ * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
+ * T_TINT where each instant carries the pcpatch's npoints
  */
 static TInstant **
 tpcpatch_transform_tnpoints(const Temporal *temp, int *count_out)
@@ -192,8 +192,8 @@ Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants
- * over T_TFLOAT each carrying npoints / (xrange * yrange).
+ * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
+ * T_TFLOAT each carrying npoints / (xrange * yrange)
  */
 static TInstant **
 tpcpatch_transform_tdensity(const Temporal *temp, int *count_out)

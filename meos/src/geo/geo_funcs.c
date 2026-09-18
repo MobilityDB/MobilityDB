@@ -5011,7 +5011,7 @@ relate_points_equal(double x1, double y1, double x2, double y2, bool vertex)
 }
 
 /**
- * @brief Return true if a point is an endpoint of an edge.
+ * @brief Return true if a point is an endpoint of an edge
  */
 static inline bool
 relate_point_is_edge_endpoint(double x, double y, const Edge *e)
@@ -5022,7 +5022,7 @@ relate_point_is_edge_endpoint(double x, double y, const Edge *e)
 
 /**
  * @brief Return true if a point occurs an odd number of times among the
- * endpoints of a linear geometry.
+ * endpoints of a linear geometry
  * @details This implements the endpoint parity rule used for the boundary of
  * linear geometries:
  * - odd number of occurrences -> boundary
@@ -5059,9 +5059,9 @@ relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges,
  * @brief The endpoints of the curves of a linear geometry, sorted by their
  * coordinates, so the endpoints a point equals are found by a binary search
  * rather than by a scan of every edge
- * @details The endpoints are those #relate_point_on_linear_boundary counts: both
- * ends of every non-empty straight or circular linear edge. An endpoint with a
- * coordinate that is not a number equals no point, so it is left out
+ * @details The endpoints are those #relate_point_on_linear_boundary counts:
+ * both ends of every non-empty straight or circular linear edge. An endpoint
+ * with a coordinate that is not a number equals no point, so it is left out
  */
 typedef struct
 {
@@ -5174,7 +5174,7 @@ relate_linear_ends_boundary(RelateLinearEnds *ends, double x, double y,
 }
 
 /**
- * @brief Classify a point with respect to a complete linear geometry.
+ * @brief Classify a point with respect to a complete linear geometry
  * @details Return:
  *   0 = interior
  *   1 = boundary
@@ -5570,7 +5570,7 @@ relate_area_point(const LWGEOM *area_geom, const LWGEOM *point_geom,
  *****************************************************************************/
 
 /**
- * @brief Compute the parameter of a point on an arc.
+ * @brief Compute the parameter of a point on an arc
  * @details The returned value is in [0,1], where 0 corresponds to theta0 and
  * 1 corresponds to theta1 following the orientation of the arc.
  */
@@ -5601,7 +5601,7 @@ relate_arc_parameter(const Edge *e, double x, double y)
 }
 
 /**
- * @brief Compute the point at parameter t on an edge.
+ * @brief Compute the point at parameter t on an edge
  * @details This preserves the exact circular representation of an arc.
  */
 static void
@@ -5626,7 +5626,7 @@ relate_edge_point(const Edge *e, double t, double *x, double *y)
 }
 
 /**
- * @brief Add an intersection parameter to an array.
+ * @brief Add an intersection parameter to an array
  */
 static void
 relate_add_parameter(double t, double *params, int *nparams, int maxparams)
@@ -5652,8 +5652,7 @@ relate_add_parameter(double t, double *params, int *nparams, int maxparams)
 
 
 /**
- * @brief Return true if two circular arcs overlap in a non-zero-length
- * portion.
+ * @brief Return true if two circular arcs overlap in a non-zero-length portion
  * @details  The arcs must lie on the same supporting circle.
  * We use the endpoints of both arcs as candidate split points and test
  * whether an interval between consecutive candidates belongs to both
@@ -5732,7 +5731,7 @@ relate_arcs_overlap(const Edge *a, const Edge *b)
 }
 
 /**
- * @brief Add the intersection points of two circular arcs.
+ * @brief Add the intersection points of two circular arcs
  * @details Returns the number of point intersections added to x/y.
  * If the arcs overlap over a non-zero-length portion, overlap is set
  * to true and no point is required for the one-dimensional component.
@@ -5815,8 +5814,8 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
 }
 
 /**
- * @brief Process the intersection between one linear edge and one
- * polygon boundary edge.
+ * @brief Process the intersection between one linear edge and one polygon
+ * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
  * the linear geometry and the polygon boundary. The parameter array is
  * populated with all points at which the linear edge must be split.
@@ -5948,8 +5947,8 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
 }
 
 /**
- * @brief Classify the open portion of a linear edge between two
- * consecutive parameters.
+ * @brief Classify the open portion of a linear edge between two consecutive
+ * parameters
  * @details Since the portion contains no intersection with the polygon
  * boundary, one representative point is sufficient to determine whether the
  * complete open portion belongs to the polygon interior or exterior.
@@ -5984,7 +5983,7 @@ relate_linear_area_interval(const Edge *line, double t0, double t1,
 }
 
 /**
- * @brief Sort an array of parameters in increasing order.
+ * @brief Sort an array of parameters in increasing order
  */
 static int
 relate_parameter_cmp(const void *a, const void *b)
@@ -6454,8 +6453,7 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
 }
 
 /**
- * @brief Compute the DE-9IM matrix for a linear geometry and an
- * areal geometry.
+ * @brief Compute the DE-9IM matrix for a linear geometry and an areal geometry
  * @details Only the cells named in @p want are answered, and the walk over the
  * edges of the linear geometry stops once each of them holds the largest
  * dimension it can reach, so a pattern asking whether the interiors meet stops
@@ -6818,7 +6816,7 @@ relate_area_linear(const LWGEOM *area_geom, const LWGEOM *line_geom,
  *****************************************************************************/
 
 /**
- * @brief Return true if an edge is a polygon boundary edge.
+ * @brief Return true if an edge is a polygon boundary edge
  */
 static inline bool
 relate_area_boundary_edge(const Edge *e)
@@ -6914,7 +6912,7 @@ relate_area_edges_cross(const Edge *e1, const Edge *e2)
 }
 
 /**
- * @brief Compute a point on an areal boundary edge.
+ * @brief Compute a point on an areal boundary edge
  * @details 
  *   t = 0 -> first endpoint
  *   t = 1 -> second endpoint
@@ -6943,7 +6941,7 @@ relate_area_edge_point(const Edge *e, double t, double *x, double *y)
 }
 
 /**
- * @brief Return the parameter of a point on a polygon boundary edge.
+ * @brief Return the parameter of a point on a polygon boundary edge
  * @details The parameter is read along the coordinate the edge advances most
  * along. The ends of a segment are input vertices, so it has no direction
  * exactly where they are equal, and any other segment, however short, gives
@@ -6964,7 +6962,7 @@ relate_area_edge_parameter(const Edge *e, double x, double y)
 }
 
 /**
- * @brief Add an intersection parameter to an array.
+ * @brief Add an intersection parameter to an array
  */
 static void
 relate_area_add_parameter(double t, double *params, int *nparams,
@@ -6987,7 +6985,7 @@ relate_area_add_parameter(double t, double *params, int *nparams,
 }
 
 /**
- * @brief Sort area-edge parameters.
+ * @brief Sort area-edge parameters
  */
 static int
 relate_area_parameter_cmp(const void *a, const void *b)
@@ -7002,7 +7000,7 @@ relate_area_parameter_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Determine intersections between two polygon boundary edges.
+ * @brief Determine intersections between two polygon boundary edges
  * @details Return the number of point intersections, written in x/y, and set
  * @p overlap when the two edges share a one-dimensional portion. The two
  * answers are separate because a shared portion carries no discrete
@@ -7077,8 +7075,8 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
 }
 
 /**
- * @brief Test whether an open portion of one area boundary lies in the
- * interior of another area.
+ * @brief Test whether an open portion of one area boundary lies in the interior
+ * of another area
  * @details This is the key operation for detecting:
  *   BI = boundary(A) / interior(B)
  *   IB = interior(A) / boundary(B)
@@ -7103,7 +7101,7 @@ relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
 }
 
 /**
- * @brief Classify the open portions of one polygon boundary edge.
+ * @brief Classify the open portions of one polygon boundary edge
  * @details The edge is split at every intersection with the other polygon
  * boundary. Since there is no boundary intersection inside an open
  * interval, one representative point is sufficient.
@@ -7272,7 +7270,7 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
 }
 
 /**
- * @brief Process all point intersections between two area boundaries.
+ * @brief Process all point intersections between two area boundaries
  */
 static void
 relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
@@ -7330,8 +7328,8 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
 }
 
 /**
- * @brief Determine whether an area has an interior point in the
- * interior of another area.
+ * @brief Determine whether an area has an interior point in the interior of
+ * another area
  * @details We use boundary vertices first. If a vertex of A lies in the
  * interior of B, then a neighbourhood of that vertex inside A is
  * also inside B, proving II = 2.
@@ -7354,7 +7352,7 @@ relate_area_has_vertex_interior(const RelateEdges *self,
 }
 
 /**
- * @brief Find an interior point of an areal geometry.
+ * @brief Find an interior point of an areal geometry
  * @details The function first tries boundary-edge midpoints with a small
  * perturbation to either side. This avoids requiring a centroid
  * implementation and works directly with circular boundaries.
@@ -7530,8 +7528,8 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
 }
 
 /**
- * @brief Determine whether the interiors of two areal geometries
- * intersect in dimension 2.
+ * @brief Determine whether the interiors of two areal geometries intersect in
+ * dimension 2
  */
 static bool
 relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
@@ -7587,7 +7585,7 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
 }
 
 /**
- * @brief Compute the DE-9IM matrix for two areal geometries.
+ * @brief Compute the DE-9IM matrix for two areal geometries
  */
 static void
 relate_area_area(const LWGEOM *g1, const LWGEOM *g2,

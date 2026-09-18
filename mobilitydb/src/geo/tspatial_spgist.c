@@ -354,8 +354,7 @@ PGDLLEXPORT Datum Stbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for spatiotemporal values
- *
- * It splits a list of boxes into quadrants by choosing a central 8D
+ * @details It splits a list of boxes into quadrants by choosing a central 8D
  * point as the median of the coordinates of the boxes.
  */
 Datum

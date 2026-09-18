@@ -509,7 +509,7 @@ bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
  *****************************************************************************/
 
 /**
- * @brief Shim a varlena Pcpoint into a read-only libpc.a PCPOINT.
+ * @brief Shim a varlena Pcpoint into a read-only libpc.a PCPOINT
  * @note Shares the underlying dimension-byte pointer; the caller's
  *   Pcpoint is NOT copied.
  */
@@ -611,7 +611,7 @@ pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
 
 /**
  * @ingroup meos_pointcloud_box_constructor
- * @brief Convert a pcpoint to a degenerate single-point TPCBox.
+ * @brief Convert a pcpoint to a degenerate single-point TPCBox
  * @return Newly-palloc'd TPCBox, or @p NULL if the schema lacks the
  *   required X/Y dimensions.
  * @csqlfn #Pcpoint_to_tpcbox()

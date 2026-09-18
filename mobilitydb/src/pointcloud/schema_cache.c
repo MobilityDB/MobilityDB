@@ -164,13 +164,11 @@ fetch_schema_row(uint32_t pcid, int32 *srid)
  *   unknown (caller decides whether that's an error).
  */
 /**
- * @brief Parse pgPointCloud schema XML into a long-lived @c PCSCHEMA*.
- *
- * Installed at @c mobilitydb_init time as @c meos_pc_parse_xml_fn,
- * this is invoked by the WKB decoder when an incoming WKB blob carries
- * an embedded schema XML for a pcid not yet registered in the backend.
- * Allocates the parsed schema in @c TopMemoryContext so it outlives
- * the current query.
+ * @brief Parse pgPointCloud schema XML into a long-lived @c PCSCHEMA*
+ * @details Installed at @c mobilitydb_init time as @c meos_pc_parse_xml_fn,
+ * this is invoked by the WKB decoder when an incoming WKB blob carries an
+ * embedded schema XML for a pcid not yet registered in the backend. Allocates
+ * the parsed schema in @c TopMemoryContext so it outlives the current query.
  *
  * @param[in] xml NUL-terminated schema XML
  * @return Parsed @c PCSCHEMA pointer, or @p NULL on parse failure.

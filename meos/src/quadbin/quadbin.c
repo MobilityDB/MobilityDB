@@ -73,8 +73,8 @@
  *****************************************************************************/
 
 /**
- * @brief Parse a string into a quadbin cell. See header for the accepted
- * input shapes.
+ * @brief Parse a string into a quadbin cell
+ * @details See header for the accepted input shapes.
  */
 Quadbin
 quadbin_parse(const char *str)
@@ -110,7 +110,7 @@ quadbin_parse(const char *str)
 
 /**
  * @ingroup meos_quadbin_base_inout
- * @brief Return a quadbin from its string representation.
+ * @brief Return a quadbin from its string representation
  * @param[in] str String
  * @csqlfn #Quadbin_in()
  */
@@ -229,7 +229,7 @@ quadbin_cmp(Quadbin a, Quadbin b)
 /**
  * @ingroup meos_quadbin_base_comp
  * @brief Return the 32-bit hash value of a quadbin — matches the result
- * `hashint8` would produce on the same bit pattern.
+ * `hashint8` would produce on the same bit pattern
  * @csqlfn #Quadbin_hash()
  */
 uint32
@@ -240,8 +240,8 @@ quadbin_hash(Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_base_comp
- * @brief Return the 64-bit hash value of a quadbin using a seed — matches
- * the result `hashint8extended` would produce on the same bit pattern.
+ * @brief Return the 64-bit hash value of a quadbin using a seed — matches the
+ * result `hashint8extended` would produce on the same bit pattern
  * @param[in] cell Quadbin cell
  * @param[in] seed Seed
  * @csqlfn #Quadbin_hash_extended()

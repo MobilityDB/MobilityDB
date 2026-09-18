@@ -101,7 +101,7 @@ static const uint64_t QB_B[6] = {
 };
 
 /**
- * @brief Morton-decode a QUADBIN cell into Web-Mercator tile coordinates.
+ * @brief Morton-decode a QUADBIN cell into Web-Mercator tile coordinates
  * @details Canonical compact_bits algorithm matching CARTO quadbin-js
  * quadbinCellToTile: extract even/odd bits, compact right (shifts 1→2→4→8→16),
  * descale from 2^26.
@@ -130,7 +130,7 @@ qb_to_xyz(uint64_t cell, uint32_t *tx, uint32_t *ty, uint32_t *tz)
 }
 
 /**
- * @brief Morton-encode tile (x, y, z) into a QUADBIN cell.
+ * @brief Morton-encode tile (x, y, z) into a QUADBIN cell
  * @details Canonical spread_bits algorithm matching CARTO quadbin-js
  * quadbinTileToCell: scale to 2^26 grid, spread left (shifts 16→8→4→2→1),
  * interleave x/y, and set to one the 52 - 2z bits of the Morton code below
@@ -179,7 +179,7 @@ raster_quadbin_is_cell(uint64 cell)
 }
 
 /**
- * @brief Compute the WGS-84 bounding box and Mercator top/bottom of a tile.
+ * @brief Compute the WGS-84 bounding box and Mercator top/bottom of a tile
  * @details The Mercator top/bot values are kept in the caller-visible
  * representation to avoid recomputing them in the hot per-instant loop.
  */
@@ -232,7 +232,7 @@ raster_quadbin_zoom(uint64 cell)
 
 /**
  * @brief Derive the QUADBIN cell of a Web-Mercator raster tile from its
- * EPSG:3857 georeferencing.
+ * EPSG:3857 georeferencing
  * @details A Raquet tile is a single QUADBIN cell of the Web-Mercator tile 
  * pyramid, so its EPSG:3857 origin and pixel resolution determine the cell 
  * exactly. Thepixel extent gives the zoom (a tile of zoom
@@ -490,7 +490,7 @@ raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
 
 /**
  * @ingroup meos_raster_base_accessor
- * @brief Sample a Raquet raster chip along a tgeompoint trajectory.
+ * @brief Sample a Raquet raster chip along a tgeompoint trajectory
  * @details The chip is identified by its QUADBIN cell, which encodes the
  * Web-Mercator tile coordinates and thus the full georeferencing without any
  * separate metadata. A position outside the tile extent or on a nodata pixel

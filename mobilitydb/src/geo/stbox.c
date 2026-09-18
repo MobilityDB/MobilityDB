@@ -556,8 +556,9 @@ Timestamptz_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peek into a set datum to find the bounding box. If the datum
- * needs to be detoasted, extract only the header and not the full object.
+ * @brief Peek into a set datum to find the bounding box
+ * @details If the datum needs to be detoasted, extract only the header and not
+ * the full object.
  */
 void
 tstzset_stbox_slice(Datum sdatum, STBox *box)
@@ -605,8 +606,9 @@ Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peek into a span set datum to find the bounding box. If the datum
- * needs to be detoasted, extract only the header and not the full object.
+ * @brief Peek into a span set datum to find the bounding box
+ * @details If the datum needs to be detoasted, extract only the header and not
+ * the full object.
  */
 void
 tstzspanset_stbox_slice(Datum ssdatum, STBox *box)

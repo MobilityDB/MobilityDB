@@ -63,7 +63,7 @@
 
 /**
  * @brief Return the area of an h3 cell in square metres, the unit the shared
- * `cell_area` slot is defined in.
+ * `cell_area` slot is defined in
  */
 static Datum
 datum_h3_cell_area_m2(Datum cell_d)
@@ -76,7 +76,7 @@ datum_h3_cell_area_m2(Datum cell_d)
  *****************************************************************************/
 
 /**
- * @brief H3 operations descriptor consumed by `dggs_cellops()`.
+ * @brief H3 operations descriptor consumed by `dggs_cellops()`
  */
 const DggsCellOps h3_cellops =
 {

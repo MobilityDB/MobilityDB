@@ -76,10 +76,10 @@
  *****************************************************************************/
 
 /**
- * @brief Ensure that a (tquadbin, tquadbin) pair is valid — both are
- * the right temptype and share a meaningful time axis. The sync
- * check itself happens later in `tfunc_temporal_temporal`; we only
- * handle the null / temptype fences here.
+ * @brief Ensure that a (tquadbin, tquadbin) pair is valid — both are the right
+ * temptype and share a meaningful time axis
+ * @details The sync check itself happens later in `tfunc_temporal_temporal`; we
+ * only handle the null / temptype fences here.
  */
 bool
 ensure_valid_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
@@ -90,13 +90,11 @@ ensure_valid_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Ensure that a (tquadbin, Quadbin) pair is valid.
- *
- * The cell argument carries quadbin semantics: a value of 0 is the
- * conventional "invalid" sentinel (what `quadbin_is_valid_cell(0)`
- * returns `false` for). We reject it up front so callers cannot
- * e.g. test a temporal trajectory for "ever equal to the invalid
- * sentinel" without noticing.
+ * @brief Ensure that a (tquadbin, Quadbin) pair is valid
+ * @details The cell argument carries quadbin semantics: a value of 0 is the
+ * conventional "invalid" sentinel (what `quadbin_is_valid_cell(0)` returns
+ * `false` for). We reject it up front so callers cannot e.g. test a temporal
+ * trajectory for "ever equal to the invalid sentinel" without noticing.
  */
 bool
 ensure_valid_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
@@ -113,7 +111,7 @@ ensure_valid_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 }
 
 /**
- * @brief Ensure that a (tquadbin, tgeompoint) pair is valid.
+ * @brief Ensure that a (tquadbin, tgeompoint) pair is valid
  */
 bool
 ensure_valid_tquadbin_tgeompoint(const Temporal *temp1, const Temporal *temp2)
@@ -138,7 +136,7 @@ ensure_valid_tquadbin_tgeompoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_quadbin_inout
  * @brief Parse a temporal quadbin cell index from its Well-Known Text
- * representation.
+ * representation
  * @csqlfn #Temporal_in()
  */
 Temporal *
@@ -152,7 +150,7 @@ tquadbin_in(const char *str)
 /**
  * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell instant from its Well-Known Text
- * representation.
+ * representation
  */
 TInstant *
 tquadbininst_in(const char *str)
@@ -167,11 +165,10 @@ tquadbininst_in(const char *str)
 /**
  * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell sequence from its Well-Known Text
- * representation.
- *
- * tquadbin sequences always carry step interpolation (quadbin cells are
- * discrete); the `interp` argument is accepted for signature
- * parity with the generic API and discarded.
+ * representation
+ * @details tquadbin sequences always carry step interpolation (quadbin cells
+ * are discrete); the `interp` argument is accepted for signature parity with
+ * the generic API and discarded.
  */
 TSequence *
 tquadbinseq_in(const char *str, interpType interp)
@@ -187,7 +184,7 @@ tquadbinseq_in(const char *str, interpType interp)
 /**
  * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell sequence set from its Well-Known Text
- * representation.
+ * representation
  */
 TSequenceSet *
 tquadbinseqset_in(const char *str)
@@ -220,7 +217,7 @@ tquadbin_out(const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_constructor
- * @brief Build a temporal quadbin cell instant.
+ * @brief Build a temporal quadbin cell instant
  * @param[in] value The quadbin cell value
  * @param[in] t The instant's timestamp
  */
@@ -232,8 +229,8 @@ tquadbininst_make(Quadbin value, TimestampTz t)
 
 /**
  * @ingroup meos_quadbin_constructor
- * @brief Build a temporal quadbin cell sequence (step interpolation only
- * — quadbin cells are discrete, never interpolated).
+ * @brief Build a temporal quadbin cell sequence (step interpolation only —
+ * quadbin cells are discrete, never interpolated)
  * @param[in] values Array of quadbin cell values
  * @param[in] times Array of timestamps, same length as `values`
  * @param[in] count Number of elements in the arrays
@@ -263,7 +260,7 @@ tquadbinseq_make(const Quadbin *values, const TimestampTz *times,
 
 /**
  * @ingroup meos_quadbin_constructor
- * @brief Build a temporal quadbin cell sequence set from an array of sequences.
+ * @brief Build a temporal quadbin cell sequence set from an array of sequences
  * @param[in] sequences Array of sequences (step interpolation)
  * @param[in] count Number of sequences
  */
@@ -275,8 +272,8 @@ tquadbinseqset_make(const TSequence **sequences, int count)
 
 /**
  * @ingroup meos_quadbin_constructor
- * @brief Shorthand constructor: the single-instant temporal quadbin cell.
- * Alias for `tquadbininst_make`.
+ * @brief Shorthand constructor: the single-instant temporal quadbin cell
+ * @details Alias for `tquadbininst_make`.
  */
 Temporal *
 tquadbin_make(Quadbin value, TimestampTz t)
@@ -290,7 +287,7 @@ tquadbin_make(Quadbin value, TimestampTz t)
 
 /**
  * @ingroup meos_quadbin_accessor
- * @brief Return the quadbin cell value at the first instant of `temp`.
+ * @brief Return the quadbin cell value at the first instant of `temp`
  * @csqlfn #Temporal_start_value()
  */
 Quadbin
@@ -303,7 +300,7 @@ tquadbin_start_value(const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_accessor
- * @brief Return the quadbin cell value at the last instant of `temp`.
+ * @brief Return the quadbin cell value at the last instant of `temp`
  * @csqlfn #Temporal_end_value()
  */
 Quadbin
@@ -317,7 +314,7 @@ tquadbin_end_value(const Temporal *temp)
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the quadbin cell value at the `n`-th distinct value of `temp`.
- * 1-indexed.
+ * 1-indexed
  * @param[in] temp Temporal value
  * @param[in] n Number
  * @param[out] result Value
@@ -341,7 +338,7 @@ tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the distinct quadbin cell values that `temp` takes, in
- * ascending order.
+ * ascending order
  * @param[in] temp Temporal quadbin cell
  * @param[out] count Number of distinct values
  * @return Allocated array of `count` Quadbin values. Caller owns.
@@ -401,7 +398,7 @@ tquadbin_unnest(const Temporal *temp, Quadbin **values, int *count)
 
 /**
  * @ingroup meos_quadbin_accessor
- * @brief Return the quadbin cell value of `temp` at timestamp `t`.
+ * @brief Return the quadbin cell value of `temp` at timestamp `t`
  * @param[in] temp Temporal quadbin cell
  * @param[in] t Timestamp
  * @param[in] strict True to require an exact instant match; false
@@ -449,7 +446,8 @@ datum_quadbin_identity(Datum d)
 
 /**
  * @ingroup meos_quadbin_conversion
- * @brief Convert a `tbigint` to a `tquadbin`. Caller owns the result.
+ * @brief Convert a `tbigint` to a `tquadbin`
+ * @details Caller owns the result.
  * @csqlfn #Tbigint_to_tquadbin()
  */
 Temporal *
@@ -471,7 +469,8 @@ tbigint_to_tquadbin(const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_conversion
- * @brief Convert a `tquadbin` to a `tbigint`. Caller owns the result.
+ * @brief Convert a `tquadbin` to a `tbigint`
+ * @details Caller owns the result.
  * @csqlfn #Tquadbin_to_tbigint()
  */
 Temporal *

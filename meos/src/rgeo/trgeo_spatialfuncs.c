@@ -95,9 +95,10 @@
 
 
 /**
- * @brief Return true if any polygon component of an LWGEOM carries an
- * interior ring (hole). The M1 clip primitive ignores holes, so a holey
- * target is rejected rather than silently treated as solid.
+ * @brief Return true if any polygon component of an LWGEOM carries an interior
+ * ring (hole)
+ * @details The M1 clip primitive ignores holes, so a holey target is rejected
+ * rather than silently treated as solid.
  */
 static bool
 lwgeom_has_interior_ring(const LWGEOM *geom)
@@ -124,11 +125,10 @@ lwgeom_has_interior_ring(const LWGEOM *geom)
 
 /**
  * @brief Append to @p events the per-body-edge clip-interval endpoints (in
- * segment-local parameter t in [0, 1]) for a pure-translation body segment.
- *
- * The body translates by @p dx, @p dy with fixed orientation. Each exterior
- * ring edge of the (already world-posed at t = 0) body @p body0 sweeps a
- * parallelogram; the clip primitive returns the times at which that edge
+ * segment-local parameter t in [0, 1]) for a pure-translation body segment
+ * @details The body translates by @p dx, @p dy with fixed orientation. Each
+ * exterior ring edge of the (already world-posed at t = 0) body @p body0 sweeps
+ * a parallelogram; the clip primitive returns the times at which that edge
  * touches the target boundary.
  */
 static void
@@ -474,10 +474,9 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
 
 /**
  * @brief Compute the timestamps at which a trgeometry body overlaps a target
- * geometry, returning a tstzspanset (or NULL if no overlap).
- *
- * Iterates the trgeometry instants. Each linear segment is required to be a
- * pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The
+ * geometry, returning a tstzspanset (or NULL if no overlap)
+ * @details Iterates the trgeometry instants. Each linear segment is required to
+ * be a pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The
  * caller has already rejected holey targets.
  *
  * @return The overlap spanset, NULL when the body never overlaps the target
@@ -601,7 +600,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @brief Restrict a temporal rigid geometry to (the complement of) a set of
- * timestamps, preserving the appended reference geometry.
+ * timestamps, preserving the appended reference geometry
  * @details The generic temporal restriction operates on the pose component
  * and drops the reference geometry; this re-appends it so the result is a
  * well-formed temporal rigid geometry.
@@ -1226,8 +1225,8 @@ trgeometry_twcentroid(const Temporal *temp)
 #define TRGEO_TRAVERSED_AREA_ANGLE_TOL    0.05
 
 /**
- * @brief Append the materialised polygon at timestamp @p t to the running
- * geom array, growing it as needed.
+ * @brief Append the materialised polygon at timestamp @p t to the running geom
+ * array, growing it as needed
  */
 static void
 trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
@@ -1498,7 +1497,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
 /**
  * @ingroup meos_rgeo_conversion
  * @brief Materialise the moving polygon of a temporal rigid geometry as a
- * temporal geometry (one rotated/translated polygon per instant).
+ * temporal geometry (one rotated/translated polygon per instant)
  * @details For each instant, applies the instant's pose to the trgeo's
  * reference geometry and emits the resulting polygon. The returned
  * `tgeometry` has the same temporal structure as the input and the same

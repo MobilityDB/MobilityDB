@@ -109,8 +109,9 @@ double_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Append a critical t to an events buffer if it lies in [0, 1].
- * Tolerance-aware: out-of-range values within MEOS_GEOM_TOLERANCE are clamped.
+ * @brief Append a critical t to an events buffer if it lies in [0, 1]
+ * @details Tolerance-aware: out-of-range values within MEOS_GEOM_TOLERANCE are
+ * clamped.
  */
 static inline void
 push_event(double t, double *events, int *nevents, int cap)
@@ -124,8 +125,8 @@ push_event(double t, double *events, int *nevents, int cap)
 }
 
 /**
- * @brief Test whether segments (sa, sb) and (pa, pb) intersect.
- * Returns true on any non-empty intersection (point or overlap).
+ * @brief Test whether segments (sa, sb) and (pa, pb) intersect
+ * @details Returns true on any non-empty intersection (point or overlap).
  */
 static bool
 segments_intersect(double sax, double say, double sbx, double sby,
@@ -153,8 +154,8 @@ segments_intersect(double sax, double say, double sbx, double sby,
 }
 
 /**
- * @brief Ray-cast point-in-polygon test against a closed POINTARRAY.
- * Returns 1 if (x, y) is strictly inside, 0 if outside or on boundary.
+ * @brief Ray-cast point-in-polygon test against a closed POINTARRAY
+ * @details Returns 1 if (x, y) is strictly inside, 0 if outside or on boundary.
  * Holes are not considered (exterior ring only).
  */
 static int
@@ -176,13 +177,12 @@ point_in_ring(double x, double y, const POINTARRAY *pa)
 }
 
 /**
- * @brief Test whether a fixed (already-computed-in-world-space) line
- * segment intersects the polygon described by `pa`.
- *
- * Caller passes the moving edge's world-space endpoints at the test
- * time. Both M1 (linear translation) and M2 (rotational pose) use this
- * helper after computing their respective endpoints; the difference
- * between the two regimes lives in the endpoint computation, not here.
+ * @brief Test whether a fixed (already-computed-in-world-space) line segment
+ * intersects the polygon described by `pa`
+ * @details Caller passes the moving edge's world-space endpoints at the test
+ * time. Both M1 (linear translation) and M2 (rotational pose) use this helper
+ * after computing their respective endpoints; the difference between the two
+ * regimes lives in the endpoint computation, not here.
  */
 static bool
 segment_intersects_polygon(double sax, double say, double sbx, double sby,
@@ -201,8 +201,8 @@ segment_intersects_polygon(double sax, double say, double sbx, double sby,
 }
 
 /**
- * @brief Drop near-duplicate values within MEOS_GEOM_TOLERANCE.
- * Operates in place on the sorted `events` array.
+ * @brief Drop near-duplicate values within MEOS_GEOM_TOLERANCE
+ * @details Operates in place on the sorted `events` array.
  */
 static int
 dedup_sorted(double *events, int n)
@@ -217,13 +217,11 @@ dedup_sorted(double *events, int n)
 }
 
 /**
- * @brief Walk sorted events, midpoint-test each gap; emit merged
- * intervals to `out`.
- *
- * The midpoint-test predicate `intersects(t_m, ctx)` is provided by
- * the caller — it computes the moving edge's world-space endpoints at
- * `t_m` (M1: linear; M2: rotational) and forwards to
- * `segment_intersects_polygon`.
+ * @brief Walk sorted events, midpoint-test each gap; emit merged intervals to
+ * `out`
+ * @details The midpoint-test predicate `intersects(t_m, ctx)` is provided by
+ * the caller — it computes the moving edge's world-space endpoints at `t_m`
+ * (M1: linear; M2: rotational) and forwards to `segment_intersects_polygon`.
  *
  * @return number of merged intervals emitted.
  */
@@ -266,9 +264,8 @@ walk_events_and_emit(const double *events, int nuniq,
  *****************************************************************************/
 
 /**
- * @brief Solve "moving endpoint a + t*delta lies on polygon edge p1 -> p2".
- *
- * 2x2 linear system in (s, t). Returns the t-coordinate (modulo
+ * @brief Solve "moving endpoint a + t*delta lies on polygon edge p1 -> p2"
+ * @details 2x2 linear system in (s, t). Returns the t-coordinate (modulo
  * tolerance) if a valid intersection exists with s in [0, 1].
  */
 static bool
@@ -292,8 +289,8 @@ solve_m1_endpoint_on_edge(double ax, double ay, double dxd, double dyd,
 }
 
 /**
- * @brief Solve "polygon edge endpoint p lies on the moving edge at time t,
- * at parameter u in [0, 1]".
+ * @brief Solve "polygon edge endpoint p lies on the moving edge at time t, at
+ * parameter u in [0, 1]"
  */
 static bool
 solve_m1_p_on_movingedge(double px, double py,
@@ -441,9 +438,9 @@ trgeo_geom_clip_box(const POINT2D *a1, const POINT2D *b1,
  *****************************************************************************/
 
 /**
- * @brief Read 2D pose components into local doubles. Returns false on
- * 3D pose input (M2 is 2D only — same constraint as cbuffer's
- * 2D-only design).
+ * @brief Read 2D pose components into local doubles
+ * @details Returns false on 3D pose input (M2 is 2D only — same constraint as
+ * cbuffer's 2D-only design).
  */
 static bool
 pose2d_read(const Pose *pose, double *x, double *y, double *theta)
@@ -457,8 +454,8 @@ pose2d_read(const Pose *pose, double *x, double *y, double *theta)
 }
 
 /**
- * @brief World-space endpoint of a body-local point under the
- * interpolated pose at time t.
+ * @brief World-space endpoint of a body-local point under the interpolated pose
+ * at time t
  */
 static inline void
 posed_endpoint_at(double t, double x1, double y1, double th1,
@@ -475,10 +472,9 @@ posed_endpoint_at(double t, double x1, double y1, double th1,
 }
 
 /**
- * @brief Boundary residual for the u=0 / u=1 cases.
- *
- * "moving body's local point traced through pose interpolation lies
- * on the static polygon edge from p1 to p2".
+ * @brief Boundary residual for the u=0 / u=1 cases
+ * @details "moving body's local point traced through pose interpolation lies on
+ * the static polygon edge from p1 to p2".
  */
 static double
 m2_residual_endpoint_on_edge(double t,
@@ -495,10 +491,9 @@ m2_residual_endpoint_on_edge(double t,
 }
 
 /**
- * @brief Boundary residual for the s=0 / s=1 cases.
- *
- * "polygon edge endpoint p_e lies on the moving edge (between
- * the body's two body-local endpoint trajectories) at time t".
+ * @brief Boundary residual for the s=0 / s=1 cases
+ * @details "polygon edge endpoint p_e lies on the moving edge (between the
+ * body's two body-local endpoint trajectories) at time t".
  */
 static double
 m2_residual_polypoint_on_movingedge(double t,
@@ -549,8 +544,8 @@ residual_polypoint_on_movingedge_wrap(double t, void *state)
 }
 
 /**
- * @brief Sign-change scan + bracket bisection in [0, 1] for the
- * non-Taylor regime.
+ * @brief Sign-change scan + bracket bisection in [0, 1] for the non-Taylor
+ * regime
  */
 static int
 solve_m2_numerical(residual_fn f, void *state, double *roots, int max_roots)
@@ -591,9 +586,8 @@ solve_m2_numerical(residual_fn f, void *state, double *roots, int max_roots)
 }
 
 /**
- * @brief Closed-form Taylor solver for the u=0 / u=1 case.
- *
- * Linearises cos(theta(t)) and sin(theta(t)) around theta_1, valid for
+ * @brief Closed-form Taylor solver for the u=0 / u=1 case
+ * @details Linearises cos(theta(t)) and sin(theta(t)) around theta_1, valid for
  * |Delta theta| < TAYLOR_THRESHOLD. Yields a residual linear in t →
  * single closed-form root.
  *

@@ -65,7 +65,7 @@
  *****************************************************************************/
 
 /**
- * @brief Set the X/Y planar part of a spatiotemporal box from a quadbin cell.
+ * @brief Set the X/Y planar part of a spatiotemporal box from a quadbin cell
  * @param[in] cell Quadbin cell index (must be a valid, non-zero cell)
  * @param[out] box Spatiotemporal box (caller-initialised; this function
  *   sets xmin/xmax/ymin/ymax, the X/Y flags and the SRID)
@@ -193,7 +193,7 @@ quadbinarr_set_stbox(const Datum *values, int count, STBox *box)
 
 /**
  * @brief Return in the last argument the spatiotemporal box of a temporal
- * quadbin cell instant.
+ * quadbin cell instant
  * @param[in] inst Temporal quadbin cell instant
  * @param[out] box Spatiotemporal box
  */
@@ -210,8 +210,8 @@ tquadbininst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Return in the last argument a spatiotemporal box constructed from
- * an array of temporal quadbin cell instants.
+ * @brief Return in the last argument a spatiotemporal box constructed from an
+ * array of temporal quadbin cell instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -230,8 +230,8 @@ tquadbininstarr_set_stbox(TInstant **instants, int count, STBox *box)
 }
 
 /**
- * @brief Expand the bounding box of a temporal quadbin cell sequence with a
- * new instant.
+ * @brief Expand the bounding box of a temporal quadbin cell sequence with a new
+ * instant
  * @param[in] seq Temporal sequence (its stored bbox is expanded in place)
  * @param[in] inst New temporal instant
  */

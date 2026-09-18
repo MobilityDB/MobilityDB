@@ -115,7 +115,7 @@ prng_get_aggregation_rng(void)
 /***************************************************************************/
 
 /**
- * @brief Generate a uniformly distributed random double in [0, 1).
+ * @brief Generate a uniformly distributed random double in [0, 1)
  */
 inline double
 meos_random_double(pg_prng_state *rng)
@@ -124,7 +124,7 @@ meos_random_double(pg_prng_state *rng)
 }
 
 /**
- * @brief Generate an exponentially distributed random value.
+ * @brief Generate an exponentially distributed random value
  *
  * @param[in] rng Random generator
  * @param[in] mean Mean of the exponential distribution
@@ -138,7 +138,7 @@ meos_random_exponential(pg_prng_state *rng, double mean)
 }
 
 /**
- * @brief Generate a binomially distributed random value.
+ * @brief Generate a binomially distributed random value
  * @param[in] rng Random generator
  * @param[in] p Probability of success
  * @param[in] n Number of trials

@@ -371,12 +371,11 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
 #if NPOINT
 /**
  * @brief Write into the buffer a network point in the MF-JSON representation
- *
- * The payload shape is @code {"route":<route>,"position":<position>} @endcode,
- * using the natural-language descriptors that match the SQL accessor surface
- * (@c route(npoint) / @c getPosition(npoint)).  The position is a relative
- * coordinate in [0, 1]; the route id is a 64-bit integer, so it is rendered
- * with INT64_FORMAT to avoid loss of precision in the JSON payload.
+ * @details The payload shape is @code {"route":<route>,"position":<position>}
+ * @endcode, using the natural-language descriptors that match the SQL accessor
+ * surface (@c route(npoint) / @c getPosition(npoint)).  The position is a
+ * relative coordinate in [0, 1]; the route id is a 64-bit integer, so it is
+ * rendered with INT64_FORMAT to avoid loss of precision in the JSON payload.
  */
 static void
 npoint_as_mfjson_sb(stringbuffer_t *sb, const Npoint *np, int precision)
@@ -391,10 +390,10 @@ npoint_as_mfjson_sb(stringbuffer_t *sb, const Npoint *np, int precision)
 
 #if POINTCLOUD
 /**
- * @brief Write into the buffer a tpcpoint instant's coordinates in the
- * MF-JSON representation. Resolves the schema by pcid and emits an
- * `[X, Y]` or `[X, Y, Z]` array. Falls back to `[]` if the schema
- * is unknown or has no X/Y dimensions.
+ * @brief Write into the buffer a tpcpoint instant's coordinates in the MF-JSON
+ * representation
+ * @details Resolves the schema by pcid and emits an `[X, Y]` or `[X, Y, Z]`
+ * array. Falls back to `[]` if the schema is unknown or has no X/Y dimensions.
  */
 static void
 tpcpoint_coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
@@ -422,11 +421,11 @@ tpcpoint_coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
 }
 
 /**
- * @brief Write into the buffer a tpcpatch instant in the MF-JSON
- * representation. Patches don't decompose to a single coordinate, so
- * we emit a small object with pcid, npoints, and the 2D PCBOUNDS.
- * The compressed point payload is intentionally left out — JSON is
- * not the right wire format for it; use asBinary for round-trip.
+ * @brief Write into the buffer a tpcpatch instant in the MF-JSON representation
+ * @details Patches don't decompose to a single coordinate, so we emit a small
+ * object with pcid, npoints, and the 2D PCBOUNDS. The compressed point payload
+ * is intentionally left out — JSON is not the right wire format for it; use
+ * asBinary for round-trip.
  */
 static void
 tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
@@ -717,8 +716,8 @@ stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *box, int precision)
 
 #if POINTCLOUD
 /**
- * @brief Write into the buffer a TPCBox in the MF-JSON representation.
- * Same shape as stbox JSON plus a "pcid" field.
+ * @brief Write into the buffer a TPCBox in the MF-JSON representation
+ * @details Same shape as stbox JSON plus a "pcid" field.
  */
 static void
 tpcbox_as_mfjson_sb(stringbuffer_t *sb, const TPCBox *box, int precision)
@@ -1439,15 +1438,14 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
 
 #if POINTCLOUD
 /**
- * @brief Return the size in bytes of a pgPointCloud pcpoint / pcpatch
- * in the Well-Known Binary (WKB) representation
- *
- * The encoding is intentionally minimal: the entire varlena body
- * (i.e. pcid + payload) is written length-prefixed. The full length is
- * kept even for a pcpoint, whose trailing bytes are pgpointcloud's
- * struct-tail padding (see the note in pointcloud/pcpoint.c): shrinking
- * the length would make @c pcvarlena_from_wkb_state (type_in.c) allocate
- * a varlena pgpointcloud's own point deserializer no longer recognizes.
+ * @brief Return the size in bytes of a pgPointCloud pcpoint / pcpatch in the
+ * Well-Known Binary (WKB) representation
+ * @details The encoding is intentionally minimal: the entire varlena body (i.e.
+ * pcid + payload) is written length-prefixed. The full length is kept even for
+ * a pcpoint, whose trailing bytes are pgpointcloud's struct-tail padding (see
+ * the note in pointcloud/pcpoint.c): shrinking the length would make @c
+ * pcvarlena_from_wkb_state (type_in.c) allocate a varlena pgpointcloud's own
+ * point deserializer no longer recognizes.
  * @c pcpoint_to_wkb_buf writes that padding as zeros instead, mirroring
  * @c pcpoint_hex_out, so two byte-equal pcpoints always agree on their
  * WKB. The schema for the @c pcid is resolved out-of-band (pgpointcloud's
@@ -2402,16 +2400,15 @@ opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
 }
 
 /**
- * @brief Write into the buffer a pgPointCloud pcpoint in the Well-Known
- * Binary (WKB) representation: int32 body length + body bytes.
- *
- * The body comprises everything after the varlena header: pcid +
+ * @brief Write into the buffer a pgPointCloud pcpoint in the Well-Known Binary
+ * (WKB) representation: int32 body length + body bytes
+ * @details The body comprises everything after the varlena header: pcid +
  * dimension payload. The trailing bytes past the meaningful prefix are
  * pgpointcloud's struct-tail padding, which its constructor leaves
- * uninitialized (see the note in pointcloud/pcpoint.c). They are
- * written as zeros — mirroring @c pcpoint_hex_out — instead of copied
- * verbatim, so that two pcpoints holding the same point always produce
- * the same WKB. The full body length is still written, matching what
+ * uninitialized (see the note in pointcloud/pcpoint.c). They are written as
+ * zeros — mirroring @c pcpoint_hex_out — instead of copied verbatim, so that
+ * two pcpoints holding the same point always produce the same WKB. The full
+ * body length is still written, matching what
  * @c pcvarlena_from_wkb_state (type_in.c) needs to rebuild a varlena of
  * the size pgpointcloud's own deserializer expects.
  */

@@ -1617,7 +1617,8 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
 /**
  * @ingroup meos_json_json
  * @brief Extract the first item specified by a JSON path expression from a
- * temporal JSONB value. If there are no items, return NULL.
+ * temporal JSONB value
+ * @details If there are no items, return NULL.
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables, may be NULL

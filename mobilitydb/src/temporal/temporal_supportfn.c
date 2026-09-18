@@ -375,7 +375,8 @@ temporal_get_strategy_by_type(MeosType temptype, uint16_t index)
 /**
  * @brief Is the function calling the support function one of those we will
  * enhance with index ops? If so, copy the metadata for the function into idxfn
- * and return true. If false, how did the support function get added, anyways?
+ * and return true
+ * @details If false, how did the support function get added, anyways?
  */
 bool
 func_needs_index(Oid funcid, const IndexableFunction *idxfns,
@@ -490,7 +491,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 /**
  * @brief To apply the "bunding box search" pattern we need access to the
  * corresponding bbox function, so lookup the function Oid using the function
- * name and type number.
+ * name and type number
  */
 static FuncExpr *
 makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)

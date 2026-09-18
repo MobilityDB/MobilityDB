@@ -89,7 +89,7 @@ static bool schema_register(uint32_t pcid, PCSCHEMA *schema,
  *****************************************************************************/
 
 /**
- * @brief Internal helper — copy @p xml into long-lived memory.
+ * @brief Internal helper — copy @p xml into long-lived memory
  * @return palloc'd cstring (TopMemoryContext on PG, malloc on standalone)
  * or NULL when @p xml is NULL.
  */
@@ -111,7 +111,7 @@ copy_xml_long_lived(const char *xml)
 }
 
 /**
- * @brief Internal helper — make room for one more cache entry.
+ * @brief Internal helper — make room for one more cache entry
  */
 static void
 ensure_cache_capacity(void)
@@ -165,7 +165,7 @@ pcschema_registrable(uint32_t pcid, const PCSCHEMA *schema)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Register a parsed PCSCHEMA in the MEOS-owned cache.
+ * @brief Register a parsed PCSCHEMA in the MEOS-owned cache
  */
 void
 meos_pc_schema_register(uint32_t pcid, PCSCHEMA *schema)
@@ -464,7 +464,7 @@ meos_pc_schema_xml(uint32_t pcid)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Drop every entry from the MEOS schema cache.
+ * @brief Drop every entry from the MEOS schema cache
  */
 void
 meos_pc_schema_clear(void)
@@ -485,11 +485,10 @@ meos_pc_schema_clear(void)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Return the cached SRID for a pcid (SRID_INVALID on miss).
- *
- * The SRID is extracted from the PCSCHEMA at registration time so
- * callers (e.g. spatial_srid in tspatial_srid.c) do not need the full
- * PCSCHEMA struct definition.
+ * @brief Return the cached SRID for a pcid (SRID_INVALID on miss)
+ * @details The SRID is extracted from the PCSCHEMA at registration time so
+ * callers (e.g. spatial_srid in tspatial_srid.c) do not need the full PCSCHEMA
+ * struct definition.
  * @sqlfn pointCloudSchemaSRID()
  */
 int32_t
@@ -748,7 +747,7 @@ meos_pc_schema(uint32_t pcid)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Install the pgPointCloud library handlers for standalone MEOS.
+ * @brief Install the pgPointCloud library handlers for standalone MEOS
  * @details The bundled libpc.a leaves its allocator, deallocator and
  *   message handlers as NULL function pointers until a host installs
  *   them. The PG backend does this in @c mobilitydb_init via

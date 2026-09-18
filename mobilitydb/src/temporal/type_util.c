@@ -199,7 +199,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
  *****************************************************************************/
 
 /**
- * @brief Extract a C array from a PostgreSQL array containing datums.
+ * @brief Extract a C array from a PostgreSQL array containing datums
  * @note If array elements are pass-by-ref data type, the returned Datums will
  * be pointers into the array object.
  */
@@ -316,7 +316,7 @@ temparr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * @brief Return a C array of datums converted into a PostgreSQL array.
+ * @brief Return a C array of datums converted into a PostgreSQL array
  * @note The values will be copied into the object even if pass-by-ref type
  */
 ArrayType *

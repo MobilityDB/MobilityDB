@@ -49,8 +49,8 @@
 PGDLLEXPORT Datum Trgeometry_geom_clip_polygon(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_geom_clip_polygon);
 /**
- * @brief Return the time-parameter intervals during which a moving
- * segment under pure translation intersects a polygon.
+ * @brief Return the time-parameter intervals during which a moving segment
+ * under pure translation intersects a polygon
  * @sqlfn _trgeometry_geom_clip_polygon()
  */
 Datum
@@ -100,8 +100,8 @@ Trgeometry_geom_clip_polygon(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_geom_clip_polygon_posed(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_geom_clip_polygon_posed);
 /**
- * @brief Return the time-parameter intervals during which a moving
- * body's edge under interpolated 2D pose intersects a polygon.
+ * @brief Return the time-parameter intervals during which a moving body's edge
+ * under interpolated 2D pose intersects a polygon
  * @sqlfn _trgeometry_geom_clip_polygon_posed()
  */
 Datum

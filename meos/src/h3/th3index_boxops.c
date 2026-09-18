@@ -118,7 +118,7 @@ h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
 }
 
 /**
- * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell.
+ * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell
  * @param[in] cell H3 cell index (must be a valid, non-zero cell)
  * @param[out] box Spatiotemporal box (caller-initialised; this function
  *   sets xmin/xmax/ymin/ymax, the X/Y/geodetic flags and the SRID)
@@ -276,8 +276,8 @@ h3indexarr_set_stbox(const Datum *values, int count, STBox *box)
  *****************************************************************************/
 
 /**
- * @brief Return in the last argument the spatiotemporal box of a temporal
- * H3 cell instant.
+ * @brief Return in the last argument the spatiotemporal box of a temporal H3
+ * cell instant
  * @param[in] inst Temporal H3 cell instant
  * @param[out] box Spatiotemporal box
  */
@@ -294,8 +294,8 @@ th3indexinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Return in the last argument a spatiotemporal box constructed from
- * an array of temporal H3 cell instants.
+ * @brief Return in the last argument a spatiotemporal box constructed from an
+ * array of temporal H3 cell instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -315,7 +315,7 @@ th3indexinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 
 /**
  * @brief Expand the bounding box of a temporal H3 cell sequence with a new
- * instant.
+ * instant
  * @param[in] seq Temporal sequence (its stored bbox is expanded in place)
  * @param[in] inst New temporal instant
  */

@@ -60,8 +60,8 @@
  *****************************************************************************/
 
 /**
- * @brief Return a palloc'd 2D geometry point for the position in @p pt, or
- * NULL when the schema lacks X or Y dimensions.
+ * @brief Return a palloc'd 2D geometry point for the position in @p pt, or NULL
+ * when the schema lacks X or Y dimensions
  */
 static GSERIALIZED *
 pcpoint_to_geompoint2d(const Pcpoint *pt)
@@ -76,7 +76,7 @@ pcpoint_to_geompoint2d(const Pcpoint *pt)
 }
 
 /**
- * @brief Return the Pcpoint payload of a tpcpoint instant.
+ * @brief Return the Pcpoint payload of a tpcpoint instant
  */
 static const Pcpoint *
 tpointcloudinst_pcpoint(const Temporal *temp)

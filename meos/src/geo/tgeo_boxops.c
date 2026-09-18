@@ -1010,9 +1010,9 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
 /**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes obtained by merging
- * consecutive instants or segments of a temporal geo, where the choice
- * between instants or segments depends, respectively, on whether the
- * interpolation is discrete or continuous.
+ * consecutive instants or segments of a temporal geo, where the choice between
+ * instants or segments depends, respectively, on whether the interpolation is
+ * discrete or continuous
  * @param[in] temp Temporal value
  * @param[in] elems_per_box Number of input instants or segments merged into an
  * output box

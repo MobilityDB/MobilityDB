@@ -211,7 +211,7 @@ PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /**
  * @ingroup mobilitydb_setspan_agg
- * @brief Final function for union aggregation of spans.
+ * @brief Final function for union aggregation of spans
  * @note Shared for both spans and span sets
  * @sqlfn union()
  * @sqlaggfn spanUnion(), spansetUnion()

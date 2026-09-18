@@ -2430,14 +2430,14 @@ eacontains_tcbuffer_ctx_native(const Temporal *temp, const void *ctx,
 /**
  * @brief Return true when some unit of a temporal circular buffer could have
  * its disk inside the box @p bxmin, @p bymin, @p bxmax, @p bymax
- *
- * A disk inside a geometry is inside the box of that geometry, so its centre
- * lies in that box shrunk by the radius on every side, and a shrunk box that
- * comes out empty admits no disk at all. Over a unit the centres lie in their
- * own box and the radius is at least the smaller of the two endpoint radii, so
- * testing that centre box against the box shrunk by that smaller radius accepts
- * every disk the unit really holds. A value for which no unit passes is inside
- * the geometry at no instant, which refutes ever contains and ever covers.
+ * @details A disk inside a geometry is inside the box of that geometry, so its
+ * centre lies in that box shrunk by the radius on every side, and a shrunk box
+ * that comes out empty admits no disk at all. Over a unit the centres lie in
+ * their own box and the radius is at least the smaller of the two endpoint
+ * radii, so testing that centre box against the box shrunk by that smaller
+ * radius accepts every disk the unit really holds. A value for which no unit
+ * passes is inside the geometry at no instant, which refutes ever contains and
+ * ever covers.
  *
  * The relaxation is one-sided, so a passing unit proves nothing and the running
  * scan decides it. Reading the radius off the centre this way, instead of

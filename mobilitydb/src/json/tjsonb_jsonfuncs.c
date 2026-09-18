@@ -1286,7 +1286,8 @@ Tjsonb_path_query_array_tz(PG_FUNCTION_ARGS)
 
 /**
  * @brief Extract the first item specified by a JSON path expression from a
- * temporal JSONB value. If there are no items, return NULL.
+ * temporal JSONB value
+ * @details If there are no items, return NULL.
  * @sqlfn tjsonbPathQueryFirst(), tjsonbPathQueryFirstTz()
  */
 Datum
@@ -1312,7 +1313,8 @@ PG_FUNCTION_INFO_V1(Tjsonb_path_query_first);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract the first item specified by a JSON path expression from a
- * temporal JSONB value. If there are no items, return NULL.
+ * temporal JSONB value
+ * @details If there are no items, return NULL.
  * @sqlfn tjsonbPathQueryFirst()
  */
 Datum
@@ -1326,7 +1328,8 @@ PG_FUNCTION_INFO_V1(Tjsonb_path_query_first_tz);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract the first item specified by a JSON path expression from a
- * temporal JSONB value. If there are no items, return NULL.
+ * temporal JSONB value
+ * @details If there are no items, return NULL.
  * @sqlfn tjsonbPathQueryFirstTz()
  */
 Datum

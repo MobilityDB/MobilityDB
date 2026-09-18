@@ -69,7 +69,7 @@
  *****************************************************************************/
 
 /**
- * @brief Serialize a @c PCPOINT into a fresh @c SERIALIZED_POINT varlena.
+ * @brief Serialize a @c PCPOINT into a fresh @c SERIALIZED_POINT varlena
  * @param pcpt Source in-memory point.
  * @return Newly allocated @c SERIALIZED_POINT (palloc'd, varlena header set).
  *   Caller owns the result.
@@ -86,7 +86,7 @@ meos_pc_point_serialize(const PCPOINT *pcpt)
 }
 
 /**
- * @brief Deserialize a @c SERIALIZED_POINT into a fresh @c PCPOINT.
+ * @brief Deserialize a @c SERIALIZED_POINT into a fresh @c PCPOINT
  * @param serpt  Source varlena.
  * @param schema Schema matching @c serpt->pcid (must not be NULL).
  * @return Newly allocated @c PCPOINT, or @c NULL when @c schema->size
@@ -112,7 +112,7 @@ meos_pc_point_deserialize(const SERIALIZED_POINT *serpt, const PCSCHEMA *schema)
  *****************************************************************************/
 
 /**
- * @brief Compute the @c SERIALIZED_PATCH size for an in-memory @c PCPATCH.
+ * @brief Compute the @c SERIALIZED_PATCH size for an in-memory @c PCPATCH
  * @param patch In-memory patch (compression type may be @c PC_NONE,
  *   @c PC_DIMENSIONAL, or @c PC_LAZPERF).
  * @return Total bytes the serialized form will occupy, including the
@@ -159,7 +159,7 @@ meos_pc_patch_serialized_size(const PCPATCH *patch)
  *****************************************************************************/
 
 /**
- * @brief Write the (min, max, avg) stats triplet into @p buf.
+ * @brief Write the (min, max, avg) stats triplet into @p buf
  * @return Number of bytes written.
  */
 static size_t
@@ -188,7 +188,7 @@ pc_patch_stats_deserialize(const PCSCHEMA *schema, const uint8_t *buf)
 }
 
 /**
- * @brief Serialize a dimensional-compressed in-memory patch.
+ * @brief Serialize a dimensional-compressed in-memory patch
  * @details Per-dimension @c PCBYTES blobs are concatenated after the
  *   stats triplet.
  */
@@ -239,7 +239,7 @@ pc_patch_dimensional_serialize(const PCPATCH *patch_in)
 }
 
 /**
- * @brief Serialize a LAZ-perf-compressed in-memory patch.
+ * @brief Serialize a LAZ-perf-compressed in-memory patch
  * @details Layout after the stats triplet is a 4-byte length prefix
  *   followed by the LAZ-perf payload.
  */
@@ -281,7 +281,7 @@ pc_patch_lazperf_serialize(const PCPATCH *patch_in)
 }
 
 /**
- * @brief Serialize an uncompressed in-memory patch.
+ * @brief Serialize an uncompressed in-memory patch
  * @details The point payload is a contiguous byte array; copied as-is
  *   after the stats triplet.
  */
@@ -327,7 +327,7 @@ pc_patch_uncompressed_serialize(const PCPATCH *patch_in)
  *****************************************************************************/
 
 /**
- * @brief Serialize a @c PCPATCH at its schema's target compression.
+ * @brief Serialize a @c PCPATCH at its schema's target compression
  * @param patch_in Source in-memory patch (must carry stats).
  * @param userdata Compression-specific side state — typically a
  *   @c PCDIMSTATS for dimensional compression; may be @c NULL.
@@ -398,7 +398,7 @@ meos_pc_patch_serialize_to_uncompressed(const PCPATCH *patch_in)
  *****************************************************************************/
 
 /**
- * @brief Deserialize an uncompressed @c SERIALIZED_PATCH.
+ * @brief Deserialize an uncompressed @c SERIALIZED_PATCH
  * @details The returned @c PCPATCH carries @c readonly=true and its
  *   @c data field aliases the input buffer; do not @c pc_patch_free
  *   the data area separately. A consistency check raises @c pcerror
@@ -438,7 +438,7 @@ pc_patch_uncompressed_deserialize(const SERIALIZED_PATCH *serpatch,
 }
 
 /**
- * @brief Deserialize a dimensional-compressed @c SERIALIZED_PATCH.
+ * @brief Deserialize a dimensional-compressed @c SERIALIZED_PATCH
  * @details Per-dimension @c PCBYTES arrays alias the input buffer
  *   (@c readonly=true). The container array of @c PCBYTES is freshly
  *   palloc'd.
@@ -486,7 +486,7 @@ pc_patch_dimensional_deserialize(const SERIALIZED_PATCH *serpatch,
 }
 
 /**
- * @brief Deserialize a LAZ-perf-compressed @c SERIALIZED_PATCH.
+ * @brief Deserialize a LAZ-perf-compressed @c SERIALIZED_PATCH
  * @details Unlike the uncompressed and dimensional variants, the
  *   LAZ-perf payload is copied into a fresh palloc'd buffer (the
  *   decoder needs its own), not aliased.
@@ -530,7 +530,7 @@ pc_patch_lazperf_deserialize(const SERIALIZED_PATCH *serpatch,
  *****************************************************************************/
 
 /**
- * @brief Deserialize a @c SERIALIZED_PATCH into a fresh in-memory @c PCPATCH.
+ * @brief Deserialize a @c SERIALIZED_PATCH into a fresh in-memory @c PCPATCH
  * @param serpatch Source varlena.
  * @param schema   Schema matching @c serpatch->pcid (must not be NULL).
  * @return Newly allocated @c PCPATCH (compression-specific subtype),

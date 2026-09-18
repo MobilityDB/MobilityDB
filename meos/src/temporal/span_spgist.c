@@ -76,8 +76,7 @@ span_upper_qsort_cmp(const void *a, const void *b)
 
 /**
  * @brief Initialize the traversal value
- *
- * In the beginning, we don't have any restrictions.  We have to
+ * @details In the beginning, we don't have any restrictions.  We have to
  * initialize the struct to cover the whole 2D space.
  */
 void
@@ -132,10 +131,9 @@ spannode_copy(const SpanNode *orig)
 }
 
 /**
- * @brief Compute the next traversal value for a quadtree given the bounding
- * box and the centroid of the current node and the quadrant number (0 to 3)
- *
- * For example, given the bounding box of the root node (level 0) and
+ * @brief Compute the next traversal value for a quadtree given the bounding box
+ * and the centroid of the current node and the quadrant number (0 to 3)
+ * @details For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
  *     nodebox = (-infinity, -infinity)(infinity, infinity)
  *     centroid = (2001-06-13 18:10:00+02, 2001-06-13 18:11:00+02)
@@ -174,11 +172,9 @@ spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
 }
 
 /**
- * @brief Compute the next traversal value for a k-d tree given the bounding
- * box and the centroid of the current node, the half number (0 or 1), and the
- * level
- *
- * For example, given the bounding box of the root node (level 0) and
+ * @brief Compute the next traversal value for a k-d tree given the bounding box
+ * and the centroid of the current node, the half number (0 or 1), and the level
+ * @details For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
  *     nodebox = (-infinity, -infinity)(infinity, infinity)
  *     centroid = (2001-06-19 09:07:00, 2001-06-19 09:13:00]
@@ -228,10 +224,9 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
 
 /**
  * @brief Calculate the quadrant
- *
- * The quadrant is 8 bit unsigned integer with 2 least bits in use.
- * This function accepts Spans as input. The 2 bits are set by comparing
- * a corner of the box. This makes 4 quadrants in total.
+ * @details The quadrant is 8 bit unsigned integer with 2 least bits in use.
+ * This function accepts Spans as input. The 2 bits are set by comparing a
+ * corner of the box. This makes 4 quadrants in total.
  */
 uint8
 getQuadrant2D(const Span *centroid, const Span *query)

@@ -1247,8 +1247,8 @@ s2cell_token_to_cell(const char *token)
  *****************************************************************************/
 
 /**
- * @brief Parse a string into an S2 cell. See header for the accepted input
- * shapes.
+ * @brief Parse a string into an S2 cell
+ * @details See header for the accepted input shapes.
  */
 S2CellId
 s2cell_parse(const char *str)

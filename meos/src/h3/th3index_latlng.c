@@ -226,9 +226,10 @@ h3index_cell_to_geog(H3Index cell)
  *****************************************************************************/
 
 /**
- * @brief One-instant conversion. The Datum carries a GSERIALIZED point
- * in SRID 4326 (either tgeompoint or tgeogpoint encoding); the SRID
- * guard lives in the static adapter `geo_to_h3index_cell`.
+ * @brief One-instant conversion
+ * @details The Datum carries a GSERIALIZED point in SRID 4326 (either
+ * tgeompoint or tgeogpoint encoding); the SRID guard lives in the static
+ * adapter `geo_to_h3index_cell`.
  */
 static TInstant *
 tpointinst_to_th3index(const TInstant *inst, int32 resolution)
@@ -239,11 +240,11 @@ tpointinst_to_th3index(const TInstant *inst, int32 resolution)
 }
 
 /**
- * @brief Densify a tgeompoint / tgeogpoint TSequence to a th3index
- * STEP TSequence. See file-level comment for the algorithm.
- *
- * Discrete-interp input is converted one-instant-per-input (no
- * straight-line segment between instants to walk).
+ * @brief Densify a tgeompoint / tgeogpoint TSequence to a th3index STEP
+ * TSequence
+ * @details See file-level comment for the algorithm. Discrete-interp input is
+ * converted one-instant-per-input (no straight-line segment between instants to
+ * walk).
  */
 static TSequence *
 tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
@@ -425,8 +426,8 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
 }
 
 /**
- * @brief Densify a tgeompoint / tgeogpoint TSequenceSet to a th3index
- * STEP TSequenceSet by per-sequence densification.
+ * @brief Densify a tgeompoint / tgeogpoint TSequenceSet to a th3index STEP
+ * TSequenceSet by per-sequence densification
  */
 static TSequenceSet *
 tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
@@ -444,8 +445,8 @@ tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
 }
 
 /**
- * @brief Subtype-dispatching wrapper used by both tgeompoint and
- * tgeogpoint entrypoints.
+ * @brief Subtype-dispatching wrapper used by both tgeompoint and tgeogpoint
+ * entrypoints
  * @details Every path validates the lon/lat SRID through `geo_to_h3index_cell`
  * (the instant adapter, the non-densify branch, and the first lookup of
  * the densify walker), so non lon/lat input is rejected before any cell
@@ -477,9 +478,9 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
 
 /**
  * @ingroup meos_h3_latlng
- * @brief Return the temporal H3 cell of a temporal planar point (SRID 4326)
- * at the given resolution; segments between consecutive instants are
- * densified so every cell the trajectory traverses appears in the result.
+ * @brief Return the temporal H3 cell of a temporal planar point (SRID 4326) at
+ * the given resolution; segments between consecutive instants are densified so
+ * every cell the trajectory traverses appears in the result
  * @csqlfn #Tgeompoint_to_th3index()
  */
 Temporal *
@@ -496,9 +497,9 @@ tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 
 /**
  * @ingroup meos_h3_latlng
- * @brief Return the temporal H3 cell of a temporal geodetic point at the
- * given resolution; segments between consecutive instants are densified
- * so every cell the trajectory traverses appears in the result.
+ * @brief Return the temporal H3 cell of a temporal geodetic point at the given
+ * resolution; segments between consecutive instants are densified so every cell
+ * the trajectory traverses appears in the result
  * @csqlfn #Tgeogpoint_to_th3index()
  */
 Temporal *
@@ -515,7 +516,7 @@ tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 
 /**
  * @ingroup meos_h3_latlng
- * @brief Return the geodetic centroid trajectory of a temporal H3 cell.
+ * @brief Return the geodetic centroid trajectory of a temporal H3 cell
  * @csqlfn #Th3index_cell_to_tgeogpoint()
  */
 Temporal *
@@ -545,8 +546,8 @@ datum_h3_cell_to_geompoint(Datum d)
 
 /**
  * @ingroup meos_h3_latlng
- * @brief Return the planar centroid trajectory (SRID 4326) of a temporal
- * H3 cell.
+ * @brief Return the planar centroid trajectory (SRID 4326) of a temporal H3
+ * cell
  * @csqlfn #Th3index_cell_to_tgeompoint()
  */
 Temporal *

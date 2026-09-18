@@ -434,16 +434,15 @@ common_entry_cmp(const void *i1, const void *i2)
 
 /**
  * @brief Double sorting split algorithm
- *
- * The algorithm considers dividing spans into two groups. The first (left)
- * group contains general left bound. The second (right) group contains
- * general right bound. The challenge is to find upper bound of left group
- * and lower bound of right group so that overlap of groups is minimal and
- * ratio of distribution is acceptable. Algorithm finds for each lower bound of
- * right group minimal upper bound of left group, and for each upper bound of
- * left group maximal lower bound of right group. For each found pair
- * span_gist_consider_split considers replacement of currently selected
- * split with the new one.
+ * @details The algorithm considers dividing spans into two groups. The first
+ * (left) group contains general left bound. The second (right) group contains
+ * general right bound. The challenge is to find upper bound of left group and
+ * lower bound of right group so that overlap of groups is minimal and ratio of
+ * distribution is acceptable. Algorithm finds for each lower bound of right
+ * group minimal upper bound of left group, and for each upper bound of left
+ * group maximal lower bound of right group. For each found pair
+ * span_gist_consider_split considers replacement of currently selected split
+ * with the new one.
  *
  * After that, all the entries are divided into three groups:
  * 1) Entries which should be placed to the left group

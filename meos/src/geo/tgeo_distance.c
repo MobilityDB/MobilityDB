@@ -130,8 +130,9 @@ dist_minfun(double A, double B, double C, double R0, double DR, double lo,
 }
 
 /**
- * @brief Append the segments of a point array to the segment array, growing
- * it as needed. A single-point array contributes one degenerate segment.
+ * @brief Append the segments of a point array to the segment array, growing it
+ * as needed
+ * @details A single-point array contributes one degenerate segment.
  */
 static void
 dist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
@@ -210,10 +211,11 @@ dist_geom_arc_set_bbox(DistEdge *e)
 }
 
 /**
- * @brief Append one arc edge, defined by three consecutive points of a
- * circular string (start, any interior point, end), to the segment array.
- * Collinear triples degenerate to two straight segments. Mirrors the exact
- * circumcentre construction of the native clip engine (#tpoint_geom_clip.c).
+ * @brief Append one arc edge, defined by three consecutive points of a circular
+ * string (start, any interior point, end), to the segment array
+ * @details Collinear triples degenerate to two straight segments. Mirrors the
+ * exact circumcentre construction of the native clip engine
+ * (#tpoint_geom_clip.c).
  */
 static void
 dist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
@@ -279,9 +281,10 @@ dist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
 }
 
 /**
- * @brief Append the boundary segments of a curve polygon ring (a line string,
- * a circular string, or a compound curve chaining both) with polygon (region)
- * semantics. Returns false when an arc ring is present but the caller does not
+ * @brief Append the boundary segments of a curve polygon ring (a line string, a
+ * circular string, or a compound curve chaining both) with polygon (region)
+ * semantics
+ * @details Returns false when an arc ring is present but the caller does not
  * consume arc edges (@p allow_arc is false), so the exact path is used.
  */
 static bool
@@ -316,10 +319,11 @@ dist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
 
 /**
  * @brief Recursively collect the boundary segments of a geometry, as straight
- * edges and, when @p allow_arc is true, as circular-arc edges. Returns false
- * for a type that has no exact edge decomposition, that is, a TIN or a
- * polyhedral surface, and for a circular-arc type when @p allow_arc is false
- * (the caller then falls back to the exact traversed-area path).
+ * edges and, when @p allow_arc is true, as circular-arc edges
+ * @details Returns false for a type that has no exact edge decomposition, that
+ * is, a TIN or a polyhedral surface, and for a circular-arc type when @p
+ * allow_arc is false (the caller then falls back to the exact traversed-area
+ * path).
  */
 bool
 dist_geom_edges(const LWGEOM *lw, bool allow_arc, DistEdge **arr,
@@ -401,10 +405,11 @@ dist_geom_edges(const LWGEOM *lw, bool allow_arc, DistEdge **arr,
 
 /**
  * @brief Apply the rightward-ray crossings of one polygon-boundary segment to
- * the even-odd accumulator @p inside. A straight edge contributes at most one
- * crossing; a circular arc contributes the crossings of the horizontal line
- * y with its supporting circle that fall within the arc's angular span. Point,
- * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
+ * the even-odd accumulator @p inside
+ * @details A straight edge contributes at most one crossing; a circular arc
+ * contributes the crossings of the horizontal line y with its supporting circle
+ * that fall within the arc's angular span. Point, line, and standalone (1D) arc
+ * edges (not @p is_poly) contribute nothing.
  */
 static void
 dist_poly_seg_raycross(const DistEdge *s, double x, double y,
@@ -540,9 +545,9 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
- * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the
- * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2,
- * and @p e is a circular-arc edge.
+ * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the centre
+ * moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, and @p e is a
+ * circular-arc edge
  * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot
  * angle phi(t) lies within the arc's angular span the distance to the arc is
  * | sqrt(Q(t)) - R |, so the distance to the moving disc is
@@ -926,11 +931,12 @@ dist_geom_morton_cmp(const void *a, const void *b)
 
 /**
  * @brief Reorder the segments along a Morton (Z-order) curve and group them
- * into ~sqrt(n) spatially-local buckets, each with its bounding box. The
- * buckets let a swept-capsule unit skip whole groups of edges that are farther
- * than the running minimum, turning the per-unit edge scan from O(edges) into
- * roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too
- * coarse for large coastal polygons, but the bucket boxes are tight.
+ * into ~sqrt(n) spatially-local buckets, each with its bounding box
+ * @details The buckets let a swept-capsule unit skip whole groups of edges that
+ * are farther than the running minimum, turning the per-unit edge scan from
+ * O(edges) into roughly O(sqrt(edges) + matches) — the geometry's overall
+ * bounding box is too coarse for large coastal polygons, but the bucket boxes
+ * are tight.
  */
 static DistBucket *
 dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
@@ -986,11 +992,12 @@ dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
 
 /**
  * @brief Per-operation scratch buffer for the R-tree candidate ids in the
- * relationship kernels. It is created together with the R-tree in
- * #tcbuffer_geo_ctx_make and destroyed together with it in
- * #tcbuffer_geo_ctx_free, so it lives exactly as long as the geometry context
- * (the same create-with-rtree / destroy-with-rtree lifetime as rtree_results in
- * tpoint_geom_clip.c). MEOS_TLS keeps concurrent threads from sharing it.
+ * relationship kernels
+ * @details It is created together with the R-tree in #tcbuffer_geo_ctx_make and
+ * destroyed together with it in #tcbuffer_geo_ctx_free, so it lives exactly as
+ * long as the geometry context (the same create-with-rtree / destroy-with-rtree
+ * lifetime as rtree_results in tpoint_geom_clip.c). MEOS_TLS keeps concurrent
+ * threads from sharing it.
  */
 MEOS_TLS MeosArray *dist_pip_results = NULL;
 
@@ -1076,13 +1083,12 @@ dist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
 /**
  * @brief Return the squared distance between two axis-aligned boxes, zero when
  * they overlap
- *
- * A box contains what it bounds, so this is a lower bound on the distance
- * between the two bounded objects: the geometry, one of its edge buckets or one
- * of its edges on one side, and the box swept by a capsule unit on the other.
- * A lower bound that reaches the running minimum leaves nothing inside the box
- * able to improve it, which is what the three prune levels of the two
- * traversals below test.
+ * @details A box contains what it bounds, so this is a lower bound on the
+ * distance between the two bounded objects: the geometry, one of its edge
+ * buckets or one of its edges on one side, and the box swept by a capsule unit
+ * on the other. A lower bound that reaches the running minimum leaves nothing
+ * inside the box able to improve it, which is what the three prune levels of
+ * the two traversals below test.
  */
 static double
 box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
@@ -1123,12 +1129,11 @@ dist_unit_thr2(double best, double rmax)
 /**
  * @brief Return true when the exact swept-disc solve against a straight edge
  * cannot improve the running minimum behind the squared threshold @p thr2
- *
- * This reads the same signed-gap lower bound as #dist_unit_thr2 on the exact
- * centre segment rather than on its bounding box, so it rejects the survivors
- * the box levels leave. A scalar squared segment distance serves here rather
- * than lw_dist2d_seg_seg, which also computes the closest points and is far
- * heavier in this loop.
+ * @details This reads the same signed-gap lower bound as #dist_unit_thr2 on the
+ * exact centre segment rather than on its bounding box, so it rejects the
+ * survivors the box levels leave. A scalar squared segment distance serves here
+ * rather than lw_dist2d_seg_seg, which also computes the closest points and is
+ * far heavier in this loop.
  */
 static bool
 dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
@@ -3293,7 +3298,7 @@ mindist_tpoint_tpoint_threshold(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @brief qsort comparator: pair record ordered by bbox-distance ascending.
+ * @brief qsort comparator: pair record ordered by bbox-distance ascending
  */
 typedef struct
 {

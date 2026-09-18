@@ -441,9 +441,9 @@ Tspatial_typmod_out(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Check the consistency of the metadata specified in the typmod: 
- * temporal subtype, geometry type, and SRID. If things are inconsistent, 
- * shut down the query.
+ * @brief Check the consistency of the metadata specified in the typmod:
+ * temporal subtype, geometry type, and SRID
+ * @details If things are inconsistent, shut down the query.
  */
 Temporal *
 tspatial_valid_typmod(Temporal *temp, int32_t typmod)

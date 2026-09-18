@@ -107,7 +107,7 @@ typedef struct
    offsetof(PcpatchLayoutShadow, data))
 
 /**
- * @brief Return the comparable byte length of a pcpatch.
+ * @brief Return the comparable byte length of a pcpatch
  * @details Strips the trailing bytes that pgpointcloud's varlena layout
  * reserves past the statistics and packed points, so that
  * @c pcpatch_cmp / @c pcpatch_hash do not depend on them.

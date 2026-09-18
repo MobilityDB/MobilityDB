@@ -56,8 +56,8 @@
 #define SPATIAL_REF_SYS "/usr/local/share/spatial_ref_sys.csv"
 
 /**
- * @brief Utility structure to get many potential string representations
- * from spatial_ref_sys query.
+ * @brief Utility structure to get many potential string representations from
+ * spatial_ref_sys query
  */
 typedef struct
 {

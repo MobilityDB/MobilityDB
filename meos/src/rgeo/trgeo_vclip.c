@@ -93,8 +93,7 @@ compute_angle(const POINT2D *p, const POINT2D *vs, const POINT2D *ve)
 
 /**
  * @brief Return the distance between a point and a segment
- *
- * Note: this assumes that the projection of p
+ * @details Note: this assumes that the projection of p
  * on the line l going through (vs, ve) is
  * between vs and ve. (0 <= compute_s(p, vs, ve) <= 1)
  */
