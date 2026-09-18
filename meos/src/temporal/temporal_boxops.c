@@ -54,6 +54,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/bbox_index.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
 #include "temporal/type_util.h"
@@ -2155,6 +2156,420 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   tnumber_set_tbox(temp1, &box1);
   tnumber_set_tbox(temp2, &box2);
   return func(&box1, &box2);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Double sorting split of a set of bounding boxes
+ *
+ * The split of Korotkov, "A new double sorting-based node splitting algorithm
+ * for R-tree", http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf
+ * #page=36, which the GiST operator classes of PostgreSQL use for their boxes.
+ * It is shared by the GiST operator classes of the extension and the in-memory
+ * RTree of MEOS.
+ *****************************************************************************/
+
+/**
+ * @brief Compare common entries by their deltas
+ * @note We assume the deltas can't be NaN
+ */
+int
+common_entry_cmp(const void *i1, const void *i2)
+{
+  double delta1 = ((const CommonEntry *) i1)->delta;
+  double delta2 = ((const CommonEntry *) i2)->delta;
+  if (delta1 < delta2)
+    return -1;
+  else if (delta1 > delta2)
+    return 1;
+  else
+    return 0;
+}
+
+/**
+ * @brief Interval comparison function by lower bound of the intervals
+ */
+static int
+interval_cmp_lower(const void *i1, const void *i2)
+{
+  return pg_float8_cmp(((const SplitInterval *) i1)->lower,
+    ((const SplitInterval *) i2)->lower);
+}
+
+/**
+ * @brief Interval comparison function by upper bound of the intervals
+ */
+static int
+interval_cmp_upper(const void *i1, const void *i2)
+{
+  return pg_float8_cmp(((const SplitInterval *) i1)->upper,
+    ((const SplitInterval *) i2)->upper);
+}
+
+/**
+ * @brief Replace a negative (or NaN) value with zero
+ */
+static inline float
+non_negative(float val)
+{
+  return (val >= 0.0f) ? val : 0.0f;
+}
+
+/* Axes a box can be split on: the value span or X, Y, Z and time */
+#define SPLIT_AXIS_X 0
+#define SPLIT_AXIS_Y 1
+#define SPLIT_AXIS_Z 2
+#define SPLIT_AXIS_T 3
+
+/**
+ * @brief Project a bounding box on a split axis
+ * @details A temporal box has a value span on #SPLIT_AXIS_X and a period on
+ * #SPLIT_AXIS_T; a spatiotemporal box, and a point cloud box sharing its
+ * layout, have X, Y, Z and a period
+ */
+static void
+bbox_split_project(MeosType bboxtype, const void *box, int axis,
+  double *lower, double *upper)
+{
+  if (bboxtype == T_TBOX)
+  {
+    const TBox *b = (const TBox *) box;
+    if (axis == SPLIT_AXIS_X)
+    {
+      *lower = DatumGetFloat8(b->span.lower);
+      *upper = DatumGetFloat8(b->span.upper);
+    }
+    else
+    {
+      *lower = (double) DatumGetTimestampTz(b->period.lower);
+      *upper = (double) DatumGetTimestampTz(b->period.upper);
+    }
+    return;
+  }
+  /* T_STBOX or T_TPCBOX, which share the STBox prefix */
+  const STBox *b = (const STBox *) box;
+  switch (axis)
+  {
+    case SPLIT_AXIS_X: *lower = b->xmin; *upper = b->xmax; return;
+    case SPLIT_AXIS_Y: *lower = b->ymin; *upper = b->ymax; return;
+    case SPLIT_AXIS_Z: *lower = b->zmin; *upper = b->zmax; return;
+    default:
+      *lower = (double) DatumGetTimestampTz(b->period.lower);
+      *upper = (double) DatumGetTimestampTz(b->period.upper);
+      return;
+  }
+}
+
+/**
+ * @brief Return the axes a set of boxes is split on: those its boxes carry
+ * @details A box lacking an axis projects every entry on the same empty
+ * interval there, whose range is zero, so a split read on it has no overlap
+ * to compare but NaN and must never be considered
+ */
+static int
+bbox_split_axes(MeosType bboxtype, const void *box, int axes[4])
+{
+  int n = 0;
+  if (bboxtype == T_TBOX)
+  {
+    int16 flags = ((const TBox *) box)->flags;
+    if (MEOS_FLAGS_GET_X(flags))
+      axes[n++] = SPLIT_AXIS_X;
+    if (MEOS_FLAGS_GET_T(flags))
+      axes[n++] = SPLIT_AXIS_T;
+    return n;
+  }
+  int16 flags = ((const STBox *) box)->flags;
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    axes[n++] = SPLIT_AXIS_X;
+    axes[n++] = SPLIT_AXIS_Y;
+  }
+  if (MEOS_FLAGS_GET_Z(flags))
+    axes[n++] = SPLIT_AXIS_Z;
+  if (MEOS_FLAGS_GET_T(flags))
+    axes[n++] = SPLIT_AXIS_T;
+  return n;
+}
+
+/**
+ * @brief Information about the split selected so far
+ */
+typedef struct
+{
+  int entriesCount;   /**< Total number of entries being split */
+  double range[4];    /**< Width of the projection of all the entries on
+                           each axis */
+  bool first;         /**< True if no split was selected yet */
+  double leftUpper;   /**< Upper bound of the left interval */
+  double rightLower;  /**< Lower bound of the right interval */
+  float4 ratio;
+  float4 overlap;
+  int axis;           /**< Axis of the split */
+} BboxSplitContext;
+
+/**
+ * @brief Consider replacing the split selected so far with a better one
+ */
+static void
+bbox_split_consider(BboxSplitContext *context, int axis, double rightLower,
+  int minLeftCount, double leftUpper, int maxLeftCount)
+{
+  /* Distribution ratio assuming the most uniform distribution of the common
+   * entries */
+  int leftCount;
+  if (minLeftCount >= (context->entriesCount + 1) / 2)
+    leftCount = minLeftCount;
+  else if (maxLeftCount <= context->entriesCount / 2)
+    leftCount = maxLeftCount;
+  else
+    leftCount = context->entriesCount / 2;
+  int rightCount = context->entriesCount - leftCount;
+
+  /* Ratio of the split: the smaller group over the number of entries */
+  float4 ratio = ((float4) Min(leftCount, rightCount)) /
+    ((float4) context->entriesCount);
+  if (ratio <= LIMIT_RATIO)
+    return;
+
+  double range = context->range[axis];
+  float4 overlap = (float4) ((leftUpper - rightLower) / range);
+  bool selectthis = false;
+  if (context->first)
+    selectthis = true;
+  else if (context->axis == axis)
+  {
+    /* Within the same axis, a smaller overlap, or the same overlap and a
+     * better ratio */
+    if (overlap < context->overlap ||
+        (overlap == context->overlap && ratio > context->ratio))
+      selectthis = true;
+  }
+  else
+  {
+    /* Across axes, a smaller non-negative overlap, or the same one and a
+     * larger range. Where leaf boxes do not overlap, non-overlapping splits
+     * are frequent and tend to be along one axis, which makes the boxes very
+     * long on the other; the range as second criterion makes them squarer */
+    if (non_negative(overlap) < non_negative(context->overlap) ||
+        (range > context->range[context->axis] &&
+         non_negative(overlap) <= non_negative(context->overlap)))
+      selectthis = true;
+  }
+  if (selectthis)
+  {
+    context->first = false;
+    context->ratio = ratio;
+    context->overlap = overlap;
+    context->rightLower = rightLower;
+    context->leftUpper = leftUpper;
+    context->axis = axis;
+  }
+  return;
+}
+
+/**
+ * @brief Place a box in a group, growing the group's bounding box
+ */
+static void
+bbox_split_place(void *groupbox, int *groupcount, const void *box,
+  size_t bboxsize, void (*bbox_adjust)(void *, void *))
+{
+  if (*groupcount > 0)
+    bbox_adjust(groupbox, (void *) box);
+  else
+    memcpy(groupbox, box, bboxsize);
+  (*groupcount)++;
+  return;
+}
+
+/**
+ * @ingroup meos_internal_box_index
+ * @brief Split a set of bounding boxes in two groups
+ * @details The double sorting split of Korotkov. Each box is projected as an
+ * interval on each axis the boxes carry, the ways to split the intervals of
+ * an axis into two groups are considered, and the split of least overlap
+ * whose smaller group holds more than #LIMIT_RATIO of the boxes is selected.
+ * The boxes that fit only one group of that split go to it; those that fit
+ * both ("common entries") are distributed by least penalty, the most
+ * ambiguous first. When no split reaches the ratio, the first half of the
+ * boxes goes left and the rest right.
+ * @param[in] bboxtype Type of the boxes: T_TBOX, T_STBOX or T_TPCBOX
+ * @param[in] boxes Array of pointers to the boxes
+ * @param[in] count Number of boxes, at least two
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ * @param[in] bbox_penalty Function returning the growth of its first box when
+ * the second is added
+ * @param[out] left For each box, true if it goes to the left group
+ */
+void
+bbox_split(MeosType bboxtype, void **boxes, int count,
+  void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *),
+  bool *left)
+{
+  assert(boxes); assert(left); assert(count >= 2);
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+    || bboxtype == T_TPCBOX
+#endif
+    );
+  size_t bboxsize = bbox_get_size(bboxtype);
+
+  /* The bounding box of all the entries gives the range of every axis */
+  bboxunion all;
+  memcpy(&all, boxes[0], bboxsize);
+  for (int i = 1; i < count; i++)
+    bbox_adjust(&all, boxes[i]);
+  BboxSplitContext context;
+  memset(&context, 0, sizeof(BboxSplitContext));
+  context.entriesCount = count;
+  context.first = true;
+  int axes[4];
+  int naxes = bbox_split_axes(bboxtype, boxes[0], axes);
+  for (int a = 0; a < naxes; a++)
+  {
+    double lower, upper;
+    bbox_split_project(bboxtype, &all, axes[a], &lower, &upper);
+    context.range[axes[a]] = upper - lower;
+    /* MEOS refuses a NaN where a number enters it, so no bound is NaN */
+    assert(! isnan(context.range[axes[a]]));
+  }
+
+  SplitInterval *intervalsLower = palloc(sizeof(SplitInterval) * count);
+  SplitInterval *intervalsUpper = palloc(sizeof(SplitInterval) * count);
+  for (int a = 0; a < naxes; a++)
+  {
+    int axis = axes[a];
+    /* An axis on which every box projects on the same point separates
+     * nothing */
+    if (context.range[axis] <= 0.0)
+      continue;
+    for (int i = 0; i < count; i++)
+      bbox_split_project(bboxtype, boxes[i], axis, &intervalsLower[i].lower,
+        &intervalsLower[i].upper);
+    memcpy(intervalsUpper, intervalsLower, sizeof(SplitInterval) * count);
+    qsort(intervalsLower, (size_t) count, sizeof(SplitInterval),
+      interval_cmp_lower);
+    qsort(intervalsUpper, (size_t) count, sizeof(SplitInterval),
+      interval_cmp_upper);
+
+    /* The left and right intervals are of the form (min, a) and (b, max).
+     * First the splits where b is the lower bound of an entry, each with the
+     * smallest possible a */
+    int i1 = 0, i2 = 0;
+    double rightLower = intervalsLower[i1].lower;
+    double leftUpper = intervalsUpper[i2].lower;
+    while (true)
+    {
+      while (i1 < count && FLOAT8_EQ(rightLower, intervalsLower[i1].lower))
+      {
+        if (FLOAT8_LT(leftUpper, intervalsLower[i1].upper))
+          leftUpper = intervalsLower[i1].upper;
+        i1++;
+      }
+      if (i1 >= count)
+        break;
+      rightLower = intervalsLower[i1].lower;
+      while (i2 < count && FLOAT8_LE(intervalsUpper[i2].upper, leftUpper))
+        i2++;
+      bbox_split_consider(&context, axis, rightLower, i1, leftUpper, i2);
+    }
+
+    /* Then the splits where a is the upper bound of an entry, each with the
+     * greatest possible b */
+    i1 = count - 1;
+    i2 = count - 1;
+    rightLower = intervalsLower[i1].upper;
+    leftUpper = intervalsUpper[i2].upper;
+    while (true)
+    {
+      while (i2 >= 0 && FLOAT8_EQ(leftUpper, intervalsUpper[i2].upper))
+      {
+        if (FLOAT8_GT(rightLower, intervalsUpper[i2].lower))
+          rightLower = intervalsUpper[i2].lower;
+        i2--;
+      }
+      if (i2 < 0)
+        break;
+      leftUpper = intervalsUpper[i2].upper;
+      while (i1 >= 0 && FLOAT8_GE(intervalsLower[i1].lower, rightLower))
+        i1--;
+      bbox_split_consider(&context, axis, rightLower, i1 + 1, leftUpper,
+        i2 + 1);
+    }
+  }
+  pfree(intervalsLower); pfree(intervalsUpper);
+
+  /* No acceptable split: the first half left, the rest right */
+  if (context.first)
+  {
+    for (int i = 0; i < count; i++)
+      left[i] = (i < count / 2);
+    return;
+  }
+
+  /* The entries that fit one group only go to it, the others are collected */
+  bboxunion leftbox, rightbox;
+  int nleft = 0, nright = 0, ncommon = 0;
+  CommonEntry *common = palloc(sizeof(CommonEntry) * count);
+  for (int i = 0; i < count; i++)
+  {
+    double lower, upper;
+    bbox_split_project(bboxtype, boxes[i], context.axis, &lower, &upper);
+    if (FLOAT8_LE(upper, context.leftUpper))
+    {
+      if (FLOAT8_GE(lower, context.rightLower))
+        common[ncommon++].index = i;
+      else
+      {
+        left[i] = true;
+        bbox_split_place(&leftbox, &nleft, boxes[i], bboxsize, bbox_adjust);
+      }
+    }
+    else
+    {
+      /* An entry not fitting the left group fits the right one */
+      assert(FLOAT8_GE(lower, context.rightLower));
+      left[i] = false;
+      bbox_split_place(&rightbox, &nright, boxes[i], bboxsize, bbox_adjust);
+    }
+  }
+
+  /* The common entries, the most ambiguous first, each to the group it
+   * enlarges least unless a group needs it to reach the ratio */
+  if (ncommon > 0)
+  {
+    int m = (int) ceil(LIMIT_RATIO * (double) count);
+    for (int j = 0; j < ncommon; j++)
+    {
+      void *box = boxes[common[j].index];
+      common[j].delta = (nleft == 0 || nright == 0) ? 0.0 :
+        fabs(bbox_penalty(&leftbox, box) - bbox_penalty(&rightbox, box));
+    }
+    qsort(common, (size_t) ncommon, sizeof(CommonEntry), common_entry_cmp);
+    for (int j = 0; j < ncommon; j++)
+    {
+      int idx = common[j].index;
+      void *box = boxes[idx];
+      bool goleft;
+      if (nleft + (ncommon - j) <= m)
+        goleft = true;
+      else if (nright + (ncommon - j) <= m)
+        goleft = false;
+      else if (nleft == 0 || nright == 0)
+        goleft = (nleft == 0);
+      else
+        goleft = bbox_penalty(&leftbox, box) < bbox_penalty(&rightbox, box);
+      left[idx] = goleft;
+      if (goleft)
+        bbox_split_place(&leftbox, &nleft, box, bboxsize, bbox_adjust);
+      else
+        bbox_split_place(&rightbox, &nright, box, bboxsize, bbox_adjust);
+    }
+  }
+  pfree(common);
+  return;
 }
 
 /*****************************************************************************/

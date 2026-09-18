@@ -55,6 +55,9 @@
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/stbox.h"
+#include "geo/stbox_index.h"
+#include "temporal/bbox_index.h"
+#include "temporal/tbox_index.h"
 #include "temporal/temporal_rtree.h"
 
 /*****************************************************************************
@@ -874,11 +877,53 @@ node_sort_axis(const RTree *rtree, RTreeNode *node, int index, bool upper)
  * node) will be stored
  */
 static void
-node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
+node_split(const RTree *rtree, RTreeNode *node, const void *box,
+  RTreeNode **right_out)
 {
-  /* Split through the largest axis */
-  int largest_axis = box_largest_axis(rtree, box);
   RTreeNode *right = node_make(node->node_type, rtree->bboxsize);
+  /* A tree of temporal, spatiotemporal or point cloud boxes splits a node as
+   * the GiST operator classes do, by the double sorting split of Korotkov
+   * (#bbox_split), which compares the overlap of the two groups on each axis
+   * the boxes carry relative to the extent of the node on that axis */
+  void (*adjust)(void *, void *) = NULL;
+  double (*penalty)(void *, void *) = NULL;
+  if (rtree->bboxtype == T_TBOX)
+  {
+    adjust = &tbox_adjust;
+    penalty = &tbox_penalty;
+  }
+  else if (rtree->bboxtype == T_STBOX
+#if POINTCLOUD
+      || rtree->bboxtype == T_TPCBOX
+#endif
+      )
+  {
+    adjust = &stbox_adjust;
+    penalty = &stbox_penalty;
+  }
+  if (adjust)
+  {
+    void *boxes[MAXITEMS];
+    bool left[MAXITEMS];
+    for (int i = 0; i < node->count; ++i)
+      boxes[i] = RTREE_NODE_BBOX_N(node, i);
+    bbox_split(rtree->bboxtype, boxes, node->count, adjust, penalty, left);
+    /* Moving an entry fills its slot with the last one, which the walk down
+     * has already visited, so the side of every entry still to visit holds */
+    for (int i = node->count - 1; i >= 0; --i)
+      if (! left[i])
+        node_move_box_at_index_into(node, i, right);
+    if (node->node_type == RTREE_INNER)
+    {
+      node_sort_axis(rtree, node, 0, false);
+      node_sort_axis(rtree, right, 0, false);
+    }
+    *right_out = right;
+    return;
+  }
+
+  /* A tree of spans splits through the largest axis */
+  int largest_axis = box_largest_axis(rtree, box);
   for (int i = 0; i < node->count; ++i)
   {
     double min_dist =

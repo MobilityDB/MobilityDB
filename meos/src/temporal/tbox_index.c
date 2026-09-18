@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/bbox_index.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
 #include "temporal/temporal_boxops.h"
@@ -214,6 +215,86 @@ tbox_index_recheck(StrategyNumber strategy)
     default:
       return true;
   }
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Growing and measuring a temporal box, for choosing where an entry goes in
+ * an index node and for splitting one
+ *****************************************************************************/
+
+/**
+ * @brief Increase the first box to include the second one
+ */
+void
+tbox_adjust(void *bbox1, void *bbox2)
+{
+  TBox *box1 = (TBox *) bbox1;
+  TBox *box2 = (TBox *) bbox2;
+  if (MEOS_FLAGS_GET_X(box1->flags))
+    span_expand(&box2->span, &box1->span);
+  if (MEOS_FLAGS_GET_T(box1->flags))
+    span_expand(&box2->period, &box1->period);
+  return;
+}
+
+/**
+ * @brief Return the size of a temporal box for penalty calculation
+ * @note The result can be +Infinity, but not NaN
+ */
+static double
+tbox_size(const TBox *box)
+{
+  double result_size = 1;
+  bool hasx = MEOS_FLAGS_GET_X(box->flags),
+       hast = MEOS_FLAGS_GET_T(box->flags);
+  /*
+   * Check for zero-width cases.  Note that we define the size of a zero-
+   * by-infinity box as zero.  It's important to special-case this somehow,
+   * as naively multiplying infinity by zero will produce NaN.
+   *
+   * The less-than cases should not happen, but if they do, say "zero".
+   */
+  if ((hasx && datum_le(box->span.upper, box->span.lower,
+        box->span.basetype)) ||
+      (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
+    return 0.0;
+
+  /*
+   * We treat NaN as larger than +Infinity, so any distance involving a NaN
+   * and a non-NaN is infinite.  Note the previous check eliminated the
+   * possibility that the low fields are NaNs.
+   */
+  if (hasx && box->span.basetype == T_FLOAT8 &&
+      isnan(DatumGetFloat8(box->span.upper)))
+    return get_float8_infinity();
+
+  /* The value span of a tint box holds integers, so its width is read
+   * through the base type the span names */
+  if (hasx)
+    result_size *= distance_double(distance_value_value(box->span.lower,
+      box->span.upper, box->span.basetype), box->span.basetype);
+  if (hast)
+    result_size *= (double) (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower));
+  return result_size;
+}
+
+/**
+ * @brief Return the amount by which the union of two temporal boxes is larger
+ * than the first one
+ * @note The result can be +Infinity, but not NaN
+ */
+double
+tbox_penalty(void *bbox1, void *bbox2)
+{
+  const TBox *original = (TBox *) bbox1;
+  const TBox *new = (TBox *) bbox2;
+  TBox unionbox;
+  memcpy(&unionbox, original, sizeof(TBox));
+  tbox_adjust(&unionbox, (void *) new);
+  return tbox_size(&unionbox) - tbox_size(original);
 }
 
 /*****************************************************************************/

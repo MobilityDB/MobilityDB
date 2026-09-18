@@ -55,6 +55,7 @@
 #include "pointcloud/tpcbox_index.h"
 #include "pointcloud/tpc_boxops.h"  /* tpcbox_set_stbox */
 #include "geo/stbox.h"              /* PG_RETURN_STBOX_P */
+#include "geo/stbox_index.h"        /* stbox_adjust, stbox_penalty */
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/meos_catalog.h"  /* oid_meostype */
@@ -139,27 +140,6 @@ Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
  * GiST union (and shared adjust helper)
  *****************************************************************************/
 
-/**
- * @brief Increase @p box1 to include @p box2
- * @details Same as stbox_adjust on the binary-compatible prefix.  The
- * pcid field is left untouched: the GiST opclass is per-type, not
- * per-schema, so all entries in one index already share a pcid.
- */
-void
-tpcbox_adjust(void *bbox1, void *bbox2)
-{
-  TPCBox *box1 = (TPCBox *) bbox1;
-  TPCBox *box2 = (TPCBox *) bbox2;
-  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
-  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
-  box1->ymin = FLOAT8_MIN(box1->ymin, box2->ymin);
-  box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
-  box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
-  box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
-  if (MEOS_FLAGS_GET_T(box1->flags))
-    span_expand(&box2->period, &box1->period);
-}
-
 PGDLLEXPORT Datum Tpcbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_union);
 /**
@@ -174,61 +154,13 @@ Tpcbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TPCBox *result = tpcbox_copy(DatumGetTpcboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tpcbox_adjust(result, DatumGetTpcboxP(ent[i].key));
+    stbox_adjust(result, DatumGetTpcboxP(ent[i].key));
   PG_RETURN_TPCBOX_P(result);
 }
 
 /*****************************************************************************
  * GiST penalty
  *****************************************************************************/
-
-/**
- * @brief Volume of a TPCBox for penalty calculation
- */
-static double
-tpcbox_size(const TPCBox *box)
-{
-  double result_size = 1;
-  bool hasx = MEOS_FLAGS_GET_X(box->flags),
-       hasz = MEOS_FLAGS_GET_Z(box->flags),
-       hast = MEOS_FLAGS_GET_T(box->flags);
-
-  /* Zero-width / inverted cases — same handling as stbox_size */
-  if ((hasx && (FLOAT8_LE(box->xmax, box->xmin) ||
-                FLOAT8_LE(box->ymax, box->ymin) ||
-                (hasz && FLOAT8_LE(box->zmax, box->zmin)))) ||
-      (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
-    return 0.0;
-
-  if (hasx && (isnan(box->xmax) || isnan(box->ymax) ||
-               (hasz && isnan(box->zmax))))
-    return get_float8_infinity();
-
-  if (hasx)
-  {
-    result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
-    if (hasz)
-      result_size *= (box->zmax - box->zmin);
-  }
-  if (hast)
-    result_size *= (DatumGetTimestampTz(box->period.upper) -
-      DatumGetTimestampTz(box->period.lower)) / USECS_PER_SEC;
-  return result_size;
-}
-
-/**
- * @brief Increase in TPCBox volume from inserting @p bbox2 into @p bbox1
- */
-double
-tpcbox_penalty(void *bbox1, void *bbox2)
-{
-  const TPCBox *original = (TPCBox *) bbox1;
-  const TPCBox *new = (TPCBox *) bbox2;
-  TPCBox unionbox;
-  memcpy(&unionbox, original, sizeof(TPCBox));
-  tpcbox_adjust(&unionbox, (void *) new);
-  return tpcbox_size(&unionbox) - tpcbox_size(original);
-}
 
 PGDLLEXPORT Datum Tpcbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_penalty);
@@ -245,7 +177,7 @@ Tpcbox_gist_penalty(PG_FUNCTION_ARGS)
   float *result = (float *) PG_GETARG_POINTER(2);
   void *origbox = (TPCBox *) DatumGetPointer(origentry->key);
   void *newbox = (TPCBox *) DatumGetPointer(newentry->key);
-  *result = (float) tpcbox_penalty(origbox, newbox);
+  *result = (float) stbox_penalty(origbox, newbox);
   PG_RETURN_POINTER(result);
 }
 
@@ -264,8 +196,9 @@ PG_FUNCTION_INFO_V1(Tpcbox_gist_picksplit);
 Datum
 Tpcbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit(fcinfo, T_TPCBOX, &tpcbox_adjust,
-    &tpcbox_penalty);
+  /* A point cloud box shares the layout of a spatiotemporal box on the fields
+   * a split grows and measures */
+  return bbox_gist_picksplit(fcinfo, T_TPCBOX, &stbox_adjust, &stbox_penalty);
 }
 
 /*****************************************************************************

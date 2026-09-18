@@ -136,25 +136,6 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
  * GiST union method
  *****************************************************************************/
 
-/**
- * @brief Increase the first box to include the second one
- */
-void
-stbox_adjust(void *bbox1, void *bbox2)
-{
-  STBox *box1 = (STBox *) bbox1;
-  STBox *box2 = (STBox *) bbox2;
-  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
-  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
-  box1->ymin = FLOAT8_MIN(box1->ymin, box2->ymin);
-  box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
-  box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
-  box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
-  if (MEOS_FLAGS_GET_T(box1->flags))
-    span_expand(&box2->period, &box1->period);
-  return;
-}
-
 PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
@@ -202,70 +183,6 @@ Tspatial_gist_compress(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * GiST penalty method
  *****************************************************************************/
-
-/**
- * @brief Return the size of a spatiotemporal box for penalty calculation
- * @note The result can be +Infinity, but not NaN
- */
-static double
-stbox_size(const STBox *box)
-{
-  double result_size = 1;
-  bool  hasx = MEOS_FLAGS_GET_X(box->flags),
-        hasz = MEOS_FLAGS_GET_Z(box->flags),
-        hast = MEOS_FLAGS_GET_T(box->flags);
-  /*
-   * Check for zero-width cases.  Note that we define the size of a zero-
-   * by-infinity box as zero.  It's important to special-case this somehow,
-   * as naively multiplying infinity by zero will produce NaN.
-   *
-   * The less-than cases should not happen, but if they do, say "zero".
-   */
-  if ((hasx && (FLOAT8_LE(box->xmax, box->xmin) ||
-                FLOAT8_LE(box->ymax, box->ymin) ||
-                (hasz && FLOAT8_LE(box->zmax, box->zmin)))) ||
-      (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
-    return 0.0;
-
-  /*
-   * We treat NaN as larger than +Infinity, so any distance involving a NaN
-   * and a non-NaN is infinite.  Note the previous check eliminated the
-   * possibility that the low fields are NaNs.
-   */
-  if (hasx && (isnan(box->xmax) || isnan(box->ymax) || (hasz && isnan(box->zmax))))
-    return get_float8_infinity();
-
-  /*
-   * Compute the box size
-   */
-  if (hasx)
-  {
-    result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
-    if (hasz)
-      result_size *= (box->zmax - box->zmin);
-  }
-  if (hast)
-    /* Expressed in seconds */
-    result_size *= (DatumGetTimestampTz(box->period.upper) -
-      DatumGetTimestampTz(box->period.lower)) / USECS_PER_SEC;
-  return result_size;
-}
-
-/**
- * @brief Return the amount by which the union of the two boxes is larger than
- * the original STBox's volume
- * @note The result can be +Infinity, but not NaN
- */
-double
-stbox_penalty(void *bbox1, void *bbox2)
-{
-  const STBox *original = (STBox *) bbox1;
-  const STBox *new = (STBox *) bbox2;
-  STBox unionbox;
-  memcpy(&unionbox, original, sizeof(STBox));
-  stbox_adjust(&unionbox, (void *) new);
-  return stbox_size(&unionbox) - stbox_size(original);
-}
 
 PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
