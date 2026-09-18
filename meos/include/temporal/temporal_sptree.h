@@ -86,6 +86,8 @@ struct SPTree
                              the dimension its region is then narrowed on, or
                              the search prunes the subtrees holding the
                              matches. */
+  uint8 kd_bits_box[8]; /**< The bits of @p kd_bits for a spatiotemporal box
+                             tree, read from the axes of its boxes */
   SPTreeKind kind;      /**< Quad-tree or k-d tree */
   SPNode *root;         /**< Root node, or @p NULL when empty */
   int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when
