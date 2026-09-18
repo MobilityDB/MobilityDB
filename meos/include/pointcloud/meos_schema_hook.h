@@ -41,11 +41,11 @@
  *
  * The two entry points:
  *
- * * @ref meos_pc_schema_register — populate the cache by hand
+ * - @ref meos_pc_schema_register — populate the cache by hand
  * (standalone use case).  The PG-side @c mobilitydb_pc_schema
  * hook impl also calls it after a catalog scan.
  *
- * * @ref meos_pc_schema — fast lookup with hook fallback.  On miss,
+ * - @ref meos_pc_schema — fast lookup with hook fallback.  On miss,
  * defers to @c meos_pc_schema_fn (installed by the PG extension's
  * @c mobilitydb_init) which does the catalog scan; the result is
  * then registered automatically.

@@ -37,9 +37,9 @@
  * hexagon-only families (directed edges, vertexes, icosahedron faces,
  * grid path / ring) and keeping the operations with a square analogue:
  *
- * * the k-ring (square Chebyshev disk) around a cell,
- * * the four-per-level children of a cell at a finer resolution,
- * * the compaction of a cell set and its reverse, a tile being exactly the
+ * - the k-ring (square Chebyshev disk) around a cell,
+ * - the four-per-level children of a cell at a finer resolution,
+ * - the compaction of a cell set and its reverse, a tile being exactly the
  * union of its four children.
  *
  * All functions here operate on STATIC `quadbin` values; the temporal
