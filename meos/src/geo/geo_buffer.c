@@ -5084,7 +5084,7 @@ buffer_point_edges_nearer(double x, double y, const MeosArray *edges,
     nextafter(x + reach, INFINITY), nextafter(y - reach, -INFINITY),
     nextafter(y + reach, INFINITY), 0, 0, NULL, &query);
   meos_array_reset(found);
-  int nc = rtree_search(index, INDEX_OVERLAPS, &query, found);
+  int nc = rtree_search_intl(index, INDEX_OVERLAPS, &query, found);
   for (int c = 0; c < nc; c++)
   {
     const Edge *e = (const Edge *) meos_array_get(edges,

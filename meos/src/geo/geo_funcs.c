@@ -4309,7 +4309,7 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re,
   STBox query;
   stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
     y + re->tol, 0, 0, NULL, &query);
-  int nc = rtree_search(re->index, INDEX_OVERLAPS, &query, re->results);
+  int nc = rtree_search_intl(re->index, INDEX_OVERLAPS, &query, re->results);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
   {
@@ -7137,7 +7137,7 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     stbox_set(true, false, false, 0, edge->xmin - pad, edge->xmax + pad,
       edge->ymin - pad, edge->ymax + pad, 0, 0, NULL, &query);
     candidates = index_result_create();
-    ncand = rtree_search(other->index, INDEX_OVERLAPS, &query, candidates);
+    ncand = rtree_search_intl(other->index, INDEX_OVERLAPS, &query, candidates);
   }
   for (int c = 0; c < ncand; c++)
   {
@@ -7296,7 +7296,7 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
       double pad = fmax(bre->tol, a->tol);
       stbox_set(true, false, false, 0, a->xmin - pad, a->xmax + pad,
         a->ymin - pad, a->ymax + pad, 0, 0, NULL, &query);
-      ncand = rtree_search(bre->index, INDEX_OVERLAPS, &query, candidates);
+      ncand = rtree_search_intl(bre->index, INDEX_OVERLAPS, &query, candidates);
     }
     for (int c = 0; c < ncand; c++)
     {
@@ -7514,7 +7514,7 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
     stbox_set(true, false, false, 0, ea->xmin, ea->xmax, ea->ymin, ea->ymax,
       0, 0, NULL, &query);
     MeosArray *candidates = index_result_create();
-    int nc = rtree_search(b->index, INDEX_OVERLAPS, &query, candidates);
+    int nc = rtree_search_intl(b->index, INDEX_OVERLAPS, &query, candidates);
     bool result = false;
     for (int c = 0; c < nc && ! result; c++)
     {
@@ -7855,7 +7855,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
         STBox query;
         stbox_set(true, false, false, 0, x - r, x + r, y - r, y + r, 0, 0,
           NULL, &query);
-        int nc = rtree_search(comps[i].re.index, INDEX_OVERLAPS, &query,
+        int nc = rtree_search_intl(comps[i].re.index, INDEX_OVERLAPS, &query,
           candidates);
         for (int c = 0; c < nc; c++)
         {
@@ -8508,7 +8508,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
       double pad = fmax(re.tol, e->tol);
       stbox_set(true, false, false, 0, e->xmin - pad, e->xmax + pad,
         e->ymin - pad, e->ymax + pad, 0, 0, NULL, &query);
-      ncand = rtree_search(re.index, INDEX_OVERLAPS, &query, candidates);
+      ncand = rtree_search_intl(re.index, INDEX_OVERLAPS, &query, candidates);
     }
     for (int c = 0; c < ncand; c++)
     {
@@ -9418,7 +9418,7 @@ relate_edges_candidates(const RelateEdges *re, double xmin, double xmax,
   STBox query;
   stbox_set(true, false, false, 0, xmin - re->tol, xmax + re->tol,
     ymin - re->tol, ymax + re->tol, 0, 0, NULL, &query);
-  return rtree_search(re->index, INDEX_OVERLAPS, &query, candidates);
+  return rtree_search_intl(re->index, INDEX_OVERLAPS, &query, candidates);
 }
 
 /**
@@ -11016,7 +11016,7 @@ linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
     stbox_set(true, false, false, 0, e->xmin, e->xmax, e->ymin, e->ymax, 0, 0,
       NULL, &query);
     meos_array_reset(found);
-    int nfound = rtree_search(rtree, INDEX_OVERLAPS, &query, found);
+    int nfound = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, found);
     int nwhich = 0;
     for (int f = 0; f < nfound; f++)
     {

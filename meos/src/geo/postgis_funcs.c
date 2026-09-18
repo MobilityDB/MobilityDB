@@ -2377,7 +2377,7 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       stbox_set(true, false, false, 0, axmin - pad, axmax + pad,
         aymin - pad, aymax + pad, 0, 0, NULL, &query);
       meos_array_reset(candidates);
-      ncand = rtree_search(index, INDEX_OVERLAPS, &query, candidates);
+      ncand = rtree_search_intl(index, INDEX_OVERLAPS, &query, candidates);
     }
 
     for (int c = 0; c < ncand; c++)

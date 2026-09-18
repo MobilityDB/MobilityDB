@@ -1189,6 +1189,56 @@ spnode_search_overlaps_stbox(const SPTree *sptree, const SPNode *node,
 }
 
 /**
+ * @ingroup meos_internal_box_index
+ * @brief Search an SPTree with a bounding box, collecting matching ids into
+ * a MeosArray, for a caller that has validated the arguments
+ * @details The search #sptree_search makes once it has checked the query
+ * against the tree, for the callers inside MEOS that ask an index many times
+ * with query boxes they build themselves
+ * @param[in] sptree The SPTree to query
+ * @param[in] op The search operation
+ * @param[in] query The bounding box that serves as query
+ * @param[out] result Array collecting the matching ids, made by
+ * #index_result_create
+ * @return Number of matching ids
+ */
+int
+sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
+  MeosArray *result)
+{
+  assert(sptree); assert(query); assert(result);
+  assert(ensure_valid_sptree_box(sptree, query));
+  /* Project the query box into the internal box type (TPCBox: STBox) */
+  bboxunion proj;
+  if (sptree->project)
+  {
+    sptree->project(query, &proj);
+    query = &proj;
+  }
+  meos_array_reset(result);
+  if (! sptree->root)
+    return 0;
+  char rootbox[SPTREE_NODEBOX_MAXSIZE];
+  sptree->nodebox_init(rootbox, sptree->root->centroid, sptree);
+  if (op == INDEX_OVERLAPS && sptree->bboxtype == T_STBOX)
+  {
+    /* The stored boxes share their axes, which the root carries, so the
+     * axes both sides have are read once here rather than once per box;
+     * the entry has refused a query sharing none */
+    const STBox *q = (const STBox *) query;
+    int16 f = ((const STBox *) sptree->root->centroid)->flags;
+    bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
+      z = MEOS_FLAGS_GET_Z(q->flags) && MEOS_FLAGS_GET_Z(f),
+      t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
+    spnode_search_overlaps_stbox(sptree, sptree->root,
+      (const STboxNode *) rootbox, q, 0, x, z, t, result);
+  }
+  else
+    spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);
+  return (int) result->count;
+}
+
+/**
  * @ingroup meos_temporal_box_index
  * @brief Search an in-memory space-partitioning index with a bounding box,
  * collecting matching ids into a MeosArray
@@ -1211,36 +1261,7 @@ sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_valid_sptree_box(sptree, query) || ! ensure_index_result(result))
     return -1;
-
-  /* Project the query box into the internal box type (TPCBox: STBox) */
-  bboxunion proj;
-  if (sptree->project)
-  {
-    sptree->project(query, &proj);
-    query = &proj;
-  }
-  meos_array_reset(result);
-  if (sptree->root)
-  {
-    char rootbox[SPTREE_NODEBOX_MAXSIZE];
-    sptree->nodebox_init(rootbox, sptree->root->centroid, sptree);
-    if (op == INDEX_OVERLAPS && sptree->bboxtype == T_STBOX)
-    {
-      /* The stored boxes share their axes, which the root carries, so the
-       * axes both sides have are read once here rather than once per box;
-       * the entry has refused a query sharing none */
-      const STBox *q = (const STBox *) query;
-      int16 f = ((const STBox *) sptree->root->centroid)->flags;
-      bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
-        z = MEOS_FLAGS_GET_Z(q->flags) && MEOS_FLAGS_GET_Z(f),
-        t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
-      spnode_search_overlaps_stbox(sptree, sptree->root,
-        (const STboxNode *) rootbox, q, 0, x, z, t, result);
-      return meos_array_count(result);
-    }
-    spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);
-  }
-  return meos_array_count(result);
+  return sptree_search_intl(sptree, op, query, result);
 }
 
 /*****************************************************************************
