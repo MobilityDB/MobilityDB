@@ -231,11 +231,21 @@ tiling_families:
     - {sig: "spaceSplit(tgeompoint, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sym: "Tgeo_space_split"}
     - {sig: "spaceSplit(tgeompoint, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
     - {sig: "spaceSplit(tgeompoint, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
+  - lit: "\nCREATE TYPE point_tgeogpoint AS (\n  point geography,\n  tpoint tgeogpoint\n);\n\n"
+  - fns:
+    - {sig: "spaceSplit(tgeogpoint, xsize float, ysize float, zsize float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sym: "Tgeo_space_split"}
+    - {sig: "spaceSplit(tgeogpoint, size float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
+    - {sig: "spaceSplit(tgeogpoint, xsize float, ysize float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
   - lit: "\nCREATE TYPE point_time_tpoint AS (\n  point geometry,\n  time timestamptz,\n  tpoint tgeompoint\n);\n\n"
   - fns:
     - {sig: "spaceTimeSplit(tgeompoint, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sym: "Tgeo_space_time_split"}
     - {sig: "spaceTimeSplit(tgeompoint, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
     - {sig: "spaceTimeSplit(tgeompoint, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
+  - lit: "\nCREATE TYPE point_time_tgeogpoint AS (\n  point geography,\n  time timestamptz,\n  tpoint tgeogpoint\n);\n\n"
+  - fns:
+    - {sig: "spaceTimeSplit(tgeogpoint, xsize float, ysize float,\n    zsize float, interval, sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sym: "Tgeo_space_time_split"}
+    - {sig: "spaceTimeSplit(tgeogpoint, size float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
+    - {sig: "spaceTimeSplit(tgeogpoint, xsize float, ysize float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
   - lit: "\n/*****************************************************************************/"
 - family: tpose_tile
   file: mobilitydb/sql/pose/119_tpose_tile.in.sql

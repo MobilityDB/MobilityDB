@@ -254,6 +254,30 @@ CREATE FUNCTION spaceSplit(tgeompoint, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE TYPE point_tgeogpoint AS (
+  point geography,
+  tpoint tgeogpoint
+);
+
+CREATE FUNCTION spaceSplit(tgeogpoint, xsize float, ysize float, zsize float,
+    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_space_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceSplit(tgeogpoint, size float,
+    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_tgeogpoint
+  AS 'SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceSplit(tgeogpoint, xsize float, ysize float,
+    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_tgeogpoint
+  AS 'SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE point_time_tpoint AS (
   point geometry,
   time timestamptz,
@@ -279,6 +303,34 @@ CREATE FUNCTION spaceTimeSplit(tgeompoint, xsize float, ysize float, interval,
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
+  AS 'SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE point_time_tgeogpoint AS (
+  point geography,
+  time timestamptz,
+  tpoint tgeogpoint
+);
+
+CREATE FUNCTION spaceTimeSplit(tgeogpoint, xsize float, ysize float,
+    zsize float, interval, sorigin geography DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_time_tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_space_time_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTimeSplit(tgeogpoint, size float, interval,
+    sorigin geography DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_time_tgeogpoint
+  AS 'SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTimeSplit(tgeogpoint, xsize float, ysize float, interval,
+    sorigin geography DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF point_time_tgeogpoint
   AS 'SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 

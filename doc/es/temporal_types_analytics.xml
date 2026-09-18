@@ -992,18 +992,19 @@ SELECT (sp).number, (sp).time,
 					<para>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support;
  &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
+spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,
+  origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
 timeSplit(tpoint,duration interval,origin timestamptz='2000-01-03') → {(time,tpoint)}
-spaceTimeSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
+spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  duration interval,sorigin geompoint='Point(0 0 0)',
+  duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',
   torigin timestamptz='2000-01-03',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,time,tpoint)}
 </programlisting>
 					<para>Una pose temporal y un punto de nube de puntos temporal responden a estas funciones en el punto geométrico temporal al que se resuelve su posición, de modo que un valor con interpolación lineal se divide en mosaicos a lo largo de su trayectoria y no solo en sus instantes. La segunda columna de una división lleva el tipo del primer argumento, de modo que dividir una pose temporal devuelve poses temporales. El resultado es un conjunto de pares o un conjunto de triples. Si el origen de la dimensión espacial y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión espacial y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
+					<para>Un punto temporal geodésico recorre el círculo máximo entre dos posiciones, de modo que se divide en los mosaicos que ese círculo cruza y no en los de la línea recta en longitud y latitud: un viaje cuyas dos posiciones están en la latitud 61 alcanza la latitud 62.485889 y entra en la fila de mosaicos al norte de aquella en la que esa línea permanece. La cuadrícula que se aplica a un valor geodésico toma un origen de tipo geografía y sus mosaicos son geodésicos, de modo que un mosaico y el valor restringido a él expresan coordenadas de una misma clase. La matriz de bits se rellena a partir de la línea recta entre dos posiciones, que un círculo máximo abandona, de modo que un valor geodésico se divide sin ella y en su lugar se lee cada mosaico de su caja delimitadora.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
@@ -1024,6 +1025,13 @@ FROM (SELECT spaceSplit(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0) AS sp) t;
 -- POINT(0 0) | {[Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.1)@2001-01-02)}
 -- POINT(2 2) | {[Pose(POINT(2 2),0.1)@2001-01-02, Pose(POINT(3 3),0.1)@2001-01-03]}
+SELECT ST_AsText((sp).point) AS point, asText((sp).tpoint, 6) AS tpoint
+FROM (SELECT spaceSplit(tgeogpoint '[Point(10 61)@2001-03-01,
+  Point(50 61)@2001-03-03]', 20.0) AS sp) t;
+-- POINT(0 60)  | {[POINT(10 61)@2001-03-01, POINT(20 62.124941)@2001-03-01 12:17:24.687202)}
+-- POINT(20 60) | {[POINT(20 62.124941)@2001-03-01 12:17:24.687202,
+--                 POINT(40 62.124941)@2001-03-02 11:42:35.312797)}
+-- POINT(40 60) | {[POINT(40 62.124941)@2001-03-02 11:42:35.312797, POINT(50 61)@2001-03-03]}
 </programlisting>
 
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
