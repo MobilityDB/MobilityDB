@@ -7,7 +7,7 @@
 #
 # MobilityDB includes portions of PostGIS version 3 source code released
 # under the GNU General Public License (GPLv2 or later).
-# Copyright (c) 2001-2025, PostGIS contributors
+# Copyright (c) 2001-2026, PostGIS contributors
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose, without fee, and without a written
@@ -62,6 +62,11 @@ import sys
 _REPO_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 ROOT = os.path.join(_REPO_ROOT, "meos", "test")
+
+# The licence banner, copied from tools/license/banner.txt
+with open(os.path.join(_REPO_ROOT, "tools", "license", "banner.txt"),
+          encoding="utf-8") as _fh:
+    LICENSE_BANNER = _fh.read()
 
 # Self-contained, family-local smoke configs live here: a family ships
 # meos/test/smoke/<family>.json and is DISCOVERED by glob (in main) — the
@@ -556,34 +561,7 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
 
 
 HEADER_TEMPLATE = """\
-/*****************************************************************************
- *
- * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
- * contributors
- *
- * MobilityDB includes portions of PostGIS version 3 source code released
- * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2025, PostGIS contributors
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written
- * agreement is hereby granted, provided that the above copyright notice and
- * this paragraph and the following two paragraphs appear in all copies.
- *
- * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
- * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
- * OF SUCH DAMAGE.
- *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- *****************************************************************************/
+{banner}
 
 /**
  * @file
@@ -2560,6 +2538,7 @@ def write_test(name, cfg):
             CSV_DATA[k][1])
         for k in ["spatial_ref_sys"] + list(cfg.get("csv_data", [])))
     head = HEADER_TEMPLATE.format(
+        banner=LICENSE_BANNER.rstrip("\n"),
         type_label=label, header_relpath=cfg["header"],
         out_basename=out_basename,
         common_inputs=cfg["common_inputs"],
