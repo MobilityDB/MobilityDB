@@ -86,7 +86,9 @@ struct RTree
 {
   size_t bboxsize;       /**< Size of the bouding box */
   MeosType bboxtype;     /**< Type of the bouding box */
-  int dims;
+  int dims;              /**< Number of axes the boxes carry */
+  uint8 axes[4];         /**< The axis @p get_axis reads for each of the
+                              @p dims axes the boxes carry */
   RTreeNode *root;
   double (*get_axis)(const void *, int, bool);
   void (*bbox_expand)(const void *, void *);
