@@ -448,7 +448,7 @@ div_float_tfloat(double d, const Temporal *temp)
  * @brief Return the division of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
-*/
+ */
 Temporal *
 div_tbigint_bigint(const Temporal *temp, int64 i)
 {
@@ -463,7 +463,7 @@ div_tbigint_bigint(const Temporal *temp, int64 i)
  * @brief Return the temporal division of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
-*/
+ */
 Temporal *
 div_tint_int(const Temporal *temp, int i)
 {

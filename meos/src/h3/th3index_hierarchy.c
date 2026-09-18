@@ -99,7 +99,7 @@ h3_cell_to_center_child_next_meos(H3Index cell)
 
 /**
  * @ingroup meos_h3_hierarchy
- * @brief Return the temporal parent cell at the next-coarser resolution.
+ * @brief Return the temporal parent cell at the next-coarser resolution
  * @csqlfn #Th3index_cell_to_parent_next()
  */
 Temporal *
@@ -126,7 +126,7 @@ th3index_cell_to_parent_next(const Temporal *temp)
 
 /**
  * @ingroup meos_h3_hierarchy
- * @brief Return the temporal center-child cell at the given resolution.
+ * @brief Return the temporal center-child cell at the given resolution
  * @csqlfn #Th3index_cell_to_center_child()
  */
 Temporal *
@@ -154,7 +154,7 @@ th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 
 /**
  * @ingroup meos_h3_hierarchy
- * @brief Return the temporal center-child cell at the next-finer resolution.
+ * @brief Return the temporal center-child cell at the next-finer resolution
  * @csqlfn #Th3index_cell_to_center_child_next()
  */
 Temporal *
@@ -182,7 +182,7 @@ th3index_cell_to_center_child_next(const Temporal *temp)
 /**
  * @ingroup meos_h3_hierarchy
  * @brief Return the temporal position of a child cell among its parent's
- * children at the given parent resolution.
+ * children at the given parent resolution
  * @csqlfn #Th3index_cell_to_child_pos()
  */
 Temporal *
@@ -213,8 +213,8 @@ th3index_cell_to_child_pos(const Temporal *temp, int32 parent_res)
 
 /**
  * @ingroup meos_h3_hierarchy
- * @brief Return the temporal child cell of a parent at a given ordinal
- * position among siblings, at a given child resolution.
+ * @brief Return the temporal child cell of a parent at a given ordinal position
+ * among siblings, at a given child resolution
  * @csqlfn #Th3index_child_pos_to_cell()
  */
 Temporal *

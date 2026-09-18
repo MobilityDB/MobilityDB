@@ -180,7 +180,7 @@ typedef enum
  * @brief Return the size in bytes to read from toast to get the basic
  * information from a variable-length time type: Time struct (i.e., Set
  * or SpanSet) and bounding box size
-*/
+ */
 #define TIME_MAX_HEADER_SIZE DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)))
 
 /*****************************************************************************

@@ -61,9 +61,9 @@ PG_FUNCTION_INFO_V1(Tgeo_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a spatiotemporal value, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or 
- * continuous
+ * of a spatiotemporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @sqlfn stboxes()
  */
 Datum
@@ -105,9 +105,9 @@ PG_FUNCTION_INFO_V1(Tgeo_split_n_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the instants or
- * segments of a spatiotemporal value, where the choice between instants or
- * segments depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * segments of a spatiotemporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @sqlfn splitNStboxes()
  */
 Datum
@@ -153,9 +153,9 @@ PG_FUNCTION_INFO_V1(Tgeo_split_each_n_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a spatiotemporal value, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * of a spatiotemporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @sqlfn splitEachNStboxes()
  */
 Datum

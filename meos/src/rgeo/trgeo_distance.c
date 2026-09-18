@@ -225,9 +225,9 @@ tdist_elem_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Sort the distance elements by time and drop duplicate timestamps,
- * keeping the smallest distance so that a coincident kink and extremum collapse
- * to the true value
+ * @brief Sort the distance elements by time and drop duplicate timestamps
+ * @details The smallest distance is kept so that a coincident kink and
+ * extremum collapse to the true value.
  */
 static void
 tdist_array_sort(tdist_array *tda)
@@ -339,10 +339,9 @@ rel_pose_interpolate_2d(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
 
 /**
  * @brief Return the pose of the first rigid geometry in the moving frame of the
- * second one at @p ratio (see @ref rel_pose_interpolate_2d); the caller owns
- * the result
- * @details When @p pose2_s is @p NULL this is
- * @ref posesegm_interpolate on the first pose.
+ * second one at @p ratio
+ * @details See @ref rel_pose_interpolate_2d; the caller owns the result. When
+ * @p pose2_s is @p NULL this is @ref posesegm_interpolate on the first pose.
  */
 static Pose *
 rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
@@ -572,13 +571,14 @@ compute_dist_tpoly_point(cfp_elem *cfp, tdist_array *tda)
 
 /**
  * @brief Append the interior turning points (local extrema) of the distance
- * between the moving rigid geometry and the point realized by the fixed
- * closest-feature pair of @p cfp_s over the temporal segment @p [t_lo,t_hi]
- * @details The distance of a fixed feature pair is smooth in the ratio, so its
- * extrema are the roots of its derivative: the derivative is bracketed on a
- * subdivision and each root refined to machine precision, and the exact
- * distance there (from the v-clip oracle on the interpolated pose) is emitted
- * as a turning point of the tfloat.
+ * between the moving rigid geometry and the point
+ * @details The distance is the one realized by the fixed closest-feature pair
+ * of @p cfp_s over the temporal segment @p [t_lo,t_hi]. The distance of a
+ * fixed feature pair is smooth in the ratio, so its extrema are the roots of
+ * its derivative: the derivative is bracketed on a subdivision and each root
+ * refined to machine precision, and the exact distance there (from the v-clip
+ * oracle on the interpolated pose) is emitted as a turning point of the
+ * tfloat.
  */
 static void
 compute_turnpoints_tpoly_point(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
@@ -1705,13 +1705,13 @@ compute_contact_tpoly_poly(const LWGEOM *geom_1, const LWGEOM *geom_2,
 
 /**
  * @brief Append the interior turning points (local extrema) of the distance
- * realized by the fixed closest-feature pair of @p cfp_s while the rigid
- * geometry moves over the temporal segment @p [t_lo,t_hi]
- * @details The distance of a fixed feature pair is smooth in the ratio, so its
- * extrema are the roots of its derivative: the derivative is bracketed on a
- * subdivision and each root refined to machine precision, and the exact
- * distance there (from the v-clip oracle on the interpolated pose) is emitted
- * as a turning point of the tfloat.
+ * realized by the fixed closest-feature pair of @p cfp_s
+ * @details The distance is taken while the rigid geometry moves over the
+ * temporal segment @p [t_lo,t_hi]. The distance of a fixed feature pair is
+ * smooth in the ratio, so its extrema are the roots of its derivative: the
+ * derivative is bracketed on a subdivision and each root refined to machine
+ * precision, and the exact distance there (from the v-clip oracle on the
+ * interpolated pose) is emitted as a turning point of the tfloat.
  */
 static void
 compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,

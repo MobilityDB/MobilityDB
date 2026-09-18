@@ -381,9 +381,11 @@ bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 }
 
 /**
- * @brief A.touches(B) implies that the point/multipoint meets the polygons
- * without any member reaching their interior, that is, at least one member lies
- * on the boundary and none inside
+ * @brief Return true if a point/multipoint touches the polygons of an interval
+ * tree
+ * @details A.touches(B) implies that the point/multipoint meets the polygons
+ * without any member reaching their interior, that is, at least one member
+ * lies on the boundary and none inside.
  */
 bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
@@ -839,6 +841,10 @@ box3d_to_lwgeom(BOX3D *box)
 
 /**
  * @ingroup meos_geo_base_accessor
+ * @brief Return true if a geometry is unitary, that is, not a collection
+ * @details A geometry is unitary when it is a non-empty point, line string,
+ * polygon, curve polygon, compound curve, circular string, or triangle. An
+ * empty geometry is not unitary.
  * @note Derived from PostGIS function: @p lwgeom_is_unitary(const LWGEOM *geom)
  */
 bool
@@ -2564,13 +2570,13 @@ geo_union_parts(GSERIALIZED **parts, int nparts, int32_t srid)
 }
 
 /**
- * @brief Return an overlay of two geometries where one is a collection,
- * answered from the overlays of its components, or NULL where that route does
- * not apply
- * @details A collection's topology is that of the UNION of its components --
- * which is how #relate_extract_edges already reads one for the matrix -- and
- * both overlay operations follow from that union rather than needing a kernel
- * of their own:
+ * @brief Return an overlay of two geometries where one is a collection, or
+ * NULL where that route does not apply
+ * @details The overlay is answered from the overlays of the components of the
+ * collection. A collection's topology is that of the UNION of its components
+ * -- which is how #relate_extract_edges already reads one for the matrix --
+ * and both overlay operations follow from that union rather than needing a
+ * kernel of their own:
  * @code
  *   A n (c1 u ... u cn) = (A n c1) u ... u (A n cn)
  *   (c1 u ... u cn) \ B = (c1 \ B) u ... u (cn \ B)
@@ -4674,10 +4680,11 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  *****************************************************************************/
 
 /**
-* @brief Check the consistency of the metadata to enforce in the typmod:
-* SRID, type, and dimensionality. If things are inconsistent, return NULL
-* @note Function from gserialized_typmod.c
-*/
+ * @brief Check the consistency of the metadata to enforce in the typmod: SRID,
+ * type, and dimensionality
+ * @details If things are inconsistent, return NULL
+ * @note Function from gserialized_typmod.c
+ */
 GSERIALIZED *
 postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 {
@@ -5284,10 +5291,10 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  *****************************************************************************/
 
 /**
- * @brief Ensure that the geography type is valid The geography type only
- * support POINT, LINESTRING, POLYGON, MULTI* variants of same, and
- * GEOMETRYCOLLECTION
- * @details If the input type is not one of those, shut down the query.
+ * @brief Ensure that the geography type is valid
+ * @details The geography type only supports POINT, LINESTRING, POLYGON, MULTI*
+ * variants of same, and GEOMETRYCOLLECTION. If the input type is not one of
+ * those, shut down the query.
  */
 void
 geography_valid_type(uint8_t type)
@@ -6120,7 +6127,7 @@ line_point_n(const GSERIALIZED *gs, int n)
  * @brief Return the number of points of a line
  * @param[in] gs Geometry
  * @errval -1
-*/
+ */
 int
 line_numpoints(const GSERIALIZED *gs)
 {

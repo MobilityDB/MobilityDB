@@ -1347,14 +1347,14 @@ sptree_id_cmp(const void *a, const void *b)
 
 /**
  * @ingroup meos_temporal_box_index
- * @brief Search an in-memory space-partitioning index built with
- * #sptree_insert_temporal_split using a temporal value, returning each matching
- * id exactly once
- * @details The query temporal value is decomposed into the same tight
- * per-segment bounding boxes as #sptree_insert_temporal_split, the existing
- * #sptree_search is run for every query box, and the union of matching ids is
- * deduplicated so that each surviving id appears exactly once. The result array
- * is reset before the search.
+ * @brief Search an in-memory space-partitioning index using a temporal value,
+ * returning each matching id exactly once
+ * @details The index is built with #sptree_insert_temporal_split. The query
+ * temporal value is decomposed into the same tight per-segment bounding boxes
+ * as #sptree_insert_temporal_split, the existing #sptree_search is run for
+ * every query box, and the union of matching ids is deduplicated so that each
+ * surviving id appears exactly once. The result array is reset before the
+ * search.
  * @param[in] sptree The SPTree to query
  * @param[in] op The search operation
  * @param[in] temp The temporal value whose per-segment bounding boxes serve as

@@ -405,7 +405,7 @@ PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
  * @brief GiST distance for spatiotemporal boxes
  * @note Take in a query and an entry and return the "distance" between them
-*/
+ */
 Datum
 Stbox_gist_distance(PG_FUNCTION_ARGS)
 {
@@ -417,7 +417,7 @@ PG_FUNCTION_INFO_V1(Tspatial_gist_distance);
 /**
  * @brief GiST distance for spatiotemporal values
  * @note Take in a query and an entry and return the "distance" between them
-*/
+ */
 Datum
 Tspatial_gist_distance(PG_FUNCTION_ARGS)
 {

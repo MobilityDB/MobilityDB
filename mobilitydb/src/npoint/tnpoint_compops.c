@@ -328,7 +328,6 @@ PG_FUNCTION_INFO_V1(Tne_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal network
  * point is different from a network point
- * network point
  * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */

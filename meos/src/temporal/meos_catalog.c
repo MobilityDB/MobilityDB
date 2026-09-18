@@ -232,8 +232,9 @@ static const char *MEOS_OPER_NAMES[] =
 
 /**
  * @brief Global constant array containing the types related to each type of
- * the enumeration MeosType defined in file `meos_catalog.h`, indexed by the
- * type itself
+ * the enumeration MeosType
+ * @details The enumeration is defined in file `meos_catalog.h` and the array
+ * is indexed by the type itself.
  * @note Every field is named after the function that reads it, so that a
  * relation that does not apply to a type keeps the value `T_UNKNOWN` and a
  * type of the wrong kind is rejected as it was by the arrays of pairs that
@@ -1279,8 +1280,8 @@ talpha_type(MeosType type)
 
 #if POINTCLOUD
 /**
- * @brief Return true if the type is a temporal pgpointcloud type
- *   (tpcpoint, tpcpatch) — its bounding box is a TPCBox.
+ * @brief Return true if the type is a temporal pgpointcloud type (tpcpoint,
+ * tpcpatch) — its bounding box is a TPCBox
  */
 bool
 tpointcloud_temptype(MeosType type)

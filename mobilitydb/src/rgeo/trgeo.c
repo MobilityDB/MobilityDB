@@ -511,9 +511,9 @@ PGDLLEXPORT Datum Trgeometry_unnest(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_unnest);
 /**
  * @ingroup mobilitydb_rgeo_transf
- * @brief Return the rows of a temporal rigid geometry, one per distinct pose,
- * each pairing the reference geometry with that pose applied with the span set
- * on which the pose is taken
+ * @brief Return the rows of a temporal rigid geometry, one per distinct pose
+ * @details Each row pairs the reference geometry with that pose applied with
+ * the span set on which the pose is taken.
  * @sqlfn unnest()
  */
 Datum

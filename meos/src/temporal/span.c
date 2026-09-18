@@ -211,9 +211,9 @@ span_lower_cmp(const Span *s1, const Span *s2)
 }
 
 /**
- * @brief Compare the upper bounds of two spans, returning <0, 0, or >0
- * according to whether the first bound is less than, equal to, or greater than
- * the second one
+ * @brief Compare the upper bounds of two spans
+ * @details The function returns <0, 0, or >0 according to whether the first
+ * bound is less than, equal to, or greater than the second one.
  * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
@@ -512,7 +512,7 @@ span_copy(const Span *s)
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @param[out] s Result span
-*/
+ */
 void
 value_set_span(Datum value, MeosType basetype, Span *s)
 {

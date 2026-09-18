@@ -858,9 +858,9 @@ dggs_lonlat_box_holds(double lon, double lat, double xmin, double ymin,
 
 /**
  * @brief Return in @p tin and @p tout the parameters between which a geodetic
- * path lies in a box of longitudes and latitudes, and the number of such
- * spans
- * @details A box is bounded by the planes of two meridians, which pass through
+ * path lies in a box of longitudes and latitudes
+ * @details The function also returns the number of such spans. A box is
+ * bounded by the planes of two meridians, which pass through
  * the centre of the sphere, and by the planes of constant height of two
  * parallels. The path meets each of them at parameters #dggs_arc_plane_params
  * states, and those parameters cut the path into pieces that lie wholly inside
@@ -1009,14 +1009,14 @@ dggs_line_height(const DggsLine *line, const POINT3D *m, double t,
 
 /**
  * @brief Return the first parameter strictly ahead of `tmin` at which a
- * planar path reaches the plane of normal `m` from its positive side, or a
- * value above 1 when it does not before its end
- * @details The height `f` of the path above the plane has a second derivative
- * of norm at most `M`, the curvature bound of the path, so over a step `h` it
- * stays above `f + f' h - M h² / 2`. The search steps to the first zero of
- * that bound, which the height cannot reach sooner: no crossing is stepped
- * over, however short the stretch the path spends beyond the plane. Near a
- * crossing the steps shrink quadratically onto it.
+ * planar path reaches the plane of normal `m` from its positive side
+ * @details The function returns a value above 1 when the path does not reach
+ * the plane before its end. The height `f` of the path above the plane has a
+ * second derivative of norm at most `M`, the curvature bound of the path, so
+ * over a step `h` it stays above `f + f' h - M h² / 2`. The search steps to
+ * the first zero of that bound, which the height cannot reach sooner: no
+ * crossing is stepped over, however short the stretch the path spends beyond
+ * the plane. Near a crossing the steps shrink quadratically onto it.
  */
 static double
 dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
@@ -1044,10 +1044,10 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
 
 /**
  * @brief Return the first parameter strictly ahead of `tmin` at which the
- * height of a planar path above the plane of normal `m` changes sign, or a
- * value above 1 when it does not before its end
- * @details The search of #dggs_line_plane_param, read from whichever side of
- * the plane the path lies on at `tmin`
+ * height of a planar path above the plane of normal `m` changes sign
+ * @details Return a value above 1 when the sign does not change before the end
+ * of the path. The search is the one of #dggs_line_plane_param, read from
+ * whichever side of the plane the path lies on at `tmin`.
  */
 static double
 dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
@@ -1073,9 +1073,9 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
 }
 
 /**
- * @brief Return where a planar path first crosses an edge of a cell, a
- * crossing of the circle of an edge counting where it lies between the two
- * vertices of the edge
+ * @brief Return where a planar path first crosses an edge of a cell
+ * @details A crossing of the circle of an edge counts where it lies between
+ * the two vertices of the edge.
  */
 static double
 dggs_line_exit_param_edges(const DggsLine *line, const double *lons,

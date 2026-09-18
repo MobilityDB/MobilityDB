@@ -323,8 +323,9 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
 
 /**
  * @brief State a Raquet tile sampling call keeps for the length of a
- * trajectory: the pixel array, the layout its QUADBIN cell fixes, and whether
- * a pixel held a value the sampling surface cannot carry
+ * trajectory
+ * @details The state holds the pixel array, the layout its QUADBIN cell fixes,
+ * and whether a pixel held a value the sampling surface cannot carry.
  */
 typedef struct
 {
@@ -605,9 +606,9 @@ raster_cell_index(double g, int n)
 }
 
 /**
- * @brief Return the value of the pixel a position falls in, or false when
- * the position lies outside the pre-filter box, outside the pixel grid, or
- * on a nodata pixel
+ * @brief Return the value of the pixel a position falls in
+ * @details The function returns false when the position lies outside the
+ * pre-filter box, outside the pixel grid, or on a nodata pixel.
  */
 static bool
 raster_sample_at(const RasterGridOps *ops, double x, double y,

@@ -174,10 +174,11 @@ build_hull_wkt(trip_t *trip, int A, int B, int C, int D)
  *==========================================================================*/
 
 /**
- * @brief Build a Pose from one AIS record. The antenna is projected from
- * WGS84 to EPSG:25832; the heading (degrees clockwise from N) becomes a
- * pose theta in radians counter-clockwise from +x. The boundary value
- * theta = ±π is nudged by 1e-7 to satisfy the half-open MEOS validator.
+ * @brief Build a Pose from one AIS record
+ * @details The antenna is projected from WGS84 to EPSG:25832; the heading
+ * (degrees clockwise from N) becomes a pose theta in radians counter-clockwise
+ * from +x. The boundary value theta = ±π is nudged by 1e-7 to satisfy the
+ * half-open MEOS validator.
  */
 static Pose *
 make_pose_from_ais(double lon, double lat, double heading_deg)

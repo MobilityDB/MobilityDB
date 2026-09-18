@@ -122,8 +122,8 @@ get_axis_stbox(const void *box, int axis, bool upper)
 
 #if POINTCLOUD
 /**
- * @brief Return the lower or upper bound of a given axis from a TPCBox
- *   as a double.
+ * @brief Return the lower or upper bound of a given axis from a TPCBox as a
+ * double
  * @details Same axis convention as @ref get_axis_stbox (TPCBox shares
  *   the STBox prefix layout) — the cast is binary-compatible.
  */
@@ -1270,9 +1270,9 @@ rtree_create_stbox()
 #if POINTCLOUD
 /**
  * @ingroup meos_pointcloud_box
- * @brief Create an in-memory RTree index for the @c tpcbox bounding-box
- *   type.  Pair with @ref rtree_insert / @ref rtree_insert_temporal to
- *   populate, @ref rtree_search / @ref rtree_search_temporal to query.
+ * @brief Create an in-memory RTree index for the @c tpcbox bounding-box type
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized.
  */
 RTree *

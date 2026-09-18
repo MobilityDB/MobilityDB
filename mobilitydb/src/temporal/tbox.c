@@ -1054,8 +1054,8 @@ PGDLLEXPORT Datum Tbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_extent_transfn);
 /**
  * @brief Transition function for extent aggregation for boxes
-  * @sqlaggfn extent()
-*/
+ * @sqlaggfn extent()
+ */
 Datum
 Tbox_extent_transfn(PG_FUNCTION_ARGS)
 {
@@ -1092,8 +1092,8 @@ PGDLLEXPORT Datum Tbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_extent_combinefn);
 /**
  * @brief Combine function for extent aggregation for temporal boxes
-  * @sqlaggfn extent()
-*/
+ * @sqlaggfn extent()
+ */
 Datum
 Tbox_extent_combinefn(PG_FUNCTION_ARGS)
 {

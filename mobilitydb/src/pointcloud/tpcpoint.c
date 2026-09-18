@@ -210,8 +210,8 @@ tpcpoint_project(const Temporal *temp, PCSCHEMA *schema,
 }
 
 /**
- * @brief Resolve the PCSCHEMA for a tpcpoint's common pcid before doing
- *   any other work.
+ * @brief Resolve the PCSCHEMA for a tpcpoint's common pcid before doing any
+ * other work
  * @note This must be called AT THE TOP of the PG V1 wrapper — not
  *   deeper in the call stack. On PG 17, calling
  *   @c mobilitydb_pc_schema from a deeper static function during a
@@ -260,8 +260,8 @@ PGDLLEXPORT Datum Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_to_tgeompoint);
 /**
  * @ingroup mobilitydb_pointcloud_conversion
- * @brief Project a tpcpoint onto a tgeompoint by extracting X/Y/[Z]
- *   from each instant's pcpoint via the schema cache.
+ * @brief Project a tpcpoint onto a tgeompoint by extracting X/Y/[Z] from each
+ * instant's pcpoint via the schema cache
  * @sqlfn tgeompoint()
  */
 Datum
@@ -383,8 +383,8 @@ PGDLLEXPORT Datum Tpcpoint_get_dim(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_get_dim);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the per-instant projection of a tpcpoint onto a named
- *   dimension (Intensity, GpsTime, etc.) as a tfloat.
+ * @brief Return the per-instant projection of a tpcpoint onto a named dimension
+ * (Intensity, GpsTime, etc.) as a tfloat
  * @sqlfn getDim()
  */
 Datum

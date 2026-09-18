@@ -164,8 +164,9 @@ tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
 /**
  * @ingroup meos_pointcloud_conversion
  * @brief Return a temporal pointcloud value projected onto a temporal
- * geometry point by extracting X/Y/[Z] from each instant's pcpoint via
- * the schema cache
+ * geometry point
+ * @details The X/Y/[Z] coordinates are extracted from each instant's pcpoint
+ * via the schema cache.
  * @param[in] temp Temporal pointcloud value
  * @return NULL if the pcid schema cannot be resolved
  * @csqlfn #Tpcpoint_to_tgeompoint()

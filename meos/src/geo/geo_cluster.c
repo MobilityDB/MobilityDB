@@ -419,8 +419,8 @@ geo_combine_clusters(UNIONFIND *uf, LWGEOM **geoms, uint32_t ngeoms,
 
 /**
  * @brief Merge the geometries of an array into clusters of geometries lying
- * within a distance of each other, and assemble each cluster into one
- * collection
+ * within a distance of each other
+ * @details Each cluster is assembled into one collection.
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of geometries
  * @param[in] tolerance Distance

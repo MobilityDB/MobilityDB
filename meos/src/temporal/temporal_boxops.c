@@ -947,8 +947,9 @@ tcontseq_spans_iter(const TSequence *seq, Span *result)
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of spans obtained from the instants or segments of a
- * temporal sequence, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * temporal sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  */
@@ -995,8 +996,9 @@ tsequenceset_spans(const TSequenceSet *ss, int *count)
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans obtained from the instants or segments of a
- * temporal value, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * temporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal value
  * @param[out] count Number of values of the output array
  * @errval NULL
@@ -1125,8 +1127,9 @@ tcontseq_split_n_spans_iter(const TSequence *seq, int span_count, Span *result)
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of N spans obtained from the instants or segments of
- * a temporal sequence, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * a temporal sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[in] span_count Number of spans
  * @param[out] count Number of elements in the output array
@@ -1222,8 +1225,9 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N spans obtained from the instants or segments of
- * a temporal value, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * a temporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal value
  * @param[in] span_count Number of spans
  * @param[out] count Number of values of the output array
@@ -1299,7 +1303,7 @@ tdiscseq_split_each_n_spans(const TSequence *seq, int elems_per_span,
 /**
  * @brief Return an array of spans of a temporal number sequence with
  * continuous interpolation obtained by merging consecutive segments
- * (iterator function)
+ * @details This is an iterator function.
  * @param[in] seq Temporal value
  * @param[in] elems_per_span Number of segments merged into an output span
  * @param[out] result Array of spans
@@ -1338,9 +1342,9 @@ tcontseq_split_each_n_spans_iter(const TSequence *seq, int elems_per_span,
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of spans of a temporal number sequence obtained
- * by merging consecutive instants or segments, where the choice between
- * instants or segments depends, respectively, on whether the interpolation
- * is discrete or continuous
+ * by merging consecutive instants or segments
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[in] elems_per_span Number of segments merged into an output span
  * @param[out] count Number of elements in the output array
@@ -1394,8 +1398,9 @@ tsequenceset_split_each_n_spans(const TSequenceSet *ss, int elems_per_span,
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans obtained from the instants or segments of a
- * temporal value, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * temporal value
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal value
  * @param[in] elems_per_span Number of input instants or segments merged into an
  * output span
@@ -1501,9 +1506,9 @@ tnumberseq_cont_tboxes_iter(const TSequence *seq, TBox *result)
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of temporal boxes obtained from the instants or
- * segments of a temporal number sequence, where the choice between instants or
- * segments depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * segments of a temporal number sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  */
@@ -1552,8 +1557,9 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int *count)
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes obtained from the instants or
- * segments of a temporal number, where the choice between instants or segments
- * depends on whether the interpolation is discrete or continuous
+ * segments of a temporal number
+ * @details The choice between instants or segments depends on whether the
+ * interpolation is discrete or continuous.
  * @param[in] temp Temporal value
  * @param[out] count Number of elements in the output array
  * @errval NULL
@@ -1680,9 +1686,9 @@ tnumberseq_cont_split_n_tboxes_iter(const TSequence *seq, int box_count,
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of N temporal boxes from the instants or segments of
- * a temporal number sequence, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or
- * continuous
+ * a temporal number sequence
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] seq Temporal sequence
  * @param[in] box_count Number of elements in the output array
  * @param[out] count Number of elements in the output array
@@ -1788,8 +1794,9 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N temporal boxes obtained from the instants or
- * segments of a temporal number, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or continuous
+ * segments of a temporal number
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal number
  * @param[in] box_count Number of boxes
  * @param[out] count Number of values of the output array
@@ -1956,8 +1963,9 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elems_per_box,
 /**
  * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes obtained from the instants or
- * segments of a temporal number, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or continuous
+ * segments of a temporal number
+ * @details The choice between instants or segments depends, respectively, on
+ * whether the interpolation is discrete or continuous.
  * @param[in] temp Temporal number
  * @param[in] elems_per_box Number of input elements merged in an output box
  * @param[out] count Number of values of the output array

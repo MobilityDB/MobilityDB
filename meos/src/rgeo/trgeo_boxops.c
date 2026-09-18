@@ -216,8 +216,9 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
 /**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal rigid geometry, where the choice depends on whether the
- * interpolation is discrete or continuous
+ * of a temporal rigid geometry
+ * @details The choice depends on whether the interpolation is discrete or
+ * continuous.
  * @param[in] temp Temporal rigid geometry
  * @param[out] count Number of elements in the output array
  * @errval NULL

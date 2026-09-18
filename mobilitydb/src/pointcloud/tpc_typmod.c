@@ -126,8 +126,9 @@ PGDLLEXPORT Datum Tpc_typmod_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpc_typmod_out);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Output typmod for tpcpoint / tpcpatch as `(pcid)`. Returns an
- *   empty string when typmod is -1 (unconstrained).
+ * @brief Output typmod for tpcpoint / tpcpatch as `(pcid)`
+ * @details The function returns an empty string when typmod is -1
+ * (unconstrained).
  * @sqlfn tpc_typmod_out()
  */
 Datum
@@ -147,9 +148,9 @@ Tpc_typmod_out(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Read the pcid from a temporal pcpoint/pcpatch's first instant.
- *   All instants share the same pcid by construction, so the first
- *   instant is authoritative.
+ * @brief Read the pcid from a temporal pcpoint/pcpatch's first instant
+ * @details All instants share the same pcid by construction, so the first
+ * instant is authoritative.
  */
 static uint32_t
 tpc_pcid(const Temporal *temp)

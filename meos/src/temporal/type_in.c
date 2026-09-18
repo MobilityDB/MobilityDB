@@ -825,7 +825,8 @@ parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
 #if POSE
 /**
  * @brief Return a pose from its GeoJSON representation
- */Pose *
+ */
+Pose *
 parse_mfjson_pose(json_object *mfjson, int32_t srid)
 {
   assert(mfjson);
@@ -2242,9 +2243,9 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
 
 #if H3 || QUADBIN || S2CELL
 /**
- * @brief Return a cell read as a 64-bit integer and advance the parse state,
- * raising an error when the integer encodes no cell of the grid of a temporal
- * cell-index type
+ * @brief Return a cell read as a 64-bit integer and advance the parse state
+ * @details An error is raised when the integer encodes no cell of the grid of
+ * a temporal cell-index type.
  */
 static Datum
 base_cell_from_wkb_state(meos_wkb_parse_state *s, MeosType temptype)
@@ -2365,9 +2366,9 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 }
 
 /**
- * @brief Return a span from its WKB representation when reading components
- * spans in a span set (which does not repeat the spantype for every component
- * (iterator function)
+ * @brief Return a span from its WKB representation when reading the component
+ * spans of a span set (iterator function)
+ * @details A span set does not repeat the span type for every component.
  */
 static void
 span_from_wkb_state_iter(meos_wkb_parse_state *s, Span *result)
@@ -2634,9 +2635,10 @@ stbox_from_wkb_state(meos_wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Take in an unknown kind of WKB type number and ensure it comes out as
- * an extended WKB type number with the `Z/GEODETIC/SRID/LINEAR_INTERP`
- * flags masked onto the high bits
+ * @brief Set the flags of a WKB parse state from a WKB type number
+ * @details The function takes in an unknown kind of WKB type number and
+ * ensures it comes out as an extended WKB type number with the
+ * `Z/GEODETIC/SRID/LINEAR_INTERP` flags masked onto the high bits.
  */
 void
 temporal_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)

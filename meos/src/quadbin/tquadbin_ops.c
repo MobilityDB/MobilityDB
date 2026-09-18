@@ -263,15 +263,15 @@ tpointinst_point2d(const TInstant *inst)
 
 /**
  * @brief Return the temporal quadbin cell of a temporal point sequence at a
- * resolution, or NULL when its positions are not in a lon/lat reference
- * system
- * @details A sequence stating nothing between its instants, discrete or
- * stepwise, holds the cells of its instants. A linear sequence moves between
- * two instants along the straight line in longitude and latitude of a planar
- * point, or the great circle of a geodetic one, and each segment is traversed
- * tile by tile, so the result holds every cell the trajectory crosses and each
- * of its instants marks the time the trajectory enters that cell. The last
- * cell holds to the end of the trajectory.
+ * resolution
+ * @details The result is NULL when the positions of the sequence are not in a
+ * lon/lat reference system. A sequence stating nothing between its instants,
+ * discrete or stepwise, holds the cells of its instants. A linear sequence
+ * moves between two instants along the straight line in longitude and
+ * latitude of a planar point, or the great circle of a geodetic one, and each
+ * segment is traversed tile by tile, so the result holds every cell the
+ * trajectory crosses and each of its instants marks the time the trajectory
+ * enters that cell. The last cell holds to the end of the trajectory.
  */
 static TSequence *
 tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
@@ -369,8 +369,9 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
 
 /**
  * @brief Return the temporal quadbin cell of a temporal point sequence set at
- * a resolution, or NULL when its positions are not in a lon/lat reference
- * system
+ * a resolution
+ * @details Return NULL when its positions are not in a lon/lat reference
+ * system.
  */
 static TSequenceSet *
 tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution)
@@ -423,8 +424,8 @@ tpoint_to_tquadbin(const Temporal *temp, int32 resolution)
 /**
  * @ingroup meos_quadbin_conversion
  * @brief Return the temporal quadbin cell of a temporal planar point in a
- * lon/lat reference system at a resolution, holding every cell the
- * trajectory crosses
+ * lon/lat reference system at a resolution
+ * @details The result holds every cell the trajectory crosses.
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
  * @csqlfn #Tgeompoint_to_tquadbin()
@@ -440,8 +441,9 @@ tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
 /**
  * @ingroup meos_quadbin_conversion
  * @brief Return the temporal quadbin cell of a temporal geodetic point at a
- * resolution, holding every cell the trajectory crosses along its great
- * circles
+ * resolution
+ * @details The result holds every cell the trajectory crosses along its great
+ * circles.
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
  * @csqlfn #Tgeogpoint_to_tquadbin()

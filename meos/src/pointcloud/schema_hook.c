@@ -726,12 +726,11 @@ meos_pc_schema_lookup(uint32_t pcid)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, stating the
- *   absence of any facility that could resolve one as an error.
- *
- * A hook that answers @p NULL has looked the pcid up and not found it, which
- * the caller reads as the miss it is; no hook at all means the pcid could not
- * be looked up at all, and a caller needing the schema is stuck.
+ * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback
+ * @details The absence of any facility that could resolve one is stated as an
+ * error. A hook that answers @p NULL has looked the pcid up and not found it,
+ * which the caller reads as the miss it is; no hook at all means the pcid
+ * could not be looked up at all, and a caller needing the schema is stuck.
  */
 PCSCHEMA *
 meos_pc_schema(uint32_t pcid)

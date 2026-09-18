@@ -84,9 +84,9 @@ srid_parse(const char **str, int *srid)
 
 /**
  * @brief Parse the dimension and coordinate part of a spatiotemporal box from
- * the buffer, after the `(GEOD)STBOX` prefix and any SRID have already been
- * consumed
- * @details Shared by the STBox and TPCBox text parsers. Does NOT enforce
+ * the buffer
+ * @details The `(GEOD)STBOX` prefix and any SRID have already been consumed.
+ * Shared by the STBox and TPCBox text parsers. Does NOT enforce
  * end-of-input, so a caller may parse a trailing suffix (e.g. the TPCBox
  * `PCID`) after the box body.
  * @param[in,out] str Input string, advanced past what is read
@@ -602,8 +602,8 @@ error:
 /**
  * @brief Parse a spatiotemporal value from the input buffer
  * @param[in,out] str Input string, advanced past what is read
-  * @param[in] temptype Temporal type
-*/
+ * @param[in] temptype Temporal type
+ */
 Temporal *
 tspatial_parse(const char **str, MeosType temptype)
 {

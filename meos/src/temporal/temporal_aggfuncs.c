@@ -388,9 +388,10 @@ temporal_skiplist_merge(void **spliced, int spliced_count, void **values,
 }
 
 /**
- * @brief Insert a new set of values to the skiplist while performing the 
- * aggregation between the new values that overlap with the values in the list
-*/
+ * @brief Insert a new set of values to the skiplist
+ * @details The aggregation is performed between the new values that overlap
+ * with the values in the list.
+ */
 void
 temporal_skiplist_splice(SkipList *list, void **values, int count,
   datum_func2 func, bool crossings)

@@ -32,9 +32,9 @@
 #include <string.h>
 
 /**
-  * Floating-point precision defaults to single but can be made double via
+ * Floating-point precision defaults to single but can be made double via
     <tt><b>#define _float_t double</b></tt> before <tt>#include <tinyekf.h></tt>
-  */
+ */
 #ifndef _float_t
 #define _float_t float
 #endif
@@ -259,13 +259,13 @@ static void ekf_initialize(ekf_t * ekf, const _float_t pdiag[EKF_N])
 }
 
 /**
-  * Runs the EKF prediction step
-  * @param ekf pointer to an ekf_t structure
-  * @param fx predicted values
-  * @param F Jacobian of state-transition function
-  * @param Q process noise matrix
-  * 
-  */static void ekf_predict(
+ * Runs the EKF prediction step
+ * @param ekf pointer to an ekf_t structure
+ * @param fx predicted values
+ * @param F Jacobian of state-transition function
+ * @param Q process noise matrix
+ * 
+ */static void ekf_predict(
         ekf_t * ekf, 
         const _float_t fx[EKF_N],
         const _float_t F[EKF_N*EKF_N],
@@ -299,14 +299,14 @@ static void ekf_update_step3(ekf_t * ekf, _float_t GH[EKF_N*EKF_N])
 }
 
 /**
-  * Runs the EKF update step
-  * @param ekf pointer to an ekf_t structure
-  * @param z observations
-  * @param hx predicted values
-  * @param H sensor-function Jacobian matrix
-  * @param R measurement-noise matrix
-  * 
-  */
+ * Runs the EKF update step
+ * @param ekf pointer to an ekf_t structure
+ * @param z observations
+ * @param hx predicted values
+ * @param H sensor-function Jacobian matrix
+ * @param R measurement-noise matrix
+ * 
+ */
 static bool ekf_update(
         ekf_t * ekf, 
         const _float_t z[EKF_M], 

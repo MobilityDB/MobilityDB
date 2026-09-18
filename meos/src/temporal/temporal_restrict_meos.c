@@ -440,9 +440,8 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 
 /**
  * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of an array of
- * spans
- * of base values
+ * @brief Return a temporal value restricted to the complement of a span set of
+ * base values
  * @param[in] temp Temporal value
  * @param[in] ss Span set
  * @csqlfn #Tnumber_minus_spanset()

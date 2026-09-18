@@ -54,8 +54,8 @@
 #include <meos_geo.h>
 
 /**
- * Maximum length in characters of a trip in the input data. 
- * This value is set according to the following query executed in the database
+ * @brief Maximum length in characters of a trip in the input data
+ * @details The value follows from the following query executed in the database
  * created by the MobilityDB-BerlinMOD generator.
  * @code
  * SELECT MAX(length(asHexEWKB(trip))) FROM trips;

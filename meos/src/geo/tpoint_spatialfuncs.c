@@ -215,9 +215,9 @@ tpoint_get_z(const Temporal *temp)
 
 
 /**
- * @brief Return a float between 0 and 1 representing the location of the
- * closest point on the geography segment to the given point, as a fraction of
- * total segment length
+ * @brief Return the location of the closest point on a geography segment to a
+ * point, as a fraction of the total segment length
+ * @details The location is a float between 0 and 1.
  * @param[in] p Reference point
  * @param[in] A,B Points defining the segment
  * @param[out] closest Closest point in the segment
@@ -354,10 +354,11 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
 }
 
 /**
- * @brief Return a float in (0,1) representing the location of the closest
- * point on the line segment to the given point, as a fraction of the total
- * segment length, return -1.0 if the point is not located in the segment or
- * if is approximately equal to the start or to the end point
+ * @brief Return the location of the closest point on a line segment to a
+ * point, as a fraction of the total segment length
+ * @details The location is a float in (0,1). The function returns -1.0 if the
+ * point is not located in the segment or if it is approximately equal to the
+ * start or to the end point.
  * @param[in] start,end Points defining the segment
  * @param[in] point Reference point
  * @param[out] dist Distance
@@ -1313,9 +1314,10 @@ geomeas_tpointinst_iter(LWPOINT *lwpoint)
 }
 
 /**
- * @brief Return the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch transformed into a temporal
- * point instant
+ * @brief Return a temporal point instant transformed from a PostGIS trajectory
+ * geometry/geography
+ * @details The M coordinates of the geometry/geography encode the timestamps
+ * in Unix epoch.
  */
 static TInstant *
 geomeas_tpointinst(const LWGEOM *geom)
@@ -1375,9 +1377,10 @@ ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
 }
 
 /**
- * @brief Return the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps transformed into Unix epoch into a
- * temporal point discrete sequence
+ * @brief Return a temporal point discrete sequence from a PostGIS trajectory
+ * geometry/geography
+ * @details The M coordinates of the trajectory encode the timestamps
+ * transformed into Unix epoch.
  */
 static TSequence *
 geomeas_tpointseq_disc(const LWGEOM *geom, bool hasz)
@@ -1397,9 +1400,9 @@ geomeas_tpointseq_disc(const LWGEOM *geom, bool hasz)
 }
 
 /**
- * @brief Return the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch transformed into a temporal
- * point sequence
+ * @brief Return a PostGIS trajectory transformed into a temporal point sequence
+ * @details The trajectory is a geometry/geography where the M coordinates
+ * encode the timestamps in Unix epoch.
  * @note Notice that it is not possible to encode step interpolation in
  * PostGIS and thus sequences obtained will be either discrete or linear.
  */
@@ -1428,9 +1431,9 @@ geomeas_tpointseq_linear(const LWGEOM *geom, bool hasz, bool geodetic)
 }
 
 /**
- * @brief Return the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch transformed into a temporal
- * point sequence set
+ * @brief Return a temporal point sequence set from a PostGIS trajectory
+ * geometry/geography whose M coordinates encode the timestamps
+ * @details The M coordinates encode the timestamps in Unix epoch.
  * @note With respect to functions #geomeas_tpointseq_disc and
  * #geomeas_tpointseq_linear, there is no validation of the trajectory since
  * it is more elaborated to be done. Nevertheless, erroneous geometries where
@@ -2788,8 +2791,8 @@ geo_bearing_fn(int16 flags)
 
 /**
  * @brief Return 1 or 2 if a temporal point segment and a point are at the
- * minimum bearing during the period defined by the output timestamps, return
- * 0 otherwise
+ * minimum bearing during a period, 0 otherwise
+ * @details The period is defined by the output timestamps.
  * @param[in] start,end Values defining the segment
  * @param[in] point Geometric/geography point to locate
  * @param[in] lower,upper Timestampts defining the segment
@@ -2854,8 +2857,8 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
 
 /**
  * @brief Return 1 or 2 if two temporal point segments are at the minimum
- * bearing during the period defined by the output timestamps, return 0
- * otherwise
+ * bearing during the period defined by the output timestamps
+ * @details The function returns 0 otherwise.
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
@@ -3233,7 +3236,7 @@ stopwindow_within(StopWindow *win, int start, int end)
 /**
  * @brief Return the subsequences where the temporal value stays within an area
  * with a given maximum size for at least the specified duration
- * (iterator function)
+ * @details This is an iterator function.
  * @param[in] seq Temporal sequence
  * @param[in] maxdist Maximum distance
  * @param[in] mintunits Minimum duration

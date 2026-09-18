@@ -278,11 +278,10 @@ overafter_stbox_tspatial(const STBox *box, const Temporal *temp)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if a spatiotemporal value is to the left of a
- * spatiotemporal
- * box
+ * spatiotemporal box
  * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
-box * @csqlfn #Left_tspatial_stbox()
+ * @csqlfn #Left_tspatial_stbox()
  */
 bool
 left_tspatial_stbox(const Temporal *temp, const STBox *box)
@@ -594,8 +593,7 @@ above_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if the first spatiotemporal value does not extend below
- * the
- * second one
+ * the second one
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overabove_tspatial_tspatial()
  */

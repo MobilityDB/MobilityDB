@@ -779,7 +779,7 @@ PG_FUNCTION_INFO_V1(Span_gist_distance);
 /**
  * @brief GiST distance method for span types
  * @note Take in a query and an entry and return the "distance" between them
-*/
+ */
 Datum
 Span_gist_distance(PG_FUNCTION_ARGS)
 {

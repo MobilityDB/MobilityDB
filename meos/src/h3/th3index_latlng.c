@@ -479,8 +479,9 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
 /**
  * @ingroup meos_h3_latlng
  * @brief Return the temporal H3 cell of a temporal planar point (SRID 4326) at
- * the given resolution; segments between consecutive instants are densified so
- * every cell the trajectory traverses appears in the result
+ * the given resolution
+ * @details Segments between consecutive instants are densified so every cell
+ * the trajectory traverses appears in the result.
  * @csqlfn #Tgeompoint_to_th3index()
  */
 Temporal *
@@ -498,8 +499,9 @@ tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 /**
  * @ingroup meos_h3_latlng
  * @brief Return the temporal H3 cell of a temporal geodetic point at the given
- * resolution; segments between consecutive instants are densified so every cell
- * the trajectory traverses appears in the result
+ * resolution
+ * @details Segments between consecutive instants are densified so every cell
+ * the trajectory traverses appears in the result.
  * @csqlfn #Tgeogpoint_to_th3index()
  */
 Temporal *

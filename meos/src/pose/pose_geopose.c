@@ -386,11 +386,12 @@ geopose_param_number(const char *str, double *out)
 
 /**
  * @brief Extract the position and orientation of a pose in the form every
- * GeoPose encoding needs: longitude, latitude and height in degrees and metres,
- * and a unit quaternion in Hamilton convention
- * @details Every class the standard defines places its pose in a topocentric
- * frame on the surface of the Earth, so this is where the frame of the pose
- * is checked. A pose with SRID 0 is treated as geographic.
+ * GeoPose encoding needs
+ * @details The position is given as longitude, latitude and height in degrees
+ * and metres, and the orientation as a unit quaternion in Hamilton convention.
+ * Every class the standard defines places its pose in a topocentric frame on
+ * the surface of the Earth, so this is where the frame of the pose is checked.
+ * A pose with SRID 0 is treated as geographic.
  *
  * That frame is geographic, which a planar pose does not have: its
  * coordinates measure a plane rather than the ellipsoid, so writing them as a
@@ -473,9 +474,9 @@ geopose_quaternion_from_json(json_object *jq, double *W, double *X, double *Y,
 }
 
 /**
- * @brief Return whether a `crs` frame parameter names a WGS-84 geographic CRS,
- * in the `EPSG:<code>` form the frames of this module carry and the form the
- * Moving Features encoding names a CRS by
+ * @brief Return whether a `crs` frame parameter names a WGS-84 geographic CRS
+ * @details The parameter is in the `EPSG:<code>` form the frames of this
+ * module carry and the form the Moving Features encoding names a CRS by.
  */
 static bool
 geopose_crs_is_geographic(const char *crs)
@@ -1138,10 +1139,11 @@ geopose_transition_model_interp(json_object *tm)
 
 /**
  * @brief Build the inner FrameSpecification of a pose relative to the outer
- * frame, in the `translation=[…]&rotation=[…]` form used by the encoding
- * examples of the standard
- * @details The rotation list is ordered w, x, y, z, the order in which
- * Requirement 15 lists the components of a GeoPose quaternion.
+ * frame
+ * @details The specification takes the `translation=[…]&rotation=[…]` form
+ * used by the encoding examples of the standard. The rotation list is ordered
+ * w, x, y, z, the order in which Requirement 15 lists the components of a
+ * GeoPose quaternion.
  * @errval NULL
  */
 static json_object *
@@ -1285,13 +1287,13 @@ geopose_series_header(int count, TimestampTz start, TimestampTz stop,
 
 /**
  * @brief Return the constant inter-pose duration of @p instants in
- * milliseconds, or -1 if the instants are not equally spaced by a whole number
- * of milliseconds
- * @details A Regular Series states the spacing once, as an integer number
- * of milliseconds (Requirement 25), and carries no per-pose time. It can
- * therefore only represent instants that are equally spaced *and* whose
- * spacing is a whole number of milliseconds; anything else must go out as
- * an Irregular Series to stay lossless.
+ * milliseconds
+ * @details The function returns -1 if the instants are not equally spaced by
+ * a whole number of milliseconds. A Regular Series states the spacing once, as
+ * an integer number of milliseconds (Requirement 25), and carries no per-pose
+ * time. It can therefore only represent instants that are equally spaced *and*
+ * whose spacing is a whole number of milliseconds; anything else must go out
+ * as an Irregular Series to stay lossless.
  */
 static int64
 geopose_interpose_duration(const TInstant **instants, int count)

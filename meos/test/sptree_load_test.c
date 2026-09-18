@@ -360,15 +360,16 @@ test_contract(SPTreeKind kind, const char *kindname, TBox **boxes,
 
 /**
  * @brief Check a bounding box type other than the one the fixture above is
- * built from, so that the engine is exercised on a second number of dimensions
- * and on the dimensions being read from the first box rather than being fixed
- * when the tree is created
- * @details Exactness against the brute-force answer is asserted, which is what
- * a second family adds; the shapes of the entry set are covered by the
- * temporal box above. The spatial extents are uncorrelated and the time span
- * is shared by every box and every query, so a level narrowing the temporal
- * dimension separates nothing, and the windows are on the scale of the data,
- * so a window covering the extent cannot hide a subtree that is pruned wrongly.
+ * built from
+ * @details The engine is thus exercised on a second number of dimensions and
+ * on the dimensions being read from the first box rather than being fixed
+ * when the tree is created. Exactness against the brute-force answer is
+ * asserted, which is what a second family adds; the shapes of the entry set
+ * are covered by the temporal box above. The spatial extents are uncorrelated
+ * and the time span is shared by every box and every query, so a level
+ * narrowing the temporal dimension separates nothing, and the windows are on
+ * the scale of the data, so a window covering the extent cannot hide a
+ * subtree that is pruned wrongly.
  */
 static int
 test_stbox(SPTreeKind kind, const char *kindname)

@@ -296,8 +296,9 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
 /**
  * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal instants
- * introducing a gap when two consecutive instants are separated from each other
- * by at least the given distance or the given time interval
+ * introducing gaps
+ * @details A gap is introduced when two consecutive instants are separated
+ * from each other by at least the given distance or the given time interval.
  * @param[in] geom Geometry
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

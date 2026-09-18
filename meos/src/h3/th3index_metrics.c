@@ -213,8 +213,8 @@ tgeogpoint_great_circle_distance_in(const Temporal *a, const Temporal *b,
 /**
  * @ingroup meos_h3_metrics
  * @brief Return the per-instant great-circle distance between two temporal
- * geodetic points in metres, the quantity libh3 answers as
- * greatCircleDistanceM
+ * geodetic points in metres
+ * @details This is the quantity libh3 answers as greatCircleDistanceM.
  * @csqlfn #Tgeogpoint_great_circle_distance()
  */
 Temporal *

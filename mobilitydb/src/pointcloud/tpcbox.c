@@ -507,8 +507,8 @@ PGDLLEXPORT Datum Tpcbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_round);
 /**
  * @ingroup mobilitydb_pointcloud_box
- * @brief Return a TPCBox with coordinates rounded to a given number
- *   of decimal digits.
+ * @brief Return a TPCBox with coordinates rounded to a given number of decimal
+ * digits
  * @sqlfn round()
  */
 Datum
@@ -525,8 +525,7 @@ PGDLLEXPORT Datum Tpcbox_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_set_srid);
 /**
  * @ingroup mobilitydb_pointcloud_box
- * @brief Return a TPCBox with the SRID overwritten (no coordinate
- *   reprojection).
+ * @brief Return a TPCBox with the SRID overwritten (no coordinate reprojection)
  * @sqlfn setSRID()
  */
 Datum

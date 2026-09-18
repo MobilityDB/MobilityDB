@@ -393,8 +393,9 @@ time_sel_type(MeosType type)
 
 /**
  * @brief Return true if the type may be an operand of an operator whose
- * selectivity is estimated for the `Temporal` family, that is, a time type or
- * a temporal type whose bounding box is a `tstzspan`
+ * selectivity is estimated for the `Temporal` family
+ * @details Such a type is a time type or a temporal type whose bounding box is
+ * a `tstzspan`.
  */
 static bool
 temporal_sel_type(MeosType type)
@@ -404,9 +405,9 @@ temporal_sel_type(MeosType type)
 
 /**
  * @brief Return true if the type may be an operand of an operator whose
- * selectivity is estimated for the `TNumber` family, that is, a time type, a
- * type of the number value domain, or a temporal type whose bounding box is a
- * `tbox`
+ * selectivity is estimated for the `TNumber` family
+ * @details Such a type is a time type, a type of the number value domain, or
+ * a temporal type whose bounding box is a `tbox`.
  */
 static bool
 tnumber_sel_type(MeosType type)
@@ -418,8 +419,9 @@ tnumber_sel_type(MeosType type)
 
 /**
  * @brief Return true if the type may be an operand of an operator whose
- * selectivity is estimated for the `TSpatial` family, that is, a time type, a
- * spatial base type, or a temporal type whose bounding box is an `stbox`
+ * selectivity is estimated for the `TSpatial` family
+ * @details This is the case for a time type, a spatial base type, or a
+ * temporal type whose bounding box is an `stbox`.
  */
 static bool
 tspatial_sel_type(MeosType type)
@@ -827,9 +829,9 @@ Tspatial_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Depending on the operator and the arguments, determine wheter the
- * value, the time, or both components are taken into account for computing
- * the join selectivity
+ * @brief Determine whether the value, the time, or both components are taken
+ * into account for computing the join selectivity
+ * @details The components depend on the operator and the arguments.
  */
 static bool
 tnumber_joinsel_components(MeosOper oper, MeosType oprleft,
@@ -870,9 +872,10 @@ tnumber_joinsel_components(MeosOper oper, MeosType oprleft,
 }
 
 /**
- * @brief Depending on the operator and the arguments, determine wheter the
- * space, the time, or both components are taken into account for computing the
- * join selectivity
+ * @brief Determine whether the space, the time, or both components are taken
+ * into account for computing the join selectivity
+ * @details The components are determined depending on the operator and the
+ * arguments.
  */
 static bool
 tspatial_joinsel_components(MeosOper oper, MeosType oprleft,

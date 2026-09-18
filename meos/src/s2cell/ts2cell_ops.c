@@ -411,8 +411,9 @@ tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
 /**
  * @ingroup meos_s2cell_conversion
  * @brief Return the temporal S2 cell of a temporal planar point in a lon/lat
- * reference system at a level, holding every cell the trajectory crosses
- * along its straight lines in longitude and latitude
+ * reference system at a level
+ * @details The result holds every cell the trajectory crosses along its
+ * straight lines in longitude and latitude.
  * @param[in] temp Temporal point
  * @param[in] level S2 level
  * @csqlfn #Tgeompoint_to_ts2cell()

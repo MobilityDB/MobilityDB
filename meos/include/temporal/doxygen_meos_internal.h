@@ -188,7 +188,7 @@
  *   @defgroup meos_internal_box_bbox_pos Position functions
  *   @ingroup meos_internal_box_bbox
  *   @brief Position functions for box types
-  */
+ */
 
 /*****************************************************************************/
 

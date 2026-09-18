@@ -1093,7 +1093,7 @@ PGDLLEXPORT Datum NAD_tpcbox_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Nearest-approach distance between two TPCBox values.
+ * @brief Return the nearest-approach distance between two TPCBox values
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1112,7 +1112,8 @@ PGDLLEXPORT Datum NAD_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpointcloud_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Nearest-approach distance between a tpcpoint/tpcpatch and a TPCBox.
+ * @brief Return the nearest-approach distance between a tpcpoint/tpcpatch and a
+ * TPCBox
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1132,7 +1133,8 @@ PGDLLEXPORT Datum NAD_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpcbox_tpointcloud);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Nearest-approach distance between a TPCBox and a tpcpoint/tpcpatch.
+ * @brief Return the nearest-approach distance between a TPCBox and a
+ * tpcpoint/tpcpatch
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1152,7 +1154,8 @@ PGDLLEXPORT Datum NAD_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpointcloud_tpointcloud);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Nearest-approach distance between two temporal pointcloud values.
+ * @brief Return the nearest-approach distance between two temporal point cloud
+ * values
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */

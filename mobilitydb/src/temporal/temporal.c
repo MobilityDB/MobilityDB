@@ -2313,7 +2313,7 @@ Temporal_minus_max(PG_FUNCTION_ARGS)
 /**
  * @brief Return a temporal value restricted to (the complement of) a temporal
  * box
-  */
+ */
 static Datum
 Tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
 {

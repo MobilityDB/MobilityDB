@@ -846,8 +846,8 @@ tpcbox_expand(const TPCBox *box1, TPCBox *box2)
 
 /**
  * @ingroup meos_pointcloud_box_transf
- * @brief Return a tpcbox with coordinate bounds rounded to a given
- *   number of decimal digits.
+ * @brief Return a tpcbox with coordinate bounds rounded to a given number of
+ * decimal digits
  * @param[in] box Bounding box
  * @param[in] maxdd Maximum number of decimal digits (must be >= 0)
  * @return Newly-palloc'd TPCBox, or @p NULL on invalid argument.

@@ -45,10 +45,10 @@
 #include "pg_geo/tspatial_analyze.h"
 
 /**
-* The maximum number of dimensions our code can handle.
-* We'll use this to statically allocate a bunch of
-* arrays below.
-*/
+ * The maximum number of dimensions our code can handle.
+ * We'll use this to statically allocate a bunch of
+ * arrays below.
+ */
 #define X_DIM  0
 #define Y_DIM  1
 #define Z_DIM  2
@@ -68,11 +68,11 @@
 #define SDFACTOR 3.25
 
 /**
-* Minimum width of a dimension that we'll bother trying to
-* compute statistics on. Bearing in mind we have no control
-* over units, but noting that for geographics, 10E-5 is in the
-* range of meters, we go lower than that.
-*/
+ * Minimum width of a dimension that we'll bother trying to
+ * compute statistics on. Bearing in mind we have no control
+ * over units, but noting that for geographics, 10E-5 is in the
+ * range of meters, we go lower than that.
+ */
 #define MIN_DIMENSION_WIDTH 0.000000001
 
 #define STATISTIC_KIND_ND 102
@@ -81,14 +81,14 @@
 #define STATISTIC_SLOT_2D 1
 
 /**
-* Default geometry selectivity factor
-*/
+ * Default geometry selectivity factor
+ */
 #define DEFAULT_ND_SEL 0.0001
 #define DEFAULT_ND_JOINSEL 0.001
 
 /**
-* More modest fallafter selectivity factor
-*/
+ * More modest fallafter selectivity factor
+ */
 #define FALLBACK_ND_SEL 0.2
 #define FALLBACK_ND_JOINSEL 0.3
 

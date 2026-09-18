@@ -88,8 +88,8 @@ pg_notice(const char *fmt, va_list ap)
 
 #if POINTCLOUD
 /**
- * @brief Informational handler — libpc.a takes one more callback slot
- *   than liblwgeom (notice vs warning vs info).
+ * @brief Informational handler — libpc.a takes one more callback slot than
+ * liblwgeom (notice vs warning vs info)
  */
 static void
 pg_info(const char *fmt, va_list ap)
@@ -102,8 +102,8 @@ pg_info(const char *fmt, va_list ap)
 #endif
 
 /**
- * @brief Set the handlers for initializing the liblwgeom library
- *   (and libpc.a when POINTCLOUD=ON).
+ * @brief Set the handlers for initializing the liblwgeom library (and libpc.a
+ * when POINTCLOUD=ON)
  * @note When both libMobilityDB-1.4.so and pointcloud-1.2.so are
  *   loaded in the same backend, both bundle their own copy of
  *   libpc.a; ELF's global symbol interposition chooses one copy for

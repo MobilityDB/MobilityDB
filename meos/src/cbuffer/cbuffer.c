@@ -91,9 +91,10 @@ cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2, const Cbuffer *cb3,
 }
 
 /**
- * @brief Return a float in [0,1] representing the location of the closest
- * location on the circular buffer segment to the given circular buffer,
- * as a fraction of the segment length
+ * @brief Return the location of the closest location on a circular buffer
+ * segment to a circular buffer
+ * @details The result is a float in [0,1] that represents the location as a
+ * fraction of the segment length.
  * @param[in] start,end Circular buffers defining the segment
  * @param[in] value Circular buffer to locate
  */

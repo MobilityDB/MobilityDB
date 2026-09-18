@@ -87,9 +87,9 @@ typedef struct struct_MEOSPROJSRSCache
 } MEOSPROJSRSCache;
 
 /**
- * @brief PROJ 4 backend hash table initial hash size (since 16 is the default
- * portal hash table size, and we would typically have 2 entries per portal
- * then we shall use a default size of 256)
+ * @brief PROJ 4 backend hash table initial hash size
+ * @details Since 16 is the default portal hash table size, and there are
+ * typically 2 entries per portal, the default size is 256.
  */
 #define PROJ_BACKEND_HASH_SIZE 256
 
@@ -159,9 +159,9 @@ PROJSRSDestroyPJ(void *projection)
 }
 
 /**
- * @brief Get the Proj cache entry from the global variable if one exists.
- * If it doesn't exist, make a new blank one and return it.
-*/
+ * @brief Get the Proj cache entry from the global variable if one exists
+ * @details If it doesn't exist, make a new blank one and return it.
+ */
 MEOSPROJSRSCache *
 GetMEOSPROJSRSCache()
 {

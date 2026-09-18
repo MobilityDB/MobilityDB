@@ -187,9 +187,10 @@ dist_geom_arc_contains_angle(const DistEdge *e, double phi)
 }
 
 /**
- * @brief Set an arc edge's bounding box: the chord endpoints extended with any
- * cardinal-direction circle extreme (0, pi/2, pi, -pi/2) that lies within the
- * arc's angular span, so the bucket hierarchy never prunes away the arc bulge
+ * @brief Set the bounding box of an arc edge
+ * @details The box is the chord endpoints extended with any cardinal-direction
+ * circle extreme (0, pi/2, pi, -pi/2) that lies within the arc's angular span,
+ * so the bucket hierarchy never prunes away the arc bulge.
  */
 static void
 dist_geom_arc_set_bbox(DistEdge *e)
@@ -281,11 +282,11 @@ dist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
 }
 
 /**
- * @brief Append the boundary segments of a curve polygon ring (a line string, a
- * circular string, or a compound curve chaining both) with polygon (region)
- * semantics
- * @details Returns false when an arc ring is present but the caller does not
- * consume arc edges (@p allow_arc is false), so the exact path is used.
+ * @brief Append the boundary segments of a curve polygon ring with polygon
+ * (region) semantics
+ * @details The ring is a line string, a circular string, or a compound curve
+ * chaining both. Returns false when an arc ring is present but the caller does
+ * not consume arc edges (@p allow_arc is false), so the exact path is used.
  */
 static bool
 dist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
@@ -545,10 +546,12 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
- * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the centre
- * moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, and @p e is a
- * circular-arc edge
- * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot
+ * @brief Return the minimum distance between a moving disc and a circular-arc
+ * edge
+ * @details The minimum is that of [ dist(c(t), arc) - r(t) ] for t in [0,1],
+ * where the centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to
+ * r2, and @p e is a circular-arc edge.
+ * Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot
  * angle phi(t) lies within the arc's angular span the distance to the arc is
  * | sqrt(Q(t)) - R |, so the distance to the moving disc is
  * | sqrt(Q(t)) - R | - r(t); its minimisers over t are the interval endpoints,
@@ -869,9 +872,9 @@ dist_geom_closest_on_edge(double px, double py, const DistEdge *e,
 }
 
 /**
- * @brief Closest point on arc edge @p e to (px,py): the projection onto the
- * supporting circle when its angle lies in the arc span, otherwise the nearer
- * arc endpoint
+ * @brief Compute the closest point on arc edge @p e to (px,py)
+ * @details The closest point is the projection onto the supporting circle when
+ * its angle lies in the arc span, otherwise the nearer arc endpoint.
  */
 static void
 dist_geom_closest_on_arc(double px, double py, const DistEdge *e,
@@ -1053,9 +1056,10 @@ dist_pt_seg_dist2(double px, double py, double ax, double ay, double bx,
 }
 
 /**
- * @brief Squared minimum distance between two 2D segments (0 when they cross),
- * a scalar-only alternative to lw_dist2d_seg_seg for the hot nearest-approach
- * prune (no closest-point bookkeeping)
+ * @brief Return the squared minimum distance between two 2D segments
+ * @details The distance is 0 when the segments cross. This is a scalar-only
+ * alternative to lw_dist2d_seg_seg for the hot nearest-approach prune (no
+ * closest-point bookkeeping).
  */
 static inline double
 dist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
@@ -1100,20 +1104,19 @@ box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
 }
 
 /**
- * @brief Return the squared distance a centre segment must reach from a
- * geometry, one of its edge buckets or one of its edges before a swept-capsule
- * unit of largest radius @p rmax can no longer improve the running minimum
- * @p best
- *
- * Every point of the unit lies within @p rmax of the unit's centre segment, so
- * the unit's distance to a set is at least that set's distance to the centre
- * segment minus @p rmax, and a centre distance of at least best + rmax leaves
- * the exact solve nothing to find. Testing the centre this way is strictly
- * tighter than growing the centre box by @p rmax on each axis and comparing
- * against @p best, which is what the three prune levels below did before: the
- * axis-wise growth subtracts the radius once per axis and so gives away up to
- * a factor of sqrt(2) radially, because a disc is round and a box is square.
- * With @p rmax zero -- a temporal point -- the two forms coincide exactly.
+ * @brief Return the squared distance at which a swept-capsule unit of largest
+ * radius @p rmax can no longer improve the running minimum @p best
+ * @details This is the distance a centre segment must reach from a geometry,
+ * one of its edge buckets or one of its edges. Every point of the unit lies
+ * within @p rmax of the unit's centre segment, so the unit's distance to a set
+ * is at least that set's distance to the centre segment minus @p rmax, and a
+ * centre distance of at least best + rmax leaves the exact solve nothing to
+ * find. The three prune levels below test the centre this way, which is
+ * strictly tighter than growing the centre box by @p rmax on each axis and
+ * comparing against @p best: the axis-wise growth subtracts the radius once
+ * per axis and so gives away up to a factor of sqrt(2) radially, because a
+ * disc is round and a box is square. With @p rmax zero -- a temporal point --
+ * the two forms coincide exactly.
  *
  * The threshold is squared because every distance it is compared against is a
  * squared one, and it is computed here rather than at each test because it
@@ -1224,9 +1227,10 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
 }
 
 /**
- * @brief Update the witness with one swept-capsule unit against the geometry,
- * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
- * c2 with radius r1 to r2; a stationary disk has c1 == c2)
+ * @brief Update the witness with one swept-capsule unit against the geometry
+ * @details The unit is pruned by the bucket bounding-volume hierarchy. The
+ * centre moves from c1 to c2 with radius r1 to r2; a stationary disk has
+ * c1 == c2.
  */
 void
 dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
@@ -1332,10 +1336,11 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
 }
 
 /**
- * @brief Update the witness with one swept-capsule unit against the geometry,
- * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
- * c2 with radius r1 to r2 over the time span t1 to t2; a stationary disc has
- * c1 == c2 and t1 == t2), mirroring #dist_segm_shortestline
+ * @brief Update the witness with one swept-capsule unit against the geometry
+ * @details The unit is pruned by the bucket bounding-volume hierarchy. The
+ * centre moves from c1 to c2 with radius r1 to r2 over the time span t1 to t2;
+ * a stationary disc has c1 == c2 and t1 == t2. The function mirrors
+ * #dist_segm_shortestline.
  */
 void
 dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
@@ -1421,9 +1426,9 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
 }
 
 /**
- * @brief Build a generic R-tree over the edge bounding boxes for the fixed-reach
- * relationship kernels; the index boxes use SRID 0 so a query needs no geometry
- * SRID
+ * @brief Build a generic R-tree over the edge bounding boxes for the
+ * fixed-reach relationship kernels
+ * @details The index boxes use SRID 0 so a query needs no geometry SRID.
  */
 RTree *
 dist_geom_build_rtree(const DistEdge *segs, int n)
@@ -1532,10 +1537,11 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  *****************************************************************************/
 
 /**
- * @brief Return 1 or 2 if a temporal point segment and a point are at a 
- * minimum distance during the period defined by the output timestamps, return
- * 0 otherwise
- * @details These are the turning points when computing the temporal distance.
+ * @brief Return whether a temporal point segment and a point are at a minimum
+ * distance
+ * @details Return 1 or 2 if they are at a minimum distance during the period
+ * defined by the output timestamps, return 0 otherwise. These are the turning
+ * points when computing the temporal distance.
  * @param[in] start,end Values defining the first segment
  * @param[in] point Point to locate
  * @param[in] lower,upper Minimum distance at turning point
@@ -1625,9 +1631,9 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
 
 /**
  * @brief Return 1 or 2 if two temporal geometry point segments are at a
- * minimum distance during the period defined by the output timestamps, return
- * 0 otherwise
- * @details These are the turning points when computing the temporal distance.
+ * minimum distance during the output period, return 0 otherwise
+ * @details The period is defined by the output timestamps. These are the
+ * turning points when computing the temporal distance.
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
@@ -1677,9 +1683,9 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 
 /**
  * @brief Return 1 or 2 if two temporal geography point segments are at a
- * minimum distance during the period defined by the output timestamps, return
- * 0 otherwise
- * @details These are the turning points when computing the temporal distance
+ * minimum distance during a period, 0 otherwise
+ * @details The period is defined by the output timestamps. These are the
+ * turning points when computing the temporal distance
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
@@ -1726,8 +1732,8 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 
 /**
  * @brief Return 1 or 2 if two temporal point segments are at a minimum
- * distance during the period defined by the output timestamps, return 0
- * otherwise
+ * distance during the period defined by the output timestamps
+ * @details The function returns 0 otherwise.
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
@@ -2078,7 +2084,7 @@ nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
 /**
  * @brief Return the new current nearest approach instant between a temporal
  * point sequence with step interpolation and a geometry/geography
- * (iterator function)
+ * @details This is an iterator function.
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
@@ -2146,8 +2152,8 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
 
 /**
  * @brief Return the distance and the timestamp of the nearest approach instant
- * between a temporal point sequence with linear interpolation and a
- * geometry/geography
+ * between a temporal point sequence and a geometry/geography
+ * @details The temporal point sequence has linear interpolation.
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
  * @param[out] t Timestamp
@@ -2191,8 +2197,9 @@ nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Return the distance and the timestamp of the nearest approach instant
- * between a temporal point sequence with linear interpolation and a
- * geometry/geography (iterator function)
+ * between a temporal point sequence and a geometry/geography
+ * @details The temporal point sequence has linear interpolation. This is an
+ * iterator function.
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning

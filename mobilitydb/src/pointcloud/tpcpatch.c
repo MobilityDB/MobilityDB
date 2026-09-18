@@ -150,8 +150,8 @@ PGDLLEXPORT Datum Tpcpatch_npoints(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_npoints);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
- * @brief Return the total number of points across every instant's
- *   pcpatch in a tpcpatch value.
+ * @brief Return the total number of points across every instant's pcpatch in a
+ * tpcpatch value
  * @details Per-instant @c pcpatch_npoints summed without decompressing
  *   any payload (the count is in the patch header). bigint return type
  *   because a long sequence of dense patches can blow past int32.
@@ -211,8 +211,8 @@ Tpcpatch_npoints(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Per-instant predicate: pcpatch's pcid + 2D @c PCBOUNDS +
- *   timestamp all overlap the supplied @c TPCBox.
+ * @brief Per-instant predicate: pcpatch's pcid + 2D @c PCBOUNDS + timestamp all
+ * overlap the supplied @c TPCBox
  * @param pa          Source pcpatch.
  * @param t           Instant timestamp.
  * @param box         Filtering @c TPCBox.
@@ -372,8 +372,8 @@ tpcpatch_inst_filter(const TInstant *inst, pcpatch_pointpred_fn pred,
 }
 
 /**
- * @brief Filter a @c TSequence's instants, emit one output TSequence
- *   per contiguous run of survivors.
+ * @brief Filter a @c TSequence's instants, emit one output TSequence per
+ * contiguous run of survivors
  * @param seq              Source sequence.
  * @param pred             Per-point predicate.
  * @param extra            Caller-supplied state for @p pred.
@@ -506,8 +506,7 @@ PGDLLEXPORT Datum Tpcpatch_at_tpcbox_fine(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_at_tpcbox_fine);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to only the points inside the supplied
- *   TPCBox.
+ * @brief Restrict a tpcpatch to only the points inside the supplied TPCBox
  * @details Per-point granularity: each surviving instant carries a
  *   freshly-built pcpatch containing only the points inside the box.
  *   Instants whose patches have zero points inside are dropped. The
@@ -559,8 +558,8 @@ PGDLLEXPORT Datum Tpcpatch_at_geometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_at_geometry);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to only the points whose XY projection
- *   intersects the supplied geometry.
+ * @brief Restrict a tpcpatch to only the points whose XY projection intersects
+ * the supplied geometry
  * @sqlfn atGeometry()
  */
 Datum
@@ -580,8 +579,8 @@ PGDLLEXPORT Datum Tpcpatch_minus_geometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_minus_geometry);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to only the points whose XY projection
- *   does NOT intersect the supplied geometry.
+ * @brief Restrict a tpcpatch to only the points whose XY projection does NOT
+ * intersect the supplied geometry
  * @sqlfn minusGeometry()
  */
 Datum
@@ -602,12 +601,11 @@ Tpcpatch_minus_geometry(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Test whether any instant of @p temp has at least one point
- *   matching @p pred.
- *
- * Walks instants in subtype order, short-circuits on the first hit —
- * never rebuilds a patch. Backs the @c eIntersects PG wrapper.
- *
+ * @brief Test whether any instant of @p temp has at least one point matching
+ * @p pred
+ * @details The function walks instants in subtype order and short-circuits on
+ * the first hit; it never rebuilds a patch. It backs the @c eIntersects PG
+ * wrapper.
  * @param temp   Source tpcpatch.
  * @param pred   Per-point predicate.
  * @param extra  Caller-supplied state for @p pred.
@@ -636,8 +634,8 @@ PGDLLEXPORT Datum Eintersects_tpcpatch_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tpcpatch_geo);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Return true iff at least one point in any of the tpcpatch's
- *   instants intersects the geometry.
+ * @brief Return true iff at least one point in any of the tpcpatch's instants
+ * intersects the geometry
  * @details Walks instants in order, short-circuiting on the first
  *   hit. No patch rebuild, no allocations beyond the temporary
  *   per-instant decompression.
@@ -659,8 +657,8 @@ PGDLLEXPORT Datum Tpcpatch_at_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_at_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to the patches whose 2D PCBOUNDS overlap
- *   the box and whose timestamp falls in its period.
+ * @brief Restrict a tpcpatch to the patches whose 2D PCBOUNDS overlap the box
+ * and whose timestamp falls in its period
  * @details Patch-level granularity: each surviving instant keeps its
  *   pcpatch payload verbatim. No per-point decompression.
  * @sqlfn atTpcbox()
@@ -682,7 +680,7 @@ PG_FUNCTION_INFO_V1(Tpcpatch_minus_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Remove from a tpcpatch the instants whose patch passes the
- *   PCBOUNDS-overlap + timestamp-in-period predicate.
+ * PCBOUNDS-overlap + timestamp-in-period predicate
  * @sqlfn minusTpcbox()
  */
 Datum
@@ -789,8 +787,8 @@ PGDLLEXPORT Datum Tpcpatch_points(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_points);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Set-returning function emitting one (timestamptz, pcpoint) row
- *   per point per instant of a tpcpatch.
+ * @brief Set-returning function emitting one (timestamptz, pcpoint) row per
+ * point per instant of a tpcpatch
  * @sqlfn points()
  */
 Datum

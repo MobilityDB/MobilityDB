@@ -74,8 +74,8 @@
 /*****************************************************************************/
 
 /**
- * @brief Return the install namespace of the pgpointcloud extension, or
- *   @c InvalidOid if pgpointcloud isn't installed in this database.
+ * @brief Return the install namespace of the pgpointcloud extension, or @c
+ * InvalidOid if pgpointcloud isn't installed in this database
  */
 static Oid
 pointcloud_namespace_oid(void)
@@ -87,8 +87,8 @@ pointcloud_namespace_oid(void)
 }
 
 /**
- * @brief Fetch the XML schema text and the SRID for a given pcid from
- *   @c pointcloud_formats via a direct heap scan.
+ * @brief Fetch the XML schema text and the SRID for a given pcid from @c
+ * pointcloud_formats via a direct heap scan
  * @details The SRID is a column of that table and appears nowhere in the
  *   schema XML, so this is the only place it can be read from.
  * @param[in] pcid pgPointCloud schema identifier

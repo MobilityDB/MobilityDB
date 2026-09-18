@@ -373,10 +373,10 @@ temporal_get_strategy_by_type(MeosType temptype, uint16_t index)
  *****************************************************************************/
 
 /**
- * @brief Is the function calling the support function one of those we will
- * enhance with index ops? If so, copy the metadata for the function into idxfn
- * and return true
- * @details If false, how did the support function get added, anyways?
+ * @brief Return true if the function calling the support function is one of
+ * those enhanced with index operations
+ * @details If so, the metadata for the function is copied into idxfn. If
+ * false, how did the support function get added, anyways?
  */
 bool
 func_needs_index(Oid funcid, const IndexableFunction *idxfns,
@@ -400,10 +400,11 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
 }
 
 /**
- * @brief We only add index enhancements for indexes that support range-based
- * searches like the && operator), so only implementations based on GIST
- * and SPGIST.
-*/
+ * @brief Return the access method of an operator family
+ * @details The index enhancements apply only to the indexes that support
+ * range-based searches such as the && operator, that is, to the
+ * implementations based on GiST and SP-GiST.
+ */
 static Oid
 opFamilyAmOid(Oid opfamilyoid)
 {
@@ -423,14 +424,15 @@ opFamilyAmOid(Oid opfamilyoid)
 
 /*****************************************************************************/
 
-/**
- * @brief To apply the "expand for radius search" pattern we need access to the
- * expand function, so lookup the function Oid using the function name and
- * type number.
- */
 static FuncExpr *makeBboxExpr(Node *arg, Oid argoid, Oid retoid,
   Oid callingfunc);
 
+/**
+ * @brief Return a call of the expand function of an argument
+ * @details Applying the "expand for radius search" pattern requires access to
+ * the expand function, so the function Oid is looked up using the function
+ * name and type number.
+ */
 static FuncExpr *
 makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   Oid callingfunc)
@@ -489,9 +491,10 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 }
 
 /**
- * @brief To apply the "bunding box search" pattern we need access to the
- * corresponding bbox function, so lookup the function Oid using the function
- * name and type number
+ * @brief Return a call of the bounding box function of an argument
+ * @details Applying the "bounding box search" pattern requires access to the
+ * corresponding bbox function, so the function Oid is looked up using the
+ * function name and type number.
  */
 static FuncExpr *
 makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)

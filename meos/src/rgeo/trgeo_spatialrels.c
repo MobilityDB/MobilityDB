@@ -229,9 +229,10 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 }
 
 /**
- * @brief Return 1 if the placements of a temporal rigid geometry ever or
- * always contains a geometry, 0 if not, and -1 on error or if the geometry
- * is empty
+ * @brief Return whether the placements of a temporal rigid geometry ever or
+ * always contain a geometry
+ * @details The result is 1 if they do, 0 if not, and -1 on error or if the
+ * geometry is empty.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -482,9 +483,9 @@ edisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if the temporal rigid geometries are always disjoint, 0 if
- * not, and -1 on error or if the temporal rigid geometries do not intersect
- * in time
+ * @brief Return whether the temporal rigid geometries are always disjoint
+ * @details The function returns 1 if they are, 0 if not, and -1 on error or if
+ * the temporal rigid geometries do not intersect in time.
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Adisjoint_trgeometry_trgeometry()
  */
@@ -499,9 +500,10 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return 1 if the placements of a temporal rigid geometry ever or
- * always intersects a geometry, 0 if not, and -1 on error or if the geometry
- * is empty
+ * @brief Return whether the placements of a temporal rigid geometry ever or
+ * always intersect a geometry
+ * @details The result is 1 if they do, 0 if not, and -1 on error or if the
+ * geometry is empty.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -945,8 +947,7 @@ ea_dwithin_trgeo_trgeo_sync(const Temporal *sync1, const Temporal *sync2,
 /**
  * @ingroup meos_internal_geo_spatial_rel_ever
  * @brief Return 1 if two temporal rigid geometries are ever within a distance,
- * 0 if not, -1 on error or if the temporal rigid geometries do not intersect
- * on time
+ * 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -989,9 +990,10 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if two temporal rigid geometries are ever within a distance,
- * 0 if not, -1 on error or if the temporal rigid geometries do not intersect
- * on time
+ * @brief Return whether two temporal rigid geometries are ever within a
+ * distance
+ * @details The result is 1 if they are, 0 if not, -1 on error or if the
+ * temporal rigid geometries do not intersect on time.
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Edwithin_trgeometry_trgeometry()
@@ -1005,8 +1007,7 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if two temporal rigid geometries are always within a
- * distance, 0 if not, -1 on error or if the temporal rigid geometries do not
- * intersect on time
+ * distance, 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Adwithin_trgeometry_trgeometry()

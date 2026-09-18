@@ -110,8 +110,8 @@ typedef struct
   (sizeof(PcpointLayoutShadow) - offsetof(PcpointLayoutShadow, data) - 1)
 
 /**
- * @brief Return the meaningful byte length of a pcpoint — i.e. VARSIZE
- *   minus pgpointcloud's struct-tail padding.
+ * @brief Return the meaningful byte length of a pcpoint
+ * @details The length is VARSIZE minus pgpointcloud's struct-tail padding.
  * @note Guards against degenerate tiny values: if the computed length
  *   would dip below the header + pcid (8 bytes), fall back to VARSIZE.
  *   In practice any well-formed pcpoint has VARSIZE >= 12 (header +

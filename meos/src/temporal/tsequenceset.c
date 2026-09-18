@@ -212,8 +212,9 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
 
 /**
  * @brief Ensure that all temporal sequences of the array have the same
- * temporal type and increasing timestamp, and if they are temporal points,
- * have the same srid and the same dimensionality
+ * temporal type and increasing timestamp
+ * @details If they are temporal points, they must also have the same srid and
+ * the same dimensionality.
  */
 bool
 ensure_valid_tseqarr(TSequence **sequences, int count)
@@ -454,17 +455,18 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 
 /**
  * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality
- * @details This function extends function #ensure_valid_tinstarr by
- * determining the splits that must be made according the maximum distance or
- * interval between consecutive instants.
+ * timestamp and, if they are temporal points, the same srid and dimensionality
+ * @details Consecutive timestamps may be equal if the merge parameter is true.
+ * This function extends function #ensure_valid_tinstarr by determining the
+ * splits that must be made according to the maximum distance or interval
+ * between consecutive instants.
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
  * @param[in] maxdist Maximum distance to split the temporal sequence
- * @param[in] maxt Maximum time interval to split the temporal sequence, may be `NULL`
+ * @param[in] maxt Maximum time interval to split the temporal sequence, may be
+ *   `NULL`
  * @param[out] nsplits Number of splits
  * @return Array of indices at which the temporal sequence is split
  */
@@ -526,8 +528,9 @@ ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
 
 /**
  * @brief Ensure the validity of the arguments when creating a temporal value
- * This function extends function #tsequence_make_valid by spliting the
- * sequences according the maximum distance or interval between instants
+ * with gaps
+ * @details This function extends function #tsequence_make_valid by spliting
+ * the sequences according the maximum distance or interval between instants
  */
 static int *
 tsequenceset_make_gaps_valid(TInstant **instants, int count, bool lower_inc,
@@ -545,8 +548,9 @@ tsequenceset_make_gaps_valid(TInstant **instants, int count, bool lower_inc,
 /**
  * @ingroup meos_temporal_constructor
  * @brief Return a temporal sequence set from an array of temporal instants
- * introducing a gap when two consecutive instants are separated from each
- * other by at least a distance or a time interval
+ * introducing gaps
+ * @details A gap is introduced when two consecutive instants are separated
+ * from each other by at least a distance or a time interval.
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation

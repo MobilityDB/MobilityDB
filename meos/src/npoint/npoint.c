@@ -116,9 +116,11 @@ npointsegm_interpolate(const Npoint *start, const Npoint *end,
 }
 
 /**
- * @brief Return a float in (0,1) if a network point segment intersects a 
- * network point, return -1.0 if the network point is not located in the
- * segment or if it is approximately equal to the start or the end valuess
+ * @brief Return the location of a network point in a network point segment
+ * @details The location is a float in (0,1) if the segment intersects the
+ * network point. The function returns -1.0 if the network point is not located
+ * in the segment or if it is approximately equal to the start or the end
+ * values.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @note The function returns -1.0 if the network point is approximately equal 
