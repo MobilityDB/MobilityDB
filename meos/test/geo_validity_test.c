@@ -41,7 +41,9 @@
  * The program verifies that #tpointseq_make_coords reports a null array of
  * coordinates or timestamps and a count that is not positive by returning
  * NULL and setting #meos_errno, and that a valid call still answers with no
- * error left behind.
+ * error left behind. It also verifies that an empty geometry is reported by
+ * the constructors of a temporal instant and of a sequence from a timestamptz
+ * span, and a geometry that is not a point by the temporal point one.
  *
  * The program can be build as follows
  * @code
@@ -120,6 +122,55 @@ int main(void)
   assert(temporal_num_instants((Temporal *) seq) == 2);
   assert(meos_errno() == 0);
   free(seq);
+
+  /* An empty geometry is reported by every constructor of a temporal value,
+   * as for a point read in place as for a geometry walked, and a point that
+   * is not empty still answers */
+  Span *period = tstzspan_in("[2001-01-01, 2001-01-02]");
+  static const char *empties[] = {"POINT EMPTY", "POINT Z EMPTY",
+    "LINESTRING EMPTY"};
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *empty = geom_in(empties[i], -1);
+    meos_errno_reset();
+    TInstant *inst = tgeoinst_make(empty, ts[0]);
+    printf("tgeoinst_make(%s, t): %s, errno %d\n", empties[i],
+      inst ? "a value" : "NULL", meos_errno());
+    assert(inst == NULL);
+    assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+    meos_errno_reset();
+    seq = tgeoseq_from_base_tstzspan(empty, period, LINEAR);
+    printf("tgeoseq_from_base_tstzspan(%s, ...): %s, errno %d\n", empties[i],
+      seq ? "a value" : "NULL", meos_errno());
+    assert(seq == NULL);
+    assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+    meos_errno_reset();
+    seq = tpointseq_from_base_tstzspan(empty, period, LINEAR);
+    printf("tpointseq_from_base_tstzspan(%s, ...): %s, errno %d\n",
+      empties[i], seq ? "a value" : "NULL", meos_errno());
+    assert(seq == NULL);
+    assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+    meos_errno_reset();
+    free(empty);
+  }
+  /* The point variant also refuses a geometry that is not a point */
+  GSERIALIZED *line = geom_in("LINESTRING(1 1,2 2)", -1);
+  seq = tpointseq_from_base_tstzspan(line, period, LINEAR);
+  printf("tpointseq_from_base_tstzspan(LINESTRING, ...): %s, errno %d\n",
+    seq ? "a value" : "NULL", meos_errno());
+  assert(seq == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  free(line);
+  GSERIALIZED *point = geom_in("POINT(1 1)", -1);
+  TInstant *inst = tpointinst_make(point, ts[0]);
+  seq = tpointseq_from_base_tstzspan(point, period, LINEAR);
+  printf("tpointinst_make(POINT(1 1), t): %s, "
+    "tpointseq_from_base_tstzspan(POINT(1 1), ...): %s, errno %d\n",
+    inst ? "a value" : "NULL", seq ? "a value" : "NULL", meos_errno());
+  assert(inst != NULL && seq != NULL);
+  assert(meos_errno() == 0);
+  free(inst); free(seq); free(point); free(period);
 
   /* Finalize MEOS */
   meos_finalize();
