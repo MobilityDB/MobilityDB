@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that reads AIS data from a CSV file, converts them
- * into temporal values, and stores them in MobilityDB.
- *
- * This program uses the libpq library
+ * into temporal values, and stores them in MobilityDB
+ * @details This program uses the libpq library
  * https://www.postgresql.org/docs/current/libpq.html
  * for connecting to a PostgreSQL database that has the MobilityDB extension.
  * For this, it is required that `libpq-dev` is installed in your system.

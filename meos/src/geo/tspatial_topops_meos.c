@@ -30,11 +30,11 @@
 /**
  * @file
  * @brief Topological bounding box operators for spatiotemporal values
- * @details These operators test the bounding boxes of spatiotemporal values,  
- * which are an @p STBox, where the *x*, *y*, and optional *z* coordinates are  
+ * @details These operators test the bounding boxes of spatiotemporal values,
+ * which are an @p STBox, where the *x*, *y*, and optional *z* coordinates are
  * for the space(value) dimension and the *t* coordinate is for the time
  * dimension.
- * 
+ *
  * The following operators are defined: overlaps, contains, contained,
  * same, and adjacent.
  *

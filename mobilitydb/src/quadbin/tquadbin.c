@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the tquadbin conversion casts.
- *
- * The uint64 payload is identical between tbigint and tquadbin, but
+ * @brief PG V1 wrappers for the tquadbin conversion casts
+ * @details The uint64 payload is identical between tbigint and tquadbin, but
  * the embedded bounding box differs (TBox vs STBox). The MEOS-level
  * tbigint_to_tquadbin / tquadbin_to_tbigint helpers lift an identity
  * Datum function so the result is rebuilt at the correct shape.

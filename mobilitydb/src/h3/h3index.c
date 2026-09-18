@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `h3index` SQL type.
+ * @brief PG V1 wrappers for the static `h3index` SQL type
  */
 
 /* PostgreSQL */

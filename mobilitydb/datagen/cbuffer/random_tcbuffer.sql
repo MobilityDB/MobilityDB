@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * random_tcbuffer.sql
- * Basic synthetic data generator functions for circular buffer and
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for circular buffer and
  * temporal circular buffer types
  */
 

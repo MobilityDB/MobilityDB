@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for the pgPointCloud temporal types.
+ * @brief Aggregate functions for the pgPointCloud temporal types
  */
 
 CREATE FUNCTION tpcbox_extent_transfn(tpcbox, tpcbox)

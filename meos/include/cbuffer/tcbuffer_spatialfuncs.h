@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal network points.
+ * @file
+ * @brief Temporal distance for temporal network points
  */
 
 #ifndef __TCBUFFER_SPATIALFUNCS_H__

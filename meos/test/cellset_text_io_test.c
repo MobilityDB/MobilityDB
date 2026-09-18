@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the typed text input and output of the cell
- * index sets.
- *
- * Each set type gives its text form through a typed public function that
+ * index sets
+ * @details Each set type gives its text form through a typed public function
+ * that
  * tests its argument, as intset_out does for an integer set. The program
  * verifies that quadbinset_out, s2cellset_out and h3indexset_out answer the
  * text their input reads back with no error left behind, that each reports a

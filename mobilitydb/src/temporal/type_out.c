@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Output of types in WKT, EWKT, WKB, EWKB, HexWKB, and MF-JSON
- * representation.
+ * representation
  */
 
 /* PostgreSQL */

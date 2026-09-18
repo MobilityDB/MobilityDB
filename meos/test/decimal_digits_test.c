@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests how the functions taking a count of decimal
- * digits treat a count of zero and a negative count.
- *
- * A count of decimal digits says how many digits a value keeps after the
+ * digits treat a count of zero and a negative count
+ * @details A count of decimal digits says how many digits a value keeps after
+ * the
  * decimal point, and zero keeps none; every output and rounding function of
  * MEOS accepts it. A negative count is an erroneous argument, which the
  * public function taking it reports at its entry, as it reports a null

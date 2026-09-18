@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `s2cell` cell operations.
- *
- * Each wrapper unpacks its arguments, delegates to the first-party S2
+ * @brief PG V1 wrappers for the static `s2cell` cell operations
+ * @details Each wrapper unpacks its arguments, delegates to the first-party S2
  * kernel declared in `meos_s2cell.h`, and returns the result. The
  * subset shared with every DGGS family (resolution, hierarchy,
  * point/boundary, area) is wrapped here under the names the

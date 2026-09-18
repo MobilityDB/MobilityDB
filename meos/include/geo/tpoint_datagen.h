@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for spatiotemporal bounding boxes.
+ * @file
+ * @brief Functions for spatiotemporal bounding boxes
  */
 
 #ifndef __TPOINT_DATAGEN_H__

@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief Data generator for MobilityDB
- *
- * These functions are used in the BerlinMOD data generator
+ * @details These functions are used in the BerlinMOD data generator
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
 

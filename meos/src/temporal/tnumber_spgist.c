@@ -43,39 +43,39 @@
  * Unlike the original quadtree, we are splitting the tree into 16 quadrants
  * in 4D space. It is easier to imagine it as splitting space two times into 4:
  * @code
- *              |      |
- *              |      |
- *              | -----+-----
- *              |      | c2
- *              |      |
+ * |      |
+ * |      |
+ * | -----+-----
+ * |      | c2
+ * |      |
  * -------------+-------------
- *              | c1
- *              |
- *              |
- *              |
- *              |
+ * | c1
+ * |
+ * |
+ * |
+ * |
  * @endcode
  * where `c1` and `c2` are the centroids of the node and the child quadrant.
  *
- * We use centroids represented as a temporal box as the prefix, but we treat 
- * them as points in 4-dimensional space. Notice that 2D boxes are not enough 
- * to represent the quadrant boundaries in 4D space. However, they are 
+ * We use centroids represented as a temporal box as the prefix, but we treat
+ * them as points in 4-dimensional space. Notice that 2D boxes are not enough
+ * to represent the quadrant boundaries in 4D space. However, they are
  * sufficient to point out the additional boundaries of the next quadrant.
  *
  * We use node boxes (see below) composed by a left and a right temporal boxes
  * as traversal values to calculate and to store the bounds of the quadrants
- * while traversing the tree. A traversal value has all the boundaries in 
+ * while traversing the tree. A traversal value has all the boundaries in
  * 4D space, and is is capable of transferring the required boundaries to the
  * following traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *  1. the traversal value of the parent
- *  2. the quadrant of the current node
- *  3. the prefix of the current node
+ * 1. the traversal value of the parent
+ * 2. the quadrant of the current node
+ * 3. the prefix of the current node
  *
  * If we visualize them on the above drawing, transferred boundaries of
- * (1) would be the relevant part of the outer axis, 
- * (2) would be the up right part of the other axis, and 
+ * (1) would be the relevant part of the outer axis,
+ * (2) would be the up right part of the other axis, and
  * (3) would be the inner axis.
  *
  * For example, consider the case of overlapping.  When recursion descends

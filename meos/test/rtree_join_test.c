@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the join of two in-memory RTree indexes, i.e.,
- * rtree_join, against an exact brute-force oracle.
- *
- * The oracle is the public box predicate the join is meant to reproduce --
+ * rtree_join, against an exact brute-force oracle
+ * @details The oracle is the public box predicate the join is meant to
+ * reproduce --
  * #overlaps_stbox_stbox and #contains_stbox_stbox -- applied to every pair of
  * boxes, so the join is checked against an independent implementation rather
  * than against the callback it uses internally.
@@ -42,11 +42,11 @@
  * time, so a pair is reported only when it overlaps in every dimension.
  *
  * Four properties are asserted per operation:
- *  (i)   soundness: every reported pair satisfies the predicate;
- *  (ii)  completeness: every pair satisfying the predicate is reported;
- *  (iii) no duplicates: no pair is reported twice, so a caller counting the
- *        result counts each pair once;
- *  (iv)  count: the number of reported pairs equals the brute-force count.
+ * (i)   soundness: every reported pair satisfies the predicate;
+ * (ii)  completeness: every pair satisfying the predicate is reported;
+ * (iii) no duplicates: no pair is reported twice, so a caller counting the
+ * result counts each pair once;
+ * (iv)  count: the number of reported pairs equals the brute-force count.
  * The degenerate cases of an empty index and of two indexes that share no box
  * are asserted separately.
  *

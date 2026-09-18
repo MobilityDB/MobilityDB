@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests how the functions reading a raster along a
- * trajectory report an erroneous trajectory under the noexit error handler.
- *
- * A raster, a raster file and a Raquet tile each carry a planar grid, and the
+ * trajectory report an erroneous trajectory under the noexit error handler
+ * @details A raster, a raster file and a Raquet tile each carry a planar grid,
+ * and the
  * functions reading them along a trajectory, like the QUADBIN cover of a
  * trajectory, take a temporal geometry point, as their SQL signatures do. A
  * binding calling one of them with a null trajectory or with a temporal

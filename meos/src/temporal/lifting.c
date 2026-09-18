@@ -31,72 +31,72 @@
  * @file
  * @brief Generic functions for lifting functions and operators on temporal
  * types
- *
- * These functions are used for lifting arithmetic operators (`+`, `-`, `*`,
+ * @details These functions are used for lifting arithmetic operators (`+`,
+ * `-`, `*`,
  * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`,
  * `>=`), distance (`<->`), spatial relationships (`tcontains`), etc.
  *
  * The lifting of functions and operators must take into account the following
  * characteristic of the function to be lifted
  * 1. The number of arguments of the function
- *  - unary functions, such as `degrees` for temporal floats or `round`
- *    for temporal points.
- *  - binary functions and operators, such as arithmetic operators and comparisons (e.g.,
- *    `+` or `<`) or spatial relationships functions (e.g.,`tintersects`).
+ * - unary functions, such as `degrees` for temporal floats or `round`
+ * for temporal points.
+ * - binary functions and operators, such as arithmetic operators and comparisons (e.g.,
+ * `+` or `<`) or spatial relationships functions (e.g.,`tintersects`).
  * 2. The type of the arguments for binary functions
- *   - a temporal type and a base type. In this case the non-lifted function
- *     is applied to each instant of the temporal type.
- *   - two temporal types. In this case the operands must be synchronized
- *     and the function is applied to each pair of synchronized instants.
+ * - a temporal type and a base type. In this case the non-lifted function
+ * is applied to each instant of the temporal type.
+ * - two temporal types. In this case the operands must be synchronized
+ * and the function is applied to each pair of synchronized instants.
  * 4. Whether the type of the arguments may vary. For example, temporal
- *    numbers can be of different base type (that is, integer and float).
- *    Therefore, the types of the arguments must be taken into account when
- *    computing binary operators (e.g., `+` or `<`) for temporal numbers.
+ * numbers can be of different base type (that is, integer and float).
+ * Therefore, the types of the arguments must be taken into account when
+ * computing binary operators (e.g., `+` or `<`) for temporal numbers.
  * 5. The number of optional parameters of the function
- *  - no arguments, such as most spatial relationships functions (e.g.,
- *    `tintersects`).
- *  - one argument, such as spatial relationships functions that need
- *    an additional parameter (e.g., `tdwithin`).
- *  - two arguments, e.g., when assembling a temporal point from two temporal
- *    floats, the SRID and a boolean flag stating whether the resulting
- *    temporal point is geometric or geographic are needed.
+ * - no arguments, such as most spatial relationships functions (e.g.,
+ * `tintersects`).
+ * - one argument, such as spatial relationships functions that need
+ * an additional parameter (e.g., `tdwithin`).
+ * - two arguments, e.g., when assembling a temporal point from two temporal
+ * floats, the SRID and a boolean flag stating whether the resulting
+ * temporal point is geometric or geographic are needed.
  * 6. Whether the function has instantaneous discontinuities at the crossings.
- *    Examples of such functions are temporal comparisons for temporal floats
- *    or spatiotemporal relationships since the value of the result may
- *    change immediately before, at, or immediately after a crossing.
+ * Examples of such functions are temporal comparisons for temporal floats
+ * or spatiotemporal relationships since the value of the result may
+ * change immediately before, at, or immediately after a crossing.
  * 7. Whether intermediate points between synchronized instants must be added
- *    to take into account the crossings or the turning points (or local
- *    minimum/maximum) of the function. For example, `tfloat + tfloat`
- *    only needs to synchronize the arguments while `tfloat * tfloat` requires
- *    in addition to add the turning point, which is the timestamp between the
- *    two consecutive synchronized instants in which the linear functions
- *    defined by the two segments are equal.
+ * to take into account the crossings or the turning points (or local
+ * minimum/maximum) of the function. For example, `tfloat + tfloat`
+ * only needs to synchronize the arguments while `tfloat * tfloat` requires
+ * in addition to add the turning point, which is the timestamp between the
+ * two consecutive synchronized instants in which the linear functions
+ * defined by the two segments are equal.
  *
  * Examples
- *   - `tfloat_degrees => tfunc_temporal`
- *     applies the `degrees` function to each instant.
- *   - `tfloatseq + base => tfunc_tsequence_base`
- *     applies the `+` operator to each instant and results in a `tfloatseq`.
- *   - `tfloatseq < base => tfunc_tlinearseq_base_discfn`
- *     applies the `<` operator to each instant, if the sequence is equal
- *     to the base value in the middle of two consecutive instants add an
- *     instantaneous sequence at the crossing. The result is a `tfloatseqset`.
- *   - `tfloatseq + tfloatseq => tfunc_tcontseq_tcontseq`
- *     synchronizes the sequences and applies the `+` operator to each instant.
- *   - `tfloatseq * tfloatseq => tfunc_tcontseq_tcontseq`
- *     synchronizes the sequences possibly adding the turning points between
- *     two consecutive instants and applies the `*` operator to each instant.
- *     The result is a `tfloatseq`.
- *   - `tfloatseq < tfloatseq => tfunc_tcontseq_tcontseq_discfn`
- *     synchronizes the sequences, applies the `<` operator to each instant,
- *     and if there is a crossing in the middle of two consecutive pairs of
- *     instants add an instant sequence at the crossing. The result is a
- *     `tfloatseqset`.
- *   - `tfloatseq <-> tfloatseq => tfunc_tcontseq_tcontseq_single`
- *     synchronizes the sequences, applies the `<->` operator to each instant,
- *     and if there is a crossing in the middle of two consecutive pairs of
- *     instants add an instant sequence at the crossing. The result is a
- *     `tfloatseq`.
+ * - `tfloat_degrees => tfunc_temporal`
+ * applies the `degrees` function to each instant.
+ * - `tfloatseq + base => tfunc_tsequence_base`
+ * applies the `+` operator to each instant and results in a `tfloatseq`.
+ * - `tfloatseq < base => tfunc_tlinearseq_base_discfn`
+ * applies the `<` operator to each instant, if the sequence is equal
+ * to the base value in the middle of two consecutive instants add an
+ * instantaneous sequence at the crossing. The result is a `tfloatseqset`.
+ * - `tfloatseq + tfloatseq => tfunc_tcontseq_tcontseq`
+ * synchronizes the sequences and applies the `+` operator to each instant.
+ * - `tfloatseq * tfloatseq => tfunc_tcontseq_tcontseq`
+ * synchronizes the sequences possibly adding the turning points between
+ * two consecutive instants and applies the `*` operator to each instant.
+ * The result is a `tfloatseq`.
+ * - `tfloatseq < tfloatseq => tfunc_tcontseq_tcontseq_discfn`
+ * synchronizes the sequences, applies the `<` operator to each instant,
+ * and if there is a crossing in the middle of two consecutive pairs of
+ * instants add an instant sequence at the crossing. The result is a
+ * `tfloatseqset`.
+ * - `tfloatseq <-> tfloatseq => tfunc_tcontseq_tcontseq_single`
+ * synchronizes the sequences, applies the `<->` operator to each instant,
+ * and if there is a crossing in the middle of two consecutive pairs of
+ * instants add an instant sequence at the crossing. The result is a
+ * `tfloatseq`.
  *
  * A struct named `LiftedFunctionInfo` is used to describe the above
  * characteristics of the function to be lifted. Such struct is filled by
@@ -119,25 +119,25 @@
  * TInstant *
  * tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
  * {
- *   Datum resvalue;
- *   if (lfinfo->numparam == 0)
- *   {
- *     datum_func1 func1 = (datum_func1)(*lfinfo->func);
- *     resvalue = func1(temporalinst_value(inst));
- *   }
- *   else if (lfinfo->numparam == 1)
- *   {
- *     datum_func2 func2 = (datum_func2)(*lfinfo->func);
- *     resvalue = func2(temporalinst_value(inst), lfinfo->param[0]);
- *   }
- *   [...]
- *   else
- *   {
- *     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
- *       "Number of function parameters not supported: %u", lfinfo->numparam);
- *     return NULL;
- *   }
- *   return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
+ * Datum resvalue;
+ * if (lfinfo->numparam == 0)
+ * {
+ * datum_func1 func1 = (datum_func1)(*lfinfo->func);
+ * resvalue = func1(temporalinst_value(inst));
+ * }
+ * else if (lfinfo->numparam == 1)
+ * {
+ * datum_func2 func2 = (datum_func2)(*lfinfo->func);
+ * resvalue = func2(temporalinst_value(inst), lfinfo->param[0]);
+ * }
+ * [...]
+ * else
+ * {
+ * meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+ * "Number of function parameters not supported: %u", lfinfo->numparam);
+ * return NULL;
+ * }
+ * return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
  * }
  *
  * // Definitions for TSequence, TSequence, and TSequenceSet
@@ -147,8 +147,8 @@
  * Temporal *
  * tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
  * {
- *   // Dispatch depending on the temporal type
- *   [...]
+ * // Dispatch depending on the temporal type
+ * [...]
  * }
  * @endcode
  * An example of use of the lifting functions is given next.
@@ -157,17 +157,17 @@
  * PGDLLEXPORT Datum
  * tgeompoint_tgeogpoint(PG_FUNCTION_ARGS)
  * {
- *   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
- *   LiftedFunctionInfo *lfinfo;
- *   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
- *   lfinfo->func = (varfunc) &datum_geom_to_geog;
- *   lfinfo->numparam = 1;
- *   lfinfo->restype = T_TGEOGPOINT;
- *   lfinfo->tpfn_base = NULL;
- *   lfinfo->tpfn_temp = NULL;
- *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
- *   PG_FREE_IF_COPY(temp, 0);
- *   PG_RETURN_TEMPORAL_P(result);
+ * Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+ * LiftedFunctionInfo *lfinfo;
+ * memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+ * lfinfo->func = (varfunc) &datum_geom_to_geog;
+ * lfinfo->numparam = 1;
+ * lfinfo->restype = T_TGEOGPOINT;
+ * lfinfo->tpfn_base = NULL;
+ * lfinfo->tpfn_temp = NULL;
+ * Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+ * PG_FREE_IF_COPY(temp, 0);
+ * PG_RETURN_TEMPORAL_P(result);
  * }
  * @endcode
  */

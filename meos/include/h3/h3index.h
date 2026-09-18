@@ -29,21 +29,20 @@
 
 /**
  * @file
- * @brief Internal helpers for the static `h3index` SQL type.
- *
- * The static h3index type is the analogue of the static `cbuffer`
+ * @brief Internal helpers for the static `h3index` SQL type
+ * @details The static h3index type is the analogue of the static `cbuffer`
  * type — it provides the base value that the temporal `th3index`
  * type carries through time. Unlike `cbuffer`, h3index has no
  * compound payload (it is a 64-bit integer cell identifier), so
  * the helpers here are minimal:
  *
- *   * an input parser that reads the canonical hexadecimal cell literal,
- *     with an optional "0x" prefix and at most 16 significant digits, and
- *     that requires the value to denote a cell, a directed edge or a vertex,
- *   * an output formatter (canonical form is hex, matching h3-pg),
- *   * comparison / ordering / hashing helpers — exposed at the MEOS
- *     layer so MobilityDuck and other consumers can reuse them
- *     without re-implementing the int64 bit-compare logic.
+ * * an input parser that reads the canonical hexadecimal cell literal,
+ * with an optional "0x" prefix and at most 16 significant digits, and
+ * that requires the value to denote a cell, a directed edge or a vertex,
+ * * an output formatter (canonical form is hex, matching h3-pg),
+ * * comparison / ordering / hashing helpers — exposed at the MEOS
+ * layer so MobilityDuck and other consumers can reuse them
+ * without re-implementing the int64 bit-compare logic.
  */
 
 #ifndef __H3INDEX_H__

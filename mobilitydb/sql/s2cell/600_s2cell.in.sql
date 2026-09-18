@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Static `s2cell` SQL type — the base type of `ts2cell`.
- *
- * Defines the static Google S2 cell value type with its parser, output, send
+ * @brief Static `s2cell` SQL type — the base type of `ts2cell`
+ * @details Defines the static Google S2 cell value type with its parser,
+ * output, send
  * and receive, the six comparison operators, the btree and hash operator
  * classes, and the explicit casts to and from `bigint`.
  *
@@ -44,13 +44,13 @@
  * families: a base type the host database already provides is DEFERRED to the
  * host's own extension, and defined here where the host provides nothing.
  * PostgreSQL ships no S2 extension, so this file carries the whole surface.
- *   - `s2cell`   — no host extension ⇒ defined here
- *   - `quadbin`  — no host extension ⇒ defined in
- *                  `mobilitydb/sql/quadbin/350_quadbin.in.sql`
- *   - `h3index`  — h3-pg provides it ⇒ DEFERRED, and the equivalent blocks in
- *                  `mobilitydb/sql/h3/250_h3index.in.sql` are commented out,
- *                  since a second definition would collide on
- *                  `CREATE EXTENSION`
+ * - `s2cell`   — no host extension ⇒ defined here
+ * - `quadbin`  — no host extension ⇒ defined in
+ * `mobilitydb/sql/quadbin/350_quadbin.in.sql`
+ * - `h3index`  — h3-pg provides it ⇒ DEFERRED, and the equivalent blocks in
+ * `mobilitydb/sql/h3/250_h3index.in.sql` are commented out,
+ * since a second definition would collide on
+ * `CREATE EXTENSION`
  */
 
 /******************************************************************************

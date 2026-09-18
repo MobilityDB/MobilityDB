@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of disjoint spans.
+ * @file
+ * @brief Basic functions for set of disjoint spans
  */
 
 #ifndef __SPANSET_H__

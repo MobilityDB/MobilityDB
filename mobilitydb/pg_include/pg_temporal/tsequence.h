@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for temporal sequences.
+ * @file
+ * @brief Basic functions for temporal sequences
  */
 
 #ifndef __PG_TSEQUENCE_H__

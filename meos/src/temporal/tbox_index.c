@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief R-tree GiST index for temporal integers and temporal floats
- *
- * These functions are based on those in the file `gistproc.c`.
+ * @details These functions are based on those in the file `gistproc.c`.
  */
 
 #include "temporal/tbox_index.h"

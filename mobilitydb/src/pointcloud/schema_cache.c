@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief PG-side resolver for pgPointCloud schemas — installed as the
- *   @c meos_pc_schema_fn hook by @c mobilitydb_init.
+ * @c meos_pc_schema_fn hook by @c mobilitydb_init.
  *
  * The cache itself lives at the MEOS layer
  * (@c meos/src/pointcloud/schema_hook.c), so this file is now a thin

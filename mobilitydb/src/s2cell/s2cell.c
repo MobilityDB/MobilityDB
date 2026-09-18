@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the static `s2cell` SQL type.
+ * @brief PG V1 wrappers for the static `s2cell` SQL type
  */
 
 /* PostgreSQL */

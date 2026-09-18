@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A program that tests the input and output functions of the PostGIS
- * raster type, and the band count read through them.
- *
- * A @p Raster is the serialized form of the PostGIS @p raster type. A
+ * raster type, and the band count read through them
+ * @details A @p Raster is the serialized form of the PostGIS @p raster type. A
  * PostgreSQL session reaches it by detoasting its own column, but every other
  * binding holds the interchange representation instead, so
  * #raster_num_bands() is reachable outside PostgreSQL only through

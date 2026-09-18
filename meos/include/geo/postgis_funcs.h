@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Functions for geometry types corresponding to external
- * PostGIS functions in order to bypass the function manager @p fmgr.c.
+ * @brief Functions for geometry types corresponding to external PostGIS
+ * functions in order to bypass the function manager @p fmgr.c
  */
 
 #ifndef __POSTGIS_FUNCS_H__

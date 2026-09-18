@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Network-based static point and segment types.
- *
- * Several functions are commented out since they are not currently used.
+ * @brief Network-based static point and segment types
+ * @details Several functions are commented out since they are not currently
+ * used.
  * They are kept if needed in the future.
  */
 

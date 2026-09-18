@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the th3index comparison operators.
- *
- * Each wrapper unpacks an H3Index from a bigint Datum (the SQL
+ * @brief PG V1 wrappers for the th3index comparison operators
+ * @details Each wrapper unpacks an H3Index from a bigint Datum (the SQL
  * surface for bare cells) or a Temporal from a TOAST datum, calls
  * the th3index-specific MEOS function declared in `meos_h3.h`, and
  * returns the result.

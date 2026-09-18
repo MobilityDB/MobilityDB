@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Sections for the documentation of the MobilityDB API: Circular buffers
+ * @brief Sections for the documentation of the MobilityDB API: Circular
+ * buffers
  */
 
 /*****************************************************************************

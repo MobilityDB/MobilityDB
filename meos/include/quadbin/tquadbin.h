@@ -29,10 +29,8 @@
 
 /**
  * @file
- * @brief Internal declarations for the tquadbin type-inheritance
- * boilerplate.
- *
- * This header is the analogue of `meos/include/h3/th3index.h`.
+ * @brief Internal declarations for the tquadbin type-inheritance boilerplate
+ * @details This header is the analogue of `meos/include/h3/th3index.h`.
  * It carries the extern decls for the static helpers in `tquadbin.c`
  * that do not belong in the public `meos_quadbin.h`. The validity
  * macro `VALIDATE_TQUADBIN(temp, ret)`, used in every lifted function

@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Selectivity functions for temporal points.
+ * @file
+ * @brief Selectivity functions for temporal points
  */
 
 #ifndef __TSPATIAL_SELFUNCS_H__

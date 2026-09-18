@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries
- *
- * A rigid geometry occupies the region its body covers, so the tiles are the
+ * @details A rigid geometry occupies the region its body covers, so the tiles
+ * are the
  * ones that body reaches, which #trgeo_restrict_stbox answers by solving for
  * the times the body meets a box. The grid itself is the `tgeo` one, reached
  * through #tspatial_space_time_boxes, so the two families lay values on the

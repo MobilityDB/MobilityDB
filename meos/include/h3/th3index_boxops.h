@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Internal declarations for the th3index bounding box functions.
+ * @brief Internal declarations for the th3index bounding box functions
  */
 
 #ifndef __TH3INDEX_BOXOPS_H__

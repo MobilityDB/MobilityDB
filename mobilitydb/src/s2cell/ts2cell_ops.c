@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the temporal `ts2cell` cell operations.
- *
- * Each wrapper delegates to the generic cell-index entry point in
+ * @brief PG V1 wrappers for the temporal `ts2cell` cell operations
+ * @details Each wrapper delegates to the generic cell-index entry point in
  * `meos_cellindex.h`, which reads the `s2_cellops` descriptor
  * (`meos/src/s2cell/ts2cell_ops.c`) to reach the S2 kernel. The six
  * operations every DGGS shares are wrapped here under the names the

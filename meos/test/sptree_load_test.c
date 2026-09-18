@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the build of the in-memory space-partitioning
- * index from a whole entry set, i.e., sptree_load, for both kinds of tree.
- *
- * sptree_load partitions the entries top-down on the median of the dimension
+ * index from a whole entry set, i.e., sptree_load, for both kinds of tree
+ * @details sptree_load partitions the entries top-down on the median of the
+ * dimension
  * each level narrows, so the tree it produces has a different shape from one
  * grown by repeated sptree_insert, whose depth follows the order the entries
  * arrive in. The shape is free to differ; the answers are not.
@@ -44,25 +44,25 @@
  * to one contract.
  *
  * Seven properties are asserted, for the quad-tree and for the k-d tree:
- *  (i)    exactness: the tree returns every box satisfying the operator and no
- *         other;
- *  (ii)   the comparison is not vacuous: the windows must match a substantial
- *         number of entries, since a tree that answers nothing and an oracle
- *         that expects nothing agree on nothing;
- *  (iii)  completeness: a window over the whole extent returns each loaded id
- *         exactly once, so the partitioning neither drops an entry nor reports
- *         one twice;
- *  (iv)   an ordered entry set is answered exactly. This is the set that makes
- *         insertion degenerate into a chain, and the one a build that halves
- *         its range is written for;
- *  (v)    an entry set that ties throughout is answered exactly. Equal boxes
- *         cannot be separated by any dimension, so they descend as a chain,
- *         and a build that expects every level to split does not terminate;
- *  (vi)   the degenerate counts are handled: loading no entries leaves a tree
- *         that answers nothing, and loading one returns that one;
- *  (vii)  a load leaves the tree holding exactly the entries it is given,
- *         whatever it holds when it is called, and releases what it held
- *         whatever the number given, so a load of no entries empties a tree.
+ * (i)    exactness: the tree returns every box satisfying the operator and no
+ * other;
+ * (ii)   the comparison is not vacuous: the windows must match a substantial
+ * number of entries, since a tree that answers nothing and an oracle
+ * that expects nothing agree on nothing;
+ * (iii)  completeness: a window over the whole extent returns each loaded id
+ * exactly once, so the partitioning neither drops an entry nor reports
+ * one twice;
+ * (iv)   an ordered entry set is answered exactly. This is the set that makes
+ * insertion degenerate into a chain, and the one a build that halves
+ * its range is written for;
+ * (v)    an entry set that ties throughout is answered exactly. Equal boxes
+ * cannot be separated by any dimension, so they descend as a chain,
+ * and a build that expects every level to split does not terminate;
+ * (vi)   the degenerate counts are handled: loading no entries leaves a tree
+ * that answers nothing, and loading one returns that one;
+ * (vii)  a load leaves the tree holding exactly the entries it is given,
+ * whatever it holds when it is called, and releases what it held
+ * whatever the number given, so a load of no entries empties a tree.
  *
  * The fixture is built so that a partitioning fault cannot pass unnoticed. The
  * dimensions are uncorrelated and the temporal one is held constant across

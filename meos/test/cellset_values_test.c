@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the typed values functions of the cell index
- * sets.
- *
- * Each set type gives the array of its values through a typed public function
+ * sets
+ * @details Each set type gives the array of its values through a typed public
+ * function
  * that tests its argument, as intset_values does for an integer set. The
  * program verifies that quadbinset_values, s2cellset_values and
  * h3indexset_values answer the values of the set in its order with no error

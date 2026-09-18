@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal Boolean operators (and, or, not).
+ * @file
+ * @brief Temporal Boolean operators (and, or, not)
  */
 
 #ifndef __TBOOL_BOOLOPS_H__

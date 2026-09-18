@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief MEOS-owned cache of parsed pgPointCloud PCSCHEMA values,
- *   keyed by pcid.  See @c meos/include/pointcloud/meos_schema_hook.h
- *   for the design rationale.
+ * @brief MEOS-owned cache of parsed pgPointCloud PCSCHEMA values, keyed by
+ * pcid
+ * @details See @c meos/include/pointcloud/meos_schema_hook.h
+ * for the design rationale.
  */
 
 /* PostgreSQL */

@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Spatial restriction functions for temporal rigid geometries
- *
- * The restriction is exact for the body extent: a `trgeometry` is "in" a
+ * @details The restriction is exact for the body extent: a `trgeometry` is
+ * "in" a
  * geometry / STBox at time `t` iff its posed reference polygon (the whole
  * body, not merely its centre point) overlaps that geometry / STBox at `t`.
  * The overlap intervals are computed per trgeometry segment from the

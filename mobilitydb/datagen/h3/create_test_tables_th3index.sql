@@ -27,9 +27,10 @@
  *
  *****************************************************************************/
 
-/*
- * create_test_tables_th3index.sql
- * Build the test tables for the static and temporal H3 cell index types. This
+/**
+ * @file
+ * @brief Build the test tables for the static and temporal H3 cell index types
+ * @details This
  * is the OFFLINE regeneration job that produces the frozen pg_dump fixture
  * test/h3/data/load_h3.sql.xz; it is NOT part of the mobilitydb_datagen
  * extension (only the random_* helpers are).

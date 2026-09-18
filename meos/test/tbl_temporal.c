@@ -31,12 +31,12 @@
  * @file
  * @brief A simple program that reads the CSV file of every temporal type and
  * applies a function to the values it holds
- *
- * The corresponding SQL query would be, for each temporal type in turn,
+ * @details The corresponding SQL query would be, for each temporal type in
+ * turn,
  * @code
  * SELECT k, numInstants(tprecision(temp, interval '5 minutes', timestamptz
-     '2000-01-03'))
-   FROM tbl_tfloat;
+ * '2000-01-03'))
+ * FROM tbl_tfloat;
  * @endcode
  *
  * The function is one every temporal type answers, so one run reports every

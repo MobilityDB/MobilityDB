@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for temporal types of any subtype.
+ * @file
+ * @brief Basic functions for temporal types of any subtype
  */
 
 #ifndef __TEMPORAL_H__

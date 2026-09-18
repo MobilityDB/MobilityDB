@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for spatiotemporal bounding boxes.
+ * @file
+ * @brief Functions for spatiotemporal bounding boxes
  */
 
 #ifndef __STBOX_H__

@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that uses the MEOS library for input and output
- * geometry values.
- *
- * The program can be build as follows
+ * geometry values
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o geo_inout geo_inout.c -L/usr/local/lib -lmeos
  * @endcode

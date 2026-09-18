@@ -35,9 +35,9 @@
  *
  * Depending on the parameters various relationships are available
  * - For a temporal geometry geo and a geometry:
- *   `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and `tdwithin`.
+ * `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and `tdwithin`.
  * - For two temporal **geometries**:
- *   `tdisjoint`, `tintersects`, `tdwithin`.
+ * `tdisjoint`, `tintersects`, `tdwithin`.
  */
 
 #include "geo/tgeo_tempspatialrels.h"

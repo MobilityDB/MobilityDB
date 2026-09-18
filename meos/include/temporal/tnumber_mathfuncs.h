@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal numbers.
+ * @file
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,
+ * ...) for temporal numbers
  */
 
 #ifndef __TEMPORAL_MATHFUNCS_H__

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Skiplist data structure used for performing temporal aggregates
  */
 

@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief Ground-truth correctness gate for the vendored liblwgeom WKT
- * geometry parser (the flex/bison lexer in postgis/liblwgeom/).
- *
- * Unlike the crash/leak smoke suites, this test asserts that each parse
+ * @brief Ground-truth correctness gate for the vendored liblwgeom WKT geometry
+ * parser (the flex/bison lexer in postgis/liblwgeom/)
+ * @details Unlike the crash/leak smoke suites, this test asserts that each
+ * parse
  * actually SUCCEEDS: every valid WKT string must produce a non-NULL
  * geometry that round-trips through geo_out(), and every malformed string
  * must be rejected (NULL). A parser change that silently breaks parsing
@@ -45,7 +45,7 @@
  * Build:
  * @code
  * gcc -Wall -g -I<prefix>/include -o parse_test parse_test.c \
- *     -L<prefix>/lib -lmeos
+ * -L<prefix>/lib -lmeos
  * @endcode
  */
 

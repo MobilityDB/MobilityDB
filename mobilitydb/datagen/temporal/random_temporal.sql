@@ -27,12 +27,12 @@
  *
  *****************************************************************************/
 
-/*
- * random_temporal.sql
- * Basic synthetic data generator functions for some PostgreSQL data types
- * and for set, span, spanset, and temporal data types.
- *
- * These functions use lower and upper bounds for the generated values, e.g.,
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for some PostgreSQL data
+ * types and for set, span, spanset, and temporal data types
+ * @details These functions use lower and upper bounds for the generated
+ * values, e.g.,
  * lowvalue and highvalue for values, lowtime and hightime for timestamps.
  * When generating series of values, the maxdelta argument states the maximum
  * difference between two consecutive values, while maxminutes states the

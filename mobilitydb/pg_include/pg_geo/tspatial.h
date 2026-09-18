@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for temporal points.
+ * @file
+ * @brief Spatial functions for temporal points
  */
 
 #ifndef __PG_TSPATIAL_H__

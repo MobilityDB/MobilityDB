@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Comparison operators for the tquadbin type.
- *
- * Analogue of `meos/src/h3/th3index_compops.c`. Every ever /
+ * @brief Comparison operators for the tquadbin type
+ * @details Analogue of `meos/src/h3/th3index_compops.c`. Every ever /
  * always / temporal comparison flavour for tquadbin is mirrored
  * from the th3index pattern, with the base-cell operand carried as
  * `Quadbin` (int64).

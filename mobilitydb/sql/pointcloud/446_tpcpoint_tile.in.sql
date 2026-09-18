@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief Tile functions for temporal pcpoint
- *
- * All functions delegate to the temporal geometry point equivalents
+ * @details All functions delegate to the temporal geometry point equivalents
  * by casting tpcpoint → tgeompoint for the spatial computation, so a
  * value keeps the interpolation it carries. Split functions
  * reconstruct the tpcpoint fragment by restricting the original tpcpoint to

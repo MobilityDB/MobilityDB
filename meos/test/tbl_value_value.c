@@ -30,13 +30,12 @@
 /**
  * @file
  * @brief A simple program that reads two CSV files containing non-temporal
- * values and applies a function to them.
- *
- * The corresponding SQL query would be
+ * values and applies a function to them
+ * @details The corresponding SQL query would be
  * @code
  * SELECT t1.k, t2.k, array_length(timeSpans(t, i), 1)
-   FROM tbl_tstzspanset t1, tbl_interval t2
-   WHERE timeSpans(t, i) IS NOT NULL;
+ * FROM tbl_tstzspanset t1, tbl_interval t2
+ * WHERE timeSpans(t, i) IS NOT NULL;
  * @endcode
  *
  * The program can be build as follows

@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Static h3index cell operations.
- *
- * Non-temporal operations on the `h3index` base type: the static-geometry
+ * @brief Static h3index cell operations
+ * @details Non-temporal operations on the `h3index` base type: the
+ * static-geometry
  * → cell / cell-set constructors (`latLngToCell`, `geoToH3IndexSet`) and the
  * MobilityDB ports of the h3-pg SETOF-returning grid functions. h3-pg
  * returns rows; MobilityDB returns a single `h3indexset` (or `intset` for

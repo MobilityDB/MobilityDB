@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests how the merge functions of the MEOS API report a
- * conflict under the noexit error handler.
- *
- * Merging temporal values that share a timestamp with different values is an
+ * conflict under the noexit error handler
+ * @details Merging temporal values that share a timestamp with different
+ * values is an
  * error. Under the default error handler the process exits, so the error path
  * is only observable once #meos_initialize_noexit_error_handler is installed —
  * the handler every language binding uses, since a binding must return an

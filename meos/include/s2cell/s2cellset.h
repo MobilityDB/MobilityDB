@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Set-returning static helpers on `s2cell`.
- *
- * These wrap the S2 cell kernel's array-returning primitives into the
+ * @brief Set-returning static helpers on `s2cell`
+ * @details These wrap the S2 cell kernel's array-returning primitives into the
  * `s2cellset` MobilityDB set type. All functions here operate on STATIC
  * `s2cell` values; the temporal lift is handled by the ts2cell layer.
  */

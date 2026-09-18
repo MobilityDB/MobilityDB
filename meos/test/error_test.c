@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the error status functions of the MEOS API.
- *
- * The error status is only observable once
+ * @brief A program that tests the error status functions of the MEOS API
+ * @details The error status is only observable once
  * #meos_initialize_noexit_error_handler is installed — the handler every
  * language binding uses, since a binding must return an exception to its host
  * rather than terminate it. The program verifies that a failing call sets

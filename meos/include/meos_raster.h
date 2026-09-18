@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief Public MEOS API for Raquet raster chip sampling along temporal point
- * trajectories via the CARTO QUADBIN grid.
- *
- * The raster family adds no temporal type of its own: it samples a raster chip
+ * trajectories via the CARTO QUADBIN grid
+ * @details The raster family adds no temporal type of its own: it samples a
+ * raster chip
  * (a QUADBIN-tiled pixel array in MEOS, or a PostGIS raster band on the PG
  * side) at every instant of a `tgeompoint` trajectory, yielding a `tfloat`.
  *

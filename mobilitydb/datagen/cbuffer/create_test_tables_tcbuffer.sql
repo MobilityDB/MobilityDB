@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Function generating test tables for temporal circular buffers
- * @details These functions use the random generator for these types that are 
+ * @details These functions use the random generator for these types that are
  * in the file `random_tpose.sql`. Refer to that file for the meaning of the
  * parameters used in the function calls of this file.
  */

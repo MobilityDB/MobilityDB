@@ -29,15 +29,14 @@
 
 /**
  * @file
- * @brief A raster band whose pixels cannot be read raises an error rather
- * than reading as a band without values
- *
+ * @brief A raster band whose pixels cannot be read raises an error rather than
+ * reading as a band without values
  * @details Two rasters are read along a trip over them. Each opens, and each
  * fails at the first pixel it is asked for:
  * - a PostGIS raster whose band is stored outside the database in a file
- *   that does not exist, read through the vendored raster core;
+ * that does not exist, read through the vendored raster core;
  * - a GDAL virtual raster whose band takes its pixels from a file that does
- *   not exist, read through GDAL.
+ * not exist, read through GDAL.
  *
  * The values read along the trip, the restrictions and the ever and always
  * predicates must each raise an error: no value, never and always would each
@@ -46,7 +45,7 @@
  *
  * @code
  * gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include
- *   -o rasterread_test rasterread_test.c -L/usr/local/lib -lmeos
+ * -o rasterread_test rasterread_test.c -L/usr/local/lib -lmeos
  * @endcode
  */
 

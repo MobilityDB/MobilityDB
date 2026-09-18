@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Public MEOS API for temporal cell index types
- *
- * The temporal cell index (tcellindex) is the abstract temporal type shared by
+ * @details The temporal cell index (tcellindex) is the abstract temporal type
+ * shared by
  * the concrete cell index families (tquadbin, th3index): its accessors are
  * declared once here and overload on the concrete temporal type in the SQL and
  * binding layers.

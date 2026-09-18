@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Bounding box operators for temporal types.
+ * @file
+ * @brief Bounding box operators for temporal types
  */
 
 #ifndef __PG_TEMPORAL_BOXOPS_H__

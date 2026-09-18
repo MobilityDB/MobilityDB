@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Tables stating the schema that a point cloud identifier names
- *
- * A pcpoint and a pcpatch carry a pcid and nothing else about their own
+ * @details A pcpoint and a pcpatch carry a pcid and nothing else about their
+ * own
  * layout: the dimensions they hold, how each is stored, and what a stored
  * integer means as a coordinate are stated by the schema that pcid names.
  * The two tables state it in SQL, so registering a schema needs no XML

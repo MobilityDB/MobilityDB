@@ -31,8 +31,7 @@
  * @file
  * @brief Create a cache of PostgreSQL type and operator Oids in global
  * variable arrays to avoid (slow) lookups
- *
- * The arrays are initialized when the extension is loaded.
+ * @details The arrays are initialized when the extension is loaded.
  *
  * Estimating the selectivity of Boolean operators is essential for defining
  * efficient queries execution plans. The extension defines several classes

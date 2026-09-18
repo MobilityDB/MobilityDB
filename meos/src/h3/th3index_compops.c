@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Comparison operators for the th3index type.
- *
- * Analogue of `meos/src/cbuffer/tcbuffer_compops.c`. Every ever /
+ * @brief Comparison operators for the th3index type
+ * @details Analogue of `meos/src/cbuffer/tcbuffer_compops.c`. Every ever /
  * always / temporal comparison flavour for th3index is mirrored
  * from the cbuffer pattern, with the bare-cell operand carried as
  * `H3Index` (uint64).

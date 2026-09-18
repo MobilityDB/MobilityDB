@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of (distinct) timestamps.
+ * @file
+ * @brief Basic functions for set of (distinct) timestamps
  */
 
 #ifndef __SET_H__

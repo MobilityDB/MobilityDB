@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Cell-metric functions for `th3index`.
- *
- * Each function names the unit it answers, the way libh3 names its own
+ * @brief Cell-metric functions for `th3index`
+ * @details Each function names the unit it answers, the way libh3 names its
+ * own
  * (`cellAreaKm2`, `edgeLengthM`, `greatCircleDistanceRads`), so a unit is
  * chosen by calling the function that answers it rather than by passing a
  * string. `cellArea` is the exception and not an omission: the square metre

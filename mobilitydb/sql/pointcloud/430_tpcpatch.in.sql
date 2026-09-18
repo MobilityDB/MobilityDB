@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud patch type.
- *
- * `tpcpatch` is a temporal lifting of `pcpatch` — a time series of
+ * @brief Temporal pgpointcloud patch type
+ * @details `tpcpatch` is a temporal lifting of `pcpatch` — a time series of
  * compressed point clusters (static-position sensors dumping many
  * returns per scan; temporal tiling of LiDAR acquisitions). Each
  * instant's value is the full serialized patch.

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Polygon Boolean clipping for temporal-point spatial functions.
+ * @brief Polygon Boolean clipping for temporal-point spatial functions
  * @details Thin trivial-cases layer over the Clipper2 adapter
  * (@c clipper2_clip_poly_poly in @c clip_clipper2.cpp). The empty-input
  * and bbox-disjoint short-circuits handled here are the same ones the

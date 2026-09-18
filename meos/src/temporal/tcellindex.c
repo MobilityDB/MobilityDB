@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Shared temporal lifting for the DGGS cell-index family.
- *
- * The generic entry points dispatch on the temporal type via
+ * @brief Shared temporal lifting for the DGGS cell-index family
+ * @details The generic entry points dispatch on the temporal type via
  * `dggs_cellops()` and lift the descriptor's Datum-convention static kernel
  * with `tfunc_temporal`. Adding a DGGS requires only a new descriptor and one
  * line in `dggs_cellops()` — see meos/include/temporal/tcellindex.h.

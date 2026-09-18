@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief Tile functions for temporal poses
- *
- * All functions delegate to the temporal geometry point equivalents
+ * @details All functions delegate to the temporal geometry point equivalents
  * by casting tpose → tgeompoint for the spatial computation, so a
  * value keeps the interpolation it carries. Split functions
  * reconstruct the tpose fragment by restricting the original tpose to

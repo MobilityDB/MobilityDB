@@ -28,9 +28,11 @@
  *****************************************************************************/
 
 /**
- * @brief TPCBox bounding-box helpers for temporal pointcloud types
- *   (tpcpoint, tpcpatch). Mirrors the tspatial_boxops.h API for the
- *   STBox case.
+ * @file
+ * @brief TPCBox bounding-box helpers for temporal pointcloud types (tpcpoint,
+ * tpcpatch)
+ * @details Mirrors the tspatial_boxops.h API for the
+ * STBox case.
  */
 
 #ifndef __TPC_BOXOPS_H__

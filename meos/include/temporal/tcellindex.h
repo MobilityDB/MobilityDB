@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief Shared scaffolding for the temporal Discrete-Global-Grid-System
- * (DGGS) cell-index family: th3index, tquadbin, and any future ts2cell.
- *
- * All three are the same shape: a uint64 cell id sampled over time with STEP
+ * (DGGS) cell-index family: th3index, tquadbin, and any future ts2cell
+ * @details All three are the same shape: a uint64 cell id sampled over time
+ * with STEP
  * (never-interpolated) semantics — a `tbigint`-shaped temporal type. The
  * temporal machinery (I/O, constructors, accessors, comparison, lifting) is
  * therefore IDENTICAL across them; only the static-cell kernel differs.
@@ -43,28 +43,28 @@
  * below lift those pointers with `tfunc_temporal`. The descriptor hides HOW a
  * DGGS sources its kernel:
  *
- *   - th3index : linked C library (Uber libh3)
- *   - tquadbin : first-party from the CARTO bit-spec (libm only, no vendoring)
- *   - ts2cell  : first-party S2CellId subset (libm only) — see note below
+ * - th3index : linked C library (Uber libh3)
+ * - tquadbin : first-party from the CARTO bit-spec (libm only, no vendoring)
+ * - ts2cell  : first-party S2CellId subset (libm only) — see note below
  *
  * ---------------------------------------------------------------------------
  * ADDING A NEW DGGS (worked example: Google S2)
  * ---------------------------------------------------------------------------
- *   1. Catalog: add T_S2CELL / T_S2CELLSET / T_TS2CELL to MeosType, and the
- *      T_TS2CELL case to `tcellindex_type()`.
- *   2. Static kernel: implement the S2CellId algebra (uint64 cell math). S2 has
- *      no maintained C API and its full C++ library is a heavy Abseil-dependent
- *      vendored blob; the recommended path mirrors quadbin — first-party the
- *      cell-id subset (cube-face projection + Hilbert curve), libm only.
- *   3. Descriptor: define a `DggsCellOps s2_cellops` with `datum_s2_*` wrappers,
- *      its point_temptype (T_TGEOGPOINT for S2's geodetic cells) and SRID.
- *   4. Register: add the `#if S2CELL case T_TS2CELL: return &s2_cellops;` line
- *      to `dggs_cellops()`, and the matching `option(S2CELL ...)` beside
- *      `option(H3 ...)`. The family option carries the STATIC TYPE's name, as
- *      H3 carries h3index and QUADBIN carries quadbin: the grid's bare name
- *      cannot serve here, because `S2` is a stab-line endpoint in the vendored
- *      PostGIS geodetic code (liblwgeom/lwgeodetic.c, lwgeodetic_tree.c) that a
- *      build-wide `-DS2=0|1` rewrites into a numeric constant.
+ * 1. Catalog: add T_S2CELL / T_S2CELLSET / T_TS2CELL to MeosType, and the
+ * T_TS2CELL case to `tcellindex_type()`.
+ * 2. Static kernel: implement the S2CellId algebra (uint64 cell math). S2 has
+ * no maintained C API and its full C++ library is a heavy Abseil-dependent
+ * vendored blob; the recommended path mirrors quadbin — first-party the
+ * cell-id subset (cube-face projection + Hilbert curve), libm only.
+ * 3. Descriptor: define a `DggsCellOps s2_cellops` with `datum_s2_*` wrappers,
+ * its point_temptype (T_TGEOGPOINT for S2's geodetic cells) and SRID.
+ * 4. Register: add the `#if S2CELL case T_TS2CELL: return &s2_cellops;` line
+ * to `dggs_cellops()`, and the matching `option(S2CELL ...)` beside
+ * `option(H3 ...)`. The family option carries the STATIC TYPE's name, as
+ * H3 carries h3index and QUADBIN carries quadbin: the grid's bare name
+ * cannot serve here, because `S2` is a stab-line endpoint in the vendored
+ * PostGIS geodetic code (liblwgeom/lwgeodetic.c, lwgeodetic_tree.c) that a
+ * build-wide `-DS2=0|1` rewrites into a numeric constant.
  * No new temporal scaffolding, SQL boilerplate, or binding code is required:
  * the generic entry points below already cover the new type.
  */

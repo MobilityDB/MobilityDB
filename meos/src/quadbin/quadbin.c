@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief First-party implementation of the CARTO quadbin cell algebra.
- *
- * Quadbin is a square-quadtree Discrete Global Grid System packing a
+ * @brief First-party implementation of the CARTO quadbin cell algebra
+ * @details Quadbin is a square-quadtree Discrete Global Grid System packing a
  * Web-Mercator slippy-tile (z, x, y) into a 64-bit integer. This file is the
  * MobilityDB-owned counterpart of libh3: it provides the static-cell kernel
  * that the temporal `tquadbin` layer lifts over time. It links only libm.
@@ -44,10 +43,10 @@
  * vendor split and no .codacy.yml exclusion.
  *
  * Cell layout (most-significant bit first):
- *   bit 62      : header bit (always set)            -> QUADBIN_HEADER
- *   bits 59..61 : mode (0..6; data cells use mode 1)
- *   bits 52..56 : resolution / zoom (0..26)
- *   bits 0..51  : interleaved (Morton) quadkey, low unused bits set to 1
+ * bit 62      : header bit (always set)            -> QUADBIN_HEADER
+ * bits 59..61 : mode (0..6; data cells use mode 1)
+ * bits 52..56 : resolution / zoom (0..26)
+ * bits 0..51  : interleaved (Morton) quadkey, low unused bits set to 1
  */
 
 #include "quadbin/quadbin.h"

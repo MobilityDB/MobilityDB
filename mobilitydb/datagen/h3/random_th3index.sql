@@ -27,10 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * random_th3index.sql
- * Basic synthetic data generator functions for the static H3 cell index type
- * and the temporal H3 cell index type. Cells are always VALID: each is built
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for the static H3 cell index
+ * type and the temporal H3 cell index type
+ * @details Cells are always VALID: each is built
  * from a random WGS84 (SRID 4326) point via latLngToCell, so the h3-semantic
  * operators (lat/lng, hierarchy, traversal, metrics) exercise real cells.
  * th3index has step interpolation only, so there is no continuous-sequence

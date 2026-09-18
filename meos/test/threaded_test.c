@@ -29,32 +29,31 @@
 
 /**
  * @file
- * @brief Concurrent stress test for MEOS thread-local state (issue #404).
- *
- * Each worker thread independently runs the full lifecycle:
- *   meos_initialize() →
- *   parse a unique WKT temporal point in a hot loop (exercises the
- *     per-thread WKT lexer/parser globals + GMT bootstrap) →
- *   read-only queries on the parsed value →
- *   thread-unique meos_errno round-trip →
- *   meos_finalize()
+ * @brief Concurrent stress test for MEOS thread-local state
+ * @details Each worker thread independently runs the full lifecycle:
+ * meos_initialize() →
+ * parse a unique WKT temporal point in a hot loop (exercises the
+ * per-thread WKT lexer/parser globals + GMT bootstrap) →
+ * read-only queries on the parsed value →
+ * thread-unique meos_errno round-trip →
+ * meos_finalize()
  *
  * Verifies:
- *   - meos_initialize/finalize can be called concurrently without
- *     racing on shared library state;
- *   - WKT parsing (geometry_in / tgeompoint_in / ...) works concurrently
- *     because the lwgeom flex/bison globals are now MEOS_TLS;
- *   - coordinate transforms (tspatial_transform) work concurrently because
- *     each thread drives PROJ through its own per-thread PJ_CONTEXT, never
- *     the shared global PJ_DEFAULT_CTX;
- *   - meos_errno reads/writes remain isolated per thread;
- *   - the GMT timezone bootstrap (postgres/timezone/localtime.c) is
- *     no longer racy under concurrent first-use.
+ * - meos_initialize/finalize can be called concurrently without
+ * racing on shared library state;
+ * - WKT parsing (geometry_in / tgeompoint_in / ...) works concurrently
+ * because the lwgeom flex/bison globals are now MEOS_TLS;
+ * - coordinate transforms (tspatial_transform) work concurrently because
+ * each thread drives PROJ through its own per-thread PJ_CONTEXT, never
+ * the shared global PJ_DEFAULT_CTX;
+ * - meos_errno reads/writes remain isolated per thread;
+ * - the GMT timezone bootstrap (postgres/timezone/localtime.c) is
+ * no longer racy under concurrent first-use.
  *
  * Build (Linux, after `cmake --install` to a prefix):
  * @code
  * gcc -Wall -g -O2 -I<prefix>/include -pthread \
- *     -o threaded_test threaded_test.c -L<prefix>/lib -lmeos
+ * -o threaded_test threaded_test.c -L<prefix>/lib -lmeos
  * ./threaded_test 8 5000   # 8 threads, 5000 iterations each
  * @endcode
  *

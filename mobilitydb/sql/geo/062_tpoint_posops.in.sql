@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Relative position operators for temporal geometry points.
+ * @brief Relative position operators for temporal geometry points
  */
 
 /*****************************************************************************

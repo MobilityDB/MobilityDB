@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Internal definition of the Raquet raster-tile value type.
- *
- * A Raquet value is a single CARTO Raquet raster chip: a self-describing
+ * @brief Internal definition of the Raquet raster-tile value type
+ * @details A Raquet value is a single CARTO Raquet raster chip: a
+ * self-describing
  * Web-Mercator tile identified by a QUADBIN cell, carrying a row-major packed
  * pixel array. It is a GDAL-free MEOS value type; the trajectory-sampling
  * kernel operates on it directly. See @ref meos_raster.h for the public API.

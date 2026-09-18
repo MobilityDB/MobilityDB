@@ -28,9 +28,10 @@
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal point to a tile defined by a spatiotemporal box.
- *
- * In addition to applying the atStbox() function we must remove the upper
+ * @file
+ * @brief Restrict a temporal point to a tile defined by a spatiotemporal box
+ * @details In addition to applying the atStbox() function we must remove the
+ * upper
  * bound for each dimension. The following figure shows the borders that
  * are removed (represented by x) for a 2D tile and 3D tile
  *
@@ -40,8 +41,8 @@
  * |               x
  * |---------------x
  *
- *   xxxxxxxxxxxxxxxxx
- *  xxxxxxxxxxxxxxxxxx
+ * xxxxxxxxxxxxxxxxx
+ * xxxxxxxxxxxxxxxxxx
  * xxxxxxxxxxxxxxxxxxx
  * |               xxx
  * |               xx

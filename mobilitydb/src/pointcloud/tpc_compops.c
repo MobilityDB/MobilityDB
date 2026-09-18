@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Ever/always and temporal comparisons for the temporal pgpointcloud
- *   types
+ * types
  */
 
 /* C */

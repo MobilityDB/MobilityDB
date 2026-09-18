@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Internal declarations for the ts2cell bounding box functions.
+ * @brief Internal declarations for the ts2cell bounding box functions
  */
 
 #ifndef __TS2CELL_BOXOPS_H__

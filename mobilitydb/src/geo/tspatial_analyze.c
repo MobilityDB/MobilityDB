@@ -42,11 +42,11 @@
  * subtypes. These statistics are obtained by calling the PostGIS function
  * `gserialized_analyze_nd`.
  * - Slot 1
- *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_2D`.
- *     - `stanumbers` stores the 2D histogram of occurrence of features.
+ * - `stakind` contains the type of statistics which is `STATISTIC_SLOT_2D`.
+ * - `stanumbers` stores the 2D histogram of occurrence of features.
  * - Slot 2
- *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
- *     - `stanumbers` stores the ND histogram of occurrence of features.
+ * - `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
+ * - `stanumbers` stores the ND histogram of occurrence of features.
  *
  * For the time dimension, the statistics collected in Slots 3 and 4 depend on
  * the subtype. Please refer to file temporal_analyze.c for more information.

@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief MEOS lifting for hierarchy functions, plus the two
- * next-resolution conveniences that back them.
- *
- * The `cell_to_child_pos` / `child_pos_to_cell` pair and the
+ * @brief MEOS lifting for hierarchy functions, plus the two next-resolution
+ * conveniences that back them
+ * @details The `cell_to_child_pos` / `child_pos_to_cell` pair and the
  * required-resolution `cell_to_parent_meos` /
  * `cell_to_center_child_meos` forms are auto-generated from h3-pg
  * (see `h3_generated.h`). The hand-written

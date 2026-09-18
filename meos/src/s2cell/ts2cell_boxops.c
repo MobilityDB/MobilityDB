@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Bounding box functions for the temporal S2 cell type.
- *
- * An S2 cell is defined on the sphere, so a temporal S2 cell carries a GEODETIC
+ * @brief Bounding box functions for the temporal S2 cell type
+ * @details An S2 cell is defined on the sphere, so a temporal S2 cell carries
+ * a GEODETIC
  * STBox: X and Y set, the geodetic flag set, no Z, and T taken from the time
  * span — the pattern tgeogpoint and th3index follow, where the Web-Mercator
  * tquadbin carries a planar one.

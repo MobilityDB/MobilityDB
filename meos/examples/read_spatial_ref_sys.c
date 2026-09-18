@@ -31,8 +31,7 @@
  * @file
  * @brief A simple program that reads the `spatial_ref_sys.csv` file obtained
  * by exporting the PostGIS `spatial_ref_sys` table in CSV format
- *
- * The program can be build as follows
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o read_spatial_ref_sys read_spatial_ref_sys.c -L/usr/local/lib -lmeos
  * @endcode

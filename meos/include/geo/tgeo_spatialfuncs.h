@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for temporal points.
+ * @file
+ * @brief Spatial functions for temporal points
  */
 
 #ifndef __TGEO_SPATIALFUNCS_H__

@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief Transitional compatibility layer for pgPointCloud's varlena ↔
- *   in-memory bridge.
- *
- * pgPointCloud keeps `pc_(point|patch)_(de)serialize` in `pgsql/pc_pgsql.c`,
+ * in-memory bridge
+ * @details pgPointCloud keeps `pc_(point|patch)_(de)serialize` in
+ * `pgsql/pc_pgsql.c`,
  * which is compiled into the PG extension `.so` only — they don't reach
  * `libpc.a` and so are unreachable from MEOS, which links the static
  * library. An upstream proposal to move these helpers into `lib/` so

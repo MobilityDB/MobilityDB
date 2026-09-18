@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief Distance functions for temporal pcpoint — geometry/tpcpoint cross-type.
- *
- * Delegates to the corresponding tgeompoint overloads via the XY-projection
+ * @brief Distance functions for temporal pcpoint — geometry/tpcpoint
+ * cross-type
+ * @details Delegates to the corresponding tgeompoint overloads via the
+ * XY-projection
  * cast. The nearestApproachInstant overloads return `tpcpoint` by restricting
  * the original (with all sensor channels) to the NAI timestamp.
  *

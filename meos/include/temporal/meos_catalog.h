@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for building a cache of temporal types and operators.
+ * @file
+ * @brief Functions for building a cache of temporal types and operators
  */
 
 #ifndef __MEOS_CATALOG_H__

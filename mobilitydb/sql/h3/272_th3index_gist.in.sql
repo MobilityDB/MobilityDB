@@ -31,9 +31,9 @@
 
 /**
  * @file
- * @brief GiST operator class for `th3index`.
- *
- * The bounding box of a `th3index` value is the cell's spatiotemporal `stbox`, so
+ * @brief GiST operator class for `th3index`
+ * @details The bounding box of a `th3index` value is the cell's spatiotemporal
+ * `stbox`, so
  * the opclass is STORAGE stbox and indexes the topological / positional / time
  * operators through that box (the tgeompoint / tcbuffer pattern).
  *

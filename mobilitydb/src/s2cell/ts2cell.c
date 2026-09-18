@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the temporal `ts2cell` type.
- *
- * Every operation of the temporal type routes to a generic
+ * @brief PG V1 wrappers for the temporal `ts2cell` type
+ * @details Every operation of the temporal type routes to a generic
  * `Temporal_*` symbol; the two conversions below are the whole
  * family-specific surface, because `ts2cell` and `tbigint` share the
  * int64 payload while carrying different bounding boxes.

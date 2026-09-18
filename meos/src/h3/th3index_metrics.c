@@ -29,11 +29,9 @@
 
 /**
  * @file
- * @brief MEOS lifting for metric functions, plus the static
- * unit-string dispatcher and libh3-wrapping adapters that back
- * them.
- *
- * All three entries take a text `unit` argument. The unit is
+ * @brief MEOS lifting for metric functions, plus the static unit-string
+ * dispatcher and libh3-wrapping adapters that back them
+ * @details All three entries take a text `unit` argument. The unit is
  * validated once at the MEOS entry point (via `h3_unit_from_cstring`
  * defined below) and then carried through the lifting machinery as
  * an `Int32` datum holding the `H3Unit` enum — saves parsing the

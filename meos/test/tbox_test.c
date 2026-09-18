@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief A simple program that tests the TBox functions in MEOS.
- *
- * The program can be build as follows
+ * @brief A simple program that tests the TBox functions in MEOS
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbox_test tbox_test.c -L/usr/local/lib -lmeos
  * @endcode

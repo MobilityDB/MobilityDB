@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Opaque byte-level helpers for the pgpointcloud `pcpoint` base type.
- *
- * MEOS treats `pcpoint` values as opaque varlena byte blobs that share a
+ * @brief Opaque byte-level helpers for the pgpointcloud `pcpoint` base type
+ * @details MEOS treats `pcpoint` values as opaque varlena byte blobs that
+ * share a
  * fixed layout (`SERIALIZED_POINT`) with pgpointcloud. The only field
  * interpreted here is `pcid` (schema id) at its fixed offset — enough for
  * same-schema equality checks. Dimension-level extraction (X, Y, intensity,

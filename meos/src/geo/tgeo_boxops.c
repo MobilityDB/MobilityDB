@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Bounding box operators for temporal geos
- * @details These operators test the bounding boxes of temporal points, which 
+ * @details These operators test the bounding boxes of temporal points, which
  * are an `STBox`, where the *x*, *y*, and optional *z* coordinates are for the
  * space (value) dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,

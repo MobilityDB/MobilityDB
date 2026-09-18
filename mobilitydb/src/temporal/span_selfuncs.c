@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Functions for selectivity estimation of span types
- *
- * These functions are based on those of the file `rangetypes_selfuncs.c`.
+ * @details These functions are based on those of the file
+ * `rangetypes_selfuncs.c`.
  * Estimates are based on histograms of lower and upper bounds.
  */
 

@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Bounding box functions for temporal H3 cell indices.
- *
- * An H3 cell is a hexagon of the grid the H3 specification builds on the
+ * @brief Bounding box functions for temporal H3 cell indices
+ * @details An H3 cell is a hexagon of the grid the H3 specification builds on
+ * the
  * planar faces of a sphere-circumscribed icosahedron and projects back onto
  * the sphere, whose coordinate reference system is spherical coordinates with
  * the WGS84/EPSG:4326 authalic radius — a sphere, not the WGS84 ellipsoid, so

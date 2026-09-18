@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief TPCBox bounding-box type.
- *
- * Fixed-size struct; no varlena. Mirrors STBox but carries an extra
+ * @brief TPCBox bounding-box type
+ * @details Fixed-size struct; no varlena. Mirrors STBox but carries an extra
  * `pcid` field so bboxes from different pgpointcloud schemas cannot
  * silently merge. Most work goes through per-type wrappers in
  * `mobilitydb/src/pointcloud/tpcbox.c`.

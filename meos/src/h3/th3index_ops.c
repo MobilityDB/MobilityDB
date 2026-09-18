@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief The `h3_cellops` descriptor that plugs h3 into the shared temporal
- * cell-index machinery (meos/src/temporal/tcellindex.c).
- *
- * The Datum-convention wrappers of the h3 kernel live alongside the base type
+ * cell-index machinery (meos/src/temporal/tcellindex.c)
+ * @details The Datum-convention wrappers of the h3 kernel live alongside the
+ * base type
  * in h3index.c, so this file holds the descriptor and the single adapter the
  * descriptor needs: the shared `cell_area` slot is a one-argument function
  * returning square metres, whereas the h3 kernel takes the unit as a second

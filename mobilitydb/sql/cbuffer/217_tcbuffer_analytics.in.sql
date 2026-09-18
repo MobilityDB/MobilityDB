@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Analytic functions for temporal circular buffers
- *
- * All functions simplify the center-point trajectory (cast to tgeompoint)
+ * @details All functions simplify the center-point trajectory (cast to
+ * tgeompoint)
  * and then delete from the original tcbuffer the instants the simplification
  * dropped, preserving the radius channel at each surviving instant.
  *

@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Ever and always spatial relationships for temporal geometries
- * @details These relationships compute the ever/always spatial relationship 
+ * @details These relationships compute the ever/always spatial relationship
  * between the arguments and return a Boolean. These functions may be used for
  * filtering purposes before applying the corresponding spatiotemporal
  * relationship.

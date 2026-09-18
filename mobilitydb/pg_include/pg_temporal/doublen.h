@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Internal types used in particular for computing the average and
- * centroid temporal aggregates.
+ * centroid temporal aggregates
  */
 
 #ifndef __PG_DOUBLEN_H__

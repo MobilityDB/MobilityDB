@@ -30,7 +30,6 @@
 /**
  * @file
  * @brief Bin and tile functions for temporal types
- *
  * @note The time bin functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */

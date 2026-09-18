@@ -27,10 +27,12 @@
  *
  *****************************************************************************/
 
-/*
- * random_raquet.sql
- * Basic synthetic data generator function for the Raquet raster tile type.
- * Tiles are always VALID: each is built by the raquet constructor from a
+/**
+ * @file
+ * @brief Basic synthetic data generator function for the Raquet raster tile
+ * type
+ * @details Tiles are always VALID: each is built by the raquet constructor
+ * from a
  * QUADBIN cell of the Web-Mercator tile pyramid and a pixel array of exactly
  * the size the dimensions and pixel type call for. The QUADBIN cell is
  * Morton-encoded here rather than taken from the QUADBIN family, so the

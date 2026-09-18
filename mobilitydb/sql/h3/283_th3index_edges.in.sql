@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Directed-edge functions for `th3index`.
- *
- * Binary operations on cells (`are_neighbor_cells`, `cells_to_directed_edge`)
+ * @brief Directed-edge functions for `th3index`
+ * @details Binary operations on cells (`are_neighbor_cells`,
+ * `cells_to_directed_edge`)
  * synchronise the two temporal operands before applying the per-instant
  * h3-pg function. Unary operations on edges are plain `unary_scalar` /
  * `unary_geometry` lifts.

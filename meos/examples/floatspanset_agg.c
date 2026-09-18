@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that reads float spanset values from a CSV file and
- * aggregates them into a given number of groups.
- *
- * The program can be build as follows
+ * aggregates them into a given number of groups
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o floatspanset_agg floatspanset_agg.c -L/usr/local/lib -lmeos
  * @endcode

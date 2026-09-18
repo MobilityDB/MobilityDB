@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud point type.
- *
- * `tpcpoint` is a temporal lifting of `pcpoint` — a single moving
+ * @brief Temporal pgpointcloud point type
+ * @details `tpcpoint` is a temporal lifting of `pcpoint` — a single moving
  * pgpointcloud point (LiDAR sensor, GPS fix with per-reading metadata,
  * etc.) whose value at each instant is the full schema-typed pcpoint.
  *

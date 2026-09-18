@@ -27,10 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * random_tquadbin.sql
- * Basic synthetic data generator functions for the static QUADBIN cell index
- * type and the temporal QUADBIN cell index type. Cells are always VALID: each
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for the static QUADBIN cell
+ * index type and the temporal QUADBIN cell index type
+ * @details Cells are always VALID: each
  * is built from a random WGS84 (SRID 4326) point via geoToQuadbinCell, so the
  * bounding-box operators exercise real cells. tquadbin has step interpolation
  * only, so there is no continuous-sequence generator.

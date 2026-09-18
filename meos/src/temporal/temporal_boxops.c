@@ -30,11 +30,10 @@
 /**
  * @file
  * @brief Bounding box operators for temporal types
- *
- * The bounding box of temporal values are
+ * @details The bounding box of temporal values are
  * - a @p Span for temporal Booleans
  * - a @p TBox for temporal integers and floats, where the @p x coordinate is
- *   for the value dimension and the @p t coordinate is for the time dimension.
+ * for the value dimension and the @p t coordinate is for the time dimension.
  * The following operators are defined: @p overlaps, @p contains, @p contained,
  * @p same, and @p adjacent.
  *

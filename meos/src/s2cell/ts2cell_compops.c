@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Ever, always and temporal comparisons for the temporal S2 cell type.
- *
- * Equality of S2 cells is bit equality of the identifier, so every entry point
+ * @brief Ever, always and temporal comparisons for the temporal S2 cell type
+ * @details Equality of S2 cells is bit equality of the identifier, so every
+ * entry point
  * here is a thin type-correct dispatcher over the generic comparison machinery,
  * as the quadbin and h3index twins are. Each comparison stands in three forms:
  * the ever form, true when it holds at some instant; the always form, true when

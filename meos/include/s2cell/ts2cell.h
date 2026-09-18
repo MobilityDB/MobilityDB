@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Internal declarations for the ts2cell type-inheritance boilerplate.
- *
- * The analogue of `meos/include/quadbin/tquadbin.h`. It carries the extern
+ * @brief Internal declarations for the ts2cell type-inheritance boilerplate
+ * @details The analogue of `meos/include/quadbin/tquadbin.h`. It carries the
+ * extern
  * declarations for the helpers in `ts2cell.c` that do not belong in the public
  * `meos_s2cell.h`. The validity macro `VALIDATE_TS2CELL(temp, ret)`, used in
  * every lifted function and public accessor, lives in the public header

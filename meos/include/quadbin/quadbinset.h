@@ -29,18 +29,18 @@
 
 /**
  * @file
- * @brief Set-returning static helpers on `quadbin`.
- *
- * These wrap the quadbin cell kernel's array-returning primitives into
+ * @brief Set-returning static helpers on `quadbin`
+ * @details These wrap the quadbin cell kernel's array-returning primitives
+ * into
  * the `quadbinset` MobilityDB set type. They are the square-quadtree
  * counterpart of the h3index set-returning functions, dropping the
  * hexagon-only families (directed edges, vertexes, icosahedron faces,
  * grid path / ring) and keeping the operations with a square analogue:
  *
- *   * the k-ring (square Chebyshev disk) around a cell,
- *   * the four-per-level children of a cell at a finer resolution,
- *   * the compaction of a cell set and its reverse, a tile being exactly the
- *     union of its four children.
+ * * the k-ring (square Chebyshev disk) around a cell,
+ * * the four-per-level children of a cell at a finer resolution,
+ * * the compaction of a cell set and its reverse, a tile being exactly the
+ * union of its four children.
  *
  * All functions here operate on STATIC `quadbin` values; the temporal
  * lift is handled by the tquadbin layer.

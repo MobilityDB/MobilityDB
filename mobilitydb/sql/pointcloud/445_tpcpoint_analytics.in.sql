@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Analytic functions for temporal pcpoint
- *
- * All functions simplify the XY trajectory (cast to tgeompoint) and then
+ * @details All functions simplify the XY trajectory (cast to tgeompoint) and
+ * then
  * delete from the original tpcpoint the instants the simplification dropped,
  * preserving all per-point sensor channels.
  *

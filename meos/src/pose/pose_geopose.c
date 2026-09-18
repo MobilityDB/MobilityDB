@@ -28,23 +28,24 @@
  *****************************************************************************/
 
 /**
- * @brief OGC GeoPose JSON I/O — the classes a single pose is written as.
+ * @file
+ * @brief OGC GeoPose JSON I/O — the classes a single pose is written as
+ * @details Implements the OGC GeoPose v1.0 standard's two Basic conformance
+ * classes:
  *
- * Implements the OGC GeoPose v1.0 standard's two Basic conformance classes:
- *
- *   {                                  {
- *     "position": {                      "position": {
- *       "lat": 47.0,                       "lat": 47.0,
- *       "lon": 8.0,                        "lon": 8.0,
- *       "h":   1500.0                      "h":   1500.0
- *     },                                 },
- *     "quaternion": {                    "angles": {
- *       "x": 0.0,                          "yaw":   90.0,
- *       "y": 0.0,                          "pitch":  0.0,
- *       "z": 0.7071,                       "roll":   0.0
- *       "w": 0.7071                      }
- *     }                                }
- *   }
+ * {                                  {
+ * "position": {                      "position": {
+ * "lat": 47.0,                       "lat": 47.0,
+ * "lon": 8.0,                        "lon": 8.0,
+ * "h":   1500.0                      "h":   1500.0
+ * },                                 },
+ * "quaternion": {                    "angles": {
+ * "x": 0.0,                          "yaw":   90.0,
+ * "y": 0.0,                          "pitch":  0.0,
+ * "z": 0.7071,                       "roll":   0.0
+ * "w": 0.7071                      }
+ * }                                }
+ * }
  *
  * Position is geographic (lat / lon in degrees, height h in metres). The
  * standard mandates a geographic outer frame for the Basic classes; this
@@ -53,14 +54,14 @@
  *
  * The Advanced class carries the same pose with the frame named explicitly:
  *
- *   {
- *     "frameSpecification": {
- *       "authority": "/geopose/1.0",
- *       "id": "LTP-ENU",
- *       "parameters": "longitude=8&latitude=47&height=1500&crs=EPSG:4979"
- *     },
- *     "quaternion": { "x": 0.0, "y": 0.0, "z": 0.7071, "w": 0.7071 }
- *   }
+ * {
+ * "frameSpecification": {
+ * "authority": "/geopose/1.0",
+ * "id": "LTP-ENU",
+ * "parameters": "longitude=8&latitude=47&height=1500&crs=EPSG:4979"
+ * },
+ * "quaternion": { "x": 0.0, "y": 0.0, "z": 0.7071, "w": 0.7071 }
+ * }
  *
  * The class has no position member, so the pose sits at the tangent point of
  * the frame it names, which makes the two documents above describe the same

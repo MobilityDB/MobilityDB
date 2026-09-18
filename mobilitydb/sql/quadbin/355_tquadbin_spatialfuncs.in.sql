@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief Accessors, lifted cell operations, and convenience casts for
- * `tquadbin`.
- *
- * Value accessors (`startValue`, `endValue`, `valueN`, `getValues`,
+ * `tquadbin`
+ * @details Value accessors (`startValue`, `endValue`, `valueN`, `getValues`,
  * `valueAtTimestamp`) route to the generic `Temporal_*` C symbols —
  * the same pattern tbigint and th3index use — and return the quadbin
  * basetype family (`quadbin` for scalar accessors, `quadbinset` for

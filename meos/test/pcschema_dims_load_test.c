@@ -31,8 +31,8 @@
  * @file
  * @brief Test that a point cloud schema stated as dimensions is the schema
  * that the same document states
- *
- * A schema stated as rows and the same schema parsed from its XML document
+ * @details A schema stated as rows and the same schema parsed from its XML
+ * document
  * are two statements of one thing, so every field of the result must agree,
  * including the ones the engine computes: the size of a dimension, the offset
  * of a dimension within a point, and the width of a point.

@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief Type plumbing for `tquadbin`, a temporal type carrying CARTO
- * quadbin cell indices as a function of time.
- *
- * On-disk representation is the same Temporal structure used by
+ * @brief Type plumbing for `tquadbin`, a temporal type carrying CARTO quadbin
+ * cell indices as a function of time
+ * @details On-disk representation is the same Temporal structure used by
  * every other temporal type; the basetype is the dedicated
  * `quadbin`, not `int8`, and the catalog entry
  * `{T_TQUADBIN, T_QUADBIN}` drives dispatch. tquadbin is classified

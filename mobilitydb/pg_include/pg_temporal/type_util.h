@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Miscellaneous utility functions for temporal types.
+ * @file
+ * @brief Miscellaneous utility functions for temporal types
  */
 
 #ifndef __PG_TEMPORAL_UTIL_H__

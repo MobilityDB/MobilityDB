@@ -29,18 +29,18 @@
 
 /**
  * @file
- * @brief MEOS implementations of the nine set-returning h3-pg
- * functions, returning `h3indexset` / `intset`.
+ * @brief MEOS implementations of the nine set-returning h3-pg functions,
+ * returning `h3indexset` / `intset`
  * @details Shape of every function below:
- *   1. Ask libh3 for the output buffer size (where applicable).
- *   2. `palloc` the buffer.
- *   3. Call the libh3 fill function.
- *   4. Walk the buffer, dropping any 0 entries libh3 used as
- *      "no cell here" padding (near pentagons, icosahedron faces,
- *      etc.).
- *   5. `set_make_free` the Datum array — the constructor copies
- *      into its own storage and frees the input.
- *   6. Return the Set.
+ * 1. Ask libh3 for the output buffer size (where applicable).
+ * 2. `palloc` the buffer.
+ * 3. Call the libh3 fill function.
+ * 4. Walk the buffer, dropping any 0 entries libh3 used as
+ * "no cell here" padding (near pentagons, icosahedron faces,
+ * etc.).
+ * 5. `set_make_free` the Datum array — the constructor copies
+ * into its own storage and frees the input.
+ * 6. Return the Set.
  */
 
 #include "h3/h3index_sets.h"

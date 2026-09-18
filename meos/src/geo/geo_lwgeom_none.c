@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief The entry points of the geometry library's GEOS files that the rest of
- * that library still calls, for a build carrying no GEOS
+ * @brief The entry points of the geometry library's GEOS files that the rest
+ * of that library still calls, for a build carrying no GEOS
  * @details The files of the vendored PostGIS geometry library that reach GEOS
  * are left out of a build carrying none, and four of the files that remain
  * still call into them: @p lwkmeans.c seeds its clusters from a centroid,

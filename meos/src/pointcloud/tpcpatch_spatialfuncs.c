@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Geometric representation of the pcpatch and tpcpatch types
- *
- * A patch is a cluster of points, so its geometry is the @p MULTIPOINT of the
+ * @details A patch is a cluster of points, so its geometry is the @p
+ * MULTIPOINT of the
  * positions its points occupy, read through the schema its pcid names. Lifting
  * that value-level answer over time gives @ref tpcpatch_to_tgeometry, which is
  * what the type's temporal spatial relationships convert to before delegating

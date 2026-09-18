@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief A simple program that demonstrates the RTree index for searching
- * MEOS bounding boxes: floatspan, tstzspan, tbox, stbox, and temporal types.
- *
- * The program tests all bounding box types with OVERLAPS, CONTAINS, and
+ * @brief A simple program that demonstrates the RTree index for searching MEOS
+ * bounding boxes: floatspan, tstzspan, tbox, stbox, and temporal types
+ * @details The program tests all bounding box types with OVERLAPS, CONTAINS,
+ * and
  * CONTAINED_BY operations, inserting random boxes into the index and
  * verifying search results against a brute-force scan. It also demonstrates
  * the temporal convenience functions (rtree_insert_temporal,

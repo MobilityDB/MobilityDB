@@ -29,23 +29,22 @@
 
 /**
  * @file
- * @brief Type-inheritance boilerplate for `tquadbin`.
- *
- * This file is the analogue of `meos/src/h3/th3index.c`. Every
+ * @brief Type-inheritance boilerplate for `tquadbin`
+ * @details This file is the analogue of `meos/src/h3/th3index.c`. Every
  * temporal type carries this layer to specialise the generic
  * `Temporal` machinery for its own value type:
  *
- *   * argument validators for every supported operand pair,
- *   * type-specific input parsers that delegate to the generic
- *     int-8 parser but tag the result with `T_TQUADBIN`,
- *   * type-specific constructors (`tquadbin_make`, `tquadbininst_make`,
- *     `tquadbinseq_make`, `tquadbinseqset_make`),
- *   * type-specific accessors (`tquadbin_start_value`,
- *     `tquadbin_end_value`, `tquadbin_value_n`, `tquadbin_values`,
- *     `tquadbin_value_at_timestamptz`) that hide the Datum-packing
- *     convention from callers,
- *   * MEOS-level conversions to and from `tbigint` for callers that
- *     want the bit-identical representation without a SQL round trip.
+ * * argument validators for every supported operand pair,
+ * * type-specific input parsers that delegate to the generic
+ * int-8 parser but tag the result with `T_TQUADBIN`,
+ * * type-specific constructors (`tquadbin_make`, `tquadbininst_make`,
+ * `tquadbinseq_make`, `tquadbinseqset_make`),
+ * * type-specific accessors (`tquadbin_start_value`,
+ * `tquadbin_end_value`, `tquadbin_value_n`, `tquadbin_values`,
+ * `tquadbin_value_at_timestamptz`) that hide the Datum-packing
+ * convention from callers,
+ * * MEOS-level conversions to and from `tbigint` for callers that
+ * want the bit-identical representation without a SQL round trip.
  *
  * Quadbin cells are square Web-Mercator (planar) cells; the temporal
  * point bridge therefore uses `tgeompoint` rather than `tgeogpoint`.

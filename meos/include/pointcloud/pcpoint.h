@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Internal declarations for pcpoint — binary-compatible with
- * pgpointcloud's SERIALIZED_POINT varlena.
+ * pgpointcloud's SERIALIZED_POINT varlena
  */
 
 #ifndef __PCPOINT_H__

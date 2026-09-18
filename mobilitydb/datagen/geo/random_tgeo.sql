@@ -27,8 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * Basic synthetic data generator functions for temporal geo types
+/**
+ * @file
+ * @brief Basic synthetic data generator functions for temporal geo types
  */
 
 -------------------------------------------------------------------------------

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Route identifier operators for temporal network points.
+ * @brief Route identifier operators for temporal network points
  */
 
 #ifndef __TNPOINT_ROUTEOPS_H__

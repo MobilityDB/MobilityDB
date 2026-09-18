@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal rigid geometries.
+ * @file
+ * @brief Distance functions for temporal rigid geometries
  */
 
 #include "rgeo/trgeo_distance.h"

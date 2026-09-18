@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Grid-traversal functions for `th3index`.
- *
- * Besides declaring `th3GridDistance`, `th3CellToLocalIj` and
+ * @brief Grid-traversal functions for `th3index`
+ * @details Besides declaring `th3GridDistance`, `th3CellToLocalIj` and
  * `th3LocalIjToCell`, this file wires up the temporal `<->`
  * operator on `(th3index, th3index)` to grid-hop distance. No
  * arithmetic `<->` exists — `th3index` is a `talpha_type`

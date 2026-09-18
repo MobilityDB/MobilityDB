@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Restriction functions for temporal value.
+ * @file
+ * @brief Restriction functions for temporal value
  */
 
 #ifndef __TEMPORAL_RESTRICT_H__

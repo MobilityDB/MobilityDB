@@ -30,21 +30,20 @@
 /**
  * @file
  * @brief PostGIS raster and Raquet raster sampling along tgeompoint
- * trajectories.
- *
- * Sampling functions:
- *   rasterValue(tgeompoint, raster, band integer DEFAULT 1,
- *     exclude_nodata_value boolean DEFAULT true,
- *     resample text DEFAULT 'nearest') → tfloat
- *   rasterTileValueQuadbin(tgeompoint, bytea, ...) → tfloat
+ * trajectories
+ * @details Sampling functions:
+ * rasterValue(tgeompoint, raster, band integer DEFAULT 1,
+ * exclude_nodata_value boolean DEFAULT true,
+ * resample text DEFAULT 'nearest') → tfloat
+ * rasterTileValueQuadbin(tgeompoint, bytea, ...) → tfloat
  *
  * Restriction functions (SQL-defined, compose the sampling operators):
- *   atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
- *   minusRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
+ * atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
+ * minusRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
  *
  * Ever/always predicates (SQL-defined):
- *   eRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
- *   aRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
+ * eRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
+ * aRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
  *
  * rasterValue and the four functions above also take the path of a raster
  * file on the server in place of the raster, which GDAL reads.
@@ -54,7 +53,7 @@
  * `mobilitydb.control` then declares `requires = '...postgis_raster'`
  * so the extension stack is created in a single CASCADE:
  *
- *   CREATE EXTENSION mobilitydb CASCADE;
+ * CREATE EXTENSION mobilitydb CASCADE;
  */
 
 /******************************************************************************

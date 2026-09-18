@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief API of the Mobility Engine Open Source (MEOS) library.
+ * @file
+ * @brief API of the Mobility Engine Open Source (MEOS) library
  */
 
 #ifndef __MEOS_NPOINT_H__

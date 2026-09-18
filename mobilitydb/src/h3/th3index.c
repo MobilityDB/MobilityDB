@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the th3index conversion casts.
- *
- * The int64 payload is identical between tbigint and th3index, but
+ * @brief PG V1 wrappers for the th3index conversion casts
+ * @details The int64 payload is identical between tbigint and th3index, but
  * the embedded bounding box differs (TBox vs STBox). The MEOS-level
  * tbigint_to_th3index / th3index_to_tbigint helpers lift an identity
  * Datum function so the result is rebuilt at the correct shape.

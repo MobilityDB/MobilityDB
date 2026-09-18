@@ -31,9 +31,9 @@
 
 /**
  * @file
- * @brief GiST operator class for `ts2cell`.
- *
- * The bounding box of a `ts2cell` value is the cell's spatiotemporal `stbox`, so
+ * @brief GiST operator class for `ts2cell`
+ * @details The bounding box of a `ts2cell` value is the cell's spatiotemporal
+ * `stbox`, so
  * the opclass is STORAGE stbox and indexes the topological / positional / time
  * operators through that box (the tgeompoint / tcbuffer pattern).
  *

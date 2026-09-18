@@ -33,13 +33,13 @@
  * @details Computes time intervals during which a moving polygon edge
  * intersects a static polygon. The swept envelope of the edge between
  * two timestamps is:
- *   - M1 (pure translation): a parallelogram; P(u, t) is affine in
- *     both u and t. Boundary residuals are linear → closed form.
- *   - M2 (rotation, 2D only): a curved quadrilateral whose two
- *     "lateral" sides are arcs; P(u, t) is non-linear in t. Boundary
- *     residuals are `a + b*t + c*cos(theta(t)) + d*sin(theta(t))`.
- *     Two solver paths: closed-form Taylor for |Delta theta| < 0.10
- *     rad, and 20-bin sign-change scan + bracket bisection otherwise.
+ * - M1 (pure translation): a parallelogram; P(u, t) is affine in
+ * both u and t. Boundary residuals are linear → closed form.
+ * - M2 (rotation, 2D only): a curved quadrilateral whose two
+ * "lateral" sides are arcs; P(u, t) is non-linear in t. Boundary
+ * residuals are `a + b*t + c*cos(theta(t)) + d*sin(theta(t))`.
+ * Two solver paths: closed-form Taylor for |Delta theta| < 0.10
+ * rad, and 20-bin sign-change scan + bracket bisection otherwise.
  *
  * Note: "trapezoid" in this codebase refers to the shape swept by a
  * tcbuffer segment (two circle arcs + two tangent lines), implemented

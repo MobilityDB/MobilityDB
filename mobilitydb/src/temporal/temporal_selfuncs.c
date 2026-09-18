@@ -31,14 +31,12 @@
  * @file
  * @brief Functions for selectivity estimation of operators on temporal types
  * whose bounding box is a `tstzspan`, that is, the `talpha` types
- *
- * The operators currently supported are as follows
+ * @details The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`
  * - Bounding box operators: `&&`, `@>`, `<@`, `~=`
  * - Relative position operators: `<<#`, `&<#`, `#>>`, `#>>`
  * - Ever/always comparison operators: `?=`, `%=`, `?<>`, `%<>`, `?<, `%<`,
  * ... These still need to be defined. TODO
- *
  */
 
 #include "pg_temporal/temporal_selfuncs.h"

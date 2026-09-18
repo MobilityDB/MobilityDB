@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief PG wrappers for per-type pcpoint / pcpatch accessors.
- *
- * Set-level SQL bindings for @p pcpointset / @p pcpatchset delegate to
+ * @brief PG wrappers for per-type pcpoint / pcpatch accessors
+ * @details Set-level SQL bindings for @p pcpointset / @p pcpatchset delegate
+ * to
  * the generic @p Set_* wrappers in @p mobilitydb/src/temporal/set.c
  * (dispatch happens via the Oid-MeosType cache). This file hosts the
  * type-specific accessors: the trivial @p pcid reads and the

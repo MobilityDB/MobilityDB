@@ -29,11 +29,10 @@
 
 /**
  * @file
- * @brief Build the standard set of test tables for the pgpointcloud
- *   temporal types: pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox,
- *   tpcpoint, tpcpatch.
- *
- * Mirrors the layout of @c create_test_tables_tcbuffer / @c create_test_tables_tnpoint.
+ * @brief Build the standard set of test tables for the pgpointcloud temporal
+ * types: pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch
+ * @details Mirrors the layout of @c create_test_tables_tcbuffer / @c
+ * create_test_tables_tnpoint.
  * All values share a single pcid, materialized on demand by
  * @c ensure_random_pcid() in @c random_tpcpoint.sql.
  */

@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that assembles temporal points from temporal floats,
- * one for each coordinate dimension.
- *
- * The program can be build as follows
+ * one for each coordinate dimension
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tpointseq_make_coords tpointseq_make_coords.c -L/usr/local/lib -lmeos
  * @endcode

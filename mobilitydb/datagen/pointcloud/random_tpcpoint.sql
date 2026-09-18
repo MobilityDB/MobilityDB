@@ -27,12 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * random_tpcpoint.sql
- * Synthetic data generator for the pgpointcloud temporal types
- * (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch).
- *
- * All randomly generated values share a single pcid.  The datagen
+/**
+ * @file
+ * @brief Synthetic data generator for the pgpointcloud temporal types
+ * (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch)
+ * @details All randomly generated values share a single pcid.  The datagen
  * schema (pcid 1, SRID 0, three int32 dimensions X/Y/Z scaled by 0.01)
  * is materialized on demand via @ref ensure_random_pcid().
  */

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief In-memory space-partitioning index (quad-tree and k-d tree) for MEOS
  * bounding boxes, i.e., for Span and TBox
  */

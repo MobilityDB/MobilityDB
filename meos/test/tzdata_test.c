@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief A program that tests the time zone database compiled into MEOS.
- *
- * Standalone MEOS reads its zones from the database compiled into the
+ * @brief A program that tests the time zone database compiled into MEOS
+ * @details Standalone MEOS reads its zones from the database compiled into the
  * library, so the program answers the same on a host without a zone
  * directory, Windows included. It checks a zone found by name ignoring case,
  * a zone name that is a link to another zone, the standard and daylight

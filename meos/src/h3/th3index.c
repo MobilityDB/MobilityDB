@@ -29,22 +29,22 @@
 
 /**
  * @file
- * @brief Type-inheritance boilerplate for `th3index`.
+ * @brief Type-inheritance boilerplate for `th3index`
  * @details This file is the analogue of `meos/src/cbuffer/tcbuffer.c`. Every
  * temporal type carries this layer to specialise the generic
  * `Temporal` machinery for its own value type:
  *
- *   - argument validators for every supported operand pair,
- *   - type-specific input parsers that delegate to the generic
- *     int-8 parser but tag the result with `T_TH3INDEX`,
- *   - type-specific constructors (`th3index_make`, `th3indexinst_make`,
- *     `th3indexseq_make`, `th3indexseqset_make`),
- *   - type-specific accessors (`th3index_start_value`,
- *     `th3index_end_value`, `th3index_value_n`, `th3index_values`,
- *     `th3index_value_at_timestamptz`) that hide the Datum-packing
- *     convention from callers,
- *   - MEOS-level conversions to and from `tbigint` for callers that
- *     want the bit-identical representation without a SQL round trip.
+ * - argument validators for every supported operand pair,
+ * - type-specific input parsers that delegate to the generic
+ * int-8 parser but tag the result with `T_TH3INDEX`,
+ * - type-specific constructors (`th3index_make`, `th3indexinst_make`,
+ * `th3indexseq_make`, `th3indexseqset_make`),
+ * - type-specific accessors (`th3index_start_value`,
+ * `th3index_end_value`, `th3index_value_n`, `th3index_values`,
+ * `th3index_value_at_timestamptz`) that hide the Datum-packing
+ * convention from callers,
+ * - MEOS-level conversions to and from `tbigint` for callers that
+ * want the bit-identical representation without a SQL round trip.
  *
  * The lifting-specific Datum wrappers (`datum_h3_*`) live in
  * `th3index_lifting.c`; the comparison-operator wrappers live in

@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief PG V1 wrappers for the lifted temporal `tquadbin` cell operations.
- *
- * The shared DGGS operations (resolution, validity, parent, centroid
+ * @brief PG V1 wrappers for the lifted temporal `tquadbin` cell operations
+ * @details The shared DGGS operations (resolution, validity, parent, centroid
  * point, boundary, area) route through the generic `tcellindex_*`
  * entry points, which dispatch to the `quadbin_cellops` descriptor.
  * The quadbin-unique quadkey lift calls the typed

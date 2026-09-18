@@ -36,7 +36,7 @@
  * relationship.
  *
  * The following relationships are supported: `eContains`, `aContains`,
- * `eCovers`, `aCovers`, `eDisjoint`, `aDisjoint`, `eIntersects`, 
+ * `eCovers`, `aCovers`, `eDisjoint`, `aDisjoint`, `eIntersects`,
  * `aIntersects`, `eTouches`, `aTouches`, `eDwithin`, and `aDwithin`.
  *
  * All these relationships support the following combinations of arguments

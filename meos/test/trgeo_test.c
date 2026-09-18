@@ -31,8 +31,8 @@
  * @file
  * @brief A simple program that tests trgeometry_in(), the public MEOS entry
  * point for reading a temporal rigid geometry from its text representation
- *
- * A trgeometry value carries a leading reference geometry ahead of its
+ * @details A trgeometry value carries a leading reference geometry ahead of
+ * its
  * temporal (pose) part. This test exercises trgeometry_in() directly on a
  * well-formed value and checks that the result round-trips through
  * trgeometry_out(). It also exercises the restriction of a trgeometry to a

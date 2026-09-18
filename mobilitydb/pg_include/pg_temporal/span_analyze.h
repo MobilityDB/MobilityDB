@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for gathering statistics from time type columns
  */
 

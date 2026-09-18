@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal bounding boxes.
+ * @file
+ * @brief Functions for temporal bounding boxes
  */
 
 #ifndef __TBOX_H__

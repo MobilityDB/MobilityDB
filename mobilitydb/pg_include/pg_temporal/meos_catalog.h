@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for building a cache of type and operator Oids.
+ * @file
+ * @brief Functions for building a cache of type and operator Oids
  */
 
 #ifndef __PG_MEOS_CATALOG_H__

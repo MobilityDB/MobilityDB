@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Bounding box operators for temporal circular buffers.
+ * @file
+ * @brief Bounding box operators for temporal circular buffers
  */
 
 #ifndef __TCBUFFER_BOXOPS_H__

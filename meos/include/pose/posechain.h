@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for static pose chain objects.
+ * @file
+ * @brief Basic functions for static pose chain objects
  */
 
 #ifndef __POSECHAIN_H__

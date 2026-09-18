@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests how the geo constructors report an erroneous
- * argument under the noexit error handler.
- *
- * A public MEOS function tests the conditions its internal form asserts, so a
+ * argument under the noexit error handler
+ * @details A public MEOS function tests the conditions its internal form
+ * asserts, so a
  * binding calling it with a null pointer or a count out of range receives an
  * error it can raise in its host language. An assertion cannot carry that
  * contract: it is compiled out under NDEBUG, which leaves the release build a

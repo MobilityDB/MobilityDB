@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Bounding box operators for temporal pose objects.
+ * @file
+ * @brief Bounding box operators for temporal pose objects
  */
 
 #ifndef __TPOSE_BOXOPS_H__

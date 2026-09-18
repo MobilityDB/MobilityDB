@@ -29,10 +29,10 @@
  *
  *****************************************************************************/
 
-/*
- * Spatial relationships for temporal cell indices.
- *
- * Each tquadbin value carries one cell per instant. The spatial
+/**
+ * @file
+ * @brief Spatial relationships for temporal cell indices
+ * @details Each tquadbin value carries one cell per instant. The spatial
  * relations defined here operate on the cell's BOUNDARY POLYGON (not
  * the cell's centre point), matching the prefilter semantics in
  * `geoToH3IndexSet` / `everIntersectsH3IndexSet_Th3Index` and the user

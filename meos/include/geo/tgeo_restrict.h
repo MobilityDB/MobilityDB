@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Restriction functions for temporal points.
+ * @file
+ * @brief Restriction functions for temporal points
  */
 
 #ifndef __TPOINT_RESTRICT_H__

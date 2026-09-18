@@ -30,9 +30,9 @@
 /**
  * @file
  * @brief A program that tests the join of two in-memory space-partitioning
- * indexes, i.e., sptree_join, against an exact brute-force oracle.
- *
- * The oracle is the public box predicate the join is meant to reproduce --
+ * indexes, i.e., sptree_join, against an exact brute-force oracle
+ * @details The oracle is the public box predicate the join is meant to
+ * reproduce --
  * #overlaps_stbox_stbox and #contains_stbox_stbox -- applied to every pair of
  * boxes, so the join is checked against an independent implementation rather
  * than against the callback it uses internally.
@@ -40,23 +40,23 @@
  * A space-partitioning index stores a box at every node and not only at its
  * leaves, so an entry pairs with entries lying at any depth of the other index,
  * and the cases are built around the depth an entry reaches:
- *  - the two indexes hold a different number of entries, and one of each pair
- *    is grown entry by entry while the other is built from the whole set, so
- *    the two depths of a pair have nothing to do with each other;
- *  - one case grows an index from a set ordered on one dimension, which
- *    #sptree_insert stores deeper than a build would;
- *  - one case joins a quad-tree with a k-d tree, whose depths and regions are
- *    those of two different partitions of the same space.
+ * - the two indexes hold a different number of entries, and one of each pair
+ * is grown entry by entry while the other is built from the whole set, so
+ * the two depths of a pair have nothing to do with each other;
+ * - one case grows an index from a set ordered on one dimension, which
+ * #sptree_insert stores deeper than a build would;
+ * - one case joins a quad-tree with a k-d tree, whose depths and regions are
+ * those of two different partitions of the same space.
  * The fixture keeps the temporal dimension constant across a whole case, so
  * that a level narrowing the wrong dimension separates nothing and the answer
  * rests on the spatial dimensions alone.
  *
  * Four properties are asserted per case:
- *  (i)   soundness: every reported pair satisfies the predicate;
- *  (ii)  completeness: every pair satisfying the predicate is reported;
- *  (iii) no duplicates: no pair is reported twice, so a caller counting the
- *        result counts each pair once;
- *  (iv)  count: the number of reported pairs equals the brute-force count.
+ * (i)   soundness: every reported pair satisfies the predicate;
+ * (ii)  completeness: every pair satisfying the predicate is reported;
+ * (iii) no duplicates: no pair is reported twice, so a caller counting the
+ * result counts each pair once;
+ * (iv)  count: the number of reported pairs equals the brute-force count.
  * The degenerate cases of an empty index and of two indexes that share no box,
  * and the operations a join refuses, are asserted separately.
  *

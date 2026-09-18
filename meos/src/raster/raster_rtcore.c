@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief General functions for the PostGIS raster type, backed by the
- * vendored rt_core library.
- *
- * This is the only MEOS source file that includes `librtcore.h`. A `Raster`
+ * @brief General functions for the PostGIS raster type, backed by the vendored
+ * rt_core library
+ * @details This is the only MEOS source file that includes `librtcore.h`. A
+ * `Raster`
  * is the serialized on-disk form that PostgreSQL stores for the PostGIS
  * `raster` type; it is passed through unchanged and deserialized here on
  * demand.

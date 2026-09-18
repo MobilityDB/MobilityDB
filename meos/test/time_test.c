@@ -30,9 +30,8 @@
 /**
  * @file
  * @brief A simple program that tests the time functions exposed by the
- * PostgreSQL types embedded in MEOS.
- *
- * The program can be build as follows
+ * PostgreSQL types embedded in MEOS
+ * @details The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o time_test time_test.c -L/usr/local/lib -lmeos
  * @endcode

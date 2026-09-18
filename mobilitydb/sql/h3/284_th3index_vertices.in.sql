@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief H3 vertex functions for `th3index`.
- *
- * `th3CellToVertex` takes an extra integer vertex number (0-5 for
+ * @brief H3 vertex functions for `th3index`
+ * @details `th3CellToVertex` takes an extra integer vertex number (0-5 for
  * hexagons, 0-4 for pentagons) that is constant across the time
  * axis — `lift_with_const` flavour.
  *
