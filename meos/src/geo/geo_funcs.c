@@ -4361,8 +4361,8 @@ relate_point_in_area_parity(double x, double y, const RelateEdges *re)
 {
   if (! re->index)
     return point_in_polygon(x, y, re->edges, re->nedges) ? 0 : 2;
-  return point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
-    re->xmax) ? 0 : 2;
+  return point_in_polygon_index_into(x, y, re->edges, re->nedges, re->index,
+    re->xmax, re->reach, re->results, false) ? 0 : 2;
 }
 
 /*****************************************************************************
@@ -7110,6 +7110,10 @@ relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
   return relate_point_in_area_index(x, y, area, false) == 0;
 }
 
+/* Split parameters an edge holds on the stack, which covers an edge meeting up
+ * to 31 candidate edges of the other boundary */
+#define RELATE_INTERVAL_PARAMS 64
+
 /**
  * @brief Classify the open portions of one polygon boundary edge
  * @details The edge is split at every intersection with the other polygon
@@ -7120,19 +7124,6 @@ static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   MeosDE9IM *m, bool first)
 {
-  /* Maximum number of intersections between one edge and one
-   * circular/linear boundary edge is two */
-  int maxparams = 2 * other->nedges + 2;
-  double *params = palloc(sizeof(double) * maxparams);
-  int nparams = 0;
-  params[nparams++] = 0.0;
-  params[nparams++] = 1.0;
-  /* The stretches along which this edge RUNS ON the other boundary rather than
-   * meeting it at a point. Every other part of the edge misses that boundary
-   * entirely, which is what lets the classification below drop a tolerance */
-  double *shlo = palloc(sizeof(double) * maxparams);
-  double *shhi = palloc(sizeof(double) * maxparams);
-  int nshared = 0;
   /* The edges this one can meet are those whose box meets its own, and an index
    * answers them in the place of a pass over the whole array. A boundary of a
    * few thousand edges leaves every pair but a handful standing apart, so the
@@ -7145,9 +7136,32 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     double pad = fmax(other->tol, edge->tol);
     stbox_set(true, false, false, 0, edge->xmin - pad, edge->xmax + pad,
       edge->ymin - pad, edge->ymax + pad, 0, 0, NULL, &query);
-    candidates = index_result_create();
+    /* The ids are collected into the array the edges carry for their index,
+     * which nothing else reads while this loop runs, rather than into one
+     * made and released for every edge */
+    candidates = other->results;
     ncand = rtree_search_intl(other->index, INDEX_OVERLAPS, &query, candidates);
   }
+
+  /* Maximum number of intersections between one edge and one
+   * circular/linear boundary edge is two, and only a candidate meets this
+   * one, so the parameters are bounded by the candidates rather than by the
+   * whole other boundary: a handful, held on the stack rather than allocated
+   * for every edge */
+  int maxparams = 2 * ncand + 2;
+  double pstack[RELATE_INTERVAL_PARAMS], lostack[RELATE_INTERVAL_PARAMS],
+    histack[RELATE_INTERVAL_PARAMS];
+  bool heap = maxparams > RELATE_INTERVAL_PARAMS;
+  double *params = heap ? palloc(sizeof(double) * maxparams) : pstack;
+  int nparams = 0;
+  params[nparams++] = 0.0;
+  params[nparams++] = 1.0;
+  /* The stretches along which this edge RUNS ON the other boundary rather than
+   * meeting it at a point. Every other part of the edge misses that boundary
+   * entirely, which is what lets the classification below drop a tolerance */
+  double *shlo = heap ? palloc(sizeof(double) * maxparams) : lostack;
+  double *shhi = heap ? palloc(sizeof(double) * maxparams) : histack;
+  int nshared = 0;
   for (int c = 0; c < ncand; c++)
   {
     int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
@@ -7196,9 +7210,6 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
       relate_area_add_parameter(t, params, &nparams, maxparams);
     }
   }
-
-  if (candidates)
-    meos_array_destroy(candidates);
 
   qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
   /* Remove duplicates */
@@ -7273,9 +7284,12 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
         m->eb = 1;
     }
   }
-  pfree(params);
-  pfree(shlo);
-  pfree(shhi);
+  if (heap)
+  {
+    pfree(params);
+    pfree(shlo);
+    pfree(shhi);
+  }
   return;
 }
 
@@ -9470,11 +9484,8 @@ relate_edge_inside_area(const Edge *e, const RelateEdges *other)
     return (vertex ?
       point_in_polygon_vertex(x, y, other->edges, other->nedges) :
       point_in_polygon(x, y, other->edges, other->nedges)) != 0;
-  return (vertex ?
-    point_in_polygon_index_vertex(x, y, other->edges, other->nedges,
-      other->index, other->xmax) :
-    point_in_polygon_index(x, y, other->edges, other->nedges,
-      other->index, other->xmax)) != 0;
+  return point_in_polygon_index_into(x, y, other->edges, other->nedges,
+    other->index, other->xmax, other->reach, other->results, vertex) != 0;
 }
 
 /**
