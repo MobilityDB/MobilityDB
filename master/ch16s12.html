@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Latitude and Longitude Conversions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s11.html" title="Hierarchy"><link rel="next" href="ch16s13.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Latitude and Longitude Conversions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s11.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_latlng"></a>Latitude and Longitude Conversions</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_tgeompoint_to_th3"></a><a class="indexterm" name="id13052"></a><p>Return the temporal cell at the given resolution that contains each point in a temporal geodetic or planar point</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Latitude and Longitude Conversions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s11.html" title="Hierarchy"><link rel="next" href="ch16s13.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Latitude and Longitude Conversions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s11.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_latlng"></a>Latitude and Longitude Conversions</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_tgeompoint_to_th3"></a><a class="indexterm" name="id13054"></a><p>Return the temporal cell at the given resolution that contains each point in a temporal geodetic or planar point</p><pre class="programlisting">
 th3index(tpoint,integer) → th3index
 tquadbin(tpoint,integer) → tquadbin
 ts2cell(tpoint,integer) → ts2cell
@@ -24,7 +24,7 @@ SELECT getResolution(ts2cell(tgeompoint
 SELECT numInstants(ts2cell(tgeompoint
   'SRID=4326;[POINT(-15 44.5)@2001-01-01, POINT(15 44.5)@2001-01-02]', 0));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_quadbinSplit"></a><a class="indexterm" name="id13067"></a><p>Split a temporal point at the QUADBIN cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tcell_quadbinSplit"></a><a class="indexterm" name="id13069"></a><p>Split a temporal point at the QUADBIN cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 quadbinSplit(tpoint,integer) → {(cell,tpoint)}
 </pre><p>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. A trajectory reaching a cell at its last instant holds it there for an instant, and the split states that fragment over that instant.</p><p>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. The period of a fragment is what <code class="varname">getTime</code> answers for it, so the split carries no period of its own.</p><pre class="programlisting">
@@ -39,7 +39,7 @@ SELECT count(*) FROM quadbinSplit(tgeogpoint
 SELECT count(*) FROM quadbinSplit(tgeompoint
   'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
 -- 1
-</pre></li><li class="listitem"><a name="tcell_h3Split"></a><a class="indexterm" name="id13084"></a><p>Split a temporal point at the H3 cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tcell_h3Split"></a><a class="indexterm" name="id13086"></a><p>Split a temporal point at the H3 cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 h3Split(tpoint,integer) → {(cell,tpoint)}
 </pre><p>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. The period of a fragment is what <code class="varname">getTime</code> answers for it, so the split carries no period of its own.</p><p>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. An H3 cell is a hexagon on the sphere, and a great circle is the shortest path between two positions on it, so a geodetic trajectory crosses no more of those cells than the straight line in longitude and latitude between the same positions does.</p><pre class="programlisting">
@@ -54,7 +54,7 @@ SELECT count(*) FROM h3Split(tgeogpoint
 SELECT count(*) FROM h3Split(tgeompoint
   'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
 -- 16
-</pre></li><li class="listitem"><a name="tcell_s2Split"></a><a class="indexterm" name="id13101"></a><p>Split a temporal point at the S2 cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tcell_s2Split"></a><a class="indexterm" name="id13103"></a><p>Split a temporal point at the S2 cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 s2Split(tpoint,integer) → {(cell,tpoint)}
 </pre><p>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. The period of a fragment is what <code class="varname">getTime</code> answers for it, so the split carries no period of its own.</p><p>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. The two paths cross different cells, and the count of them is a property of the trajectory rather than of the grid: the arc from longitude -170 to -100 along latitude 65 crosses as many S2 cells as the straight line between the same positions does, while the cells themselves differ.</p><pre class="programlisting">
@@ -69,7 +69,7 @@ SELECT getValues(ts2cell(tgeogpoint
   = getValues(ts2cell(tgeompoint
     'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 6));
 -- f
-</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id13118"></a><a class="indexterm" name="id13121"></a><p>Return the centroid of a cell, or of each cell in a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id13120"></a><a class="indexterm" name="id13123"></a><p>Return the centroid of a cell, or of each cell in a trajectory</p><pre class="programlisting">
 cellToPoint({h3index,quadbin}) → geometry
 cellToPoint(s2cell) → geography
 cellToPoint({th3index,ts2cell}) → tgeogpoint
@@ -90,7 +90,7 @@ SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
 -- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id13132"></a><p>Return the polygon boundary of a cell, or of each cell in a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id13134"></a><p>Return the polygon boundary of a cell, or of each cell in a trajectory</p><pre class="programlisting">
 cellToBoundary({h3index,quadbin}) → geometry
 cellToBoundary(s2cell) → geography
 cellToBoundary({th3index,ts2cell}) → tgeography
