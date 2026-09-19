@@ -408,6 +408,130 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
+ * @brief Frame the distance kernels read an arc edge in
+ * @details The arc is read off its chord and the inscribed angle at its middle
+ * vertex (#lw_arc_frame), as the distance of a point to an arc reads it,
+ * rather than off its circumcentre: the chord is made of input vertices, and
+ * the circumcentre of a nearly straight arc lies far from them
+ */
+typedef struct
+{
+  double wx, wy;  /**< Offset from the centre to the start of the arc, S - O */
+  double nx, ny;  /**< Unit normal of the chord, toward the arc */
+  double cosa;    /**< Cosine of the inscribed angle at the middle vertex */
+  double radius;  /**< Radius, |W|, which the frame reads as half the chord
+                       over the sine of the inscribed angle */
+  bool chord;     /**< True when the arc is read off its chord */
+} DistArc;
+
+/**
+ * @brief Set the frame of an arc edge
+ * @details A half of a circle given by its diameter, and an arc the frame
+ * cannot read, keep the centre of the edge and the angular test of its span
+ */
+static void
+dist_arc_init(const Edge *e, DistArc *a)
+{
+  a->chord = false;
+  if (e->diameter)
+  {
+    /* The centre of the circle on a diameter is the middle of the diameter */
+    a->wx = (e->sx - e->ex) / 2.0;
+    a->wy = (e->sy - e->ey) / 2.0;
+    a->radius = hypot(a->wx, a->wy);
+    return;
+  }
+  POINT2D a1 = {e->sx, e->sy}, a2 = {e->mx, e->my}, a3 = {e->ex, e->ey};
+  LW_ARC_FRAME f;
+  if (lw_arc_frame(&a1, &a2, &a3, &f) && f.sina != 0.0)
+  {
+    /* C - A1 is half the chord plus hc along the normal toward the arc */
+    double hc = f.half * f.cosa / f.sina;
+    a->wx = - ((a3.x - a1.x) / 2.0 + f.nx * hc);
+    a->wy = - ((a3.y - a1.y) / 2.0 + f.ny * hc);
+    a->nx = f.nx;
+    a->ny = f.ny;
+    a->cosa = f.cosa;
+    a->radius = f.half / f.sina;
+    a->chord = true;
+    return;
+  }
+  a->wx = e->sx - e->cx;
+  a->wy = e->sy - e->cy;
+  a->radius = e->radius;
+  return;
+}
+
+/**
+ * @brief Return the power of a point with respect to the circle of an arc
+ * edge, |P - O|^2 - R^2
+ * @details The power is read from the start S of the arc, an input vertex on
+ * the circle: with X = P - S and W = S - O it is |X|^2 + 2 X.W, whose terms
+ * keep the scale of the distance of the point to the arc where the circle is
+ * far larger than the arc
+ */
+static inline double
+dist_arc_power(double px, double py, const Edge *e, const DistArc *a)
+{
+  double xx = px - e->sx, xy = py - e->sy;
+  return xx * xx + xy * xy + 2.0 * (xx * a->wx + xy * a->wy);
+}
+
+/**
+ * @brief Return the signed distance of a point to the circle of an arc edge,
+ * |P - O| - R
+ * @details It is the power over |P - O| + R, which subtracts no two quantities
+ * on the scale of the radius
+ */
+static inline double
+dist_arc_delta(double px, double py, const Edge *e, const DistArc *a)
+{
+  double pw = dist_arc_power(px, py, e, a);
+  double q = pw + a->radius * a->radius;
+  if (q < 0.0)
+    q = 0.0;
+  return pw / (sqrt(q) + a->radius);
+}
+
+/**
+ * @brief Return true if the point of the circle of an arc edge nearest to a
+ * point lies on the arc
+ * @details Read in the frame of the arc, the nearest point lies on the arc
+ * when the height of the point above the chord, toward the arc, is at least
+ * minus its signed distance to the circle times the cosine of the inscribed
+ * angle, the test #lw_dist2d_pt_arc makes. Its angle from a centre far from
+ * the arc is not read: an angular tolerance there is a length the arc may not
+ * reach
+ */
+static inline bool
+dist_arc_on_span(double px, double py, const Edge *e, const DistArc *a)
+{
+  if (! a->chord)
+    return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
+  double qn = (px - e->sx) * a->nx + (py - e->sy) * a->ny;
+  return qn >= - dist_arc_delta(px, py, e, a) * a->cosa;
+}
+
+/**
+ * @brief Return in the last arguments the linear and constant coefficients of
+ * the power of a moving point with respect to the circle of an arc edge
+ * @details The point moves from (cx1, cy1) by (dcx, dcy) as t goes from 0 to
+ * 1, and its power is a t^2 + b t + c with a = dcx^2 + dcy^2, the power at
+ * t = 0 being c (#dist_arc_power)
+ */
+void
+dist_arc_power_coefs(double cx1, double cy1, double dcx, double dcy,
+  const Edge *e, double *b, double *c)
+{
+  DistArc a;
+  dist_arc_init(e, &a);
+  double xx = cx1 - e->sx, xy = cy1 - e->sy;
+  *c = xx * xx + xy * xy + 2.0 * (xx * a.wx + xy * a.wy);
+  *b = 2.0 * (dcx * (xx + a.wx) + dcy * (xy + a.wy));
+  return;
+}
+
+/**
  * @brief Return the minimum distance between a moving disc and a circular-arc
  * edge
  * @details The minimum is that of [ dist(c(t), arc) - r(t) ] for t in [0,1],
@@ -430,7 +554,7 @@ dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
-  const double px = e->cx, py = e->cy, R = e->radius;
+  const double px = e->cx, py = e->cy;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -439,21 +563,24 @@ dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
   int nc = 0;
   cand[nc++] = 0.0;
   cand[nc++] = 1.0;
-  /* Circle crossings Q(t) = R^2 */
+  /* Circle crossings: the roots of the power of the moving centre */
+  DistArc arc;
+  dist_arc_init(e, &arc);
   {
-    double c0 = C - R * R;
+    double b0, c0;
+    dist_arc_power_coefs(cx1, cy1, dcx, dcy, e, &b0, &c0);
     if (fabs(A) > 1e-18)
     {
-      double disc = B * B - 4.0 * A * c0;
+      double disc = b0 * b0 - 4.0 * A * c0;
       if (disc >= 0.0)
       {
         double sd = sqrt(disc);
-        cand[nc++] = (-B + sd) / (2.0 * A);
-        cand[nc++] = (-B - sd) / (2.0 * A);
+        cand[nc++] = (-b0 + sd) / (2.0 * A);
+        cand[nc++] = (-b0 - sd) / (2.0 * A);
       }
     }
-    else if (fabs(B) > 1e-18)
-      cand[nc++] = -c0 / B;
+    else if (fabs(b0) > 1e-18)
+      cand[nc++] = -c0 / b0;
   }
   /* Vertex of Q (closest approach to the centre) */
   if (fabs(A) > 1e-18)
@@ -485,12 +612,10 @@ dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     double t = cand[i];
     if (t < 0.0) t = 0.0;
     if (t > 1.0) t = 1.0;
-    double q = A * t * t + B * t + C;
-    if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! dist_arc_on_span(cpx, cpy, e, &arc))
       continue;
-    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    double f = fabs(dist_arc_delta(cpx, cpy, e, &arc)) - (r1 + dr * t);
     if (f < best) best = f;
   }
   /* Off-span regions are nearest to an arc endpoint: two point-distance
@@ -638,7 +763,7 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
-  const double px = e->cx, py = e->cy, R = e->radius;
+  const double px = e->cx, py = e->cy;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -647,21 +772,24 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
   int nc = 0;
   cand[nc++] = 0.0;
   cand[nc++] = 1.0;
-  /* Circle crossings Q(t) = R^2 */
+  /* Circle crossings: the roots of the power of the moving centre */
+  DistArc arc;
+  dist_arc_init(e, &arc);
   {
-    double c0 = C - R * R;
+    double b0, c0;
+    dist_arc_power_coefs(cx1, cy1, dcx, dcy, e, &b0, &c0);
     if (fabs(A) > 1e-18)
     {
-      double disc = B * B - 4.0 * A * c0;
+      double disc = b0 * b0 - 4.0 * A * c0;
       if (disc >= 0.0)
       {
         double sd = sqrt(disc);
-        cand[nc++] = (-B + sd) / (2.0 * A);
-        cand[nc++] = (-B - sd) / (2.0 * A);
+        cand[nc++] = (-b0 + sd) / (2.0 * A);
+        cand[nc++] = (-b0 - sd) / (2.0 * A);
       }
     }
-    else if (fabs(B) > 1e-18)
-      cand[nc++] = -c0 / B;
+    else if (fabs(b0) > 1e-18)
+      cand[nc++] = -c0 / b0;
   }
   /* Vertex of Q (closest approach to the centre) */
   if (fabs(A) > 1e-18)
@@ -693,12 +821,10 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double t = cand[i];
     if (t < 0.0) t = 0.0;
     if (t > 1.0) t = 1.0;
-    double q = A * t * t + B * t + C;
-    if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! dist_arc_on_span(cpx, cpy, e, &arc))
       continue;
-    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    double f = fabs(dist_arc_delta(cpx, cpy, e, &arc)) - (r1 + dr * t);
     if (f < best) { best = f; bt = t; }
   }
   /* Off-span regions are nearest to an arc endpoint */
@@ -744,10 +870,15 @@ dist_geom_closest_on_arc(double px, double py, const Edge *e,
 {
   double vx = px - e->cx, vy = py - e->cy;
   double vl = hypot(vx, vy);
-  if (vl > MEOS_GEOM_TOLERANCE && arc_contains_angle(e, atan2(vy, vx)))
+  DistArc arc;
+  dist_arc_init(e, &arc);
+  if (vl > MEOS_GEOM_TOLERANCE && dist_arc_on_span(px, py, e, &arc))
   {
-    *qx = e->cx + vx * (e->radius / vl);
-    *qy = e->cy + vy * (e->radius / vl);
+    /* The point moved toward the centre by its signed distance to the
+     * circle */
+    double s = dist_arc_delta(px, py, e, &arc);
+    *qx = px - vx * (s / vl);
+    *qy = py - vy * (s / vl);
     return;
   }
   double d1 = (px - e->x1) * (px - e->x1) + (py - e->y1) * (py - e->y1);
