@@ -1029,8 +1029,9 @@ typedef struct
  * @brief Build the reusable geometry context for the native within kernel
  * @details The context is built from the straight and circular-arc edges of
  * the boundary. The function returns NULL for a geometry that has no edge
- * decomposition, that is, a TIN or a polyhedral surface, and the caller then
- * uses the traversed-area path.
+ * decomposition, that is, a TIN or a polyhedral surface, or of more than one
+ * face (#dist_geom_decompose), and the caller then uses the traversed-area
+ * path.
  */
 void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
@@ -1038,6 +1039,15 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
   DistGeom g;
   if (! dist_geom_decompose(gs, &g))
     return NULL;
+  /* The relationship kernels read the boundary of the geometry as the union
+   * of its region edges, which it is only for one face: faces that overlap or
+   * share an edge hold edges inside the geometry, as a TIN holds its shared
+   * edges, and such a geometry is left to the traversed-area path */
+  if (g.face)
+  {
+    dist_geom_free(&g);
+    return NULL;
+  }
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->kind = TCBUF_CTX_GEO;
   g.rtree = dist_geom_build_rtree(g.segs, g.n);

@@ -175,12 +175,79 @@ dist_geom_decomposes(const LWGEOM *lw)
 }
 
 /**
+ * @brief Add to the arrays in the last arguments the edges of a geometry and
+ * the face each one bounds
+ * @details A member of a collection, a triangle of a TIN and a face of a
+ * polyhedral surface is a face of its own, since two of them may overlap in
+ * the plane. The parts of a multipolygon or a multisurface do not overlap, so
+ * together they are one face. An edge bounding no region is of no face, -1
+ */
+static void
+dist_geom_collect(const LWGEOM *lw, MeosArray *edges, MeosArray *faces,
+  int *nfaces)
+{
+  switch (lw->type)
+  {
+    case TINTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *c = (const LWCOLLECTION *) lw;
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        dist_geom_collect(c->geoms[i], edges, faces, nfaces);
+      return;
+    }
+    case POINTTYPE:
+    case MULTIPOINTTYPE:
+    case LINETYPE:
+    case MULTILINETYPE:
+    case POLYGONTYPE:
+    case MULTIPOLYGONTYPE:
+    case TRIANGLETYPE:
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    {
+      MeosArray *part = geom_extract_edges(lw);
+      int face = -1;
+      for (int k = 0; k < (int) part->count; k++)
+      {
+        Edge *e = (Edge *) meos_array_get(part, k);
+        int f = -1;
+        if (e->etype == EDGE_POLYSEG || e->etype == EDGE_POLYARC)
+        {
+          if (face < 0)
+            face = (*nfaces)++;
+          f = face;
+        }
+        meos_array_add(edges, e);
+        meos_array_add(faces, &f);
+      }
+      meos_array_destroy(part);
+      return;
+    }
+    /* Every type liblwgeom numbers has an arm above, so this one is reached
+     * only by a type added after this code, which is reported as
+     * #geom_meos_coverage reports it */
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return;
+  }
+}
+
+/**
  * @brief Decompose a geometry into the edges the distance engine reads, with
  * their overall bounding box and whether any bounds a region
  * @details The edges are those #geom_extract_edges gives every native kernel:
  * straight segments, circular arcs and points. The caller builds the index it
  * reads them through, the Morton buckets of the nearest-approach kernels
- * (#dist_geom_build) or the R-tree of the relationship kernels
+ * (#dist_geom_build) or the R-tree of the relationship kernels. A geometry
+ * whose surfaces may overlap in the plane, a collection, a TIN or a polyhedral
+ * surface, also gets the face each region edge bounds (#dist_geom_collect), so
+ * that #dist_geom_point_inside reads a point covered by two faces as inside
  * @return False when the engine does not decompose the geometry or the
  * geometry has no edge, so the caller falls back to the exact path
  */
@@ -193,12 +260,24 @@ dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
     lwgeom_free(lw);
     return false;
   }
-  MeosArray *edges = geom_extract_edges(lw);
+  MeosArray *edges, *faces = NULL;
+  int nfaces = 0;
+  if (lw->type == TINTYPE || lw->type == POLYHEDRALSURFACETYPE ||
+      lw->type == COLLECTIONTYPE)
+  {
+    edges = meos_array_create(sizeof(Edge));
+    faces = meos_array_create(sizeof(int));
+    dist_geom_collect(lw, edges, faces, &nfaces);
+  }
+  else
+    edges = geom_extract_edges(lw);
   lwgeom_free(lw);
   int n = (int) edges->count;
   if (n == 0)
   {
     meos_array_destroy(edges);
+    if (faces)
+      meos_array_destroy(faces);
     return false;
   }
   const Edge *segs = (const Edge *) edges->elems;
@@ -213,8 +292,21 @@ dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
     if (s->xmax > gxmax) gxmax = s->xmax;
     if (s->ymax > gymax) gymax = s->ymax;
   }
+  /* The faces are read only where two of them may cover one point */
+  int *face = NULL;
+  uint8 *state = NULL;
+  int *touched = NULL;
+  if (nfaces > 1)
+  {
+    face = palloc(sizeof(int) * n);
+    memcpy(face, faces->elems, sizeof(int) * n);
+    state = palloc0(sizeof(uint8) * nfaces);
+    touched = palloc(sizeof(int) * nfaces);
+  }
+  if (faces)
+    meos_array_destroy(faces);
   *g = (DistGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL, 0,
-    NULL, edges };
+    NULL, edges, face, nfaces, state, touched };
   return true;
 }
 
@@ -756,14 +848,18 @@ dist_geom_morton_cmp(const void *a, const void *b)
  * bounding box is too coarse for large coastal polygons, but the bucket boxes
  * are tight.
  * @param[in] segs Edges
+ * @param[in] face Face of each edge, or NULL
  * @param[in] n Number of edges
  * @param[in] gxmin,gymin,gxmax,gymax Bounding box of the edges
  * @param[out] sorted Array of @p n edges receiving them in their Morton order
+ * @param[out] sorted_face Array of @p n faces receiving them in the same
+ * order, when @p face is not NULL
  * @param[out] nbk_out Number of buckets
  */
 static DistBucket *
-dist_geom_build_buckets(const Edge *segs, int n, double gxmin,
-  double gymin, double gxmax, double gymax, Edge *sorted, int *nbk_out)
+dist_geom_build_buckets(const Edge *segs, const int *face, int n,
+  double gxmin, double gymin, double gxmax, double gymax, Edge *sorted,
+  int *sorted_face, int *nbk_out)
 {
   double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
   double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
@@ -784,6 +880,9 @@ dist_geom_build_buckets(const Edge *segs, int n, double gxmin,
    * polygons, and each edge is then copied once */
   for (int i = 0; i < n; i++)
     sorted[i] = segs[items[i].idx];
+  if (face)
+    for (int i = 0; i < n; i++)
+      sorted_face[i] = face[items[i].idx];
   pfree(items);
 
   int bsize = (int) ceil(sqrt((double) n));
@@ -821,6 +920,36 @@ dist_geom_build_buckets(const Edge *segs, int n, double gxmin,
 MEOS_TLS MeosArray *dist_pip_results = NULL;
 
 /**
+ * @brief Apply the rightward-ray crossings of one edge to the parity of the
+ * point-inside test
+ * @details Without faces the parity is the one of the whole geometry; with
+ * them it is the one of the face the edge bounds, and a face is recorded the
+ * first time it is crossed so that the test reads and resets only those
+ */
+static inline void
+dist_geom_crossing(const DistGeom *g, int i, double x, double y, bool *inside,
+  int *ntouched)
+{
+  if (! g->face)
+  {
+    dist_poly_seg_raycross(&g->segs[i], x, y, inside);
+    return;
+  }
+  bool flip = false;
+  dist_poly_seg_raycross(&g->segs[i], x, y, &flip);
+  if (! flip)
+    return;
+  int f = g->face[i];
+  if (! (g->state[f] & 2))
+  {
+    g->state[f] = 2;
+    g->touched[(*ntouched)++] = f;
+  }
+  g->state[f] ^= 1;
+  return;
+}
+
+/**
  * @brief Ray-casting interior test
  * @details Over the R-tree (relationship path) the candidates are the edges
  * overlapping the rightward ray box [x, xmax] x [y, y]; over the bucket
@@ -833,25 +962,37 @@ bool
 dist_geom_point_inside(double x, double y, const DistGeom *g)
 {
   bool inside = false;
+  int ntouched = 0;
   if (g->rtree)
   {
     STBox query;
     stbox_set(true, false, false, 0, x, g->xmax, y, y, 0, 0, NULL, &query);
     int nc = rtree_search_intl(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
     for (int j = 0; j < nc; j++)
-      dist_poly_seg_raycross(
-        &g->segs[INDEX_RESULT_ID_N(dist_pip_results, j)], x, y,
-        &inside);
-    return inside;
+      dist_geom_crossing(g, (int) INDEX_RESULT_ID_N(dist_pip_results, j), x,
+        y, &inside, &ntouched);
   }
-  for (int b = 0; b < g->nbk; b++)
+  else
   {
-    const DistBucket *bk = &g->bks[b];
-    if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
-      continue;
-    int e = bk->start + bk->n;
-    for (int i = bk->start; i < e; i++)
-      dist_poly_seg_raycross(&g->segs[i], x, y, &inside);
+    for (int b = 0; b < g->nbk; b++)
+    {
+      const DistBucket *bk = &g->bks[b];
+      if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
+        continue;
+      int e = bk->start + bk->n;
+      for (int i = bk->start; i < e; i++)
+        dist_geom_crossing(g, i, x, y, &inside, &ntouched);
+    }
+  }
+  if (! g->face)
+    return inside;
+  /* A point is inside when it lies inside some face; the faces crossed are
+   * reset for the next point */
+  for (int t = 0; t < ntouched; t++)
+  {
+    int f = g->touched[t];
+    inside |= (g->state[f] & 1) != 0;
+    g->state[f] = 0;
   }
   return inside;
 }
@@ -2130,8 +2271,14 @@ dist_geom_build(const GSERIALIZED *gs, DistGeom *g)
     return false;
   int nbk = 0;
   Edge *sorted = palloc(sizeof(Edge) * g->n);
-  g->bks = dist_geom_build_buckets(g->segs, g->n, g->xmin, g->ymin, g->xmax,
-    g->ymax, sorted, &nbk);
+  int *sorted_face = g->face ? palloc(sizeof(int) * g->n) : NULL;
+  g->bks = dist_geom_build_buckets(g->segs, g->face, g->n, g->xmin, g->ymin,
+    g->xmax, g->ymax, sorted, sorted_face, &nbk);
+  if (g->face)
+  {
+    pfree(g->face);
+    g->face = sorted_face;
+  }
   g->nbk = nbk;
   /* The kernels read the edges in the order of the buckets */
   meos_array_destroy(g->edges);
@@ -2151,6 +2298,9 @@ dist_geom_free(DistGeom *g)
     meos_array_destroy(g->edges);
   else if (g->segs)
     pfree((void *) g->segs);
+  if (g->face) pfree(g->face);
+  if (g->state) pfree(g->state);
+  if (g->touched) pfree(g->touched);
 }
 
 /**
