@@ -1137,6 +1137,29 @@ SELECT numInstants(ts2cell(tgeompoint
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcell_quadbinSplit">
+				<indexterm significance="normal"><primary><varname>quadbinSplit</varname></primary></indexterm>
+				<para>Split a temporal point at the QUADBIN cells it crosses &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinSplit(tpoint,integer) → {(cell,tpoint)}
+</programlisting>
+				<para>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. A trajectory reaching a cell at its last instant holds it there for an instant, and the split states that fragment over that instant.</para>
+				<para>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. The period of a fragment is what <varname>getTime</varname> answers for it, so the split carries no period of its own.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (s).cell, asText((s).tpoint, 6) AS tpoint
+FROM (SELECT quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2) AS s) t;
+-- 4823ffffffffffff | {[POINT(-90 0)@2001-01-02, POINT(-45 10)@2001-01-03]}
+-- 4828ffffffffffff | {[POINT(-135 -10)@2001-01-01, POINT(-90 0)@2001-01-02)}
+SELECT count(*) FROM quadbinSplit(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 2
+SELECT count(*) FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 1
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcell_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>

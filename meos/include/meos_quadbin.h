@@ -301,6 +301,10 @@ extern Temporal *tgeogpoint_to_tquadbin(const Temporal *temp,
   int32 resolution);
 extern Temporal *tgeompoint_to_tquadbin(const Temporal *temp,
   int32 resolution);
+extern Temporal **tgeogpoint_quadbin_split(const Temporal *temp,
+  int32 resolution, Datum **cells, int *count);
+extern Temporal **tgeompoint_quadbin_split(const Temporal *temp,
+  int32 resolution, Datum **cells, int *count);
 // extern Temporal *tquadbin_to_tgeompoint(const Temporal *temp);
 // extern Temporal *tquadbin_cell_to_boundary(const Temporal *temp);
 
