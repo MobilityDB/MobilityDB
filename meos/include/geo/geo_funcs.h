@@ -266,7 +266,10 @@ typedef struct
   RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
   MeosArray *results; /**< Array a search of the index collects ids into,
                            made and released with the index, NULL without it */
+  double xmin;    /**< Least x the edges reach */
   double xmax;    /**< Greatest x the edges reach */
+  double ymin;    /**< Least y the edges reach */
+  double ymax;    /**< Greatest y the edges reach */
   double tol;     /**< Widest tolerance any of the edges asks for */
   double reach;   /**< Widest distance at which an end of an edge is read as
                        lying on a ray cast to locate a point: the tolerance of
