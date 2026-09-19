@@ -1071,5 +1071,26 @@ WITH temp(trip, box) AS (
 SELECT trip = merge(atStbox(trip, box), minusStbox(trip,box))
 FROM temp;
 
+-------------------------------------------------------------------------------
+-- atElevation, minusElevation
+-------------------------------------------------------------------------------
+
+SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+
+-- The elevation of a geodetic point admits the same periods as the planar one,
+-- while its positions follow the great circle
+SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'), 6);
+SELECT asText(minusElevation(tgeogpoint 'SRID=4326;[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'), 6);
+SELECT getTime(atElevation(tgeogpoint 'SRID=4326;[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]')) =
+  getTime(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+
+SELECT asText(atElevation(tgeogpoint 'SRID=4326;{Point(1 1 1)@2001-01-01, Point(2 2 5)@2001-01-02}', floatspan '[0,2]'), 6);
+SELECT asText(atElevation(tgeogpoint 'SRID=4326;Point(1 1 1)@2001-01-01', floatspan '[0,2]'), 6);
+SELECT asText(minusElevation(tgeogpoint 'SRID=4326;Point(1 1 1)@2001-01-01', floatspan '[5,6]'), 6);
+
+/* Errors */
+SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', floatspan '[0,2]'));
+
 --------------------------------------------------------
 
