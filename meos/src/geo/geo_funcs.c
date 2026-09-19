@@ -4250,10 +4250,18 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
    * is thousands of times that. The widest tolerance in the array is what
    * makes the index answer what the scan answers at every scale */
   re->tol = 0.0;
+  re->reach = 0.0;
   for (int i = 0; i < nedges; i++)
   {
     if (edges[i]->tol > re->tol)
       re->tol = edges[i]->tol;
+    /* The reach a point location reads an end of the edge within, as
+     * #point_in_polygon_impl reads it */
+    double reach = edges[i]->tol;
+    if (edges[i]->etype == EDGE_POLYARC)
+      reach = fmax(reach, MEOS_GEOM_TOLERANCE * edges[i]->radius);
+    if (reach > re->reach)
+      re->reach = reach;
   }
   re->index = index ? relate_edges_index(edges, nedges) : NULL;
   re->results = index ? index_result_create() : NULL;
@@ -4333,7 +4341,7 @@ relate_point_in_area_index(double x, double y, const RelateEdges *re,
     return (vertex ? point_in_polygon_vertex(x, y, re->edges, re->nedges) :
       point_in_polygon(x, y, re->edges, re->nedges)) ? 0 : 2;
   return point_in_polygon_index_into(x, y, re->edges, re->nedges, re->index,
-    re->xmax, re->results, vertex) ? 0 : 2;
+    re->xmax, re->reach, re->results, vertex) ? 0 : 2;
 }
 
 /**
