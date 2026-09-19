@@ -82,11 +82,10 @@
 /* upper, lower: #spannode_kdtree_next narrows an even level on the upper
  * bound and an odd one on the lower bound */
 static const uint8 SPAN_KD_BITS[2] = {0, 1};
-/* span.lower, span.upper, period.lower, period.upper */
-static const uint8 TBOX_KD_BITS[4] = {3, 2, 1, 0};
-/* The spatiotemporal box reads its bits from the axes its boxes carry,
- * through #stbox_kd_dim and #stbox_quadrant_bit, when the tree receives its
- * first box (#sptree_set_dims) */
+/* The temporal and spatiotemporal boxes read their bits from the axes their
+ * boxes carry, through #tbox_kd_dim and #tbox_quadrant_bit or #stbox_kd_dim
+ * and #stbox_quadrant_bit, when the tree receives its first box
+ * (#sptree_set_dims) */
 
 /*****************************************************************************
  * Family-specific adapters (Span)
@@ -179,6 +178,12 @@ span_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
 /*****************************************************************************
  * Family-specific adapters (TBox)
  *****************************************************************************/
+
+static int
+tbox_box_dims(const void *box)
+{
+  return tbox_index_dims(((const TBox *) box)->flags);
+}
 
 static uint8
 tbox_get_quadrant(const void *centroid, const void *key)
@@ -434,8 +439,11 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
   }
   else if (bboxtype == T_TBOX)
   {
-    sptree->dims = 4;
-    sptree->kd_bits = TBOX_KD_BITS;
+    /* The dimensions (2 for X or T, 4 for X and T) and hence the number of
+     * children are determined at the first insertion from the axes of the
+     * box */
+    sptree->dims = -1;
+    sptree->box_dims = &tbox_box_dims;
     sptree->nodeboxsize = sizeof(TboxNode);
     sptree->get_quadrant = &tbox_get_quadrant;
     sptree->nodebox_init = &tbox_nodebox_init;
@@ -465,8 +473,9 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
 #endif /* POINTCLOUD */
   else /* bboxtype == T_STBOX */
   {
-    /* The dimensions (6 for 2D+T, 8 for 3D+T) and hence the number of children
-     * are determined at the first insertion from the Z flag of the box */
+    /* The dimensions (4 for X, 2 for T, 6 for X and T, 8 for X, Z and T) and
+     * hence the number of children are determined at the first insertion from
+     * the axes of the box */
     sptree->dims = -1;
     sptree->nodeboxsize = sizeof(STboxNode);
     sptree->box_dims = &stbox_box_dims;
@@ -623,19 +632,31 @@ spnode_children(const SPTree *sptree, SPNode *node)
 /**
  * @brief Return the number of dimensions a box type carries, for a type that
  * determines it from the data rather than from the type
- * @details An STBox tree partitions on the bounds of the axes its boxes carry
- * (#stbox_index_dims): 4 for X, 2 for T, 6 for X and T, 8 for X, Z and T. The
- * dimensions, the bit each level narrows and the number of children per node
- * are all read from the first box the tree receives.
+ * @details A TBox or STBox tree partitions on the bounds of the axes its boxes
+ * carry (#tbox_index_dims, #stbox_index_dims): 2 for X or T, 4 for X and T for
+ * a temporal box, 4 for X, 2 for T, 6 for X and T, 8 for X, Z and T for a
+ * spatiotemporal box. The dimensions, the bit each level narrows and the
+ * number of children per node are all read from the first box the tree
+ * receives.
  */
 static void
 sptree_set_dims(SPTree *sptree, const void *box)
 {
   sptree->dims = sptree->box_dims(box);
-  int16 flags = ((const STBox *) box)->flags;
-  for (int level = 0; level < sptree->dims; level++)
-    sptree->kd_bits_box[level] = (uint8) stbox_quadrant_bit(flags,
-      stbox_kd_dim(flags, level));
+  if (sptree->bboxtype == T_TBOX)
+  {
+    int16 flags = ((const TBox *) box)->flags;
+    for (int level = 0; level < sptree->dims; level++)
+      sptree->kd_bits_box[level] = (uint8) tbox_quadrant_bit(flags,
+        tbox_kd_dim(flags, level));
+  }
+  else
+  {
+    int16 flags = ((const STBox *) box)->flags;
+    for (int level = 0; level < sptree->dims; level++)
+      sptree->kd_bits_box[level] = (uint8) stbox_quadrant_bit(flags,
+        stbox_kd_dim(flags, level));
+  }
   sptree->kd_bits = sptree->kd_bits_box;
   sptree->nchild = (sptree->kind == SPTREE_QUADTREE) ? (1 << sptree->dims) : 2;
   return;

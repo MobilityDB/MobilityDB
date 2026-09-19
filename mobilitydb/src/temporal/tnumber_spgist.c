@@ -323,18 +323,24 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples >> 1;
 
+  /* The centroid carries the axes of the boxes */
   centroid = palloc0(sizeof(TBox));
   Span s, p;
-  MeosType spantype = basetype_spantype(basetype);
-  span_set(lowXs[median], highXs[median], true, true, basetype, spantype, &s);
-  span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ,
-    T_TSTZSPAN, &p);
-  tbox_set(&s, &p, centroid);
+  bool hasx = MEOS_FLAGS_GET_X(DatumGetTboxP(in->datums[0])->flags);
+  bool hast = MEOS_FLAGS_GET_T(DatumGetTboxP(in->datums[0])->flags);
+  if (hasx)
+    span_set(lowXs[median], highXs[median], true, true, basetype,
+      basetype_spantype(basetype), &s);
+  if (hast)
+    span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ,
+      T_TSTZSPAN, &p);
+  tbox_set(hasx ? &s : NULL, hast ? &p : NULL, centroid);
 
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = PointerGetDatum(centroid);
-  out->nNodes = 16;
+  /* One node per combination of the bounds the centroid carries */
+  out->nNodes = 1 << tbox_index_dims(centroid->flags);
   out->nodeLabels = NULL;    /* We don't need node labels */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
@@ -378,16 +384,16 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     memcpy(&sorted[i].box, DatumGetTboxP(in->datums[i]), sizeof(TBox));
     sorted[i].i = i;
   }
-  qsort_comparator qsortfn;
-  int mod = in->level % 4;
-  if (mod == 0)
-    qsortfn = (qsort_comparator) &tbox_xmin_cmp;
-  else if (mod == 1)
-    qsortfn = (qsort_comparator) &tbox_xmax_cmp;
-  else if (mod == 2)
-    qsortfn = (qsort_comparator) &tbox_tmin_cmp;
-  else
-    qsortfn = (qsort_comparator) &tbox_tmax_cmp;
+  /* The boxes are ordered on the bound the level splits on, read from the
+   * axes they carry (#tbox_kd_dim) */
+  qsort_comparator qsortfn = NULL;
+  switch (tbox_kd_dim(sorted[0].box.flags, in->level))
+  {
+    case TBOX_XMIN: qsortfn = (qsort_comparator) &tbox_xmin_cmp; break;
+    case TBOX_XMAX: qsortfn = (qsort_comparator) &tbox_xmax_cmp; break;
+    case TBOX_TMIN: qsortfn = (qsort_comparator) &tbox_tmin_cmp; break;
+    case TBOX_TMAX: qsortfn = (qsort_comparator) &tbox_tmax_cmp; break;
+  }
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
   TBox *centroid = tbox_copy(&sorted[median].box);
