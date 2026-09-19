@@ -9395,6 +9395,9 @@ relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
  * @param[in] ops Operands of the relationship the matrix answers a step of,
  * NULL where the matrix is asked for on its own
  * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] meet True where the caller has found that the geometries share a
+ * point, which settles that neither is empty and that their extents are not
+ * apart
  * @param[out] result The matrix, which matches every pattern of @p q exactly
  * as the whole matrix does; where @p q is NULL it is the whole matrix
  * @return true if the geometry pair is supported, which is what
@@ -9402,7 +9405,7 @@ relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
  */
 static bool
 relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
-  const RelateQuery *q, char result[10])
+  const RelateQuery *q, bool meet, char result[10])
 {
   assert(g1); assert(g2); assert(result);
 
@@ -9416,9 +9419,11 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 
   /* An empty operand meets nothing, and neither do two geometries whose
    * extents lie apart, which a handful of comparisons settles before a single
-   * edge is extracted */
-  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2) ||
-      relate_extents_apart(g1, g2))
+   * edge is extracted. Two geometries sharing a point are within the band of
+   * one another, a thousandth of the margin the extents are compared by, so a
+   * caller that has found them meeting skips the test */
+  if (! meet && (lwgeom_is_empty(g1) || lwgeom_is_empty(g2) ||
+      relate_extents_apart(g1, g2)))
   {
     relate_matrix_apart(g1, g2, q, &m);
     de9im_to_string(&m, result);
@@ -9444,7 +9449,7 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 bool
 meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
 {
-  return relate_matrix(g1, g2, NULL, NULL, result);
+  return relate_matrix(g1, g2, NULL, NULL, false, result);
 }
 
 /**
@@ -10112,7 +10117,7 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
       else
         relate_query_init(&q, covers, 4);
       char m[10];
-      covered = relate_matrix(g1, g2, &ops, &q, m);
+      covered = relate_matrix(g1, g2, &ops, &q, true, m);
       if (covered)
         switch (rel)
         {
@@ -10678,7 +10683,7 @@ meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern,
   RelateQuery q;
   relate_query_init(&q, &pattern, 1);
   char matrix[10];
-  if (! relate_matrix(g1, g2, NULL, &q, matrix))
+  if (! relate_matrix(g1, g2, NULL, &q, false, matrix))
     return false;
   *result = de9im_match(matrix, pattern);
   return true;
@@ -10713,7 +10718,7 @@ meos_relate_ctx(const void *ctx1, const void *ctx2, char result[10])
   RelateOperands ops;
   ops.op[0] = c1->op;
   ops.op[1] = c2->op;
-  return relate_matrix(c1->op.geom, c2->op.geom, &ops, NULL, result);
+  return relate_matrix(c1->op.geom, c2->op.geom, &ops, NULL, false, result);
 }
 
 /**
@@ -10749,7 +10754,8 @@ meos_relate_pattern_ctx(const void *ctx1, const void *ctx2,
   ops.op[0] = c1->op;
   ops.op[1] = c2->op;
   char matrix[10];
-  if (! relate_matrix(c1->op.geom, c2->op.geom, &ops, &q, matrix))
+  if (! relate_matrix(c1->op.geom, c2->op.geom, &ops, &q, false,
+        matrix))
     return false;
   *result = de9im_match(matrix, pattern);
   return true;
