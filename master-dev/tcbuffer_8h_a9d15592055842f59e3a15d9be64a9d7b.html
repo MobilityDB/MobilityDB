@@ -89,7 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a400186b42f9eaafd5dd8e83532a54452.html#a400186b42f9eaafd5dd8e83532a54452">tcbuffer_disc_touch_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_aecb593ba0ffd24dd09e14c68a52f7e04.html#aecb593ba0ffd24dd09e14c68a52f7e04">tcbuffer_disc_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a179613ffde5ec2db04c640b18e5e801a.html#a179613ffde5ec2db04c640b18e5e801a">tcbuffer_geo_ctx_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a9d15592055842f59e3a15d9be64a9d7b.html#a9d15592055842f59e3a15d9be64a9d7b">tcbuffer_geo_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad80a75141cb9ec6668728a7ccc19c50c.html#ad80a75141cb9ec6668728a7ccc19c50c">tcbuffer_geo_ctx_nsegs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3615f677322e602562454b432c4ac054.html#a3615f677322e602562454b432c4ac054">tcbufferseg_boundary_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a47735124ca40df2927b9c43bab54952f.html#a47735124ca40df2927b9c43bab54952f">tcbufferseg_touch_roots</a></td></tr>
@@ -104,8 +104,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a179613ffde5ec2db04c640b18e5e801a" name="a179613ffde5ec2db04c640b18e5e801a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a179613ffde5ec2db04c640b18e5e801a">&#9670;&#160;</a></span>tcbuffer_geo_ctx_make()</h2>
+<a id="a9d15592055842f59e3a15d9be64a9d7b" name="a9d15592055842f59e3a15d9be64a9d7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d15592055842f59e3a15d9be64a9d7b">&#9670;&#160;</a></span>tcbuffer_geo_ctx_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -114,14 +114,30 @@ $(function() {
           <td class="memname">void * tcbuffer_geo_ctx_make </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>boundary</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Build the reusable geometry context for the native within kernel. </p>
-<p >The context is built from the straight and circular-arc edges of the boundary. The function returns NULL for a geometry of a type the native kernels do not cover, or of more than one face (<a class="el" href="tgeo__distance_8h_aa68f69cdf70f248838cddb6e71e64931.html#aa68f69cdf70f248838cddb6e71e64931" title="Decompose a geometry into the edges the distance engine reads, with their overall bounding box and wh...">dist_geom_decompose</a>), and the caller then uses the traversed-area path. </p>
+<p >The context is built from the straight and circular-arc edges of the geometry, or, for a caller reading the boundary of a geometry of more than one face, from those of the union of its faces (<a class="el" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a" title="Return the union of the areal components of a geometry.">meos_areal_union</a>). The function returns NULL for a geometry of a type the native kernels do not cover (<a class="el" href="tgeo__distance_8h_aa68f69cdf70f248838cddb6e71e64931.html#aa68f69cdf70f248838cddb6e71e64931" title="Decompose a geometry into the edges the distance engine reads, with their overall bounding box and wh...">dist_geom_decompose</a>), and for one whose union the overlay does not answer, and the caller then uses the traversed-area path. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">boundary</td><td>True when the caller reads the boundary of the geometry </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
