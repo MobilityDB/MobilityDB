@@ -7356,7 +7356,9 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
  * another area
  * @details We use boundary vertices first. If a vertex of A lies in the
  * interior of B, then a neighbourhood of that vertex inside A is
- * also inside B, proving II = 2.
+ * also inside B, proving II = 2. The rings of an area are closed, so the end
+ * of each boundary edge is the start of the one following it, and locating
+ * the starts locates every vertex once rather than twice.
  */
 static bool
 relate_area_has_vertex_interior(const RelateEdges *self,
@@ -7368,8 +7370,6 @@ relate_area_has_vertex_interior(const RelateEdges *self,
     if (!relate_area_boundary_edge(e))
       continue;
     if (relate_point_in_area_index(e->x1, e->y1, other, false) == 0)
-      return true;
-    if (relate_point_in_area_index(e->x2, e->y2, other, false) == 0)
       return true;
   }
   return false;
