@@ -1904,6 +1904,20 @@ geo_error_unsupported_type(const char *what, uint8_t type)
 }
 
 /**
+ * @brief Read a geometry into a context of its own, which no entry holds
+ * @param[in] gs Serialized geometry
+ * @param[out] ctx Its context, NULL where the engine does not cover it
+ * @param[out] made The geometry read for it, which the caller releases
+ */
+static void
+relate_ctx_twin(const GSERIALIZED *gs, void **ctx, LWGEOM **made)
+{
+  *made = lwgeom_from_gserialized(gs);
+  *ctx = *made ? relate_ctx_make(*made) : NULL;
+  return;
+}
+
+/**
  * @brief Borrow the edges of both operands of a relationship
  * @details The cache is asked on the serialized value, so a hit answers
  * without reading anything out of a geometry. Two callers share this because
@@ -1913,25 +1927,38 @@ geo_error_unsupported_type(const char *what, uint8_t type)
  * operands apart by the identity of the geometry they carry
  * (#relate_borrow_edges matches `ops->op[i].geom == geom`), so one entry
  * standing for both makes a pair read as a geometry against itself.
+ * One entry answering both is also where the cache has found the two values
+ * byte for byte equal (#relate_ctx_same), which a caller answering from that
+ * alone asks for through @p same instead of a second context.
  * @param[in] gs1,gs2 The two geometries
  * @param[out] ctx1,ctx2 Their contexts, NULL where the engine covers neither
  * @param[out] ent1,ent2 Entries holding them, NULL where none does
  * @param[out] made1,made2 Geometries read for this call, which it releases
+ * @param[out] same Where not NULL, set to true if the two values are one
+ * entry, in which case @p ctx2 and @p ent2 are NULL; where NULL, the second
+ * geometry is read into a context of its own
  */
 static void
 relate_ctx_borrow_pair(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   void **ctx1, void **ctx2, void **ent1, void **ent2, LWGEOM **made1,
-  LWGEOM **made2)
+  LWGEOM **made2, bool *same)
 {
   *made1 = *made2 = NULL;
+  if (same)
+    *same = false;
   *ctx1 = relate_ctx_borrow(gs1, ent1, made1);
   *ctx2 = relate_ctx_borrow(gs2, ent2, made2);
   if (*ctx1 && *ctx1 == *ctx2)
   {
     relate_ctx_return(*ctx2, *ent2);
     *ent2 = NULL;
-    *made2 = lwgeom_from_gserialized(gs2);
-    *ctx2 = *made2 ? relate_ctx_make(*made2) : NULL;
+    if (same)
+    {
+      *same = true;
+      *ctx2 = NULL;
+      return;
+    }
+    relate_ctx_twin(gs2, ctx2, made2);
   }
   return;
 }
@@ -2018,7 +2045,19 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
    * reading was genuinely needed, and only those are released. */
   void *ent1, *ent2, *ctx1, *ctx2;
   LWGEOM *made1, *made2;
-  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
+  bool same;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2,
+    &same);
+  if (same)
+  {
+    /* The two values are one, which the cache found comparing them byte for
+     * byte. The interior of a non-empty geometry meets itself and no part of
+     * the geometry lies in its own exterior, so it intersects, contains and
+     * covers itself, and does not touch itself */
+    relate_ctx_return(ctx1, ent1);
+    if (made1) lwgeom_free(made1);
+    return rel != TOUCHES;
+  }
   bool result;
   bool answered = ctx1 && ctx2 &&
     meos_spatialrel_ctx(ctx1, ctx2, rel, &result);
@@ -2144,9 +2183,19 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * form that only a predicate could use */
   void *ent1, *ent2, *ctx1, *ctx2;
   LWGEOM *made1, *made2;
-  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
+  bool same;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2,
+    &same);
+  /* Two values the cache found equal byte for byte are one geometry, whose
+   * matrix with itself its own dimensions state */
   char matrix[10];
-  bool covered = ctx1 && ctx2 && meos_relate_ctx(ctx1, ctx2, matrix);
+  bool covered = same && meos_relate_self_ctx(ctx1, matrix);
+  if (! covered)
+  {
+    if (same)
+      relate_ctx_twin(gs2, &ctx2, &made2);
+    covered = ctx1 && ctx2 && meos_relate_ctx(ctx1, ctx2, matrix);
+  }
   relate_ctx_return(ctx1, ent1);
   relate_ctx_return(ctx2, ent2);
   if (made1) lwgeom_free(made1);
@@ -2194,10 +2243,22 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
    * them again */
   void *ent1, *ent2, *ctx1, *ctx2;
   LWGEOM *made1, *made2;
-  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2);
+  bool same;
+  relate_ctx_borrow_pair(gs1, gs2, &ctx1, &ctx2, &ent1, &ent2, &made1, &made2,
+    &same);
+  /* Two values the cache found equal byte for byte are one geometry, whose
+   * matrix with itself its own dimensions state */
   bool result;
-  bool covered = ctx1 && ctx2 &&
-    meos_relate_pattern_ctx(ctx1, ctx2, p, &result);
+  char matrix[10];
+  bool covered = same && meos_relate_self_ctx(ctx1, matrix);
+  if (covered)
+    result = de9im_match(matrix, p);
+  else
+  {
+    if (same)
+      relate_ctx_twin(gs2, &ctx2, &made2);
+    covered = ctx1 && ctx2 && meos_relate_pattern_ctx(ctx1, ctx2, p, &result);
+  }
   relate_ctx_return(ctx1, ent1);
   relate_ctx_return(ctx2, ent2);
   if (! covered)
