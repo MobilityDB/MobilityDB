@@ -233,6 +233,8 @@ extern bool tcellindex_ever_in_set(const Temporal *temp, const Set *cells);
 extern Set *dggs_quadtree_compact_cells(const Set *cells, MeosType temptype);
 extern Set *dggs_quadtree_uncompact_cells(const Set *cells, int32 resolution,
   MeosType temptype, uint64 *(*children)(uint64, uint32_t, int *));
+extern Set *dggs_quadtree_cover_cells(const Set *cells, int32 resolution,
+  MeosType temptype);
 
 extern bool dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
   DggsArc *arc);

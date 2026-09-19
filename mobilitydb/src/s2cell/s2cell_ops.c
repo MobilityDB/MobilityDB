@@ -220,6 +220,45 @@ S2cellset_uncompact_cells(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum S2cell_cell_to_cover(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cell_cell_to_cover);
+/**
+ * @ingroup mobilitydb_s2cell_base_hierarchy
+ * @brief Return the set of cells at the given resolution covering an S2
+ * cell
+ * @sqlfn cellToCover()
+ */
+Datum
+S2cell_cell_to_cover(PG_FUNCTION_ARGS)
+{
+  S2CellId cell = PG_GETARG_S2CELL(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = s2cell_cell_to_cover(cell, resolution);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum S2cellset_cover_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cellset_cover_cells);
+/**
+ * @ingroup mobilitydb_s2cell_base_hierarchy
+ * @brief Return the set of cells at the given resolution covering the cells of
+ * an s2cellset
+ * @sqlfn coverCells()
+ */
+Datum
+S2cellset_cover_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = s2cellset_cover_cells(cells, resolution);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum S2cell_cell_contains(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_cell_contains);
 /**

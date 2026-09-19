@@ -231,6 +231,48 @@ meos_h3_grid_disk(H3Index origin, int k)
 }
 
 /**
+ * @ingroup meos_h3_conversion
+ * @brief Return the set of H3 cells covering the cells of an H3 cell set at
+ * the given resolution
+ * @details The cover holds the cells that hold a point of a cell of the set,
+ * the union of the cover of each of them (#h3index_cell_to_cover), so a
+ * trajectory passing through any cell of the set takes a cell of the cover
+ * there. Reading the values of a temporal H3 cell this way states a cover of
+ * its trajectory at a resolution the values are not stored at.
+ * @param[in] cells Set of H3 cells
+ * @param[in] resolution H3 resolution of the cover
+ * @csqlfn #H3indexset_cover_cells()
+ */
+Set *
+h3indexset_cover_cells(const Set *cells, int32 resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(cells, NULL);
+  int capacity = cells->count * 7, count = 0;
+  Datum *datums = palloc(sizeof(Datum) * (size_t) capacity);
+  for (int i = 0; i < cells->count; i++)
+  {
+    Set *cover = h3index_cell_to_cover(DatumGetH3Index(SET_VAL_N(cells, i)),
+      resolution);
+    if (! cover)
+    {
+      pfree(datums);
+      return NULL;
+    }
+    if (count + cover->count > capacity)
+    {
+      while (count + cover->count > capacity)
+        capacity *= 2;
+      datums = repalloc(datums, sizeof(Datum) * (size_t) capacity);
+    }
+    for (int j = 0; j < cover->count; j++)
+      datums[count++] = SET_VAL_N(cover, j);
+    pfree(cover);
+  }
+  return set_make_free(datums, count, T_H3INDEX, ORDER);
+}
+
+/**
  * @ingroup meos_h3_traversal
  * @brief Return the set of H3 cells within grid distance k of a cell of an H3
  * cell set

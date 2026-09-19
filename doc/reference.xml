@@ -3001,6 +3001,9 @@
 				<listitem>
 					<para><link linkend="tcell_cell_to_parent"><varname>cellToParent</varname></link>: Return the temporal parent cell at the given resolution</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tcell_cell_to_cover"><varname>cellToCover</varname>, <varname>coverCells</varname></link>: Return the cells covering a cell, or the cells of a cell set, at the given resolution</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

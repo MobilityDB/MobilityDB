@@ -203,6 +203,8 @@ extern Set *quadbin_cell_to_children_set(Quadbin origin,
   int children_resolution);
 extern Set *quadbinset_compact_cells(const Set *cells);
 extern Set *quadbinset_uncompact_cells(const Set *cells, int resolution);
+extern Set *quadbin_cell_to_cover(Quadbin cell, int resolution);
+extern Set *quadbinset_cover_cells(const Set *cells, int resolution);
 
 /* Input and output functions of `quadbinset` */
 

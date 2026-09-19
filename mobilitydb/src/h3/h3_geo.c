@@ -94,6 +94,49 @@ Geo_to_h3indexset(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum H3_cell_to_cover(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3_cell_to_cover);
+/**
+ * @ingroup mobilitydb_h3_conversion
+ * @brief Set of H3 cells covering an H3 cell at the given resolution
+ *
+ * The cells that hold a point of the cell, as `geoToH3IndexSet` states them
+ * for a geometry, so a trajectory passing through the cell takes a cell of
+ * the cover there.
+ *
+ * @sqlfn cellToCover()
+ */
+Datum
+H3_cell_to_cover(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  int32 resolution = PG_GETARG_INT32(1);
+  Set *result = h3index_cell_to_cover(cell, resolution);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum H3indexset_cover_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3indexset_cover_cells);
+/**
+ * @ingroup mobilitydb_h3_conversion
+ * @brief Set of H3 cells covering the cells of an H3 cell set at the given
+ * resolution
+ * @sqlfn coverCells()
+ */
+Datum
+H3indexset_cover_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int32 resolution = PG_GETARG_INT32(1);
+  Set *result = h3indexset_cover_cells(cells, resolution);
+  PG_FREE_IF_COPY(cells, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum Ever_eq_h3indexset_th3index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ever_eq_h3indexset_th3index);
 /**

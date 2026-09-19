@@ -1093,6 +1093,37 @@ SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcell_cell_to_cover">
+				<indexterm significance="normal"><primary><varname>cellToCover</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>coverCells</varname></primary></indexterm>
+				<para>Devolver las celdas que cubren una celda, o las celdas de un conjunto de celdas, en la resolución dada</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToCover(h3index,integer) → h3indexset
+cellToCover(quadbin,integer) → quadbinset
+cellToCover(s2cell,integer) → s2cellset
+coverCells(h3indexset,integer) → h3indexset
+coverCells(quadbinset,integer) → quadbinset
+coverCells(s2cellset,integer) → s2cellset
+</programlisting>
+				<para>La cobertura contiene las celdas que contienen un punto de la celda, cada punto asignado a su celda como lo asigna <varname>latLngToCell</varname>, que es lo que <varname>geoToH3IndexSet</varname> establece para una geometría. Una trayectoria que pasa por la celda toma por tanto allí una celda de la cobertura, de modo que leer así los valores de una celda temporal establece una cobertura de su trayectoria en una resolución en la que sus valores no están almacenados, sin volver a leer la trayectoria. La resolución es la propia de la celda o una más gruesa, y una más fina produce un error. Una tesela QUADBIN y una celda S2 son cada una exactamente la unión de sus cuatro hijos, de modo que su cobertura en una resolución más gruesa es su ancestro en ella (<varname>cellToParent</varname>). El padre de una celda H3 no es su cobertura: los hijos de un hexágono no lo teselan, de modo que una celda H3 puede alcanzar celdas distintas de su padre.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cellToCover(h3index '8c1f005018733ff', 10);
+-- {"8a1f00501877fff"}
+SELECT coverCells(getValues(th3index '{8c1f005018733ff@2001-01-01,
+  8c1f005018731ff@2001-01-02}'), 10);
+-- {"8a1f00501877fff"}
+SELECT cellToCover(quadbin '48a6227affffffff', 7);
+-- {"4876227fffffffff"}
+SELECT coverCells(getValues(tquadbin '{48a6227affffffff@2001-01-01,
+  48a6227bffffffff@2001-01-02}'), 7);
+-- {"4876227fffffffff"}
+SELECT cellToCover(s2cell '47c3c', 5);
+-- {"47c4"}
+SELECT coverCells(cellToChildren(s2cell '47c3c', 9), 7);
+-- {"47c3c"}
+</programlisting>
+			</listitem>
+
 
 
 		</itemizedlist>

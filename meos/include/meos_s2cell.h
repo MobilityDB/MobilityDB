@@ -212,6 +212,8 @@ extern Set *s2cell_edge_neighbors_set(S2CellId cell);
 extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
 extern Set *s2cellset_compact_cells(const Set *cells);
 extern Set *s2cellset_uncompact_cells(const Set *cells, int resolution);
+extern Set *s2cell_cell_to_cover(S2CellId cell, int resolution);
+extern Set *s2cellset_cover_cells(const Set *cells, int resolution);
 
 /* Input and output functions of `s2cellset` */
 

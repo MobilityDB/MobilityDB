@@ -106,6 +106,60 @@ SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
 SELECT cellToChildren(h3index '8a2a1072b59ffff', 5);
 
 -------------------------------------------------------------------------------
+-- cellToCover / coverCells
+-------------------------------------------------------------------------------
+
+-- The cover at the cell's own resolution holds the cell
+SELECT cellToCover(h3index '8a2a1072b59ffff', 10) @> h3index '8a2a1072b59ffff';
+
+-- The cover at a coarser resolution holds the parent, and holds cells of that
+-- resolution alone
+SELECT cellToCover(h3index '8a2a1072b59ffff', 8) @>
+  cellToParent(h3index '8a2a1072b59ffff', 8);
+SELECT bool_and(getResolution(c) = 8)
+  FROM unnest(cellToCover(h3index '8a2a1072b59ffff', 8)) c;
+
+-- A cover holds at least the parent, for a cell whose children do not tile it
+SELECT numValues(cellToCover(h3index '8c1f005018733ff', 10)) >= 1;
+
+-- The cover of a set is the union of the covers of its cells
+SELECT coverCells(cellToChildren(h3index '8a2a1072b59ffff', 11), 10) @>
+  h3index '8a2a1072b59ffff';
+SELECT coverCells(set(ARRAY[h3index '8a2a1072b59ffff']), 8) =
+  cellToCover(h3index '8a2a1072b59ffff', 8);
+
+-- The cover and the geometry state the same cells. Every cell of the cover
+-- reaches the cell, and every cell whose interior the cell reaches belongs to
+-- the cover, read over an envelope wider than any cover, since one
+-- tessellation stated twice drifts unless something reads both
+WITH c(cell) AS (VALUES (h3index '8a2a1072b59ffff')),
+  cov AS (SELECT c.cell, unnest(cellToCover(c.cell, 8)) AS x FROM c),
+  cand AS (SELECT c.cell, unnest(gridDisk(cellToParent(c.cell, 8), 2)) AS x
+    FROM c)
+SELECT
+  (SELECT count(*) FROM cov
+     WHERE NOT ST_Intersects(cellToBoundary(cov.x), cellToBoundary(cov.cell)))
+    AS cover_cells_the_cell_does_not_reach,
+  (SELECT count(*) FROM cand
+     WHERE ST_Relate(cellToBoundary(cand.x), cellToBoundary(cand.cell),
+       'T********')
+       AND NOT (cellToCover(cand.cell, 8) @> cand.x))
+    AS reached_cells_the_cover_lacks;
+
+-- The same agreement over the cells of a set
+WITH s(cells) AS (VALUES (cellToChildren(h3index '8a2a1072b59ffff', 11))),
+  cov AS (SELECT unnest(coverCells(cells, 9)) AS x FROM s)
+SELECT count(*) AS cover_cells_no_cell_of_the_set_reaches
+  FROM cov
+  WHERE NOT EXISTS (SELECT 1 FROM s, unnest(s.cells) AS c
+    WHERE ST_Intersects(cellToBoundary(cov.x), cellToBoundary(c)));
+
+/* Errors */
+-- A resolution outside the grid
+SELECT cellToCover(h3index '8a2a1072b59ffff', 16);
+SELECT coverCells(cellToChildren(h3index '8a2a1072b59ffff', 11), -1);
+
+-------------------------------------------------------------------------------
 -- compactCells / uncompactCells
 -------------------------------------------------------------------------------
 
