@@ -1135,6 +1135,29 @@ SELECT numInstants(ts2cell(tgeompoint
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcell_quadbinSplit">
+				<indexterm significance="normal"><primary><varname>quadbinSplit</varname></primary></indexterm>
+				<para>Dividir un punto temporal en las celdas QUADBIN que atraviesa &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinSplit(tpoint,integer) → {(cell,tpoint)}
+</programlisting>
+				<para>La cobertura indica qué celda ocupa una trayectoria y cuándo. La división indica las mismas celdas y, junto a cada una, la trayectoria sobre los períodos que la cobertura indica para esa celda, de modo que un valor indexado por celda se lee en una sola pasada donde la cobertura por sí sola exige una restricción por celda. Las celdas de una división son las celdas de la cobertura, el fragmento de una celda es la trayectoria restringida a los períodos que la cobertura indica para ella, y los fragmentos se fusionan en la trayectoria. Una trayectoria que alcanza una celda en su último instante la ocupa allí durante un instante, y la división indica ese fragmento sobre ese instante.</para>
+				<para>El segmento se recorre a lo largo del camino que sigue su punto, de modo que una trayectoria geodésica se divide en las celdas que atraviesan sus círculos máximos y una planar en las celdas que atraviesa su línea recta en longitud y latitud. El período de un fragmento es el que responde <varname>getTime</varname> para él, de modo que la división no lleva un período propio.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (s).cell, asText((s).tpoint, 6) AS tpoint
+FROM (SELECT quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2) AS s) t;
+-- 4823ffffffffffff | {[POINT(-90 0)@2001-01-02, POINT(-45 10)@2001-01-03]}
+-- 4828ffffffffffff | {[POINT(-135 -10)@2001-01-01, POINT(-90 0)@2001-01-02)}
+SELECT count(*) FROM quadbinSplit(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 2
+SELECT count(*) FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 1
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcell_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>

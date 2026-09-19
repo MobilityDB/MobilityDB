@@ -453,4 +453,95 @@ tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution)
   return tpoint_to_tquadbin(temp, resolution);
 }
 
+/*****************************************************************************
+ * Split
+ *****************************************************************************/
+
+/**
+ * @brief Return the fragments of a temporal point split by the quadbin cells
+ * it crosses at a resolution, and the cell of each
+ * @details The cover states which cell the trajectory holds and when, and the
+ * fragment of a cell is the trajectory over the periods the cover states for
+ * it, so a fragment and the cover answer the same periods for a cell
+ */
+static Temporal **
+tpoint_quadbin_split(const Temporal *temp, int32 resolution, Datum **cells,
+  int *count)
+{
+  assert(temp); assert(cells); assert(count);
+  *count = 0;
+  Temporal *cover = tpoint_to_tquadbin(temp, resolution);
+  if (! cover)
+    return NULL;
+  int ncells;
+  SpanSet **spansets = temporal_unnest(cover, cells, &ncells);
+  if (! spansets)
+  {
+    pfree(cover);
+    return NULL;
+  }
+  Temporal **result = palloc(sizeof(Temporal *) * ncells);
+  int nfrags = 0;
+  for (int i = 0; i < ncells; i++)
+  {
+    Temporal *frag = temporal_restrict_tstzspanset(temp, spansets[i], REST_AT);
+    /* A cell the cover holds for an instant alone under an exclusive upper
+     * bound leaves the trajectory nothing over its periods */
+    if (frag)
+    {
+      (*cells)[nfrags] = (*cells)[i];
+      result[nfrags++] = frag;
+    }
+    pfree(spansets[i]);
+  }
+  pfree(spansets); pfree(cover);
+  if (nfrags == 0)
+  {
+    pfree(result);
+    return NULL;
+  }
+  *count = nfrags;
+  return result;
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the fragments of a temporal planar point split by the quadbin
+ * cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeompoint_quadbin_split()
+ */
+Temporal **
+tgeompoint_quadbin_split(const Temporal *temp, int32 resolution,
+  Datum **cells, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return tpoint_quadbin_split(temp, resolution, cells, count);
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the fragments of a temporal geodetic point split by the
+ * quadbin cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeogpoint_quadbin_split()
+ */
+Temporal **
+tgeogpoint_quadbin_split(const Temporal *temp, int32 resolution,
+  Datum **cells, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return tpoint_quadbin_split(temp, resolution, cells, count);
+}
+
 /*****************************************************************************/

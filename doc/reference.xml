@@ -3010,6 +3010,9 @@
 					<para><link linkend="tcell_tgeompoint_to_th3"><varname>tcell</varname></link>: Return the temporal cell at the given resolution that contains each point in a temporal geodetic or planar point</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_quadbinSplit"><varname>quadbinSplit</varname></link>: Split a temporal point at the QUADBIN cells it crosses &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Return the centroid of a cell, or of each cell in a trajectory</para>
 				</listitem>
 				<listitem>

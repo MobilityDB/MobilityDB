@@ -341,3 +341,53 @@ SELECT quadbinset '{48a6227affffffff, 480fffffffffffff}' ?=
        tquadbin '{[48a6227bffffffff@2001-01-01], [48a62278ffffffff@2001-01-02]}';
 
 -------------------------------------------------------------------------------
+-- Split by the cells of the grid: quadbinSplit(tgeompoint|tgeogpoint, integer)
+-------------------------------------------------------------------------------
+
+-- The split states the cells of the cover and, beside each, the trajectory
+-- over the periods the cover states for that cell
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE s.tpoint <> atTime(tp, getTime(s.tpoint)))
+  AS fragments_stating_another_value,
+  count(*) FILTER (WHERE getTime(s.tpoint) <>
+    (SELECT u.time FROM unnest(tquadbin(tp, 2)) u WHERE u.value = s.cell))
+  AS fragments_stating_another_period
+FROM trip, LATERAL quadbinSplit(tp, 2) s;
+
+-- Every cell of the split is a cell of the cover
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT set(array_agg(s.cell)) = getValues(tquadbin(tp, 2)) AS same_cells
+FROM trip, LATERAL quadbinSplit(tp, 2) s GROUP BY tp;
+
+-- A trajectory reaching a cell at its last instant holds it there for an
+-- instant, so the cover states that cell and the split states its fragment
+-- over that instant
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'
+)
+SELECT numValues(getValues(tquadbin(tp, 2))) AS cells_of_the_cover,
+  (SELECT count(*) FROM quadbinSplit(tp, 2)) AS fragments_of_the_split
+FROM trip;
+
+-- The fragments of a split merge into the trajectory
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT merge(array_agg(s.tpoint ORDER BY getTime(s.tpoint))) = tp AS merges_back
+FROM trip, LATERAL quadbinSplit(tp, 2) s GROUP BY tp;
+
+-- A geodetic trajectory is split along its great circles, so it holds a cell
+-- the straight line in longitude and latitude never enters
+SELECT count(*) AS fragments
+FROM quadbinSplit(tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]',
+  2);
+SELECT count(*) AS fragments
+FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+
+-------------------------------------------------------------------------------

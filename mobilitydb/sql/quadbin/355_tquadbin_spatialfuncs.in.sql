@@ -94,6 +94,35 @@ CREATE FUNCTION tquadbin(tgeogpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Split by the cells of the grid
+ *
+ * The cover states which cell a trajectory holds and when. A split states the
+ * same cells and, beside each, the trajectory over the periods the cover
+ * states for it, so a field indexed by cell is read in one pass rather than
+ * one restriction per cell.
+ ******************************************************************************/
+
+CREATE TYPE quadbin_tpoint AS (
+  cell quadbin,
+  tpoint tgeompoint
+);
+
+CREATE TYPE quadbin_tgeogpoint AS (
+  cell quadbin,
+  tpoint tgeogpoint
+);
+
+CREATE FUNCTION quadbinSplit(tgeompoint, integer)
+  RETURNS SETOF quadbin_tpoint
+  AS 'MODULE_PATHNAME', 'Tgeompoint_quadbin_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION quadbinSplit(tgeogpoint, integer)
+  RETURNS SETOF quadbin_tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_quadbin_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Centroid point / boundary (Web-Mercator lon/lat, SRID 4326)
  *
  * `cellToPoint` emits the per-instant cell centroid as a
