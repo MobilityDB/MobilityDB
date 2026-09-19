@@ -2009,6 +2009,329 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
 }
 
 /**
+ * @brief Return the parameters at which a great-circle path enters and leaves
+ * a polygon read on the sphere
+ * @details An edge of a geography joins its two vertices along the great
+ * circle through them, so it lies in the plane through the centre of the
+ * sphere whose normal is the cross product of those vertices as unit vectors,
+ * and the path meets the edge only where it meets that plane. Every such
+ * parameter cuts the path, and a piece between two consecutive cuts lies
+ * wholly inside the polygon or wholly outside it, which the position halfway
+ * along it states. A parameter where the path crosses the plane of an edge
+ * away from the edge itself only splits a piece in two, and both halves
+ * answer the same, so the extent of an edge needs no test of its own.
+ * @param[in] arc Great-circle path
+ * @param[in] poly Polygon whose rings are read as geodetic
+ * @param[out] tin,tout Parameters at which the path enters and leaves
+ * @param[in] maxout Maximum number of spans to state
+ * @return The number of spans stated
+ */
+static int
+dggs_arc_geog_poly_spans(const DggsArc *arc, const LWPOLY *poly, double *tin,
+  double *tout, int maxout)
+{
+  assert(arc); assert(poly); assert(tin); assert(tout);
+  if (maxout < 1)
+    return 0;
+  /* The path is cut at its ends and wherever it crosses the plane of an edge */
+  uint32_t npoints = 0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+    npoints += poly->rings[r]->npoints;
+  double *cuts = palloc(sizeof(double) * (size_t) (2 * npoints + 2));
+  int ncuts = 0;
+  cuts[ncuts++] = 0.0;
+  cuts[ncuts++] = 1.0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+  {
+    const POINTARRAY *pa = poly->rings[r];
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *q1 = getPoint2d_cp(pa, i);
+      const POINT2D *q2 = getPoint2d_cp(pa, i + 1);
+      GEOGRAPHIC_POINT g1, g2;
+      POINT3D v1, v2;
+      geographic_point_init(q1->x, q1->y, &g1);
+      geographic_point_init(q2->x, q2->y, &g2);
+      geog2cart(&g1, &v1);
+      geog2cart(&g2, &v2);
+      /* The unit normal of the plane the edge lies in */
+      double m[3];
+      m[0] = v1.y * v2.z - v1.z * v2.y;
+      m[1] = v1.z * v2.x - v1.x * v2.z;
+      m[2] = v1.x * v2.y - v1.y * v2.x;
+      double norm = sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+      /* Two vertices at one position, or at opposite ends of a diameter,
+       * state no single plane and therefore no edge to cross */
+      if (norm <= MEOS_EPSILON)
+        continue;
+      m[0] /= norm; m[1] /= norm; m[2] /= norm;
+      double params[2];
+      int count = dggs_arc_plane_params(arc, m, 0.0, params);
+      for (int k = 0; k < count; k++)
+        cuts[ncuts++] = params[k];
+    }
+  }
+  /* In ascending order, which is the order the path passes them */
+  for (int i = 1; i < ncuts; i++)
+  {
+    double v = cuts[i];
+    int j = i - 1;
+    while (j >= 0 && cuts[j] > v)
+    {
+      cuts[j + 1] = cuts[j]; j--;
+    }
+    cuts[j + 1] = v;
+  }
+  /* A piece halfway inside the polygon is inside it, and a piece following one
+   * that is inside extends its span */
+  int nspans = 0;
+  for (int i = 0; i + 1 < ncuts; i++)
+  {
+    if (cuts[i + 1] <= cuts[i])
+      continue;
+    double lon, lat;
+    if (! dggs_arc_point(arc, (cuts[i] + cuts[i + 1]) / 2.0, &lon, &lat))
+      continue;
+    POINT2D pt;
+    pt.x = lon * 180.0 / M_PI;
+    pt.y = lat * 180.0 / M_PI;
+    if (! lwpoly_covers_point2d(poly, &pt))
+      continue;
+    if (nspans > 0 && tout[nspans - 1] == cuts[i])
+      tout[nspans - 1] = cuts[i + 1];
+    else if (nspans < maxout)
+    {
+      tin[nspans] = cuts[i];
+      tout[nspans++] = cuts[i + 1];
+    }
+    else
+      break;
+  }
+  pfree(cuts);
+  return nspans;
+}
+
+/**
+ * @brief Return whether a geography holds a position
+ * @param[in] polys Polygons the geography states
+ * @param[in] npolys Number of polygons
+ * @param[in] lon,lat Position, in degrees
+ */
+static bool
+geog_polys_cover_lonlat(LWPOLY **polys, int npolys, double lon, double lat)
+{
+  POINT2D pt;
+  pt.x = lon; pt.y = lat;
+  for (int i = 0; i < npolys; i++)
+    if (polys[i] && lwpoly_covers_point2d(polys[i], &pt))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return the polygons a geography states
+ * @param[in] lwgeom Geography
+ * @param[out] count Number of polygons
+ */
+static LWPOLY **
+geog_polys(LWGEOM *lwgeom, int *count)
+{
+  LWPOLY **result;
+  if (lwgeom->type == MULTIPOLYGONTYPE)
+  {
+    LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom);
+    *count = (int) coll->ngeoms;
+    result = palloc(sizeof(LWPOLY *) * (size_t) (*count));
+    for (int i = 0; i < *count; i++)
+      result[i] = lwgeom_as_lwpoly(coll->geoms[i]);
+  }
+  else
+  {
+    *count = 1;
+    result = palloc(sizeof(LWPOLY *));
+    result[0] = lwgeom_as_lwpoly(lwgeom);
+  }
+  return result;
+}
+
+/**
+ * @brief Return the periods at which a temporal geodetic point sequence holds
+ * a geography
+ * @details A geodetic point travels the great circle between two positions and
+ * a geography joins its own vertices the same way, so the periods the trip
+ * holds the region are the ones between the parameters at which its path
+ * crosses the edges, which #dggs_arc_geog_poly_spans() states. A segment of a
+ * sequence that does not interpolate holds the position of its first instant
+ * throughout, so it holds the region for its whole extent or not at all.
+ * @param[in] seq Temporal point sequence
+ * @param[in] polys,npolys Polygons the geography states
+ * @param[in,out] spans Spans the sequence states, appended to
+ * @param[in] nspans Number of spans already stated
+ * @pre The sequence is geodetic and the arguments have the same SRID
+ */
+static int
+tpointseq_at_geog_spans(const TSequence *seq, LWPOLY **polys, int npolys,
+  Span *spans, int nspans)
+{
+  int32_t srid = tspatial_srid((Temporal *) seq);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  /* The instants of a sequence with discrete interpolation state positions of
+   * their own and no path between them, so each one answers for itself */
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags) || seq->count == 1)
+  {
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const POINT2D *q = GSERIALIZED_POINT2D_P(
+        DatumGetGserializedP(tinstant_value_p(inst)));
+      if (geog_polys_cover_lonlat(polys, npolys, q->x, q->y))
+        span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+          true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+    }
+    return nspans;
+  }
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
+    const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value_p(inst2));
+    const POINT2D *q1 = GSERIALIZED_POINT2D_P(p1);
+    const POINT2D *q2 = GSERIALIZED_POINT2D_P(p2);
+    bool last = (i == seq->count - 1);
+    DggsArc arc;
+    if (! linear || geopoint_eq(p1, p2) ||
+        ! dggs_arc_init(q1->x, q1->y, q2->x, q2->y, &arc))
+    {
+      /* A segment holding one position is in the region when that position
+       * is */
+      if (geog_polys_cover_lonlat(polys, npolys, q1->x, q1->y))
+        span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
+          true, last ? seq->period.upper_inc : false, T_TIMESTAMPTZ,
+          T_TSTZSPAN, &spans[nspans++]);
+      /* The last instant of a sequence that does not interpolate states its
+       * own position rather than the one before it */
+      if (! linear && last && seq->period.upper_inc &&
+          geog_polys_cover_lonlat(polys, npolys, q2->x, q2->y))
+        span_set(TimestampTzGetDatum(inst2->t), TimestampTzGetDatum(inst2->t),
+          true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+      inst1 = inst2;
+      continue;
+    }
+    for (int j = 0; j < npolys; j++)
+    {
+      if (! polys[j])
+        continue;
+      double tin[16], tout[16];
+      int count = dggs_arc_geog_poly_spans(&arc, polys[j], tin, tout, 16);
+      for (int k = 0; k < count; k++)
+      {
+        /* A crossing is dated from the position the path holds there, so two
+         * regions meeting at that position state the same instant */
+        TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
+          tin[k], srid);
+        TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
+          tout[k], srid);
+        bool lower_inc = (t1 == inst1->t && i == 1) ?
+          seq->period.lower_inc : true;
+        bool upper_inc = (t2 == inst2->t) ?
+          (last ? seq->period.upper_inc : false) : true;
+        if (t1 == t2)
+        {
+          if (! lower_inc || ! upper_inc)
+            continue;        /* the path holds the region for no time at all */
+          upper_inc = true;
+        }
+        span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), lower_inc,
+          upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+      }
+    }
+    inst1 = inst2;
+  }
+  return nspans;
+}
+
+/**
+ * @brief Return a temporal geodetic point restricted to (the complement of) a
+ * geography
+ * @details The periods the value holds the region state the restriction whole:
+ * the `at` restriction keeps them and the `minus` restriction keeps the rest,
+ * so the two partition the time domain by construction. The value returns the
+ * dimensions the path does not state, exactly as the restriction to a box
+ * does.
+ * @param[in] temp Temporal geodetic point
+ * @param[in] gs Geography
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @pre The arguments have the same SRID and the geography is not empty
+ */
+static Temporal *
+tpoint_geog_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool atfunc)
+{
+  assert(temp); assert(gs); assert(MEOS_FLAGS_GET_GEODETIC(temp->flags));
+
+  /* A region on the sphere is bounded by great-circle edges, which only a
+   * polygonal geography states */
+  uint32_t gstype = gserialized_get_type(gs);
+  if (gstype != POLYGONTYPE && gstype != MULTIPOLYGONTYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Restriction of a temporal geodetic point to a geography of type %s is "
+      "not implemented", geo_typename((int) gstype));
+    return NULL;
+  }
+
+  /* Bounding box test */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  int npolys;
+  LWPOLY **polys = geog_polys(lwgeom, &npolys);
+
+  /* The periods the value holds the region, which the segments state one by
+   * one and a span set states as a whole */
+  int maxspans = (temporal_num_instants(temp) + 1) * 4 * npolys;
+  Span *spans = palloc(sizeof(Span) * (size_t) maxspans);
+  int nspans = 0;
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    const POINT2D *q = GSERIALIZED_POINT2D_P(
+      DatumGetGserializedP(tinstant_value_p(inst)));
+    if (geog_polys_cover_lonlat(polys, npolys, q->x, q->y))
+      span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    nspans = tpointseq_at_geog_spans((const TSequence *) temp, polys, npolys,
+      spans, nspans);
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    for (int i = 0; i < ss->count; i++)
+      nspans = tpointseq_at_geog_spans(TSEQUENCESET_SEQ_N(ss, i), polys,
+        npolys, spans, nspans);
+  }
+  pfree(polys);
+  lwgeom_free(lwgeom);
+
+  if (nspans == 0)
+  {
+    pfree(spans);
+    return atfunc ? NULL : temporal_copy(temp);
+  }
+  SpanSet *ss = spanset_make_free(spans, nspans, NORMALIZE, ORDER);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss,
+    atfunc ? REST_AT : REST_MINUS);
+  pfree(ss);
+  return result;
+}
+
+/**
  * @brief Return a temporal point sequence with linear interpolation
  * restricted to a geometry
  * @details The computation is based on the PostGIS function @p ST_Intersection
@@ -2294,6 +2617,22 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   /* Empty geometry */
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
+
+  /* A geodetic point travels the great circle between two positions and a
+   * geography is bounded by great-circle edges, neither of which a clip of
+   * straight lines in longitude and latitude follows */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  {
+    if (tpoint_type(temp->temptype))
+      return tpoint_geog_restrict_geom(temp, gs, atfunc);
+    /* The body of a temporal geography covers a region of the sphere bounded
+     * by great-circle edges of its own, and the region two such bodies share
+     * is no path that a parameter dates */
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Restriction of a %s to a geography is not implemented",
+      meostype_name(temp->temptype));
+    return NULL;
+  }
 
   /* Bounding box test */
   STBox box1, box2;

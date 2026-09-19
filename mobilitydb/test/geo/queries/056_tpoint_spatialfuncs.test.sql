@@ -952,6 +952,40 @@ WITH temp(trip, geo) AS (
 SELECT trip = merge(atGeometry(trip, geo), minusGeometry(trip, geo))
 FROM temp;
 
+-------------------------------------------------------------------------------
+-- atGeometry, minusGeometry on a geodetic point
+-------------------------------------------------------------------------------
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(5 5)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+SELECT asText(minusGeometry(tgeogpoint 'SRID=4326;Point(5 5)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+
+-- A trip crossing a region leaves it where its own great circle meets the edge
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+SELECT asText(minusGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+
+-- A high-latitude crossing, where the great circle departs most from the
+-- straight line in longitude and latitude
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-03]', geography 'SRID=4326;Polygon((-150 60,-150 70,-120 70,-120 60,-150 60))'), 6);
+
+-- The at and minus restrictions partition the trip
+WITH temp(trip, geo) AS (
+  SELECT tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]',
+    geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))' )
+SELECT trip = merge(atGeometry(trip, geo), minusGeometry(trip, geo))
+FROM temp;
+
+-- A multipolygon states two regions
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(7 1)@2001-01-09]', geography 'SRID=4326;Multipolygon(((0 0,0 2,2 2,2 0,0 0)),((4 0,4 2,6 2,6 0,4 0)))'), 6);
+
+-- A sequence that does not interpolate holds the position of each instant
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02, Point(1 1)@2001-01-03]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;{Point(1 1)@2001-01-01, Point(5 5)@2001-01-02}', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+
+/* Errors */
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Linestring(0 0,2 2)'));
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4269;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+
 --------------------------------------------------------
 
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
