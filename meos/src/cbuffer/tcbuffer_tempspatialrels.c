@@ -1021,7 +1021,7 @@ tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
 int
 edisjoint_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs)
 {
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, false);
   if (! ctx)
     return -1;
   int result = 0;
@@ -1100,7 +1100,7 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
 
   /* Native path, straight and circular-arc edges alike; the traversed-area
    * path remains the fallback for a geometry that has no edge decomposition */
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, false);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (ctx)
@@ -2151,7 +2151,7 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
   if (! overlaps_stbox_stbox(&box1, &box2))
     return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, true);
   if (! ctx)
     return NULL;
   Temporal *result = NULL;
@@ -2256,7 +2256,7 @@ int
 eatouches_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, true);
   if (! ctx)
     return -1;
   int result;
@@ -2540,7 +2540,7 @@ eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
       box2.ymax))
     return 0;
 
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, true);
   if (! ctx)
     return -1;
   int result = eacontains_tcbuffer_ctx_native(temp, ctx, ever, strict);
@@ -2654,7 +2654,7 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Native path: the moving-disk boundary contact instants, for straight and
    * circular-arc edges alike. A geometry that has no edge decomposition keeps
    * the traversed-area path. */
-  void *ctx = tcbuffer_geo_ctx_make(gs);
+  void *ctx = tcbuffer_geo_ctx_make(gs, true);
   if (! ctx)
     return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_geom_touches);
 
