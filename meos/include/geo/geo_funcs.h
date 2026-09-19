@@ -194,6 +194,7 @@ extern bool meos_relate_pattern_ctx(const void *ctx1, const void *ctx2,
   const char *pattern, bool *result);
 extern bool meos_relate_ctx(const void *ctx1, const void *ctx2,
   char result[10]);
+extern bool meos_relate_self_ctx(const void *ctx, char result[10]);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
 extern int point_in_polygon_vertex(double x, double y, Edge **edges,

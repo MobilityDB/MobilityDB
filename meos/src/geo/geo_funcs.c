@@ -10722,6 +10722,42 @@ meos_relate_ctx(const void *ctx1, const void *ctx2, char result[10])
 }
 
 /**
+ * @brief Compute the DE-9IM matrix of a geometry with itself, from the
+ * context kept for it
+ * @details The interior and the boundary of a geometry are disjoint, and
+ * neither meets its exterior, so the matrix of a geometry with itself holds
+ * the dimension of its interior, the dimension of its boundary and the two
+ * exteriors meeting in dimension 2, and nothing else. The dimensions are the
+ * ones the matrix of two geometries apart reads (#relate_matrix_apart), and
+ * only for a geometry whose own dimension and the one its edges draw agree,
+ * as #relate_extents_apart requires of it
+ * @param[in] ctx Context of the geometry
+ * @param[out] result The matrix
+ * @return true if the matrix is answered here, false where the caller reads
+ * it from the edges of the two operands
+ */
+bool
+meos_relate_self_ctx(const void *ctx, char result[10])
+{
+  assert(result);
+  const struct RelateCtx *c = (const struct RelateCtx *) ctx;
+  if (! c || lwgeom_is_empty(c->op.geom))
+    return false;
+  const LWGEOM *geom = c->op.geom;
+  int mask = relate_dim_mask(geom);
+  int drawn = (mask & 4) ? 2 : (mask & 2) ? 1 : (mask & 1) ? 0 : -1;
+  if ((mask & (mask - 1)) != 0 || drawn != relate_dimension(geom))
+    return false;
+  MeosDE9IM m;
+  de9im_init(&m);
+  m.ii = (int8_t) drawn;
+  m.bb = relate_boundary_dimension(geom);
+  m.ee = 2;
+  de9im_to_string(&m, result);
+  return true;
+}
+
+/**
  * @brief Return whether a DE-9IM pattern holds of two geometries, from the
  * edges already read for them
  * @details The twin of #meos_spatialrel_ctx for the pattern entry. PostGIS
