@@ -1036,30 +1036,14 @@ typedef struct
 void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
 {
-  LWGEOM *lw = lwgeom_from_gserialized(gs);
-  DistEdge *segs = NULL;
-  int cap = 0, n = 0;
-  bool has_poly = false;
-  bool ok = dist_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
-  lwgeom_free(lw);
-  if (! ok || n == 0)
-  {
-    if (segs) pfree(segs);
+  DistGeom g;
+  if (! dist_geom_decompose(gs, &g))
     return NULL;
-  }
-  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
-  for (int k = 0; k < n; k++)
-  {
-    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
-    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
-    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
-    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
-  }
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->kind = TCBUF_CTX_GEO;
-  ctx->segs = segs;
-  ctx->g = (DistGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL,
-    0, dist_geom_build_rtree(segs, n) };
+  ctx->segs = (DistEdge *) g.segs;
+  g.rtree = dist_geom_build_rtree(g.segs, g.n);
+  ctx->g = g;
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
    * freed with it in #tcbuffer_geo_ctx_free (see dist_pip_results). */
   dist_pip_results = index_result_create();
