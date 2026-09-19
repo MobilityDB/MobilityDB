@@ -38,7 +38,8 @@
  * string returning to its start draws, to half of it and to its diameter, and
  * to an arc of radius one at the coordinates of a projected reference system,
  * where a circumcentre read from the squares of the coordinates carries an
- * error of the order of 1e-3.
+ * error of the order of 1e-3, and to an arc far shorter than its radius, whose
+ * distance read through the centre loses the digits the radius takes.
  *
  * The program can be built as follows
  * @code
@@ -80,6 +81,29 @@ check(const char *place, const char *wkt, double expected)
   free(temp); free(gs);
 }
 
+/*
+ * Compare the nearest approach distance of a temporal point standing still at
+ * a place with the exact distance, relative to it
+ */
+static void
+check_rel(const char *place, const char *wkt, double expected)
+{
+  char tpoint[256];
+  snprintf(tpoint, sizeof(tpoint),
+    "[%s@2001-01-01, %s@2001-01-02]", place, place);
+  Temporal *temp = tgeompoint_in(tpoint);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  double d = nad_tgeo_geo(temp, gs);
+  bool ok = fabs(d - expected) <= 1e-9 * expected;
+  printf("  %.17g %s\n", d, ok ? "OK" : "FAIL");
+  if (! ok)
+  {
+    printf("    exact %.17g\n", expected);
+    failures++;
+  }
+  free(temp); free(gs);
+}
+
 /* Main program */
 int main(void)
 {
@@ -104,6 +128,32 @@ int main(void)
     "CIRCULARSTRING(6100000 0,6100001 1,6100002 0)", 1.0);
   check("Point(6100001 4)",
     "CIRCULARSTRING(6100000 0,6100001 1,6100002 0)", 3.0);
+
+  /* The arc through (-200000 9999999999), (0 10000000001) and
+   * (200000 9999999999), on the circle of radius 10000000001 centred at the
+   * origin: the Pythagorean triple (9999999999, 200000, 10000000001) puts the
+   * three points exactly on it, and the arc is 25000 times shorter than its
+   * radius */
+  printf("Arc of radius 10000000001 centred at (0 0):\n");
+  check("Point(0 10000000002)", "CIRCULARSTRING(-200000 9999999999,"
+    "0 10000000001,200000 9999999999)", 1.0);
+  check("Point(0 10000000000)", "CIRCULARSTRING(-200000 9999999999,"
+    "0 10000000001,200000 9999999999)", 1.0);
+  check("Point(0 10000000001.25)", "CIRCULARSTRING(-200000 9999999999,"
+    "0 10000000001,200000 9999999999)", 0.25);
+
+  /* Two nearly straight arcs, far shorter than the circle they lie on, and
+   * the exact distance to each, computed in rational arithmetic: a point near
+   * the first, and a point beyond the end of the second */
+  printf("Nearly straight arcs:\n");
+  check_rel("Point(-2.31273961515321e-08 -2.1153402775748315e-08)",
+    "CIRCULARSTRING(-3.22566372349572e-09 -4.2240170882638686e-08,"
+    "-2.3127496518755652e-08 -2.1153497503430836e-08,"
+    "-5.8524987287719254e-08 1.63513561433461e-08)", 1.3801055539164903e-13);
+  check_rel("Point(-1.7119576591494597e-09 3.305872965375566e-09)",
+    "CIRCULARSTRING(1.5228162733504057e-10 -1.5379050301617932e-10,"
+    "3.6466540003486635e-11 -1.5908996852759037e-10,"
+    "-2.403045297136147e-10 -1.7175445613722083e-10)", 3.7761958921957409e-09);
 
   if (failures == 0)
     printf("Arc distance test: all tests passed\n");

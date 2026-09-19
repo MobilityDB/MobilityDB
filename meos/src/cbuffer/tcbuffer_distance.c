@@ -274,27 +274,28 @@ tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
-  const double px = e->cx, py = e->cy, R = e->radius;
+  const double px = e->cx, py = e->cy;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
 
-  /* Circle crossings sqrt(Q) = R: kinks of the absolute value defining the
-   * distance to the arc's supporting circle */
+  /* Circle crossings, the roots of the power of the moving centre: kinks of
+   * the absolute value defining the distance to the arc's supporting circle */
   {
-    double c0 = C - R * R;
+    double b0, c0;
+    dist_arc_power_coefs(cx1, cy1, dcx, dcy, e, &b0, &c0);
     if (fabs(A) > 1e-18)
     {
-      double disc = B * B - 4.0 * A * c0;
+      double disc = b0 * b0 - 4.0 * A * c0;
       if (disc >= 0.0)
       {
         double sd = sqrt(disc);
-        tcbuffer_add_within01((-B + sd) / (2.0 * A), cand, nc);
-        tcbuffer_add_within01((-B - sd) / (2.0 * A), cand, nc);
+        tcbuffer_add_within01((-b0 + sd) / (2.0 * A), cand, nc);
+        tcbuffer_add_within01((-b0 - sd) / (2.0 * A), cand, nc);
       }
     }
-    else if (fabs(B) > 1e-18)
-      tcbuffer_add_within01(-c0 / B, cand, nc);
+    else if (fabs(b0) > 1e-18)
+      tcbuffer_add_within01(-c0 / b0, cand, nc);
   }
   /* Vertex of Q: closest/farthest approach to the arc's centre */
   if (fabs(A) > 1e-18)
