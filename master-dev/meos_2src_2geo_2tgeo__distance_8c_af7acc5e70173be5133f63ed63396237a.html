@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dist_geom_build_buckets</title>
+<title>MobilityDB: dist_geom_collect</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,12 +83,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a625bf80e22b2c8973bb71dc2efff89b4.html#a625bf80e22b2c8973bb71dc2efff89b4">circ_tree_distance_tree_internal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa6d595db13692a9ea8bd2d71a805ebc1.html#aa6d595db13692a9ea8bd2d71a805ebc1">dist_edge_radius_prune</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_adcd3ebc49f6d98bcf69d1f6102d2d025.html#adcd3ebc49f6d98bcf69d1f6102d2d025">dist_geom_build</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ac332e2e997f6178de67509622783c830.html#ac332e2e997f6178de67509622783c830">dist_geom_build_buckets</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a6f9d0733a5f3bbf05c4ef22311189fdb.html#a6f9d0733a5f3bbf05c4ef22311189fdb">dist_geom_build_buckets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ab462f3248b2861e49a6162291e3e5b18.html#ab462f3248b2861e49a6162291e3e5b18">dist_geom_build_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a78cff933e8edc2d04edef439ee529246.html#a78cff933e8edc2d04edef439ee529246">dist_geom_closest_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ab9ca755cf575ab1f88123984d88819b7.html#ab9ca755cf575ab1f88123984d88819b7">dist_geom_closest_on_edge</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_af7acc5e70173be5133f63ed63396237a.html#af7acc5e70173be5133f63ed63396237a">dist_geom_collect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a1960e13e817084dbfc99184a53ca920a.html#a1960e13e817084dbfc99184a53ca920a">dist_geom_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa68f69cdf70f248838cddb6e71e64931.html#aa68f69cdf70f248838cddb6e71e64931">dist_geom_decompose</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a4dad2c67cb8a11f8a50981b2a33c8327.html#a4dad2c67cb8a11f8a50981b2a33c8327">dist_geom_decomposes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a55faef907b132d538b1a92491cf80192.html#a55faef907b132d538b1a92491cf80192">dist_geom_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa8257bbaa3390997a3bc16f571f165e7.html#aa8257bbaa3390997a3bc16f571f165e7">dist_geom_morton_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a3c49fbfe4fdbb64b3209f27a41fcdf6e.html#a3c49fbfe4fdbb64b3209f27a41fcdf6e">dist_geom_morton_part</a></td></tr>
@@ -156,8 +157,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac332e2e997f6178de67509622783c830" name="ac332e2e997f6178de67509622783c830"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac332e2e997f6178de67509622783c830">&#9670;&#160;</a></span>dist_geom_build_buckets()</h2>
+<a id="af7acc5e70173be5133f63ed63396237a" name="af7acc5e70173be5133f63ed63396237a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7acc5e70173be5133f63ed63396237a">&#9670;&#160;</a></span>dist_geom_collect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -166,52 +167,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structDistBucket.html">DistBucket</a> * dist_geom_build_buckets </td>
+          <td class="memname">static void dist_geom_collect </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>segs</em>, </td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>lw</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>edges</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>gxmin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>gymin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>gxmax</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>gymax</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>sorted</em>, </td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>faces</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>nbk_out</em>&#160;</td>
+          <td class="paramname"><em>nfaces</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -226,17 +203,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Copy the edges in their order along a Morton (Z-order) curve and group them into ~sqrt(n) spatially-local buckets, each with its bounding box. </p>
-<p >The buckets let a swept-capsule unit skip whole groups of edges that are farther than the running minimum, turning the per-unit edge scan from O(edges) into roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too coarse for large coastal polygons, but the bucket boxes are tight. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">segs</td><td>Edges </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of edges </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gxmin,gymin,gxmax,gymax</td><td>Bounding box of the edges </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">sorted</td><td>Array of <code>n</code> edges receiving them in their Morton order </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">nbk_out</td><td>Number of buckets </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Add to the arrays in the last arguments the edges of a geometry and the face each one bounds. </p>
+<p >A member of a collection, a triangle of a TIN and a face of a polyhedral surface is a face of its own, since two of them may overlap in the plane. The parts of a multipolygon or a multisurface do not overlap, so together they are one face. An edge bounding no region is of no face, -1 </p>
 
 </div>
 </div>

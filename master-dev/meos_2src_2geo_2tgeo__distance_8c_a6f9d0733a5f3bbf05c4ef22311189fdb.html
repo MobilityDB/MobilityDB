@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dist_geom_decomposes</title>
+<title>MobilityDB: dist_geom_build_buckets</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,12 +83,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a625bf80e22b2c8973bb71dc2efff89b4.html#a625bf80e22b2c8973bb71dc2efff89b4">circ_tree_distance_tree_internal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa6d595db13692a9ea8bd2d71a805ebc1.html#aa6d595db13692a9ea8bd2d71a805ebc1">dist_edge_radius_prune</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_adcd3ebc49f6d98bcf69d1f6102d2d025.html#adcd3ebc49f6d98bcf69d1f6102d2d025">dist_geom_build</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ac332e2e997f6178de67509622783c830.html#ac332e2e997f6178de67509622783c830">dist_geom_build_buckets</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a6f9d0733a5f3bbf05c4ef22311189fdb.html#a6f9d0733a5f3bbf05c4ef22311189fdb">dist_geom_build_buckets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ab462f3248b2861e49a6162291e3e5b18.html#ab462f3248b2861e49a6162291e3e5b18">dist_geom_build_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a78cff933e8edc2d04edef439ee529246.html#a78cff933e8edc2d04edef439ee529246">dist_geom_closest_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ab9ca755cf575ab1f88123984d88819b7.html#ab9ca755cf575ab1f88123984d88819b7">dist_geom_closest_on_edge</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_af7acc5e70173be5133f63ed63396237a.html#af7acc5e70173be5133f63ed63396237a">dist_geom_collect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a1960e13e817084dbfc99184a53ca920a.html#a1960e13e817084dbfc99184a53ca920a">dist_geom_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa68f69cdf70f248838cddb6e71e64931.html#aa68f69cdf70f248838cddb6e71e64931">dist_geom_decompose</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a4dad2c67cb8a11f8a50981b2a33c8327.html#a4dad2c67cb8a11f8a50981b2a33c8327">dist_geom_decomposes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a55faef907b132d538b1a92491cf80192.html#a55faef907b132d538b1a92491cf80192">dist_geom_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aa8257bbaa3390997a3bc16f571f165e7.html#aa8257bbaa3390997a3bc16f571f165e7">dist_geom_morton_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a3c49fbfe4fdbb64b3209f27a41fcdf6e.html#a3c49fbfe4fdbb64b3209f27a41fcdf6e">dist_geom_morton_part</a></td></tr>
@@ -156,8 +157,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4dad2c67cb8a11f8a50981b2a33c8327" name="a4dad2c67cb8a11f8a50981b2a33c8327"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4dad2c67cb8a11f8a50981b2a33c8327">&#9670;&#160;</a></span>dist_geom_decomposes()</h2>
+<a id="a6f9d0733a5f3bbf05c4ef22311189fdb" name="a6f9d0733a5f3bbf05c4ef22311189fdb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f9d0733a5f3bbf05c4ef22311189fdb">&#9670;&#160;</a></span>dist_geom_build_buckets()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -166,11 +167,69 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool dist_geom_decomposes </td>
+          <td class="memname">static <a class="el" href="structDistBucket.html">DistBucket</a> * dist_geom_build_buckets </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lw</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>segs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const int *&#160;</td>
+          <td class="paramname"><em>face</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>gxmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>gymin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>gxmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>gymax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>sorted</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>sorted_face</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>nbk_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -180,8 +239,19 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if the distance engine decomposes a geometry into edges. </p>
-<p >A TIN and a polyhedral surface, alone or in a collection, are left to the exact path; every other geometry <a class="el" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> answers for is read through the edges <a class="el" href="geo__funcs_8h_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a> gives </p>
+<p>Copy the edges in their order along a Morton (Z-order) curve and group them into ~sqrt(n) spatially-local buckets, each with its bounding box. </p>
+<p >The buckets let a swept-capsule unit skip whole groups of edges that are farther than the running minimum, turning the per-unit edge scan from O(edges) into roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too coarse for large coastal polygons, but the bucket boxes are tight. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">segs</td><td>Edges </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">face</td><td>Face of each edge, or NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of edges </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gxmin,gymin,gxmax,gymax</td><td>Bounding box of the edges </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">sorted</td><td>Array of <code>n</code> edges receiving them in their Morton order </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">sorted_face</td><td>Array of <code>n</code> faces receiving them in the same order, when <code>face</code> is not NULL </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">nbk_out</td><td>Number of buckets </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
