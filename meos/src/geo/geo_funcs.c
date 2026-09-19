@@ -424,9 +424,6 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
   e.dx = e.dy = e.length = 0;
   e.etype = arc_etype;
-  if (getenv("ARC_DIAG"))
-    fprintf(stderr, "[arc] reconstructed radius %.12f centre (%.6f,%.6f)\n",
-      e.radius, e.cx, e.cy);
   arc_set_bbox(&e);
   edge_set_tolerance(&e);
   meos_array_add(edges, &e);
