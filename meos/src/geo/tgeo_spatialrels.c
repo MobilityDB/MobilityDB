@@ -1316,6 +1316,29 @@ adisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
+ * @brief Return -1 if two temporal geos share no time, 0 if they share time
+ * and their boxes show they never meet, and 1 if they may meet
+ * @details The time is tested first, since the box carries time as a
+ * dimension and two values sharing no instant have boxes that do not overlap,
+ * while the relationship has no answer for them. A temporal geo never leaves
+ * its box, so two planar values sharing time whose boxes do not overlap are
+ * apart at every common instant, as #ea_touches_tgeo_tgeo and
+ * #ea_dwithin_tgeo_tgeo read it. A geodetic value keeps the lifted path
+ */
+static int
+ea_intersects_tgeo_tgeo_box(const Temporal *temp1, const Temporal *temp2)
+{
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    return 1;
+  STBox box1, box2;
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
+  return overlaps_stbox_stbox(&box1, &box2) ? 1 : 0;
+}
+
+/**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if the temporal geos ever/always intersect, 0 if not, and
  * -1 on error or if the temporal geos do not intersect in time
@@ -1331,6 +1354,12 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
+  /* Two temporal geos sharing time whose boxes do not meet are apart at every
+   * common instant, so they are ever and always disjoint
+   * (#ea_intersects_tgeo_tgeo) */
+  int box = ea_intersects_tgeo_tgeo_box(temp1, temp2);
+  if (box <= 0)
+    return box < 0 ? -1 : 1;
   datum_func2 func = geo_disjoint_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
@@ -1541,6 +1570,9 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
+  int box = ea_intersects_tgeo_tgeo_box(temp1, temp2);
+  if (box <= 0)
+    return box;
   datum_func2 func = geo_intersects_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
