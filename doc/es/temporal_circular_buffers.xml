@@ -1158,6 +1158,21 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcbuffer_minDistance">
+				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
+				<para>Devuelve la distancia espacial mínima entre dos conjuntos de búferes circulares temporales, ignorando el tiempo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+minDistance(tcbuffer[],tcbuffer[]) → float
+</programlisting>
+				<para>La distancia se mide entre las áreas recorridas sin tener en cuenta el tiempo, igual a <varname>ST_Distance</varname> del área recorrida de cada argumento, y el resultado es el mínimo sobre todos los pares tomados de los dos conjuntos. Dos valores cuyos discos barren la misma región en momentos distintos están por lo tanto a distancia cero. La magnitud sincronizada en el tiempo, que compara dos argumentos solo en los instantes que comparten, es <link linkend="tcbuffer_nearestApproachDistance"><varname>|=|</varname></link>. Un único par es el caso de un elemento.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT minDistance(ARRAY[tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
+  Cbuffer(Point(2 0),1)@2001-01-02]'], ARRAY[tcbuffer
+  '[Cbuffer(Point(0 5),0.5)@2001-01-03, Cbuffer(Point(2 5),0.5)@2001-01-04]']);
+-- 3.5
+</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

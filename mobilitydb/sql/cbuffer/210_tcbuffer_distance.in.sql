@@ -259,3 +259,10 @@ CREATE FUNCTION shortestLine(tcbuffer, tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+CREATE FUNCTION minDistance(tcbuffer[], tcbuffer[])
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Mindistance_tcbufferarr_tcbufferarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/

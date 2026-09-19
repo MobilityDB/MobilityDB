@@ -67,4 +67,13 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
 --------------------------------------------------------
 
 
+-- Set-set minimum distance
+
+-- The set-set form equals the minimum over the pairs of the table of the
+-- distance between their traversed areas
+SELECT round(minDistance((SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k < 10) t),
+  (SELECT array_agg(temp) FROM (SELECT temp FROM tbl_tcbuffer WHERE k BETWEEN 50 AND 59) t))::numeric, 6) =
+  (SELECT round(MIN(ST_Distance(traversedArea(t1.temp), traversedArea(t2.temp)))::numeric, 6)
+   FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.k < 10 AND t2.k BETWEEN 50 AND 59);
+
 -------------------------------------------------------------------------------

@@ -2289,6 +2289,9 @@
 					<listitem>
 						<para><link linkend="tcbuffer_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two sets of temporal circular buffers, ignoring time</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>

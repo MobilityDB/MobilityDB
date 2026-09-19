@@ -40,6 +40,7 @@
 #include "cbuffer/cbuffer.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
@@ -644,6 +645,37 @@ Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
+}
+
+
+/*****************************************************************************
+ * Set-set spatial minimum distance
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Mindistance_tcbufferarr_tcbufferarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mindistance_tcbufferarr_tcbufferarr);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the exact minimum spatial distance between two arrays of
+ * temporal circular buffers
+ * @sqlfn minDistance()
+ */
+Datum
+Mindistance_tcbufferarr_tcbufferarr(PG_FUNCTION_ARGS)
+{
+  ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
+  ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
+  int count1, count2;
+  Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
+  Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
+  double result = mindistance_tcbufferarr_tcbufferarr(
+    (const Temporal **) arr1, count1, (const Temporal **) arr2, count2);
+  pfree(arr1); pfree(arr2);
+  PG_FREE_IF_COPY(array1, 0);
+  PG_FREE_IF_COPY(array2, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************/

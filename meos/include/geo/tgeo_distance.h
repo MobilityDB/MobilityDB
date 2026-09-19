@@ -163,4 +163,18 @@ extern RTree * dist_geom_build_rtree(const Edge *segs, int n);
 
 /*****************************************************************************/
 
+/**
+ * @brief A pair drawn from two arrays of spatial temporal values, with the
+ * distance between the boxes of its values
+ */
+typedef struct
+{
+  int i;          /**< Position of the value in the first array */
+  int j;          /**< Position of the value in the second array */
+  double bd;      /**< Distance between the boxes of the two values */
+} TspatialarrPair;
+
+extern TspatialarrPair *tspatialarr_pairs(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2);
+
 #endif /* __TGEO_DISTANCE_H__ */

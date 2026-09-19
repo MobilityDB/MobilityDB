@@ -2320,6 +2320,59 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   return mindist_tcbuffer_tcbuffer_threshold(temp1, temp2, threshold);
 }
 
+/**
+ * @ingroup meos_cbuffer_dist
+ * @brief Return the minimum spatial distance between two arrays of temporal
+ * circular buffers
+ * @details Time-agnostic, equivalent to the distance between the union of the
+ * traversed areas of the first array and that of the second, as
+ * #mindistance_tgeoarr_tgeoarr answers for temporal geos. The pairs are taken
+ * nearest box first (#tspatialarr_pairs) and each is measured by
+ * #mindistance_tcbuffer_tcbuffer capped at the running minimum, so the search
+ * stops once no pair left can improve it and no traversed area is built
+ * @param[in] arr1,arr2 Arrays of temporal circular buffers
+ * @param[in] count1,count2 Array lengths
+ * @return Minimum spatial distance, DBL_MAX for an empty array
+ * @errval DBL_MAX
+ * @csqlfn #Mindistance_tcbufferarr_tcbufferarr()
+ */
+double
+mindistance_tcbufferarr_tcbufferarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(arr1, DBL_MAX); VALIDATE_NOT_NULL(arr2, DBL_MAX);
+  if (count1 <= 0 || count2 <= 0)
+    return DBL_MAX;
+  for (int i = 0; i < count1; i++)
+    VALIDATE_TCBUFFER(arr1[i], DBL_MAX);
+  for (int j = 0; j < count2; j++)
+    VALIDATE_TCBUFFER(arr2[j], DBL_MAX);
+  int32_t srid = tspatial_srid(arr1[0]);
+  for (int i = 1; i < count1; i++)
+    if (! ensure_same_srid(tspatial_srid(arr1[i]), srid))
+      return DBL_MAX;
+  for (int j = 0; j < count2; j++)
+    if (! ensure_same_srid(tspatial_srid(arr2[j]), srid))
+      return DBL_MAX;
+
+  size_t npairs = count1;
+  npairs *= count2;
+  TspatialarrPair *pairs = tspatialarr_pairs(arr1, count1, arr2, count2);
+  double result = DBL_MAX;
+  for (size_t k = 0; k < npairs && pairs[k].bd < result; k++)
+  {
+    double d = mindistance_tcbuffer_tcbuffer(arr1[pairs[k].i],
+      arr2[pairs[k].j], result);
+    if (d < result)
+      result = d;
+    if (result == 0.0)
+      break;
+  }
+  pfree(pairs);
+  return result;
+}
+
 /*****************************************************************************
  * ShortestLine
  *****************************************************************************/
