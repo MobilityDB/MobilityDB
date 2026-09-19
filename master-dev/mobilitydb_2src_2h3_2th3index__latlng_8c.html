@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">th3index_latlng.c File Reference</div></div>
 </div><!--header-->
@@ -84,17 +85,30 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
+<code>#include &lt;funcapi.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__h3_8h_source.html">meos_h3.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structH3indexSplitState.html">H3indexSplitState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">State of an H3 split, holding the cell and the fragment of every row it has left to return.  <a href="structH3indexSplitState.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga0555b55bc4686dcc007a3ae89e3e927a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_ga0555b55bc4686dcc007a3ae89e3e927a.html#ga0555b55bc4686dcc007a3ae89e3e927a">Tgeogpoint_h3index_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga0555b55bc4686dcc007a3ae89e3e927a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal geodetic point split by the H3 cells it crosses at the given resolution, and the cell of each @sqlfn h3Split()  <a href="group__mobilitydb__h3__latlng_ga0555b55bc4686dcc007a3ae89e3e927a.html#ga0555b55bc4686dcc007a3ae89e3e927a">More...</a><br /></td></tr>
+<tr class="separator:ga0555b55bc4686dcc007a3ae89e3e927a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga79254d17b5df653ed471e960d56029f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_ga79254d17b5df653ed471e960d56029f4.html#ga79254d17b5df653ed471e960d56029f4">Tgeogpoint_to_th3index</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga79254d17b5df653ed471e960d56029f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal H3 cell index of a temporal geodetic point at the given resolution @sqlfn th3index()  <a href="group__mobilitydb__h3__latlng_ga79254d17b5df653ed471e960d56029f4.html#ga79254d17b5df653ed471e960d56029f4">More...</a><br /></td></tr>
 <tr class="separator:ga79254d17b5df653ed471e960d56029f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c030742dadf528ae43dec4fa91c97c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_ga3c030742dadf528ae43dec4fa91c97c7.html#ga3c030742dadf528ae43dec4fa91c97c7">Tgeompoint_h3index_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga3c030742dadf528ae43dec4fa91c97c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal planar point split by the H3 cells it crosses at the given resolution, and the cell of each @sqlfn h3Split()  <a href="group__mobilitydb__h3__latlng_ga3c030742dadf528ae43dec4fa91c97c7.html#ga3c030742dadf528ae43dec4fa91c97c7">More...</a><br /></td></tr>
+<tr class="separator:ga3c030742dadf528ae43dec4fa91c97c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6a0536e30239201a9f2d0d034fb93cef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_ga6a0536e30239201a9f2d0d034fb93cef.html#ga6a0536e30239201a9f2d0d034fb93cef">Tgeompoint_to_th3index</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga6a0536e30239201a9f2d0d034fb93cef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal H3 cell index of a temporal planar point at the given resolution (SRID must be 4326) @sqlfn th3index()  <a href="group__mobilitydb__h3__latlng_ga6a0536e30239201a9f2d0d034fb93cef.html#ga6a0536e30239201a9f2d0d034fb93cef">More...</a><br /></td></tr>
 <tr class="separator:ga6a0536e30239201a9f2d0d034fb93cef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -107,6 +121,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gafb0e0e571612222a5b514c43df1f773d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_gafb0e0e571612222a5b514c43df1f773d.html#gafb0e0e571612222a5b514c43df1f773d">Th3index_cell_to_tgeompoint</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gafb0e0e571612222a5b514c43df1f773d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the planar centroid trajectory (SRID 4326) of a temporal H3 cell @sqlfn tgeompoint()  <a href="group__mobilitydb__h3__latlng_gafb0e0e571612222a5b514c43df1f773d.html#gafb0e0e571612222a5b514c43df1f773d">More...</a><br /></td></tr>
 <tr class="separator:gafb0e0e571612222a5b514c43df1f773d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95e28a404e0bdb8d9db977b02ed1c4e2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2h3_2th3index__latlng_8c_a95e28a404e0bdb8d9db977b02ed1c4e2.html#a95e28a404e0bdb8d9db977b02ed1c4e2">Tpoint_h3index_split_ext</a> (FunctionCallInfo fcinfo, <a class="el" href="structTemporal.html">Temporal</a> **(*split)(const <a class="el" href="structTemporal.html">Temporal</a> *, int32, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> **, int *))</td></tr>
+<tr class="memdesc:a95e28a404e0bdb8d9db977b02ed1c4e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal point split by the H3 cells it crosses, and the cell of each.  <a href="mobilitydb_2src_2h3_2th3index__latlng_8c_a95e28a404e0bdb8d9db977b02ed1c4e2.html#a95e28a404e0bdb8d9db977b02ed1c4e2">More...</a><br /></td></tr>
+<tr class="separator:a95e28a404e0bdb8d9db977b02ed1c4e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >PG V1 wrappers for th3index lat/lng conversions. </p>
