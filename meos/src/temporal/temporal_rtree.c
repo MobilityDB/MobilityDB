@@ -1255,6 +1255,76 @@ node_search_contain_stbox(const RTreeNode *node, const STBox *query,
 }
 
 /**
+ * @brief Return true if two temporal boxes overlap on the axes named
+ * @details The test #tbox_overlaps makes, with the axes decided once for the
+ * whole search
+ */
+static inline bool
+tbox_overlaps_axes(const TBox *b1, const TBox *b2, bool x, bool t)
+{
+  if (x && ! bbox_overlaps_span(&b1->span, &b2->span))
+    return false;
+  if (t && ! bbox_overlaps_span(&b1->period, &b2->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if the first temporal box contains the second one on the
+ * axes named
+ * @details The test #tbox_contains makes, with the axes decided once for the
+ * whole search
+ */
+static inline bool
+tbox_contains_axes(const TBox *b1, const TBox *b2, bool x, bool t)
+{
+  if (x && ! span_contains(&b1->span, &b2->span))
+    return false;
+  if (t && ! span_contains(&b1->period, &b2->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Search a node of a tree of temporal boxes for the entries
+ * overlapping a query, containing it, or contained by it
+ * @details The search #node_search makes for #INDEX_OVERLAPS,
+ * #INDEX_CONTAINS and #INDEX_CONTAINED_BY, with the tests read inline. A
+ * subtree holds an entry containing the query only when its box contains the
+ * query, and an entry overlapping the query or contained by it only when its
+ * box overlaps the query
+ * @param[in] node The node to be searched
+ * @param[in] query The query box
+ * @param[in] op #INDEX_OVERLAPS, #INDEX_CONTAINS or #INDEX_CONTAINED_BY
+ * @param[in] x,t The axes both the query and the entries carry
+ * @param[out] result MeosArray to collect matching IDs
+ */
+static void
+node_search_tbox(const RTreeNode *node, const TBox *query, IndexSearchOp op,
+  bool x, bool t, MeosArray *result)
+{
+  bool leaf = (node->node_type == RTREE_LEAF);
+  for (int i = 0; i < node->count; ++i)
+  {
+    const TBox *key = (const TBox *) RTREE_NODE_BBOX_N(node, i);
+    if (leaf)
+    {
+      if ((op == INDEX_OVERLAPS) ? tbox_overlaps_axes(key, query, x, t) :
+          ((op == INDEX_CONTAINS) ? tbox_contains_axes(key, query, x, t) :
+            tbox_contains_axes(query, key, x, t)))
+      {
+        int64 id = node->ids[i];
+        meos_array_add(result, &id);
+      }
+    }
+    else if ((op == INDEX_CONTAINS) ? tbox_contains_axes(key, query, x, t) :
+        tbox_overlaps_axes(key, query, x, t))
+      node_search_tbox(node->nodes[i], query, op, x, t, result);
+  }
+  return;
+}
+
+/**
  * @brief Report the qualifying entry pairs of two nodes, descending both trees
  * @details A node does not store its own bounding box, so each node is visited
  * together with the box its parent holds for it; the roots are visited with a
@@ -1837,6 +1907,16 @@ rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
     else
       node_search_contain_stbox(rtree->root, q, op == INDEX_CONTAINS, x, z, t,
         result);
+  }
+  else if (rtree->bboxtype == T_TBOX && (op == INDEX_OVERLAPS ||
+      op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
+  {
+    /* As for the spatiotemporal boxes above */
+    const TBox *q = (const TBox *) query;
+    int16 f = ((const TBox *) rtree->box)->flags;
+    bool x = MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
+      t = MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags);
+    node_search_tbox(rtree->root, q, op, x, t, result);
   }
   else
     node_search(rtree, rtree->root, op, query, result);
