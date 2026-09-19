@@ -33,5 +33,7 @@ var searchData=
   ['num_5fsog_5finstants_30',['num_SOG_instants',['../structtrip__record_a9e4e091089bf67b17e566cbc5946829e.html#a9e4e091089bf67b17e566cbc5946829e',1,'trip_record']]],
   ['num_5ftrip_5finstants_31',['num_trip_instants',['../structtrip__record_abdb7d6d1675264ef41656e00afde0e4c.html#abdb7d6d1675264ef41656e00afde0e4c',1,'trip_record']]],
   ['numinstants_32',['numinstants',['../structtrip__record_a75efa4e47c1b5cd78f77b623336b7cec.html#a75efa4e47c1b5cd78f77b623336b7cec',1,'trip_record']]],
-  ['numparam_33',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]]
+  ['numparam_33',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]],
+  ['nx_34',['nx',['../structDistArc_a59649b59c51d57be731cef714011426a.html#a59649b59c51d57be731cef714011426a',1,'DistArc']]],
+  ['ny_35',['ny',['../structDistArc_a86fa0fcdc99bb7d289380d16f59f9c6f.html#a86fa0fcdc99bb7d289380d16f59f9c6f',1,'DistArc']]]
 ];
