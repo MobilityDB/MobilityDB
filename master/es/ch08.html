@@ -2,7 +2,7 @@
 </p><pre class="programlisting">
 atGeometry(tgeom,geometry) → tgeom
 minusGeometry(tgeom,geometry) → tgeom
-</pre><p>La geometría debe ser 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</p><pre class="programlisting">
+</pre><p>La geometría debe ser 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</p><p>Un punto geodésico se restringe a una <code class="varname">geography</code>, que debe ser un polígono o un multipolígono, y el cálculo se realiza sobre la esfera: el punto recorre el círculo máximo entre dos posiciones y la región está delimitada por los círculos máximos que pasan por sus propios vértices, de modo que el viaje entra y sale donde esos caminos se cruzan. La diferencia crece con la latitud, ya que un viaje a lo largo de un paralelo se sitúa bastante al norte de él.</p><pre class="programlisting">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- {"[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]"}
@@ -30,7 +30,13 @@ SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2
 SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01',
   'Polygon((0 0,0 5,5 5,5 0,0 0))'));
 -- LINESTRING(5 1,10 1)@2001-01-01
-</pre></li><li class="listitem"><a name="tgeo_atStbox"></a><a class="indexterm" name="id5673"></a><a class="indexterm" name="id5676"></a><p>Restringe a (al complemento de) un <code class="varname">stbox</code> <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre><pre class="programlisting">
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-170 65)@2001-01-01,
+  Point(-100 65)@2001-01-03]',
+  geography 'SRID=4326;Polygon((-150 60,-150 70,-120 70,-120 60,-150 60))'), 6);
+/* {[POINT(-150 68.423603)@2001-01-01 14:39:22.550164,
+   POINT(-120 68.423603)@2001-01-02 09:20:37.449835]} */
+</pre></li><li class="listitem"><a name="tgeo_atStbox"></a><a class="indexterm" name="id5676"></a><a class="indexterm" name="id5679"></a><p>Restringe a (al complemento de) un <code class="varname">stbox</code> <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
@@ -63,7 +69,7 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
   stbox 'STBOX X((2,2),(3,3))'));
 /* {[POINT(1 1)@2001-01-01, LINESTRING(1 1,2 2)@2001-01-03, 
    LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
-</pre></li><li class="listitem"><a name="tgeo_atElevation"></a><a class="indexterm" name="id5700"></a><a class="indexterm" name="id5703"></a><p>Restringe a (al complemento de) un rango de altitud <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_atElevation"></a><a class="indexterm" name="id5703"></a><a class="indexterm" name="id5706"></a><p>Restringe a (al complemento de) un rango de altitud <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 atElevation(tgeom,zspan) → tgeom
 minusElevation(tgeom,zspan) → tgeom
@@ -74,8 +80,10 @@ SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@200
    [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
 SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
-/* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03],
-   [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02),
+   (POINT Z (3 3 3)@2001-01-03, POINT Z (4 4 4)@2001-01-04,
+   POINT Z (3 3 3)@2001-01-05), (POINT Z (2 2 2)@2001-01-06,
+   POINT Z (1 1 1)@2001-01-07]} */
 </pre><pre class="programlisting">
 SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1 1)@2001-01-01,
   Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'), 6);
