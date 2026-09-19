@@ -18,7 +18,7 @@ var searchData=
   ['bbox_5fposition_15',['bbox_position',['../structRTree_a6e6e567208441a9afe38f653faa4e7c9.html#a6e6e567208441a9afe38f653faa4e7c9',1,'RTree']]],
   ['bboxsize_16',['bboxsize',['../structRTreeNode_a55646d85e3699c29fd4d73ddd752fc00.html#a55646d85e3699c29fd4d73ddd752fc00',1,'RTreeNode::bboxsize()'],['../structRTree_a562f74d23eed838587cde5e0d376c74b.html#a562f74d23eed838587cde5e0d376c74b',1,'RTree::bboxsize()'],['../structTSequence_af54e7f67e1787e2240fd08e5efa49be1.html#af54e7f67e1787e2240fd08e5efa49be1',1,'TSequence::bboxsize()'],['../structSet_acfadda45ae9a023f24a99d4fd0bf174d.html#acfadda45ae9a023f24a99d4fd0bf174d',1,'Set::bboxsize()'],['../structTSequenceSet_ac4d845cf1918b7cf6d654defec6fabfa.html#ac4d845cf1918b7cf6d654defec6fabfa',1,'TSequenceSet::bboxsize()']]],
   ['bboxtype_17',['bboxtype',['../structRTree_a3f8de7435c5eb49456dfb5e02c4acc62.html#a3f8de7435c5eb49456dfb5e02c4acc62',1,'RTree::bboxtype()'],['../structSPTree_ae9591f86438c764c83c6e7839b3d905f.html#ae9591f86438c764c83c6e7839b3d905f',1,'SPTree::bboxtype()']]],
-  ['bd_18',['bd',['../structTgeoarrPair_a1fee3c3a71562837a64145a613e64e4d.html#a1fee3c3a71562837a64145a613e64e4d',1,'TgeoarrPair']]],
+  ['bd_18',['bd',['../structTspatialarrPair_a3386b0f8179e309257dc38e8663dcf61.html#a3386b0f8179e309257dc38e8663dcf61',1,'TspatialarrPair']]],
   ['be_19',['be',['../structMeosDE9IM_abb794e71b78e54784d25b6434dea1ff4.html#abb794e71b78e54784d25b6434dea1ff4',1,'MeosDE9IM']]],
   ['bfac_20',['bfac',['../structAFFINE_a57ad0d85a7707e8209ad2f96c37269ee.html#a57ad0d85a7707e8209ad2f96c37269ee',1,'AFFINE']]],
   ['bi_21',['bi',['../structMeosDE9IM_acb1743c27a39265672e0ea52e47c8355.html#acb1743c27a39265672e0ea52e47c8355',1,'MeosDE9IM']]],

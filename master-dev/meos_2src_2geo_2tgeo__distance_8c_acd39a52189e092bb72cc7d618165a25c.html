@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeoarr_pair_cmp</title>
+<title>MobilityDB: tspatialarr_pairs</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -148,7 +148,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__dist_gaf35725a10a0aa8c5832996d929b9a90b.html#gaf35725a10a0aa8c5832996d929b9a90b">stbox_spatial_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__dist_gaac8c95ee6f681495c4952b814bb24252.html#gaac8c95ee6f681495c4952b814bb24252">tdistance_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__dist_gacb4ad01593a55cd0632b58194945728b.html#gacb4ad01593a55cd0632b58194945728b">tdistance_tgeo_tgeo</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ad7a98b8a8f8287575239465f3eeb7af9.html#ad7a98b8a8f8287575239465f3eeb7af9">tgeoarr_pair_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a8a0d33cecd2e24bc18b56d9783ace581.html#a8a0d33cecd2e24bc18b56d9783ace581">tgeogpointsegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a009f073beb92fd8087aab76146986b70.html#a009f073beb92fd8087aab76146986b70">tgeoinst_point2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aded5425298d46d52bacc4b7d5e83d937.html#aded5425298d46d52bacc4b7d5e83d937">tgeompointsegm_distance_turnpt</a></td></tr>
@@ -158,30 +157,41 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a35a5ca43d4bc5052208683bc659ce4af.html#a35a5ca43d4bc5052208683bc659ce4af">tpointseg_distance_lb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a29a2827ca4ca6b11acba355273ab3fa2.html#a29a2827ca4ca6b11acba355273ab3fa2">tpointsegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a6019268ba378dd7b59e541037ad75daa.html#a6019268ba378dd7b59e541037ad75daa">tpointseq_shortestline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a11a69e0c518cd48152159df065827f25.html#a11a69e0c518cd48152159df065827f25">tspatialarr_pair_cmp</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_acd39a52189e092bb72cc7d618165a25c.html#acd39a52189e092bb72cc7d618165a25c">tspatialarr_pairs</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad7a98b8a8f8287575239465f3eeb7af9" name="ad7a98b8a8f8287575239465f3eeb7af9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7a98b8a8f8287575239465f3eeb7af9">&#9670;&#160;</a></span>tgeoarr_pair_cmp()</h2>
+<a id="acd39a52189e092bb72cc7d618165a25c" name="acd39a52189e092bb72cc7d618165a25c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd39a52189e092bb72cc7d618165a25c">&#9670;&#160;</a></span>tspatialarr_pairs()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int tgeoarr_pair_cmp </td>
+          <td class="memname"><a class="el" href="structTspatialarrPair.html">TspatialarrPair</a> * tspatialarr_pairs </td>
           <td>(</td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> **&#160;</td>
+          <td class="paramname"><em>arr1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>b</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> **&#160;</td>
+          <td class="paramname"><em>arr2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -189,14 +199,17 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Compare two candidate pairs by the distance between their bounding boxes. </p>
+<p>Return every pair drawn from two arrays of spatial temporal values with the distance between their boxes, nearest first. </p>
+<p >The box of a value holds every point the value covers, so the distance between the boxes of a pair bounds from below the spatial distance between its values, and a search taking the pairs in this order stops once its running minimum is no greater than the bound of the next pair. The planar distance between boxes bounds no geodetic distance, so a geodetic pair is given the bound 0, which keeps every pair in the search </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">arr1,arr2</td><td>Arrays of spatial temporal values, sharing their SRID, dimensionality and geodetic flag </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count1,count2</td><td>Array lengths, both positive </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Array of <code>count1</code> times <code>count2</code> pairs </dd></dl>
 
 </div>
 </div>

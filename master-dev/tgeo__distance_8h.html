@@ -108,6 +108,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDistShortLine.html">DistShortLine</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Witness of the nearest approach: the point <code></code>(px,py) on the swept-capsule boundary and <code></code>(qx,qy) on the geometry.  <a href="structDistShortLine.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTspatialarrPair.html">TspatialarrPair</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A pair drawn from two arrays of spatial temporal values, with the distance between the boxes of its values.  <a href="structTspatialarrPair.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -171,6 +174,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a35a5ca43d4bc5052208683bc659ce4af"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_a35a5ca43d4bc5052208683bc659ce4af.html#a35a5ca43d4bc5052208683bc659ce4af">tpointseg_distance_lb</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end2)</td></tr>
 <tr class="memdesc:a35a5ca43d4bc5052208683bc659ce4af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a lower bound on the distance between two synchronized linear temporal point segments.  <a href="tgeo__distance_8h_a35a5ca43d4bc5052208683bc659ce4af.html#a35a5ca43d4bc5052208683bc659ce4af">More...</a><br /></td></tr>
 <tr class="separator:a35a5ca43d4bc5052208683bc659ce4af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd39a52189e092bb72cc7d618165a25c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTspatialarrPair.html">TspatialarrPair</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_acd39a52189e092bb72cc7d618165a25c.html#acd39a52189e092bb72cc7d618165a25c">tspatialarr_pairs</a> (const <a class="el" href="structTemporal.html">Temporal</a> **arr1, int count1, const <a class="el" href="structTemporal.html">Temporal</a> **arr2, int count2)</td></tr>
+<tr class="memdesc:acd39a52189e092bb72cc7d618165a25c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return every pair drawn from two arrays of spatial temporal values with the distance between their boxes, nearest first.  <a href="tgeo__distance_8h_acd39a52189e092bb72cc7d618165a25c.html#acd39a52189e092bb72cc7d618165a25c">More...</a><br /></td></tr>
+<tr class="separator:acd39a52189e092bb72cc7d618165a25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
