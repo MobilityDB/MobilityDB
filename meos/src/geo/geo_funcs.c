@@ -4196,21 +4196,6 @@ relate_point_in_area(double x, double y, Edge **edges, int nedges,
  * cheaper of the two keeps it */
 
 /**
- * @brief Return the greatest x an edge array reaches, which is how far a ray
- * cast from a point to its right runs before it leaves the array behind
- */
-static double
-relate_edges_xmax(Edge **edges, int nedges)
-{
-  assert(edges);
-  double result = -DBL_MAX;
-  for (int i = 0; i < nedges; i++)
-    if (edges[i]->xmax > result)
-      result = edges[i]->xmax;
-  return result;
-}
-
-/**
  * @brief Return an index over the bounding boxes of an edge array
  * @details The boxes carry no SRID of their own: each is compared against
  * another built the same way, so the value only has to be the same everywhere
@@ -4240,26 +4225,37 @@ relate_edges_index(Edge **edges, int nedges)
 void
 relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
 {
+  assert(edges);
   re->edges = edges;
   re->nedges = nedges;
-  re->xmax = relate_edges_xmax(edges, nedges);
-  /* An index query has to admit every edge the scan it replaces would accept,
+  /* The extent is the union of the edge boxes the index holds, so a question
+   * it leaves standing apart is one the index answers with no edge at all.
+   * Its greatest x is also how far a ray cast from a point to its right runs
+   * before it leaves the array behind.
+   * An index query has to admit every edge the scan it replaces would accept,
    * and the on-edge tests read the tolerance the EDGE carries, which grows
    * with the size of its coordinates. Padding a query by MEOS_GEOM_TOLERANCE
    * would therefore drop, at projected coordinates, edges whose own tolerance
    * is thousands of times that. The widest tolerance in the array is what
    * makes the index answer what the scan answers at every scale */
+  re->xmin = re->ymin = DBL_MAX;
+  re->xmax = re->ymax = -DBL_MAX;
   re->tol = 0.0;
   re->reach = 0.0;
   for (int i = 0; i < nedges; i++)
   {
-    if (edges[i]->tol > re->tol)
-      re->tol = edges[i]->tol;
+    const Edge *e = edges[i];
+    if (e->xmin < re->xmin) re->xmin = e->xmin;
+    if (e->xmax > re->xmax) re->xmax = e->xmax;
+    if (e->ymin < re->ymin) re->ymin = e->ymin;
+    if (e->ymax > re->ymax) re->ymax = e->ymax;
+    if (e->tol > re->tol)
+      re->tol = e->tol;
     /* The reach a point location reads an end of the edge within, as
      * #point_in_polygon_impl reads it */
-    double reach = edges[i]->tol;
-    if (edges[i]->etype == EDGE_POLYARC)
-      reach = fmax(reach, MEOS_GEOM_TOLERANCE * edges[i]->radius);
+    double reach = e->tol;
+    if (e->etype == EDGE_POLYARC)
+      reach = fmax(reach, MEOS_GEOM_TOLERANCE * e->radius);
     if (reach > re->reach)
       re->reach = reach;
   }
@@ -4325,6 +4321,25 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re,
 }
 
 /**
+ * @brief Return true if a box grown by a pad stands apart from the extent of
+ * an edge array
+ * @details The extent is the union of the boxes the index of the array holds,
+ * so a query the test separates is one the index answers with no edge, and
+ * with the pad an index query is grown by, one the scan answers with none
+ * either
+ * @param[in] re Edge array
+ * @param[in] xmin,xmax,ymin,ymax Box
+ * @param[in] pad Distance the box is grown by
+ */
+static inline bool
+relate_edges_apart(const RelateEdges *re, double xmin, double xmax,
+  double ymin, double ymax, double pad)
+{
+  return xmax + pad < re->xmin || xmin - pad > re->xmax ||
+    ymax + pad < re->ymin || ymin - pad > re->ymax;
+}
+
+/**
  * @brief Return where a point stands with respect to the area an edge array
  * bounds, reading the edges each question needs out of an index
  * @details The answer is the one #relate_point_in_area() gives: the index only
@@ -4335,6 +4350,10 @@ int
 relate_point_in_area_index(double x, double y, const RelateEdges *re,
   bool vertex)
 {
+  /* A point apart from the extent is carried by no edge, and a ray cast from
+   * it crosses the closed rings the array draws an even number of times */
+  if (relate_edges_apart(re, x, x, y, y, re->tol))
+    return 2;
   if (relate_point_on_boundary_index(x, y, re, vertex))
     return 1;
   if (! re->index)
@@ -4359,6 +4378,8 @@ relate_point_in_area_index(double x, double y, const RelateEdges *re,
 static int
 relate_point_in_area_parity(double x, double y, const RelateEdges *re)
 {
+  if (relate_edges_apart(re, x, x, y, y, 0.0))
+    return 2;
   if (! re->index)
     return point_in_polygon(x, y, re->edges, re->nedges) ? 0 : 2;
   return point_in_polygon_index_into(x, y, re->edges, re->nedges, re->index,
@@ -7124,6 +7145,18 @@ static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   MeosDE9IM *m, bool first)
 {
+  /* An edge apart from the extent of the other boundary meets none of its
+   * edges, so it is one open interval, and its midpoint, lying in the box of
+   * the edge, stands apart from the other area as well */
+  if (relate_edges_apart(other, edge->xmin, edge->xmax, edge->ymin,
+        edge->ymax, fmax(other->tol, edge->tol)))
+  {
+    if (first)
+      m->be = 1;
+    else
+      m->eb = 1;
+    return;
+  }
   /* The edges this one can meet are those whose box meets its own, and an index
    * answers them in the place of a pass over the whole array. A boundary of a
    * few thousand edges leaves every pair but a handful standing apart, so the
@@ -7524,6 +7557,36 @@ relate_area_ring_point_located(const RelateEdges *self,
       sy = e->y1;
       open = true;
       located = false;
+      /* A witness looked for INSIDE the other geometry is never found on a
+       * ring standing apart from its extent. A witness lies within the box of
+       * its edge grown by its step, which is a billionth of the length of the
+       * edge or ten times the band of the geometry, and a point apart from the
+       * extent of the other geometry by more than the band of the other is
+       * located in its exterior (#relate_point_in_area_index). An edge, or the
+       * arc it draws, is no longer than four times the diagonal of the box of
+       * its ring, which bounds the step of every witness the ring yields */
+      if (location == 0)
+      {
+        double xmin = e->xmin, xmax = e->xmax, ymin = e->ymin,
+          ymax = e->ymax;
+        int end = i;
+        while (end < self->nedges - 1 &&
+            ! (self->edges[end]->x2 == sx && self->edges[end]->y2 == sy))
+        {
+          const Edge *f = self->edges[++end];
+          xmin = fmin(xmin, f->xmin); xmax = fmax(xmax, f->xmax);
+          ymin = fmin(ymin, f->ymin); ymax = fmax(ymax, f->ymax);
+        }
+        double step = fmax(4e-9 * ((xmax - xmin) + (ymax - ymin)),
+          10.0 * self->tol);
+        if (relate_edges_apart(other, xmin, xmax, ymin, ymax,
+              step + other->tol))
+        {
+          i = end;
+          open = false;
+          continue;
+        }
+      }
     }
     double x, y;
     if (! located && relate_area_edge_interior_point(e, self, &x, &y))
@@ -9522,6 +9585,10 @@ relate_edge_is_point(const Edge *e)
 static bool
 relate_edge_inside_area(const Edge *e, const RelateEdges *other)
 {
+  /* The point read lies in the box of the edge, and a point apart from the
+   * extent of the other geometry lies inside none of its surfaces */
+  if (relate_edges_apart(other, e->xmin, e->xmax, e->ymin, e->ymax, 0.0))
+    return false;
   double x, y;
   if (e->etype == EDGE_POINT)
   {
@@ -9566,6 +9633,12 @@ relate_edges_candidates(const RelateEdges *re, double xmin, double xmax,
 static bool
 relate_edges_meet_any(const Edge *a, const RelateEdges *other)
 {
+  /* The scan rejects a pair by the MEOS tolerance and the index by the widest
+   * one the array asks for, so a curve apart from the extent by both meets
+   * none of the curves either would solve */
+  if (relate_edges_apart(other, a->xmin, a->xmax, a->ymin, a->ymax,
+        fmax(other->tol, MEOS_GEOM_TOLERANCE)))
+    return false;
   if (! other->index)
   {
     for (int j = 0; j < other->nedges; j++)
