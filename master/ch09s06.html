@@ -312,17 +312,17 @@ SELECT (sp).number, (sp).time,
  <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
-spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
+spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,
+  origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
 timeSplit(tpoint,duration interval,origin timestamptz='2000-01-03') → {(time,tpoint)}
-spaceTimeSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
+spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  duration interval,sorigin geompoint='Point(0 0 0)',
+  duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',
   torigin timestamptz='2000-01-03',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,time,tpoint)}
-</pre><p>A temporal pose and a temporal point cloud point answer these at the temporal geometry point their position resolves to, so a value carrying linear interpolation is tiled along its trajectory rather than at its instants alone. The second column of a split carries the type of the first argument, so splitting a temporal pose returns temporal poses. The result is a set of pairs or a set of triples. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The arguments <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. If the argument <code class="varname">bitmatrix</code> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</p><pre class="programlisting">
+</pre><p>A temporal pose and a temporal point cloud point answer these at the temporal geometry point their position resolves to, so a value carrying linear interpolation is tiled along its trajectory rather than at its instants alone. The second column of a split carries the type of the first argument, so splitting a temporal pose returns temporal poses. The result is a set of pairs or a set of triples. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The arguments <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. If the argument <code class="varname">bitmatrix</code> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</p><p>A geodetic temporal point travels the great circle between two positions, so it is split at the tiles that circle crosses rather than at those of the straight line in longitude and latitude: a trip whose positions both lie at latitude 61 reaches latitude 62.485889 and enters the row of tiles north of the one that line stays in. The grid laid on a geodetic value takes a geography origin and its tiles are geodetic, so a tile and the value restricted to it state coordinates of one kind. The bit matrix is filled from the straight line between two positions, which a great circle leaves, so a geodetic value is split without it and every tile of its bounding box is read instead.</p><pre class="programlisting">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
@@ -342,6 +342,13 @@ FROM (SELECT spaceSplit(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0) AS sp) t;
 -- POINT(0 0) | {[Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.1)@2001-01-02)}
 -- POINT(2 2) | {[Pose(POINT(2 2),0.1)@2001-01-02, Pose(POINT(3 3),0.1)@2001-01-03]}
+SELECT ST_AsText((sp).point) AS point, asText((sp).tpoint, 6) AS tpoint
+FROM (SELECT spaceSplit(tgeogpoint '[Point(10 61)@2001-03-01,
+  Point(50 61)@2001-03-03]', 20.0) AS sp) t;
+-- POINT(0 60)  | {[POINT(10 61)@2001-03-01, POINT(20 62.124941)@2001-03-01 12:17:24.687202)}
+-- POINT(20 60) | {[POINT(20 62.124941)@2001-03-01 12:17:24.687202,
+--                 POINT(40 62.124941)@2001-03-02 11:42:35.312797)}
+-- POINT(40 60) | {[POINT(40 62.124941)@2001-03-02 11:42:35.312797, POINT(50 61)@2001-03-03]}
 </pre><pre class="programlisting">
 SELECT (sp).time,
   astext((sp).temp) AS tpoint FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01,
