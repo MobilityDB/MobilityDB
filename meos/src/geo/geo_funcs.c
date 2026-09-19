@@ -9804,17 +9804,28 @@ relate_edges_within(const RelateEdges *re1, const RelateEdges *re2,
  * curves or points. #point_in_polygon passes over every edge bounding no
  * surface, so an array mixing dimensions is read correctly
  * @param[in] x,y Coordinates of the point
- * @param[in] edges,nedges Edge array
+ * @param[in] re Edge array, read through its index where it carries one
  * @param[in] vertex True if the point is an input vertex (#relate_point_on_edge)
  */
 static bool
-relate_point_in_edges(double x, double y, Edge **edges, int nedges,
-  bool vertex)
+relate_point_in_edges(double x, double y, const RelateEdges *re, bool vertex)
 {
-  if (point_in_polygon(x, y, edges, nedges) != 0)
+  if (! re->index)
+  {
+    if (point_in_polygon(x, y, re->edges, re->nedges) != 0)
+      return true;
+    for (int i = 0; i < re->nedges; i++)
+      if (relate_point_on_edge(x, y, re->edges[i], vertex))
+        return true;
+    return false;
+  }
+  if (point_in_polygon_index_into(x, y, re->edges, re->nedges, re->index,
+        re->xmax, re->reach, re->results, false))
     return true;
-  for (int i = 0; i < nedges; i++)
-    if (relate_point_on_edge(x, y, edges[i], vertex))
+  int nc = relate_edges_candidates(re, x, x, y, y, re->results);
+  for (int c = 0; c < nc; c++)
+    if (relate_point_on_edge(x, y, re->edges[INDEX_RESULT_ID_N(re->results, c)],
+          vertex))
       return true;
   return false;
 }
@@ -9831,12 +9842,19 @@ relate_point_in_edges(double x, double y, Edge **edges, int nedges,
  * false answer is conclusive while a true one is not: a hole of the first
  * geometry lying within the second is a piece of the second outside the first
  * that no edge of the second visits. The caller reads it as a rejection only
- * @return False if @p e2 draws a point outside what @p e1 draws, which settles
- * that the second geometry is not covered by the first
+ * The edges of the first geometry an edge of the second can meet are those
+ * whose box meets its own, which the index of the first answers where it
+ * carries one, as it answers the location of each piece
+ * @param[in] r1 Edges of the first geometry
+ * @param[in] e2,n2 Edges of the second geometry
+ * @return False if @p e2 draws a point outside what @p r1 draws, which
+ * settles that the second geometry is not covered by the first
  */
 static bool
-relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
+relate_edges_cover(const RelateEdges *r1, Edge **e2, int n2)
 {
+  Edge **e1 = r1->edges;
+  int n1 = r1->nedges;
   /* Nothing lies within a geometry whose box it stands outside of */
   if (! relate_edges_boxes_overlap(e1, n1, e2, n2))
     return false;
@@ -9849,15 +9867,23 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
     const Edge *e = e2[j];
     if (e->etype == EDGE_POINT)
     {
-      result = relate_point_in_edges(e->x1, e->y1, e1, n1, true);
+      result = relate_point_in_edges(e->x1, e->y1, r1, true);
       continue;
     }
     int nparams = 0;
     params[nparams++] = 0.0;
     params[nparams++] = 1.0;
-    for (int i = 0; i < n1; i++)
+    /* The index query is grown by the widest tolerance the array asks for,
+     * which is wider than the bound the scan rejects a pair by, and the scan's
+     * own test is applied to what it answers, so the pairs solved are those
+     * the scan solves. The parameters are sorted below, so the order the
+     * index answers them in does not reach the result */
+    int ncand = r1->index ? relate_edges_candidates(r1, e->xmin, e->xmax,
+      e->ymin, e->ymax, r1->results) : n1;
+    for (int c = 0; c < ncand; c++)
     {
-      const Edge *o = e1[i];
+      const Edge *o = r1->index ?
+        e1[INDEX_RESULT_ID_N(r1->results, c)] : e1[c];
       if (e->xmax < o->xmin - MEOS_GEOM_TOLERANCE ||
           o->xmax < e->xmin - MEOS_GEOM_TOLERANCE ||
           e->ymax < o->ymin - MEOS_GEOM_TOLERANCE ||
@@ -9887,7 +9913,7 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
         continue;
       double x, y;
       relate_edge_point(e, (params[k] + params[k + 1]) * 0.5, &x, &y);
-      result = relate_point_in_edges(x, y, e1, n1, false);
+      result = relate_point_in_edges(x, y, r1, false);
     }
   }
   pfree(params);
@@ -10001,16 +10027,24 @@ meos_covers_possible(const RelateOperands *ops, bool *result)
 {
   assert(ops); assert(result);
   MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
-  int n1 = (int) a1->count, n2 = (int) a2->count;
-  Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
-  Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
-  for (int i = 0; i < n1; i++)
-    e1[i] = (Edge *) meos_array_get(a1, i);
-  for (int j = 0; j < n2; j++)
-    e2[j] = (Edge *) meos_array_get(a2, j);
+  Edge **e1 = relate_edge_pointers(a1);
+  Edge **e2 = relate_edge_pointers(a2);
 
-  *result = relate_edges_cover(e1, n1, e2, n2);
+  /* Every edge of the second geometry is split against, and located in, the
+   * first, so the first is read through the index its context keeps, or
+   * through one built for the call where the pair is large enough to pay it,
+   * by the gate #meos_intersects reads */
+  RelateEdges re1;
+  bool index = (double) a1->count * (double) a2->count >=
+    RELATE_INDEX_MIN_PAIRS;
+  bool kept = relate_edges_init_kept(&re1, e1, (int) a1->count, ops, a1,
+    index);
+  *result = relate_edges_cover(&re1, e2, (int) a2->count);
 
+  /* A kept index belongs to its context and outlives this call */
+  if (kept)
+    re1.index = NULL;
+  relate_edges_clear(&re1);
   pfree(e1); pfree(e2);
   return;
 }
