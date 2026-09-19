@@ -1160,6 +1160,29 @@ SELECT count(*) FROM quadbinSplit(tgeompoint
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcell_h3Split">
+				<indexterm significance="normal"><primary><varname>h3Split</varname></primary></indexterm>
+				<para>Split a temporal point at the H3 cells it crosses &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3Split(tpoint,integer) → {(cell,tpoint)}
+</programlisting>
+				<para>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. The period of a fragment is what <varname>getTime</varname> answers for it, so the split carries no period of its own.</para>
+				<para>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. An H3 cell is a hexagon on the sphere, and a great circle is the shortest path between two positions on it, so a geodetic trajectory crosses no more of those cells than the straight line in longitude and latitude between the same positions does.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (s).cell, asText((s).tpoint, 6) AS tpoint
+FROM (SELECT h3Split(tgeompoint
+  'SRID=4326;[Point(-0.1 51.5)@2001-01-01, Point(0.1 51.5)@2001-01-02]', 4) AS s) t;
+-- 84194adffffffff | {[POINT(-0.1 51.5)@2001-01-01, POINT(0.004068 51.5)@2001-01-01 12:29:17.362145)}
+-- 84194e7ffffffff | {[POINT(0.004068 51.5)@2001-01-01 12:29:17.362145, POINT(0.1 51.5)@2001-01-02]}
+SELECT count(*) FROM h3Split(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 14
+SELECT count(*) FROM h3Split(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 16
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcell_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
