@@ -93,6 +93,48 @@ FROM s;
 /* Errors */
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
 ERROR:  quadbin_grid_disk: k must be >= 0
+SELECT cellToCover(quadbin '48a6227affffffff', 10) = quadbinset '{48a6227affffffff}',
+  cellToCover(quadbin '48a6227affffffff', 7) =
+    set(ARRAY[cellToParent(quadbin '48a6227affffffff', 7)]);
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+SELECT coverCells(cellToChildren(quadbin '48a6227affffffff', 12), 10) =
+    quadbinset '{48a6227affffffff}',
+  coverCells(set(ARRAY[quadbin '48a6227affffffff', quadbin '48427fffffffffff']), 2) =
+    set(ARRAY[cellToParent(quadbin '48a6227affffffff', 2),
+      cellToParent(quadbin '48427fffffffffff', 2)]);
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+WITH c(cell) AS (VALUES (quadbin '48a6227affffffff')),
+  cov AS (SELECT c.cell, unnest(cellToCover(c.cell, 7)) AS x FROM c),
+  cand AS (SELECT c.cell, unnest(gridDisk(cellToParent(c.cell, 7), 2)) AS x
+    FROM c)
+SELECT
+  (SELECT count(*) FROM cov
+     WHERE NOT ST_Intersects(cellToBoundary(cov.x), cellToBoundary(cov.cell)))
+    AS cover_cells_the_cell_does_not_reach,
+  (SELECT count(*) FROM cand
+     WHERE ST_Relate(cellToBoundary(cand.x), cellToBoundary(cand.cell),
+       'T********')
+       AND NOT (cellToCover(cand.cell, 7) @> cand.x))
+    AS reached_cells_the_cover_lacks;
+ cover_cells_the_cell_does_not_reach | reached_cells_the_cover_lacks 
+-------------------------------------+-------------------------------
+                                   0 |                             0
+(1 row)
+
+/* Errors */
+-- A resolution finer than the cell's own, and one outside the grid
+SELECT cellToCover(quadbin '48a6227affffffff', 11);
+ERROR:  The cover of a cell at resolution 11, finer than the cell's own 10, is not supported
+SELECT coverCells(cellToChildren(quadbin '48a6227affffffff', 12), 27);
+ERROR:  The resolution must be between 0 and 26
 SELECT numValues(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))),
   startValue(compactCells(cellToChildren(quadbin '48a6227affffffff', 12))) =
     quadbin '48a6227affffffff',

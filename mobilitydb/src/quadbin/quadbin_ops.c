@@ -222,6 +222,45 @@ Quadbinset_uncompact_cells(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Quadbin_cell_to_cover(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_cell_to_cover);
+/**
+ * @ingroup mobilitydb_quadbin_set
+ * @brief Return the set of cells at the given resolution covering a QUADBIN
+ * cell
+ * @sqlfn cellToCover()
+ */
+Datum
+Quadbin_cell_to_cover(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = quadbin_cell_to_cover(cell, resolution);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Quadbinset_cover_cells(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbinset_cover_cells);
+/**
+ * @ingroup mobilitydb_quadbin_set
+ * @brief Return the set of cells at the given resolution covering the cells of
+ * a quadbinset
+ * @sqlfn coverCells()
+ */
+Datum
+Quadbinset_cover_cells(PG_FUNCTION_ARGS)
+{
+  Set *cells = PG_GETARG_SET_P(0);
+  int resolution = PG_GETARG_INT32(1);
+  Set *result = quadbinset_cover_cells(cells, resolution);
+  PG_FREE_IF_COPY(cells, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
 /*****************************************************************************
  * Point <-> cell
  *****************************************************************************/

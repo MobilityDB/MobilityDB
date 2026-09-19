@@ -1397,6 +1397,47 @@ dggs_quadtree_uncompact_cells(const Set *cells, int32 resolution,
   return set_make_free(datums, k, ops->celltype, ORDER);
 }
 
+/**
+ * @brief Return the set of cells at a resolution covering a set of cells of a
+ * quadtree grid
+ * @details The cover holds the cells that hold a point of a cell of the set.
+ * A cell of a quadtree grid is exactly the union of its four children, so
+ * every point of a cell lies in its ancestor at a coarser resolution, and the
+ * cover of a cell there is that ancestor alone; at the cell's own resolution
+ * it is the cell. A resolution finer than a cell's own is the uncompaction of
+ * the cell, which #dggs_quadtree_uncompact_cells states, so it raises an
+ * error here.
+ * @param[in] cells Set of cells
+ * @param[in] resolution Resolution of the cover
+ * @param[in] temptype Temporal cell-index type naming the grid
+ */
+Set *
+dggs_quadtree_cover_cells(const Set *cells, int32 resolution,
+  MeosType temptype)
+{
+  assert(cells);
+  const DggsCellOps *ops = dggs_cellops(temptype);
+  if (! ops || ! ensure_valid_cell_resolution(temptype, resolution))
+    return NULL;
+  Datum *datums = palloc(sizeof(Datum) * (size_t) cells->count);
+  for (int i = 0; i < cells->count; i++)
+  {
+    Datum cell = SET_VAL_N(cells, i);
+    int32 res = DatumGetInt32(ops->get_resolution(cell));
+    if (resolution > res)
+    {
+      pfree(datums);
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "The cover of a cell at resolution %d, finer than the cell's own %d, is not supported",
+        resolution, res);
+      return NULL;
+    }
+    datums[i] = (resolution == res) ? cell :
+      ops->cell_to_parent(cell, Int32GetDatum(resolution));
+  }
+  return set_make_free(datums, cells->count, ops->celltype, ORDER);
+}
+
 /*****************************************************************************
  * Membership of a temporal cell index in a cell set
  *****************************************************************************/

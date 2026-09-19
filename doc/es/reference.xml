@@ -2992,6 +2992,9 @@
 				<listitem>
 					<para><link linkend="tcell_cell_to_parent"><varname>cellToParent</varname></link>: Devolver la celda padre temporal en la resolución dada</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tcell_cell_to_cover"><varname>cellToCover</varname>, <varname>coverCells</varname></link>: Devolver las celdas que cubren una celda, o las celdas de un conjunto de celdas, en la resolución dada</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

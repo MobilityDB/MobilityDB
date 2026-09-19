@@ -285,10 +285,12 @@ extern H3Index *h3indexset_values(const Set *s, int *count);
 /* Grid traversal functions of `h3indexset` */
 
 extern Set    *h3indexset_grid_disk(const Set *cells, int k);
+extern Set    *h3indexset_cover_cells(const Set *cells, int32 resolution);
 
 /* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
 extern H3Index geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution);
 extern Set    *geo_to_h3index_set(const GSERIALIZED *gs,    int32 resolution);
+extern Set    *h3index_cell_to_cover(H3Index cell,          int32 resolution);
 extern STBox  *h3index_to_stbox(H3Index cell);
 extern STBox  *h3index_timestamptz_to_stbox(H3Index cell, TimestampTz t);
 extern STBox  *h3index_tstzspan_to_stbox(H3Index cell, const Span *s);

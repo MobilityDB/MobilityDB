@@ -107,6 +107,16 @@ CREATE FUNCTION geoToH3IndexSet(geometry, integer)
   AS 'MODULE_PATHNAME', 'Geo_to_h3indexset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION cellToCover(h3index, integer)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'H3_cell_to_cover'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION coverCells(h3indexset, integer)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'H3indexset_cover_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Grid traversal
  ******************************************************************************/

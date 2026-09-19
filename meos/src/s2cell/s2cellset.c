@@ -252,6 +252,41 @@ s2cellset_uncompact_cells(const Set *cells, int resolution)
     &s2cell_cell_to_children);
 }
 
+/**
+ * @ingroup meos_s2cell_accessor
+ * @brief Return the set of cells at a resolution covering an S2 cell
+ * @details The cells that hold a point of the cell: the cell itself at its own
+ * resolution and its ancestor at a coarser one; a resolution finer than the
+ * cell's own raises an error
+ * @param[in] cell S2 cell
+ * @param[in] resolution Resolution of the cover
+ * @csqlfn #S2cell_cell_to_cover()
+ */
+Set *
+s2cell_cell_to_cover(S2CellId cell, int resolution)
+{
+  Set *cells = s2cellset_make(&cell, 1);
+  Set *result = s2cellset_cover_cells(cells, resolution);
+  pfree(cells);
+  return result;
+}
+
+/**
+ * @ingroup meos_s2cell_accessor
+ * @brief Return the set of cells at a resolution covering an S2 cell set
+ * @details The union of the covers of the cells of the set
+ * @param[in] cells Set of S2 cells
+ * @param[in] resolution Resolution of the cover
+ * @csqlfn #S2cellset_cover_cells()
+ */
+Set *
+s2cellset_cover_cells(const Set *cells, int resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(cells, NULL);
+  return dggs_quadtree_cover_cells(cells, resolution, T_TS2CELL);
+}
+
 /*****************************************************************************/
 
 /*****************************************************************************

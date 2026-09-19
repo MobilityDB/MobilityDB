@@ -286,6 +286,41 @@ quadbinset_uncompact_cells(const Set *cells, int resolution)
     &quadbin_cell_to_children);
 }
 
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of cells at a resolution covering a QUADBIN cell
+ * @details The cells that hold a point of the cell: the cell itself at its own
+ * resolution and its ancestor at a coarser one; a resolution finer than the
+ * cell's own raises an error
+ * @param[in] cell QUADBIN cell
+ * @param[in] resolution Resolution of the cover
+ * @csqlfn #Quadbin_cell_to_cover()
+ */
+Set *
+quadbin_cell_to_cover(Quadbin cell, int resolution)
+{
+  Set *cells = quadbinset_make(&cell, 1);
+  Set *result = quadbinset_cover_cells(cells, resolution);
+  pfree(cells);
+  return result;
+}
+
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of cells at a resolution covering a QUADBIN cell set
+ * @details The union of the covers of the cells of the set
+ * @param[in] cells Set of QUADBIN cells
+ * @param[in] resolution Resolution of the cover
+ * @csqlfn #Quadbinset_cover_cells()
+ */
+Set *
+quadbinset_cover_cells(const Set *cells, int resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(cells, NULL);
+  return dggs_quadtree_cover_cells(cells, resolution, T_TQUADBIN);
+}
+
 /*****************************************************************************/
 
 /*****************************************************************************

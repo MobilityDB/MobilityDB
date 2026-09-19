@@ -91,6 +91,16 @@ CREATE FUNCTION uncompactCells(s2cellset, integer)
   AS 'MODULE_PATHNAME', 'S2cellset_uncompact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION cellToCover(s2cell, integer)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'S2cell_cell_to_cover'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION coverCells(s2cellset, integer)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'S2cellset_cover_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION s2CellContains(s2cell, s2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'S2cell_cell_contains'

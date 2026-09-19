@@ -871,6 +871,76 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 }
 
 /**
+ * @ingroup meos_h3_conversion
+ * @brief Return the set of H3 cells covering an H3 cell at the given
+ * resolution
+ * @details The cover is the set of the cells that hold a point of the cell,
+ * each point assigned to its cell as #geo_to_h3index_cell assigns it, so a
+ * trajectory passing through the cell takes a cell of the cover there. The
+ * cover of the values of a temporal H3 cell is therefore a cover of the
+ * trajectory they come from, read at a resolution the values are not stored
+ * at.
+ *
+ * At a resolution no finer than the cell's own, the cover is the walk of the
+ * cell's boundary: a cell of that resolution is at least as wide as this one,
+ * so it cannot meet it without holding a point of its boundary, and the walk
+ * of #h3_segment_cells passes through every cell a boundary reaches. At a
+ * finer resolution the cell is read as the polygon it is, since cells of that
+ * resolution lie in its interior, which no boundary reaches.
+ * @param[in] cell H3 cell
+ * @param[in] resolution H3 resolution of the cover
+ * @errval NULL
+ * @csqlfn #H3_cell_to_cover()
+ */
+Set *
+h3index_cell_to_cover(H3Index cell, int32 resolution)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_h3index_cell(cell) ||
+      ! ensure_valid_cell_resolution(T_TH3INDEX, resolution))
+    return NULL;
+
+  /* A cell of a finer resolution lies in the interior of this one, which the
+   * walk of a boundary never reaches, so a finer cover is a different
+   * construction and is refused rather than approximated */
+  int32_t res = getResolution(cell);
+  if (resolution > res)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The cover of a cell at resolution %d, finer than the cell's own %d, is not supported",
+      resolution, res);
+    return NULL;
+  }
+
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+    return NULL;
+  }
+  h3_buf buf;
+  h3_buf_init(&buf, 2 * MAX_CELL_BNDRY_VERTS);
+  /* The edges of a cell are arcs of great circles, the path the geodetic
+   * walk follows, and the last edge closes the boundary on its first vertex */
+  for (int i = 0; i < bnd.numVerts && ! buf.overflow; i++)
+  {
+    const LatLng *v0 = &bnd.verts[i];
+    const LatLng *v1 = &bnd.verts[(i + 1) % bnd.numVerts];
+    segment_to_cells_into(radsToDegs(v0->lng), radsToDegs(v0->lat),
+      radsToDegs(v1->lng), radsToDegs(v1->lat), true, resolution, &buf);
+  }
+  if (buf.overflow)
+  {
+    h3_buf_free(&buf);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The cover of the cell at resolution %d exceeds %d cells", resolution,
+      H3_MAX_COVER_CELLS);
+    return NULL;
+  }
+  return h3_buf_to_set(&buf);
+}
+
+/**
  * @ingroup meos_h3_comp
  * @brief Return true if a temporal H3 cell is ever equal to a cell of an H3
  * cell set

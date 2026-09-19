@@ -106,6 +106,16 @@ CREATE FUNCTION uncompactCells(quadbinset, integer)
   AS 'MODULE_PATHNAME', 'Quadbinset_uncompact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION cellToCover(quadbin, integer)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Quadbin_cell_to_cover'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION coverCells(quadbinset, integer)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Quadbinset_cover_cells'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Point ↔ cell
  *

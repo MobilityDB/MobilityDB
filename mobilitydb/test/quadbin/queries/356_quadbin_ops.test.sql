@@ -83,6 +83,46 @@ FROM s;
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
 
 -------------------------------------------------------------------------------
+-- cellToCover / coverCells
+-------------------------------------------------------------------------------
+
+-- A tile is exactly the union of its four children, so the cover of a tile at
+-- its own resolution is the tile and at a coarser one is its ancestor there
+SELECT cellToCover(quadbin '48a6227affffffff', 10) = quadbinset '{48a6227affffffff}',
+  cellToCover(quadbin '48a6227affffffff', 7) =
+    set(ARRAY[cellToParent(quadbin '48a6227affffffff', 7)]);
+
+-- The cover of a set is the union of the covers of its cells, so the sixteen
+-- grandchildren of a tile cover it with the tile alone
+SELECT coverCells(cellToChildren(quadbin '48a6227affffffff', 12), 10) =
+    quadbinset '{48a6227affffffff}',
+  coverCells(set(ARRAY[quadbin '48a6227affffffff', quadbin '48427fffffffffff']), 2) =
+    set(ARRAY[cellToParent(quadbin '48a6227affffffff', 2),
+      cellToParent(quadbin '48427fffffffffff', 2)]);
+
+-- The cover and the geometry state the same cells. Every cell of the cover
+-- reaches the tile, and every cell whose interior the tile reaches belongs to
+-- the cover, read over the disk of radius 2 around the ancestor
+WITH c(cell) AS (VALUES (quadbin '48a6227affffffff')),
+  cov AS (SELECT c.cell, unnest(cellToCover(c.cell, 7)) AS x FROM c),
+  cand AS (SELECT c.cell, unnest(gridDisk(cellToParent(c.cell, 7), 2)) AS x
+    FROM c)
+SELECT
+  (SELECT count(*) FROM cov
+     WHERE NOT ST_Intersects(cellToBoundary(cov.x), cellToBoundary(cov.cell)))
+    AS cover_cells_the_cell_does_not_reach,
+  (SELECT count(*) FROM cand
+     WHERE ST_Relate(cellToBoundary(cand.x), cellToBoundary(cand.cell),
+       'T********')
+       AND NOT (cellToCover(cand.cell, 7) @> cand.x))
+    AS reached_cells_the_cover_lacks;
+
+/* Errors */
+-- A resolution finer than the cell's own, and one outside the grid
+SELECT cellToCover(quadbin '48a6227affffffff', 11);
+SELECT coverCells(cellToChildren(quadbin '48a6227affffffff', 12), 27);
+
+-------------------------------------------------------------------------------
 -- compactCells / uncompactCells
 -------------------------------------------------------------------------------
 

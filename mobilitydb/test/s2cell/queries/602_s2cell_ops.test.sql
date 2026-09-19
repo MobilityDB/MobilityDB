@@ -222,6 +222,37 @@ SELECT s2TokenToCell(s2CellToToken(geoToS2Cell(geography 'SRID=4326;Point(4.35 5
   = geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 
 -------------------------------------------------------------------------------
+-- cellToCover / coverCells
+-------------------------------------------------------------------------------
+
+-- An S2 cell is exactly the union of its four children, so the cover of a
+-- cell at its own level is the cell and at a coarser one is its ancestor there
+SELECT cellToCover(s2cell '47c3c', 7) = set(ARRAY[s2cell '47c3c']),
+  cellToCover(s2cell '47c3c', 5) = set(ARRAY[cellToParent(s2cell '47c3c', 5)]);
+
+-- The cover of a set is the union of the covers of its cells, so the sixteen
+-- grandchildren of a cell cover it with the cell alone
+SELECT coverCells(cellToChildren(s2cell '47c3c', 9), 7) =
+  set(ARRAY[s2cell '47c3c']);
+
+-- The cover and the geography state the same cells. The ancestor covers the
+-- cell, and no edge neighbour of the ancestor holds the centre of the cell
+WITH c(cell) AS (VALUES (s2cell '47c3c'))
+SELECT
+  (SELECT count(*) FROM c, unnest(cellToCover(c.cell, 5)) AS x
+     WHERE NOT ST_Covers(cellToBoundary(x), cellToBoundary(c.cell)))
+    AS cover_cells_the_cell_does_not_reach,
+  (SELECT count(*) FROM c,
+       unnest(s2EdgeNeighbors(cellToParent(c.cell, 5))) AS x
+     WHERE ST_Covers(cellToBoundary(x), cellToPoint(c.cell)))
+    AS reached_cells_the_cover_lacks;
+
+/* Errors */
+-- A level finer than the cell's own, and one outside the grid
+SELECT cellToCover(s2cell '47c3c', 8);
+SELECT coverCells(cellToChildren(s2cell '47c3c', 9), 31);
+
+-------------------------------------------------------------------------------
 -- compactCells / uncompactCells
 -------------------------------------------------------------------------------
 
