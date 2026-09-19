@@ -1457,7 +1457,7 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
       {
         if (tf < 0.0) tf = 0.0; else if (tf > 1.0) tf = 1.0;
         w->d = m;
-        w->t = t1 + (TimestampTz) ((double) (t2 - t1) * tf);
+        w->t = tsegment_timestamptz_at_ratio(t1, t2, tf);
         w->set = true;
         thr2 = dist_unit_thr2(m, rmax);
         /* Overlap: the distance cannot drop below zero, so stop refining */
@@ -1597,12 +1597,11 @@ tpoint_geo_distance_turnpt(Datum start, Datum end, Datum point,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  long double duration = (long double) (upper - lower);
   double dist;
   double fraction = (double) pointsegm_locate(start, end, point, &dist);
   if (fraction < 0.0)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 
@@ -1719,8 +1718,7 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
       return 0;
   }
 
-  double duration = upper - lower;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 
@@ -1768,8 +1766,7 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   /* Compute the timestamp of intersection */
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return 0;
-  double duration = (double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 
@@ -2232,8 +2229,7 @@ nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
     *t = inst2->t;
   else
   {
-    double duration = (double) (inst2->t - inst1->t);
-    *t = inst1->t + (TimestampTz) (duration * fraction);
+    *t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, fraction);
   }
   return dist;
 }

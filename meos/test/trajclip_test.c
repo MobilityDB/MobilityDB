@@ -131,9 +131,9 @@ main(void)
     "{[POINT(69.790369 81.452098)@2001-01-01 00:00:00+00,"
     " POINT(55.752648 78.953813)@2001-01-02 00:00:00+00,"
     /* The segment reaches x = 50 at 0.81783626209040821... of the way from the
-     * first instant, which is 70661.053044611... seconds into the day, and a
-     * timestamp holds whole microseconds */
-    " POINT(50 77.980799)@2001-01-02 19:37:41.053044+00]}");
+     * first instant, which is 70661.053044611... seconds into the day, the
+     * microsecond nearest to it */
+    " POINT(50 77.980799)@2001-01-02 19:37:41.053045+00]}");
 
   /* Multi-path open-path output where each output path is two crossings on
    * the same segment (no input vertex inside the path). The earlier
@@ -157,12 +157,12 @@ main(void)
     "44.539342168718576 6.923481728881598,"
     "29.645028244704008 36.87097877264023,"
     "56.72718310374483 50.53721809824145))",
-    "{[POINT(82.963951 12.089449)@2001-03-29 10:26:39.347482+00,"
+    "{[POINT(82.963951 12.089449)@2001-03-29 10:26:39.347483+00,"
     " POINT(81.280652 6.48016)@2001-03-29 10:26:56.129728+00],"
     " [POINT(78.038715 6.519277)@2001-03-29 10:27:11.429509+00,"
     /* The last segment meets the edge at 5.1393297419... seconds past the
-     * minute, and a timestamp holds whole microseconds */
-    " POINT(34.666556 26.774361)@2001-03-29 10:30:05.139329+00]}");
+     * minute, the microsecond nearest to it */
+    " POINT(34.666556 26.774361)@2001-03-29 10:30:05.13933+00]}");
 
   meos_finalize();
   printf("\n%d failure(s)\n", fails);

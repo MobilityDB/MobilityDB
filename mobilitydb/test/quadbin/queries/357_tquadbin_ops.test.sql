@@ -245,6 +245,10 @@ SELECT numInstants(t), numValues(getValues(t)), startValue(t) = endValue(t),
 FROM (SELECT tquadbin(tgeogpoint
   '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2) AS t) AS q;
 
+-- An arc reaching the antimeridian at noon enters the tile across it at noon
+SELECT tquadbin(tgeogpoint
+  '[Point(179 10)@2001-01-01, Point(-179 10)@2001-01-02]', 4);
+
 -- An arc across the antimeridian takes its short way, through the tiles of
 -- the last and the first columns, where the straight line in longitude and
 -- latitude sweeps every column of the grid

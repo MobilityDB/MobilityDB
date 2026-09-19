@@ -2069,6 +2069,9 @@ SELECT atValues(tfloat '1.5@2001-01-01', floatset '{1.5,2}');
 SELECT atValues(tfloat '{1.5@2001-01-01}', floatset '{1.5,2}');
 SELECT atValues(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}', floatset '{1.5,2}');
 SELECT atValues(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', floatset '{1.5,2}');
+-- A value reached a whole number of microseconds into a segment is reached at
+-- that instant, whichever side of it the ratio stating it rounds to
+SELECT atValue(tfloat '[0@2001-01-01, 1@2001-01-02]', 0.7);
 SELECT atValues(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', floatset '{1.5,2}');
 SELECT atValues(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', floatset '{1.5,2}');
 SELECT atValues(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', floatset '{1.5,2}');

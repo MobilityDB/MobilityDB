@@ -100,6 +100,8 @@ extern int tsegment_intersection_value(Datum start, Datum end, Datum value,
 extern int tsegment_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, MeosType temptype, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
+extern TimestampTz tsegment_timestamptz_at_ratio(TimestampTz lower,
+  TimestampTz upper, double ratio);
 extern Datum tsegment_value_at_timestamptz(Datum start, Datum end,
   MeosType temptype, TimestampTz lower, TimestampTz upper, TimestampTz t);
   

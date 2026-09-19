@@ -398,7 +398,6 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
     }
     qsort(cand, nc, sizeof(double), tcbufferdist_cand_cmp);
 
-    const double duration = (double) (inst2->t - inst1->t);
     TimestampTz prevt = inst1->t;
     for (int k = 0; k < nc; k++)
     {
@@ -407,7 +406,7 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
         continue;
       if (k > 0 && fabs(frac - cand[k - 1]) < MEOS_EPSILON)
         continue;
-      TimestampTz t = inst1->t + (TimestampTz) (duration * frac);
+      TimestampTz t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, frac);
       /* Keep the instants strictly increasing and off the segment bounds */
       if (t <= prevt || t >= inst2->t)
         continue;

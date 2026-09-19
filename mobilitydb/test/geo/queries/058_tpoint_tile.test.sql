@@ -104,6 +104,11 @@ SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2.0) AS sp) t;
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2.0) AS sp) t;
+-- A trip through the corner of two tiles leaves the first and enters the
+-- second at the instant it reaches the corner
+SELECT ST_AsText((sp).point) AS point, getTime((sp).tpoint) AS time
+FROM (SELECT spaceSplit(tgeompoint
+  '[Point(0.13 0.29)@2001-01-01, Point(0.07 0.11)@2001-01-02]', 0.1) AS sp) t;
 
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;

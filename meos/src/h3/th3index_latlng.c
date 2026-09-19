@@ -57,6 +57,7 @@
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
 #include "temporal/tcellindex.h"
+#include "temporal/tsequence.h"
 #include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
@@ -372,16 +373,8 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
         H3Index cell = xcells[k];
         if (have_last && cell == last_cell)
           continue;
-        /* A crossing the last microsecond of the segment holds is the end
-         * of the segment at the resolution a timestamp states, so it enters
-         * at that instant, as the clip of a segment by a geometry states a
-         * parameter of 1 as the instant of the second position. A cell is
-         * then entered at the same instant however the segment is cut */
-        TimestampTz ts = (k == 0) ? inst_a->t
-          : inst_a->t + (TimestampTz) ((double) (inst_b->t - inst_a->t)
-              * xenter[k]);
-        if (inst_b->t - ts <= 1)
-          ts = inst_b->t;
+        TimestampTz ts = tsegment_timestamptz_at_ratio(inst_a->t, inst_b->t,
+          xenter[k]);
         PUSH_INSTANT(cell, ts);
         last_cell = cell;
         have_last = true;

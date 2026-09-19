@@ -62,6 +62,7 @@
 #include "temporal/tcellindex.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
+#include "temporal/tsequence.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -302,15 +303,8 @@ tpointseq_to_ts2cell(const TSequence *seq, int32 level)
     {
       if (cells[k] == last)
         continue;
-      /* A crossing the last microsecond of the segment holds is the end of
-       * the segment at the resolution a timestamp states, so it enters at
-       * that instant, as the clip of a segment by a geometry states a
-       * parameter of 1 as the instant of the second position. A cell is then
-       * entered at the same instant however the segment is cut */
-      TimestampTz tenter = inst1->t +
-        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
-      if (inst2->t - tenter <= 1)
-        tenter = inst2->t;
+      TimestampTz tenter = tsegment_timestamptz_at_ratio(inst1->t, inst2->t,
+        enter[k]);
       ts2cell_entry_append(&instants, &count, &size, cells[k], tenter);
       last = cells[k];
     }

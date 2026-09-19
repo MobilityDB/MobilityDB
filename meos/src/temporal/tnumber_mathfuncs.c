@@ -92,8 +92,7 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
     /* Minimum/maximum occurs out of the period */
     return 0;
 
-  long double duration = (long double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 
@@ -314,8 +313,7 @@ tnumberseq_linear_abs(const TSequence *seq)
     if ((dvalue1 < 0 && dvalue2 > 0) || (dvalue1 > 0 && dvalue2 < 0))
     {
       double ratio = fabs(dvalue1) / (fabs(dvalue1) + fabs(dvalue2));
-      double duration = (double) (inst2->t - inst1->t);
-      TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
+      TimestampTz t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, ratio);
       if (t != inst1->t && t != inst2->t)
         instants[ninsts++] = tinstant_make(dzero, seq->temptype, t);
     }
@@ -763,12 +761,11 @@ tfloat_exp_turnpt(Datum start, Datum end,
   /* Compute in IEEE-754 double (not long double): long double is 80-bit on
    * x86 but 128-bit on aarch64, so it makes the turning point platform-
    * dependent.  double is identical across platforms. */
-  double duration = (double) (upper - lower);
   double slope = (exp(b) - exp(a)) / (b - a);
   double fraction = (log(slope) - a) / (b - a);
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 
@@ -831,12 +828,11 @@ tfloat_ln_turnpt(Datum start, Datum end,
   /* Compute in IEEE-754 double (not long double): long double is 80-bit on
    * x86 but 128-bit on aarch64, so it makes the turning point platform-
    * dependent.  double is identical across platforms. */
-  double duration = (double) (upper - lower);
   double xstar = (b - a) / (log(b) - log(a));
   double fraction = (xstar - a) / (b - a);
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   return 1;
 }
 

@@ -209,6 +209,15 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2
  POINT(2 2) | Interp=Step;{[POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST), [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(3 3)@Fri Jan 05 00:00:00 2001 PST]}
 (2 rows)
 
+SELECT ST_AsText((sp).point) AS point, getTime((sp).tpoint) AS time
+FROM (SELECT spaceSplit(tgeompoint
+  '[Point(0.13 0.29)@2001-01-01, Point(0.07 0.11)@2001-01-02]', 0.1) AS sp) t;
+     point      |                              time                              
+----------------+----------------------------------------------------------------
+ POINT(0 0.1)   | {(Mon Jan 01 12:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+ POINT(0.1 0.2) | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 12:00:00 2001 PST]}
+(2 rows)
+
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, geometry 'Point(0.5 0.5)') AS sp) t;
      point      |                 tpoint                  

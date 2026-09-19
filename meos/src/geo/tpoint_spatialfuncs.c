@@ -2842,8 +2842,7 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
     if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
       return 0;
   }
-  long double duration = (long double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   /* Compute the projected value only for geometries */
   if (! geodetic)
     proj = tsegment_value_at_timestamptz(start, end, T_TGEOMPOINT,
@@ -2903,12 +2902,11 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   long double min = Min(d1, d2);
   long double max = Max(d1, d2);
   long double fraction = min + (max - min)/2;
-  long double duration = (long double) (upper - lower);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     /* Minimum/maximum occurs out of the period */
     return 0;
 
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   /* We need to verify that at timestamp t the first segment is to the
    * North of the second */
   Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOMPOINT,

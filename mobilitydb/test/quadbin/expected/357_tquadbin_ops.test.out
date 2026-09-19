@@ -298,6 +298,13 @@ FROM (SELECT tquadbin(tgeogpoint
            4 |         2 | t        |         1
 (1 row)
 
+SELECT tquadbin(tgeogpoint
+  '[Point(179 10)@2001-01-01, Point(-179 10)@2001-01-02]', 4);
+                                                                   tquadbin                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [4847ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4842afffffffffff@Mon Jan 01 12:00:00 2001 PST, 4842afffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT numValues(getValues(tquadbin(tgeogpoint
     '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3))),
   numValues(getValues(tquadbin(tgeompoint

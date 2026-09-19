@@ -2192,6 +2192,25 @@ tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
 }
 
 /**
+ * @brief Return the timestamptz at which a segment reaches a ratio of its
+ * duration
+ * @details The ratio states an instant to digits a timestamp does not hold,
+ * so the instant is rounded to the nearest microsecond, as PostgreSQL rounds
+ * the product of an interval by a number. An instant a whole number of
+ * microseconds into the segment is then stated there whether the ratio that
+ * reaches it rounds a bit below or a bit above, and so is one reached by two
+ * ratios computed apart, as a crossing of two boundaries at a corner is
+ * @param[in] lower, upper Timestamps defining the segment
+ * @param[in] ratio Ratio in [0, 1] of the duration of the segment
+ */
+TimestampTz
+tsegment_timestamptz_at_ratio(TimestampTz lower, TimestampTz upper,
+  double ratio)
+{
+  return lower + (TimestampTz) rint((double) (upper - lower) * ratio);
+}
+
+/**
  * @brief Return the base value of the segment of a temporal continuous
  * sequence at a timestamptz
  * @param[in] start,end Base values defining the segment
@@ -2601,10 +2620,9 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
     return 0;
   if (t)
   {
-    double duration = (double) (upper - lower);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to lower or to upper */
-    *t = lower + (TimestampTz) (duration * fraction);
+    *t = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   }
   return 1;
 }
@@ -2636,10 +2654,9 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
     return 0;
   if (t1)
   {
-    double duration = (double) (upper - lower);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t1 = lower + (TimestampTz) (duration * fraction);
+    *t1 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
     if (t2)
       *t2 = *t1;
   }
@@ -2725,8 +2742,7 @@ tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
     /* Intersection occurs out of the period */
     return 0;
 
-  double duration = (double) (upper - lower);
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
   if (*t1 <= lower || *t2 >= upper)

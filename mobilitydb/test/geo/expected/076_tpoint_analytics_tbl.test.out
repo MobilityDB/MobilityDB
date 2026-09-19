@@ -255,7 +255,7 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
     round     | max 
 --------------+-----
- 67719.329591 |  45
+ 67719.329452 |  45
 (1 row)
 
 SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed

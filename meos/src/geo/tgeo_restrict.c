@@ -223,8 +223,7 @@ tpointsegm_timestamp_at_value_2d_iter(const TInstant *inst1,
   double dist = distance2d_pt_pt(p, &proj);
   if (fraction < 0.0 || fraction > 1.0 || fabs(dist) >= MEOS_EPSILON)
     return false;
-  double duration = (double) (inst2->t - inst1->t);
-  *t = inst1->t + (TimestampTz) (duration * fraction);
+  *t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, fraction);
   return true;
 }
 
@@ -285,8 +284,7 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
       result = false;
     else
     {
-      double duration = (double) (inst2->t - inst1->t);
-      *t = inst1->t + (TimestampTz) (duration * fraction);
+      *t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, fraction);
     }
   }
   return result;
@@ -832,8 +830,7 @@ tgeogpointsegm_timestamp_at_param(const TInstant *inst1, const TInstant *inst2,
     if (found)
       return result;
   }
-  return inst1->t +
-    (TimestampTz) ((double) (inst2->t - inst1->t) * param);
+  return tsegment_timestamptz_at_ratio(inst1->t, inst2->t, param);
 }
 
 /**
@@ -1053,7 +1050,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
          * the border's low digits to the coordinates that carry it, and the
          * crossing then falls a microsecond before the instant it happens */
         TimestampTz t1, t2;
-        TimestampTz duration = inst2->t - inst1->t;
         if (hasz_seq && ! hasz)
         {
           /* Force the computation at 2D */
@@ -1068,14 +1064,14 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else if (geopoint_eq(p2, p3))
           t1 = inst2->t;
         else /* inst1->t < t1(p3) < inst2->t */
-          t1 = inst1->t + (TimestampTz) ((double) duration * param3);
+          t1 = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, param3);
         /* Compute timestamp t2 of point p4  */
         if (geopoint_eq(p2, p4))
           t2 = inst2->t;
         else if (geopoint_eq(p3, p4))
           t2 = t1;
         else /* inst1->t < t2(p4) < inst2->t */
-          t2 = inst1->t + (TimestampTz) ((double) duration * param4);
+          t2 = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, param4);
         if (hasz_seq && ! hasz)
         {
           pfree(inst1_2d); pfree(inst2_2d);

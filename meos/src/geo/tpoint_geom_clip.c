@@ -52,6 +52,7 @@
 #include "temporal/temporal.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/temporal_rtree.h"
+#include "temporal/tsequence.h"
 #include "geo/geo_funcs.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -1000,7 +1001,6 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
 
     /* Generate the periods from the float spans taking into account exclusive
      * temporal bounds */
-    double duration = (double) (inst2->t - inst1->t);
     for (int j = 0; j < count; j++)
     {
       Span s;
@@ -1018,7 +1018,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
 
         /* Interpolate only if 0 < lower/upper < 1 */
         TimestampTz t = (lower == 0.0) ?
-          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+          inst1->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
         meos_array_add(periods, &s);
@@ -1026,9 +1026,9 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
       else
       {
         TimestampTz t1 = (lower == 0.0) ?
-          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+          inst1->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, lower);
         TimestampTz t2 = (upper == 1.0) ?
-          inst2->t : inst1->t + (TimestampTz) (duration * upper);
+          inst2->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
         meos_array_add(periods, &s);
@@ -2966,7 +2966,6 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
 
     /* Generate the periods from the float spans taking into account exclusive
      * temporal bounds */
-    double duration = (double) (inst2->t - inst1->t);
     for (int j = 0; j < count; j++)
     {
       Span s;
@@ -2982,7 +2981,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
             fabs(upper - 1.0) < MEOS_GEOM_TOLERANCE)
           continue;
         TimestampTz t = (lower == 0.0) ?
-          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+          inst1->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
         meos_array_add(periods, &s);
@@ -2990,9 +2989,9 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
       else
       {
         TimestampTz t1 = (lower == 0.0) ?
-          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+          inst1->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, lower);
         TimestampTz t2 = (upper == 1.0) ?
-          inst2->t : inst1->t + (TimestampTz) (duration * upper);
+          inst2->t : tsegment_timestamptz_at_ratio(inst1->t, inst2->t, upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
         meos_array_add(periods, &s);
@@ -3347,7 +3346,6 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
      * with the exact distance to the whole geometry */
     qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
     const double *ev = (double *) events->elems;
-    const double duration = (double) (inst2->t - inst1->t);
     TimestampTz prevt = inst1->t;
     for (int k = 0; k < (int) events->count; k++)
     {
@@ -3356,7 +3354,7 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
         continue;
       if (k > 0 && fabs(p - ev[k - 1]) < MEOS_GEOM_TOLERANCE)
         continue;
-      TimestampTz t = inst1->t + (TimestampTz) (duration * p);
+      TimestampTz t = tsegment_timestamptz_at_ratio(inst1->t, inst2->t, p);
       /* Keep the instants strictly increasing and off the segment endpoints */
       if (t <= prevt || t >= inst2->t)
         continue;

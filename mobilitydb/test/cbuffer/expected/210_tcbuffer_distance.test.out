@@ -873,7 +873,7 @@ SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Poi
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', cbuffer 'Cbuffer(Point(5 6),0)'), 6);
                                                            astext                                                           
 ----------------------------------------------------------------------------------------------------------------------------
- [6.81025@Mon Jan 01 00:00:00 2001 PST, 2.499091@Thu Jan 04 01:08:19.323438 2001 PST, 2.81025@Fri Jan 05 00:00:00 2001 PST]
+ [6.81025@Mon Jan 01 00:00:00 2001 PST, 2.499091@Thu Jan 04 01:08:19.323439 2001 PST, 2.81025@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
 SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', cbuffer 'Cbuffer(Point(5 6),0)')::numeric, 6);

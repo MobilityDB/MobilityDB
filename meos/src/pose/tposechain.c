@@ -47,6 +47,7 @@
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
@@ -150,8 +151,7 @@ tposechainsegm_intersection_value(Datum start, Datum end, Datum value,
     DatumGetPoseChainP(end), DatumGetPoseChainP(value));
   if (fraction < 0.0)
     return 0;
-  double duration = (double) (upper - lower);
-  *t1 = lower + (TimestampTz) (duration * (double) fraction);
+  *t1 = tsegment_timestamptz_at_ratio(lower, upper, (double) fraction);
   if (t2)
     *t2 = *t1;
   return 1;

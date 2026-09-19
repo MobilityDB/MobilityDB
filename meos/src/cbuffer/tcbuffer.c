@@ -44,6 +44,7 @@
 #include "temporal/span.h"
 #include "temporal/spanset.h"
 #include "temporal/tnumber_mathfuncs.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -666,7 +667,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
     return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
       lower, upper, t1, t2);
 
-  *t1 = *t2 = lower + (TimestampTz) ((double) (upper - lower) * fbest);
+  *t1 = *t2 = tsegment_timestamptz_at_ratio(lower, upper, fbest);
   return 1;
 }
 
