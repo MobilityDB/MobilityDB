@@ -16,4 +16,26 @@ SELECT getResolution(cellToParent(s2cell '47c3c', 5));
 -- 5
 SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 -- 5@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_cell_to_cover"></a><a class="indexterm" name="id13051"></a><a class="indexterm" name="id13054"></a><p>Return the cells covering a cell, or the cells of a cell set, at the given resolution</p><pre class="programlisting">
+cellToCover(h3index,integer) → h3indexset
+cellToCover(quadbin,integer) → quadbinset
+cellToCover(s2cell,integer) → s2cellset
+coverCells(h3indexset,integer) → h3indexset
+coverCells(quadbinset,integer) → quadbinset
+coverCells(s2cellset,integer) → s2cellset
+</pre><p>The cover holds the cells that hold a point of the cell, each point assigned to its cell as <code class="varname">latLngToCell</code> assigns it, which is what <code class="varname">geoToH3IndexSet</code> states for a geometry. A trajectory passing through the cell therefore takes a cell of the cover there, so reading the values of a temporal cell this way states a cover of its trajectory at a resolution its values are not stored at, without reading the trajectory again. The resolution is the cell's own or a coarser one, and a finer one raises an error. A QUADBIN tile and an S2 cell are each exactly the union of their four children, so their cover at a coarser resolution is their ancestor there (<code class="varname">cellToParent</code>). The parent of an H3 cell is not its cover: the children of a hexagon do not tile it, so an H3 cell can reach cells other than its parent.</p><pre class="programlisting">
+SELECT cellToCover(h3index '8c1f005018733ff', 10);
+-- {"8a1f00501877fff"}
+SELECT coverCells(getValues(th3index '{8c1f005018733ff@2001-01-01,
+  8c1f005018731ff@2001-01-02}'), 10);
+-- {"8a1f00501877fff"}
+SELECT cellToCover(quadbin '48a6227affffffff', 7);
+-- {"4876227fffffffff"}
+SELECT coverCells(getValues(tquadbin '{48a6227affffffff@2001-01-01,
+  48a6227bffffffff@2001-01-02}'), 7);
+-- {"4876227fffffffff"}
+SELECT cellToCover(s2cell '47c3c', 5);
+-- {"47c4"}
+SELECT coverCells(cellToChildren(s2cell '47c3c', 9), 7);
+-- {"47c3c"}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s12.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Inspection </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Latitude and Longitude Conversions</td></tr></table></div></body></html>
