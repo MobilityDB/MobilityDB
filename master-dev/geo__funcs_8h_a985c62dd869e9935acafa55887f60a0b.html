@@ -159,12 +159,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0c6ee23fecb2ad027f5d37d121ea3e58.html#a0c6ee23fecb2ad027f5d37d121ea3e58">meos_relate_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a5b730401413ce3196bcf928b1aefd042.html#a5b730401413ce3196bcf928b1aefd042">meos_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a55e021e86dd5e78c40a189a8c6c0c5d9.html#a55e021e86dd5e78c40a189a8c6c0c5d9">meos_relate_pattern_ctx</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a5c124cd15ccb0654ee651533eee6b9bc.html#a5c124cd15ccb0654ee651533eee6b9bc">meos_relate_self_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8c7c150ee032d76c797920948aa89b59.html#a8c7c150ee032d76c797920948aa89b59">meos_spatialrel_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ab7ecfbcfedbae3021be5bc4ccab5edee.html#ab7ecfbcfedbae3021be5bc4ccab5edee">point_in_polygon_index_into</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a985c62dd869e9935acafa55887f60a0b.html#a985c62dd869e9935acafa55887f60a0b">point_in_polygon_index_into</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8742b88b1b621335b33e37389deea9b5.html#a8742b88b1b621335b33e37389deea9b5">point_in_polygon_index_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a57fdfe5ada50d7d5ba5b1585540ca98d.html#a57fdfe5ada50d7d5ba5b1585540ca98d">point_in_polygon_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
@@ -192,8 +193,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab7ecfbcfedbae3021be5bc4ccab5edee" name="ab7ecfbcfedbae3021be5bc4ccab5edee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7ecfbcfedbae3021be5bc4ccab5edee">&#9670;&#160;</a></span>point_in_polygon_index_into()</h2>
+<a id="a985c62dd869e9935acafa55887f60a0b" name="a985c62dd869e9935acafa55887f60a0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a985c62dd869e9935acafa55887f60a0b">&#9670;&#160;</a></span>point_in_polygon_index_into()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,6 +238,12 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>reach</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
           <td class="paramname"><em>results</em>, </td>
         </tr>
@@ -261,6 +268,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges the index is built over, in its own order </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Greatest x the edges reach, which bounds the ray </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reach</td><td>Widest distance at which an end of an edge is read as lying on the ray, which makes the answer the one the scan gives: the widest rounding of an edge, or of the radius of an arc, the edges carry </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">vertex</td><td>True if the point is an input vertex </td></tr>
   </table>
