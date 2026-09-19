@@ -2005,6 +2005,8 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
 bool
 rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, false); VALIDATE_NOT_NULL(temp, false);
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
     return false;
   /* Use a stack buffer large enough for any MEOS bounding box type */
@@ -2032,6 +2034,9 @@ int
 rtree_search_temporal(const RTree *rtree, IndexSearchOp op,
   const Temporal *temp, MeosArray *result)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, -1); VALIDATE_NOT_NULL(temp, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
   {
     meos_array_reset(result);
@@ -2086,6 +2091,8 @@ bool
 rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id,
   int maxboxes)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, false); VALIDATE_NOT_NULL(temp, false);
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
     return false;
   int count;
@@ -2139,6 +2146,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, -1); VALIDATE_NOT_NULL(temp, -1);
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_index_result(result))
     return -1;
@@ -2146,6 +2154,15 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
   meos_array_reset(result);
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
     return 0;
+  /* Every box split off the value carries the SRID, the dimensions and the
+   * point cloud schema of the box of the whole value, so the query is checked
+   * against the tree once, on that box, and the split boxes are searched by
+   * the internal twin */
+  bboxunion whole;
+  memset(&whole, 0, sizeof(whole));
+  temporal_set_bbox(temp, &whole);
+  if (! ensure_valid_rtree_box(rtree, &whole))
+    return -1;
 
   int count;
   void *boxes = bbox_temporal_split_boxes(rtree->bboxtype, rtree->bboxsize, temp, maxboxes, &count);
@@ -2157,7 +2174,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
   MeosArray *hits = index_result_create();
   for (int i = 0; i < count; i++)
   {
-    int nhits = rtree_search(rtree, op,
+    int nhits = rtree_search_intl(rtree, op,
       (char *) boxes + (size_t) i * rtree->bboxsize, hits);
     for (int j = 0; j < nhits; j++)
     {
