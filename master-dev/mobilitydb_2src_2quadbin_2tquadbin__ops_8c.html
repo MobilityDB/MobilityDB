@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tquadbin_ops.c File Reference</div></div>
 </div><!--header-->
@@ -84,20 +85,36 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
+<code>#include &lt;funcapi.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__quadbin_8h_source.html">meos_quadbin.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structQuadbinSplitState.html">QuadbinSplitState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">State of a quadbin split, holding the cell and the fragment of every row it has left to return.  <a href="structQuadbinSplitState.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gaf937dafa110ef8fbf0771bf5eaa47167"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_gaf937dafa110ef8fbf0771bf5eaa47167.html#gaf937dafa110ef8fbf0771bf5eaa47167">Tgeogpoint_quadbin_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:gaf937dafa110ef8fbf0771bf5eaa47167"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal geodetic point split by the quadbin cells it crosses at the given resolution, and the cell of each @sqlfn quadbinSplit()  <a href="group__mobilitydb__quadbin__conversion_gaf937dafa110ef8fbf0771bf5eaa47167.html#gaf937dafa110ef8fbf0771bf5eaa47167">More...</a><br /></td></tr>
+<tr class="separator:gaf937dafa110ef8fbf0771bf5eaa47167"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabcc5fa4f10ffce54ff2cc33c44ee2446"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_gabcc5fa4f10ffce54ff2cc33c44ee2446.html#gabcc5fa4f10ffce54ff2cc33c44ee2446">Tgeogpoint_to_tquadbin</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gabcc5fa4f10ffce54ff2cc33c44ee2446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal quadbin cell of a temporal geodetic point at the given resolution @sqlfn tquadbin()  <a href="group__mobilitydb__quadbin__conversion_gabcc5fa4f10ffce54ff2cc33c44ee2446.html#gabcc5fa4f10ffce54ff2cc33c44ee2446">More...</a><br /></td></tr>
 <tr class="separator:gabcc5fa4f10ffce54ff2cc33c44ee2446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga891ba633dad1cec9f850ad5427e06434"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga891ba633dad1cec9f850ad5427e06434.html#ga891ba633dad1cec9f850ad5427e06434">Tgeompoint_quadbin_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga891ba633dad1cec9f850ad5427e06434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal planar point split by the quadbin cells it crosses at the given resolution, and the cell of each @sqlfn quadbinSplit()  <a href="group__mobilitydb__quadbin__conversion_ga891ba633dad1cec9f850ad5427e06434.html#ga891ba633dad1cec9f850ad5427e06434">More...</a><br /></td></tr>
+<tr class="separator:ga891ba633dad1cec9f850ad5427e06434"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0f7227ec67dec696a7e6dec793ab2c4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga0f7227ec67dec696a7e6dec793ab2c4f.html#ga0f7227ec67dec696a7e6dec793ab2c4f">Tgeompoint_to_tquadbin</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga0f7227ec67dec696a7e6dec793ab2c4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal quadbin cell of a temporal planar point at the given resolution (SRID must be 4326) @sqlfn tquadbin()  <a href="group__mobilitydb__quadbin__conversion_ga0f7227ec67dec696a7e6dec793ab2c4f.html#ga0f7227ec67dec696a7e6dec793ab2c4f">More...</a><br /></td></tr>
 <tr class="separator:ga0f7227ec67dec696a7e6dec793ab2c4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58b837ca18f73e8cef3cc81b88aff6a3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2quadbin_2tquadbin__ops_8c_a58b837ca18f73e8cef3cc81b88aff6a3.html#a58b837ca18f73e8cef3cc81b88aff6a3">Tpoint_quadbin_split_ext</a> (FunctionCallInfo fcinfo, <a class="el" href="structTemporal.html">Temporal</a> **(*split)(const <a class="el" href="structTemporal.html">Temporal</a> *, int32, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> **, int *))</td></tr>
+<tr class="memdesc:a58b837ca18f73e8cef3cc81b88aff6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal point split by the quadbin cells it crosses, and the cell of each.  <a href="mobilitydb_2src_2quadbin_2tquadbin__ops_8c_a58b837ca18f73e8cef3cc81b88aff6a3.html#a58b837ca18f73e8cef3cc81b88aff6a3">More...</a><br /></td></tr>
+<tr class="separator:a58b837ca18f73e8cef3cc81b88aff6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafa03307337aed9a0c93c824245655f12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__accessor_gafa03307337aed9a0c93c824245655f12.html#gafa03307337aed9a0c93c824245655f12">Tquadbin_cell_area</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gafa03307337aed9a0c93c824245655f12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the per-instant cell area (square metres) as a temporal float @sqlfn cellArea()  <a href="group__mobilitydb__quadbin__accessor_gafa03307337aed9a0c93c824245655f12.html#gafa03307337aed9a0c93c824245655f12">More...</a><br /></td></tr>
 <tr class="separator:gafa03307337aed9a0c93c824245655f12"><td class="memSeparator" colspan="2">&#160;</td></tr>
