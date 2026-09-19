@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
+#include "geo/geo_funcs.h"
 #include <meos_tls.h>
 
 /*****************************************************************************/
@@ -83,26 +84,6 @@ extern double tpointseg_distance_lb(Datum start1, Datum end1, Datum start2,
  */
 
 /**
- * @brief A geometry boundary segment with its precomputed 2D bounding box;
- * @p is_poly marks segments that belong to a polygon ring (used by the
- * ray-casting interior test)
- */
-typedef struct
-{
-  double x1, y1, x2, y2;
-  double xmin, ymin, xmax, ymax;
-  bool is_poly;
-  /* Circular-arc edge (from a CIRCULARSTRING): when @p is_arc is true the edge
-   * is the arc of the circle centred at (@p acx, @p acy) with radius @p arad,
-   * from angle @p at0 to @p at1 traversed counterclockwise when @p accw. The
-   * endpoints (x1,y1)/(x2,y2) are the arc start/end; the bounding box already
-   * accounts for the arc bulge (cardinal extremes within the angular span). */
-  bool is_arc;
-  double acx, acy, arad, at0, at1;
-  bool accw;
-} DistEdge;
-
-/**
  * @brief Witness of the nearest approach: the point @p (px,py) on the
  * swept-capsule boundary and @p (qx,qy) on the geometry
  */
@@ -131,13 +112,16 @@ typedef struct
  */
 typedef struct
 {
-  const DistEdge *segs;
+  const Edge *segs;
   int n;
   bool has_poly;
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
   const DistBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
   int nbk;
   RTree *rtree; /**< Generic R-tree (relationship path), or NULL */
+  MeosArray *edges; /**< Array of the extracted edges, which @p segs reads
+                         until the buckets copy them in their own order, then
+                         NULL */
 } DistGeom;
 
 /**
@@ -155,9 +139,9 @@ extern bool dist_geom_build(const GSERIALIZED *gs, DistGeom *g);
 extern void dist_geom_free(DistGeom *g);
 extern bool dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g);
 extern double dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e);
+  double r1, double r2, const Edge *e);
 extern double dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e);
+  double r1, double r2, const Edge *e);
 extern MEOS_TLS MeosArray *dist_pip_results;
 extern bool dist_geom_point_inside(double x, double y, const DistGeom *g);
 extern void dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
@@ -166,7 +150,7 @@ extern void dist_segm_shortestline(double cx1, double cy1, double r1, double cx2
   double cy2, double r2, const DistGeom *g, DistShortLine *w);
 extern void dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
   double cy2, double r2, TimestampTz t2, const DistGeom *g, DistNai *w);
-extern RTree * dist_geom_build_rtree(const DistEdge *segs, int n);
+extern RTree * dist_geom_build_rtree(const Edge *segs, int n);
 
 /*****************************************************************************/
 

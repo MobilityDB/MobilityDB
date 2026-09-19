@@ -130,30 +130,6 @@ dist_minfun(double A, double B, double C, double R0, double DR, double lo,
 }
 
 /**
- * @brief Normalise an angle to [0, 2*pi)
- */
-static double
-dist_angle_norm(double a)
-{
-  const double TWOPI = 2.0 * M_PI;
-  double r = fmod(a, TWOPI);
-  return (r < 0.0) ? r + TWOPI : r;
-}
-
-/**
- * @brief True if the angle @p phi lies within the arc's angular span
- */
-static bool
-dist_geom_arc_contains_angle(const DistEdge *e, double phi)
-{
-  double sweep = e->accw ?
-    dist_angle_norm(e->at1 - e->at0) : dist_angle_norm(e->at0 - e->at1);
-  double off = e->accw ?
-    dist_angle_norm(phi - e->at0) : dist_angle_norm(e->at0 - phi);
-  return off <= sweep + MEOS_GEOM_TOLERANCE;
-}
-
-/**
  * @brief Return true if the distance engine decomposes a geometry into edges
  * @details A TIN and a polyhedral surface, alone or in a collection, are left
  * to the exact path; every other geometry #geom_meos_coverage answers for is
@@ -225,31 +201,20 @@ dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
     meos_array_destroy(edges);
     return false;
   }
-  DistEdge *segs = palloc(sizeof(DistEdge) * n);
+  const Edge *segs = (const Edge *) edges->elems;
   bool has_poly = false;
   double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
   for (int k = 0; k < n; k++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, k);
-    DistEdge *s = &segs[k];
-    s->x1 = e->x1; s->y1 = e->y1; s->x2 = e->x2; s->y2 = e->y2;
-    s->xmin = e->xmin; s->ymin = e->ymin; s->xmax = e->xmax; s->ymax = e->ymax;
-    s->is_poly = (e->etype == EDGE_POLYSEG || e->etype == EDGE_POLYARC);
-    s->is_arc = (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC);
-    if (s->is_arc)
-    {
-      s->acx = e->cx; s->acy = e->cy; s->arad = e->radius;
-      s->at0 = e->theta0; s->at1 = e->theta1; s->accw = e->ccw;
-    }
-    has_poly |= s->is_poly;
+    const Edge *s = &segs[k];
+    has_poly |= (s->etype == EDGE_POLYSEG || s->etype == EDGE_POLYARC);
     if (s->xmin < gxmin) gxmin = s->xmin;
     if (s->ymin < gymin) gymin = s->ymin;
     if (s->xmax > gxmax) gxmax = s->xmax;
     if (s->ymax > gymax) gymax = s->ymax;
   }
-  meos_array_destroy(edges);
   *g = (DistGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL, 0,
-    NULL };
+    NULL, edges };
   return true;
 }
 
@@ -260,34 +225,34 @@ dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
  * @details A straight edge contributes at most one crossing; a circular arc
  * contributes the crossings of the horizontal line y with its supporting circle
  * that fall within the arc's angular span. Point, line, and standalone (1D) arc
- * edges (not @p is_poly) contribute nothing.
+ * edges, which bound no region, contribute nothing.
  */
 static void
-dist_poly_seg_raycross(const DistEdge *s, double x, double y,
+dist_poly_seg_raycross(const Edge *s, double x, double y,
   bool *inside)
 {
-  if (! s->is_poly)
+  if (! (s->etype == EDGE_POLYSEG || s->etype == EDGE_POLYARC))
     return;
-  if (s->is_arc)
+  if ((s->etype == EDGE_LINEARC || s->etype == EDGE_POLYARC))
   {
     /* The horizontal line at height y meets the supporting circle at
-     * acx +/- sqrt(arad^2 - (y - acy)^2). Flip the parity for each crossing
+     * cx +/- sqrt(radius^2 - (y - cy)^2). Flip the parity for each crossing
      * strictly to the right of x that lies within the arc's angular span; a
      * ray that only grazes the circle tangentially does not cross. */
-    const double dyc = y - s->acy;
-    const double h2 = s->arad * s->arad - dyc * dyc;
+    const double dyc = y - s->cy;
+    const double h2 = s->radius * s->radius - dyc * dyc;
     if (h2 <= MEOS_GEOM_TOLERANCE)
       return;
     const double h = sqrt(h2);
-    const double xhit[2] = {s->acx - h, s->acx + h};
+    const double xhit[2] = {s->cx - h, s->cx + h};
     /* Forward traversal direction of the arc in the angle parameter */
-    const double sdir = s->accw ? 1.0 : -1.0;
+    const double sdir = s->ccw ? 1.0 : -1.0;
     for (int k = 0; k < 2; k++)
     {
       const double xi = xhit[k];
       if (xi <= x)
         continue;
-      if (! dist_geom_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
+      if (! arc_contains_angle(s, atan2(dyc, xi - s->cx)))
         continue;
       /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
        * arc endpoint (a ring junction on the ray) is owned by this edge only if
@@ -299,7 +264,7 @@ dist_poly_seg_raycross(const DistEdge *s, double x, double y,
         fabs(y - s->y2) < MEOS_GEOM_TOLERANCE;
       if (at_ep0 || at_ep1)
       {
-        const double theta_e = at_ep0 ? s->at0 : s->at1;
+        const double theta_e = at_ep0 ? s->theta0 : s->theta1;
         const double dtheta_in = at_ep0 ? sdir : -sdir;
         if (dtheta_in * cos(theta_e) <= 0)
           continue;
@@ -323,7 +288,7 @@ dist_poly_seg_raycross(const DistEdge *s, double x, double y,
  */
 double
 dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e)
+  double r1, double r2, const Edge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -414,11 +379,11 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
  */
 double
 dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e)
+  double r1, double r2, const Edge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
-  const double px = e->acx, py = e->acy, R = e->arad;
+  const double px = e->cx, py = e->cy, R = e->radius;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -476,7 +441,7 @@ dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! dist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) best = f;
@@ -551,7 +516,7 @@ dist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
  */
 static double
 dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const DistEdge *e, double *out_t)
+  double r2, const Edge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -622,11 +587,11 @@ dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
  */
 static double
 dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const DistEdge *e, double *out_t)
+  double r2, const Edge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
-  const double px = e->acx, py = e->acy, R = e->arad;
+  const double px = e->cx, py = e->cy, R = e->radius;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -684,7 +649,7 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! dist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) { best = f; bt = t; }
@@ -708,7 +673,7 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
  * @brief Closest point on edge @p e to (px,py)
  */
 static void
-dist_geom_closest_on_edge(double px, double py, const DistEdge *e,
+dist_geom_closest_on_edge(double px, double py, const Edge *e,
   double *qx, double *qy)
 {
   double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
@@ -727,15 +692,15 @@ dist_geom_closest_on_edge(double px, double py, const DistEdge *e,
  * its angle lies in the arc span, otherwise the nearer arc endpoint.
  */
 static void
-dist_geom_closest_on_arc(double px, double py, const DistEdge *e,
+dist_geom_closest_on_arc(double px, double py, const Edge *e,
   double *qx, double *qy)
 {
-  double vx = px - e->acx, vy = py - e->acy;
+  double vx = px - e->cx, vy = py - e->cy;
   double vl = hypot(vx, vy);
-  if (vl > MEOS_GEOM_TOLERANCE && dist_geom_arc_contains_angle(e, atan2(vy, vx)))
+  if (vl > MEOS_GEOM_TOLERANCE && arc_contains_angle(e, atan2(vy, vx)))
   {
-    *qx = e->acx + vx * (e->arad / vl);
-    *qy = e->acy + vy * (e->arad / vl);
+    *qx = e->cx + vx * (e->radius / vl);
+    *qy = e->cy + vy * (e->radius / vl);
     return;
   }
   double d1 = (px - e->x1) * (px - e->x1) + (py - e->y1) * (py - e->y1);
@@ -783,17 +748,22 @@ dist_geom_morton_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Reorder the segments along a Morton (Z-order) curve and group them
- * into ~sqrt(n) spatially-local buckets, each with its bounding box
+ * @brief Copy the edges in their order along a Morton (Z-order) curve and
+ * group them into ~sqrt(n) spatially-local buckets, each with its bounding box
  * @details The buckets let a swept-capsule unit skip whole groups of edges that
  * are farther than the running minimum, turning the per-unit edge scan from
  * O(edges) into roughly O(sqrt(edges) + matches) — the geometry's overall
  * bounding box is too coarse for large coastal polygons, but the bucket boxes
  * are tight.
+ * @param[in] segs Edges
+ * @param[in] n Number of edges
+ * @param[in] gxmin,gymin,gxmax,gymax Bounding box of the edges
+ * @param[out] sorted Array of @p n edges receiving them in their Morton order
+ * @param[out] nbk_out Number of buckets
  */
 static DistBucket *
-dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
-  double gymin, double gxmax, double gymax, int *nbk_out)
+dist_geom_build_buckets(const Edge *segs, int n, double gxmin,
+  double gymin, double gxmax, double gymax, Edge *sorted, int *nbk_out)
 {
   double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
   double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
@@ -808,16 +778,12 @@ dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
     items[i].idx = i;
   }
   qsort(items, n, sizeof(DistSortItem), dist_geom_morton_cmp);
-  /* Apply the resulting permutation to the segments through one scratch pass.
-   * Sorting the lightweight key/index handles above (rather than the segments
-   * themselves) keeps qsort from copying the ~128-byte edge payloads on every
-   * swap, which dominated the bucket build for large polygons. */
-  DistEdge *sorted = palloc(sizeof(DistEdge) * n);
+  /* Copy the edges in the resulting order. Sorting the lightweight key/index
+   * handles above rather than the edges themselves keeps qsort from copying
+   * an edge on every swap, which dominated the bucket build for large
+   * polygons, and each edge is then copied once */
   for (int i = 0; i < n; i++)
     sorted[i] = segs[items[i].idx];
-  for (int i = 0; i < n; i++)
-    segs[i] = sorted[i];
-  pfree(sorted);
   pfree(items);
 
   int bsize = (int) ceil(sqrt((double) n));
@@ -831,10 +797,10 @@ dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
     double xmn = DBL_MAX, ymn = DBL_MAX, xmx = -DBL_MAX, ymx = -DBL_MAX;
     for (int k = s; k < e; k++)
     {
-      if (segs[k].xmin < xmn) xmn = segs[k].xmin;
-      if (segs[k].ymin < ymn) ymn = segs[k].ymin;
-      if (segs[k].xmax > xmx) xmx = segs[k].xmax;
-      if (segs[k].ymax > ymx) ymx = segs[k].ymax;
+      if (sorted[k].xmin < xmn) xmn = sorted[k].xmin;
+      if (sorted[k].ymin < ymn) ymn = sorted[k].ymin;
+      if (sorted[k].xmax > xmx) xmx = sorted[k].xmax;
+      if (sorted[k].ymax > ymx) ymx = sorted[k].ymax;
     }
     bks[b].start = s; bks[b].n = e - s;
     bks[b].xmin = xmn; bks[b].ymin = ymn; bks[b].xmax = xmx; bks[b].ymax = ymx;
@@ -990,7 +956,7 @@ dist_unit_thr2(double best, double rmax)
  */
 static bool
 dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
-  const DistEdge *e, double thr2)
+  const Edge *e, double thr2)
 {
   return dist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
     e->y2) >= thr2;
@@ -1050,7 +1016,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     int e = bk->start + bk->n;
     for (int k = bk->start; k < e && *best > 0.0; k++)
     {
-      const DistEdge *ed = &g->segs[k];
+      const Edge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
         if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
@@ -1060,11 +1026,11 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
          * box, which rejects the survivors the box levels leave. It pays only
          * for a moving disc against a straight edge: with a zero radius the box
          * levels are already exact on this bound. */
-        if (! ed->is_arc && rmax > 0.0 &&
+        if (! (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) && rmax > 0.0 &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, ed, thr2))
           continue;
       }
-      double m = ed->is_arc ?
+      double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
         dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
         dist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
       if (m < *best)
@@ -1137,7 +1103,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
     int elast = bk->start + bk->n;
     for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
-      const DistEdge *e = &g->segs[k];
+      const Edge *e = &g->segs[k];
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
@@ -1146,12 +1112,12 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         /* The same lower bound read on the exact centre segment instead of its
          * box, which rejects the survivors the box levels leave. It pays only
          * for a moving disc against a straight edge. */
-        if (! e->is_arc && rmax > 0.0 &&
+        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) && rmax > 0.0 &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
       double t;
-      double m = e->is_arc ?
+      double m = (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) ?
         dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
         dist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
       if (! w->set || m < w->d)
@@ -1160,7 +1126,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         double ccy = cy1 + (cy2 - cy1) * t;
         double rr = r1 + (r2 - r1) * t;
         double qx, qy;
-        if (e->is_arc)
+        if ((e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC))
           dist_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
         else
           dist_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
@@ -1241,7 +1207,7 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
     int elast = bk->start + bk->n;
     for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
-      const DistEdge *e = &g->segs[k];
+      const Edge *e = &g->segs[k];
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
@@ -1250,12 +1216,12 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
         /* The same lower bound read on the exact centre segment instead of its
          * box, which rejects the survivors the box levels leave. It pays only
          * for a moving disc against a straight edge. */
-        if (! e->is_arc && rmax > 0.0 &&
+        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) && rmax > 0.0 &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
       double tf;
-      double m = e->is_arc ?
+      double m = (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) ?
         dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
         dist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf);
       /* Strict improvement keeps the earliest timestamp among equal minima
@@ -1281,7 +1247,7 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
  * @details The index boxes use SRID 0 so a query needs no geometry SRID.
  */
 RTree *
-dist_geom_build_rtree(const DistEdge *segs, int n)
+dist_geom_build_rtree(const Edge *segs, int n)
 {
   RTree *rt = rtree_create_stbox();
   for (int k = 0; k < n; k++)
@@ -2163,9 +2129,14 @@ dist_geom_build(const GSERIALIZED *gs, DistGeom *g)
   if (! dist_geom_decompose(gs, g))
     return false;
   int nbk = 0;
-  g->bks = dist_geom_build_buckets((DistEdge *) g->segs, g->n, g->xmin,
-    g->ymin, g->xmax, g->ymax, &nbk);
+  Edge *sorted = palloc(sizeof(Edge) * g->n);
+  g->bks = dist_geom_build_buckets(g->segs, g->n, g->xmin, g->ymin, g->xmax,
+    g->ymax, sorted, &nbk);
   g->nbk = nbk;
+  /* The kernels read the edges in the order of the buckets */
+  meos_array_destroy(g->edges);
+  g->edges = NULL;
+  g->segs = sorted;
   return true;
 }
 
@@ -2176,7 +2147,10 @@ void
 dist_geom_free(DistGeom *g)
 {
   if (g->bks) pfree((void *) g->bks);
-  if (g->segs) pfree((void *) g->segs);
+  if (g->edges)
+    meos_array_destroy(g->edges);
+  else if (g->segs)
+    pfree((void *) g->segs);
 }
 
 /**
