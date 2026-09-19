@@ -390,6 +390,63 @@ spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
 }
 
 /**
+ * @brief Return false if the boxes of a temporal geo and of a geometry show
+ * that the two cannot stand in a relationship, true if they may
+ * @details Two geometries that meet have boxes that overlap, and a geometry
+ * that contains or covers another has a box that contains the box of the
+ * other. The box of a temporal geo holds its trajectory or traversed area, so
+ * the test answers for the geometry the relationship reads without building
+ * it. The ever form of a containment of the traversed area, which asks it of
+ * one element of a collection, only needs the boxes to overlap, as does any
+ * containment where a box may not be exact: a box read off a circular arc is
+ * computed from its centre, so only the box of a temporal point and that of a
+ * geometry that cannot carry an arc are compared for containment. The boxes
+ * are compared on the dimensions the relationship reads: the intersection and
+ * the distance read Z where both operands carry it, and the containments and
+ * the meeting of the interiors are read in the plane, so a separation in Z
+ * rejects nothing there (#spatialrel_datum_geo_geo). A geodetic value and an
+ * empty geometry are left to the relationship itself
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] dist Distance, read by @p SREL_DWITHIN alone
+ * @param[in] op Relationship asked for
+ * @param[in] invert True if the geometry is the first operand
+ * @param[in] ever True for the ever semantics
+ */
+static bool
+spatialrel_tgeo_geo_box(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, SpatialRelOp op, bool invert, bool ever)
+{
+  STBox box1, box2;
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags) || ! geo_set_stbox(gs, &box2))
+    return true;
+  tspatial_set_stbox(temp, &box1);
+  if (op != SREL_INTERSECTS && op != SREL_DWITHIN)
+  {
+    MEOS_FLAGS_SET_Z(box1.flags, false);
+    MEOS_FLAGS_SET_Z(box2.flags, false);
+  }
+  if (op == SREL_DWITHIN)
+  {
+    STBox box;
+    stbox_expand_space_set(&box1, dist, &box);
+    return overlaps_stbox_stbox(&box, &box2);
+  }
+  if (op == SREL_CONTAINS || op == SREL_COVERS)
+  {
+    uint8_t type = gserialized_get_type(gs);
+    bool exact = tpoint_type(temp->temptype) && type != CIRCSTRINGTYPE &&
+      type != COMPOUNDTYPE && type != CURVEPOLYTYPE &&
+      type != MULTICURVETYPE && type != MULTISURFACETYPE &&
+      type != COLLECTIONTYPE;
+    if (exact && ! (invert && ever))
+      return invert ? contains_stbox_stbox(&box2, &box1) :
+        contains_stbox_stbox(&box1, &box2);
+  }
+  return overlaps_stbox_stbox(&box1, &box2);
+}
+
+/**
  * @brief Generic spatial relationship for the trajectory or traversed area
  * of a temporal geo and a geometry
  * @details The function reads the relationship between the trajectory or the
@@ -414,6 +471,11 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) )
     return -1;
+
+  /* The boxes are tested before the trajectory or the traversed area is
+   * built, so that a pair they reject does not pay for it */
+  if (! spatialrel_tgeo_geo_box(temp, gs, dist, op, invert, ever))
+    return 0;
 
   int16 flags1 = temp->flags;
   uint8_t flags2 = gs->gflags;
