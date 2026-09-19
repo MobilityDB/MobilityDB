@@ -7825,8 +7825,12 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
     {
       if (!relate_area_boundary_edge(edges[i]))
         continue;
+      /* The query reads the cells alone, so it is asked again only where an
+       * edge has raised one: a matrix left as it stood is still undecided */
+      MeosDE9IM before = *m;
       relate_area_edge_intervals(edges[i], other, m, first);
-      if (relate_query_decided(q, m))
+      if (memcmp(&before, m, sizeof(MeosDE9IM)) != 0 &&
+          relate_query_decided(q, m))
         goto done;
     }
   }
