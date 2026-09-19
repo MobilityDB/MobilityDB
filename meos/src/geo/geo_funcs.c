@@ -7491,6 +7491,55 @@ relate_area_interior_point_located(const RelateEdges *self,
 }
 
 /**
+ * @brief Return true if an areal geometry holds an interior point standing to
+ * another areal geometry in a given location, for a pair whose boundary of
+ * the other does not meet the interior of the first
+ * @details A connected piece of the interior of the first geometry that the
+ * boundary of the other does not meet lies wholly inside the other or wholly
+ * outside it, since passing from one to the other crosses that boundary. A
+ * piece is bounded by rings of the first geometry, so one witness stepped off
+ * one edge of each ring answers for every edge of that ring, where
+ * #relate_area_interior_point_located asks every edge. A witness read as lying
+ * on the boundary of the other answers nothing, and the next edge of the ring
+ * is asked. The edges of a ring follow one another in the array, and a ring
+ * ends at the edge that returns to the point it starts from
+ * @param[in] self Edges of the geometry the witnesses come from
+ * @param[in] other Edges of the geometry the witnesses are located in, whose
+ * boundary does not meet the interior of @p self
+ * @param[in] location Location to look for, as #relate_point_in_area reports
+ * it: 0 for the interior and 2 for the exterior
+ */
+static bool
+relate_area_ring_point_located(const RelateEdges *self,
+  const RelateEdges *other, int location)
+{
+  bool open = false, located = false;
+  double sx = 0.0, sy = 0.0;
+  for (int i = 0; i < self->nedges; i++)
+  {
+    const Edge *e = self->edges[i];
+    if (! open)
+    {
+      sx = e->x1;
+      sy = e->y1;
+      open = true;
+      located = false;
+    }
+    double x, y;
+    if (! located && relate_area_edge_interior_point(e, self, &x, &y))
+    {
+      int loc = relate_point_in_area_index(x, y, other, false);
+      if (loc == location)
+        return true;
+      located = (loc != 1);
+    }
+    if (e->x2 == sx && e->y2 == sy)
+      open = false;
+  }
+  return false;
+}
+
+/**
  * @brief Return true if a boundary edge of one areal geometry properly crosses
  * a boundary edge of the other
  * @details Where two boundaries cross transversally, the four sectors around
@@ -7752,9 +7801,15 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
   if (m->ib != -1)
     de9im_add(&m->ie, 2);
 
-  if (relate_area_interior_point_located(&re1, &re2, 2))
+  /* Where the boundary of the other geometry meets no interior point of one,
+   * a witness per ring of the one answers what a witness per edge does */
+  if (m->ie != 2 && (m->ib == -1 ?
+        relate_area_ring_point_located(&re1, &re2, 2) :
+        relate_area_interior_point_located(&re1, &re2, 2)))
     de9im_add(&m->ie, 2);
-  if (relate_area_interior_point_located(&re2, &re1, 2))
+  if (m->ei != 2 && (m->bi == -1 ?
+        relate_area_ring_point_located(&re2, &re1, 2) :
+        relate_area_interior_point_located(&re2, &re1, 2)))
     de9im_add(&m->ei, 2);
 
   /* Exterior / Exterior.
