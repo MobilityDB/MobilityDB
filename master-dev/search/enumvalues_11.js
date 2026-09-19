@@ -88,11 +88,15 @@ var searchData=
   ['t_5ftstzspanset_85',['T_TSTZSPANSET',['../meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401a176acb5435895142b689616c82453213',1,'meos_catalog.h']]],
   ['t_5fttext_86',['T_TTEXT',['../meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401ac8d9bcdf3278e500a70474eabbdaef6e',1,'meos_catalog.h']]],
   ['t_5funknown_87',['T_UNKNOWN',['../meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401a78ec08196318f3b5a2c8b8ee19cb6e0f',1,'meos_catalog.h']]],
-  ['temporaltype_88',['TEMPORALTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250bae83773553758832ed9ae14dbba89753f',1,'temporal.h']]],
-  ['tinstant_89',['TINSTANT',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6ac5b8528885e706d7f3d75e2618a1cebe',1,'meos.h']]],
-  ['tnumbertype_90',['TNUMBERTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250baa8d3d7630e95b70b64efada552e6800c',1,'temporal.h']]],
-  ['touches_91',['TOUCHES',['../meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264ca630af0842498f31e9688a9e2308ba459',1,'meos_geo.h']]],
-  ['tsequence_92',['TSEQUENCE',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6a7894bcf0641b04fbf63f9a20ae353380',1,'meos.h']]],
-  ['tsequenceset_93',['TSEQUENCESET',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6ab2d79497ceb3f1491d299f44c389031c',1,'meos.h']]],
-  ['tspatialtype_94',['TSPATIALTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250ba4a3b32092d936f6b8d555ea2b7efec23',1,'temporal.h']]]
+  ['tbox_5ftmax_88',['TBOX_TMAX',['../tbox__index_8h_abd5679da1173014b06f609d631532060.html#abd5679da1173014b06f609d631532060a69eb4e48f9e8ada492d3f6c4038432bd',1,'tbox_index.h']]],
+  ['tbox_5ftmin_89',['TBOX_TMIN',['../tbox__index_8h_abd5679da1173014b06f609d631532060.html#abd5679da1173014b06f609d631532060a7e9fe73075efadfc505a6f808aaf254b',1,'tbox_index.h']]],
+  ['tbox_5fxmax_90',['TBOX_XMAX',['../tbox__index_8h_abd5679da1173014b06f609d631532060.html#abd5679da1173014b06f609d631532060ae484bd4fd7372606ab6217e774cf349d',1,'tbox_index.h']]],
+  ['tbox_5fxmin_91',['TBOX_XMIN',['../tbox__index_8h_abd5679da1173014b06f609d631532060.html#abd5679da1173014b06f609d631532060a6bfbb63020ad37b9a691cb54434deaa1',1,'tbox_index.h']]],
+  ['temporaltype_92',['TEMPORALTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250bae83773553758832ed9ae14dbba89753f',1,'temporal.h']]],
+  ['tinstant_93',['TINSTANT',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6ac5b8528885e706d7f3d75e2618a1cebe',1,'meos.h']]],
+  ['tnumbertype_94',['TNUMBERTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250baa8d3d7630e95b70b64efada552e6800c',1,'temporal.h']]],
+  ['touches_95',['TOUCHES',['../meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264ca630af0842498f31e9688a9e2308ba459',1,'meos_geo.h']]],
+  ['tsequence_96',['TSEQUENCE',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6a7894bcf0641b04fbf63f9a20ae353380',1,'meos.h']]],
+  ['tsequenceset_97',['TSEQUENCESET',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6ab2d79497ceb3f1491d299f44c389031c',1,'meos.h']]],
+  ['tspatialtype_98',['TSPATIALTYPE',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250ba4a3b32092d936f6b8d555ea2b7efec23',1,'temporal.h']]]
 ];

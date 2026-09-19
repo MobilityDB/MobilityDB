@@ -75,7 +75,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tnumber_gist.h File Reference</div></div>
 </div><!--header-->
@@ -92,32 +91,11 @@ $(function() {
 </div>
 <p><a href="tnumber__gist_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structConsiderSplitContext.html">ConsiderSplitContext</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure keeping context for the function stbox_gist_consider_split.  <a href="structConsiderSplitContext.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad546c7e310fabf8ac276f2b9d9fac8a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_ad546c7e310fabf8ac276f2b9d9fac8a5.html#ad546c7e310fabf8ac276f2b9d9fac8a5">bbox_gist_consider_split</a> (<a class="el" href="structConsiderSplitContext.html">ConsiderSplitContext</a> *context, int dimNum, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> bboxtype, double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)</td></tr>
-<tr class="memdesc:ad546c7e310fabf8ac276f2b9d9fac8a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Consider replacement of currently selected split with the better one.  <a href="tnumber__gist_8h_ad546c7e310fabf8ac276f2b9d9fac8a5.html#ad546c7e310fabf8ac276f2b9d9fac8a5">More...</a><br /></td></tr>
-<tr class="separator:ad546c7e310fabf8ac276f2b9d9fac8a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51a51b5744a182bb24b37e0b4dd4454c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_a51a51b5744a182bb24b37e0b4dd4454c.html#a51a51b5744a182bb24b37e0b4dd4454c">bbox_gist_fallback_split</a> (GistEntryVector *entryvec, GIST_SPLITVEC *v, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> bboxtype, void(*bbox_adjust)(void *, void *))</td></tr>
-<tr class="memdesc:a51a51b5744a182bb24b37e0b4dd4454c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trivial split: half of entries will be placed on one page and the other half on another page.  <a href="tnumber__gist_8h_a51a51b5744a182bb24b37e0b4dd4454c.html#a51a51b5744a182bb24b37e0b4dd4454c">More...</a><br /></td></tr>
-<tr class="separator:a51a51b5744a182bb24b37e0b4dd4454c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d14cf0b4582e3ee2d051f352798102a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_a9d14cf0b4582e3ee2d051f352798102a.html#a9d14cf0b4582e3ee2d051f352798102a">bbox_gist_picksplit</a> (FunctionCallInfo fcinfo, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> bboxtype, void(*bbox_adjust)(void *, void *), double(*bbox_penalty)(void *, void *))</td></tr>
-<tr class="memdesc:a9d14cf0b4582e3ee2d051f352798102a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Double sorting split algorithm.  <a href="tnumber__gist_8h_a9d14cf0b4582e3ee2d051f352798102a.html#a9d14cf0b4582e3ee2d051f352798102a">More...</a><br /></td></tr>
+<tr class="memdesc:a9d14cf0b4582e3ee2d051f352798102a"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST picksplit method for bounding boxes.  <a href="tnumber__gist_8h_a9d14cf0b4582e3ee2d051f352798102a.html#a9d14cf0b4582e3ee2d051f352798102a">More...</a><br /></td></tr>
 <tr class="separator:a9d14cf0b4582e3ee2d051f352798102a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff7bf0f4bb4a1824da76546011c77ad3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_aff7bf0f4bb4a1824da76546011c77ad3.html#aff7bf0f4bb4a1824da76546011c77ad3">interval_cmp_lower</a> (const void *i1, const void *i2)</td></tr>
-<tr class="memdesc:aff7bf0f4bb4a1824da76546011c77ad3"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structInterval.html">Interval</a> comparison function by lower bound of the intervals.  <a href="tnumber__gist_8h_aff7bf0f4bb4a1824da76546011c77ad3.html#aff7bf0f4bb4a1824da76546011c77ad3">More...</a><br /></td></tr>
-<tr class="separator:aff7bf0f4bb4a1824da76546011c77ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2593558efed8120e62f01035397fcffc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_a2593558efed8120e62f01035397fcffc.html#a2593558efed8120e62f01035397fcffc">interval_cmp_upper</a> (const void *i1, const void *i2)</td></tr>
-<tr class="memdesc:a2593558efed8120e62f01035397fcffc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structInterval.html">Interval</a> comparison function by upper bound of the intervals.  <a href="tnumber__gist_8h_a2593558efed8120e62f01035397fcffc.html#a2593558efed8120e62f01035397fcffc">More...</a><br /></td></tr>
-<tr class="separator:a2593558efed8120e62f01035397fcffc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12a3a248218b19c5556fc1ce1deb5992"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_a12a3a248218b19c5556fc1ce1deb5992.html#a12a3a248218b19c5556fc1ce1deb5992">non_negative</a> (float val)</td></tr>
-<tr class="memdesc:a12a3a248218b19c5556fc1ce1deb5992"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace negative (or NaN) value with zero.  <a href="tnumber__gist_8h_a12a3a248218b19c5556fc1ce1deb5992.html#a12a3a248218b19c5556fc1ce1deb5992">More...</a><br /></td></tr>
-<tr class="separator:a12a3a248218b19c5556fc1ce1deb5992"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac82c45d52541696d02d83930ab97757e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8h_ac82c45d52541696d02d83930ab97757e.html#ac82c45d52541696d02d83930ab97757e">tbox_index_leaf_consistent</a> (const <a class="el" href="structTBox.html">TBox</a> *key, const <a class="el" href="structTBox.html">TBox</a> *query, StrategyNumber strategy)</td></tr>
 <tr class="memdesc:ac82c45d52541696d02d83930ab97757e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leaf consistency for temporal numbers.  <a href="tnumber__gist_8h_ac82c45d52541696d02d83930ab97757e.html#ac82c45d52541696d02d83930ab97757e">More...</a><br /></td></tr>
 <tr class="separator:ac82c45d52541696d02d83930ab97757e"><td class="memSeparator" colspan="2">&#160;</td></tr>

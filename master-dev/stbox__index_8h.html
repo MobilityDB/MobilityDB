@@ -77,6 +77,7 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">stbox_index.h File Reference</div></div>
 </div><!--header-->
@@ -105,6 +106,23 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a43c01ae31cdf120e7ee3e8874ac9a62d"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structSortedSTbox.html">SortedSTbox</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d">SortedSTbox</a></td></tr>
 <tr class="memdesc:a43c01ae31cdf120e7ee3e8874ac9a62d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to sort the temporal boxes of an inner node.  <a href="stbox__index_8h_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d">More...</a><br /></td></tr>
 <tr class="separator:a43c01ae31cdf120e7ee3e8874ac9a62d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a9bb82e984aefc168addc56560bff9a7f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7f">STboxDim</a> { <br />
+&#160;&#160;<a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fae3ec14d9e6ee7ba7396a994728cf04cc">STBOX_XMIN</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fac0528ba4fb0c8a410968892828f6ff80">STBOX_XMAX</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fa5534be69e61f3859b0f292afaac64e51">STBOX_YMIN</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fa67ea85b5d4b0e358486c4c0e78b2ed9c">STBOX_YMAX</a>
+, <br />
+&#160;&#160;<a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7faf40642b739ad160c27a118661632f7f8">STBOX_ZMIN</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fad49f9acac80d70bd5d6ce559fc2f6e5f">STBOX_ZMAX</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7faf193b3368ad3edc1c16eaf3b2e29f76f">STBOX_TMIN</a>
+, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7fa956ef3cc78ac47af0a6033de51eb7a4c">STBOX_TMAX</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:a9bb82e984aefc168addc56560bff9a7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bound of a spatiotemporal box an index partitions on.  <a href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7f">More...</a><br /></td></tr>
+<tr class="separator:a9bb82e984aefc168addc56560bff9a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -174,9 +192,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ad2509888940cca4b0bdd53372f26ad1a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_ad2509888940cca4b0bdd53372f26ad1a.html#ad2509888940cca4b0bdd53372f26ad1a">right8D</a> (const <a class="el" href="structSTboxNode.html">STboxNode</a> *nodebox, const <a class="el" href="structSTBox.html">STBox</a> *query)</td></tr>
 <tr class="memdesc:ad2509888940cca4b0bdd53372f26ad1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can any box from a nodebox be to the right of a query?  <a href="stbox__index_8h_ad2509888940cca4b0bdd53372f26ad1a.html#ad2509888940cca4b0bdd53372f26ad1a">More...</a><br /></td></tr>
 <tr class="separator:ad2509888940cca4b0bdd53372f26ad1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a255fe776f42e516281ecaee758dc28fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a255fe776f42e516281ecaee758dc28fc.html#a255fe776f42e516281ecaee758dc28fc">stbox_adjust</a> (void *bbox1, void *bbox2)</td></tr>
+<tr class="memdesc:a255fe776f42e516281ecaee758dc28fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increase the first box to include the second one.  <a href="stbox__index_8h_a255fe776f42e516281ecaee758dc28fc.html#a255fe776f42e516281ecaee758dc28fc">More...</a><br /></td></tr>
+<tr class="separator:a255fe776f42e516281ecaee758dc28fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a258f1883ed7d29fddbfeccc7ad598431"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a258f1883ed7d29fddbfeccc7ad598431.html#a258f1883ed7d29fddbfeccc7ad598431">stbox_gist_inner_consistent</a> (const <a class="el" href="structSTBox.html">STBox</a> *key, const <a class="el" href="structSTBox.html">STBox</a> *query, StrategyNumber strategy)</td></tr>
 <tr class="memdesc:a258f1883ed7d29fddbfeccc7ad598431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inner consistent method for temporal points.  <a href="stbox__index_8h_a258f1883ed7d29fddbfeccc7ad598431.html#a258f1883ed7d29fddbfeccc7ad598431">More...</a><br /></td></tr>
 <tr class="separator:a258f1883ed7d29fddbfeccc7ad598431"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78a8b67147150a81327562900aecffdc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a78a8b67147150a81327562900aecffdc.html#a78a8b67147150a81327562900aecffdc">stbox_index_dims</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> flags)</td></tr>
+<tr class="memdesc:a78a8b67147150a81327562900aecffdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of dimensions a spatiotemporal box is partitioned on: the bounds of the axes the box carries.  <a href="stbox__index_8h_a78a8b67147150a81327562900aecffdc.html#a78a8b67147150a81327562900aecffdc">More...</a><br /></td></tr>
+<tr class="separator:a78a8b67147150a81327562900aecffdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2df05471d6ce5d227960cac5aea84c6"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_aa2df05471d6ce5d227960cac5aea84c6.html#aa2df05471d6ce5d227960cac5aea84c6">stbox_index_distance_bound</a> (double dist, const <a class="el" href="structSTBox.html">STBox</a> *box1, const <a class="el" href="structSTBox.html">STBox</a> *box2)</td></tr>
 <tr class="memdesc:aa2df05471d6ce5d227960cac5aea84c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a distance an index may report for a pair, lowered so that it cannot exceed the distance the ordering operator computes for that pair.  <a href="stbox__index_8h_aa2df05471d6ce5d227960cac5aea84c6.html#aa2df05471d6ce5d227960cac5aea84c6">More...</a><br /></td></tr>
 <tr class="separator:aa2df05471d6ce5d227960cac5aea84c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,6 +210,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a7e2a1e9ff20b8da62f036cf30c26e20b.html#a7e2a1e9ff20b8da62f036cf30c26e20b">stbox_index_recheck</a> (StrategyNumber strategy)</td></tr>
 <tr class="memdesc:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a recheck is necessary depending on the strategy.  <a href="stbox__index_8h_a7e2a1e9ff20b8da62f036cf30c26e20b.html#a7e2a1e9ff20b8da62f036cf30c26e20b">More...</a><br /></td></tr>
 <tr class="separator:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e529944539c8598c140c8a01d393435"><td class="memItemLeft" align="right" valign="top"><a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7f">STboxDim</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a7e529944539c8598c140c8a01d393435.html#a7e529944539c8598c140c8a01d393435">stbox_kd_dim</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> flags, int level)</td></tr>
+<tr class="memdesc:a7e529944539c8598c140c8a01d393435"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the bound a k-d tree level of spatiotemporal boxes splits on.  <a href="stbox__index_8h_a7e529944539c8598c140c8a01d393435.html#a7e529944539c8598c140c8a01d393435">More...</a><br /></td></tr>
+<tr class="separator:a7e529944539c8598c140c8a01d393435"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e444b3d49f98f3599332471b1844624"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a6e444b3d49f98f3599332471b1844624.html#a6e444b3d49f98f3599332471b1844624">stbox_penalty</a> (void *bbox1, void *bbox2)</td></tr>
+<tr class="memdesc:a6e444b3d49f98f3599332471b1844624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the amount by which the union of the two boxes is larger than the first one.  <a href="stbox__index_8h_a6e444b3d49f98f3599332471b1844624.html#a6e444b3d49f98f3599332471b1844624">More...</a><br /></td></tr>
+<tr class="separator:a6e444b3d49f98f3599332471b1844624"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f6885d736d1a36105a25fd31dae6a2a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a0f6885d736d1a36105a25fd31dae6a2a.html#a0f6885d736d1a36105a25fd31dae6a2a">stbox_quadrant_bit</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> flags, <a class="el" href="stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7f">STboxDim</a> dim)</td></tr>
+<tr class="memdesc:a0f6885d736d1a36105a25fd31dae6a2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the quadrant bit carrying a bound of a spatiotemporal box.  <a href="stbox__index_8h_a0f6885d736d1a36105a25fd31dae6a2a.html#a0f6885d736d1a36105a25fd31dae6a2a">More...</a><br /></td></tr>
+<tr class="separator:a0f6885d736d1a36105a25fd31dae6a2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTboxNode.html">STboxNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8h_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">stboxnode_copy</a> (const <a class="el" href="structSTboxNode.html">STboxNode</a> *box)</td></tr>
 <tr class="memdesc:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy an <code><a class="el" href="structSTboxNode.html" title="Structure to represent the bounding box of a spatiotemporal value as a 6- or 8-dimensional point depe...">STboxNode</a></code>.  <a href="stbox__index_8h_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">More...</a><br /></td></tr>
 <tr class="separator:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="memSeparator" colspan="2">&#160;</td></tr>

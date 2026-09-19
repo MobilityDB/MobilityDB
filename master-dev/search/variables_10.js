@@ -12,6 +12,6 @@ var searchData=
   ['orient_9',['orient',['../structRelateMember_a900e97f8135e44803fe4313cb21d8789.html#a900e97f8135e44803fe4313cb21d8789',1,'RelateMember']]],
   ['origin_10',['origin',['../structSpanBinState_ad11bc7b35c0d5f5e0b179bcd3b55359e.html#ad11bc7b35c0d5f5e0b179bcd3b55359e',1,'SpanBinState']]],
   ['overflow_11',['overflow',['../structh3__buf_a30b9a3ec8e1549f88d2275ffcaa6a03f.html#a30b9a3ec8e1549f88d2275ffcaa6a03f',1,'h3_buf::overflow()'],['../structquadbin__buf_a4871b1dbdd31d3021c2cb6c9a3a1a10e.html#a4871b1dbdd31d3021c2cb6c9a3a1a10e',1,'quadbin_buf::overflow()'],['../structs2cell__buf_a2199978e5c55c404cce656b06eb2d660.html#a2199978e5c55c404cce656b06eb2d660',1,'s2cell_buf::overflow()']]],
-  ['overlap_12',['overlap',['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext']]],
+  ['overlap_12',['overlap',['../structBboxSplitContext_a2197d12e72f9d3fac732e19406578231.html#a2197d12e72f9d3fac732e19406578231',1,'BboxSplitContext::overlap()'],['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext::overlap()']]],
   ['own_13',['own',['../structRelateOperand_abe7cf00a84244424c725d7dcbaf617ce.html#abe7cf00a84244424c725d7dcbaf617ce',1,'RelateOperand']]]
 ];

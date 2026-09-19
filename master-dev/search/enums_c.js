@@ -9,5 +9,6 @@ var searchData=
   ['spatialrelop_6',['SpatialRelOp',['../meos_2src_2geo_2tgeo__spatialrels_8c_aac9a90bb16ea48c28871b8a2bb913006.html#aac9a90bb16ea48c28871b8a2bb913006',1,'tgeo_spatialrels.c']]],
   ['spgistindextype_7',['SPGistIndexType',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9',1,'temporal.h']]],
   ['sptreekind_8',['SPTreeKind',['../meos_8h_ae914b0430eccba91c6ee1284e68f36dc.html#ae914b0430eccba91c6ee1284e68f36dc',1,'meos.h']]],
-  ['syncmode_9',['SyncMode',['../meos_2include_2temporal_2temporal_8h_a08e3b775868324e578c0fe6af893bf7d.html#a08e3b775868324e578c0fe6af893bf7d',1,'temporal.h']]]
+  ['stboxdim_9',['STboxDim',['../stbox__index_8h_a9bb82e984aefc168addc56560bff9a7f.html#a9bb82e984aefc168addc56560bff9a7f',1,'stbox_index.h']]],
+  ['syncmode_10',['SyncMode',['../meos_2include_2temporal_2temporal_8h_a08e3b775868324e578c0fe6af893bf7d.html#a08e3b775868324e578c0fe6af893bf7d',1,'temporal.h']]]
 ];

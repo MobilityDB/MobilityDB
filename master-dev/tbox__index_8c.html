@@ -90,6 +90,7 @@ $(function() {
 <code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="bbox__index_8h_source.html">temporal/bbox_index.h</a>&quot;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tbox_8h_source.html">temporal/tbox.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal_boxops.h&quot;</code><br />
@@ -97,6 +98,9 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a3de89ba50a8f25bb172d7b871572e8eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c_a3de89ba50a8f25bb172d7b871572e8eb.html#a3de89ba50a8f25bb172d7b871572e8eb">tbox_adjust</a> (void *bbox1, void *bbox2)</td></tr>
+<tr class="memdesc:a3de89ba50a8f25bb172d7b871572e8eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increase the first box to include the second one.  <a href="tbox__index_8c_a3de89ba50a8f25bb172d7b871572e8eb.html#a3de89ba50a8f25bb172d7b871572e8eb">More...</a><br /></td></tr>
+<tr class="separator:a3de89ba50a8f25bb172d7b871572e8eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8f8a830fe197d788ef7e4faa9ef6064"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c_ae8f8a830fe197d788ef7e4faa9ef6064.html#ae8f8a830fe197d788ef7e4faa9ef6064">tbox_gist_inner_consistent</a> (const <a class="el" href="structTBox.html">TBox</a> *key, const <a class="el" href="structTBox.html">TBox</a> *query, StrategyNumber strategy)</td></tr>
 <tr class="memdesc:ae8f8a830fe197d788ef7e4faa9ef6064"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST inner consistent method for temporal numbers.  <a href="tbox__index_8c_ae8f8a830fe197d788ef7e4faa9ef6064.html#ae8f8a830fe197d788ef7e4faa9ef6064">More...</a><br /></td></tr>
 <tr class="separator:ae8f8a830fe197d788ef7e4faa9ef6064"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -106,6 +110,12 @@ Functions</h2></td></tr>
 <tr class="memitem:af456b4de88a5b73a14d74bc63637589b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c_af456b4de88a5b73a14d74bc63637589b.html#af456b4de88a5b73a14d74bc63637589b">tbox_index_recheck</a> (StrategyNumber strategy)</td></tr>
 <tr class="memdesc:af456b4de88a5b73a14d74bc63637589b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a recheck is necessary depending on the strategy.  <a href="tbox__index_8c_af456b4de88a5b73a14d74bc63637589b.html#af456b4de88a5b73a14d74bc63637589b">More...</a><br /></td></tr>
 <tr class="separator:af456b4de88a5b73a14d74bc63637589b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a321a3b57c22dfd300cdab67431d07842"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c_a321a3b57c22dfd300cdab67431d07842.html#a321a3b57c22dfd300cdab67431d07842">tbox_penalty</a> (void *bbox1, void *bbox2)</td></tr>
+<tr class="memdesc:a321a3b57c22dfd300cdab67431d07842"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the amount by which the union of two temporal boxes is larger than the first one.  <a href="tbox__index_8c_a321a3b57c22dfd300cdab67431d07842.html#a321a3b57c22dfd300cdab67431d07842">More...</a><br /></td></tr>
+<tr class="separator:a321a3b57c22dfd300cdab67431d07842"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5223cc09d87029007047acadc3b41d86"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c_a5223cc09d87029007047acadc3b41d86.html#a5223cc09d87029007047acadc3b41d86">tbox_size</a> (const <a class="el" href="structTBox.html">TBox</a> *box)</td></tr>
+<tr class="memdesc:a5223cc09d87029007047acadc3b41d86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the size of a temporal box for penalty calculation.  <a href="tbox__index_8c_a5223cc09d87029007047acadc3b41d86.html#a5223cc09d87029007047acadc3b41d86">More...</a><br /></td></tr>
+<tr class="separator:a5223cc09d87029007047acadc3b41d86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >R-tree GiST index for temporal integers and temporal floats. </p>

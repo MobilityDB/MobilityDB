@@ -79,12 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_ad546c7e310fabf8ac276f2b9d9fac8a5.html#ad546c7e310fabf8ac276f2b9d9fac8a5">bbox_gist_consider_split</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_a51a51b5744a182bb24b37e0b4dd4454c.html#a51a51b5744a182bb24b37e0b4dd4454c">bbox_gist_fallback_split</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tnumber__gist_8h_a9d14cf0b4582e3ee2d051f352798102a.html#a9d14cf0b4582e3ee2d051f352798102a">bbox_gist_picksplit</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_aff7bf0f4bb4a1824da76546011c77ad3.html#aff7bf0f4bb4a1824da76546011c77ad3">interval_cmp_lower</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_a2593558efed8120e62f01035397fcffc.html#a2593558efed8120e62f01035397fcffc">interval_cmp_upper</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_a12a3a248218b19c5556fc1ce1deb5992.html#a12a3a248218b19c5556fc1ce1deb5992">non_negative</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnumber__gist_8h_ac82c45d52541696d02d83930ab97757e.html#ac82c45d52541696d02d83930ab97757e">tbox_index_leaf_consistent</a></td></tr>
         </table>
       </div>
@@ -128,16 +123,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Double sorting split algorithm. </p>
-<p >The algorithm finds split of boxes by considering splits along each axis. Each entry is first projected as an interval on the X-axis, and different ways to split the intervals into two groups are considered, trying to minimize the overlap of the groups. Then the same is repeated for the Y-axis, and the overall best split is chosen. The quality of a split is determined by overlap along that axis and some other criteria (see bbox_gist_consider_split).</p>
-<p >After that, all the entries are divided into three groups:</p>
-<ol type="1">
-<li>Entries which should be placed to the left group</li>
-<li>Entries which should be placed to the right group</li>
-<li>"Common entries" which can be placed to any of groups without affecting of overlap along selected axis.</li>
-</ol>
-<p >The common entries are distributed by minimizing penalty.</p>
-<p >For details see: "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov <a href="http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36">http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36</a> </p>
+<p>GiST picksplit method for bounding boxes. </p>
+<p >The split is the double sorting split of Korotkov that MEOS computes (<a class="el" href="group__meos__internal__box__index_ga2db53b49d9d06bb70f298e203c0d7393.html#ga2db53b49d9d06bb70f298e203c0d7393" title="Split a set of bounding boxes in two groups.">bbox_split</a>) on the boxes of the entries, shared with the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a>; this function only reads the entries and writes the two groups and their bounding boxes in the form GiST expects. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fcinfo</td><td>Arguments of the GiST picksplit method </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bboxtype</td><td>Type of the boxes: T_TBOX, T_STBOX or T_TPCBOX </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bbox_adjust</td><td>Function growing its first box to include the second </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bbox_penalty</td><td>Function returning the growth of its first box when the second is added </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

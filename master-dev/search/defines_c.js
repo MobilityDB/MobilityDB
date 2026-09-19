@@ -2,7 +2,7 @@ var searchData=
 [
   ['large1_0',['LARGE1',['../setset__pairs__test_8c_a0a55586ef86195defe41218473d6962e.html#a0a55586ef86195defe41218473d6962e',1,'setset_pairs_test.c']]],
   ['large2_1',['LARGE2',['../setset__pairs__test_8c_abd99bf235450f791c063a8295b696604.html#abd99bf235450f791c063a8295b696604',1,'setset_pairs_test.c']]],
-  ['limit_5fratio_2',['LIMIT_RATIO',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_a447ebdddb8fd2f64a52e7e2fea2ba992.html#a447ebdddb8fd2f64a52e7e2fea2ba992',1,'temporal.h']]],
+  ['limit_5fratio_2',['LIMIT_RATIO',['../bbox__index_8h_a447ebdddb8fd2f64a52e7e2fea2ba992.html#a447ebdddb8fd2f64a52e7e2fea2ba992',1,'bbox_index.h']]],
   ['lonlat_5fto_5fcart_3',['lonlat_to_cart',['../postgis__funcs_8h_ae591df65a6bbda7954eff62111b5b71f.html#ae591df65a6bbda7954eff62111b5b71f',1,'postgis_funcs.h']]],
   ['lwflag_5fbbox_4',['LWFLAG_BBOX',['../postgis__ext__defs_8in_8h_a6ab6b8d3b2c6f6af28b69b9021a95abd.html#a6ab6b8d3b2c6f6af28b69b9021a95abd',1,'postgis_ext_defs.in.h']]],
   ['lwflag_5fgeodetic_5',['LWFLAG_GEODETIC',['../postgis__ext__defs_8in_8h_ab6ca96468601e0590a2dd0aa0a71187b.html#ab6ca96468601e0590a2dd0aa0a71187b',1,'postgis_ext_defs.in.h']]],
