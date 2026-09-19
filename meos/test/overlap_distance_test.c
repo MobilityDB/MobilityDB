@@ -37,8 +37,9 @@
  * collection of polygons, a TIN and a polyhedral surface are the union of
  * their surfaces, which may overlap in the plane. The program asks the nearest
  * approach distance of points covered by one, by two and by no surface, of a
- * temporal point and of a temporal circular buffer, and whether the geometry
- * contains and covers a circular buffer.
+ * temporal point and of a temporal circular buffer, whether the geometry
+ * contains and covers a circular buffer, and the temporal distance of a
+ * circular buffer to a TIN and a polyhedral surface.
  *
  * The program can be built as follows
  * @code
@@ -91,6 +92,32 @@ check(double x, double y, double radius, const char *wkt, double expected)
     failures++;
   }
   free(temp); free(gs);
+}
+
+/*
+ * Compare the temporal distance of a temporal circular buffer standing still
+ * at a place with the closed form, at its first instant
+ */
+static void
+check_tdistance(double x, double y, double radius, const char *wkt,
+  double expected)
+{
+  char text[256];
+  snprintf(text, sizeof(text), "[Cbuffer(Point(%g %g),%g)@2001-01-01, "
+    "Cbuffer(Point(%g %g),%g)@2001-01-02]", x, y, radius, x, y, radius);
+  Temporal *temp = tcbuffer_in(text);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  Temporal *dist = tdistance_tcbuffer_geo(temp, gs);
+  double d = dist ? tfloat_start_value(dist) : -1.0;
+  bool ok = fabs(d - expected) <= TOLERANCE;
+  printf("  (%g %g) r %-4g %-66s %.12g %s\n", x, y, radius, wkt, d,
+    ok ? "OK" : "FAIL");
+  if (! ok)
+  {
+    printf("    closed form %.12g\n", expected);
+    failures++;
+  }
+  free(dist); free(temp); free(gs);
 }
 
 /*
@@ -148,7 +175,12 @@ int main(void)
   printf("Surfaces containing a circular buffer:\n");
   check_contains(0.5, 0.4, 0.1, twice, 1);
   check_contains(0.5, 0.4, 0.1, folded, 1);
+  check_contains(0.5, 0.4, 0.1, tin, 1);
   check_contains(5, 0.4, 0.1, twice, 0);
+  printf("Temporal distance of a circular buffer to a surface:\n");
+  check_tdistance(3, 0.5, 0.1, apart, 1.9);
+  check_tdistance(3, 0.5, 0.1,
+    "POLYHEDRALSURFACE(((0 0,1 0,0 1,0 0)),((1 0,1 1,0 1,1 0)))", 1.9);
 
   if (failures == 0)
     printf("Overlap distance test: all tests passed\n");

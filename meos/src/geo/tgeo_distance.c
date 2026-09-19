@@ -130,51 +130,6 @@ dist_minfun(double A, double B, double C, double R0, double DR, double lo,
 }
 
 /**
- * @brief Return true if the distance engine decomposes a geometry into edges
- * @details A TIN and a polyhedral surface, alone or in a collection, are left
- * to the exact path; every other geometry #geom_meos_coverage answers for is
- * read through the edges #geom_extract_edges gives
- */
-static bool
-dist_geom_decomposes(const LWGEOM *lw)
-{
-  switch (lw->type)
-  {
-    case POINTTYPE:
-    case MULTIPOINTTYPE:
-    case LINETYPE:
-    case MULTILINETYPE:
-    case POLYGONTYPE:
-    case MULTIPOLYGONTYPE:
-    case TRIANGLETYPE:
-    case CIRCSTRINGTYPE:
-    case COMPOUNDTYPE:
-    case CURVEPOLYTYPE:
-    case MULTICURVETYPE:
-    case MULTISURFACETYPE:
-      return geom_meos_coverage(lw) == 1;
-    case TINTYPE:
-    case POLYHEDRALSURFACETYPE:
-      return false;
-    case COLLECTIONTYPE:
-    {
-      const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
-      for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! dist_geom_decomposes(c->geoms[i]))
-          return false;
-      return true;
-    }
-    /* Every type liblwgeom numbers has an arm above, so this one is reached
-     * only by a type added after this code, which is reported as
-     * #geom_meos_coverage reports it */
-    default:
-      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-        "Unsupported geometry type");
-      return false;
-  }
-}
-
-/**
  * @brief Add to the arrays in the last arguments the edges of a geometry and
  * the face each one bounds
  * @details A member of a collection, a triangle of a TIN and a face of a
@@ -255,7 +210,7 @@ bool
 dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
-  if (! dist_geom_decomposes(lw))
+  if (geom_meos_coverage(lw) != 1)
   {
     lwgeom_free(lw);
     return false;
