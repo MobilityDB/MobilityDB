@@ -337,6 +337,14 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atGeometry(tgeogpoint, geography)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_at_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusGeometry(tgeogpoint, geography)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atStbox(tgeompoint, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeompoint

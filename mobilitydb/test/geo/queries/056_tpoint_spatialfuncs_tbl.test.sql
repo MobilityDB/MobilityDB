@@ -181,6 +181,7 @@ SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
 
 -------------------------------------------------------------------------------
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geom t2 WHERE temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_geography t2 WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry) AND geometrytype(g::geometry) IN ('POLYGON', 'MULTIPOLYGON') AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
 SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_stbox3d t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));

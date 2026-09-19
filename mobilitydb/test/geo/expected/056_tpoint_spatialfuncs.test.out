@@ -3501,6 +3501,75 @@ FROM temp;
  t
 (1 row)
 
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(5 5)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusGeometry(tgeogpoint 'SRID=4326;Point(5 5)@2001-01-01', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                 astext                  
+-----------------------------------------
+ POINT(5 5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                                                            astext                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(-8.384823e-12 1.000457)@Tue Jan 02 00:00:00.008023 2001 PST, POINT(2 1.000457)@Wed Jan 03 23:59:59.991976 2001 PST]}
+(1 row)
+
+SELECT asText(minusGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                                                                                                      astext                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(-1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(-8.384823e-12 1.000457)@Tue Jan 02 00:00:00.008023 2001 PST), (POINT(2 1.000457)@Wed Jan 03 23:59:59.991976 2001 PST, POINT(3 1)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-03]', geography 'SRID=4326;Polygon((-150 60,-150 70,-120 70,-120 60,-150 60))'), 6);
+                                                          astext                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ {[POINT(-150 68.423603)@Mon Jan 01 14:39:22.550164 2001 PST, POINT(-120 68.423603)@Tue Jan 02 09:20:37.449835 2001 PST]}
+(1 row)
+
+WITH temp(trip, geo) AS (
+  SELECT tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(3 1)@2001-01-05]',
+    geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))' )
+SELECT trip = merge(atGeometry(trip, geo), minusGeometry(trip, geo))
+FROM temp;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;[Point(-1 1)@2001-01-01, Point(7 1)@2001-01-09]', geography 'SRID=4326;Multipolygon(((0 0,0 2,2 2,2 0,0 0)),((4 0,4 2,6 2,6 0,4 0)))'), 6);
+                                                                                                                    astext                                                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(-3.271103e-12 1.001068)@Tue Jan 02 00:00:00.056303 2001 PST, POINT(2 1.002289)@Thu Jan 04 00:00:00.040236 2001 PST], [POINT(4 1.002289)@Fri Jan 05 23:59:59.959763 2001 PST, POINT(6 1.001068)@Sun Jan 07 23:59:59.943696 2001 PST]}
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Interp=Step;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02, Point(1 1)@2001-01-03]', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                                                                   astext                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST), [POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;{Point(1 1)@2001-01-01, Point(5 5)@2001-01-02}', geography 'SRID=4326;Polygon((0 0,0 2,2 2,2 0,0 0))'), 6);
+                  astext                   
+-------------------------------------------
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+/* Errors */
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Linestring(0 0,2 2)'));
+ERROR:  Restriction of a temporal geodetic point to a geography of type LineString is not implemented
+SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4269;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+ERROR:  Operation on mixed SRID
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
                  astext                  
 -----------------------------------------
