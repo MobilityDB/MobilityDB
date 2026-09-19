@@ -214,7 +214,7 @@ tcbuffer_add_dist_turnpts(double A, double B, double C, double DR,
  */
 static void
 tcbuffersegm_edge_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e, double *cand, int *nc)
+  double r1, double r2, const Edge *e, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
@@ -271,10 +271,10 @@ tcbuffersegm_edge_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
  */
 static void
 tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e, double *cand, int *nc)
+  double r1, double r2, const Edge *e, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
-  const double px = e->acx, py = e->acy, R = e->arad;
+  const double px = e->cx, py = e->cy, R = e->radius;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -387,8 +387,8 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
     int nc = 0;
     for (int j = 0; j < g->n; j++)
     {
-      const DistEdge *e = &g->segs[j];
-      if (e->is_arc)
+      const Edge *e = &g->segs[j];
+      if ((e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC))
         tcbuffersegm_arc_dist_turnpts(p1->x, p1->y, p2->x, p2->y, c1->radius,
           c2->radius, e, cand, &nc);
       else
@@ -808,12 +808,12 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
   int nc = rtree_search(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
   for (int j = 0; j < nc; j++)
   {
-    const DistEdge *ed =
+    const Edge *ed =
       &g->segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, sxmin,
         symin, sxmax, symax) > dist2)
       continue;
-    double m = ed->is_arc ?
+    double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
       dist_segm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
       dist_segm_edge_mindist(cx, cy, cx, cy, r, r, ed);
     if (m <= dist)
@@ -1008,7 +1008,6 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 typedef struct
 {
   int kind;             /**< Always #TCBUF_CTX_GEO */
-  DistEdge *segs;
   DistGeom g;
 } TcbufferGeoCtx;
 
@@ -1041,7 +1040,6 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
     return NULL;
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->kind = TCBUF_CTX_GEO;
-  ctx->segs = (DistEdge *) g.segs;
   g.rtree = dist_geom_build_rtree(g.segs, g.n);
   ctx->g = g;
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
@@ -1065,7 +1063,7 @@ tcbuffer_geo_ctx_free(void *ctx)
     meos_array_destroy(dist_pip_results);
     dist_pip_results = NULL;
   }
-  pfree(c->segs);
+  dist_geom_free(&c->g);
   pfree(c);
 }
 
@@ -1173,7 +1171,7 @@ tcbuffer_region_within_roots(double A, double B, double C, double R0,
  */
 static void
 tcbuffersegm_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e, double dist, double *cand, int *nc)
+  double r1, double r2, const Edge *e, double dist, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1, R0 = r1 + dist;
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
@@ -1250,10 +1248,10 @@ tcbuffersegm_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
  */
 static void
 tcbuffersegm_arc_within_roots(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e, double dist, double *cand, int *nc)
+  double r1, double r2, const Edge *e, double dist, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
-  const double px = e->acx, py = e->acy, R = e->arad;
+  const double px = e->cx, py = e->cy, R = e->radius;
   const double A = dcx * dcx + dcy * dcy;
   const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
   const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
@@ -1321,12 +1319,12 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
     dist_pip_results);
   for (int j = 0; j < ncand; j++)
   {
-    const DistEdge *ed =
+    const Edge *ed =
       &ctx->g.segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
         cymin, cxmax, cymax) > reach2)
       continue;
-    if (ed->is_arc)
+    if ((ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC))
       tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
         &nc);
     else
@@ -1417,12 +1415,12 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
   int nc = rtree_search(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
   for (int j = 0; j < nc; j++)
   {
-    const DistEdge *ed =
+    const Edge *ed =
       &g->segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cx, cy,
         cx, cy) > reach2)
       continue;
-    double m = ed->is_arc ?
+    double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
       dist_segm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
       dist_segm_edge_mindist(cx, cy, cx, cy, r, r, ed);
     if (m < best) best = m;
@@ -1529,12 +1527,12 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
     dist_pip_results);
   for (int j = 0; j < ncand; j++)
   {
-    const DistEdge *ed =
+    const Edge *ed =
       &ctx->g.segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
         cymin, cxmax, cymax) > rmax2)
       continue;
-    if (ed->is_arc)
+    if ((ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC))
       tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
         &nc);
     else
