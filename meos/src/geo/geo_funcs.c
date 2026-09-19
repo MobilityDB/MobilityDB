@@ -7636,9 +7636,9 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
   /* Handle coincident boundaries / complete containment
    * where every tested vertex may lie on the other boundary.
    * An interior witness of either geometry inside the other answers it */
-  if (relate_area_interior_point_located(a, b, 0))
+  if (relate_area_ring_point_located(a, b, 0))
     return true;
-  if (relate_area_interior_point_located(b, a, 0))
+  if (relate_area_ring_point_located(b, a, 0))
     return true;
 
   /* Every route above answers by LOCATING A POINT, and each one a tolerance
