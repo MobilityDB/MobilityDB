@@ -24,7 +24,22 @@ SELECT getResolution(ts2cell(tgeompoint
 SELECT numInstants(ts2cell(tgeompoint
   'SRID=4326;[POINT(-15 44.5)@2001-01-01, POINT(15 44.5)@2001-01-02]', 0));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id13065"></a><a class="indexterm" name="id13068"></a><p>Return the centroid of a cell, or of each cell in a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbinSplit"></a><a class="indexterm" name="id13065"></a><p>Split a temporal point at the QUADBIN cells it crosses <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</p><pre class="programlisting">
+quadbinSplit(tpoint,integer) → {(cell,tpoint)}
+</pre><p>The cover states which cell a trajectory holds and when. The split states the same cells and, beside each, the trajectory over the periods the cover states for that cell, so a value indexed by cell is read in one pass where the cover alone asks for a restriction per cell. The cells of a split are the cells of the cover, the fragment of a cell is the trajectory restricted to the periods the cover states for it, and the fragments merge into the trajectory. A trajectory reaching a cell at its last instant holds it there for an instant, and the split states that fragment over that instant.</p><p>The segment is traversed along the path its point follows, so a geodetic trajectory is split at the cells its great circles cross and a planar one at the cells its straight line in longitude and latitude crosses. The period of a fragment is what <code class="varname">getTime</code> answers for it, so the split carries no period of its own.</p><pre class="programlisting">
+SELECT (s).cell, asText((s).tpoint, 6) AS tpoint
+FROM (SELECT quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2) AS s) t;
+-- 4823ffffffffffff | {[POINT(-90 0)@2001-01-02, POINT(-45 10)@2001-01-03]}
+-- 4828ffffffffffff | {[POINT(-135 -10)@2001-01-01, POINT(-90 0)@2001-01-02)}
+SELECT count(*) FROM quadbinSplit(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 2
+SELECT count(*) FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 1
+</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id13082"></a><a class="indexterm" name="id13085"></a><p>Return the centroid of a cell, or of each cell in a trajectory</p><pre class="programlisting">
 cellToPoint({h3index,quadbin}) → geometry
 cellToPoint(s2cell) → geography
 cellToPoint({th3index,ts2cell}) → tgeogpoint
@@ -45,7 +60,7 @@ SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
 -- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id13079"></a><p>Return the polygon boundary of a cell, or of each cell in a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id13096"></a><p>Return the polygon boundary of a cell, or of each cell in a trajectory</p><pre class="programlisting">
 cellToBoundary({h3index,quadbin}) → geometry
 cellToBoundary(s2cell) → geography
 cellToBoundary({th3index,ts2cell}) → tgeography

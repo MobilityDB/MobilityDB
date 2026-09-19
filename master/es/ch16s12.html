@@ -24,7 +24,22 @@ SELECT getResolution(ts2cell(tgeompoint
 SELECT numInstants(ts2cell(tgeompoint
   'SRID=4326;[POINT(-15 44.5)@2001-01-01, POINT(15 44.5)@2001-01-02]', 0));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id12511"></a><a class="indexterm" name="id12514"></a><p>Devolver el centroide de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbinSplit"></a><a class="indexterm" name="id12511"></a><p>Dividir un punto temporal en las celdas QUADBIN que atraviesa <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</p><pre class="programlisting">
+quadbinSplit(tpoint,integer) → {(cell,tpoint)}
+</pre><p>La cobertura indica qué celda ocupa una trayectoria y cuándo. La división indica las mismas celdas y, junto a cada una, la trayectoria sobre los períodos que la cobertura indica para esa celda, de modo que un valor indexado por celda se lee en una sola pasada donde la cobertura por sí sola exige una restricción por celda. Las celdas de una división son las celdas de la cobertura, el fragmento de una celda es la trayectoria restringida a los períodos que la cobertura indica para ella, y los fragmentos se fusionan en la trayectoria. Una trayectoria que alcanza una celda en su último instante la ocupa allí durante un instante, y la división indica ese fragmento sobre ese instante.</p><p>El segmento se recorre a lo largo del camino que sigue su punto, de modo que una trayectoria geodésica se divide en las celdas que atraviesan sus círculos máximos y una planar en las celdas que atraviesa su línea recta en longitud y latitud. El período de un fragmento es el que responde <code class="varname">getTime</code> para él, de modo que la división no lleva un período propio.</p><pre class="programlisting">
+SELECT (s).cell, asText((s).tpoint, 6) AS tpoint
+FROM (SELECT quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2) AS s) t;
+-- 4823ffffffffffff | {[POINT(-90 0)@2001-01-02, POINT(-45 10)@2001-01-03]}
+-- 4828ffffffffffff | {[POINT(-135 -10)@2001-01-01, POINT(-90 0)@2001-01-02)}
+SELECT count(*) FROM quadbinSplit(tgeogpoint
+  '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 2
+SELECT count(*) FROM quadbinSplit(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+-- 1
+</pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id12528"></a><a class="indexterm" name="id12531"></a><p>Devolver el centroide de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
 cellToPoint({h3index,quadbin}) → geometry
 cellToPoint(s2cell) → geography
 cellToPoint({th3index,ts2cell}) → tgeogpoint
@@ -45,7 +60,7 @@ SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
 -- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12525"></a><p>Devolver la frontera poligonal de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12542"></a><p>Devolver la frontera poligonal de una celda, o de cada celda de una trayectoria</p><pre class="programlisting">
 cellToBoundary({h3index,quadbin}) → geometry
 cellToBoundary(s2cell) → geography
 cellToBoundary({th3index,ts2cell}) → tgeography
