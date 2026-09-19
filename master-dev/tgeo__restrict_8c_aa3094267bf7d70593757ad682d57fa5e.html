@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: YMAX</title>
+<title>MobilityDB: dggs_arc_geog_poly_spans</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,7 +84,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a57834f306834af58d8c78c2869166f9e.html#a57834f306834af58d8c78c2869166f9e">clipt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a678d86c29a00619029849937508f168d.html#a678d86c29a00619029849937508f168d">computeMaxBorderCode</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aaf74ca0597028fbf1d45e4a8951f1434.html#aaf74ca0597028fbf1d45e4a8951f1434">computeRegionCode</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aa3094267bf7d70593757ad682d57fa5e.html#aa3094267bf7d70593757ad682d57fa5e">dggs_arc_geog_poly_spans</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_aa3094267bf7d70593757ad682d57fa5e.html#aa3094267bf7d70593757ad682d57fa5e">dggs_arc_geog_poly_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_ab0c7e1b6b3e3d1d74809f82d44100473.html#ab0c7e1b6b3e3d1d74809f82d44100473">geog_polys</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a795086b344f78a4f95f073a42aaf0677.html#a795086b344f78a4f95f073a42aaf0677">geog_polys_cover_lonlat</a></td></tr>
@@ -145,23 +145,75 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a75de7b446bcad7d612676d2039462a0a.html#a75de7b446bcad7d612676d2039462a0a">tpointseq_timestamp_at_value_2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aa7cbc22071a486e0a6b6e096fb25d000.html#aa7cbc22071a486e0a6b6e096fb25d000">tpointseqset_at_stbox_segm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a3a54b60206b996b38ab94fe1fa619da6.html#a3a54b60206b996b38ab94fe1fa619da6">XMAX</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aff810458b98cc7f985d4d60152586eed.html#aff810458b98cc7f985d4d60152586eed">ZMAX</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a689b73289e27812fea68db3702a4cb82" name="a689b73289e27812fea68db3702a4cb82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a689b73289e27812fea68db3702a4cb82">&#9670;&#160;</a></span>YMAX</h2>
+<a id="aa3094267bf7d70593757ad682d57fa5e" name="aa3094267bf7d70593757ad682d57fa5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3094267bf7d70593757ad682d57fa5e">&#9670;&#160;</a></span>dggs_arc_geog_poly_spans()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int YMAX = 2</td>
+          <td class="memname">static int dggs_arc_geog_poly_spans </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structDggsArc.html">DggsArc</a> *&#160;</td>
+          <td class="paramname"><em>arc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structLWPOLY.html">LWPOLY</a> *&#160;</td>
+          <td class="paramname"><em>poly</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>tin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>tout</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxout</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the parameters at which a great-circle path enters and leaves a polygon read on the sphere. </p>
+<p >An edge of a geography joins its two vertices along the great circle through them, so it lies in the plane through the centre of the sphere whose normal is the cross product of those vertices as unit vectors, and the path meets the edge only where it meets that plane. Every such parameter cuts the path, and a piece between two consecutive cuts lies wholly inside the polygon or wholly outside it, which the position halfway along it states. A parameter where the path crosses the plane of an edge away from the edge itself only splits a piece in two, and both halves answer the same, so the extent of an edge needs no test of its own. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">arc</td><td>Great-circle path </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">poly</td><td>Polygon whose rings are read as geodetic </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">tin,tout</td><td>Parameters at which the path enters and leaves </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">maxout</td><td>Maximum number of spans to state </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of spans stated </dd></dl>
 
 </div>
 </div>

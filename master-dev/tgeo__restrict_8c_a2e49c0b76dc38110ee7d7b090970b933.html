@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: YMAX</title>
+<title>MobilityDB: tpointseq_at_geog_spans</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -133,7 +133,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_af499cf13518c427828393036095dd23d.html#af499cf13518c427828393036095dd23d">tpointinst_restrict_stbox_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aafc66b9ecf61afefe04046727056627d.html#aafc66b9ecf61afefe04046727056627d">tpointsegm_timestamp_at_value1_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a03b69ce7118f6bd737bc2b2895daefa0.html#a03b69ce7118f6bd737bc2b2895daefa0">tpointsegm_timestamp_at_value_2d_iter</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a2e49c0b76dc38110ee7d7b090970b933.html#a2e49c0b76dc38110ee7d7b090970b933">tpointseq_at_geog_spans</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a2e49c0b76dc38110ee7d7b090970b933.html#a2e49c0b76dc38110ee7d7b090970b933">tpointseq_at_geog_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_abe37e16ee321f4a29572f49b5319163f.html#abe37e16ee321f4a29572f49b5319163f">tpointseq_at_stbox_segm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a039334b64c0540ea5ca7c86fb68a7060.html#a039334b64c0540ea5ca7c86fb68a7060">tpointseq_interperiods</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a17217293a5d55af52bd0440d53635479.html#a17217293a5d55af52bd0440d53635479">tpointseq_linear_at_geom</a></td></tr>
@@ -145,23 +145,75 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a75de7b446bcad7d612676d2039462a0a.html#a75de7b446bcad7d612676d2039462a0a">tpointseq_timestamp_at_value_2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aa7cbc22071a486e0a6b6e096fb25d000.html#aa7cbc22071a486e0a6b6e096fb25d000">tpointseqset_at_stbox_segm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a3a54b60206b996b38ab94fe1fa619da6.html#a3a54b60206b996b38ab94fe1fa619da6">XMAX</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aff810458b98cc7f985d4d60152586eed.html#aff810458b98cc7f985d4d60152586eed">ZMAX</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a689b73289e27812fea68db3702a4cb82" name="a689b73289e27812fea68db3702a4cb82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a689b73289e27812fea68db3702a4cb82">&#9670;&#160;</a></span>YMAX</h2>
+<a id="a2e49c0b76dc38110ee7d7b090970b933" name="a2e49c0b76dc38110ee7d7b090970b933"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e49c0b76dc38110ee7d7b090970b933">&#9670;&#160;</a></span>tpointseq_at_geog_spans()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int YMAX = 2</td>
+          <td class="memname">static int tpointseq_at_geog_spans </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
+          <td class="paramname"><em>seq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structLWPOLY.html">LWPOLY</a> **&#160;</td>
+          <td class="paramname"><em>polys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>npolys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>spans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nspans</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the periods at which a temporal geodetic point sequence holds a geography. </p>
+<p >A geodetic point travels the great circle between two positions and a geography joins its own vertices the same way, so the periods the trip holds the region are the ones between the parameters at which its path crosses the edges, which <a class="el" href="tgeo__restrict_8c_aa3094267bf7d70593757ad682d57fa5e.html#aa3094267bf7d70593757ad682d57fa5e" title="Return the parameters at which a great-circle path enters and leaves a polygon read on the sphere.">dggs_arc_geog_poly_spans()</a> states. A segment of a sequence that does not interpolate holds the position of its first instant throughout, so it holds the region for its whole extent or not at all. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point sequence </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">polys,npolys</td><td>Polygons the geography states </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">spans</td><td>Spans the sequence states, appended to </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nspans</td><td>Number of spans already stated </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The sequence is geodetic and the arguments have the same SRID </dd></dl>
 
 </div>
 </div>

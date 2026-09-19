@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: YMAX</title>
+<title>MobilityDB: tpoint_geog_restrict_geom</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a14d94240f3add674322e1cdf876f24c8.html#a14d94240f3add674322e1cdf876f24c8">tpoint_at_stbox_segm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__restrict_ga77f72ea068432b75f552834599130bd8.html#ga77f72ea068432b75f552834599130bd8">tpoint_at_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_ab5603f9dad173ba65a71b95239375ac0.html#ab5603f9dad173ba65a71b95239375ac0">tpoint_force2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a6e9d04c22757399553fc4b1fec42e228.html#a6e9d04c22757399553fc4b1fec42e228">tpoint_geog_restrict_geom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a6e9d04c22757399553fc4b1fec42e228.html#a6e9d04c22757399553fc4b1fec42e228">tpoint_geog_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__restrict_gab654abea6114d5ec981a2a4d7a0e2e2b.html#gab654abea6114d5ec981a2a4d7a0e2e2b">tpoint_minus_elevation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__restrict_ga083a6d3ecda7bc4d1295744421326cdc.html#ga083a6d3ecda7bc4d1295744421326cdc">tpoint_minus_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__restrict_ga2870265c88f951354c259d91fb753c36.html#ga2870265c88f951354c259d91fb753c36">tpoint_minus_value</a></td></tr>
@@ -145,23 +145,62 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a75de7b446bcad7d612676d2039462a0a.html#a75de7b446bcad7d612676d2039462a0a">tpointseq_timestamp_at_value_2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aa7cbc22071a486e0a6b6e096fb25d000.html#aa7cbc22071a486e0a6b6e096fb25d000">tpointseqset_at_stbox_segm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a3a54b60206b996b38ab94fe1fa619da6.html#a3a54b60206b996b38ab94fe1fa619da6">XMAX</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82">YMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_aff810458b98cc7f985d4d60152586eed.html#aff810458b98cc7f985d4d60152586eed">ZMAX</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a689b73289e27812fea68db3702a4cb82" name="a689b73289e27812fea68db3702a4cb82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a689b73289e27812fea68db3702a4cb82">&#9670;&#160;</a></span>YMAX</h2>
+<a id="a6e9d04c22757399553fc4b1fec42e228" name="a6e9d04c22757399553fc4b1fec42e228"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e9d04c22757399553fc4b1fec42e228">&#9670;&#160;</a></span>tpoint_geog_restrict_geom()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int YMAX = 2</td>
+          <td class="memname">static <a class="el" href="structTemporal.html">Temporal</a> * tpoint_geog_restrict_geom </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>atfunc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return a temporal geodetic point restricted to (the complement of) a geography. </p>
+<p >The periods the value holds the region state the restriction whole: the <code>at</code> restriction keeps them and the <code>minus</code> restriction keeps the rest, so the two partition the time domain by construction. The value returns the dimensions the path does not state, exactly as the restriction to a box does. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geodetic point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geography </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">atfunc</td><td>True if the restriction is <code>at</code>, false for <code>minus</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The arguments have the same SRID and the geography is not empty </dd></dl>
 
 </div>
 </div>
