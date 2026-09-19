@@ -122,6 +122,13 @@ typedef struct
   MeosArray *edges; /**< Array of the extracted edges, which @p segs reads
                          until the buckets copy them in their own order, then
                          NULL */
+  int *face;        /**< Face each edge bounds, in the order of @p segs, or -1
+                         for an edge bounding no region; NULL when the region
+                         edges bound one face */
+  int nfaces;       /**< Number of faces */
+  uint8 *state;     /**< Scratch parity and seen flag of each face, read by
+                         #dist_geom_point_inside */
+  int *touched;     /**< Scratch list of the faces a point crosses */
 } DistGeom;
 
 /**
