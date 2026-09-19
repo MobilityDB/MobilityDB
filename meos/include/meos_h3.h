@@ -260,6 +260,10 @@ extern Temporal *th3index_child_pos_to_cell(const Temporal *child_pos,
 
 extern Temporal *tgeogpoint_to_th3index(const Temporal *temp, int32 resolution);
 extern Temporal *tgeompoint_to_th3index(const Temporal *temp, int32 resolution);
+extern Temporal **tgeogpoint_h3index_split(const Temporal *temp,
+  int32 resolution, Datum **cells, int *count);
+extern Temporal **tgeompoint_h3index_split(const Temporal *temp,
+  int32 resolution, Datum **cells, int *count);
 extern Temporal *th3index_to_tgeogpoint(const Temporal *temp);
 extern Temporal *th3index_to_tgeompoint(const Temporal *temp);
 

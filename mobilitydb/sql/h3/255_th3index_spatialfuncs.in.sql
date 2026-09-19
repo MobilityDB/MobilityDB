@@ -63,6 +63,35 @@ CREATE FUNCTION th3index(tgeogpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Split by the cells of the grid
+ *
+ * The cover states which cell a trajectory holds and when. A split states the
+ * same cells and, beside each, the trajectory over the periods the cover
+ * states for it, so a value indexed by cell is read in one pass rather than
+ * one restriction per cell.
+ ******************************************************************************/
+
+CREATE TYPE h3index_tpoint AS (
+  cell h3index,
+  tpoint tgeompoint
+);
+
+CREATE TYPE h3index_tgeogpoint AS (
+  cell h3index,
+  tpoint tgeogpoint
+);
+
+CREATE FUNCTION h3Split(tgeompoint, integer)
+  RETURNS SETOF h3index_tpoint
+  AS 'MODULE_PATHNAME', 'Tgeompoint_h3index_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION h3Split(tgeogpoint, integer)
+  RETURNS SETOF h3index_tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_h3index_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * cellToPoint
  *
  * Primary output is `tgeogpoint` (geodetic, matches h3-pg semantics);

@@ -3013,6 +3013,9 @@
 					<para><link linkend="tcell_quadbinSplit"><varname>quadbinSplit</varname></link>: Split a temporal point at the QUADBIN cells it crosses &SRF;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_h3Split"><varname>h3Split</varname></link>: Split a temporal point at the H3 cells it crosses &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Return the centroid of a cell, or of each cell in a trajectory</para>
 				</listitem>
 				<listitem>

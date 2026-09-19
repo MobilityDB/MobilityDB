@@ -337,3 +337,53 @@ FROM trip, unnest(th3index(tp, 3)) u;
                    0 |                113
 (1 row)
 
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE s.tpoint <> atTime(tp, getTime(s.tpoint)))
+  AS fragments_stating_another_value,
+  count(*) FILTER (WHERE getTime(s.tpoint) <>
+    (SELECT u.time FROM unnest(th3index(tp, 3)) u WHERE u.value = s.cell))
+  AS fragments_stating_another_period
+FROM trip, LATERAL h3Split(tp, 3) s;
+ fragments | fragments_stating_another_value | fragments_stating_another_period 
+-----------+---------------------------------+----------------------------------
+       113 |                               0 |                                0
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT set(array_agg(s.cell)) = getValues(th3index(tp, 3)) AS same_cells
+FROM trip, LATERAL h3Split(tp, 3) s GROUP BY tp;
+ same_cells 
+------------
+ t
+(1 row)
+
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT merge(array_agg(s.tpoint ORDER BY getTime(s.tpoint))) = tp AS merges_back
+FROM trip, LATERAL h3Split(tp, 3) s GROUP BY tp;
+ merges_back 
+-------------
+ t
+(1 row)
+
+SELECT count(*) AS fragments
+FROM h3Split(tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+ fragments 
+-----------
+        14
+(1 row)
+
+SELECT count(*) AS fragments
+FROM h3Split(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+ fragments 
+-----------
+        16
+(1 row)
+

@@ -3004,6 +3004,9 @@
 					<para><link linkend="tcell_quadbinSplit"><varname>quadbinSplit</varname></link>: Dividir un punto temporal en las celdas QUADBIN que atraviesa &SRF;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_h3Split"><varname>h3Split</varname></link>: Dividir un punto temporal en las celdas H3 que atraviesa &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Devolver el centroide de una celda, o de cada celda de una trayectoria</para>
 				</listitem>
 				<listitem>
