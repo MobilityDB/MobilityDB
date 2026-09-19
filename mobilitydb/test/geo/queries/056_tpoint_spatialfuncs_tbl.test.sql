@@ -188,6 +188,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_stbox3d t2 WHERE temp != merge(atS
 SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_floatspan t2 WHERE temp != merge(atElevation(temp, f), minusElevation(temp, f));
 
 
 -------------------------------------------------------------------------------

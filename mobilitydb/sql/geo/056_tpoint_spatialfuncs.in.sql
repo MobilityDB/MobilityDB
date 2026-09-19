@@ -360,8 +360,16 @@ CREATE FUNCTION atElevation(tgeompoint, floatspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_at_elevation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atElevation(tgeogpoint, floatspan)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_at_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusElevation(tgeompoint, floatspan)
   RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_minus_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusElevation(tgeogpoint, floatspan)
+  RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_elevation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
