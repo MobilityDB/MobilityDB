@@ -8,5 +8,6 @@ var searchData=
   ['ais_5fgeneralize_2ec_5',['ais_generalize.c',['../ais__generalize_8c.html',1,'']]],
   ['ais_5ftransform_2ec_6',['ais_transform.c',['../ais__transform_8c.html',1,'']]],
   ['ais_5ftransform_5ffull_2ec_7',['ais_transform_full.c',['../ais__transform__full_8c.html',1,'']]],
-  ['allocator_5ftest_2ec_8',['allocator_test.c',['../allocator__test_8c.html',1,'']]]
+  ['allocator_5ftest_2ec_8',['allocator_test.c',['../allocator__test_8c.html',1,'']]],
+  ['arc_5fdistance_5ftest_2ec_9',['arc_distance_test.c',['../arc__distance__test_8c.html',1,'']]]
 ];

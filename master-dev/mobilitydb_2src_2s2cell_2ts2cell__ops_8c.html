@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">ts2cell_ops.c File Reference</div></div>
 </div><!--header-->
@@ -84,20 +85,36 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
+<code>#include &lt;funcapi.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__cellindex_8h_source.html">meos_cellindex.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__s2cell_8h_source.html">meos_s2cell.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structS2cellSplitState.html">S2cellSplitState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">State of an S2 split, holding the cell and the fragment of every row it has left to return.  <a href="structS2cellSplitState.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gaba010cd2d264c707710c6364b0737f73"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__conversion_gaba010cd2d264c707710c6364b0737f73.html#gaba010cd2d264c707710c6364b0737f73">Tgeogpoint_s2cell_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:gaba010cd2d264c707710c6364b0737f73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal geodetic point split by the S2 cells it crosses at the given level, and the cell of each @sqlfn s2Split()  <a href="group__mobilitydb__s2cell__conversion_gaba010cd2d264c707710c6364b0737f73.html#gaba010cd2d264c707710c6364b0737f73">More...</a><br /></td></tr>
+<tr class="separator:gaba010cd2d264c707710c6364b0737f73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4c8d00a7ad5d69900d6760c619822892"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__conversion_ga4c8d00a7ad5d69900d6760c619822892.html#ga4c8d00a7ad5d69900d6760c619822892">Tgeogpoint_to_ts2cell</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga4c8d00a7ad5d69900d6760c619822892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal S2 cell of a temporal geodetic point at the given level @sqlfn ts2cell()  <a href="group__mobilitydb__s2cell__conversion_ga4c8d00a7ad5d69900d6760c619822892.html#ga4c8d00a7ad5d69900d6760c619822892">More...</a><br /></td></tr>
 <tr class="separator:ga4c8d00a7ad5d69900d6760c619822892"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae036f0b20845325e6407efd924d87210"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__conversion_gae036f0b20845325e6407efd924d87210.html#gae036f0b20845325e6407efd924d87210">Tgeompoint_s2cell_split</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:gae036f0b20845325e6407efd924d87210"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal planar point split by the S2 cells it crosses at the given level, and the cell of each @sqlfn s2Split()  <a href="group__mobilitydb__s2cell__conversion_gae036f0b20845325e6407efd924d87210.html#gae036f0b20845325e6407efd924d87210">More...</a><br /></td></tr>
+<tr class="separator:gae036f0b20845325e6407efd924d87210"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1a16c0ec127bf586de879d3e6be36323"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__conversion_ga1a16c0ec127bf586de879d3e6be36323.html#ga1a16c0ec127bf586de879d3e6be36323">Tgeompoint_to_ts2cell</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga1a16c0ec127bf586de879d3e6be36323"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal S2 cell of a temporal planar point at the given level (SRID must be 4326) @sqlfn ts2cell()  <a href="group__mobilitydb__s2cell__conversion_ga1a16c0ec127bf586de879d3e6be36323.html#ga1a16c0ec127bf586de879d3e6be36323">More...</a><br /></td></tr>
 <tr class="separator:ga1a16c0ec127bf586de879d3e6be36323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae70ea0ad973e156c90ab539e0d80d475"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2s2cell_2ts2cell__ops_8c_ae70ea0ad973e156c90ab539e0d80d475.html#ae70ea0ad973e156c90ab539e0d80d475">Tpoint_s2cell_split_ext</a> (FunctionCallInfo fcinfo, <a class="el" href="structTemporal.html">Temporal</a> **(*split)(const <a class="el" href="structTemporal.html">Temporal</a> *, int32, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> **, int *))</td></tr>
+<tr class="memdesc:ae70ea0ad973e156c90ab539e0d80d475"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal point split by the S2 cells it crosses, and the cell of each.  <a href="mobilitydb_2src_2s2cell_2ts2cell__ops_8c_ae70ea0ad973e156c90ab539e0d80d475.html#ae70ea0ad973e156c90ab539e0d80d475">More...</a><br /></td></tr>
+<tr class="separator:ae70ea0ad973e156c90ab539e0d80d475"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafbc4e6f54586a282c472fe95e1370d22"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__s2cell__accessor_gafbc4e6f54586a282c472fe95e1370d22.html#gafbc4e6f54586a282c472fe95e1370d22">Ts2cell_cell_area</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gafbc4e6f54586a282c472fe95e1370d22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the area in square metres of each cell of a temporal S2 value @sqlfn cellArea()  <a href="group__mobilitydb__s2cell__accessor_gafbc4e6f54586a282c472fe95e1370d22.html#gafbc4e6f54586a282c472fe95e1370d22">More...</a><br /></td></tr>
 <tr class="separator:gafbc4e6f54586a282c472fe95e1370d22"><td class="memSeparator" colspan="2">&#160;</td></tr>
