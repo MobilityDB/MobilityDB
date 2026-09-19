@@ -330,3 +330,27 @@ SELECT round(ST_Length(shortestLine(tcbuffer '{[Cbuffer(Point(0 0), 1)@2001-01-0
 SELECT round(ST_Length(shortestLine(tcbuffer '{Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(8 3), 2)@2001-01-02}', geometry 'Multipolygon(((200 200,200 210,210 210,210 200,200 200)),((9 -1,9 1,12 1,12 -1,9 -1)))'))::numeric, 6);
 
 -------------------------------------------------------------------------------
+-- Set-set minimum distance
+-------------------------------------------------------------------------------
+
+-- The distance ignores time: two capsules of radii 1 and 0.5 whose centre
+-- lines run 5 apart, crossed on different days, are 5 - 1 - 0.5 apart, and a
+-- far buffer in the first set does not lower it
+SELECT round(minDistance(
+  ARRAY[tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-02]',
+    tcbuffer '[Cbuffer(Point(20 20),1)@2001-01-01, Cbuffer(Point(22 20),1)@2001-01-02]'],
+  ARRAY[tcbuffer '[Cbuffer(Point(0 5),0.5)@2001-01-03, Cbuffer(Point(2 5),0.5)@2001-01-04]'])::numeric, 6);
+-- Buffers whose swept discs overlap are at distance 0
+SELECT round(minDistance(
+  ARRAY[tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-02]'],
+  ARRAY[tcbuffer '[Cbuffer(Point(2 1.5),1)@2001-01-05, Cbuffer(Point(2 3),1)@2001-01-06]'])::numeric, 6);
+-- A radius that grows along the segment: the discs of radius 1 and 3 at the
+-- ends of a segment from (0 0) to (10 0) against a disc of radius 1 at (10 5),
+-- which the end disc of radius 3 reaches within 5 - 3 - 1
+SELECT round(minDistance(
+  ARRAY[tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),3)@2001-01-02]'],
+  ARRAY[tcbuffer 'Cbuffer(Point(10 5),1)@2001-01-03'])::numeric, 6);
+-- An empty array has no minimum
+SELECT minDistance(ARRAY[]::tcbuffer[], ARRAY[tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01']);
+
+-------------------------------------------------------------------------------

@@ -284,6 +284,7 @@ extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tcbuffer_stbox(const Temporal *temp, const STBox *box);
 extern double nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern double mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double threshold);
+extern double mindistance_tcbufferarr_tcbufferarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
 extern TInstant *nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern TInstant *nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);

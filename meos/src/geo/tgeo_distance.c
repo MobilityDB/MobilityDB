@@ -3346,26 +3346,62 @@ mindist_tpoint_tpoint_threshold(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @brief qsort comparator: pair record ordered by bbox-distance ascending
- */
-typedef struct
-{
-  int i;
-  int j;
-  double bd;
-} TgeoarrPair;
-
-/**
  * @brief Compare two candidate pairs by the distance between their bounding boxes
  */
 static int
-tgeoarr_pair_cmp(const void *a, const void *b)
+tspatialarr_pair_cmp(const void *a, const void *b)
 {
-  double da = ((const TgeoarrPair *) a)->bd;
-  double db = ((const TgeoarrPair *) b)->bd;
+  double da = ((const TspatialarrPair *) a)->bd;
+  double db = ((const TspatialarrPair *) b)->bd;
   if (da < db) return -1;
   if (da > db) return 1;
   return 0;
+}
+
+/**
+ * @brief Return every pair drawn from two arrays of spatial temporal values
+ * with the distance between their boxes, nearest first
+ * @details The box of a value holds every point the value covers, so the
+ * distance between the boxes of a pair bounds from below the spatial distance
+ * between its values, and a search taking the pairs in this order stops once
+ * its running minimum is no greater than the bound of the next pair. The
+ * planar distance between boxes bounds no geodetic distance, so a geodetic
+ * pair is given the bound 0, which keeps every pair in the search
+ * @param[in] arr1,arr2 Arrays of spatial temporal values, sharing their SRID,
+ * dimensionality and geodetic flag
+ * @param[in] count1,count2 Array lengths, both positive
+ * @return Array of @p count1 times @p count2 pairs
+ */
+TspatialarrPair *
+tspatialarr_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
+  int count2)
+{
+  assert(arr1); assert(arr2); assert(count1 > 0); assert(count2 > 0);
+  /* The box of each value, read once for all the pairs it takes part in */
+  STBox *bb1 = palloc(count1 * sizeof(STBox));
+  STBox *bb2 = palloc(count2 * sizeof(STBox));
+  for (int i = 0; i < count1; i++)
+    tspatial_set_stbox(arr1[i], &bb1[i]);
+  for (int j = 0; j < count2; j++)
+    tspatial_set_stbox(arr2[j], &bb2[j]);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
+  /* The number of pairs is counted in size_t, since the product of the two
+   * lengths can exceed an int */
+  size_t npairs = count1;
+  npairs *= count2;
+  TspatialarrPair *pairs = palloc(npairs * sizeof(TspatialarrPair));
+  size_t k = 0;
+  for (int i = 0; i < count1; i++)
+    for (int j = 0; j < count2; j++)
+    {
+      pairs[k].i = i;
+      pairs[k].j = j;
+      pairs[k].bd = geodetic ? 0.0 : stbox_spatial_dist(&bb1[i], &bb2[j]);
+      k++;
+    }
+  qsort(pairs, npairs, sizeof(TspatialarrPair), tspatialarr_pair_cmp);
+  pfree(bb1); pfree(bb2);
+  return pairs;
 }
 
 /**
@@ -3414,31 +3450,10 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
         ! ensure_same_geodetic(arr2[j]->flags, flags))
       return DBL_MAX;
 
-  /* Pre-compute STBoxes for every input.  Each tspatial_to_stbox is a
-   * cheap aggregate over the temporal value, amortised across all pairs
-   * involving that input. */
-  STBox *bb1 = palloc(count1 * sizeof(STBox));
-  STBox *bb2 = palloc(count2 * sizeof(STBox));
-  for (int i = 0; i < count1; i++) tspatial_set_stbox(arr1[i], &bb1[i]);
-  for (int j = 0; j < count2; j++) tspatial_set_stbox(arr2[j], &bb2[j]);
-
-  /* Materialise all candidate pairs with their bbox-distance lower bound */
-  int npairs = count1 * count2;
-  TgeoarrPair *pairs = palloc(npairs * sizeof(TgeoarrPair));
-  int k = 0;
-  for (int i = 0; i < count1; i++)
-    for (int j = 0; j < count2; j++)
-    {
-      pairs[k].i = i;
-      pairs[k].j = j;
-      /* The planar bbox distance is not a lower bound on the geodetic
-       * distance, so for geodetic inputs every pair gets a zero lower bound,
-       * disabling the ordering short-circuit so that all pairs are tested */
-      pairs[k].bd = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags) ? 0.0 :
-        stbox_spatial_dist(&bb1[i], &bb2[j]);
-      k++;
-    }
-  qsort(pairs, npairs, sizeof(TgeoarrPair), tgeoarr_pair_cmp);
+  /* Every pair with the distance between its boxes, nearest first */
+  size_t npairs = count1;
+  npairs *= count2;
+  TspatialarrPair *pairs = tspatialarr_pairs(arr1, count1, arr2, count2);
 
   /* Trajectory cache: each input's trajectory is materialised at most
    * once and reused across every pair it participates in. */
@@ -3469,7 +3484,7 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   }
 
   double running_min = DBL_MAX;
-  for (k = 0; k < npairs; k++)
+  for (size_t k = 0; k < npairs; k++)
   {
     /* All remaining pairs have bbox-distance >= pairs[k].bd, which is
      * a sound lower bound on the trajectory pair's actual distance.
@@ -3513,7 +3528,7 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   {
     if (traj2[j] != NULL) pfree(traj2[j]);
   }
-  pfree(bb1); pfree(bb2); pfree(traj1); pfree(traj2); pfree(pairs);
+  pfree(traj1); pfree(traj2); pfree(pairs);
   return running_min;
 }
 
