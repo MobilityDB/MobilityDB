@@ -1331,19 +1331,31 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
 }
 
 /**
- * @brief Set the axes of a tree of spatiotemporal boxes from the flags of the
- * boxes it holds
+ * @brief Set the axes of a tree of temporal or spatiotemporal boxes from a box
+ * it holds
  * @details The axes are those the boxes carry, in the numbering of
- * #get_axis_stbox: X and Y, then Z, then time. A box lacking an axis has a
- * zero length on it, so measuring it there makes every area zero and every
- * choice of subtree the first one
+ * #get_axis_tbox (value, then time) or #get_axis_stbox (X and Y, then Z, then
+ * time). A box lacking an axis has a zero length on it, so measuring it there
+ * makes every area zero and every choice of subtree the first one
  * @param[in] rtree The RTree
- * @param[in] flags Flags of a box of the tree
+ * @param[in] box A box of the tree
  */
 static void
-rtree_set_axes(RTree *rtree, int16 flags)
+rtree_set_axes(RTree *rtree, const void *box)
 {
   int n = 0;
+  if (rtree->bboxtype == T_TBOX)
+  {
+    int16 flags = ((const TBox *) box)->flags;
+    if (MEOS_FLAGS_GET_X(flags))
+      rtree->axes[n++] = 0;
+    if (MEOS_FLAGS_GET_T(flags))
+      rtree->axes[n++] = 1;
+    rtree->dims = n;
+    return;
+  }
+  /* A tpcbox lays out its flags as a spatiotemporal box does */
+  int16 flags = ((const STBox *) box)->flags;
   if (MEOS_FLAGS_GET_X(flags))
   {
     rtree->axes[n++] = 0;
@@ -1385,8 +1397,8 @@ rtree_create(MeosType bboxtype)
   }
   else if (bboxtype == T_TBOX)
   {
-    rtree->dims = 2;
-    rtree->axes[0] = 0; rtree->axes[1] = 1;
+    /* The axes are set from the first box (#rtree_set_axes) */
+    rtree->dims = -1;
     rtree->get_axis = &get_axis_tbox;
     rtree->bbox_expand = &bbox_expand_tbox;
     rtree->bbox_contains = &bbox_contains_tbox;
@@ -1696,7 +1708,7 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
   /* A box type whose dimension count depends on the data carries -1 until the
    * first box arrives, which for a tree grown by insertion is the first insert */
   if (rtree->dims < 0)
-    rtree_set_axes(rtree, ((const STBox *) boxes)->flags);
+    rtree_set_axes(rtree, boxes);
 
   STRItem *items = palloc(sizeof(STRItem) * (size_t) count);
   for (int i = 0; i < count; i++)
@@ -1762,7 +1774,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
     {
       RTreeNode *new_root = node_make(RTREE_LEAF, rtree->bboxsize);
       if (rtree->dims < 0)
-        rtree_set_axes(rtree, ((const STBox *) box)->flags);
+        rtree_set_axes(rtree, box);
       rtree->root = new_root;
       memcpy(rtree->box, box, rtree->bboxsize);
     }
