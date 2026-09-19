@@ -535,9 +535,18 @@ SELECT astext(atStbox(tgeometry '(Point(3 1)@2001-01-01, Point(2 1)@2001-01-02, 
 SELECT astext(atStbox(tgeometry '(Point(1 1)@2001-01-01, Point(3 1)@2001-01-02, Point(3 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
 SELECT astext(atStbox(tgeometry '(Point(3 1)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
 
+-- A box holding no coordinates restricts a body having Z in time alone
+SELECT asText(atStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX T([2001-01-01,2001-01-02])'));
+SELECT asText(minusStbox(tgeometry '{Linestring(1 1 1,3 3 3)@2001-01-01, Linestring(1 1 1,3 3 3)@2001-01-03}', 'STBOX T([2001-01-01,2001-01-02])'));
+
 /* Errors */
 SELECT asText(atStbox(tgeometry 'SRID=4326;Point(1 1)@2001-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])'));
 SELECT asText(atStbox(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+-- The body of a temporal geometry is clipped in 2D
+SELECT asText(atStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX X((1,1),(2,2))'));
+SELECT asText(atStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX Z((1,1,1),(2,2,2))'));
+SELECT asText(minusStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX X((1,1),(2,2))'));
+SELECT asText(minusStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
 
 -------------------------------------------------------------------------------
 

@@ -1350,8 +1350,10 @@ tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @note It is possible to mix 2D/3D geometries, the Z dimension is only
- * considered if both the temporal geo and the box have Z dimension
+ * @note A temporal point is restricted in 3D: 2D/3D arguments can be mixed,
+ * the Z dimension being considered only if both the temporal point and the box
+ * have Z dimension. The body of a temporal geometry is clipped in 2D, so a
+ * body having Z dimension is refused
  */
 Temporal *
 tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -1364,7 +1366,10 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
   if (hasx && (! ensure_same_geodetic(temp->flags, box->flags) ||
-      ! ensure_same_srid(tspatial_srid(temp), box->srid)))
+      ! ensure_same_srid(tspatial_srid(temp), box->srid) ||
+      /* Generic 3D geometries cannot be restricted to a spatiotemporal box */
+      (tgeo_type(temp->temptype) &&
+       ! ensure_has_not_Z(temp->temptype, temp->flags))))
     return NULL;
 
   /* Short-circuit restriction to only the time dimension */
