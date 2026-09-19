@@ -173,10 +173,50 @@ tboxnode_copy(const TboxNode *box)
 }
 
 /**
+ * @brief Return the number of dimensions a temporal box is partitioned on:
+ * the bounds of the axes the box carries
+ * @details Two for X (the lower and upper bound of the value span) and two for
+ * T (the lower and upper bound of the period). An index over boxes lacking an
+ * axis never splits on it: a quad-tree node has one child per combination of
+ * the bounds present, and a k-d tree cycles over those bounds only. The axes
+ * of a node are those of its centroid.
+ * @param[in] flags Flags of the box
+ */
+int
+tbox_index_dims(int16 flags)
+{
+  return (MEOS_FLAGS_GET_X(flags) ? 2 : 0) + (MEOS_FLAGS_GET_T(flags) ? 2 : 0);
+}
+
+/**
+ * @brief Return the quadrant bit carrying a bound of a temporal box
+ * @details The bounds present are packed from the lowest bit: the upper and
+ * lower period bound, then the upper and lower value bound. A box carrying X
+ * and T keeps the numbering of the full layout
+ * @param[in] flags Flags of the centroid
+ * @param[in] dim Bound
+ */
+int
+tbox_quadrant_bit(int16 flags, TboxDim dim)
+{
+  int base = 0;
+  if (MEOS_FLAGS_GET_T(flags))
+  {
+    if (dim == TBOX_TMAX)
+      return 0;
+    if (dim == TBOX_TMIN)
+      return 1;
+    base = 2;
+  }
+  assert(MEOS_FLAGS_GET_X(flags) && (dim == TBOX_XMAX || dim == TBOX_XMIN));
+  return (dim == TBOX_XMAX) ? base : base + 1;
+}
+
+/**
  * @brief Calculate the quadrant
- * @details The quadrant is 8 bit unsigned integer with 4 least bits in use.
- * This function accepts temporal boxes as input. All 4 bits are set by
- * comparing a corner of the box. This makes 16 quadrants in total.
+ * @details One bit per bound of the axes the centroid carries, set where the
+ * box is above the centroid on that bound, packed as #tbox_quadrant_bit
+ * states: 4 quadrants for X or for T, 16 for X and T.
  *
  * Continuing with the example at the top of this file 
  * @code
@@ -207,19 +247,23 @@ uint8
 getQuadrant4D(const TBox *centroid, const TBox *inBox)
 {
   uint8 quadrant = 0;
-
-  if (datum_gt(inBox->span.lower, centroid->span.lower, inBox->span.basetype))
-    quadrant |= 0x8;
-
-  if (datum_gt(inBox->span.upper, centroid->span.upper, inBox->span.basetype))
-    quadrant |= 0x4;
-
-  if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
-    quadrant |= 0x2;
-
-  if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
-    quadrant |= 0x1;
-
+  int16 flags = centroid->flags;
+  int b = 0;
+  if (MEOS_FLAGS_GET_T(flags))
+  {
+    if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
+      quadrant |= 0x01;
+    if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
+      quadrant |= 0x02;
+    b = 2;
+  }
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    if (datum_gt(inBox->span.upper, centroid->span.upper, inBox->span.basetype))
+      quadrant |= (uint8) (1 << b);
+    if (datum_gt(inBox->span.lower, centroid->span.lower, inBox->span.basetype))
+      quadrant |= (uint8) (1 << (b + 1));
+  }
   return quadrant;
 }
 
@@ -264,27 +308,31 @@ tboxnode_quadtree_next(const TboxNode *nodebox, const TBox *centroid,
   uint8 quadrant, TboxNode *next_nodebox)
 {
   memcpy(next_nodebox, nodebox, sizeof(TboxNode));
-
-  if (quadrant & 0x8)
-    next_nodebox->left.span.lower = centroid->span.lower;
-  else
-    next_nodebox->left.span.upper = centroid->span.lower;
-
-  if (quadrant & 0x4)
-    next_nodebox->right.span.lower = centroid->span.upper;
-  else
-    next_nodebox->right.span.upper = centroid->span.upper;
-
-  if (quadrant & 0x2)
-    next_nodebox->left.period.lower = centroid->period.lower;
-  else
-    next_nodebox->left.period.upper = centroid->period.lower;
-
-  if (quadrant & 0x1)
-    next_nodebox->right.period.lower = centroid->period.upper;
-  else
-    next_nodebox->right.period.upper = centroid->period.upper;
-
+  int16 flags = centroid->flags;
+  int b = 0;
+  if (MEOS_FLAGS_GET_T(flags))
+  {
+    if (quadrant & 0x01)
+      next_nodebox->right.period.lower = centroid->period.upper;
+    else
+      next_nodebox->right.period.upper = centroid->period.upper;
+    if (quadrant & 0x02)
+      next_nodebox->left.period.lower = centroid->period.lower;
+    else
+      next_nodebox->left.period.upper = centroid->period.lower;
+    b = 2;
+  }
+  if (MEOS_FLAGS_GET_X(flags))
+  {
+    if (quadrant & (1 << b))
+      next_nodebox->right.span.lower = centroid->span.upper;
+    else
+      next_nodebox->right.span.upper = centroid->span.upper;
+    if (quadrant & (1 << (b + 1)))
+      next_nodebox->left.span.lower = centroid->span.lower;
+    else
+      next_nodebox->left.span.upper = centroid->span.lower;
+  }
   return;
 }
 
@@ -297,38 +345,34 @@ tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,
   uint8 node, int level, TboxNode *next_nodebox)
 {
   memcpy(next_nodebox, nodebox, sizeof(TboxNode));
-  int mod = level % 4;
-  if (mod == 0)
+  /* Node 0 holds the boxes below the centroid on the bound of the level, node
+   * 1 those above it */
+  switch (tbox_kd_dim(centroid->flags, level))
   {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.span.lower = centroid->span.lower;
-    else
-      next_nodebox->left.span.lower = centroid->span.lower;
-  }
-  else if (mod == 1)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.span.upper = centroid->span.upper;
-    else
-      next_nodebox->left.span.upper = centroid->span.upper;
-  }
-  else if (mod == 2)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.period.lower = centroid->period.lower;
-    else
-      next_nodebox->left.period.lower = centroid->period.lower;
-  }
-  else /* mod == 3 */
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.period.upper = centroid->period.upper;
-    else
-      next_nodebox->left.period.upper = centroid->period.upper;
+    case TBOX_XMIN:
+      if (node == 0)
+        next_nodebox->right.span.lower = centroid->span.lower;
+      else
+        next_nodebox->left.span.lower = centroid->span.lower;
+      break;
+    case TBOX_XMAX:
+      if (node == 0)
+        next_nodebox->right.span.upper = centroid->span.upper;
+      else
+        next_nodebox->left.span.upper = centroid->span.upper;
+      break;
+    case TBOX_TMIN:
+      if (node == 0)
+        next_nodebox->right.period.lower = centroid->period.lower;
+      else
+        next_nodebox->left.period.lower = centroid->period.lower;
+      break;
+    case TBOX_TMAX:
+      if (node == 0)
+        next_nodebox->right.period.upper = centroid->period.upper;
+      else
+        next_nodebox->left.period.upper = centroid->period.upper;
+      break;
   }
   return;
 }
@@ -690,18 +734,21 @@ tbox_tmax_cmp(const TBox *box1, const TBox *box2)
     box1->period.basetype) ? 1 : -1;
 }
 
+/**
+ * @brief Compare a box with the centroid of a k-d tree level on the bound the
+ * level splits on (#tbox_kd_dim)
+ */
 int
 tbox_level_cmp(const TBox *centroid, const TBox *query, int level)
 {
-  int mod = level % 4;
-  if (mod == 0)
-    return tbox_xmin_cmp(query, centroid);
-  else if (mod == 1)
-    return tbox_xmax_cmp(query, centroid);
-  else if (mod == 2)
-    return tbox_tmin_cmp(query, centroid);
-  else
-    return tbox_tmax_cmp(query, centroid);
+  switch (tbox_kd_dim(centroid->flags, level))
+  {
+    case TBOX_XMIN: return tbox_xmin_cmp(query, centroid);
+    case TBOX_XMAX: return tbox_xmax_cmp(query, centroid);
+    case TBOX_TMIN: return tbox_tmin_cmp(query, centroid);
+    case TBOX_TMAX: return tbox_tmax_cmp(query, centroid);
+  }
+  return 0;
 }
 
 /*****************************************************************************/

@@ -71,6 +71,38 @@ typedef struct
 } TboxNode;
 
 /**
+ * @brief Bound of a temporal box an index partitions on
+ */
+typedef enum
+{
+  TBOX_XMIN,
+  TBOX_XMAX,
+  TBOX_TMIN,
+  TBOX_TMAX
+} TboxDim;
+
+/**
+ * @brief Return the bound a k-d tree level of temporal boxes splits on
+ * @details The levels cycle over the bounds of the axes the box carries in the
+ * order lower and upper value bound, lower and upper period bound. Every node
+ * a k-d search visits asks it, so it is inlined
+ * @param[in] flags Flags of the centroid of the level
+ * @param[in] level Level
+ */
+static inline TboxDim
+tbox_kd_dim(int16 flags, int level)
+{
+  bool hasx = MEOS_FLAGS_GET_X(flags), hast = MEOS_FLAGS_GET_T(flags);
+  assert(hasx || hast);
+  if (hasx && hast)
+    return (TboxDim) (level % 4);
+  int half = level % 2;
+  if (hasx)
+    return half ? TBOX_XMAX : TBOX_XMIN;
+  return half ? TBOX_TMAX : TBOX_TMIN;
+}
+
+/**
  * @brief Structure to sort the temporal boxes of an inner node
  */
 typedef struct SortedTbox
@@ -87,6 +119,8 @@ extern bool tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy);
 extern bool tbox_index_recheck(StrategyNumber strategy);
 
+extern int tbox_index_dims(int16 flags);
+extern int tbox_quadrant_bit(int16 flags, TboxDim dim);
 extern void tboxnode_init(TBox *centroid, TboxNode *nodebox);
 extern TboxNode *tboxnode_copy(const TboxNode *box);
 extern uint8 getQuadrant4D(const TBox *centroid, const TBox *inBox);
