@@ -297,3 +297,45 @@ SELECT count(*) AS cells,
   count(*) FILTER (WHERE (u).value = geoToS2Cell(valueAtTimestamp(tp,
     lower(span((u).time)) + interval '1 microsecond'), 16)) AS cells_the_trip_holds
 FROM trip, unnest(ts2cell(tp, 16)) u;
+
+-------------------------------------------------------------------------------
+-- Split by the cells of the grid: s2Split(tgeompoint|tgeogpoint, integer)
+-------------------------------------------------------------------------------
+
+-- The split states the cells of the cover and, beside each, the trajectory
+-- over the periods the cover states for that cell
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE s.tpoint <> atTime(tp, getTime(s.tpoint)))
+  AS fragments_stating_another_value,
+  count(*) FILTER (WHERE getTime(s.tpoint) <>
+    (SELECT u.time FROM unnest(ts2cell(tp, 3)) u WHERE u.value = s.cell))
+  AS fragments_stating_another_period
+FROM trip, LATERAL s2Split(tp, 3) s;
+
+-- Every cell of the split is a cell of the cover
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT set(array_agg(s.cell)) = getValues(ts2cell(tp, 3)) AS same_cells
+FROM trip, LATERAL s2Split(tp, 3) s GROUP BY tp;
+
+-- The fragments of a split merge into the trajectory
+WITH trip(tp) AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
+)
+SELECT merge(array_agg(s.tpoint ORDER BY getTime(s.tpoint))) = tp AS merges_back
+FROM trip, LATERAL s2Split(tp, 3) s GROUP BY tp;
+
+-- An S2 cell is bounded by arcs of great circles, the path a geodetic
+-- trajectory follows, where a planar one follows the straight line in
+-- longitude and latitude
+SELECT count(*) AS fragments
+FROM s2Split(tgeogpoint '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+SELECT count(*) AS fragments
+FROM s2Split(tgeompoint
+  'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
+
+-------------------------------------------------------------------------------

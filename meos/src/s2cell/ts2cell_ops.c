@@ -426,4 +426,95 @@ tgeompoint_to_ts2cell(const Temporal *temp, int32 level)
   return tpoint_to_ts2cell(temp, level);
 }
 
+/*****************************************************************************
+ * Split
+ *****************************************************************************/
+
+/**
+ * @brief Return the fragments of a temporal point split by the S2 cells it
+ * crosses at a level, and the cell of each
+ * @details The cover states which cell the trajectory holds and when, and the
+ * fragment of a cell is the trajectory over the periods the cover states for
+ * it, so a fragment and the cover answer the same periods for a cell
+ */
+static Temporal **
+tpoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
+  int *count)
+{
+  assert(temp); assert(cells); assert(count);
+  *count = 0;
+  Temporal *cover = tpoint_to_ts2cell(temp, level);
+  if (! cover)
+    return NULL;
+  int ncells;
+  SpanSet **spansets = temporal_unnest(cover, cells, &ncells);
+  if (! spansets)
+  {
+    pfree(cover);
+    return NULL;
+  }
+  Temporal **result = palloc(sizeof(Temporal *) * ncells);
+  int nfrags = 0;
+  for (int i = 0; i < ncells; i++)
+  {
+    Temporal *frag = temporal_restrict_tstzspanset(temp, spansets[i], REST_AT);
+    /* A cell the cover holds over periods the trajectory no longer has leaves
+     * nothing to state for it */
+    if (frag)
+    {
+      (*cells)[nfrags] = (*cells)[i];
+      result[nfrags++] = frag;
+    }
+    pfree(spansets[i]);
+  }
+  pfree(spansets); pfree(cover);
+  if (nfrags == 0)
+  {
+    pfree(result);
+    return NULL;
+  }
+  *count = nfrags;
+  return result;
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the fragments of a temporal planar point split by the S2
+ * cells it crosses at a level, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeompoint_s2cell_split()
+ */
+Temporal **
+tgeompoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return tpoint_s2cell_split(temp, level, cells, count);
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the fragments of a temporal geodetic point split by the S2
+ * cells it crosses at a level, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeogpoint_s2cell_split()
+ */
+Temporal **
+tgeogpoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return tpoint_s2cell_split(temp, level, cells, count);
+}
+
 /*****************************************************************************/

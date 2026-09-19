@@ -47,6 +47,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+#include <funcapi.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_cellindex.h>
@@ -212,6 +213,116 @@ Tgeompoint_to_ts2cell(PG_FUNCTION_ARGS)
   Temporal *result = tgeompoint_to_ts2cell(temp, level);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Split
+ *****************************************************************************/
+
+/**
+ * @brief State of an S2 split, holding the cell and the fragment of every row
+ * it has left to return
+ */
+typedef struct
+{
+  bool done;          /**< True when every row is returned */
+  int i;              /**< Index of the next row */
+  int count;          /**< Number of rows */
+  Datum *cells;       /**< Cell of each fragment */
+  Temporal **frags;   /**< Fragment of each cell */
+} S2cellSplitState;
+
+/**
+ * @brief Return the fragments of a temporal point split by the S2 cells it
+ * crosses, and the cell of each
+ */
+static Datum
+Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo,
+  Temporal **(*split)(const Temporal *, int32, Datum **, int *))
+{
+  FuncCallContext *funcctx;
+
+  /* If the function is being called for the first time */
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Get input parameters */
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+    int32 level = PG_GETARG_INT32(1);
+    /* Create function state */
+    S2cellSplitState *state = palloc0(sizeof(S2cellSplitState));
+    state->frags = split(temp, level, &state->cells, &state->count);
+    state->done = (state->count == 0);
+    funcctx->user_fctx = state;
+    /* Build a tuple description for the function output */
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* Stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+  /* Get state */
+  S2cellSplitState *state = funcctx->user_fctx;
+  /* Stop when every row is returned */
+  if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    if (state->frags)
+      pfree(state->frags);
+    if (state->cells)
+      pfree(state->cells);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  /* Get the cell and its fragment */
+  Datum values[2]; /* used to construct the composite return value */
+  values[0] = state->cells[state->i];
+  values[1] = PointerGetDatum(state->frags[state->i]);
+  /* Advance state */
+  if (++state->i == state->count)
+    state->done = true;
+  /* Form tuple and return */
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  Datum result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
+PGDLLEXPORT Datum Tgeompoint_s2cell_split(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeompoint_s2cell_split);
+/**
+ * @ingroup mobilitydb_s2cell_conversion
+ * @brief Return the fragments of a temporal planar point split by the S2
+ * cells it crosses at the given level, and the cell of each
+ * @sqlfn s2Split()
+ */
+Datum
+Tgeompoint_s2cell_split(PG_FUNCTION_ARGS)
+{
+  return Tpoint_s2cell_split_ext(fcinfo, &tgeompoint_s2cell_split);
+}
+
+PGDLLEXPORT Datum Tgeogpoint_s2cell_split(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_s2cell_split);
+/**
+ * @ingroup mobilitydb_s2cell_conversion
+ * @brief Return the fragments of a temporal geodetic point split by the S2
+ * cells it crosses at the given level, and the cell of each
+ * @sqlfn s2Split()
+ */
+Datum
+Tgeogpoint_s2cell_split(PG_FUNCTION_ARGS)
+{
+  return Tpoint_s2cell_split_ext(fcinfo, &tgeogpoint_s2cell_split);
 }
 
 /*****************************************************************************/
