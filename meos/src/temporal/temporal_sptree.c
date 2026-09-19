@@ -58,6 +58,7 @@
 #include "temporal/span_index.h"
 #include "temporal/tbox.h"
 #include "temporal/tbox_index.h"
+#include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
 #include "geo/geo_funcs.h"
@@ -1306,6 +1307,133 @@ spnode_search_contain_stbox(const SPTree *sptree, const SPNode *node,
 }
 
 /**
+ * @brief Return true if a stored temporal box overlaps a query on the axes
+ * both carry
+ * @details The test #tbox_overlaps makes, with the axes decided once for the
+ * whole search
+ */
+static inline bool
+spnode_tbox_overlaps(const TBox *key, const TBox *query, bool x, bool t)
+{
+  if (x && ! span_overlaps(&key->span, &query->span))
+    return false;
+  if (t && ! span_overlaps(&key->period, &query->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if the first temporal box contains the second one on the
+ * axes both carry
+ * @details The test #tbox_contains makes, with the axes decided once for the
+ * whole search
+ */
+static inline bool
+spnode_tbox_contains(const TBox *b1, const TBox *b2, bool x, bool t)
+{
+  if (x && ! span_contains(&b1->span, &b2->span))
+    return false;
+  if (t && ! span_contains(&b1->period, &b2->period))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if a region can hold a box overlapping a query
+ * @details The test #overlap4D makes, read on the axes both the query and the
+ * stored boxes carry
+ */
+static inline bool
+spnode_tregion_overlaps(const TboxNode *n, const TBox *query, bool x, bool t)
+{
+  MeosType basetype = query->span.basetype;
+  if (x && ! (datum_cmp(n->left.span.lower, query->span.upper, basetype) <= 0 &&
+      datum_cmp(n->right.span.upper, query->span.lower, basetype) >= 0))
+    return false;
+  if (t && ! (DatumGetTimestampTz(n->left.period.lower) <=
+        DatumGetTimestampTz(query->period.upper) &&
+      DatumGetTimestampTz(n->right.period.upper) >=
+        DatumGetTimestampTz(query->period.lower)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if a region can hold a box containing a query
+ * @details The test #contain4D makes, read on the axes both the query and the
+ * stored boxes carry
+ */
+static inline bool
+spnode_tregion_contains(const TboxNode *n, const TBox *query, bool x, bool t)
+{
+  MeosType basetype = query->span.basetype;
+  if (x && ! (datum_cmp(n->left.span.lower, query->span.lower, basetype) <= 0 &&
+      datum_cmp(n->right.span.upper, query->span.upper, basetype) >= 0))
+    return false;
+  if (t && ! (DatumGetTimestampTz(n->left.period.lower) <=
+        DatumGetTimestampTz(query->period.lower) &&
+      DatumGetTimestampTz(n->right.period.upper) >=
+        DatumGetTimestampTz(query->period.upper)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Search a node of a tree of temporal boxes for the boxes overlapping
+ * a query, containing it, or contained by it
+ * @details The search #spnode_search makes for #INDEX_OVERLAPS,
+ * #INDEX_CONTAINS and #INDEX_CONTAINED_BY, with the leaf and region tests and
+ * the next region read directly instead of through the tree's function
+ * pointers, and the stored boxes compared by the internal tests once the
+ * entry point has checked the query against the tree. A region can hold a box
+ * containing the query only where it can contain the query, and a box
+ * overlapping the query or contained by it only where it overlaps the query
+ * @param[in] sptree The SPTree
+ * @param[in] node The node being visited
+ * @param[in] nodebox The region covered by @p node
+ * @param[in] query The query box
+ * @param[in] op #INDEX_OVERLAPS, #INDEX_CONTAINS or #INDEX_CONTAINED_BY
+ * @param[in] level The depth of @p node (drives the k-d tree dimension)
+ * @param[in] x,t The axes both the query and the stored boxes carry
+ * @param[out] result MeosArray collecting the matching ids
+ */
+static void
+spnode_search_tbox(const SPTree *sptree, const SPNode *node,
+  const TboxNode *nodebox, const TBox *query, IndexSearchOp op, int level,
+  bool x, bool t, MeosArray *result)
+{
+  const TBox *centroid = (const TBox *) node->centroid;
+  bool found = (op == INDEX_OVERLAPS) ?
+    spnode_tbox_overlaps(centroid, query, x, t) :
+    ((op == INDEX_CONTAINS) ? spnode_tbox_contains(centroid, query, x, t) :
+      spnode_tbox_contains(query, centroid, x, t));
+  if (found)
+  {
+    int64 id = node->id;
+    meos_array_add(result, &id);
+  }
+  if (! node->children)
+    return;
+  bool quad = (sptree->kind == SPTREE_QUADTREE);
+  for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
+  {
+    const SPNode *child = node->children[quadrant];
+    if (! child)
+      continue;
+    TboxNode next;
+    if (quad)
+      tboxnode_quadtree_next(nodebox, centroid, (uint8) quadrant, &next);
+    else
+      tboxnode_kdtree_next(nodebox, centroid, (uint8) quadrant, level, &next);
+    if ((op == INDEX_CONTAINS) ? spnode_tregion_contains(&next, query, x, t) :
+        spnode_tregion_overlaps(&next, query, x, t))
+      spnode_search_tbox(sptree, child, &next, query, op, level + 1, x, t,
+        result);
+  }
+  return;
+}
+
+/**
  * @ingroup meos_internal_box_index
  * @brief Search an SPTree with a bounding box, collecting matching ids into
  * a MeosArray, for a caller that has validated the arguments
@@ -1355,6 +1483,17 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
       spnode_search_contain_stbox(sptree, sptree->root,
         (const STboxNode *) rootbox, q, op == INDEX_CONTAINS, 0, x, z, t,
         result);
+  }
+  else if (sptree->bboxtype == T_TBOX && (op == INDEX_OVERLAPS ||
+      op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
+  {
+    /* As for the spatiotemporal boxes above */
+    const TBox *q = (const TBox *) query;
+    int16 f = ((const TBox *) sptree->root->centroid)->flags;
+    bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
+      t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
+    spnode_search_tbox(sptree, sptree->root, (const TboxNode *) rootbox, q,
+      op, 0, x, t, result);
   }
   else
     spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);

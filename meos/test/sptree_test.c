@@ -316,6 +316,59 @@ test_tbox(SPTreeKind kind, const char *kindname)
   sptree_free(sptree);
 }
 
+/*
+ * Query a tree of temporal boxes carrying only a period with a box carrying
+ * an integer value span and a period. The value span is an axis the stored
+ * boxes lack, so the answer is the one its period alone gives. The query is
+ * selective on the scale of the periods, so a region pruned on the value span
+ * loses matches.
+ */
+static void
+test_tbox_period(SPTreeKind kind, const char *kindname)
+{
+  TBox **boxes = malloc(NUM_BOXES * sizeof(TBox *));
+  SPTree *sptree = sptree_create_tbox(kind);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    TimestampTz tlo = (TimestampTz) random_int(0, 100000) * 1000000;
+    Span *t = tstzspan_make(tlo, tlo + (TimestampTz) random_int(1, 50) *
+      1000000, true, false);
+    boxes[i] = span_to_tbox(t);
+    free(t);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  TimestampTz qlo = (TimestampTz) random_int(0, 100000) * 1000000;
+  Span *v = intspan_make(5, 10, true, false);
+  Span *t = tstzspan_make(qlo, qlo + (TimestampTz) 400 * 1000000, true,
+    false);
+  TBox *query = tbox_make(v, t);
+  free(v); free(t);
+
+  bool *ov = calloc(NUM_BOXES, sizeof(bool));
+  bool *co = calloc(NUM_BOXES, sizeof(bool));
+  bool *cb = calloc(NUM_BOXES, sizeof(bool));
+  int matches = 0;
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    ov[i] = overlaps_tbox_tbox(boxes[i], query);
+    co[i] = contains_tbox_tbox(boxes[i], query);
+    cb[i] = contains_tbox_tbox(query, boxes[i]);
+    matches += ov[i];
+  }
+
+  printf("Temporal box of periods, integer query, %s (%d random boxes):\n",
+    kindname, NUM_BOXES);
+  check("  the query overlaps some boxes", matches > 0);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
+
+  for (int i = 0; i < NUM_BOXES; i++)
+    free(boxes[i]);
+  free(boxes); free(query); free(ov); free(co); free(cb);
+  sptree_free(sptree);
+}
+
 /*****************************************************************************
  * Spatiotemporal box
  *****************************************************************************/
@@ -1181,6 +1234,8 @@ main(void)
   test_floatspan(SPTREE_KDTREE, "k-d tree");
   test_tbox(SPTREE_QUADTREE, "quad-tree");
   test_tbox(SPTREE_KDTREE, "k-d tree");
+  test_tbox_period(SPTREE_QUADTREE, "quad-tree");
+  test_tbox_period(SPTREE_KDTREE, "k-d tree");
   test_stbox(SPTREE_QUADTREE, "quad-tree");
   test_stbox(SPTREE_KDTREE, "k-d tree");
 #if POINTCLOUD
