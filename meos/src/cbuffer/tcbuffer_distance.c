@@ -1028,21 +1028,28 @@ typedef struct
 /**
  * @brief Build the reusable geometry context for the native within kernel
  * @details The context is built from the straight and circular-arc edges of
- * the boundary. The function returns NULL for a geometry of a type the native
- * kernels do not cover, or of more than one face (#dist_geom_decompose), and
- * the caller then uses the traversed-area path.
+ * the geometry. The function returns NULL for a geometry of a type the native
+ * kernels do not cover (#dist_geom_decompose), and for a geometry of more
+ * than one face when @p boundary is true, and the caller then uses the
+ * traversed-area path.
+ * @param[in] gs Geometry
+ * @param[in] boundary True when the caller reads the boundary of the geometry
  */
 void *
-tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
+tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
 {
   DistGeom g;
   if (! dist_geom_decompose(gs, &g))
     return NULL;
-  /* The relationship kernels read the boundary of the geometry as the union
-   * of its region edges, which it is only for one face: faces that overlap or
-   * share an edge hold edges inside the geometry, as a TIN holds its shared
-   * edges, and such a geometry is left to the traversed-area path */
-  if (g.face)
+  /* The touches and contains kernels read the boundary of the geometry as the
+   * union of its region edges, which it is only for one face: faces that
+   * overlap or share an edge hold edges inside the geometry, as a TIN holds
+   * its shared edges, and such a geometry is left to the traversed-area path.
+   * The within kernels read the distance to the geometry, which is zero inside
+   * some face and otherwise the distance to the nearest edge, since an edge
+   * inside the geometry is never nearer than the geometry itself; they read
+   * every geometry the decomposition covers */
+  if (boundary && g.face)
   {
     dist_geom_free(&g);
     return NULL;

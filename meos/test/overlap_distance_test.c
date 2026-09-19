@@ -38,8 +38,10 @@
  * their surfaces, which may overlap in the plane. The program asks the nearest
  * approach distance of points covered by one, by two and by no surface, of a
  * temporal point and of a temporal circular buffer, whether the geometry
- * contains and covers a circular buffer, and the temporal distance of a
- * circular buffer to a TIN and a polyhedral surface.
+ * contains and covers a circular buffer, the temporal distance of a
+ * circular buffer to a TIN and a polyhedral surface, and when a circular
+ * buffer moving across a TIN, whose two faces share an edge, intersects it,
+ * is within a distance of it and is ever disjoint from it.
  *
  * The program can be built as follows
  * @code
@@ -143,6 +145,60 @@ check_contains(double x, double y, double radius, const char *wkt,
   free(temp); free(gs);
 }
 
+/*
+ * Compare when a temporal circular buffer of radius @p radius moving along
+ * y = @p y from x = -1 at 2001-01-01 to x = 3 at 2001-01-05, one unit a day,
+ * is within @p dist of a geometry with the closed form: from @p lo to @p hi
+ * days after its start
+ */
+static void
+check_within(double y, double radius, double dist, const char *wkt,
+  double lo, double hi)
+{
+  char text[256];
+  snprintf(text, sizeof(text), "[Cbuffer(Point(-1 %g),%g)@2001-01-01, "
+    "Cbuffer(Point(3 %g),%g)@2001-01-05]", y, radius, y, radius);
+  Temporal *temp = tcbuffer_in(text);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  Temporal *tb = (dist > 0) ? tdwithin_tcbuffer_geo(temp, gs, dist) :
+    tintersects_tcbuffer_geo(temp, gs);
+  SpanSet *ss = tb ? tbool_when_true(tb) : NULL;
+  /* The start of the value, 2001-01-01, in microseconds */
+  TimestampTz start = timestamptz_in("2001-01-01", -1);
+  double day = 86400e6;
+  double l = ss ? (tstzspanset_lower(ss) - start) / day : -1.0;
+  double u = ss ? (tstzspanset_upper(ss) - start) / day : -1.0;
+  /* The answer is read to two microseconds */
+  bool ok = ss && spanset_num_spans(ss) == 1 && fabs(l - lo) <= 2.0 / day &&
+    fabs(u - hi) <= 2.0 / day;
+  printf("  y %g r %-4g d %-4g %-66s [%.9g, %.9g] %s\n", y, radius, dist,
+    wkt, l, u, ok ? "OK" : "FAIL");
+  if (! ok)
+  {
+    printf("    closed form [%.9g, %.9g]\n", lo, hi);
+    failures++;
+  }
+  free(ss); free(tb); free(temp); free(gs);
+}
+
+/*
+ * Compare whether a temporal circular buffer moving from one place to another
+ * is ever disjoint from a geometry with the expected answer
+ */
+static void
+check_edisjoint(const char *text, const char *wkt, int expected)
+{
+  Temporal *temp = tcbuffer_in(text);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  int disjoint = edisjoint_tcbuffer_geo(temp, gs);
+  bool ok = disjoint == expected;
+  printf("  %-60s %-50s edisjoint %d %s\n", text, wkt, disjoint,
+    ok ? "OK" : "FAIL");
+  if (! ok)
+    failures++;
+  free(temp); free(gs);
+}
+
 /* Main program */
 int main(void)
 {
@@ -181,6 +237,18 @@ int main(void)
   check_tdistance(3, 0.5, 0.1, apart, 1.9);
   check_tdistance(3, 0.5, 0.1,
     "POLYHEDRALSURFACE(((0 0,1 0,0 1,0 0)),((1 0,1 1,0 1,1 0)))", 1.9);
+  /* The two faces of the TIN cover the unit square and share its diagonal
+   * from (1 0) to (0 1), which lies inside the TIN: the moving circular buffer
+   * crosses it while inside, and meets the TIN from x = -r - d to x = 1 + r + d,
+   * that is x + 1 days after its start */
+  printf("A circular buffer moving across a TIN:\n");
+  check_within(0.5, 0.1, 0, apart, 0.9, 2.1);
+  check_within(0.5, 0.1, 0.4, apart, 0.5, 2.5);
+  check_within(0.25, 0.2, 0, apart, 0.8, 2.2);
+  check_edisjoint("[Cbuffer(Point(-1 0.5),0.1)@2001-01-01, "
+    "Cbuffer(Point(3 0.5),0.1)@2001-01-05]", apart, 1);
+  check_edisjoint("[Cbuffer(Point(0.2 0.5),0.1)@2001-01-01, "
+    "Cbuffer(Point(0.8 0.5),0.1)@2001-01-02]", apart, 0);
 
   if (failures == 0)
     printf("Overlap distance test: all tests passed\n");
