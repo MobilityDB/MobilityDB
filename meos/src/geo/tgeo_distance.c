@@ -130,39 +130,6 @@ dist_minfun(double A, double B, double C, double R0, double DR, double lo,
 }
 
 /**
- * @brief Append the segments of a point array to the segment array, growing it
- * as needed
- * @details A single-point array contributes one degenerate segment.
- */
-static void
-dist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
-  DistEdge **arr, int *cap, int *cnt)
-{
-  if (! pa || pa->npoints == 0)
-    return;
-  uint32_t np = pa->npoints;
-  uint32_t nseg = (np == 1) ? 1 : np - 1;
-  for (uint32_t i = 0; i < nseg; i++)
-  {
-    const POINT2D *a = getPoint2d_cp(pa, i);
-    const POINT2D *b = (np == 1) ? a : getPoint2d_cp(pa, i + 1);
-    if (*cnt == *cap)
-    {
-      int newcap = (*cap == 0) ? 64 : *cap * 2;
-      *arr = (*arr == NULL) ? palloc(sizeof(DistEdge) * newcap) :
-        repalloc(*arr, sizeof(DistEdge) * newcap);
-      *cap = newcap;
-    }
-    DistEdge *s = &(*arr)[(*cnt)++];
-    s->x1 = a->x; s->y1 = a->y; s->x2 = b->x; s->y2 = b->y;
-    s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
-    s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
-    s->is_poly = is_poly;
-    s->is_arc = false;
-  }
-}
-
-/**
  * @brief Normalise an angle to [0, 2*pi)
  */
 static double
@@ -187,222 +154,105 @@ dist_geom_arc_contains_angle(const DistEdge *e, double phi)
 }
 
 /**
- * @brief Set the bounding box of an arc edge
- * @details The box is the chord endpoints extended with any cardinal-direction
- * circle extreme (0, pi/2, pi, -pi/2) that lies within the arc's angular span,
- * so the bucket hierarchy never prunes away the arc bulge.
- */
-static void
-dist_geom_arc_set_bbox(DistEdge *e)
-{
-  double xmin = fmin(e->x1, e->x2), xmax = fmax(e->x1, e->x2);
-  double ymin = fmin(e->y1, e->y2), ymax = fmax(e->y1, e->y2);
-  const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
-  const double ex[4] = {e->acx + e->arad, e->acx, e->acx - e->arad, e->acx};
-  const double ey[4] = {e->acy, e->acy + e->arad, e->acy, e->acy - e->arad};
-  for (int k = 0; k < 4; k++)
-    if (dist_geom_arc_contains_angle(e, ang[k]))
-    {
-      if (ex[k] < xmin) xmin = ex[k];
-      if (ex[k] > xmax) xmax = ex[k];
-      if (ey[k] < ymin) ymin = ey[k];
-      if (ey[k] > ymax) ymax = ey[k];
-    }
-  e->xmin = xmin; e->xmax = xmax; e->ymin = ymin; e->ymax = ymax;
-}
-
-/**
- * @brief Append one arc edge, defined by three consecutive points of a circular
- * string (start, any interior point, end), to the segment array
- * @details Collinear triples degenerate to two straight segments. Mirrors the
- * exact circumcentre construction of the native clip engine
- * (#tpoint_geom_clip.c).
- */
-static void
-dist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
-  double cy, bool is_poly, DistEdge **arr, int *cap, int *cnt)
-{
-  if (*cnt + 2 > *cap)
-  {
-    int newcap = (*cap == 0) ? 64 : *cap * 2;
-    while (*cnt + 2 > newcap)
-      newcap *= 2;
-    *arr = (*arr == NULL) ? palloc(sizeof(DistEdge) * newcap) :
-      repalloc(*arr, sizeof(DistEdge) * newcap);
-    *cap = newcap;
-  }
-  /* Twice the signed area of triangle ABC; zero => collinear */
-  double d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-  if (fabs(d) < MEOS_GEOM_TOLERANCE)
-  {
-    /* Collinear: two straight segments A->B, B->C */
-    for (int seg = 0; seg < 2; seg++)
-    {
-      double p1x = seg == 0 ? ax : bx, p1y = seg == 0 ? ay : by;
-      double p2x = seg == 0 ? bx : cx, p2y = seg == 0 ? by : cy;
-      DistEdge *s = &(*arr)[(*cnt)++];
-      s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
-      s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
-      s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
-      s->is_poly = is_poly; s->is_arc = false;
-    }
-    return;
-  }
-  double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by, c2 = cx * cx + cy * cy;
-  DistEdge *s = &(*arr)[(*cnt)++];
-  s->acx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
-  s->acy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
-  s->arad = hypot(ax - s->acx, ay - s->acy);
-  s->x1 = ax; s->y1 = ay; s->x2 = cx; s->y2 = cy;
-  s->at0 = atan2(ay - s->acy, ax - s->acx);
-  s->at1 = atan2(cy - s->acy, cx - s->acx);
-  s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
-  s->is_poly = is_poly; s->is_arc = true;
-  dist_geom_arc_set_bbox(s);
-}
-
-/**
- * @brief Append the arc edges of a circular string (walked in three-point
- * groups) to the segment array
- */
-static void
-dist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
-  DistEdge **arr, int *cap, int *cnt)
-{
-  const POINTARRAY *pa = circ->points;
-  int np = (int) pa->npoints;
-  for (int i = 0; i + 2 < np; i += 2)
-  {
-    const POINT2D *a = getPoint2d_cp(pa, i);
-    const POINT2D *b = getPoint2d_cp(pa, i + 1);
-    const POINT2D *c = getPoint2d_cp(pa, i + 2);
-    dist_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, is_poly, arr, cap,
-      cnt);
-  }
-}
-
-/**
- * @brief Append the boundary segments of a curve polygon ring with polygon
- * (region) semantics
- * @details The ring is a line string, a circular string, or a compound curve
- * chaining both. Returns false when an arc ring is present but the caller does
- * not consume arc edges (@p allow_arc is false), so the exact path is used.
+ * @brief Return true if the distance engine decomposes a geometry into edges
+ * @details A TIN and a polyhedral surface, alone or in a collection, are left
+ * to the exact path; every other geometry #geom_meos_coverage answers for is
+ * read through the edges #geom_extract_edges gives
  */
 static bool
-dist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
-  DistEdge **arr, int *cap, int *cnt)
-{
-  switch (ring->type)
-  {
-    case LINETYPE:
-      dist_geom_edges_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
-        cnt);
-      return true;
-    case CIRCSTRINGTYPE:
-      if (! allow_arc)
-        return false;
-      dist_segs_add_circstring(lwgeom_as_lwcircstring(ring), true, arr, cap,
-        cnt);
-      return true;
-    case COMPOUNDTYPE:
-    {
-      const LWCOLLECTION *c = lwgeom_as_lwcollection(ring);
-      for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! dist_segs_add_curvepoly_ring(c->geoms[i], allow_arc, arr, cap,
-              cnt))
-          return false;
-      return true;
-    }
-    default:
-      return false;
-  }
-}
-
-/**
- * @brief Recursively collect the boundary segments of a geometry, as straight
- * edges and, when @p allow_arc is true, as circular-arc edges
- * @details Returns false for a type that has no exact edge decomposition, that
- * is, a TIN or a polyhedral surface, and for a circular-arc type when @p
- * allow_arc is false (the caller then falls back to the exact traversed-area
- * path).
- */
-bool
-dist_geom_edges(const LWGEOM *lw, bool allow_arc, DistEdge **arr,
-  int *cap, int *cnt, bool *has_poly)
+dist_geom_decomposes(const LWGEOM *lw)
 {
   switch (lw->type)
   {
     case POINTTYPE:
-      dist_geom_edges_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
-        cnt);
-      return true;
-    case CIRCSTRINGTYPE:
-      /* Arc-exact decomposition, only where the caller consumes arc edges (the
-       * nearest-approach distance). Otherwise fall back to the exact path. */
-      if (! allow_arc)
-        return false;
-      dist_segs_add_circstring(lwgeom_as_lwcircstring(lw), false, arr, cap,
-        cnt);
-      return true;
-    case LINETYPE:
-      dist_geom_edges_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
-        cnt);
-      return true;
-    case TRIANGLETYPE:
-      dist_geom_edges_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
-        cap, cnt);
-      *has_poly = true;
-      return true;
-    case POLYGONTYPE:
-    {
-      const LWPOLY *p = lwgeom_as_lwpoly(lw);
-      for (uint32_t i = 0; i < p->nrings; i++)
-        dist_geom_edges_add_ptarray(p->rings[i], true, arr, cap, cnt);
-      if (p->nrings > 0)
-        *has_poly = true;
-      return true;
-    }
-    case CURVEPOLYTYPE:
-    {
-      /* A curve polygon is bounded by rings that are line strings, circular
-       * strings, or compound curves. Decompose each ring with polygon (region)
-       * semantics so the arc-aware even-odd test in #dist_geom_point_inside
-       * treats it as a boundary. */
-      const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
-      for (uint32_t i = 0; i < cp->nrings; i++)
-        if (! dist_segs_add_curvepoly_ring(cp->rings[i], allow_arc, arr,
-              cap, cnt))
-          return false;
-      if (cp->nrings > 0)
-        *has_poly = true;
-      return true;
-    }
     case MULTIPOINTTYPE:
+    case LINETYPE:
     case MULTILINETYPE:
+    case POLYGONTYPE:
     case MULTIPOLYGONTYPE:
-    /* A compound curve chains line strings and circular strings, a multi curve
-     * groups line/circular/compound components, and a multi surface groups
-     * curve polygons; all share the collection memory layout, so their
-     * components are decomposed recursively. Circular-arc components resolve
-     * through the CIRCSTRINGTYPE / CURVEPOLYTYPE cases, which gate on
-     * @p allow_arc. */
+    case TRIANGLETYPE:
+    case CIRCSTRINGTYPE:
     case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
+      return geom_meos_coverage(lw) == 1;
+    case TINTYPE:
+    case POLYHEDRALSURFACETYPE:
+      return false;
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
       for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! dist_geom_edges(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
+        if (! dist_geom_decomposes(c->geoms[i]))
           return false;
       return true;
     }
+    /* Every type liblwgeom numbers has an arm above, so this one is reached
+     * only by a type added after this code, which is reported as
+     * #geom_meos_coverage reports it */
     default:
-      /* A type with no edge decomposition, that is, a TIN or a polyhedral
-       * surface: let the caller use the exact path */
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
       return false;
   }
 }
+
+/**
+ * @brief Decompose a geometry into the edges the distance engine reads, with
+ * their overall bounding box and whether any bounds a region
+ * @details The edges are those #geom_extract_edges gives every native kernel:
+ * straight segments, circular arcs and points. The caller builds the index it
+ * reads them through, the Morton buckets of the nearest-approach kernels
+ * (#dist_geom_build) or the R-tree of the relationship kernels
+ * @return False when the engine does not decompose the geometry or the
+ * geometry has no edge, so the caller falls back to the exact path
+ */
+bool
+dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  if (! dist_geom_decomposes(lw))
+  {
+    lwgeom_free(lw);
+    return false;
+  }
+  MeosArray *edges = geom_extract_edges(lw);
+  lwgeom_free(lw);
+  int n = (int) edges->count;
+  if (n == 0)
+  {
+    meos_array_destroy(edges);
+    return false;
+  }
+  DistEdge *segs = palloc(sizeof(DistEdge) * n);
+  bool has_poly = false;
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, k);
+    DistEdge *s = &segs[k];
+    s->x1 = e->x1; s->y1 = e->y1; s->x2 = e->x2; s->y2 = e->y2;
+    s->xmin = e->xmin; s->ymin = e->ymin; s->xmax = e->xmax; s->ymax = e->ymax;
+    s->is_poly = (e->etype == EDGE_POLYSEG || e->etype == EDGE_POLYARC);
+    s->is_arc = (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC);
+    if (s->is_arc)
+    {
+      s->acx = e->cx; s->acy = e->cy; s->arad = e->radius;
+      s->at0 = e->theta0; s->at1 = e->theta1; s->accw = e->ccw;
+    }
+    has_poly |= s->is_poly;
+    if (s->xmin < gxmin) gxmin = s->xmin;
+    if (s->ymin < gymin) gymin = s->ymin;
+    if (s->xmax > gxmax) gxmax = s->xmax;
+    if (s->ymax > gymax) gymax = s->ymax;
+  }
+  meos_array_destroy(edges);
+  *g = (DistGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL, 0,
+    NULL };
+  return true;
+}
+
 
 /**
  * @brief Apply the rightward-ray crossings of one polygon-boundary segment to
@@ -2310,31 +2160,12 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 bool
 dist_geom_build(const GSERIALIZED *gs, DistGeom *g)
 {
-  LWGEOM *lw = lwgeom_from_gserialized(gs);
-  DistEdge *segs = NULL;
-  int cap = 0, n = 0;
-  bool has_poly = false;
-  bool ok = dist_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
-  lwgeom_free(lw);
-  if (! ok || n == 0)
-  {
-    if (segs) pfree(segs);
+  if (! dist_geom_decompose(gs, g))
     return false;
-  }
-  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
-  for (int k = 0; k < n; k++)
-  {
-    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
-    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
-    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
-    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
-  }
   int nbk = 0;
-  DistBucket *bks = dist_geom_build_buckets(segs, n, gxmin, gymin, gxmax,
-    gymax, &nbk);
-  g->segs = segs; g->n = n; g->has_poly = has_poly;
-  g->xmin = gxmin; g->ymin = gymin; g->xmax = gxmax; g->ymax = gymax;
-  g->bks = bks; g->nbk = nbk; g->rtree = NULL;
+  g->bks = dist_geom_build_buckets((DistEdge *) g->segs, g->n, g->xmin,
+    g->ymin, g->xmax, g->ymax, &nbk);
+  g->nbk = nbk;
   return true;
 }
 
