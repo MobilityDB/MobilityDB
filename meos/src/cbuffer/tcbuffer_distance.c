@@ -463,9 +463,8 @@ tdistance_tcbuffer_geo_analytic(const Temporal *temp, const DistGeom *g)
  * circular-arc), the same decomposition #nad_tcbuffer_geo and
  * #nearestApproachInstant use, and the distance to the full geometry is
  * computed exactly rather than to its minimum bounding circle. A geometry
- * with no exact edge decomposition (a TIN or a polyhedral surface) falls
- * back to the bounding-circle approximation, mirroring the other analytic
- * distance kernels of this file.
+ * of a type the native kernels do not cover falls back to the bounding-circle
+ * approximation, mirroring the other analytic distance kernels of this file.
  * @csqlfn #Tdistance_tcbuffer_geo() #Tdistance_geo_tcbuffer()
  */
 Temporal *
@@ -483,8 +482,8 @@ tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
     return result;
   }
 
-  /* No exact edge decomposition (TIN / polyhedral surface): fall back to the
-   * bounding-circle approximation */
+  /* A type the native kernels do not cover: fall back to the bounding-circle
+   * approximation */
   Cbuffer *cb = geom_to_cbuffer(gs);
   Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   pfree(cb);
@@ -1028,10 +1027,9 @@ typedef struct
 /**
  * @brief Build the reusable geometry context for the native within kernel
  * @details The context is built from the straight and circular-arc edges of
- * the boundary. The function returns NULL for a geometry that has no edge
- * decomposition, that is, a TIN or a polyhedral surface, or of more than one
- * face (#dist_geom_decompose), and the caller then uses the traversed-area
- * path.
+ * the boundary. The function returns NULL for a geometry of a type the native
+ * kernels do not cover, or of more than one face (#dist_geom_decompose), and
+ * the caller then uses the traversed-area path.
  */
 void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
