@@ -1670,6 +1670,8 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
 bool
 sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree, false); VALIDATE_NOT_NULL(temp, false);
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return false;
   /* Use a stack buffer large enough for any MEOS bounding box type */
@@ -1697,6 +1699,9 @@ int
 sptree_search_temporal(const SPTree *sptree, IndexSearchOp op,
   const Temporal *temp, MeosArray *result)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree, -1); VALIDATE_NOT_NULL(temp, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
   {
     meos_array_reset(result);
@@ -1730,6 +1735,8 @@ bool
 sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id,
   int maxboxes)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree, false); VALIDATE_NOT_NULL(temp, false);
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return false;
   int count;
@@ -1778,6 +1785,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree, -1); VALIDATE_NOT_NULL(temp, -1);
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_index_result(result))
     return -1;
@@ -1785,6 +1793,15 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   meos_array_reset(result);
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return 0;
+  /* Every box split off the value carries the SRID, the dimensions and the
+   * point cloud schema of the box of the whole value, so the query is checked
+   * against the tree once, on that box, and the split boxes are searched by
+   * the internal twin */
+  bboxunion whole;
+  memset(&whole, 0, sizeof(whole));
+  temporal_set_bbox(temp, &whole);
+  if (! ensure_valid_sptree_box(sptree, &whole))
+    return -1;
 
   int count;
   void *boxes = bbox_temporal_split_boxes(sptree->bboxtype, sizeof(bboxunion), temp, maxboxes, &count);
@@ -1796,7 +1813,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   MeosArray *hits = index_result_create();
   for (int i = 0; i < count; i++)
   {
-    int nhits = sptree_search(sptree, op,
+    int nhits = sptree_search_intl(sptree, op,
       (char *) boxes + (size_t) i * sptree->boxsize, hits);
     for (int j = 0; j < nhits; j++)
     {
