@@ -264,6 +264,10 @@ extern Temporal *tbigint_to_ts2cell(const Temporal *temp);
 extern Temporal *ts2cell_to_tbigint(const Temporal *temp);
 extern Temporal *tgeogpoint_to_ts2cell(const Temporal *temp, int32 level);
 extern Temporal *tgeompoint_to_ts2cell(const Temporal *temp, int32 level);
+extern Temporal **tgeogpoint_s2cell_split(const Temporal *temp, int32 level,
+  Datum **cells, int *count);
+extern Temporal **tgeompoint_s2cell_split(const Temporal *temp, int32 level,
+  Datum **cells, int *count);
 
 /* Ever, always and temporal comparisons */
 

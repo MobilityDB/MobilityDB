@@ -108,6 +108,35 @@ CREATE FUNCTION ts2cell(tgeompoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Split by the cells of the grid
+ *
+ * The cover states which cell a trajectory holds and when. A split states the
+ * same cells and, beside each, the trajectory over the periods the cover
+ * states for it, so a value indexed by cell is read in one pass rather than
+ * one restriction per cell.
+ ******************************************************************************/
+
+CREATE TYPE s2cell_tpoint AS (
+  cell s2cell,
+  tpoint tgeompoint
+);
+
+CREATE TYPE s2cell_tgeogpoint AS (
+  cell s2cell,
+  tpoint tgeogpoint
+);
+
+CREATE FUNCTION s2Split(tgeompoint, integer)
+  RETURNS SETOF s2cell_tpoint
+  AS 'MODULE_PATHNAME', 'Tgeompoint_s2cell_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION s2Split(tgeogpoint, integer)
+  RETURNS SETOF s2cell_tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_s2cell_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * s2cellset × ts2cell — ever-equal (sound cell-set prefilter)
  *
  * True when the temporal S2 cell ever equals a cell in the set. Paired with
