@@ -41,7 +41,8 @@
  * contains and covers a circular buffer, the temporal distance of a
  * circular buffer to a TIN and a polyhedral surface, and when a circular
  * buffer moving across a TIN, whose two faces share an edge, intersects it,
- * is within a distance of it and is ever disjoint from it.
+ * is within a distance of it and is ever disjoint from it, and whether the TIN
+ * contains, covers and touches a buffer standing across the shared edge.
  *
  * The program can be built as follows
  * @code
@@ -199,6 +200,28 @@ check_edisjoint(const char *text, const char *wkt, int expected)
   free(temp); free(gs);
 }
 
+/*
+ * Compare whether a temporal circular buffer standing still at a place ever
+ * touches a geometry with the expected answer
+ */
+static void
+check_touches(double x, double y, double radius, const char *wkt,
+  int expected)
+{
+  char text[256];
+  snprintf(text, sizeof(text), "[Cbuffer(Point(%g %g),%g)@2001-01-01, "
+    "Cbuffer(Point(%g %g),%g)@2001-01-02]", x, y, radius, x, y, radius);
+  Temporal *temp = tcbuffer_in(text);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  int touches = etouches_tcbuffer_geo(temp, gs);
+  bool ok = touches == expected;
+  printf("  (%g %g) r %-4g %-66s touches %d %s\n", x, y, radius, wkt,
+    touches, ok ? "OK" : "FAIL");
+  if (! ok)
+    failures++;
+  free(temp); free(gs);
+}
+
 /* Main program */
 int main(void)
 {
@@ -249,6 +272,12 @@ int main(void)
     "Cbuffer(Point(3 0.5),0.1)@2001-01-05]", apart, 1);
   check_edisjoint("[Cbuffer(Point(0.2 0.5),0.1)@2001-01-01, "
     "Cbuffer(Point(0.8 0.5),0.1)@2001-01-02]", apart, 0);
+  /* The shared diagonal is inside the TIN and is none of its boundary: a
+   * buffer centred on it is contained, covered and touches nothing, while one
+   * tangent to a side of the square from outside touches it */
+  check_contains(0.5, 0.5, 0.1, apart, 1);
+  check_touches(0.5, 0.5, 0.1, apart, 0);
+  check_touches(1.1, 0.5, 0.1, apart, 1);
 
   if (failures == 0)
     printf("Overlap distance test: all tests passed\n");

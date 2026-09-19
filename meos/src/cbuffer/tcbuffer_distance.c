@@ -1028,10 +1028,11 @@ typedef struct
 /**
  * @brief Build the reusable geometry context for the native within kernel
  * @details The context is built from the straight and circular-arc edges of
- * the geometry. The function returns NULL for a geometry of a type the native
- * kernels do not cover (#dist_geom_decompose), and for a geometry of more
- * than one face when @p boundary is true, and the caller then uses the
- * traversed-area path.
+ * the geometry, or, for a caller reading the boundary of a geometry of more
+ * than one face, from those of the union of its faces (#meos_areal_union).
+ * The function returns NULL for a geometry of a type the native kernels do
+ * not cover (#dist_geom_decompose), and for one whose union the overlay does
+ * not answer, and the caller then uses the traversed-area path.
  * @param[in] gs Geometry
  * @param[in] boundary True when the caller reads the boundary of the geometry
  */
@@ -1044,7 +1045,9 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   /* The touches and contains kernels read the boundary of the geometry as the
    * union of its region edges, which it is only for one face: faces that
    * overlap or share an edge hold edges inside the geometry, as a TIN holds
-   * its shared edges, and such a geometry is left to the traversed-area path.
+   * its shared edges. For those kernels a geometry of several faces is read
+   * as the union of its faces, whose edges are its boundary, and one whose
+   * union the overlay does not answer is left to the traversed-area path.
    * The within kernels read the distance to the geometry, which is zero inside
    * some face and otherwise the distance to the nearest edge, since an edge
    * inside the geometry is never nearer than the geometry itself; they read
@@ -1052,7 +1055,22 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   if (boundary && g.face)
   {
     dist_geom_free(&g);
-    return NULL;
+    LWGEOM *lw = lwgeom_from_gserialized(gs);
+    LWGEOM *un = meos_areal_union(lw);
+    lwgeom_free(lw);
+    if (! un)
+      return NULL;
+    GSERIALIZED *ugs = geo_serialize(un);
+    lwgeom_free(un);
+    bool found = dist_geom_decompose(ugs, &g);
+    pfree(ugs);
+    if (! found)
+      return NULL;
+    if (g.face)
+    {
+      dist_geom_free(&g);
+      return NULL;
+    }
   }
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->kind = TCBUF_CTX_GEO;
