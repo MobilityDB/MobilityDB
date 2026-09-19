@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Basic functions for static pose chain objects.  
+<p>Structure to represent pose chain values.  
  <a href="structPoseChain.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="posechain_8h_source.html">posechain.h</a>&gt;</code></p>
@@ -100,8 +100,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:a7fd762d0c3e9bf36677b0e9bfa8b4ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Basic functions for static pose chain objects. </p>
-<p >Structure to represent pose chain values</p>
+<div class="textblock"><p >Structure to represent pose chain values. </p>
 <p >A pose chain is an ordered list of at least one pose. The first link is expressed in the chain's outer frame, which is the frame the SRID names; every later link is expressed in the frame the link before it defines. Clause 4.2.8 of OGC GeoPose 1.0 forbids an inner frame from being topocentric, so a chain has exactly one outer frame, hence one SRID and one dimension for all of its links.</p>
 <p >flags (8 bits, x = unused): xxZXxxxx, where the geodetic bit is set for a chain whose outer frame is geographic data: 2D: count blocks of [x, y, theta] 3D: count blocks of [x, y, z, W, X, Y, Z] </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>

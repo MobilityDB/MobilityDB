@@ -83,6 +83,9 @@ $(function() {
   <div class="headertitle"><div class="title">meos_internal.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Internal API of the Mobility Engine Open Source(MEOS) library.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;json-c/json.h&gt;</code><br />
@@ -238,7 +241,7 @@ Macros</h2></td></tr>
 <tr class="memdesc:ab1b520cb5709f941293e87561d657208"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for ensuring that a span set is an integer span set.  <a href="meos__internal_8h_ab1b520cb5709f941293e87561d657208.html#ab1b520cb5709f941293e87561d657208">More...</a><br /></td></tr>
 <tr class="separator:ab1b520cb5709f941293e87561d657208"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfba62e196e7f7367cb82d576fea54be"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal_8h_adfba62e196e7f7367cb82d576fea54be.html#adfba62e196e7f7367cb82d576fea54be">VALIDATE_NOT_NULL</a>(ptr,  ret)&#160;&#160;&#160;    do { <a class="el" href="meos_2src_2geo_2CMakeLists_8txt_a22244963d8d3bcc01d32ca1ecc0b7c56.html#a22244963d8d3bcc01d32ca1ecc0b7c56">if</a> (! <a class="el" href="meos_2include_2temporal_2temporal_8h_a1ca54ea01736c1ce368e71d12ae9434d.html#a1ca54ea01736c1ce368e71d12ae9434d">ensure_not_null</a>((void *) (ptr))) return (ret); } while (0)</td></tr>
-<tr class="memdesc:adfba62e196e7f7367cb82d576fea54be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API of the Mobility Engine Open Source(MEOS) library.  <a href="meos__internal_8h_adfba62e196e7f7367cb82d576fea54be.html#adfba62e196e7f7367cb82d576fea54be">More...</a><br /></td></tr>
+<tr class="memdesc:adfba62e196e7f7367cb82d576fea54be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for ensuring that a pointer is not null.  <a href="meos__internal_8h_adfba62e196e7f7367cb82d576fea54be.html#adfba62e196e7f7367cb82d576fea54be">More...</a><br /></td></tr>
 <tr class="separator:adfba62e196e7f7367cb82d576fea54be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38ed77d98f86b021ab28c600f112c3ce"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal_8h_a38ed77d98f86b021ab28c600f112c3ce.html#a38ed77d98f86b021ab28c600f112c3ce">VALIDATE_NUMSET</a>(<a class="el" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>,  ret)</td></tr>
 <tr class="memdesc:a38ed77d98f86b021ab28c600f112c3ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for ensuring that the span is a number span.  <a href="meos__internal_8h_a38ed77d98f86b021ab28c600f112c3ce.html#a38ed77d98f86b021ab28c600f112c3ce">More...</a><br /></td></tr>
@@ -561,7 +564,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a251cb4298b09367db9c6ae36bf3c1c79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a binomially distributed random value.  <a href="meos__internal_8h_a251cb4298b09367db9c6ae36bf3c1c79.html#a251cb4298b09367db9c6ae36bf3c1c79">More...</a><br /></td></tr>
 <tr class="separator:a251cb4298b09367db9c6ae36bf3c1c79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1222ec4b945c4833371a93fe05d6c805"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal_8h_a1222ec4b945c4833371a93fe05d6c805.html#a1222ec4b945c4833371a93fe05d6c805">meos_random_double</a> (<a class="el" href="structpg__prng__state.html">pg_prng_state</a> *rng)</td></tr>
-<tr class="memdesc:a1222ec4b945c4833371a93fe05d6c805"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a uniformly distributed random double in [0, 1).  <a href="meos__internal_8h_a1222ec4b945c4833371a93fe05d6c805.html#a1222ec4b945c4833371a93fe05d6c805">More...</a><br /></td></tr>
+<tr class="memdesc:a1222ec4b945c4833371a93fe05d6c805"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a uniformly distributed random double in [0, 1)  <a href="meos__internal_8h_a1222ec4b945c4833371a93fe05d6c805.html#a1222ec4b945c4833371a93fe05d6c805">More...</a><br /></td></tr>
 <tr class="separator:a1222ec4b945c4833371a93fe05d6c805"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9292693d9b5a8bae1b00944880f5ed4f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal_8h_a9292693d9b5a8bae1b00944880f5ed4f.html#a9292693d9b5a8bae1b00944880f5ed4f">meos_random_exponential</a> (<a class="el" href="structpg__prng__state.html">pg_prng_state</a> *rng, double mean)</td></tr>
 <tr class="memdesc:a9292693d9b5a8bae1b00944880f5ed4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an exponentially distributed random value.  <a href="meos__internal_8h_a9292693d9b5a8bae1b00944880f5ed4f.html#a9292693d9b5a8bae1b00944880f5ed4f">More...</a><br /></td></tr>
@@ -1053,7 +1056,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa10ebfa92acc4a981f1f0940e579c547"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs an empty skiplist.  <a href="meos__internal_8h_aa10ebfa92acc4a981f1f0940e579c547.html#aa10ebfa92acc4a981f1f0940e579c547">More...</a><br /></td></tr>
 <tr class="separator:aa10ebfa92acc4a981f1f0940e579c547"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2688f564d6bdc88fad4671f9e83a3bfe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal_8h_a2688f564d6bdc88fad4671f9e83a3bfe.html#a2688f564d6bdc88fad4671f9e83a3bfe">temporal_skiplist_splice</a> (<a class="el" href="structSkipList.html">SkipList</a> *list, void **values, int count, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, bool crossings)</td></tr>
-<tr class="memdesc:a2688f564d6bdc88fad4671f9e83a3bfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a new set of values to the skiplist while performing the aggregation between the new values that overlap with the values in the list.  <a href="meos__internal_8h_a2688f564d6bdc88fad4671f9e83a3bfe.html#a2688f564d6bdc88fad4671f9e83a3bfe">More...</a><br /></td></tr>
+<tr class="memdesc:a2688f564d6bdc88fad4671f9e83a3bfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a new set of values to the skiplist.  <a href="meos__internal_8h_a2688f564d6bdc88fad4671f9e83a3bfe.html#a2688f564d6bdc88fad4671f9e83a3bfe">More...</a><br /></td></tr>
 <tr class="separator:a2688f564d6bdc88fad4671f9e83a3bfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabe892c3286d95ed2cb38149e52e19338"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__accessor_gabe892c3286d95ed2cb38149e52e19338.html#gabe892c3286d95ed2cb38149e52e19338">temporal_start_inst</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:gabe892c3286d95ed2cb38149e52e19338"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pointer to the start instant of a temporal value.  <a href="group__meos__internal__temporal__accessor_gabe892c3286d95ed2cb38149e52e19338.html#gabe892c3286d95ed2cb38149e52e19338">More...</a><br /></td></tr>
@@ -1779,7 +1782,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaf82010a311cbbbab0899e5db2048dfbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for set union aggregate of values.  <a href="group__meos__internal__setspan__agg_gaf82010a311cbbbab0899e5db2048dfbc.html#gaf82010a311cbbbab0899e5db2048dfbc">More...</a><br /></td></tr>
 <tr class="separator:gaf82010a311cbbbab0899e5db2048dfbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Internal API of the Mobility Engine Open Source(MEOS) library. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

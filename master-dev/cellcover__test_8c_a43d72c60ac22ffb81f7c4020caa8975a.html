@@ -167,8 +167,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Count the timestamps at which the temporal quadbin cell of a linear segment holds a cell other than the one holding the position of the segment then, and the cells it holds that no such position reaches nor borders. </p>
-<p >The position at each timestamp is read from the temporal point itself and its cell through the static adapter, which shares the encoder with the value under test. An entry time is a crossing rounded to whole microseconds, so the segment spans an hour: a sampled timestamp then falls within a microsecond of a crossing with a chance far below one in a million. </p>
+<p>Count where the temporal quadbin cell of a linear segment departs from the positions of the segment. </p>
+<p >The counts are the timestamps at which the temporal quadbin cell holds a cell other than the one holding the position of the segment then, and the cells it holds that no such position reaches nor borders. The position at each timestamp is read from the temporal point itself and its cell through the static adapter, which shares the encoder with the value under test. An entry time is a crossing rounded to whole microseconds, so the segment spans an hour: a sampled timestamp then falls within a microsecond of a crossing with a chance far below one in a million. </p>
 
 </div>
 </div>

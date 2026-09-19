@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Static h3index SQL type — parser, output, comparison / hash helpers, plus every <code>datum_h3_*</code> Datum-calling-convention wrapper consumed by the th3index lifting layer.  
+<p>Static h3index type and its Datum wrappers.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="h3index_8h_source.html">h3/h3index.h</a>&quot;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -244,7 +244,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga81000dafaec6be7f47b410ce0b32d23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first h3index is greater than the second.  <a href="group__meos__h3__base__comp_ga81000dafaec6be7f47b410ce0b32d23d.html#ga81000dafaec6be7f47b410ce0b32d23d">More...</a><br /></td></tr>
 <tr class="separator:ga81000dafaec6be7f47b410ce0b32d23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1f68818fd92ecc2b54663907998c26b6"><td class="memItemLeft" align="right" valign="top">uint32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__accessor_ga1f68818fd92ecc2b54663907998c26b6.html#ga1f68818fd92ecc2b54663907998c26b6">h3index_hash</a> (H3Index cell)</td></tr>
-<tr class="memdesc:ga1f68818fd92ecc2b54663907998c26b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 32-bit hash value of an h3index — matches the result <code>hashint8</code> would produce on the same bit pattern, which is what the SQL hash opclass was previously delegating to.  <a href="group__meos__h3__base__accessor_ga1f68818fd92ecc2b54663907998c26b6.html#ga1f68818fd92ecc2b54663907998c26b6">More...</a><br /></td></tr>
+<tr class="memdesc:ga1f68818fd92ecc2b54663907998c26b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 32-bit hash value of an h3index.  <a href="group__meos__h3__base__accessor_ga1f68818fd92ecc2b54663907998c26b6.html#ga1f68818fd92ecc2b54663907998c26b6">More...</a><br /></td></tr>
 <tr class="separator:ga1f68818fd92ecc2b54663907998c26b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3b15359c0027101fcc928a865849287f"><td class="memItemLeft" align="right" valign="top">H3Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__inout_ga3b15359c0027101fcc928a865849287f.html#ga3b15359c0027101fcc928a865849287f">h3index_in</a> (const char *str)</td></tr>
 <tr class="memdesc:ga3b15359c0027101fcc928a865849287f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a string into an H3Index.  <a href="group__meos__h3__base__inout_ga3b15359c0027101fcc928a865849287f.html#ga3b15359c0027101fcc928a865849287f">More...</a><br /></td></tr>
@@ -286,7 +286,8 @@ Functions</h2></td></tr>
 <tr class="separator:ac108800daaae96171b945eedffa065db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Static h3index SQL type — parser, output, comparison / hash helpers, plus every <code>datum_h3_*</code> Datum-calling-convention wrapper consumed by the th3index lifting layer. </p>
+<div class="textblock"><p >Static h3index type and its Datum wrappers. </p>
+<p >Static h3index SQL type — parser, output, comparison / hash helpers, plus every <code>datum_h3_*</code> Datum-calling-convention wrapper consumed by the th3index lifting layer.</p>
 <p >Organisation follows cbuffer's convention: the base-type file owns both the scalar MEOS API AND the Datum wrappers that lift each scalar into the temporal-function machinery.</p>
 <p >Every helper here treats h3index as a uint64-backed value with h3-pg-style hex output. Comparison and hashing reduce to plain int64 bit operations — they carry no geographic meaning but are required for btree indexing, ORDER BY, GROUP BY, DISTINCT, etc.</p>
 <p >Datum packing for H3Index values uses <code>DatumGetH3Index</code> / <code>H3IndexGetDatum</code> from <code><a class="el" href="h3index_8h.html" title="Internal helpers for the static h3index SQL type.">h3index.h</a></code>. The wrappers that consume or produce genuinely-int64 payloads (child positions, grid hop counts) use <code>DatumGetInt64</code> / <code>Int64GetDatum</code> directly so the distinction between a cell id and a plain integer is visible. </p>

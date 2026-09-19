@@ -80,6 +80,9 @@ $(function() {
   <div class="headertitle"><div class="title">pose.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Basic functions for static pose objects.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
@@ -107,7 +110,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ad4770948beea5778b3c97a819f1ef355"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_ad4770948beea5778b3c97a819f1ef355.html#ad4770948beea5778b3c97a819f1ef355">MAXPOSELEN</a>&#160;&#160;&#160;256</td></tr>
-<tr class="memdesc:ad4770948beea5778b3c97a819f1ef355"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic functions for static pose objects.  <a href="meos_2src_2pose_2pose_8c_ad4770948beea5778b3c97a819f1ef355.html#ad4770948beea5778b3c97a819f1ef355">More...</a><br /></td></tr>
+<tr class="memdesc:ad4770948beea5778b3c97a819f1ef355"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffer size for input and output of pose values.  <a href="meos_2src_2pose_2pose_8c_ad4770948beea5778b3c97a819f1ef355.html#ad4770948beea5778b3c97a819f1ef355">More...</a><br /></td></tr>
 <tr class="separator:ad4770948beea5778b3c97a819f1ef355"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a057e726099f1f2b459e0283a27c5139d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_a057e726099f1f2b459e0283a27c5139d.html#a057e726099f1f2b459e0283a27c5139d">POSE_QUATERNION_NORM_EPSILON</a>&#160;&#160;&#160;(8 * DBL_EPSILON)</td></tr>
 <tr class="separator:a057e726099f1f2b459e0283a27c5139d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,7 +238,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa4ed76429b0163d63451bd86db48ae42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between the two poses.  <a href="meos_2src_2pose_2pose_8c_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">More...</a><br /></td></tr>
 <tr class="separator:aa4ed76429b0163d63451bd86db48ae42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa361700c4f1ab0436a74163261496a5e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">pose_enu_to_ecef_quaternion</a> (double lat_rad, double lon_rad, double *W, double *X, double *Y, double *Z)</td></tr>
-<tr class="memdesc:aa361700c4f1ab0436a74163261496a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the unit quaternion representing the rotation from the East-North-Up basis at geographic point (<code>lat_rad</code>, <code>lon_rad</code>) to the WGS-84 ECEF basis.  <a href="meos_2src_2pose_2pose_8c_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">More...</a><br /></td></tr>
+<tr class="memdesc:aa361700c4f1ab0436a74163261496a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the unit quaternion representing the rotation from the East-North-Up basis to the WGS-84 ECEF basis.  <a href="meos_2src_2pose_2pose_8c_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">More...</a><br /></td></tr>
 <tr class="separator:aa361700c4f1ab0436a74163261496a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0fe8fdbd64815816a0e7c5fc49f2850d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__comp_ga0fe8fdbd64815816a0e7c5fc49f2850d.html#ga0fe8fdbd64815816a0e7c5fc49f2850d">pose_eq</a> (const <a class="el" href="structPose.html">Pose</a> *pose1, const <a class="el" href="structPose.html">Pose</a> *pose2)</td></tr>
 <tr class="memdesc:ga0fe8fdbd64815816a0e7c5fc49f2850d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pose is equal to the second one.  <a href="group__meos__pose__base__comp_ga0fe8fdbd64815816a0e7c5fc49f2850d.html#ga0fe8fdbd64815816a0e7c5fc49f2850d">More...</a><br /></td></tr>
@@ -310,7 +313,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga2b569b8d4e5468a8713b5883f4ea6e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the orientation quaternion of a pose.  <a href="group__meos__pose__base__accessor_ga2b569b8d4e5468a8713b5883f4ea6e34.html#ga2b569b8d4e5468a8713b5883f4ea6e34">More...</a><br /></td></tr>
 <tr class="separator:ga2b569b8d4e5468a8713b5883f4ea6e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a7b67e53d1d053270b0c534e02abc6c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">pose_quaternion_mul</a> (double aw, double ax, double ay, double az, double bw, double bx, double by, double bz, double *ow, double *ox, double *oy, double *oz)</td></tr>
-<tr class="memdesc:a3a7b67e53d1d053270b0c534e02abc6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compose two unit quaternions: out = a * b (Hamilton convention).  <a href="meos_2src_2pose_2pose_8c_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">More...</a><br /></td></tr>
+<tr class="memdesc:a3a7b67e53d1d053270b0c534e02abc6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compose two unit quaternions: out = a * b (Hamilton convention)  <a href="meos_2src_2pose_2pose_8c_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">More...</a><br /></td></tr>
 <tr class="separator:a3a7b67e53d1d053270b0c534e02abc6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0890288b58a0ae101415a5dd3cae074b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_a0890288b58a0ae101415a5dd3cae074b.html#a0890288b58a0ae101415a5dd3cae074b">pose_quaternion_to_ypr</a> (double W, double X, double Y, double Z, double *yaw_rad, double *pitch_rad, double *roll_rad)</td></tr>
 <tr class="memdesc:a0890288b58a0ae101415a5dd3cae074b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a unit quaternion (W, X, Y, Z) in Hamilton convention to (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention.  <a href="meos_2src_2pose_2pose_8c_a0890288b58a0ae101415a5dd3cae074b.html#a0890288b58a0ae101415a5dd3cae074b">More...</a><br /></td></tr>
@@ -366,13 +369,15 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa155485dc29c2c72b327cc4fcc22ac3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pose value interpolated from the two poses and a ratio.  <a href="meos_2src_2pose_2pose_8c_aa155485dc29c2c72b327cc4fcc22ac3f.html#aa155485dc29c2c72b327cc4fcc22ac3f">More...</a><br /></td></tr>
 <tr class="separator:aa155485dc29c2c72b327cc4fcc22ac3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a641de21e545b9c6327cfc3f2526d499b"><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">posesegm_locate</a> (const <a class="el" href="structPose.html">Pose</a> *start, const <a class="el" href="structPose.html">Pose</a> *end, const <a class="el" href="structPose.html">Pose</a> *value)</td></tr>
-<tr class="memdesc:a641de21e545b9c6327cfc3f2526d499b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) if a network point segment intersects a network point, return -1.0 if the network point is not located in the segment or if it is approximately equal to the start or the end valuess.  <a href="meos_2src_2pose_2pose_8c_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">More...</a><br /></td></tr>
+<tr class="memdesc:a641de21e545b9c6327cfc3f2526d499b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the location of a pose in a pose segment.  <a href="meos_2src_2pose_2pose_8c_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">More...</a><br /></td></tr>
 <tr class="separator:a641de21e545b9c6327cfc3f2526d499b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b1165ad9a2c5ed16bdf824ec8b2c4ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2pose_8c_a1b1165ad9a2c5ed16bdf824ec8b2c4ab.html#a1b1165ad9a2c5ed16bdf824ec8b2c4ab">quaternion_rotate_vector</a> (double W, double X, double Y, double Z, double vx, double vy, double vz, double *ox, double *oy, double *oz)</td></tr>
 <tr class="memdesc:a1b1165ad9a2c5ed16bdf824ec8b2c4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate a vector by a unit quaternion.  <a href="meos_2src_2pose_2pose_8c_a1b1165ad9a2c5ed16bdf824ec8b2c4ab.html#a1b1165ad9a2c5ed16bdf824ec8b2c4ab">More...</a><br /></td></tr>
 <tr class="separator:a1b1165ad9a2c5ed16bdf824ec8b2c4ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Basic functions for static pose objects. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

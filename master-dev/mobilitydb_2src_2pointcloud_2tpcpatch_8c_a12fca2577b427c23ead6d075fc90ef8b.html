@@ -144,8 +144,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Test whether any instant of <code>temp</code> has at least one point matching <code>pred</code>. </p>
-<p >Walks instants in subtype order, short-circuits on the first hit — never rebuilds a patch. Backs the <code>eIntersects</code> PG wrapper.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The function walks instants in subtype order and short-circuits on the first hit; it never rebuilds a patch. It backs the <code>eIntersects</code> PG wrapper. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">temp</td><td>Source tpcpatch. </td></tr>
     <tr><td class="paramname">pred</td><td>Per-point predicate. </td></tr>

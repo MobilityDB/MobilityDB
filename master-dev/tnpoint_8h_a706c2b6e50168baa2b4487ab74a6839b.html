@@ -161,8 +161,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a float in (0,1) if a network point segment intersects a network point, return -1.0 if the network point is not located in the segment or if it is approximately equal to the start or the end valuess. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the location of a network point in a network point segment. </p>
+<p >The location is a float in (0,1) if the segment intersects the network point. The function returns -1.0 if the network point is not located in the segment or if it is approximately equal to the start or the end values. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Values defining the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to locate </td></tr>

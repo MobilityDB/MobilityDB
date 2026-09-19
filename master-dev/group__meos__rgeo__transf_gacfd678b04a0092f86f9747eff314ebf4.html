@@ -121,8 +121,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the rows of a temporal rigid geometry, one per distinct pose, each pairing the reference geometry with that pose applied with the span set on which the pose is taken. </p>
-<p >The pose is applied to the reference geometry in every row: the geometry is rotated by the pose's orientation, then translated to its position, the rigid-body transform <a class="el" href="group__meos__rgeo__accessor_ga709c675b9c20d131a6e4d51ebdd02850.html#ga709c675b9c20d131a6e4d51ebdd02850" title="Return a copy of the start value of a temporal rigid geometry.">trgeometry_start_value</a> applies. A reference geometry that a rotation maps onto itself yields rows with equal geometries, one per pose </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the rows of a temporal rigid geometry, one per distinct pose. </p>
+<p >Each row pairs the reference geometry with that pose applied with the span set on which the pose is taken. The pose is applied to the reference geometry in every row: the geometry is rotated by the pose's orientation, then translated to its position, the rigid-body transform <a class="el" href="group__meos__rgeo__accessor_ga709c675b9c20d131a6e4d51ebdd02850.html#ga709c675b9c20d131a6e4d51ebdd02850" title="Return a copy of the start value of a temporal rigid geometry.">trgeometry_start_value</a> applies. A reference geometry that a rotation maps onto itself yields rows with equal geometries, one per pose </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">values</td><td>Array of the reference geometry with each distinct pose applied </td></tr>
@@ -130,7 +130,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Array of span sets, the i-th one the time on which <code>temp</code> takes the i-th pose @csqlfn <a class="el" href="group__mobilitydb__rgeo__transf_ga06833c5e2169c0336a28d7309badb801.html#ga06833c5e2169c0336a28d7309badb801" title="Return the rows of a temporal rigid geometry, one per distinct pose, each pairing the reference geome...">Trgeometry_unnest()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Array of span sets, the i-th one the time on which <code>temp</code> takes the i-th pose @csqlfn <a class="el" href="group__mobilitydb__rgeo__transf_ga06833c5e2169c0336a28d7309badb801.html#ga06833c5e2169c0336a28d7309badb801" title="Return the rows of a temporal rigid geometry, one per distinct pose.">Trgeometry_unnest()</a> </dd></dl>
 
 </div>
 </div>

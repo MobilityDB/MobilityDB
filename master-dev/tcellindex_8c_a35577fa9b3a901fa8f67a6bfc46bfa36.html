@@ -167,8 +167,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the first parameter strictly ahead of <code>tmin</code> at which a planar path reaches the plane of normal <code>m</code> from its positive side, or a value above 1 when it does not before its end. </p>
-<p >The height <code>f</code> of the path above the plane has a second derivative of norm at most <code>M</code>, the curvature bound of the path, so over a step <code>h</code> it stays above &lsquo;f + f&rsquo; h - M h² / 2`. The search steps to the first zero of that bound, which the height cannot reach sooner: no crossing is stepped over, however short the stretch the path spends beyond the plane. Near a crossing the steps shrink quadratically onto it. </p>
+<p>Return the first parameter strictly ahead of <code>tmin</code> at which a planar path reaches the plane of normal <code>m</code> from its positive side. </p>
+<p >The function returns a value above 1 when the path does not reach the plane before its end. The height <code>f</code> of the path above the plane has a second derivative of norm at most <code>M</code>, the curvature bound of the path, so over a step <code>h</code> it stays above &lsquo;f + f&rsquo; h - M h² / 2`. The search steps to the first zero of that bound, which the height cannot reach sooner: no crossing is stepped over, however short the stretch the path spends beyond the plane. Near a crossing the steps shrink quadratically onto it. </p>
 
 </div>
 </div>

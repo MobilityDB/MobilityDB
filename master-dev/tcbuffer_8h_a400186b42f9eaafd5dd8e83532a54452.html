@@ -120,7 +120,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>ctx</em>&#160;</td>
+          <td class="paramname"><em>ctxv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -130,7 +130,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a stationary circular buffer touches the geometry, i.e., its boundary meets the geometry boundary with disjoint interiors (the signed boundary distance vanishes and the centre is not inside a polygon) </p>
+<p>Return true if a stationary circular buffer touches the geometry. </p>
+<p >The circular buffer touches the geometry when its boundary meets the geometry boundary with disjoint interiors, i.e., the signed boundary distance vanishes and the centre is not inside a polygon. </p>
 
 </div>
 </div>

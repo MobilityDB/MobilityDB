@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that reads AIS data from a CSV file containing one full day of observations provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, constructs for each ship temporal values for the trip and the SOG, and outputs for each ship the MMSI, the number of records and instants used for contruct the temporal values, the distance travelled and the time-weighted average of the SOG.  
+<p>Build one full day of ship trips by expanding sequences.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -125,7 +125,8 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that reads AIS data from a CSV file containing one full day of observations provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, constructs for each ship temporal values for the trip and the SOG, and outputs for each ship the MMSI, the number of records and instants used for contruct the temporal values, the distance travelled and the time-weighted average of the SOG. </p>
+<div class="textblock"><p >Build one full day of ship trips by expanding sequences. </p>
+<p >A simple program that reads AIS data from a CSV file containing one full day of observations provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, constructs for each ship temporal values for the trip and the SOG, and outputs for each ship the MMSI, the number of records and instants used for contruct the temporal values, the distance travelled and the time-weighted average of the SOG.</p>
 <p >Please notice that the <code>data</code> directory DOES NOT contain the input CSV file, you must download it from the website above.</p>
 <p >Please read the assumptions made about the input CSV file in the file <code><a class="el" href="02__ais__read_8c.html" title="A simple program that reads AIS data from a CSV file and outputs a few of these records converted int...">02_ais_read.c</a></code> in the same directory. The program assumes that the input file contains at most a given number of records for at most a given number of ships, as defined by two compilation constraints. Also, the program copes with minimal error correction, that is,</p><ul>
 <li>It supposes that the observations have increasing timestamp values</li>
@@ -133,7 +134,7 @@ Functions</h2></td></tr>
 <li>It takes only the first observation when there are two or more observations for the same ship with equal timestamp values.</li>
 </ul>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o ais_expand_full ais_expand_full.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

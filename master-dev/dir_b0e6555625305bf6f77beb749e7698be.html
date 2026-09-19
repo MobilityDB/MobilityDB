@@ -87,13 +87,13 @@ Files</h2></td></tr>
 <tr class="memdesc:bool__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the boolean functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="box__validity__test_8c.html">box_validity_test.c</a></td></tr>
-<tr class="memdesc:box__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the bounding box operators of two spatiotemporal values, and of a temporal point cloud, report an erroneous operand under the noexit error handler. <br /></td></tr>
+<tr class="memdesc:box__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test how the bounding box operators report an erroneous operand. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c.html">cellcover_test.c</a></td></tr>
 <tr class="memdesc:cellcover__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A trajectory's cell cover holds every cell the trajectory crosses. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellpoint__validity__test_8c.html">cellpoint_validity_test.c</a></td></tr>
-<tr class="memdesc:cellpoint__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the functions giving the cell of a point in the H3, QUADBIN and S2 grids report an erroneous argument under the noexit error handler. <br /></td></tr>
+<tr class="memdesc:cellpoint__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test how the functions giving the cell of a point report an error. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellset__make__test_8c.html">cellset_make_test.c</a></td></tr>
 <tr class="memdesc:cellset__make__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the typed constructors of the cell index sets. <br /></td></tr>
@@ -134,7 +134,7 @@ Files</h2></td></tr>
 <tr class="memdesc:h3__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the compaction and the uncompaction of a set of H3 cells report an erroneous argument under the noexit error handler. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="index__position__test_8c.html">index_position_test.c</a></td></tr>
-<tr class="memdesc:index__position__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the position search operations of the in-memory indexes, i.e., the operations that order a dimension, against the exact answer and across both index structures, together with the equality operation, which orders no dimension but is pruned the way containment is, and the width of the ids the indexes answer. <br /></td></tr>
+<tr class="memdesc:index__position__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the position search operations of the in-memory indexes. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="int__test_8c.html">int_test.c</a></td></tr>
 <tr class="memdesc:int__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the integer functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
@@ -158,16 +158,16 @@ Files</h2></td></tr>
 <tr class="memdesc:nan__input__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests that MEOS refuses a NaN where a number enters it: through text, through the generic constructors every temporal value, set and span is built by, through the typed constructors that bypass them, and as a coordinate of a point or a box. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="npoint__test_8c.html">npoint_test.c</a></td></tr>
-<tr class="memdesc:npoint__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the funtions for the temporal geometry types in MEOS, that is, geometry, geography, stbox, tgeometry, tgeography, tgeompoint, tgeogpoint. <br /></td></tr>
+<tr class="memdesc:npoint__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the functions of the network point types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="npoint__validity__test_8c.html">npoint_validity_test.c</a></td></tr>
-<tr class="memdesc:npoint__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the temporal network point instant constructor and the route accessor report an erroneous argument under the noexit error handler. <br /></td></tr>
+<tr class="memdesc:npoint__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test how the temporal network point functions report an error. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="numeric__test_8c.html">numeric_test.c</a></td></tr>
 <tr class="memdesc:numeric__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the numeric functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="parse__test_8c.html">parse_test.c</a></td></tr>
-<tr class="memdesc:parse__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ground-truth correctness gate for the vendored liblwgeom WKT geometry parser (the flex/bison lexer in postgis/liblwgeom/). <br /></td></tr>
+<tr class="memdesc:parse__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ground-truth correctness gate for the vendored liblwgeom WKT geometry parser (the flex/bison lexer in postgis/liblwgeom/) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcschema__dims__load__test_8c.html">pcschema_dims_load_test.c</a></td></tr>
 <tr class="memdesc:pcschema__dims__load__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test that a point cloud schema stated as dimensions is the schema that the same document states. <br /></td></tr>
@@ -196,19 +196,19 @@ Files</h2></td></tr>
 <tr class="memdesc:rtree__join__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the join of two in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> indexes, i.e., rtree_join, against an exact brute-force oracle. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__knn__test_8c.html">rtree_knn_test.c</a></td></tr>
-<tr class="memdesc:rtree__knn__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the nearest-neighbour cursor of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_nn_cursor_open, rtree_nn_cursor_next and rtree_nn_cursor_close, against an exact brute-force oracle. <br /></td></tr>
+<tr class="memdesc:rtree__knn__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the nearest-neighbour cursor of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__load__test_8c.html">rtree_load_test.c</a></td></tr>
-<tr class="memdesc:rtree__load__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_load, against a tree of the same entries built one at a time by rtree_insert. <br /></td></tr>
+<tr class="memdesc:rtree__load__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__mest__test_8c.html">rtree_mest_test.c</a></td></tr>
-<tr class="memdesc:rtree__mest__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the multi-entry (MEST) temporal functions of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_insert_temporal_split and rtree_search_temporal_dedup, against the single-box temporal functions rtree_insert_temporal and rtree_search_temporal and against an exact brute-force oracle. <br /></td></tr>
+<tr class="memdesc:rtree__mest__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the multi-entry temporal functions of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__span__test_8c.html">rtree_span_test.c</a></td></tr>
-<tr class="memdesc:rtree__span__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for the numeric span bounding box types, i.e., the indexes built with rtree_create_intspan and rtree_create_floatspan, against an exact brute-force oracle. <br /></td></tr>
+<tr class="memdesc:rtree__span__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for numeric spans. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="setset__pairs__test_8c.html">setset_pairs_test.c</a></td></tr>
-<tr class="memdesc:setset__pairs__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the ever/always set-set relationships over arrays of temporal geos, i.e., the <code>*_tgeoarr_tgeoarr</code> functions, against the scalar relationship applied to every pair. <br /></td></tr>
+<tr class="memdesc:setset__pairs__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the ever and always set-set relationships of temporal geos. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="setspan__test_8c.html">setspan_test.c</a></td></tr>
 <tr class="memdesc:setspan__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the set and span functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
@@ -220,7 +220,7 @@ Files</h2></td></tr>
 <tr class="memdesc:sptree__load__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the build of the in-memory space-partitioning index from a whole entry set, i.e., sptree_load, for both kinds of tree. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c.html">sptree_test.c</a></td></tr>
-<tr class="memdesc:sptree__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the in-memory space-partitioning index (quad-tree and k-d tree), i.e., sptree_create_*, sptree_insert and sptree_search, against an exact brute-force oracle. <br /></td></tr>
+<tr class="memdesc:sptree__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the in-memory space-partitioning index. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="srid__validity__test_8c.html">srid_validity_test.c</a></td></tr>
 <tr class="memdesc:srid__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the constructors and the SRID setters report an invalid SRID under the noexit error handler. <br /></td></tr>
@@ -232,10 +232,10 @@ Files</h2></td></tr>
 <tr class="memdesc:tbl__geometry__read_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads a CSV file containig geometries and compute the total number of points in all geometries. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tcbuffer__geometry_8c.html">tbl_tcbuffer_geometry.c</a></td></tr>
-<tr class="memdesc:tbl__tcbuffer__geometry_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads two CSV files, the first one containing temporal circular buffers and the second containing geometries and restricts the temporal circular buffers to the geometries. <br /></td></tr>
+<tr class="memdesc:tbl__tcbuffer__geometry_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restrict the temporal circular buffers of a CSV file to geometries. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tcbuffer__tcbuffer_8c.html">tbl_tcbuffer_tcbuffer.c</a></td></tr>
-<tr class="memdesc:tbl__tcbuffer__tcbuffer_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads a CSV files containing temporal circular buffers and performs a "self join" by restricting couples of temporal circular buffers. <br /></td></tr>
+<tr class="memdesc:tbl__tcbuffer__tcbuffer_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Join the temporal circular buffers of a CSV file with themselves. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c.html">tbl_temporal.c</a></td></tr>
 <tr class="memdesc:tbl__temporal_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads the CSV file of every temporal type and applies a function to the values it holds. <br /></td></tr>
@@ -244,19 +244,19 @@ Files</h2></td></tr>
 <tr class="memdesc:tbl__temporal__temporal_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads a CSV files containing temporal values and performs a "self join" by applying to them an operation. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal__value_8c.html">tbl_temporal_value.c</a></td></tr>
-<tr class="memdesc:tbl__temporal__value_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads two CSV files, the first one containing temporal values and the second containing non-temporal values and apply a function to them. <br /></td></tr>
+<tr class="memdesc:tbl__temporal__value_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a function to the temporal and static values of two CSV files. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tgeo__tgeo_8c.html">tbl_tgeo_tgeo.c</a></td></tr>
-<tr class="memdesc:tbl__tgeo__tgeo_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads a CSV files containing temporal circular buffers and performs a "self join" by restricting couples of temporal circular buffers. <br /></td></tr>
+<tr class="memdesc:tbl__tgeo__tgeo_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Join the temporal geometries of a CSV file with themselves. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tpoint_8c.html">tbl_tpoint.c</a></td></tr>
 <tr class="memdesc:tbl__tpoint_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that a CSV file containing temporal points and applies a function to the temporal points. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tpoint__geo_8c.html">tbl_tpoint_geo.c</a></td></tr>
-<tr class="memdesc:tbl__tpoint__geo_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads two CSV files, the first one containing temporal points and the second containing geometries and restricts the temporal point to the geometries. <br /></td></tr>
+<tr class="memdesc:tbl__tpoint__geo_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restrict the temporal points of a CSV file to geometries. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__tpoint__tpoint_8c.html">tbl_tpoint_tpoint.c</a></td></tr>
-<tr class="memdesc:tbl__tpoint__tpoint_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads a CSV files containing temporal circular buffers and performs a "self join" by restricting couples of temporal circular buffers. <br /></td></tr>
+<tr class="memdesc:tbl__tpoint__tpoint_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Join the temporal points of a CSV file with themselves. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__value__value_8c.html">tbl_value_value.c</a></td></tr>
 <tr class="memdesc:tbl__value__value_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that reads two CSV files containing non-temporal values and applies a function to them. <br /></td></tr>
@@ -274,16 +274,16 @@ Files</h2></td></tr>
 <tr class="memdesc:temporal__unnest__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the typed unnest functions of the temporal types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__validity__test_8c.html">temporal_validity_test.c</a></td></tr>
-<tr class="memdesc:temporal__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the temporal restrictions to the instants before or after a timestamptz, and the test of whether the time of two temporal values overlaps, report a null argument under the noexit error handler. <br /></td></tr>
+<tr class="memdesc:temporal__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test how temporal restrictions and time overlaps report a null argument. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="text__test_8c.html">text_test.c</a></td></tr>
 <tr class="memdesc:text__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the text functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="threaded__geos__test_8c.html">threaded_geos_test.c</a></td></tr>
-<tr class="memdesc:threaded__geos__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concurrent stress test combining the GEOS spatial-relationship surface, WKT parsing of temporal points, WKB roundtrip, temporal accessors, and per-thread geometry distance calls. <br /></td></tr>
+<tr class="memdesc:threaded__geos__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stress the GEOS-backed functions of MEOS from concurrent threads. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="threaded__test_8c.html">threaded_test.c</a></td></tr>
-<tr class="memdesc:threaded__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concurrent stress test for MEOS thread-local state (issue #404). <br /></td></tr>
+<tr class="memdesc:threaded__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concurrent stress test for MEOS thread-local state. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="time__test_8c.html">time_test.c</a></td></tr>
 <tr class="memdesc:time__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that tests the time functions exposed by the PostgreSQL types embedded in MEOS. <br /></td></tr>
@@ -306,7 +306,7 @@ Files</h2></td></tr>
 <tr class="memdesc:trgeo__validity__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests how the spatiotemporal boxes of a temporal rigid geometry report an erroneous argument under the noexit error handler. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="typeof__test_8c.html">typeof_test.c</a></td></tr>
-<tr class="memdesc:typeof__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the <a class="el" href="group__meos__internal__setspan__inout_ga2cd769d6f19248feb989dbb588c21fd8.html#ga2cd769d6f19248feb989dbb588c21fd8">meos_typeof_hexwkb</a> type discriminator, which peeks the MeosType tag from the header of a hex-encoded Well-Known Binary (WKB) string of a set, span, span set, or temporal value. <br /></td></tr>
+<tr class="memdesc:typeof__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the type discriminator of hex-encoded WKB strings. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tzdata__test_8c.html">tzdata_test.c</a></td></tr>
 <tr class="memdesc:tzdata__test_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A program that tests the time zone database compiled into MEOS. <br /></td></tr>

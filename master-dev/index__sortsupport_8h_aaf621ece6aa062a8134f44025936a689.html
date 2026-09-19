@@ -107,15 +107,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Sort support for the bottom-up GiST index build. </p>
-<p >PostgreSQL builds a GiST index by sorting the leaf entries whenever the operator class supplies a <code>sortsupport</code> support function (<code>GIST_SORTSUPPORT_PROC</code>, available since PostgreSQL 14); otherwise it inserts the entries one at a time. The sort order decides how tightly the resulting pages bound their entries, so it must place values that are close in space AND in time next to each other.</p>
-<p >The key is a 64-bit index on a Hilbert curve, composed from the vendored PostGIS primitives rather than computed by a curve of our own:</p><ul>
-<li>the spatial half is #gbox_get_sortable_hash(), which is what PostGIS itself sorts a geometry column by,</li>
-<li>the temporal half is a rank of the period, and</li>
-<li>the two are combined with #uint32_hilbert(), the same primitive a second time, so that neither dimension leads the other.</li>
-</ul>
-<p >A value carrying only one of the two dimensions contributes zero for the other, which keeps the order well defined for every box the types admit.</p>
-<p >Number of low bits dropped from a timestamp before it is ranked</p>
+<p>Number of low bits dropped from a timestamp before it is ranked. </p>
 <p >A <code>TimestampTz</code> counts microseconds, a resolution far finer than an index page can exploit. Dropping 24 bits makes the unit about 16.8 seconds, which keeps roughly 1100 years on either side of the epoch inside the 32 bits the curve is given. </p>
 
 </div>

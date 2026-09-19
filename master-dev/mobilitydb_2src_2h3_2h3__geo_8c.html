@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>PostgreSQL wrappers for the static-geometry → H3 cell helpers declared in <a class="el" href="meos__h3_8h.html" title="Public MEOS API for the temporal H3 index type (th3index).">meos/include/meos_h3.h</a>.  
+<p>PostgreSQL wrappers for the static-geometry → H3 cell helpers declared in <a class="el" href="meos__h3_8h.html" title="Public MEOS API for the temporal H3 index type (th3index)">meos/include/meos_h3.h</a>.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
@@ -103,7 +103,7 @@ Macros</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga3222ce9626672c5d539c09e94eeb8d19"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__comp__ever_ga3222ce9626672c5d539c09e94eeb8d19.html#ga3222ce9626672c5d539c09e94eeb8d19">Ever_eq_h3indexset_th3index</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga3222ce9626672c5d539c09e94eeb8d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">True iff the th3index value sequence ever lies in any cell of the candidate set.  <a href="group__mobilitydb__h3__comp__ever_ga3222ce9626672c5d539c09e94eeb8d19.html#ga3222ce9626672c5d539c09e94eeb8d19">More...</a><br /></td></tr>
+<tr class="memdesc:ga3222ce9626672c5d539c09e94eeb8d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the th3index value sequence ever lies in any cell of the candidate set.  <a href="group__mobilitydb__h3__comp__ever_ga3222ce9626672c5d539c09e94eeb8d19.html#ga3222ce9626672c5d539c09e94eeb8d19">More...</a><br /></td></tr>
 <tr class="separator:ga3222ce9626672c5d539c09e94eeb8d19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9005721aa2ca8df1e645f5510a1ce608"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__conversion_ga9005721aa2ca8df1e645f5510a1ce608.html#ga9005721aa2ca8df1e645f5510a1ce608">Geo_point_to_h3index</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga9005721aa2ca8df1e645f5510a1ce608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Single H3 cell covering a POINT geometry at the given resolution @sqlfn latLngToCell()  <a href="group__mobilitydb__h3__conversion_ga9005721aa2ca8df1e645f5510a1ce608.html#ga9005721aa2ca8df1e645f5510a1ce608">More...</a><br /></td></tr>
@@ -122,7 +122,7 @@ Functions</h2></td></tr>
 <tr class="separator:gaafaaf52d2a300ba8333d622a1391f0f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >PostgreSQL wrappers for the static-geometry → H3 cell helpers declared in <a class="el" href="meos__h3_8h.html" title="Public MEOS API for the temporal H3 index type (th3index).">meos/include/meos_h3.h</a>. </p>
+<div class="textblock"><p >PostgreSQL wrappers for the static-geometry → H3 cell helpers declared in <a class="el" href="meos__h3_8h.html" title="Public MEOS API for the temporal H3 index type (th3index)">meos/include/meos_h3.h</a>. </p>
 <p >Calls <a class="el" href="group__meos__h3__conversion_ga5adeb9e26c48ba19f307505b1f6c8f50.html#ga5adeb9e26c48ba19f307505b1f6c8f50" title="Return the set of H3 cells covering a static geometry at the given resolution.">geo_to_h3index_set()</a> and <a class="el" href="group__meos__h3__comp_ga567b60a12dcf84c77a44c1bdee4ecdf0.html#ga567b60a12dcf84c77a44c1bdee4ecdf0" title="Return true if a temporal H3 cell is ever equal to a cell of an H3 cell set.">ever_eq_h3indexset_th3index()</a> in the MEOS core; thin shims for argument extraction and result return. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

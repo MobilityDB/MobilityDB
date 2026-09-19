@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that reads from the regions.csv file obtained from the BerlinMOD benchmark <a href="https://github.com/MobilityDB/MobilityDB-BerlinMOD">https://github.com/MobilityDB/MobilityDB-BerlinMOD</a> and applies one of the PostGIS functions <code>ST_ClusterIntersecting</code> or <code>ST_ClusterWithin</code> to the entire file.  
+<p>Cluster the BerlinMOD regions by intersection or distance.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -106,31 +106,32 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that reads from the regions.csv file obtained from the BerlinMOD benchmark <a href="https://github.com/MobilityDB/MobilityDB-BerlinMOD">https://github.com/MobilityDB/MobilityDB-BerlinMOD</a> and applies one of the PostGIS functions <code>ST_ClusterIntersecting</code> or <code>ST_ClusterWithin</code> to the entire file. </p>
+<div class="textblock"><p >Cluster the BerlinMOD regions by intersection or distance. </p>
+<p >A simple program that reads from the regions.csv file obtained from the BerlinMOD benchmark <a href="https://github.com/MobilityDB/MobilityDB-BerlinMOD">https://github.com/MobilityDB/MobilityDB-BerlinMOD</a> and applies one of the PostGIS functions <code>ST_ClusterIntersecting</code> or <code>ST_ClusterWithin</code> to the entire file.</p>
 <p >The program corresponds to one of the following SQL queries </p><div class="fragment"><div class="line">DROP TABLE IF EXISTS RegionsIntersecting;</div>
 <div class="line">CREATE TABLE RegionsIntersecting AS</div>
 <div class="line">WITH Temp1 AS (</div>
-<div class="line">  SELECT unnest(ST_ClusterIntersecting(geom)) geom FROM Regions ),</div>
+<div class="line">SELECT unnest(ST_ClusterIntersecting(geom)) geom FROM Regions ),</div>
 <div class="line">Temp2 AS (</div>
-<div class="line">  SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )</div>
+<div class="line">SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )</div>
 <div class="line">SELECT cluster, (rec).geom FROM Temp2;</div>
 </div><!-- fragment --><p> or </p><div class="fragment"><div class="line">DROP TABLE IF EXISTS RegionsWithin;</div>
 <div class="line">CREATE TABLE RegionsWithin AS</div>
 <div class="line">WITH Temp1 AS (</div>
-<div class="line">  SELECT unnest(ST_ClusterWithin(geom, 1000)) geom FROM Regions ),</div>
+<div class="line">SELECT unnest(ST_ClusterWithin(geom, 1000)) geom FROM Regions ),</div>
 <div class="line">Temp2 AS (</div>
-<div class="line">  SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )</div>
+<div class="line">SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )</div>
 <div class="line">SELECT cluster, (rec).geom FROM Temp2;</div>
 </div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o regions_intersecting regions_intersecting.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --><p >The program expects the file <code>data/regions.csv</code> and produces a new file <code>data/regions_new.csv</code> with a new column cluster added to each geometry. This file can be input in PostgreSQL using the following SQL command, after which it can be visualized with QGIS. </p><div class="fragment"><div class="line">DROP TABLE IF EXISTS regions_meos;</div>
 <div class="line">CREATE TABLE regions_meos (</div>
-<div class="line">  regionid <span class="keywordtype">int</span>,</div>
-<div class="line">  geom geometry,</div>
-<div class="line">  cluster integer);</div>
+<div class="line">regionid <span class="keywordtype">int</span>,</div>
+<div class="line">geom geometry,</div>
+<div class="line">cluster integer);</div>
 <div class="line">COPY regions_meos</div>
-<div class="line">  FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/regions_new.csv&#39;</span></div>
-<div class="line">  DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
+<div class="line">FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/regions_new.csv&#39;</span></div>
+<div class="line">DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

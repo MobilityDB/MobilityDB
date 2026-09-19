@@ -219,8 +219,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Exact min spatial distance between two cbuffer segments, c1(s) = A + s(B-A), r1(s) = r_A + s(r_B - r_A), s in [0,1] c2(t) = C + t(D-C), r2(t) = r_C + t(r_D - r_C), t in [0,1] Returns max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)), capped above at <code>best_so_far</code> (caller's running threshold). </p>
-<p >The function never raises <code>best_so_far</code> above its input value. </p>
+<p>Return the exact minimum spatial distance between two circular buffer segments. </p>
+<p >The segments are c1(s) = A + s(B-A), r1(s) = r_A + s(r_B - r_A), s in [0,1] c2(t) = C + t(D-C), r2(t) = r_C + t(r_D - r_C), t in [0,1] The function returns max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)), capped above at <code>best_so_far</code> (caller's running threshold). The function never raises <code>best_so_far</code> above its input value. </p>
 
 </div>
 </div>

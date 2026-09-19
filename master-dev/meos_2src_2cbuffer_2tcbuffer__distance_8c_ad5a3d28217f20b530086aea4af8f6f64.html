@@ -201,8 +201,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Append candidate value of f(s,t) on edge s=0 (in t) given: e = |E|^2 with E = A - C q = E . </p>
-<p >V v = |V|^2 dr2 = r_D - r_C r_sum = r_A + r_C (radius offset at t=0) Computes the critical point of g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2 via the quadratic v(v - dr2^2) t^2 - 2 q (v - dr2^2) t + (q^2 - dr2^2 e) = 0. Only v &gt; dr2^2 yields a local minimum; the v == dr2^2 inflection case is skipped (covered by corners). </p>
+<p>Update <code>best</code> with the candidate value of f(s,t) on edge s=0 (in t) </p>
+<p >The inputs are:</p><ul>
+<li>e = |E|^2 with E = A - C</li>
+<li>q = E . V</li>
+<li>v = |V|^2</li>
+<li>dr2 = r_D - r_C</li>
+<li>r_sum = r_A + r_C (radius offset at t=0)</li>
+</ul>
+<p >The function computes the critical point of g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2 via the quadratic v(v - dr2^2) t^2 - 2 q (v - dr2^2) t + (q^2 - dr2^2 e) = 0. Only v &gt; dr2^2 yields a local minimum; the v == dr2^2 inflection case is skipped (covered by corners). The value at a critical point replaces <code>best</code> when it is smaller. </p>
 
 </div>
 </div>

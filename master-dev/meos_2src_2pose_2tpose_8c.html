@@ -79,6 +79,9 @@ $(function() {
   <div class="headertitle"><div class="title">tpose.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>General functions for temporal pose objects.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;common/hashfn.h&gt;</code><br />
@@ -99,7 +102,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aa49d0b7f500f8cfc3cb584bbc3611c66"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2tpose_8c_aa49d0b7f500f8cfc3cb584bbc3611c66.html#aa49d0b7f500f8cfc3cb584bbc3611c66">ensure_valid_tpose_geo</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
-<tr class="memdesc:aa49d0b7f500f8cfc3cb584bbc3611c66"><td class="mdescLeft">&#160;</td><td class="mdescRight">General functions for temporal pose objects.  <a href="meos_2src_2pose_2tpose_8c_aa49d0b7f500f8cfc3cb584bbc3611c66.html#aa49d0b7f500f8cfc3cb584bbc3611c66">More...</a><br /></td></tr>
+<tr class="memdesc:aa49d0b7f500f8cfc3cb584bbc3611c66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure the validity of a temporal pose and a geometry.  <a href="meos_2src_2pose_2tpose_8c_aa49d0b7f500f8cfc3cb584bbc3611c66.html#aa49d0b7f500f8cfc3cb584bbc3611c66">More...</a><br /></td></tr>
 <tr class="separator:aa49d0b7f500f8cfc3cb584bbc3611c66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b54562068e0fb741a28807956e77f59"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2tpose_8c_a1b54562068e0fb741a28807956e77f59.html#a1b54562068e0fb741a28807956e77f59">ensure_valid_tpose_pose</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structPose.html">Pose</a> *pose)</td></tr>
 <tr class="memdesc:a1b54562068e0fb741a28807956e77f59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure the validity of a temporal pose and a pose.  <a href="meos_2src_2pose_2tpose_8c_a1b54562068e0fb741a28807956e77f59.html#a1b54562068e0fb741a28807956e77f59">More...</a><br /></td></tr>
@@ -210,7 +213,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a3b75542f89bc2179b99337de768cf265"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-segment angular speed for a <a class="el" href="structTSequence.html" title="Structure to represent temporal values of sequence subtype.">TSequence</a> of tpose with linear interpolation.  <a href="meos_2src_2pose_2tpose_8c_a3b75542f89bc2179b99337de768cf265.html#a3b75542f89bc2179b99337de768cf265">More...</a><br /></td></tr>
 <tr class="separator:a3b75542f89bc2179b99337de768cf265"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43ee88c9b9249d39d046416a41810bc0"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2pose_2tpose_8c_a43ee88c9b9249d39d046416a41810bc0.html#a43ee88c9b9249d39d046416a41810bc0">tposeseq_apply_geo</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *body)</td></tr>
-<tr class="memdesc:a43ee88c9b9249d39d046416a41810bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-sequence builder of <code>applyPose:</code> applies the rigid-body transform of each instant's pose to the body geometry, producing a tgeompoint sequence with the same temporal shape as the input.  <a href="meos_2src_2pose_2tpose_8c_a43ee88c9b9249d39d046416a41810bc0.html#a43ee88c9b9249d39d046416a41810bc0">More...</a><br /></td></tr>
+<tr class="memdesc:a43ee88c9b9249d39d046416a41810bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the rigid-body transform of the pose of each instant of a sequence to the body geometry.  <a href="meos_2src_2pose_2tpose_8c_a43ee88c9b9249d39d046416a41810bc0.html#a43ee88c9b9249d39d046416a41810bc0">More...</a><br /></td></tr>
 <tr class="separator:a43ee88c9b9249d39d046416a41810bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3554d136eea15b25a6cce969bc8a2b64"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__constructor_ga3554d136eea15b25a6cce969bc8a2b64.html#ga3554d136eea15b25a6cce969bc8a2b64">tposeseq_from_base_tstzset</a> (const <a class="el" href="structPose.html">Pose</a> *pose, const <a class="el" href="structSet.html">Set</a> *s)</td></tr>
 <tr class="memdesc:ga3554d136eea15b25a6cce969bc8a2b64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal pose discrete sequence from a pose and a timestamptz set.  <a href="group__meos__pose__constructor_ga3554d136eea15b25a6cce969bc8a2b64.html#ga3554d136eea15b25a6cce969bc8a2b64">More...</a><br /></td></tr>
@@ -243,7 +246,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:a44beb96f43a6dac36647b3d88f923486"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the points of a temporal pose.  <a href="meos_2src_2pose_2tpose_8c_a44beb96f43a6dac36647b3d88f923486.html#a44beb96f43a6dac36647b3d88f923486">More...</a><br /></td></tr>
 <tr class="separator:a44beb96f43a6dac36647b3d88f923486"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >General functions for temporal pose objects. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

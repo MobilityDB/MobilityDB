@@ -85,7 +85,7 @@ $(function() {
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * MobilityDB includes portions of PostGIS version 3 source code released</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * under the GNU General Public License (GPLv2 or later).</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * Copyright (c) 2001-2025, PostGIS contributors</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * Copyright (c) 2001-2026, PostGIS contributors</span></div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> * Permission to use, copy, modify, and distribute this software and its</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * documentation for any purpose, without fee, and without a written</span></div>
@@ -106,35 +106,35 @@ $(function() {
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="comment"> *****************************************************************************/</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#ifndef __PG_SPAN_H__</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#define __PG_SPAN_H__</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">/* PostgreSQL */</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &lt;lib/stringinfo.h&gt;</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &lt;utils/rangetypes.h&gt;</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="comment">/* MEOS */</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="comment">/*****************************************************************************/</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="comment">/* Send/receive functions */</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">   49</a></span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">span_recv</a>(StringInfo buf);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196.html#a6a6d7ee22fc8780681eb22129cb80196">   50</a></span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196.html#a6a6d7ee22fc8780681eb22129cb80196">span_write</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structSpan.html">Span</a> *s, StringInfo buf);</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="comment">/* Conversion functions */</span></div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af.html#a4c6fe0673f4cb8a57a84bfa17bb701af">range_set_span</a>(RangeType *range, TypeCacheEntry *typcache,</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <a class="code hl_struct" href="structSpan.html">Span</a> *result);</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="comment">/*****************************************************************************/</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">#endif </span><span class="comment">/* __PG_SPAN_H__ */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#ifndef __PG_SPAN_H__</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#define __PG_SPAN_H__</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="comment">/* PostgreSQL */</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &lt;lib/stringinfo.h&gt;</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &lt;utils/rangetypes.h&gt;</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="comment">/* MEOS */</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="comment">/* Send/receive functions */</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">   50</a></span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">span_recv</a>(StringInfo buf);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196.html#a6a6d7ee22fc8780681eb22129cb80196">   51</a></span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196.html#a6a6d7ee22fc8780681eb22129cb80196">span_write</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structSpan.html">Span</a> *s, StringInfo buf);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="comment">/* Conversion functions */</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af.html#a4c6fe0673f4cb8a57a84bfa17bb701af">range_set_span</a>(RangeType *range, TypeCacheEntry *typcache,</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <a class="code hl_struct" href="structSpan.html">Span</a> *result);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">#endif </span><span class="comment">/* __PG_SPAN_H__ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="ameos_8h_html"><div class="ttname"><a href="meos_8h.html">meos.h</a></div><div class="ttdoc">External API of the Mobility Engine Open Source (MEOS) library.</div></div>
-<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af_html_a4c6fe0673f4cb8a57a84bfa17bb701af"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af.html#a4c6fe0673f4cb8a57a84bfa17bb701af">range_set_span</a></div><div class="ttdeci">void range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)</div><div class="ttdoc">Convert a PostgreSQL range into a span.</div><div class="ttdef"><b>Definition:</b> span.c:428</div></div>
+<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af_html_a4c6fe0673f4cb8a57a84bfa17bb701af"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a4c6fe0673f4cb8a57a84bfa17bb701af.html#a4c6fe0673f4cb8a57a84bfa17bb701af">range_set_span</a></div><div class="ttdeci">void range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)</div><div class="ttdoc">Convert a PostgreSQL range into a span.</div><div class="ttdef"><b>Definition:</b> span.c:429</div></div>
 <div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196_html_a6a6d7ee22fc8780681eb22129cb80196"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a6a6d7ee22fc8780681eb22129cb80196.html#a6a6d7ee22fc8780681eb22129cb80196">span_write</a></div><div class="ttdeci">void span_write(const Span *s, StringInfo buf)</div></div>
-<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19_html_a7e2e0b7fd0eb4b1798f21d02e26d1e19"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">span_recv</a></div><div class="ttdeci">Span * span_recv(StringInfo buf)</div><div class="ttdoc">Basic routines for spans (a.k.a.</div></div>
+<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19_html_a7e2e0b7fd0eb4b1798f21d02e26d1e19"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2span_8h_a7e2e0b7fd0eb4b1798f21d02e26d1e19.html#a7e2e0b7fd0eb4b1798f21d02e26d1e19">span_recv</a></div><div class="ttdeci">Span * span_recv(StringInfo buf)</div></div>
 <div class="ttc" id="astructSpan_html"><div class="ttname"><a href="structSpan.html">Span</a></div><div class="ttdoc">Structure to represent spans (a.k.a.</div><div class="ttdef"><b>Definition:</b> meos.h:157</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

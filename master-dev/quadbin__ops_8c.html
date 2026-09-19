@@ -166,7 +166,7 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >PG V1 wrappers for the static <code>quadbin</code> cell operations. </p>
 <p >Each wrapper unpacks its arguments, delegates to the first-party quadbin kernel declared in <code><a class="el" href="meos__quadbin_8h.html" title="Public MEOS API for the temporal CARTO QUADBIN index type (tquadbin) and its static quadbin cell type...">meos_quadbin.h</a></code>, and returns the result. The square subset shared with every DGGS family (resolution, hierarchy, k-ring, point/boundary/bbox, area) plus the quadbin-unique tile / quadkey conversions are wrapped here; the hexagon-only H3 families (directed edges, vertices, pentagon / base-cell / class-III inspection, local-IJ traversal, great-circle metrics) have no quadbin analogue and are not present.</p>
-<p >The cell centroid and boundary geometries are emitted as planar lon/lat (SRID 4326), matching the <code>quadbin_cellops</code> descriptor in <code><a class="el" href="meos_2src_2quadbin_2tquadbin__ops_8c.html" title="Datum-convention wrappers for the quadbin static kernel and the quadbin_cellops descriptor that plugs...">meos/src/quadbin/tquadbin_ops.c</a></code>. </p>
+<p >The cell centroid and boundary geometries are emitted as planar lon/lat (SRID 4326), matching the <code>quadbin_cellops</code> descriptor in <code><a class="el" href="meos_2src_2quadbin_2tquadbin__ops_8c.html" title="Datum wrappers and cell operations of the QUADBIN index.">meos/src/quadbin/tquadbin_ops.c</a></code>. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

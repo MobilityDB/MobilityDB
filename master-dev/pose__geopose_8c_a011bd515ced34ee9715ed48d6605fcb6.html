@@ -190,8 +190,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the constant inter-pose duration of <code>instants</code> in milliseconds, or -1 if the instants are not equally spaced by a whole number of milliseconds. </p>
-<p >A Regular Series states the spacing once, as an integer number of milliseconds (Requirement 25), and carries no per-pose time. It can therefore only represent instants that are equally spaced <em>and</em> whose spacing is a whole number of milliseconds; anything else must go out as an Irregular Series to stay lossless. </p>
+<p>Return the constant inter-pose duration of <code>instants</code> in milliseconds. </p>
+<p >The function returns -1 if the instants are not equally spaced by a whole number of milliseconds. A Regular Series states the spacing once, as an integer number of milliseconds (Requirement 25), and carries no per-pose time. It can therefore only represent instants that are equally spaced <em>and</em> whose spacing is a whole number of milliseconds; anything else must go out as an Irregular Series to stay lossless. </p>
 
 </div>
 </div>

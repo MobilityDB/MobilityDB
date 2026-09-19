@@ -144,7 +144,7 @@ $(function() {
 <li><code>query-&gt;span.lower - nodebox-&gt;right.span.upper</code> (the distance between the lower bound of the query and the maximum of the upper bounds in the node box).</li>
 <li>0 otherwise.</li>
 </ul>
-<p >Continuing with the example at the top of this file, if <code><a class="el" href="structTboxNode.html" title="Basic routines for indexing temporal values.">TboxNode</a></code> is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])</div>
+<p >Continuing with the example at the top of this file, if <code><a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a></code> is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])</div>
 <div class="line">right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])</div>
 </div><!-- fragment --><p> the distance with a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) is 10 - 9 = 1 since the query is to the right of the node box condition. </p><dl class="section note"><dt>Note</dt><dd>The distance is computed only on the value dimension. The temporal dimension is taken into account for setting the distance to infinity when the time spans of the node box and the query do not overlap. </dd></dl>
 

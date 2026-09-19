@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that get the SRID of the geometries stored in the file <code>ways.csv</code> that has the content of the PostgreSQL table ways defined as follows.  
+<p>Convert a point into a network point on the nearest way of ways.csv.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -113,14 +113,14 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that get the SRID of the geometries stored in the file <code>ways.csv</code> that has the content of the PostgreSQL table ways defined as follows. </p>
-<div class="fragment"><div class="line">CREATE TABLE <span class="keyword">public</span>.ways (</div>
-<div class="line">  gid bigint NOT NULL,</div>
-<div class="line">  the_geom <span class="keyword">public</span>.geometry NOT NULL,</div>
-<div class="line">  length <span class="keywordtype">double</span> precision NOT NULL</div>
+<div class="textblock"><p >Convert a point into a network point on the nearest way of ways.csv. </p>
+<p >The file <code>ways.csv</code> has the content of the PostgreSQL table ways defined as follows </p><div class="fragment"><div class="line">CREATE TABLE <span class="keyword">public</span>.ways (</div>
+<div class="line">gid bigint NOT NULL,</div>
+<div class="line">the_geom <span class="keyword">public</span>.geometry NOT NULL,</div>
+<div class="line">length <span class="keywordtype">double</span> precision NOT NULL</div>
 <div class="line">);</div>
 </div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o geom_npoint geom_npoint.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

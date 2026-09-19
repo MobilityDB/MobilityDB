@@ -125,34 +125,26 @@ Variables</h2></td></tr>
 <div class="textblock"><p >Functions for gathering statistics from temporal alphanumeric columns. </p>
 <p >Various kind of statistics are collected for both the value and the time dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h for more information about the statistics collected.</p>
 <ul>
-<li>Slot 1<ul>
+<li>Slot 1</li>
 <li><code>stakind</code> contains the type of statistics which is <code>STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM</code>.</li>
 <li><code>staop</code> contains the "&lt;" operator of the value dimension.</li>
 <li><code>stavalues</code> stores the histogram of spans for the value dimension.</li>
 <li><code>numvalues</code> contains the number of buckets in the histogram.</li>
-</ul>
-</li>
-<li>Slot 2<ul>
+<li>Slot 2</li>
 <li><code>stakind</code> contains the type of statistics which is <code>STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM</code>.</li>
 <li><code>staop</code> contains the "&lt;" operator to the value dimension.</li>
 <li><code>stavalues</code> stores the length of the histogram of spans for the value dimension.</li>
 <li><code>numvalues</code> contains the number of buckets in the histogram.</li>
-</ul>
-</li>
-<li>Slot 3<ul>
+<li>Slot 3</li>
 <li><code>stakind</code> contains the type of statistics which is <code>STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM</code>.</li>
 <li><code>staop</code> contains the "&lt;" operator of the time dimension.</li>
 <li><code>stavalues</code> stores the histogram of periods for the time dimension.</li>
 <li><code>numvalues</code> contains the number of buckets in the histogram.</li>
-</ul>
-</li>
-<li>Slot 4<ul>
+<li>Slot 4</li>
 <li><code>stakind</code> contains the type of statistics which is <code>STATISTIC_KIND_TIME_LENGTH_HISTOGRAM</code>.</li>
 <li><code>staop</code> contains the "&lt;" operator of the time dimension.</li>
 <li><code>stavalues</code> stores the length of the histogram of periods for the time dimension.</li>
 <li><code>numvalues</code> contains the number of buckets in the histogram.</li>
-</ul>
-</li>
 </ul>
 <p >In the case of temporal types having a timestamptz span as bounding box, that is, tbool and ttext, no statistics are collected for the value dimension and the statistics for the temporal dimension are stored in slots 1 and 2. </p>
 </div></div><!-- contents -->

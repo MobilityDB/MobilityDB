@@ -141,8 +141,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal circular buffer ever/always touches a geometry, 0 if not, and -1 for a geometry that has no edge decomposition (the caller then uses the traversed-area path) </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return whether a temporal circular buffer ever/always touches a geometry. </p>
+<p >The function returns 1 if it does, 0 if not, and -1 for a geometry that has no edge decomposition, in which case the caller uses the traversed-area path. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>

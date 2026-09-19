@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code>.  
+<p>MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code>  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="h3index__sets_8h_source.html">h3/h3index_sets.h</a>&quot;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
@@ -125,7 +125,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa4d5509cb06ef9171f9faeb6b2d59554"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pack a possibly-padded H3Index array into a Datum array, dropping any zero entries.  <a href="meos_2src_2h3_2h3index__sets_8c_aa4d5509cb06ef9171f9faeb6b2d59554.html#aa4d5509cb06ef9171f9faeb6b2d59554">More...</a><br /></td></tr>
 <tr class="separator:aa4d5509cb06ef9171f9faeb6b2d59554"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1fb6c3879cf710654f8ffd552687722"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3index__sets_8c_af1fb6c3879cf710654f8ffd552687722.html#af1fb6c3879cf710654f8ffd552687722">h3index_set_from_buffer</a> (H3Index *cells, int64_t max)</td></tr>
-<tr class="memdesc:af1fb6c3879cf710654f8ffd552687722"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an h3indexset from a freshly-allocated H3Index buffer of size <code>max</code>.  <a href="meos_2src_2h3_2h3index__sets_8c_af1fb6c3879cf710654f8ffd552687722.html#af1fb6c3879cf710654f8ffd552687722">More...</a><br /></td></tr>
+<tr class="memdesc:af1fb6c3879cf710654f8ffd552687722"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an h3indexset from a freshly-allocated H3Index buffer of size <code>max</code>  <a href="meos_2src_2h3_2h3index__sets_8c_af1fb6c3879cf710654f8ffd552687722.html#af1fb6c3879cf710654f8ffd552687722">More...</a><br /></td></tr>
 <tr class="separator:af1fb6c3879cf710654f8ffd552687722"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae22b02f8003a86519af286bb7222d371"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__set__conversion_gae22b02f8003a86519af286bb7222d371.html#gae22b02f8003a86519af286bb7222d371">h3index_to_set</a> (H3Index cell)</td></tr>
 <tr class="memdesc:gae22b02f8003a86519af286bb7222d371"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert an H3 cell into a H3 cell set.  <a href="group__meos__h3__set__conversion_gae22b02f8003a86519af286bb7222d371.html#gae22b02f8003a86519af286bb7222d371">More...</a><br /></td></tr>
@@ -165,7 +165,7 @@ Functions</h2></td></tr>
 <tr class="separator:a0079fdf1c2b710ca4c56aa06a4a6de12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code>. </p>
+<div class="textblock"><p >MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code> </p>
 <p >Shape of every function below:</p><ol type="1">
 <li>Ask libh3 for the output buffer size (where applicable).</li>
 <li><code>palloc</code> the buffer.</li>

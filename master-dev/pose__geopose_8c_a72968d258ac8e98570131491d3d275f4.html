@@ -168,18 +168,6 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>OGC GeoPose JSON I/O — the classes a single pose is written as. </p>
-<p >Implements the OGC GeoPose v1.0 standard's two Basic conformance classes:</p>
-<p >{ { "position": { "position": { "lat": 47.0, "lat": 47.0, "lon": 8.0, "lon": 8.0, "h": 1500.0 "h": 1500.0 }, }, "quaternion": { "angles": { "x": 0.0, "yaw": 90.0, "y": 0.0, "pitch": 0.0, "z": 0.7071, "roll": 0.0 "w": 0.7071 } } } }</p>
-<p >Position is geographic (lat / lon in degrees, height h in metres). The standard mandates a geographic outer frame for the Basic classes; this implementation accepts only SRID 4326 inputs (or unknown SRID, treated as geographic) and rejects projected SRIDs with a clear error.</p>
-<p >The Advanced class carries the same pose with the frame named explicitly:</p>
-<p >{ "frameSpecification": { "authority": "/geopose/1.0", "id": "LTP-ENU", "parameters": "longitude=8&amp;latitude=47&amp;height=1500&amp;crs=EPSG:4979" }, "quaternion": { "x": 0.0, "y": 0.0, "z": 0.7071, "w": 0.7071 } }</p>
-<p >The class has no position member, so the pose sits at the tangent point of the frame it names, which makes the two documents above describe the same pose and read back equal.</p>
-<p >On input the parser auto-detects the conformance class from the keys present (<code>frameSpecification</code>, then <code>quaternion</code> vs <code>angles</code>). On output the caller picks the class via <code>GeoPoseClass</code>; the default chosen by the SQL surface is Basic-Quaternion since it is lossless for our internal representation.</p>
-<p >2D poses (data = [x, y, theta]) are represented in JSON with <code>h: 0</code>, <code>pitch: 0</code>, <code>roll: 0</code>, and yaw = theta. <code>theta</code> is stored in radians internally; the JSON form uses degrees, per the standard.</p>
-<p >A temporal pose is written as an OGC Composite Sequence Series, either Regular or Irregular. Those classes encode each pose as an inner <code>FrameSpecification</code> holding a translation and a rotation relative to a single outer LTP-ENU frame, rather than as a Basic pose object, so the series encoding carries its own geographic-to-topocentric conversion. The MobilityDB <code>TemporalGeoPose</code> envelope, an array of Basic-class objects each carrying a <code>validTime</code>, remains available for reading and writing but is not an OGC conformance class.</p>
-<p >A Stream is written by the two entry points of its own, one for the header that opens it and one per element. The Chain and Graph classes are not implemented. </p>
-
 </div>
 </div>
     </td>

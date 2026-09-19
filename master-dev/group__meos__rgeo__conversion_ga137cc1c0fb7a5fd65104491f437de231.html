@@ -103,7 +103,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one rotated/translated polygon per instant). </p>
+<p>Materialise the moving polygon of a temporal rigid geometry as a temporal geometry (one rotated/translated polygon per instant) </p>
 <p >For each instant, applies the instant's pose to the trgeo's reference geometry and emits the resulting polygon. The returned <code>tgeometry</code> has the same temporal structure as the input and the same SRID as the reference geometry. </p><dl class="section note"><dt>Note</dt><dd>Unlike <code>trgeometry_to_tgeompoint</code> (which gives the antenna point trajectory), this preserves the body's footprint at each instant — the natural input for compositional spatial-rel queries against <code>tgeometry</code>'s full surface. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

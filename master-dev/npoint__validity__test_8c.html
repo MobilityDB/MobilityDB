@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests how the temporal network point instant constructor and the route accessor report an erroneous argument under the noexit error handler.  
+<p>Test how the temporal network point functions report an error.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
@@ -96,11 +96,12 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests how the temporal network point instant constructor and the route accessor report an erroneous argument under the noexit error handler. </p>
+<div class="textblock"><p >Test how the temporal network point functions report an error. </p>
+<p >A program that tests how the temporal network point instant constructor and the route accessor report an erroneous argument under the noexit error handler.</p>
 <p >A public MEOS function tests the conditions its internal form asserts, so a binding calling it with a null or mistyped argument receives an error it can raise in its host language. An assertion cannot carry that contract: it is compiled out under NDEBUG, which leaves the release build a binding links against with no check at all.</p>
 <p >The program verifies that <a class="el" href="group__meos__npoint__constructor_gaf099318ac059dae6a05da423ff3e55f2.html#gaf099318ac059dae6a05da423ff3e55f2" title="Return a temporal network point instant from a network point and a timestamptz.">tnpointinst_make</a> reports a null network point by returning NULL and setting <a class="el" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3" title="Read an error number.">meos_errno</a>, that <a class="el" href="group__meos__npoint__accessor_gaec5af905e7c29b00a22660d97e1a0a94.html#gaec5af905e7c29b00a22660d97e1a0a94" title="Return the single route of a temporal network point.">tnpoint_route</a> reports a null value, a value of another temporal type and a discrete sequence by answering INT64_MAX, the error value it documents, and setting <a class="el" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3" title="Read an error number.">meos_errno</a>, and that a valid instant and route answer with no error left behind.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o npoint_validity_test npoint_validity_test.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

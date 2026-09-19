@@ -170,7 +170,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa2df05471d6ce5d227960cac5aea84c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a distance an index may report for a pair, lowered so that it cannot exceed the distance the ordering operator computes for that pair.  <a href="meos_2src_2geo_2tspatial__spgist_8c_aa2df05471d6ce5d227960cac5aea84c6.html#aa2df05471d6ce5d227960cac5aea84c6">More...</a><br /></td></tr>
 <tr class="separator:aa2df05471d6ce5d227960cac5aea84c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTboxNode.html">STboxNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tspatial__spgist_8c_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">stboxnode_copy</a> (const <a class="el" href="structSTboxNode.html">STboxNode</a> *box)</td></tr>
-<tr class="memdesc:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy an <code><a class="el" href="structSTboxNode.html" title="Basic routines for indexing temporal numbers.">STboxNode</a></code>.  <a href="meos_2src_2geo_2tspatial__spgist_8c_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">More...</a><br /></td></tr>
+<tr class="memdesc:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy an <code><a class="el" href="structSTboxNode.html" title="Structure to represent the bounding box of a spatiotemporal value as a 6- or 8-dimensional point depe...">STboxNode</a></code>.  <a href="meos_2src_2geo_2tspatial__spgist_8c_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">More...</a><br /></td></tr>
 <tr class="separator:a7bed40a9c5ccb0a71eac4108f6210d62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f916c7f53942d327849f07e25544d52"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tspatial__spgist_8c_a9f916c7f53942d327849f07e25544d52.html#a9f916c7f53942d327849f07e25544d52">stboxnode_init</a> (const <a class="el" href="structSTBox.html">STBox</a> *<a class="el" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a>, <a class="el" href="structSTboxNode.html">STboxNode</a> *nodebox)</td></tr>
 <tr class="memdesc:a9f916c7f53942d327849f07e25544d52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the traversal value.  <a href="meos_2src_2geo_2tspatial__spgist_8c_a9f916c7f53942d327849f07e25544d52.html#a9f916c7f53942d327849f07e25544d52">More...</a><br /></td></tr>
@@ -188,18 +188,18 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >SP-GiST implementation of 8-dimensional quad-tree over temporal spatial values. </p>
 <p >This module provides SP-GiST implementation for boxes using an oct-tree analogy in 8-dimensional space. SP-GiST does not allow indexing of overlapping objects. We are making 4D objects never-overlapping in 8D space. This technique has some benefits compared to traditional R-Tree which is implemented as GiST. The performance tests reveal that this technique especially beneficial with too much overlapping objects, so called "spaghetti data".</p>
-<p >Unlike the original oct-tree, we are splitting the tree into 256 quadrants in 8D space. It is easier to imagine it as splitting space four times into four: </p><div class="fragment"><div class="line">             |      |                        |      |</div>
-<div class="line">             |      |                        |      |</div>
-<div class="line">             | -----+-----                   | -----+-----</div>
-<div class="line">             |      |                        |      |</div>
-<div class="line">             |      |                        |      |</div>
+<p >Unlike the original oct-tree, we are splitting the tree into 256 quadrants in 8D space. It is easier to imagine it as splitting space four times into four: </p><div class="fragment"><div class="line">|      |                        |      |</div>
+<div class="line">|      |                        |      |</div>
+<div class="line">| -----+-----                   | -----+-----</div>
+<div class="line">|      |                        |      |</div>
+<div class="line">|      |                        |      |</div>
 <div class="line">-------------+------------- -+- -------------+-------------</div>
-<div class="line">             |                               |</div>
-<div class="line">             |                               |</div>
-<div class="line">             |                               |</div>
-<div class="line">             |                               |</div>
-<div class="line">             |                               |</div>
-<div class="line">           <a class="code hl_variable" href="tgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a>                           <a class="code hl_variable" href="tgeo__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div>
+<div class="line">|                               |</div>
+<div class="line">|                               |</div>
+<div class="line">|                               |</div>
+<div class="line">|                               |</div>
+<div class="line">|                               |</div>
+<div class="line"><a class="code hl_variable" href="tgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a>                           <a class="code hl_variable" href="tgeo__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div>
 <div class="ttc" id="atgeo__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc_html_a4cef41b7dca1dc40f5cf35dd78b1b4dc"><div class="ttname"><a href="tgeo__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div><div class="ttdeci">const int BACK</div><div class="ttdef"><b>Definition:</b> tgeo_restrict.c:343</div></div>
 <div class="ttc" id="atgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421_html_a74b36851d26bfffaded0029d686e7421"><div class="ttname"><a href="tgeo__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a></div><div class="ttdeci">const int FRONT</div><div class="ttdef"><b>Definition:</b> tgeo_restrict.c:342</div></div>
 </div><!-- fragment --><p> We are using <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> data type as the prefix, but we are treating them as points in 8-dimensional space, because 4D boxes are not enough to represent the quadrant boundaries in 8D space. They however are sufficient to point out the additional boundaries of the next quadrant.</p>

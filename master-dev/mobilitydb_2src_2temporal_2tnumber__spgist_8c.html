@@ -151,17 +151,17 @@ Functions</h2></td></tr>
 <div class="textblock"><p >SP-GiST implementation of 4-dimensional quad-tree and kd-tree over temporal integers and temporal floats. </p>
 <dl class="section note"><dt>Note</dt><dd>These functions are based on those in the file `<code>geo_spgist.c</code>.</dd></dl>
 <p>This module provides an SP-GiST implementation for temporal number types using a quad tree analogy in 4-dimensional space. Since SP-GiST does not allow indexing of overlapping objects, we transform 2D objects in a 4D space to make them not overlap. This technique has some benefits compared to traditional R-Tree which is implemented as GiST. The performance tests reveal that this technique especially beneficial with too much overlapping objects, so called "spaghetti data".</p>
-<p >Unlike the original quadtree, we are splitting the tree into 16 quadrants in 4D space. It is easier to imagine it as splitting space two times into 4: </p><div class="fragment"><div class="line">             |      |</div>
-<div class="line">             |      |</div>
-<div class="line">             | -----+-----</div>
-<div class="line">             |      | c2</div>
-<div class="line">             |      |</div>
+<p >Unlike the original quadtree, we are splitting the tree into 16 quadrants in 4D space. It is easier to imagine it as splitting space two times into 4: </p><div class="fragment"><div class="line">|      |</div>
+<div class="line">|      |</div>
+<div class="line">| -----+-----</div>
+<div class="line">|      | c2</div>
+<div class="line">|      |</div>
 <div class="line">-------------+-------------</div>
-<div class="line">             | c1</div>
-<div class="line">             |</div>
-<div class="line">             |</div>
-<div class="line">             |</div>
-<div class="line">             |</div>
+<div class="line">| c1</div>
+<div class="line">|</div>
+<div class="line">|</div>
+<div class="line">|</div>
+<div class="line">|</div>
 </div><!-- fragment --><p> where <code>c1</code> and <code>c2</code> are the centroids of the node and the child quadrant.</p>
 <p >We use centroids represented as a temporal box as the prefix, but we treat them as points in 4-dimensional space. Notice that 2D boxes are not enough to represent the quadrant boundaries in 4D space. However, they are sufficient to point out the additional boundaries of the next quadrant.</p>
 <p >We use node boxes (see below) composed by a left and a right temporal boxes as traversal values to calculate and to store the bounds of the quadrants while traversing the tree. A traversal value has all the boundaries in 4D space, and is is capable of transferring the required boundaries to the following traversal values. In conclusion, three things are necessary to calculate the next traversal value:</p>

@@ -167,8 +167,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Count the timestamps at which the temporal S2 cell of a linear geodetic segment holds a cell other than the one holding the position of the segment then, and the cells it holds that no such position reaches nor borders. </p>
-<p >As for <a class="el" href="cellcover__test_8c_a43d72c60ac22ffb81f7c4020caa8975a.html#a43d72c60ac22ffb81f7c4020caa8975a" title="Count the timestamps at which the temporal quadbin cell of a linear segment holds a cell other than t...">tquadbin_check</a>, the position at each timestamp is read from the temporal point itself and its cell through the static adapter, and the segment spans an hour. A held cell the sampled positions do not reach is one the path crosses between two of them, so it shares an edge with a cell they reach. </p>
+<p>Count the timestamps and cells at which the temporal S2 cell of a linear geodetic segment departs from the path of the segment. </p>
+<p >The counted timestamps are those at which the temporal S2 cell of the segment holds a cell other than the one holding the position of the segment then; the counted cells are those it holds that no such position reaches nor borders. As for <a class="el" href="cellcover__test_8c_a43d72c60ac22ffb81f7c4020caa8975a.html#a43d72c60ac22ffb81f7c4020caa8975a" title="Count where the temporal quadbin cell of a linear segment departs from the positions of the segment.">tquadbin_check</a>, the position at each timestamp is read from the temporal point itself and its cell through the static adapter, and the segment spans an hour. A held cell the sampled positions do not reach is one the path crosses between two of them, so it shares an edge with a cell they reach. </p>
 
 </div>
 </div>

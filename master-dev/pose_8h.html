@@ -81,6 +81,9 @@ $(function() {
   <div class="headertitle"><div class="title">pose.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Basic functions for static pose objects.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
@@ -91,7 +94,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPose.html">Pose</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic functions for static pose objects.  <a href="structPose.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent pose values.  <a href="structPose.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -162,13 +165,13 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa4ed76429b0163d63451bd86db48ae42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between the two poses.  <a href="pose_8h_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">More...</a><br /></td></tr>
 <tr class="separator:aa4ed76429b0163d63451bd86db48ae42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa361700c4f1ab0436a74163261496a5e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">pose_enu_to_ecef_quaternion</a> (double lat_rad, double lon_rad, double *W, double *X, double *Y, double *Z)</td></tr>
-<tr class="memdesc:aa361700c4f1ab0436a74163261496a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the unit quaternion representing the rotation from the East-North-Up basis at geographic point (<code>lat_rad</code>, <code>lon_rad</code>) to the WGS-84 ECEF basis.  <a href="pose_8h_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">More...</a><br /></td></tr>
+<tr class="memdesc:aa361700c4f1ab0436a74163261496a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the unit quaternion representing the rotation from the East-North-Up basis to the WGS-84 ECEF basis.  <a href="pose_8h_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">More...</a><br /></td></tr>
 <tr class="separator:aa361700c4f1ab0436a74163261496a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63115733ec9818bc7b0358bf46d7ec08"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPose.html">Pose</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_a63115733ec9818bc7b0358bf46d7ec08.html#a63115733ec9818bc7b0358bf46d7ec08">pose_parse</a> (const char **str, bool end)</td></tr>
 <tr class="memdesc:a63115733ec9818bc7b0358bf46d7ec08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a pose value from the buffer.  <a href="pose_8h_a63115733ec9818bc7b0358bf46d7ec08.html#a63115733ec9818bc7b0358bf46d7ec08">More...</a><br /></td></tr>
 <tr class="separator:a63115733ec9818bc7b0358bf46d7ec08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a7b67e53d1d053270b0c534e02abc6c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">pose_quaternion_mul</a> (double aw, double ax, double ay, double az, double bw, double bx, double by, double bz, double *ow, double *ox, double *oy, double *oz)</td></tr>
-<tr class="memdesc:a3a7b67e53d1d053270b0c534e02abc6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compose two unit quaternions: out = a * b (Hamilton convention).  <a href="pose_8h_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">More...</a><br /></td></tr>
+<tr class="memdesc:a3a7b67e53d1d053270b0c534e02abc6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compose two unit quaternions: out = a * b (Hamilton convention)  <a href="pose_8h_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">More...</a><br /></td></tr>
 <tr class="separator:a3a7b67e53d1d053270b0c534e02abc6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0890288b58a0ae101415a5dd3cae074b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_a0890288b58a0ae101415a5dd3cae074b.html#a0890288b58a0ae101415a5dd3cae074b">pose_quaternion_to_ypr</a> (double W, double X, double Y, double Z, double *yaw_rad, double *pitch_rad, double *roll_rad)</td></tr>
 <tr class="memdesc:a0890288b58a0ae101415a5dd3cae074b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a unit quaternion (W, X, Y, Z) in Hamilton convention to (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention.  <a href="pose_8h_a0890288b58a0ae101415a5dd3cae074b.html#a0890288b58a0ae101415a5dd3cae074b">More...</a><br /></td></tr>
@@ -200,13 +203,15 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa155485dc29c2c72b327cc4fcc22ac3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pose value interpolated from the two poses and a ratio.  <a href="pose_8h_aa155485dc29c2c72b327cc4fcc22ac3f.html#aa155485dc29c2c72b327cc4fcc22ac3f">More...</a><br /></td></tr>
 <tr class="separator:aa155485dc29c2c72b327cc4fcc22ac3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a641de21e545b9c6327cfc3f2526d499b"><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">posesegm_locate</a> (const <a class="el" href="structPose.html">Pose</a> *start, const <a class="el" href="structPose.html">Pose</a> *end, const <a class="el" href="structPose.html">Pose</a> *value)</td></tr>
-<tr class="memdesc:a641de21e545b9c6327cfc3f2526d499b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) if a network point segment intersects a network point, return -1.0 if the network point is not located in the segment or if it is approximately equal to the start or the end valuess.  <a href="pose_8h_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">More...</a><br /></td></tr>
+<tr class="memdesc:a641de21e545b9c6327cfc3f2526d499b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the location of a pose in a pose segment.  <a href="pose_8h_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">More...</a><br /></td></tr>
 <tr class="separator:a641de21e545b9c6327cfc3f2526d499b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31015820a2ab2532c9f76d997297c568"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_a31015820a2ab2532c9f76d997297c568.html#a31015820a2ab2532c9f76d997297c568">quaternion_rotate_vector</a> (double W, double X, double Y, double Z, double vx, double vy, double vz, double *rx, double *ry, double *rz)</td></tr>
 <tr class="memdesc:a31015820a2ab2532c9f76d997297c568"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate a vector by a unit quaternion.  <a href="pose_8h_a31015820a2ab2532c9f76d997297c568.html#a31015820a2ab2532c9f76d997297c568">More...</a><br /></td></tr>
 <tr class="separator:a31015820a2ab2532c9f76d997297c568"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Basic functions for static pose objects. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

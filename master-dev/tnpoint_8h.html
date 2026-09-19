@@ -80,6 +80,9 @@ $(function() {
   <div class="headertitle"><div class="title">tnpoint.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Functions for temporal network points.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__npoint_8h_source.html">meos_npoint.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
@@ -89,7 +92,6 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:aac1eb8489d5b40183019800c432c03e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_aac1eb8489d5b40183019800c432c03e5.html#aac1eb8489d5b40183019800c432c03e5">DatumGetNpointP</a>(X)&#160;&#160;&#160;((<a class="el" href="structNpoint.html">Npoint</a> *) <a class="el" href="postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da">DatumGetPointer</a>(X))</td></tr>
-<tr class="memdesc:aac1eb8489d5b40183019800c432c03e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for temporal network points.  <a href="tnpoint_8h_aac1eb8489d5b40183019800c432c03e5.html#aac1eb8489d5b40183019800c432c03e5">More...</a><br /></td></tr>
 <tr class="separator:aac1eb8489d5b40183019800c432c03e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaf3ab464ff5f6367b9550f01d3238fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_aaaf3ab464ff5f6367b9550f01d3238fb.html#aaaf3ab464ff5f6367b9550f01d3238fb">DatumGetNsegmentP</a>(X)&#160;&#160;&#160;((<a class="el" href="structNsegment.html">Nsegment</a> *) <a class="el" href="postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da">DatumGetPointer</a>(X))</td></tr>
 <tr class="separator:aaaf3ab464ff5f6367b9550f01d3238fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,7 +152,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:acb69defb51d9da2fd2170c625d025b39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a network point interpolated from a network point segment with respect to a fraction of its total length.  <a href="tnpoint_8h_acb69defb51d9da2fd2170c625d025b39.html#acb69defb51d9da2fd2170c625d025b39">More...</a><br /></td></tr>
 <tr class="separator:acb69defb51d9da2fd2170c625d025b39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a706c2b6e50168baa2b4487ab74a6839b"><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a706c2b6e50168baa2b4487ab74a6839b.html#a706c2b6e50168baa2b4487ab74a6839b">npointsegm_locate</a> (const <a class="el" href="structNpoint.html">Npoint</a> *start, const <a class="el" href="structNpoint.html">Npoint</a> *end, const <a class="el" href="structNpoint.html">Npoint</a> *value)</td></tr>
-<tr class="memdesc:a706c2b6e50168baa2b4487ab74a6839b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) if a network point segment intersects a network point, return -1.0 if the network point is not located in the segment or if it is approximately equal to the start or the end valuess.  <a href="tnpoint_8h_a706c2b6e50168baa2b4487ab74a6839b.html#a706c2b6e50168baa2b4487ab74a6839b">More...</a><br /></td></tr>
+<tr class="memdesc:a706c2b6e50168baa2b4487ab74a6839b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the location of a network point in a network point segment.  <a href="tnpoint_8h_a706c2b6e50168baa2b4487ab74a6839b.html#a706c2b6e50168baa2b4487ab74a6839b">More...</a><br /></td></tr>
 <tr class="separator:a706c2b6e50168baa2b4487ab74a6839b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57ad65f34ff1a2a2eb97611e33527a61"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a57ad65f34ff1a2a2eb97611e33527a61.html#a57ad65f34ff1a2a2eb97611e33527a61">nsegment_set</a> (int64 rid, double pos1, double pos2, <a class="el" href="structNsegment.html">Nsegment</a> *ns)</td></tr>
 <tr class="memdesc:a57ad65f34ff1a2a2eb97611e33527a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a network segment constructed from a route identifier and two positions.  <a href="tnpoint_8h_a57ad65f34ff1a2a2eb97611e33527a61.html#a57ad65f34ff1a2a2eb97611e33527a61">More...</a><br /></td></tr>
@@ -222,7 +224,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:a1a74a7d95e33597471bb8bf2c1c3c069"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a temporal network point into a temporal geometry point.  <a href="tnpoint_8h_a1a74a7d95e33597471bb8bf2c1c3c069.html#a1a74a7d95e33597471bb8bf2c1c3c069">More...</a><br /></td></tr>
 <tr class="separator:a1a74a7d95e33597471bb8bf2c1c3c069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Functions for temporal network points. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

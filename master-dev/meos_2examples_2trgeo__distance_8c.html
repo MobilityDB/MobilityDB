@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A tutorial program that reads one full day of AIS data from a CSV file provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a> and constructs for each ship a temporal rigid geometry (<code>trgeometry</code>), where the reference geometry is the pentagon-shaped hull derived from the AIS antenna offsets (A, B, C, D) and the pose path is the projected antenna position plus the heading.  
+<p>Compute distances between ships modelled as temporal rigid geometries.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -120,26 +120,31 @@ Functions</h2></td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2examples_2trgeo__distance_8c_a3c04138a5bfe5d72780bb7e82a18e627.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b87d6ca9c9586d17ae65d25c814684c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structPose.html">Pose</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2examples_2trgeo__distance_8c_a1b87d6ca9c9586d17ae65d25c814684c.html#a1b87d6ca9c9586d17ae65d25c814684c">make_pose_from_ais</a> (double lon, double lat, double heading_deg)</td></tr>
-<tr class="memdesc:a1b87d6ca9c9586d17ae65d25c814684c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> from one AIS record.  <a href="meos_2examples_2trgeo__distance_8c_a1b87d6ca9c9586d17ae65d25c814684c.html#a1b87d6ca9c9586d17ae65d25c814684c">More...</a><br /></td></tr>
+<tr class="memdesc:a1b87d6ca9c9586d17ae65d25c814684c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> from one AIS record.  <a href="meos_2examples_2trgeo__distance_8c_a1b87d6ca9c9586d17ae65d25c814684c.html#a1b87d6ca9c9586d17ae65d25c814684c">More...</a><br /></td></tr>
 <tr class="separator:a1b87d6ca9c9586d17ae65d25c814684c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aa189e4f8f41718135fe6bcb2a73573"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2examples_2trgeo__distance_8c_a4aa189e4f8f41718135fe6bcb2a73573.html#a4aa189e4f8f41718135fe6bcb2a73573">parse_ais_timestamp</a> (const char *s, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *out)</td></tr>
 <tr class="memdesc:a4aa189e4f8f41718135fe6bcb2a73573"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse an AIS timestamp (<code>DD/MM/YYYY HH:MM:SS</code>) into TimestampTz.  <a href="meos_2examples_2trgeo__distance_8c_a4aa189e4f8f41718135fe6bcb2a73573.html#a4aa189e4f8f41718135fe6bcb2a73573">More...</a><br /></td></tr>
 <tr class="separator:a4aa189e4f8f41718135fe6bcb2a73573"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A tutorial program that reads one full day of AIS data from a CSV file provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a> and constructs for each ship a temporal rigid geometry (<code>trgeometry</code>), where the reference geometry is the pentagon-shaped hull derived from the AIS antenna offsets (A, B, C, D) and the pose path is the projected antenna position plus the heading. </p>
+<div class="textblock"><p >Compute distances between ships modelled as temporal rigid geometries. </p>
+<p >A tutorial program that reads one full day of AIS data from a CSV file provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a> and constructs for each ship a temporal rigid geometry (<code>trgeometry</code>), where the reference geometry is the pentagon-shaped hull derived from the AIS antenna offsets (A, B, C, D) and the pose path is the projected antenna position plus the heading.</p>
 <p >The program then computes the temporal distance <code>tdistance_trgeo_trgeo</code> between every pair of temporally-overlapping trips and prints, for each pair, the moment of closest approach (timestamp + distance in metres).</p>
-<p >The hull is built in the local frame in metres with antenna at the origin, x-axis pointing forward (bow) and y-axis pointing to the left (port) — the convention used by the maritime dataset. The pentagon has corners </p><pre class="fragment">1. (-B,  D)            stern-port
-2. (-B, -C)            stern-starboard
-3. ((3A-B)/4, -C)      bow-rectangle-starboard
-4. (A, D - C/2)        bow tip
-5. ((3A-B)/4,  D)      bow-rectangle-port
-</pre><p> which is a rectangle whose forward quarter narrows into a triangle so that the bow can be visually distinguished from the stern.</p>
+<p >The hull is built in the local frame in metres with antenna at the origin, x-axis pointing forward (bow) and y-axis pointing to the left (port) — the convention used by the maritime dataset. The pentagon has corners</p>
+<ol type="1">
+<li>(-B, D) stern-port</li>
+<li>(-B, -C) stern-starboard</li>
+<li>((3A-B)/4, -C) bow-rectangle-starboard</li>
+<li>(A, D - C/2) bow tip</li>
+<li>((3A-B)/4, D) bow-rectangle-port</li>
+</ol>
+<p >which is a rectangle whose forward quarter narrows into a triangle so that the bow can be visually distinguished from the stern.</p>
 <p >Coordinates are projected from WGS84 (EPSG:4326) to EPSG:25832 (UTM 32N) because the trgeometry pose translation must share the metric system of the hull. Heading (degrees clockwise from N) is converted to pose theta (radians counter-clockwise from +x) by <code>theta = (90° - heading) * π/180</code>.</p>
 <p >Please notice that the <code>data</code> directory DOES NOT contain the input CSV file; download <code>aisdk-2026-02-26.csv</code> from the website above.</p>
 <p >The program assumes that the input file fits the size constraints below (max 64 ships, max 5000 instants per ship). The defaults are 8 ships and 500 instants per ship; both can be overridden on the command line.</p>
-<p >The program is intentionally short (single C file, only public MEOS API) so that the canonical pipeline </p><pre class="fragment"> AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach
-</pre><p> fits in one read.</p>
+<p >The program is intentionally short (single C file, only public MEOS API) so that the canonical pipeline</p>
+<p >AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach</p>
+<p >fits in one read.</p>
 <p >Build: gcc -Wall -O2 -I/usr/local/include -o trgeo_distance \ trgeo_distance.c -L/usr/local/lib -lmeos -lm</p>
 <p >Run: ./trgeo_distance [max_trips] [max_instants_per_trip] defaults: max_trips = 8, max_instants_per_trip = 500 </p>
 </div></div><!-- contents -->

@@ -85,7 +85,7 @@ $(function() {
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * MobilityDB includes portions of PostGIS version 3 source code released</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * under the GNU General Public License (GPLv2 or later).</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * Copyright (c) 2001-2025, PostGIS contributors</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * Copyright (c) 2001-2026, PostGIS contributors</span></div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> * Permission to use, copy, modify, and distribute this software and its</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * documentation for any purpose, without fee, and without a written</span></div>
@@ -106,28 +106,28 @@ $(function() {
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="comment"> *****************************************************************************/</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#ifndef __PG_TINSTANT_H__</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#define __PG_TINSTANT_H__</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="comment">/* PostgreSQL */</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;lib/stringinfo.h&gt;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="comment">/* MEOS */</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;temporal/meos_catalog.h&quot;</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="comment">/*****************************************************************************/</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="comment">/* Send/receive functions */</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">extern</span> <a class="code hl_struct" href="structTInstant.html">TInstant</a> *<a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3.html#aa22516afd5a774b45be76111cf2304a3">tinstant_recv</a>(StringInfo buf, <a class="code hl_enumeration" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_a48ca74289a77a0fb2af7f4c226953f4f.html#a48ca74289a77a0fb2af7f4c226953f4f">tinstant_write</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTInstant.html">TInstant</a> *inst, StringInfo buf);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="comment">/*****************************************************************************/</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#endif </span><span class="comment">/* __PG_TINSTANT_H__ */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="ameos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401_html_a05df1d1fd2c829ee784b125ed34e8401"><div class="ttname"><a href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a></div><div class="ttdeci">MeosType</div><div class="ttdoc">Enumeration that defines the built-in and temporal types used in MobilityDB.</div><div class="ttdef"><b>Definition:</b> meos_catalog.h:55</div></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#ifndef __PG_TINSTANT_H__</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#define __PG_TINSTANT_H__</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">/* PostgreSQL */</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &lt;lib/stringinfo.h&gt;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">/* MEOS */</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &quot;temporal/meos_catalog.h&quot;</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="comment">/* Send/receive functions */</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">extern</span> <a class="code hl_struct" href="structTInstant.html">TInstant</a> *<a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3.html#aa22516afd5a774b45be76111cf2304a3">tinstant_recv</a>(StringInfo buf, <a class="code hl_enumeration" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="keyword">extern</span> <span class="keywordtype">void</span> <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_a48ca74289a77a0fb2af7f4c226953f4f.html#a48ca74289a77a0fb2af7f4c226953f4f">tinstant_write</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTInstant.html">TInstant</a> *inst, StringInfo buf);</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#endif </span><span class="comment">/* __PG_TINSTANT_H__ */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="ameos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401_html_a05df1d1fd2c829ee784b125ed34e8401"><div class="ttname"><a href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a></div><div class="ttdeci">MeosType</div><div class="ttdoc">Enumeration that defines the built-in and temporal types used in MobilityDB.</div><div class="ttdef"><b>Definition:</b> meos_catalog.h:56</div></div>
 <div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2tinstant_8h_a48ca74289a77a0fb2af7f4c226953f4f_html_a48ca74289a77a0fb2af7f4c226953f4f"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_a48ca74289a77a0fb2af7f4c226953f4f.html#a48ca74289a77a0fb2af7f4c226953f4f">tinstant_write</a></div><div class="ttdeci">void tinstant_write(const TInstant *inst, StringInfo buf)</div><div class="ttdoc">Write the binary representation of a temporal instant into a buffer.</div><div class="ttdef"><b>Definition:</b> temporal.c:343</div></div>
-<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3_html_aa22516afd5a774b45be76111cf2304a3"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3.html#aa22516afd5a774b45be76111cf2304a3">tinstant_recv</a></div><div class="ttdeci">TInstant * tinstant_recv(StringInfo buf, MeosType temptype)</div><div class="ttdoc">Basic functions for temporal instants.</div><div class="ttdef"><b>Definition:</b> temporal.c:320</div></div>
+<div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3_html_aa22516afd5a774b45be76111cf2304a3"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2tinstant_8h_aa22516afd5a774b45be76111cf2304a3.html#aa22516afd5a774b45be76111cf2304a3">tinstant_recv</a></div><div class="ttdeci">TInstant * tinstant_recv(StringInfo buf, MeosType temptype)</div><div class="ttdoc">Return a temporal instant from its binary representation read from a buffer.</div><div class="ttdef"><b>Definition:</b> temporal.c:320</div></div>
 <div class="ttc" id="astructTInstant_html"><div class="ttname"><a href="structTInstant.html">TInstant</a></div><div class="ttdoc">Structure to represent temporal values of instant subtype.</div><div class="ttdef"><b>Definition:</b> meos.h:273</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

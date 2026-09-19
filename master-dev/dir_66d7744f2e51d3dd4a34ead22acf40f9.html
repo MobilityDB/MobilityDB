@@ -87,13 +87,13 @@ Files</h2></td></tr>
 <tr class="memdesc:meos_2src_2h3_2h3__geo_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public API: static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> geometry → set of H3 cells. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3index_8c.html">h3index.c</a></td></tr>
-<tr class="memdesc:meos_2src_2h3_2h3index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Static h3index SQL type — parser, output, comparison / hash helpers, plus every <code>datum_h3_*</code> Datum-calling-convention wrapper consumed by the th3index lifting layer. <br /></td></tr>
+<tr class="memdesc:meos_2src_2h3_2h3index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Static h3index type and its Datum wrappers. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3index__sets_8c.html">h3index_sets.c</a></td></tr>
-<tr class="memdesc:meos_2src_2h3_2h3index__sets_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code>. <br /></td></tr>
+<tr class="memdesc:meos_2src_2h3_2h3index__sets_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code> <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2th3index_8c.html">th3index.c</a></td></tr>
-<tr class="memdesc:meos_2src_2h3_2th3index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type-inheritance boilerplate for <code>th3index</code>. <br /></td></tr>
+<tr class="memdesc:meos_2src_2h3_2th3index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type-inheritance boilerplate for <code>th3index</code> <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c.html">th3index_boxops.c</a></td></tr>
 <tr class="memdesc:th3index__boxops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounding box functions for temporal H3 cell indices. <br /></td></tr>
@@ -102,7 +102,7 @@ Files</h2></td></tr>
 <tr class="memdesc:meos_2src_2h3_2th3index__compops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison operators for the th3index type. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2th3index__edges_8c.html">th3index_edges.c</a></td></tr>
-<tr class="memdesc:meos_2src_2h3_2th3index__edges_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS lifting for directed-edge functions, plus the static <code>h3_directed_edge_to_gs_boundary</code> adapter that backs the one boundary-returning entry. <br /></td></tr>
+<tr class="memdesc:meos_2src_2h3_2th3index__edges_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lifting of the H3 directed-edge functions to temporal cells. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2th3index__hierarchy_8c.html">th3index_hierarchy.c</a></td></tr>
 <tr class="memdesc:meos_2src_2h3_2th3index__hierarchy_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS lifting for hierarchy functions, plus the two next-resolution conveniences that back them. <br /></td></tr>
@@ -117,13 +117,13 @@ Files</h2></td></tr>
 <tr class="memdesc:meos_2src_2h3_2th3index__metrics_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS lifting for metric functions, plus the static unit-string dispatcher and libh3-wrapping adapters that back them. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__ops_8c.html">th3index_ops.c</a></td></tr>
-<tr class="memdesc:th3index__ops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>h3_cellops</code> descriptor that plugs h3 into the shared temporal cell-index machinery (<a class="el" href="tcellindex_8c.html" title="Shared temporal lifting for the DGGS cell-index family.">meos/src/temporal/tcellindex.c</a>). <br /></td></tr>
+<tr class="memdesc:th3index__ops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>h3_cellops</code> descriptor that plugs h3 into the shared temporal cell-index machinery (<a class="el" href="tcellindex_8c.html" title="Shared temporal lifting for the DGGS cell-index family.">meos/src/temporal/tcellindex.c</a>) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2th3index__traversal_8c.html">th3index_traversal.c</a></td></tr>
 <tr class="memdesc:meos_2src_2h3_2th3index__traversal_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS lifting for grid-traversal functions, plus the two static local-IJ adapters that back them. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2th3index__vertices_8c.html">th3index_vertices.c</a></td></tr>
-<tr class="memdesc:meos_2src_2h3_2th3index__vertices_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MEOS lifting for vertex functions, plus the static <code>h3_vertex_to_gs_point</code> adapter that backs the <code>th3index_vertex_to_latlng</code> entry. <br /></td></tr>
+<tr class="memdesc:meos_2src_2h3_2th3index__vertices_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lifting of the H3 vertex functions to temporal cells. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

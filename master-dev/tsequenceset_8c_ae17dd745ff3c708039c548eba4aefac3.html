@@ -201,8 +201,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Ensure that all temporal instants of the array have increasing timestamp (or may be equal if the merge parameter is true), and if they are temporal points, have the same srid and the same dimensionality. </p>
-<p >This function extends function <a class="el" href="meos_2include_2temporal_2tsequence_8h_aac7e3a218770f95004d191f51335509d.html#aac7e3a218770f95004d191f51335509d" title="Ensure that all temporal instants of the array are valid.">ensure_valid_tinstarr</a> by determining the splits that must be made according the maximum distance or interval between consecutive instants. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Ensure that all temporal instants of the array have increasing timestamp and, if they are temporal points, the same srid and dimensionality. </p>
+<p >Consecutive timestamps may be equal if the merge parameter is true. This function extends function <a class="el" href="meos_2include_2temporal_2tsequence_8h_aac7e3a218770f95004d191f51335509d.html#aac7e3a218770f95004d191f51335509d" title="Ensure that all temporal instants of the array are valid.">ensure_valid_tinstarr</a> by determining the splits that must be made according to the maximum distance or interval between consecutive instants. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">instants</td><td>Array of temporal instants </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the input array </td></tr>

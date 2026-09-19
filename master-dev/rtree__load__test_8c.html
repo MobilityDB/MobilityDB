@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_load, against a tree of the same entries built one at a time by rtree_insert.  
+<p>Test the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -115,11 +115,12 @@ Functions</h2></td></tr>
 <tr class="separator:ad7125ef4b57b2f2b6e45d6b1be439e97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_load, against a tree of the same entries built one at a time by rtree_insert. </p>
+<div class="textblock"><p >Test the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. </p>
+<p >A program that tests the bulk build of the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index, i.e., rtree_load, against a tree of the same entries built one at a time by rtree_insert.</p>
 <p >rtree_load packs the entries bottom-up by Sort-Tile-Recursive, so the tree it produces has a different shape from one grown by repeated insertion. The shape is free to differ; the answers are not. The insert-built tree is therefore the oracle, and the two trees are required to agree exactly.</p>
 <p >Five properties are asserted: (i) same answers: over a spread of query windows the two trees return identical id sets, compared as sorted sequences so that a difference in traversal order is not mistaken for a difference in results; (ii) the comparison is not vacuous: those windows must match a substantial number of entries, since two trees that both answer nothing agree on nothing; (iii) completeness: a window covering the whole extent returns every id, so no entry is dropped by the packing; (iv) the ids survive: they are spread beyond 2^31, so a build carrying them at a narrower width would return different numbers; (v) the degenerate counts are handled: loading no entries leaves a tree that answers nothing, and loading one returns that one; (vi) a load leaves the tree holding exactly the entries it is given, whatever it holds when it is called, so an index is rebuilt from the entries a caller keeps; (vii) the entries a tree holds are released whatever the number given, so a load of no entries empties a tree rather than leaving the ones it held. This is the case that tells releasing the nodes apart from assigning the root over them: wherever entries follow, the two answer alike and differ only in what the run leaks, which valgrind reports and an assertion cannot.</p>
 <p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o rtree_load_test rtree_load_test.c -L/usr/local/lib -lmeos -lm</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

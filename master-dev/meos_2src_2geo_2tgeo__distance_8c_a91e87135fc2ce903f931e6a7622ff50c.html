@@ -221,7 +221,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true when the exact swept-disc solve against a straight edge cannot improve the running minimum behind the squared threshold <code>thr2</code>. </p>
-<p >This reads the same signed-gap lower bound as <a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a0e57f77ee53a90450e1d50e52bdb9c7f.html#a0e57f77ee53a90450e1d50e52bdb9c7f" title="Return the squared distance a centre segment must reach from a geometry, one of its edge buckets or o...">dist_unit_thr2</a> on the exact centre segment rather than on its bounding box, so it rejects the survivors the box levels leave. A scalar squared segment distance serves here rather than lw_dist2d_seg_seg, which also computes the closest points and is far heavier in this loop. </p>
+<p >This reads the same signed-gap lower bound as <a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a0e57f77ee53a90450e1d50e52bdb9c7f.html#a0e57f77ee53a90450e1d50e52bdb9c7f" title="Return the squared distance at which a swept-capsule unit of largest radius rmax can no longer improv...">dist_unit_thr2</a> on the exact centre segment rather than on its bounding box, so it rejects the survivors the box levels leave. A scalar squared segment distance serves here rather than lw_dist2d_seg_seg, which also computes the closest points and is far heavier in this loop. </p>
 
 </div>
 </div>

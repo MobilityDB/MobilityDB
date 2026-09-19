@@ -153,8 +153,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal circular buffer ever/always contains (<code>strict</code>) or covers a static circular buffer, or the static circular buffer the temporal one, 0 if not. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return whether a temporal and a static circular buffer ever/always satisfy a containment or covering relationship. </p>
+<p >The result is 1 if the temporal circular buffer ever/always contains (<code>strict</code>) or covers the static circular buffer, or the static circular buffer the temporal one, 0 if not. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Static circular buffer </td></tr>

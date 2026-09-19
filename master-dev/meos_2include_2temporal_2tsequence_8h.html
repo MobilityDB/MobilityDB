@@ -79,6 +79,9 @@ $(function() {
   <div class="headertitle"><div class="title">tsequence.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Basic functions for temporal sequences.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
@@ -92,7 +95,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a82ad2c52b0954e554171396f5e5d5f95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expand the second bounding box with the first one.  <a href="meos_2include_2temporal_2tsequence_8h_a82ad2c52b0954e554171396f5e5d5f95.html#a82ad2c52b0954e554171396f5e5d5f95">More...</a><br /></td></tr>
 <tr class="separator:a82ad2c52b0954e554171396f5e5d5f95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed43f638448e12314ae536de3a388bc7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_aed43f638448e12314ae536de3a388bc7.html#aed43f638448e12314ae536de3a388bc7">ensure_increasing_timestamps</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst1, const <a class="el" href="structTInstant.html">TInstant</a> *inst2, bool strict)</td></tr>
-<tr class="memdesc:aed43f638448e12314ae536de3a388bc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the timestamp of the first temporal instant is smaller (or equal if the merge parameter is true) than the one of the second temporal instant.  <a href="meos_2include_2temporal_2tsequence_8h_aed43f638448e12314ae536de3a388bc7.html#aed43f638448e12314ae536de3a388bc7">More...</a><br /></td></tr>
+<tr class="memdesc:aed43f638448e12314ae536de3a388bc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the timestamp of the first temporal instant is smaller than the one of the second temporal instant.  <a href="meos_2include_2temporal_2tsequence_8h_aed43f638448e12314ae536de3a388bc7.html#aed43f638448e12314ae536de3a388bc7">More...</a><br /></td></tr>
 <tr class="separator:aed43f638448e12314ae536de3a388bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac7e3a218770f95004d191f51335509d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_aac7e3a218770f95004d191f51335509d.html#aac7e3a218770f95004d191f51335509d">ensure_valid_tinstarr</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, bool merge, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp)</td></tr>
 <tr class="memdesc:aac7e3a218770f95004d191f51335509d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that all temporal instants of the array are valid.  <a href="meos_2include_2temporal_2tsequence_8h_aac7e3a218770f95004d191f51335509d.html#aac7e3a218770f95004d191f51335509d">More...</a><br /></td></tr>
@@ -101,13 +104,13 @@ Functions</h2></td></tr>
 <tr class="memdesc:a4ecf017d12a31b0f1def37e6c287d0d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure the validity of the arguments when creating a temporal sequence.  <a href="meos_2include_2temporal_2tsequence_8h_a4ecf017d12a31b0f1def37e6c287d0d7.html#a4ecf017d12a31b0f1def37e6c287d0d7">More...</a><br /></td></tr>
 <tr class="separator:a4ecf017d12a31b0f1def37e6c287d0d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67cea36de80f30b05f67f0eb53e06c08"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_a67cea36de80f30b05f67f0eb53e06c08.html#a67cea36de80f30b05f67f0eb53e06c08">float_collinear</a> (double x1, double x2, double x3, double ratio)</td></tr>
-<tr class="memdesc:a67cea36de80f30b05f67f0eb53e06c08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic functions for temporal sequences.  <a href="meos_2include_2temporal_2tsequence_8h_a67cea36de80f30b05f67f0eb53e06c08.html#a67cea36de80f30b05f67f0eb53e06c08">More...</a><br /></td></tr>
+<tr class="memdesc:a67cea36de80f30b05f67f0eb53e06c08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the three values are collinear.  <a href="meos_2include_2temporal_2tsequence_8h_a67cea36de80f30b05f67f0eb53e06c08.html#a67cea36de80f30b05f67f0eb53e06c08">More...</a><br /></td></tr>
 <tr class="separator:a67cea36de80f30b05f67f0eb53e06c08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa99a73b4d139dac4ee31865c7af0816c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_aa99a73b4d139dac4ee31865c7af0816c.html#aa99a73b4d139dac4ee31865c7af0816c">floatsegm_interpolate</a> (double value1, double value2, long double value)</td></tr>
 <tr class="memdesc:aa99a73b4d139dac4ee31865c7af0816c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float interpolated from a float segment with respect to a fraction of its total length.  <a href="meos_2include_2temporal_2tsequence_8h_aa99a73b4d139dac4ee31865c7af0816c.html#aa99a73b4d139dac4ee31865c7af0816c">More...</a><br /></td></tr>
 <tr class="separator:aa99a73b4d139dac4ee31865c7af0816c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab07cbf98764ce05a77e8fdf417f1a64e"><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_ab07cbf98764ce05a77e8fdf417f1a64e.html#ab07cbf98764ce05a77e8fdf417f1a64e">floatsegm_locate</a> (double value1, double value2, double value)</td></tr>
-<tr class="memdesc:ab07cbf98764ce05a77e8fdf417f1a64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) if a float segment intersects a float with respect to an epsilon value, return -1.0 if the value is not located in the segment or if it is approximately equal to the start or the end value.  <a href="meos_2include_2temporal_2tsequence_8h_ab07cbf98764ce05a77e8fdf417f1a64e.html#ab07cbf98764ce05a77e8fdf417f1a64e">More...</a><br /></td></tr>
+<tr class="memdesc:ab07cbf98764ce05a77e8fdf417f1a64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) if a float segment intersects a float with respect to an epsilon value.  <a href="meos_2include_2temporal_2tsequence_8h_ab07cbf98764ce05a77e8fdf417f1a64e.html#ab07cbf98764ce05a77e8fdf417f1a64e">More...</a><br /></td></tr>
 <tr class="separator:ab07cbf98764ce05a77e8fdf417f1a64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5452c417f03be7074d6ef29baefff6e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2tsequence_8h_af5452c417f03be7074d6ef29baefff6e.html#af5452c417f03be7074d6ef29baefff6e">intersection_tcontseq_tdiscseq</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq1, const <a class="el" href="structTSequence.html">TSequence</a> *seq2, <a class="el" href="structTSequence.html">TSequence</a> **inter1, <a class="el" href="structTSequence.html">TSequence</a> **inter2)</td></tr>
 <tr class="memdesc:af5452c417f03be7074d6ef29baefff6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temporally intersect two temporal sequences.  <a href="meos_2include_2temporal_2tsequence_8h_af5452c417f03be7074d6ef29baefff6e.html#af5452c417f03be7074d6ef29baefff6e">More...</a><br /></td></tr>
@@ -194,7 +197,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:a5f995431c6a64c2ba9d2a0a888a0c906"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal sequence with continuous base type transformed from step to linear interpolation (iterator function)  <a href="meos_2include_2temporal_2tsequence_8h_a5f995431c6a64c2ba9d2a0a888a0c906.html#a5f995431c6a64c2ba9d2a0a888a0c906">More...</a><br /></td></tr>
 <tr class="separator:a5f995431c6a64c2ba9d2a0a888a0c906"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Basic functions for temporal sequences. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

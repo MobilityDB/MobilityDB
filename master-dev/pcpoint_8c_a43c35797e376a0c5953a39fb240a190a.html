@@ -125,8 +125,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the meaningful byte length of a pcpoint — i.e. </p>
-<p >VARSIZE minus pgpointcloud's struct-tail padding. </p><dl class="section note"><dt>Note</dt><dd>Guards against degenerate tiny values: if the computed length would dip below the header + pcid (8 bytes), fall back to VARSIZE. In practice any well-formed pcpoint has VARSIZE &gt;= 12 (header + pcid + at least 1 data byte from the data[1] placeholder) so the guard only protects against malformed input, not valid values. </dd>
+<p>Return the meaningful byte length of a pcpoint. </p>
+<p >The length is VARSIZE minus pgpointcloud's struct-tail padding. </p><dl class="section note"><dt>Note</dt><dd>Guards against degenerate tiny values: if the computed length would dip below the header + pcid (8 bytes), fall back to VARSIZE. In practice any well-formed pcpoint has VARSIZE &gt;= 12 (header + pcid + at least 1 data byte from the data[1] placeholder) so the guard only protects against malformed input, not valid values. </dd>
 <dd>
 Exported (not <code>static</code>) so that the generic WKB path in temporal/type_out.c (<code>pcpoint_to_wkb_buf</code>) can zero the same padding bytes and stay byte-consistent with the hex-WKB path below. </dd></dl>
 

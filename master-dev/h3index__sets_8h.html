@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Set-returning static helpers on <code>h3index</code>.  
+<p>Set-returning static helpers on <code>h3index</code>  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;h3api.h&gt;</code><br />
@@ -112,7 +112,7 @@ Functions</h2></td></tr>
 <tr class="separator:a0079fdf1c2b710ca4c56aa06a4a6de12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Set-returning static helpers on <code>h3index</code>. </p>
+<div class="textblock"><p >Set-returning static helpers on <code>h3index</code> </p>
 <p >These are the MobilityDB ports of the nine h3-pg SETOF-returning functions. Each call returns a finite collection of H3 cells (or icosahedron face indexes), packaged as the right MobilityDB set type — <code>h3indexset</code> for cell collections, <code>intset</code> for the face index list.</p>
 <p >All functions here operate on STATIC <code>h3index</code> values — they are not lifted to the temporal <code>th3index</code> type. The temporal lift (producing a <code>tset&lt;h3indexset&gt;</code> or similar) is parked pending a <code>tset&lt;T&gt;</code> primitive design.</p>
 <p >libh3 is the ultimate authority for semantics; this file is a thin allocate / call / wrap layer:</p>

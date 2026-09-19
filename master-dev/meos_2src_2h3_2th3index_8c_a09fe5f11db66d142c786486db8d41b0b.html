@@ -132,8 +132,7 @@ $(function() {
 
 <p>Ensure that a (th3index, H3Index) pair is valid. </p>
 <p >Ensure a (th3index, h3index) pair — the bare <code>H3Index</code> is validated only for non-zero (h3 cells are non-zero by construction; zero is the canonical invalid sentinel).</p>
-<p >The cell argument carries h3 semantics: a value of 0 is the conventional "invalid" sentinel (what <code>isValidCell(0)</code> returns <code>false</code> for). We reject it up front so callers cannot e.g. test a temporal trajectory for "ever equal to the invalid
-sentinel" without noticing. </p>
+<p >The cell argument carries h3 semantics: a value of 0 is the conventional "invalid" sentinel (what <code>isValidCell(0)</code> returns <code>false</code> for). We reject it up front so callers cannot e.g. test a temporal trajectory for "ever equal to the invalid sentinel" without noticing. </p>
 
 </div>
 </div>

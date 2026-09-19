@@ -201,8 +201,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the spanset of sub-periods during which a linear temporal circular buffer sequence intersects (is within distance 0 of) the geometry, from the exact swept-capsule kernel (NULL if it never intersects) </p>
-<dl class="section note"><dt>Note</dt><dd>Shared by the temporal-relationship tbool builder and the ever/always coverage projection, so both use the identical crossing kernel </dd></dl>
+<p>Return the spanset of sub-periods during which a linear temporal circular buffer sequence intersects the geometry. </p>
+<p >Intersecting means being within distance 0 of the geometry. The spanset is computed from the exact swept-capsule kernel; the result is NULL if the sequence never intersects the geometry. </p><dl class="section note"><dt>Note</dt><dd>Shared by the temporal-relationship tbool builder and the ever/always coverage projection, so both use the identical crossing kernel </dd></dl>
 
 </div>
 </div>

@@ -80,6 +80,9 @@ $(function() {
   <div class="headertitle"><div class="title">meos_internal_geo.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Internal API of the Mobility Engine Open Source(MEOS) library.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
 <code>#include &lt;json-c/json.h&gt;</code><br />
 <code>#include &lt;proj.h&gt;</code><br />
@@ -98,7 +101,7 @@ Macros</h2></td></tr>
 <tr class="memitem:ab80bd91fa5f348ff8f54eef25cb7ddae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal__geo_8h_ab80bd91fa5f348ff8f54eef25cb7ddae.html#ab80bd91fa5f348ff8f54eef25cb7ddae">DATUM_POINT3DZ_P</a>(gs)&#160;&#160;&#160;( (<a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *) <a class="el" href="meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d">GS_POINT_PTR</a>(<a class="el" href="meos__internal__geo_8h_ade71fb9180a4cc0698c1c6f06c1824b3.html#ade71fb9180a4cc0698c1c6f06c1824b3">DatumGetGserializedP</a>(gs)) )</td></tr>
 <tr class="separator:ab80bd91fa5f348ff8f54eef25cb7ddae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade71fb9180a4cc0698c1c6f06c1824b3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal__geo_8h_ade71fb9180a4cc0698c1c6f06c1824b3.html#ade71fb9180a4cc0698c1c6f06c1824b3">DatumGetGserializedP</a>(X)&#160;&#160;&#160;((<a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *) <a class="el" href="postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da">DatumGetPointer</a>(X))</td></tr>
-<tr class="memdesc:ade71fb9180a4cc0698c1c6f06c1824b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal API of the Mobility Engine Open Source(MEOS) library.  <a href="meos__internal__geo_8h_ade71fb9180a4cc0698c1c6f06c1824b3.html#ade71fb9180a4cc0698c1c6f06c1824b3">More...</a><br /></td></tr>
+<tr class="memdesc:ade71fb9180a4cc0698c1c6f06c1824b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for accessing the <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> value of a temporal point.  <a href="meos__internal__geo_8h_ade71fb9180a4cc0698c1c6f06c1824b3.html#ade71fb9180a4cc0698c1c6f06c1824b3">More...</a><br /></td></tr>
 <tr class="separator:ade71fb9180a4cc0698c1c6f06c1824b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bdf4149ac1e18cc684ddd84c00db241"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__internal__geo_8h_a8bdf4149ac1e18cc684ddd84c00db241.html#a8bdf4149ac1e18cc684ddd84c00db241">FLAGS_GET_VERSBIT2</a>(flags)&#160;&#160;&#160;(((flags) &amp; <a class="el" href="meos__internal__geo_8h_ae19ecee039e42f3e042bc4667fdaf7d2.html#ae19ecee039e42f3e042bc4667fdaf7d2">LWFLAG_VERSBIT2</a>)&gt;&gt;7)</td></tr>
 <tr class="separator:a8bdf4149ac1e18cc684ddd84c00db241"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -398,10 +401,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaeb3e5d38b8d91a9144740d0daf7620ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geo sequence restricted to (the complement of) a spatiotemporal box.  <a href="group__meos__internal__geo__restrict_gaeb3e5d38b8d91a9144740d0daf7620ae.html#gaeb3e5d38b8d91a9144740d0daf7620ae">More...</a><br /></td></tr>
 <tr class="separator:gaeb3e5d38b8d91a9144740d0daf7620ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6fdce72d6036276b38b66544c01af2b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__bbox_ga6fdce72d6036276b38b66544c01af2b2.html#ga6fdce72d6036276b38b66544c01af2b2">tgeoseq_split_n_stboxes</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, int max_count, int *count)</td></tr>
-<tr class="memdesc:ga6fdce72d6036276b38b66544c01af2b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array of N spatiotemporal boxes from the instants or segments of a temporal geo sequence, where the choice between instants or segments depends, respectively, on whether the interpolation is discrete or continuous.  <a href="group__meos__internal__geo__bbox_ga6fdce72d6036276b38b66544c01af2b2.html#ga6fdce72d6036276b38b66544c01af2b2">More...</a><br /></td></tr>
+<tr class="memdesc:ga6fdce72d6036276b38b66544c01af2b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array of N spatiotemporal boxes from the instants or segments of a temporal geo sequence.  <a href="group__meos__internal__geo__bbox_ga6fdce72d6036276b38b66544c01af2b2.html#ga6fdce72d6036276b38b66544c01af2b2">More...</a><br /></td></tr>
 <tr class="separator:ga6fdce72d6036276b38b66544c01af2b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga82d23b3b135a45ddf78070756d5ebb95"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__bbox_ga82d23b3b135a45ddf78070756d5ebb95.html#ga82d23b3b135a45ddf78070756d5ebb95">tgeoseq_stboxes</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, int *count)</td></tr>
-<tr class="memdesc:ga82d23b3b135a45ddf78070756d5ebb95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array of spatiotemporal boxes from the instants or segments of a temporal geo sequence, where the choice between instants or segments depends, respectively, on whether the interpolation is discrete or continuous.  <a href="group__meos__internal__geo__bbox_ga82d23b3b135a45ddf78070756d5ebb95.html#ga82d23b3b135a45ddf78070756d5ebb95">More...</a><br /></td></tr>
+<tr class="memdesc:ga82d23b3b135a45ddf78070756d5ebb95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array of spatiotemporal boxes from the instants or segments of a temporal geo sequence.  <a href="group__meos__internal__geo__bbox_ga82d23b3b135a45ddf78070756d5ebb95.html#ga82d23b3b135a45ddf78070756d5ebb95">More...</a><br /></td></tr>
 <tr class="separator:ga82d23b3b135a45ddf78070756d5ebb95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac7e1cf5969424a35a42e1b0d21ecd7e1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__restrict_gac7e1cf5969424a35a42e1b0d21ecd7e1.html#gac7e1cf5969424a35a42e1b0d21ecd7e1">tgeoseqset_restrict_geom</a> (const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *ss, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, bool atfunc)</td></tr>
 <tr class="memdesc:gac7e1cf5969424a35a42e1b0d21ecd7e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geo sequence set restricted to (the complement of) a geometry.  <a href="group__meos__internal__geo__restrict_gac7e1cf5969424a35a42e1b0d21ecd7e1.html#gac7e1cf5969424a35a42e1b0d21ecd7e1">More...</a><br /></td></tr>
@@ -509,7 +512,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga8b3fa82d9ee3205073d5b5319f4a4c1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box constructed from a timestamptz span set.  <a href="group__meos__internal__box__conversion_ga8b3fa82d9ee3205073d5b5319f4a4c1b.html#ga8b3fa82d9ee3205073d5b5319f4a4c1b">More...</a><br /></td></tr>
 <tr class="separator:ga8b3fa82d9ee3205073d5b5319f4a4c1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Internal API of the Mobility Engine Open Source(MEOS) library. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

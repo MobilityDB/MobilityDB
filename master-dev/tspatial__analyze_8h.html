@@ -82,6 +82,9 @@ $(function() {
   <div class="headertitle"><div class="title">tspatial_analyze.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Functions for gathering statistics from temporal point columns.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;commands/vacuum.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
@@ -103,7 +106,7 @@ Data Structures</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a616cd2d7d958cabddbc1798a9473f9b7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7">ND_DIMS</a>&#160;&#160;&#160;4</td></tr>
-<tr class="memdesc:a616cd2d7d958cabddbc1798a9473f9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for gathering statistics from temporal point columns.  <a href="tspatial__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7">More...</a><br /></td></tr>
+<tr class="memdesc:a616cd2d7d958cabddbc1798a9473f9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum number of dimensions our code can handle.  <a href="tspatial__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7">More...</a><br /></td></tr>
 <tr class="separator:a616cd2d7d958cabddbc1798a9473f9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -133,7 +136,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa1fa62e9ac3e93d1f4917429ce2833ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the proportion of b2 that is covered by b1.  <a href="tspatial__analyze_8h_aa1fa62e9ac3e93d1f4917429ce2833ef.html#aa1fa62e9ac3e93d1f4917429ce2833ef">More...</a><br /></td></tr>
 <tr class="separator:aa1fa62e9ac3e93d1f4917429ce2833ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af06757e43e3c30cc10e5f365c9f1fa0b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8h_af06757e43e3c30cc10e5f365c9f1fa0b.html#af06757e43e3c30cc10e5f365c9f1fa0b">nd_increment</a> (<a class="el" href="tspatial__analyze_8h_ac6acd599cc9913f2ae47473382a3d271.html#ac6acd599cc9913f2ae47473382a3d271">ND_IBOX</a> *ibox, int ndims, int *counter)</td></tr>
-<tr class="memdesc:af06757e43e3c30cc10e5f365c9f1fa0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an n-d index array (counter), and a domain to increment it in (ibox) increment it by one, unless it's already at the max of the domain, in which case return false.  <a href="tspatial__analyze_8h_af06757e43e3c30cc10e5f365c9f1fa0b.html#af06757e43e3c30cc10e5f365c9f1fa0b">More...</a><br /></td></tr>
+<tr class="memdesc:af06757e43e3c30cc10e5f365c9f1fa0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increment an n-d index array (counter) by one in a domain (ibox)  <a href="tspatial__analyze_8h_af06757e43e3c30cc10e5f365c9f1fa0b.html#af06757e43e3c30cc10e5f365c9f1fa0b">More...</a><br /></td></tr>
 <tr class="separator:af06757e43e3c30cc10e5f365c9f1fa0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9aeeb8968af56c0229bad7d13832d368"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8h_a9aeeb8968af56c0229bad7d13832d368.html#a9aeeb8968af56c0229bad7d13832d368">nd_stats_value_index</a> (const <a class="el" href="tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *stats, const int *indexes)</td></tr>
 <tr class="memdesc:a9aeeb8968af56c0229bad7d13832d368"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a position in the n-d histogram (i,j,k), return the position in the 1-d values array.  <a href="tspatial__analyze_8h_a9aeeb8968af56c0229bad7d13832d368.html#a9aeeb8968af56c0229bad7d13832d368">More...</a><br /></td></tr>
@@ -142,7 +145,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:ab226d6985c1c08bfe84abff3884d7c0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the statistics for spatiotemporal columns (callback function)  <a href="tspatial__analyze_8h_ab226d6985c1c08bfe84abff3884d7c0f.html#ab226d6985c1c08bfe84abff3884d7c0f">More...</a><br /></td></tr>
 <tr class="separator:ab226d6985c1c08bfe84abff3884d7c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Functions for gathering statistics from temporal point columns. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

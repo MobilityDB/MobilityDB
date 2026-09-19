@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that reads from a CSV file obtained from geonames <a href="https://download.geonames.org/export/dump/US.zip">https://download.geonames.org/export/dump/US.zip</a> and applies the PostGIS function <code>ST_DBSCAN</code> to the entire file.  
+<p>Cluster the GeoNames places of the United States with DBSCAN.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -118,26 +118,27 @@ Functions</h2></td></tr>
 <tr class="separator:a92488df83476d9d8729fd04197bc35f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that reads from a CSV file obtained from geonames <a href="https://download.geonames.org/export/dump/US.zip">https://download.geonames.org/export/dump/US.zip</a> and applies the PostGIS function <code>ST_DBSCAN</code> to the entire file. </p>
+<div class="textblock"><p >Cluster the GeoNames places of the United States with DBSCAN. </p>
+<p >A simple program that reads from a CSV file obtained from geonames <a href="https://download.geonames.org/export/dump/US.zip">https://download.geonames.org/export/dump/US.zip</a> and applies the PostGIS function <code>ST_DBSCAN</code> to the entire file.</p>
 <p >This file simply reproduces in MEOS Paul Ramsey's blog <a href="https://www.crunchydata.com/blog/postgis-clustering-with-k-means">https://www.crunchydata.com/blog/postgis-clustering-with-k-means</a> Therefore, the program corresponds to the following SQL query </p><div class="fragment"><div class="line">DROP TABLE IF EXISTS geonames_sch;</div>
 <div class="line">CREATE TABLE geonames_sch AS</div>
 <div class="line">SELECT *, ST_ClusterDBScan(geom, 2000, 5)</div>
-<div class="line">  OVER (PARTITION BY admin1) AS cluster</div>
+<div class="line">OVER (PARTITION BY admin1) AS cluster</div>
 <div class="line">FROM geonames</div>
 <div class="line">WHERE fcode = &#39;SCH&#39;;</div>
 </div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o geonames_dbscan geonames_dbscan.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --><p> The program expects that the file <code>data/US.txt</code> extracted from the ZIP file above is located in the subdirecttory &lsquo;data&amp;rsquo;.</p>
 <div class="fragment"><div class="line">DROP TABLE IF EXISTS geonames_meos;</div>
 <div class="line">CREATE TABLE geonames_meos (</div>
-<div class="line">  geonameid <span class="keywordtype">int</span>,</div>
-<div class="line">  name <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
-<div class="line">  admin1 <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
-<div class="line">  geom geometry(Point, 5070),</div>
-<div class="line">  cluster integer);</div>
+<div class="line">geonameid <span class="keywordtype">int</span>,</div>
+<div class="line">name <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
+<div class="line">admin1 <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
+<div class="line">geom geometry(Point, 5070),</div>
+<div class="line">cluster integer);</div>
 <div class="line">COPY geonames_meos</div>
-<div class="line">  FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/geonames_new.csv&#39;</span></div>
-<div class="line">  DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
+<div class="line">FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/geonames_new.csv&#39;</span></div>
+<div class="line">DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
 <div class="ttc" id="astructvarlena_html"><div class="ttname"><a href="structvarlena.html">varlena</a></div><div class="ttdef"><b>Definition:</b> postgres_ext_defs.in.h:48</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->

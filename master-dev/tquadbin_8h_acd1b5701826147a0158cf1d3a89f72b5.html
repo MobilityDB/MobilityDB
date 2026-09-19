@@ -114,8 +114,7 @@ $(function() {
 
 <p>Ensure a (tquadbin, quadbin) pair — the bare <code>Quadbin</code> is validated only for non-zero (quadbin cells are non-zero by construction; zero is the canonical invalid sentinel). </p>
 <p >Ensure a (tquadbin, quadbin) pair — the bare <code>Quadbin</code> is validated only for non-zero (quadbin cells are non-zero by construction; zero is the canonical invalid sentinel).</p>
-<p >The cell argument carries quadbin semantics: a value of 0 is the conventional "invalid" sentinel (what <code>quadbin_is_valid_cell(0)</code> returns <code>false</code> for). We reject it up front so callers cannot e.g. test a temporal trajectory for "ever equal to the invalid
-sentinel" without noticing. </p>
+<p >The cell argument carries quadbin semantics: a value of 0 is the conventional "invalid" sentinel (what <code>quadbin_is_valid_cell(0)</code> returns <code>false</code> for). We reject it up front so callers cannot e.g. test a temporal trajectory for "ever equal to the invalid sentinel" without noticing. </p>
 
 </div>
 </div>

@@ -121,15 +121,8 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Example: read AIS CSV, build TSEQUENCE per MMSI, clean with EKF. </p>
-<hr  />
-<p >This MobilityDB code is provided under The PostgreSQL License. Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB contributors</p>
-<p >MobilityDB includes portions of PostGIS version 3 source code released under the GNU General Public License (GPLv2 or later). Copyright (c) 2001-2025, PostGIS contributors</p>
-<p >Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.</p>
-<p >IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<p >UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</p>
-<hr  />
 <p >Input CSV columns, first row is a header: Timestamp,Type of mobile,MMSI,Latitude,Longitude, ... (other columns ignored) Example timestamp format: "01/03/2024 00:00:00" (DD/MM/YYYY HH:MM:SS)</p>
-<p >For each MMSI we aggregate geographic positions (Longitude, Latitude) into a TSEQUENCE of tgeompoint instants and apply an EKF via <a class="el" href="group__meos__temporal__analytics__simplify_ga2a26451a5f62db0b2c22725e77d9e4f6.html#ga2a26451a5f62db0b2c22725e77d9e4f6" title="EKF-based outlier filtering for temporal floats/points.">temporal_ext_kalman_filter()</a>.</p>
+<p >For each MMSI we aggregate geographic positions (Longitude, Latitude) into a TSEQUENCE of tgeompoint instants and apply an EKF via <a class="el" href="group__meos__temporal__analytics__simplify_ga2a26451a5f62db0b2c22725e77d9e4f6.html#ga2a26451a5f62db0b2c22725e77d9e4f6" title="EKF-based outlier filtering for temporal floats/points @csqlfn Temporal_ext_kalman_filter()">temporal_ext_kalman_filter()</a>.</p>
 <p >Build: gcc -Wall -O2 -I/usr/local/include -o ais_ekf_clean <a class="el" href="ais__ekf__clean_8c.html" title="Example: read AIS CSV, build TSEQUENCE per MMSI, clean with EKF.">meos/examples/ais_ekf_clean.c</a> \ -L/usr/local/lib -lmeos</p>
 <p >Run: ./ais_ekf_clean input.csv [output.csv] [drop|fill] [gate_sigma] [q=...] [r=...] </p>
 </div></div><!-- contents -->

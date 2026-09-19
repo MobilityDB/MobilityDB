@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests how the functions giving the cell of a point in the H3, QUADBIN and S2 grids report an erroneous argument under the noexit error handler.  
+<p>Test how the functions giving the cell of a point report an error.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;inttypes.h&gt;</code><br />
@@ -102,11 +102,12 @@ Functions</h2></td></tr>
 <tr class="separator:aa37cbf62f16f0a8bfd428058f9df31f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests how the functions giving the cell of a point in the H3, QUADBIN and S2 grids report an erroneous argument under the noexit error handler. </p>
+<div class="textblock"><p >Test how the functions giving the cell of a point report an error. </p>
+<p >A program that tests how the functions giving the cell of a point in the H3, QUADBIN and S2 grids report an erroneous argument under the noexit error handler.</p>
 <p >A public MEOS function tests the conditions it relies on, so a binding calling it with an argument outside its contract receives an error it can raise in its host language rather than an answer computed from a value the function does not define.</p>
 <p >The program verifies that <a class="el" href="group__meos__h3__conversion_gadb35d8d14131493da1408cf9d41eb96a.html#gadb35d8d14131493da1408cf9d41eb96a" title="Single H3 cell covering a POINT geometry at the given resolution.">geo_to_h3index_cell</a>, <a class="el" href="group__meos__quadbin_gac313bbeb1ec38beb968f5d0b09824198.html#gac313bbeb1ec38beb968f5d0b09824198" title="Return the quadbin cell covering a lon/lat point at a resolution.">geo_to_quadbin_cell</a> and <a class="el" href="group__meos__s2cell_gaf363a1c5493fcbe31fe16c9e63746678.html#gaf363a1c5493fcbe31fe16c9e63746678" title="Return the S2 cell covering a lon/lat point at a level.">geo_to_s2cell_cell</a> report a null geometry with MEOS_ERR_INVALID_ARG, and a geometry that is not a point, an empty point and a resolution outside the range of their grid with MEOS_ERR_INVALID_ARG_VALUE, by returning no cell; that <a class="el" href="group__meos__h3__conversion_ga5adeb9e26c48ba19f307505b1f6c8f50.html#ga5adeb9e26c48ba19f307505b1f6c8f50" title="Return the set of H3 cells covering a static geometry at the given resolution.">geo_to_h3index_set</a> reports a resolution outside the range of its grid the same way; and that each of them answers a point at a resolution of its grid with no error left behind.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o cellpoint_validity_test cellpoint_validity_test.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

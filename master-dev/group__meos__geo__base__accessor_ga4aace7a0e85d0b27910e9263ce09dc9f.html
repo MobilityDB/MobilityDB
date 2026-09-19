@@ -111,7 +111,9 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section note"><dt>Note</dt><dd>Derived from PostGIS function: <code>lwgeom_is_unitary(const LWGEOM *geom)</code> </dd></dl>
+
+<p>Return true if a geometry is unitary, that is, not a collection. </p>
+<p >A geometry is unitary when it is a non-empty point, line string, polygon, curve polygon, compound curve, circular string, or triangle. An empty geometry is not unitary. </p><dl class="section note"><dt>Note</dt><dd>Derived from PostGIS function: <code>lwgeom_is_unitary(const LWGEOM *geom)</code> </dd></dl>
 
 </div>
 </div>

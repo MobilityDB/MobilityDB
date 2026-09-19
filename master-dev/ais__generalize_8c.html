@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that reads AIS data from the file <code>ais_trips_longest.csv</code> containing the temporal values for trip and SOG for the longest 10 trips of ships extracted from one day of observations (aisdk-2025-03-01.csv) provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, and outputs the size in KB and number of instants for various simplification algorithms.  
+<p>Generalize the ten longest AIS trips of a day.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -110,10 +110,11 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that reads AIS data from the file <code>ais_trips_longest.csv</code> containing the temporal values for trip and SOG for the longest 10 trips of ships extracted from one day of observations (aisdk-2025-03-01.csv) provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, and outputs the size in KB and number of instants for various simplification algorithms. </p>
+<div class="textblock"><p >Generalize the ten longest AIS trips of a day. </p>
+<p >A program that reads AIS data from the file <code>ais_trips_longest.csv</code> containing the temporal values for trip and SOG for the longest 10 trips of ships extracted from one day of observations (aisdk-2025-03-01.csv) provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, and outputs the size in KB and number of instants for various simplification algorithms.</p>
 <p >Please notice that the SQL script <code>generate_ais_trips_longest.sql</code> in the <code>data</code> directory was used to generate the CSV file above.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o ais_generalize ais_generalize.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

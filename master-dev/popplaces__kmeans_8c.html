@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that reads from a CSV file obtained from 1:10M populated places from Natural Earth.  
+<p>Cluster the Natural Earth populated places with k-means.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -105,21 +105,21 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that reads from a CSV file obtained from 1:10M populated places from Natural Earth. </p>
-<p ><a href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/">https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/</a> <a href="https://www.naturalearthdata.com/">https://www.naturalearthdata.com/</a> and applies the PostGIS function <code>ST_ClusterKMeans</code> to the entire file.</p>
+<div class="textblock"><p >Cluster the Natural Earth populated places with k-means. </p>
+<p >A simple program that reads from a CSV file obtained from 1:10M populated places from Natural Earth. <a href="https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/">https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/</a> <a href="https://www.naturalearthdata.com/">https://www.naturalearthdata.com/</a> and applies the PostGIS function <code>ST_ClusterKMeans</code> to the entire file.</p>
 <p >This file simply reproduces in MEOS Paul Ramsey's blog <a href="https://www.crunchydata.com/blog/postgis-clustering-with-k-means">https://www.crunchydata.com/blog/postgis-clustering-with-k-means</a> Therefore, the program corresponds to the following SQL query </p><div class="fragment"><div class="line">SELECT name, pop_max, geom,</div>
-<div class="line">  ST_ClusterKMeans(geom, 10) OVER () AS cluster</div>
+<div class="line">ST_ClusterKMeans(geom, 10) OVER () AS cluster</div>
 <div class="line">FROM popplaces;</div>
 </div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o popplaces_kmeans popplaces_kmeans.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --><div class="fragment"><div class="line">CREATE TABLE popplaces_geographic_meos (</div>
-<div class="line">  name <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
-<div class="line"> pop_max <span class="keywordtype">int</span>,</div>
-<div class="line"> geom geometry(Point, 4326),</div>
-<div class="line"> cluster integer);</div>
+<div class="line">name <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
+<div class="line">pop_max <span class="keywordtype">int</span>,</div>
+<div class="line">geom geometry(Point, 4326),</div>
+<div class="line">cluster integer);</div>
 <div class="line">COPY popplaces_geographic_meos</div>
-<div class="line">  FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/popplaces_new.csv&#39;</span></div>
-<div class="line">  DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
+<div class="line">FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/popplaces_new.csv&#39;</span></div>
+<div class="line">DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
 <div class="ttc" id="astructvarlena_html"><div class="ttname"><a href="structvarlena.html">varlena</a></div><div class="ttdef"><b>Definition:</b> postgres_ext_defs.in.h:48</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->

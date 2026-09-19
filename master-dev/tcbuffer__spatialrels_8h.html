@@ -79,6 +79,9 @@ $(function() {
   <div class="headertitle"><div class="title">tcbuffer_spatialrels.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Spatial relationships for temporal points.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="cbuffer_8h_source.html">cbuffer/cbuffer.h</a>&quot;</code><br />
@@ -91,7 +94,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a44c8117b6a49bfd20bda1590c323b54a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a circular buffer ever contains a temporal circular buffer, 0 if not, and -1 on error.  <a href="tcbuffer__spatialrels_8h_a44c8117b6a49bfd20bda1590c323b54a.html#a44c8117b6a49bfd20bda1590c323b54a">More...</a><br /></td></tr>
 <tr class="separator:a44c8117b6a49bfd20bda1590c323b54a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5347b13ab67d74d4df39267c5256eea4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__cbuffer__rel__ever_ga5347b13ab67d74d4df39267c5256eea4.html#ga5347b13ab67d74d4df39267c5256eea4">ea_contains_geo_tcbuffer</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, const <a class="el" href="structTemporal.html">Temporal</a> *temp, bool ever)</td></tr>
-<tr class="memdesc:ga5347b13ab67d74d4df39267c5256eea4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial relationships for temporal points.  <a href="group__meos__internal__cbuffer__rel__ever_ga5347b13ab67d74d4df39267c5256eea4.html#ga5347b13ab67d74d4df39267c5256eea4">More...</a><br /></td></tr>
+<tr class="memdesc:ga5347b13ab67d74d4df39267c5256eea4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a geometry ever/always contains a temporal circular buffer, 0 if not, and -1 on error.  <a href="group__meos__internal__cbuffer__rel__ever_ga5347b13ab67d74d4df39267c5256eea4.html#ga5347b13ab67d74d4df39267c5256eea4">More...</a><br /></td></tr>
 <tr class="separator:ga5347b13ab67d74d4df39267c5256eea4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58c3fcea6af6c780a7ccadd23fb1ffad"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__spatialrels_8h_a58c3fcea6af6c780a7ccadd23fb1ffad.html#a58c3fcea6af6c780a7ccadd23fb1ffad">ea_contains_tcbuffer_cbuffer</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb, bool ever)</td></tr>
 <tr class="memdesc:a58c3fcea6af6c780a7ccadd23fb1ffad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a temporal circular buffer ever/always contains a circular buffer, 0 if not, and -1 on error.  <a href="tcbuffer__spatialrels_8h_a58c3fcea6af6c780a7ccadd23fb1ffad.html#a58c3fcea6af6c780a7ccadd23fb1ffad">More...</a><br /></td></tr>
@@ -130,10 +133,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab6ad55506a8d47cb2ae1ff50197257fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a temporal circular buffer and a geometry are ever disjoint,0 if not, and -1 on error.  <a href="group__meos__internal__cbuffer__rel__ever_gab6ad55506a8d47cb2ae1ff50197257fc.html#gab6ad55506a8d47cb2ae1ff50197257fc">More...</a><br /></td></tr>
 <tr class="separator:gab6ad55506a8d47cb2ae1ff50197257fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga48998550ff36544b64c75c5040c123be"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__cbuffer__rel__ever_ga48998550ff36544b64c75c5040c123be.html#ga48998550ff36544b64c75c5040c123be">ea_disjoint_tcbuffer_tcbuffer</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, bool ever)</td></tr>
-<tr class="memdesc:ga48998550ff36544b64c75c5040c123be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the temporal circular buffers are ever/always disjoint, 0 if not, and -1 on error or if the temporal circular buffers do not intersect in time.  <a href="group__meos__internal__cbuffer__rel__ever_ga48998550ff36544b64c75c5040c123be.html#ga48998550ff36544b64c75c5040c123be">More...</a><br /></td></tr>
+<tr class="memdesc:ga48998550ff36544b64c75c5040c123be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the temporal circular buffers are ever/always disjoint, 0 if not, and -1 on error or if they do not intersect in time.  <a href="group__meos__internal__cbuffer__rel__ever_ga48998550ff36544b64c75c5040c123be.html#ga48998550ff36544b64c75c5040c123be">More...</a><br /></td></tr>
 <tr class="separator:ga48998550ff36544b64c75c5040c123be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabc14201368fe1f1eb6ecd32c69fdb123"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__cbuffer__spatial__rel__ever_gabc14201368fe1f1eb6ecd32c69fdb123.html#gabc14201368fe1f1eb6ecd32c69fdb123">ea_dwithin_tcbuffer_tcbuffer</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, double dist, bool ever)</td></tr>
-<tr class="memdesc:gabc14201368fe1f1eb6ecd32c69fdb123"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if two temporal circular buffers are ever/always within a distance, 0 if not, -1 on error or if the temporal circular buffers do not intersect on time.  <a href="group__meos__internal__cbuffer__spatial__rel__ever_gabc14201368fe1f1eb6ecd32c69fdb123.html#gabc14201368fe1f1eb6ecd32c69fdb123">More...</a><br /></td></tr>
+<tr class="memdesc:gabc14201368fe1f1eb6ecd32c69fdb123"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return whether two temporal circular buffers are ever/always within a distance.  <a href="group__meos__internal__cbuffer__spatial__rel__ever_gabc14201368fe1f1eb6ecd32c69fdb123.html#gabc14201368fe1f1eb6ecd32c69fdb123">More...</a><br /></td></tr>
 <tr class="separator:gabc14201368fe1f1eb6ecd32c69fdb123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8976fe085137548cf5ad618d356d4337"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__cbuffer__rel__ever_ga8976fe085137548cf5ad618d356d4337.html#ga8976fe085137548cf5ad618d356d4337">ea_intersects_cbuffer_tcbuffer</a> (const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb, const <a class="el" href="structTemporal.html">Temporal</a> *temp, bool ever)</td></tr>
 <tr class="memdesc:ga8976fe085137548cf5ad618d356d4337"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a circular buffer ever/always intersects a temporal circular buffer, 0 if not, and -1 on error.  <a href="group__meos__internal__cbuffer__rel__ever_ga8976fe085137548cf5ad618d356d4337.html#ga8976fe085137548cf5ad618d356d4337">More...</a><br /></td></tr>
@@ -166,7 +169,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga500e93be581e8508a1423007e584c470"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if a temporal circular buffer ever/always touches another one, 0 if not, and -1 on error.  <a href="group__meos__internal__cbuffer__rel__ever_ga500e93be581e8508a1423007e584c470.html#ga500e93be581e8508a1423007e584c470">More...</a><br /></td></tr>
 <tr class="separator:ga500e93be581e8508a1423007e584c470"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Spatial relationships for temporal points. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

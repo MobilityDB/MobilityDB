@@ -80,6 +80,9 @@ $(function() {
   <div class="headertitle"><div class="title">tgeo_spatialfuncs.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Spatial functions for temporal points.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
@@ -101,7 +104,7 @@ Macros</h2></td></tr>
 <tr class="memdesc:a28e97f9c943f6a0dd7a9e8f5c38c5dd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symbolic constants for transforming tgeompoint &lt;-&gt; tgeogpoint.  <a href="tgeo__spatialfuncs_8h_a28e97f9c943f6a0dd7a9e8f5c38c5dd9.html#a28e97f9c943f6a0dd7a9e8f5c38c5dd9">More...</a><br /></td></tr>
 <tr class="separator:a28e97f9c943f6a0dd7a9e8f5c38c5dd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b89bd63ff5147e033a6446a665777f9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__spatialfuncs_8h_a3b89bd63ff5147e033a6446a665777f9.html#a3b89bd63ff5147e033a6446a665777f9">TGEOMP_TO_TGEOGP</a>&#160;&#160;&#160;true</td></tr>
-<tr class="memdesc:a3b89bd63ff5147e033a6446a665777f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial functions for temporal points.  <a href="tgeo__spatialfuncs_8h_a3b89bd63ff5147e033a6446a665777f9.html#a3b89bd63ff5147e033a6446a665777f9">More...</a><br /></td></tr>
+<tr class="memdesc:a3b89bd63ff5147e033a6446a665777f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symbolic constants for transforming tgeompoint &lt;-&gt; tgeogpoint.  <a href="tgeo__spatialfuncs_8h_a3b89bd63ff5147e033a6446a665777f9.html#a3b89bd63ff5147e033a6446a665777f9">More...</a><br /></td></tr>
 <tr class="separator:a3b89bd63ff5147e033a6446a665777f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd93170abe05095abaf54c1662da8fa9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__spatialfuncs_8h_acd93170abe05095abaf54c1662da8fa9.html#acd93170abe05095abaf54c1662da8fa9">TPOINT_TO_TGEO</a>&#160;&#160;&#160;false</td></tr>
 <tr class="separator:acd93170abe05095abaf54c1662da8fa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,7 +208,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:acbeac9282eb0e0700dc3b3bea30aab8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a point interpolated from the geometry/geography segment with respect to the fraction of its total length.  <a href="tgeo__spatialfuncs_8h_acbeac9282eb0e0700dc3b3bea30aab8a.html#acbeac9282eb0e0700dc3b3bea30aab8a">More...</a><br /></td></tr>
 <tr class="separator:acbeac9282eb0e0700dc3b3bea30aab8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92b37fa580c0568b8215f5ee94e72975"><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__spatialfuncs_8h_a92b37fa580c0568b8215f5ee94e72975.html#a92b37fa580c0568b8215f5ee94e72975">pointsegm_locate</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> point, double *dist)</td></tr>
-<tr class="memdesc:a92b37fa580c0568b8215f5ee94e72975"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float in (0,1) representing the location of the closest point on the line segment to the given point, as a fraction of the total segment length, return -1.0 if the point is not located in the segment or if is approximately equal to the start or to the end point.  <a href="tgeo__spatialfuncs_8h_a92b37fa580c0568b8215f5ee94e72975.html#a92b37fa580c0568b8215f5ee94e72975">More...</a><br /></td></tr>
+<tr class="memdesc:a92b37fa580c0568b8215f5ee94e72975"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the location of the closest point on a line segment to a point, as a fraction of the total segment length.  <a href="tgeo__spatialfuncs_8h_a92b37fa580c0568b8215f5ee94e72975.html#a92b37fa580c0568b8215f5ee94e72975">More...</a><br /></td></tr>
 <tr class="separator:a92b37fa580c0568b8215f5ee94e72975"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a452059d6cd813233143056d746806d55"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__spatialfuncs_8h_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55">pt_distance_fn</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> flags)</td></tr>
 <tr class="memdesc:a452059d6cd813233143056d746806d55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select the appropriate distance function.  <a href="tgeo__spatialfuncs_8h_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55">More...</a><br /></td></tr>
@@ -229,10 +232,12 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga71a6a07594fe5a2f96a8909d7b200985"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return one of the coordinates of a temporal point as a temporal float.  <a href="group__meos__internal__geo__accessor_ga71a6a07594fe5a2f96a8909d7b200985.html#ga71a6a07594fe5a2f96a8909d7b200985">More...</a><br /></td></tr>
 <tr class="separator:ga71a6a07594fe5a2f96a8909d7b200985"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae64c3af72c6108b1a7c791375080096"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__spatialfuncs_8h_aae64c3af72c6108b1a7c791375080096.html#aae64c3af72c6108b1a7c791375080096">tpointseq_stops_iter</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, double maxdist, int64 mintunits, <a class="el" href="structTSequence.html">TSequence</a> **result)</td></tr>
-<tr class="memdesc:aae64c3af72c6108b1a7c791375080096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the subsequences where the temporal value stays within an area with a given maximum size for at least the specified duration (iterator function)  <a href="tgeo__spatialfuncs_8h_aae64c3af72c6108b1a7c791375080096.html#aae64c3af72c6108b1a7c791375080096">More...</a><br /></td></tr>
+<tr class="memdesc:aae64c3af72c6108b1a7c791375080096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the subsequences where the temporal value stays within an area with a given maximum size for at least the specified duration.  <a href="tgeo__spatialfuncs_8h_aae64c3af72c6108b1a7c791375080096.html#aae64c3af72c6108b1a7c791375080096">More...</a><br /></td></tr>
 <tr class="separator:aae64c3af72c6108b1a7c791375080096"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Spatial functions for temporal points. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5

@@ -219,8 +219,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if a point is within <code>dist</code> of the geometry, taking the polygon interior into account (a point inside a polygon is at distance 0), pruning both tests with an R-tree over the edges when one is given. </p>
-<p >Only an edge whose bounding box meets the square of side 2 * <code>dist</code> centred on the point can be within that distance of it; querying the R-tree for those instead of scanning every edge turns the O(nedges) test into O(log nedges + candidates). An excluded edge is farther than <code>dist</code> from the point along one axis alone, so it cannot satisfy the distance test and the result is identical to the full scan. The interior test inherits the same pruning from <a class="el" href="tpoint__geom__clip_8c_aa457872dc491ace20ff1add57e2776fe.html#aa457872dc491ace20ff1add57e2776fe" title="Return true if a point is located in a polygon.">point_in_polygon_impl</a> </p>
+<p>Return true if a point is within <code>dist</code> of the geometry. </p>
+<p >The polygon interior is taken into account (a point inside a polygon is at distance 0), and both tests are pruned with an R-tree over the edges when one is given. Only an edge whose bounding box meets the square of side 2 * <code>dist</code> centred on the point can be within that distance of it; querying the R-tree for those instead of scanning every edge turns the O(nedges) test into O(log nedges + candidates). An excluded edge is farther than <code>dist</code> from the point along one axis alone, so it cannot satisfy the distance test and the result is identical to the full scan. The interior test inherits the same pruning from <a class="el" href="tpoint__geom__clip_8c_aa457872dc491ace20ff1add57e2776fe.html#aa457872dc491ace20ff1add57e2776fe" title="Return true if a point is located in a polygon.">point_in_polygon_impl</a> </p>
 
 </div>
 </div>

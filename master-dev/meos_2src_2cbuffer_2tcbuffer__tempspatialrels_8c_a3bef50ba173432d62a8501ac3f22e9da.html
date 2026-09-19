@@ -201,8 +201,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the spanset of sub-periods during which a step-interpolated temporal circular buffer sequence intersects (is within distance 0 of) the geometry (NULL if it never intersects) </p>
-<dl class="section note"><dt>Note</dt><dd>Shared by the temporal-relationship tbool builder and the ever/always coverage projection </dd></dl>
+<p>Return the spanset of sub-periods during which a step-interpolated temporal circular buffer sequence intersects the geometry. </p>
+<p >The sub-periods are those during which the sequence is within <code>dist</code> of the geometry, which for a distance of 0 means that they intersect. The function returns NULL if the sequence never intersects the geometry. </p><dl class="section note"><dt>Note</dt><dd>Shared by the temporal-relationship tbool builder and the ever/always coverage projection </dd></dl>
 
 </div>
 </div>

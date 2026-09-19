@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>MEOS lifting for vertex functions, plus the static <code>h3_vertex_to_gs_point</code> adapter that backs the <code>th3index_vertex_to_latlng</code> entry.  
+<p>Lifting of the H3 vertex functions to temporal cells.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;h3api.h&gt;</code><br />
@@ -98,17 +98,18 @@ Functions</h2></td></tr>
 <tr class="memdesc:a209c0e4682b747f65b7458d8e8f90a3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the point of an H3 vertex.  <a href="meos_2src_2h3_2th3index__vertices_8c_a209c0e4682b747f65b7458d8e8f90a3b.html#a209c0e4682b747f65b7458d8e8f90a3b">More...</a><br /></td></tr>
 <tr class="separator:a209c0e4682b747f65b7458d8e8f90a3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8e5b118f6c7a7e937eaf208a0473263b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__vertex_ga8e5b118f6c7a7e937eaf208a0473263b.html#ga8e5b118f6c7a7e937eaf208a0473263b">th3index_cell_to_vertex</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int32 vertex_num)</td></tr>
-<tr class="memdesc:ga8e5b118f6c7a7e937eaf208a0473263b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal H3 vertex at the given vertex number of a temporal H3 cell.  <a href="group__meos__h3__vertex_ga8e5b118f6c7a7e937eaf208a0473263b.html#ga8e5b118f6c7a7e937eaf208a0473263b">More...</a><br /></td></tr>
+<tr class="memdesc:ga8e5b118f6c7a7e937eaf208a0473263b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal H3 vertex at the given vertex number of a temporal H3 cell @csqlfn <a class="el" href="group__mobilitydb__h3__vertex_ga44cd172987ee9af7899277ebf093d043.html#ga44cd172987ee9af7899277ebf093d043" title="Return the temporal H3-vertex index at the given vertex number of a temporal H3 cell @sqlfn th3CellTo...">Th3index_cell_to_vertex()</a>  <a href="group__meos__h3__vertex_ga8e5b118f6c7a7e937eaf208a0473263b.html#ga8e5b118f6c7a7e937eaf208a0473263b">More...</a><br /></td></tr>
 <tr class="separator:ga8e5b118f6c7a7e937eaf208a0473263b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga22461763d116b418eef220a73c8fc468"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__vertex_ga22461763d116b418eef220a73c8fc468.html#ga22461763d116b418eef220a73c8fc468">th3index_is_valid_vertex</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:ga22461763d116b418eef220a73c8fc468"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal boolean stating at each instant whether the value is a valid H3 vertex.  <a href="group__meos__h3__vertex_ga22461763d116b418eef220a73c8fc468.html#ga22461763d116b418eef220a73c8fc468">More...</a><br /></td></tr>
+<tr class="memdesc:ga22461763d116b418eef220a73c8fc468"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal boolean stating at each instant whether the value is a valid H3 vertex @csqlfn <a class="el" href="group__mobilitydb__h3__vertex_ga9eff599e6ce2ce565e9cf6e6a075771d.html#ga9eff599e6ce2ce565e9cf6e6a075771d" title="Return a temporal boolean stating at each instant whether the value is a valid H3 vertex @sqlfn isVal...">Th3index_is_valid_vertex()</a>  <a href="group__meos__h3__vertex_ga22461763d116b418eef220a73c8fc468.html#ga22461763d116b418eef220a73c8fc468">More...</a><br /></td></tr>
 <tr class="separator:ga22461763d116b418eef220a73c8fc468"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac57ba24a251f211fa102ac3411a27a2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__vertex_gac57ba24a251f211fa102ac3411a27a2d.html#gac57ba24a251f211fa102ac3411a27a2d">th3index_vertex_to_latlng</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:gac57ba24a251f211fa102ac3411a27a2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal geodetic point at each instant of a temporal H3 vertex.  <a href="group__meos__h3__vertex_gac57ba24a251f211fa102ac3411a27a2d.html#gac57ba24a251f211fa102ac3411a27a2d">More...</a><br /></td></tr>
+<tr class="memdesc:gac57ba24a251f211fa102ac3411a27a2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal geodetic point at each instant of a temporal H3 vertex @csqlfn <a class="el" href="group__mobilitydb__h3__vertex_ga9b4bdf5f93e4542a5996b82b6cbd89b2.html#ga9b4bdf5f93e4542a5996b82b6cbd89b2" title="Return the geodetic coordinates of a temporal H3 vertex @sqlfn th3VertexToPoint()">Th3index_vertex_to_latlng()</a>  <a href="group__meos__h3__vertex_gac57ba24a251f211fa102ac3411a27a2d.html#gac57ba24a251f211fa102ac3411a27a2d">More...</a><br /></td></tr>
 <tr class="separator:gac57ba24a251f211fa102ac3411a27a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >MEOS lifting for vertex functions, plus the static <code>h3_vertex_to_gs_point</code> adapter that backs the <code>th3index_vertex_to_latlng</code> entry. </p>
+<div class="textblock"><p >Lifting of the H3 vertex functions to temporal cells. </p>
+<p >MEOS lifting for vertex functions, plus the static <code>h3_vertex_to_gs_point</code> adapter that backs the <code>th3index_vertex_to_latlng</code> entry.</p>
 <p ><code>cell_to_vertex</code> and <code>is_valid_vertex</code> lift directly on the <code>_meos</code> helpers in <code><a class="el" href="h3__generated_8c.html" title="Bodies of the libh3 binding functions translated from h3-pg into MEOS.">h3_generated.c</a></code>. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

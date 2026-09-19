@@ -113,9 +113,9 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Resolve a parsed PCSCHEMA by pcid, with hook fallback, stating the absence of any facility that could resolve one as an error. </p>
+<p>Resolve a parsed PCSCHEMA by pcid, with hook fallback. </p>
 <p >Resolve a parsed PCSCHEMA by pcid.</p>
-<p >A hook that answers <code>NULL</code> has looked the pcid up and not found it, which the caller reads as the miss it is; no hook at all means the pcid could not be looked up at all, and a caller needing the schema is stuck. </p>
+<p >The absence of any facility that could resolve one is stated as an error. A hook that answers <code>NULL</code> has looked the pcid up and not found it, which the caller reads as the miss it is; no hook at all means the pcid could not be looked up at all, and a caller needing the schema is stuck. </p>
 
 </div>
 </div>

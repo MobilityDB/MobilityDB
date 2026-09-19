@@ -183,8 +183,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return 1 if the chord-error maximum of exp lies strictly inside (<code>lower</code>, <code>upper</code>) on the linear segment [start@lower, end@upper], 0 otherwise. </p>
-<p >Solves the slope-matching equation <code>e^</code>(x*) = (e^<code>end</code> - e^<code>start</code>) / (<code>end</code> - <code>start</code>) for <code>x*</code>, the unique point where the slope of <code>exp</code> equals the chord slope. Inserting one instant there reduces the piecewise-linear approximation error from first- to second-order in the segment width. </p><dl class="section pre"><dt>Precondition</dt><dd>The segment is not constant. </dd></dl>
+<p>Return 1 if the chord-error maximum of exp lies strictly inside a linear segment, 0 otherwise. </p>
+<p >The maximum is sought strictly inside (<code>lower</code>, <code>upper</code>) on the linear segment [start@lower, end@upper]. The function solves the slope-matching equation <code>e^</code>(x*) = (e^<code>end</code> - e^<code>start</code>) / (<code>end</code> - <code>start</code>) for <code>x*</code>, the unique point where the slope of <code>exp</code> equals the chord slope. Inserting one instant there reduces the piecewise-linear approximation error from first- to second-order in the segment width. </p><dl class="section pre"><dt>Precondition</dt><dd>The segment is not constant. </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>As there is a single turning point, <code>t2</code> is set to <code>t1</code>. </dd></dl>
 
 </div>

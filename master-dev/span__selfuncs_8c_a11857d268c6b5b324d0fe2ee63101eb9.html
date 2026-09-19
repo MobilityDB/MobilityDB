@@ -163,8 +163,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Calculate the selectivity of "var &amp;&amp; const" operator, i.e., estimate the fraction of spans that overlap the constant lower and upper bounds using the histograms of span lower and upper bounds. </p>
-<p >Note that A &amp;&amp; B &lt;=&gt; NOT (A &lt;&lt;# B OR A #&gt;&gt; B).</p>
+<p>Calculate the selectivity of "var &amp;&amp; const" operator. </p>
+<p >The selectivity estimates the fraction of spans that overlap the constant lower and upper bounds using the histograms of span lower and upper bounds. Note that A &amp;&amp; B &lt;=&gt; NOT (A &lt;&lt;# B OR A #&gt;&gt; B).</p>
 <p >Since A &lt;&lt;# B and A #&gt;&gt; B are mutually exclusive events we can sum their probabilities to find probability of (A &lt;&lt;# B OR A #&gt;&gt; B).</p>
 <p >"(span/spanset) @&gt; timestamptz" is equivalent to "span &amp;&amp; [elem,elem]". The caller already constructed the singular span from the element constant, so just treat it the same as &amp;&amp;. </p>
 

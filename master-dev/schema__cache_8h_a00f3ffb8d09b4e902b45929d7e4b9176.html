@@ -122,7 +122,7 @@ $(function() {
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Parsed <code>PCSCHEMA</code> pointer, or <code>NULL</code> if the pcid is unknown (caller decides whether that's an error).</dd></dl>
-<p>Parse pgPointCloud schema XML into a long-lived <code>PCSCHEMA*</code>.</p>
+<p>Parse pgPointCloud schema XML into a long-lived <code>PCSCHEMA*</code> </p>
 <p >Installed at <code>mobilitydb_init</code> time as <code>meos_pc_parse_xml_fn</code>, this is invoked by the WKB decoder when an incoming WKB blob carries an embedded schema XML for a pcid not yet registered in the backend. Allocates the parsed schema in <code>TopMemoryContext</code> so it outlives the current query.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

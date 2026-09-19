@@ -230,8 +230,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the PostGIS trajectory geometry/geography where the M coordinates encode the timestamps in Unix epoch transformed into a temporal point sequence set. </p>
-<dl class="section note"><dt>Note</dt><dd>With respect to functions <a class="el" href="tpoint__spatialfuncs_8c_a4769c2fb52678823f92910de32aae5fb.html#a4769c2fb52678823f92910de32aae5fb" title="Return the PostGIS trajectory geometry/geography where the M coordinates encode the timestamps transf...">geomeas_tpointseq_disc</a> and <a class="el" href="tpoint__spatialfuncs_8c_a359201563c362e96b26fac698a21c06a.html#a359201563c362e96b26fac698a21c06a" title="Return the PostGIS trajectory geometry/geography where the M coordinates encode the timestamps in Uni...">geomeas_tpointseq_linear</a>, there is no validation of the trajectory since it is more elaborated to be done. Nevertheless, erroneous geometries where the timestamps are not increasing will be detected by the constructor of the sequence set. </dd></dl>
+<p>Return a temporal point sequence set from a PostGIS trajectory geometry/geography whose M coordinates encode the timestamps. </p>
+<p >The M coordinates encode the timestamps in Unix epoch. </p><dl class="section note"><dt>Note</dt><dd>With respect to functions <a class="el" href="tpoint__spatialfuncs_8c_a4769c2fb52678823f92910de32aae5fb.html#a4769c2fb52678823f92910de32aae5fb" title="Return a temporal point discrete sequence from a PostGIS trajectory geometry/geography.">geomeas_tpointseq_disc</a> and <a class="el" href="tpoint__spatialfuncs_8c_a359201563c362e96b26fac698a21c06a.html#a359201563c362e96b26fac698a21c06a" title="Return a PostGIS trajectory transformed into a temporal point sequence.">geomeas_tpointseq_linear</a>, there is no validation of the trajectory since it is more elaborated to be done. Nevertheless, erroneous geometries where the timestamps are not increasing will be detected by the constructor of the sequence set. </dd></dl>
 
 </div>
 </div>

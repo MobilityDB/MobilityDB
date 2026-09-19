@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests how the temporal restrictions to the instants before or after a timestamptz, and the test of whether the time of two temporal values overlaps, report a null argument under the noexit error handler.  
+<p>Test how temporal restrictions and time overlaps report a null argument.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
@@ -94,11 +94,12 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests how the temporal restrictions to the instants before or after a timestamptz, and the test of whether the time of two temporal values overlaps, report a null argument under the noexit error handler. </p>
+<div class="textblock"><p >Test how temporal restrictions and time overlaps report a null argument. </p>
+<p >A program that tests how the temporal restrictions to the instants before or after a timestamptz, and the test of whether the time of two temporal values overlaps, report a null argument under the noexit error handler.</p>
 <p >A public MEOS function tests the conditions its internal form asserts, so a binding calling it with a null pointer receives an error it can raise in its host language. An assertion cannot carry that contract: it is compiled out under NDEBUG, which leaves the release build a binding links against with no check at all.</p>
 <p >The program verifies that <a class="el" href="group__meos__temporal__restrict_gaa1398e7d70d2d702e510882c79f2876e.html#gaa1398e7d70d2d702e510882c79f2876e" title="Restrict a temporal value to the instants before or equal a timestamptz.">temporal_before_timestamptz</a>, <a class="el" href="group__meos__temporal__restrict_gabad8c68b14d94f939490c28cbad03bd4.html#gabad8c68b14d94f939490c28cbad03bd4" title="Restrict a temporal value to the instants after or equal a timestamptz.">temporal_after_timestamptz</a> and <a class="el" href="group__meos__temporal__bbox__topo_ga56e3eeecd0f5bc373028c448689e3a99.html#ga56e3eeecd0f5bc373028c448689e3a99" title="Return true if the time of two temporal values actually overlaps.">temporal_time_overlaps</a> report a null temporal value by returning their error value and setting <a class="el" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3" title="Read an error number.">meos_errno</a>, and that a valid call still answers with no error left behind. Each accepts a value of every temporal type, so a null pointer is the argument they can receive wrongly.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o temporal_validity_test temporal_validity_test.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
