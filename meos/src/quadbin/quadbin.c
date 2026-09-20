@@ -616,6 +616,10 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 #define QUADBIN_EDGE_EAST   1
 #define QUADBIN_EDGE_NORTH  2
 #define QUADBIN_EDGE_SOUTH  3
+/* The top and the bottom row reach a pole, where every meridian meets. A path
+ * reaching one leaves its tile through no single boundary: it continues along
+ * the meridian half a turn away, in the tile half the grid across */
+#define QUADBIN_EDGE_POLE   4
 
 /**
  * @brief Return where a geodetic path leaves the tile holding it, in the grid
@@ -639,11 +643,18 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
     /* A meridian bounds a HEMISPHERE, and its plane is a whole great circle
      * holding the opposite meridian too, so a crossing half a world away
      * would name a tile the path never reaches. The hemisphere form states
-     * the exit, and states a path running ALONG a meridian as such */
-    double lonw = (double) x / n * 2.0 * M_PI - M_PI;
-    double lone = ((double) x + 1.0) / n * 2.0 * M_PI - M_PI;
-    const double normals[6] = { -sin(lonw), cos(lonw), 0.0,
-      sin(lone), -cos(lone), 0.0 };
+     * the exit, and states a path running ALONG a meridian as such.
+     *
+     * The bounding longitudes are whole degrees of the grid, and the plane of
+     * a meridian is read from them in the degrees they are stated in:
+     * `float8_sind` and `float8_cosd` answer a half turn exactly, where
+     * `sin` of the same angle in radians reads 1.2246467991473532e-16. The
+     * antimeridian bounds the last column of every zoom, so a residue there
+     * tilts the plane the walk crosses to wrap the column */
+    double lonw = (double) x / n * 360.0 - 180.0;
+    double lone = ((double) x + 1.0) / n * 360.0 - 180.0;
+    const double normals[6] = { -float8_sind(lonw), float8_cosd(lonw), 0.0,
+      float8_sind(lone), -float8_cosd(lone), 0.0 };
     int which = -1;
     t = dggs_arc_normals_exit_param(arc, normals, 2, tmin,
       entry & ((1u << QUADBIN_EDGE_WEST) | (1u << QUADBIN_EDGE_EAST)), &which);
@@ -653,27 +664,50 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
       *edge = (which == 0) ? QUADBIN_EDGE_WEST : QUADBIN_EDGE_EAST;
     }
   }
-  /* A parallel is ONE circle, so its first crossing ahead of `tmin` is the
-   * one the path makes */
+  /* A parallel is a SMALL circle, and a great circle meets one TWICE, going
+   * up and coming down, with both crossings inside the longitude range of a
+   * single tile. A geodetic path therefore leaves a tile through a parallel
+   * and comes back through that same parallel, so a parallel is never held
+   * out of the search the way a meridian is. The closed form takes the first
+   * crossing STRICTLY ahead of `tmin`, so the parallel just crossed states
+   * the return and never the crossing already made */
   const double pole[3] = { 0.0, 0.0, 1.0 };
-  if (y > 0 && ! (entry & (1u << QUADBIN_EDGE_NORTH)))
+  if (y > 0)
   {
-    t = dggs_arc_plane_param(arc, pole,
-      sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), tmin);
+    /* The tile lies BELOW its north parallel, and is left where the path
+     * rises through it */
+    t = dggs_arc_plane_exit_param(arc, pole,
+      sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), false, tmin);
     if (t < best)
     {
       best = t;
       *edge = QUADBIN_EDGE_NORTH;
     }
   }
-  if ((double) y + 1.0 < n && ! (entry & (1u << QUADBIN_EDGE_SOUTH)))
+  if ((double) y + 1.0 < n)
   {
-    t = dggs_arc_plane_param(arc, pole,
-      sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), tmin);
+    /* The tile lies ABOVE its south parallel, and is left where the path
+     * falls through it */
+    t = dggs_arc_plane_exit_param(arc, pole,
+      sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), true,
+      tmin);
     if (t < best)
     {
       best = t;
       *edge = QUADBIN_EDGE_SOUTH;
+    }
+  }
+  /* The top row holds the north pole and the bottom row the south one, and a
+   * path reaching a pole meets every meridian there at once. It leaves by the
+   * meridian half a turn from the one it arrived by, so the tiles between
+   * them are held for no time and are no part of the walk */
+  if (y == 0 || (double) y + 1.0 >= n)
+  {
+    t = dggs_arc_pole_param(arc, y == 0, tmin);
+    if (t < best)
+    {
+      best = t;
+      *edge = QUADBIN_EDGE_POLE;
     }
   }
   return best;
@@ -737,9 +771,16 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
       case QUADBIN_EDGE_NORTH:
         ny = y - 1;
         entry = 1u << QUADBIN_EDGE_SOUTH; break;
-      default:
+      case QUADBIN_EDGE_SOUTH:
         ny = y + 1;
         entry = 1u << QUADBIN_EDGE_NORTH; break;
+      default:
+        /* Across the pole, into the column half the grid away: the path
+         * leaves along the meridian half a turn from the one it arrived by,
+         * and stays in the row the pole belongs to. It enters that tile
+         * through no boundary, so none is held out of the next search */
+        nx = (x + (uint32_t) n / 2) % (uint32_t) n;
+        entry = 0; break;
     }
     Quadbin next = quadbin_tile_to_cell(nx, ny, resolution);
     if (next == (Quadbin) 0 || next == cur)
