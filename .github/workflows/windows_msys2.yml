@@ -67,8 +67,14 @@ jobs:
         # MSYS2 packages no h3, and H3=ON asks CMake for the library by name.
         # It installs into the MSYS2 prefix, beside postgres.exe, which is where
         # the server looks for the libh3 DLL the extension loads.
+        # The version is the one the libh3-dev package of the other jobs
+        # carries: a cell boundary is a computation of this library, two
+        # releases place a shared vertex of two cells a few units of the last
+        # place apart, and a suite whose expected output states which cells a
+        # geometry covers answers differently on each. One version across the
+        # matrix is what makes that answer the same answer everywhere.
         run: |
-          git clone --depth 1 --branch v4.2.1 https://github.com/uber/h3.git h3-src
+          git clone --depth 1 --branch v4.5.0 https://github.com/uber/h3.git h3-src
           cmake -S h3-src -B h3-build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
