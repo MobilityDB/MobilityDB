@@ -27,13 +27,14 @@ var searchData=
   ['not_5fnull_5ffeatures_24',['not_null_features',['../structND__STATS__T_a4609e29b44897fff64c225537dd833ad.html#a4609e29b44897fff64c225537dd833ad',1,'ND_STATS_T']]],
   ['npoints_25',['npoints',['../structPcpatchLayoutShadow_af4c8fe834c52f7c94599875351d18791.html#af4c8fe834c52f7c94599875351d18791',1,'PcpatchLayoutShadow::npoints()'],['../structPcpatch_ac2ee8183a329dc306aae5c4a543a8f9b.html#ac2ee8183a329dc306aae5c4a543a8f9b',1,'Pcpatch::npoints()'],['../structSERIALIZED__PATCH_a4fc7f1b8e7e4402c21a1c017674187ee.html#a4fc7f1b8e7e4402c21a1c017674187ee',1,'SERIALIZED_PATCH::npoints()'],['../structPOINTARRAY_abc97f7462a39c0c28a23713560931a84.html#abc97f7462a39c0c28a23713560931a84',1,'POINTARRAY::npoints()'],['../structBufferLocator_a868fda19481573bf92706099d8edbdd3.html#a868fda19481573bf92706099d8edbdd3',1,'BufferLocator::npoints()']]],
   ['nrings_26',['nrings',['../structRelateMember_ae66772fd834b9237c92be689d0d7ed56.html#ae66772fd834b9237c92be689d0d7ed56',1,'RelateMember::nrings()'],['../structLWCURVEPOLY_ab5bce68b17b3e00c8627db0dfc6421b0.html#ab5bce68b17b3e00c8627db0dfc6421b0',1,'LWCURVEPOLY::nrings()'],['../structLWPOLY_a7af8735c6fab702b703321cae5815b3b.html#a7af8735c6fab702b703321cae5815b3b',1,'LWPOLY::nrings()']]],
-  ['ntiles_27',['ntiles',['../structSTboxGridState_a9b523aeff94aa0bdbd67258748d0d068.html#a9b523aeff94aa0bdbd67258748d0d068',1,'STboxGridState::ntiles()'],['../structTboxGridState_aca46a298402b4f703bdf6fc51dd66e48.html#aca46a298402b4f703bdf6fc51dd66e48',1,'TboxGridState::ntiles()']]],
-  ['num_5finstants_28',['num_instants',['../structtrip__record_a2535189080be98f4543c1745e92ea3df.html#a2535189080be98f4543c1745e92ea3df',1,'trip_record']]],
-  ['num_5frecords_29',['num_records',['../structtrip__record_a682006289b08cd62e2403460e34afe3a.html#a682006289b08cd62e2403460e34afe3a',1,'trip_record']]],
-  ['num_5fsog_5finstants_30',['num_SOG_instants',['../structtrip__record_a9e4e091089bf67b17e566cbc5946829e.html#a9e4e091089bf67b17e566cbc5946829e',1,'trip_record']]],
-  ['num_5ftrip_5finstants_31',['num_trip_instants',['../structtrip__record_abdb7d6d1675264ef41656e00afde0e4c.html#abdb7d6d1675264ef41656e00afde0e4c',1,'trip_record']]],
-  ['numinstants_32',['numinstants',['../structtrip__record_a75efa4e47c1b5cd78f77b623336b7cec.html#a75efa4e47c1b5cd78f77b623336b7cec',1,'trip_record']]],
-  ['numparam_33',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]],
-  ['nx_34',['nx',['../structDistArc_a59649b59c51d57be731cef714011426a.html#a59649b59c51d57be731cef714011426a',1,'DistArc']]],
-  ['ny_35',['ny',['../structDistArc_a86fa0fcdc99bb7d289380d16f59f9c6f.html#a86fa0fcdc99bb7d289380d16f59f9c6f',1,'DistArc']]]
+  ['nseqs_27',['nseqs',['../structTDwithinRun_ae13c5eb9499c392991d4d9cd5aecd414.html#ae13c5eb9499c392991d4d9cd5aecd414',1,'TDwithinRun']]],
+  ['ntiles_28',['ntiles',['../structSTboxGridState_a9b523aeff94aa0bdbd67258748d0d068.html#a9b523aeff94aa0bdbd67258748d0d068',1,'STboxGridState::ntiles()'],['../structTboxGridState_aca46a298402b4f703bdf6fc51dd66e48.html#aca46a298402b4f703bdf6fc51dd66e48',1,'TboxGridState::ntiles()']]],
+  ['num_5finstants_29',['num_instants',['../structtrip__record_a2535189080be98f4543c1745e92ea3df.html#a2535189080be98f4543c1745e92ea3df',1,'trip_record']]],
+  ['num_5frecords_30',['num_records',['../structtrip__record_a682006289b08cd62e2403460e34afe3a.html#a682006289b08cd62e2403460e34afe3a',1,'trip_record']]],
+  ['num_5fsog_5finstants_31',['num_SOG_instants',['../structtrip__record_a9e4e091089bf67b17e566cbc5946829e.html#a9e4e091089bf67b17e566cbc5946829e',1,'trip_record']]],
+  ['num_5ftrip_5finstants_32',['num_trip_instants',['../structtrip__record_abdb7d6d1675264ef41656e00afde0e4c.html#abdb7d6d1675264ef41656e00afde0e4c',1,'trip_record']]],
+  ['numinstants_33',['numinstants',['../structtrip__record_a75efa4e47c1b5cd78f77b623336b7cec.html#a75efa4e47c1b5cd78f77b623336b7cec',1,'trip_record']]],
+  ['numparam_34',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]],
+  ['nx_35',['nx',['../structDistArc_a59649b59c51d57be731cef714011426a.html#a59649b59c51d57be731cef714011426a',1,'DistArc']]],
+  ['ny_36',['ny',['../structDistArc_a86fa0fcdc99bb7d289380d16f59f9c6f.html#a86fa0fcdc99bb7d289380d16f59f9c6f',1,'DistArc']]]
 ];
