@@ -95,12 +95,13 @@ typedef struct
   double y1;
   double x2;
   double y2;
-  /* Parameters used only for circular arcs */
+  /* Parameters used only for circular arcs, named as #Edge names them: the
+   * angle the arc starts at and the one it ends at */
   double cx;
   double cy;
   double radius;
+  double theta0;
   double theta1;
-  double theta2;
   bool ccw;
   /* Set where, IN THE DIRECTION THIS PIECE IS STORED IN, the answer lies to
    * its left. The selection knows it and the chaining walk needs it: see
@@ -1830,7 +1831,7 @@ static bool
 buffer_point_on_arc(const BufferPiece *arc, double x, double y)
 {
   assert(arc); assert(arc->type == BUFFER_ARC);
-  return arc_span_contains(arc->theta1, arc->theta2, arc->ccw,
+  return arc_span_contains(arc->theta0, arc->theta1, arc->ccw,
     atan2(y - arc->cy, x - arc->cx));
 }
 
@@ -1916,12 +1917,12 @@ buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
    * possible arcs between two points. Check the midpoint of A  and verify
    * that it lies on B. */
   double sweep = a->ccw ?
-    angle_normalize(a->theta2 - a->theta1) :
-    angle_normalize(a->theta1 - a->theta2);
+    angle_normalize(a->theta1 - a->theta0) :
+    angle_normalize(a->theta0 - a->theta1);
   double mid = a->ccw ?
-    a->theta1 + sweep * 0.5 :
-    a->theta1 - sweep * 0.5;
-  return arc_span_contains(b->theta1, b->theta2, b->ccw, mid);
+    a->theta0 + sweep * 0.5 :
+    a->theta0 - sweep * 0.5;
+  return arc_span_contains(b->theta0, b->theta1, b->ccw, mid);
 }
 
 /**
@@ -2342,8 +2343,8 @@ buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
   assert(piece); assert(point); assert(piece->type == BUFFER_ARC);
   double theta = atan2(point->y - piece->cy, point->x - piece->cx);
   if (piece->ccw)
-    return angle_normalize(theta - piece->theta1);
-  return angle_normalize(piece->theta1 - theta);
+    return angle_normalize(theta - piece->theta0);
+  return angle_normalize(piece->theta0 - theta);
 }
 
 /**
@@ -2354,8 +2355,8 @@ buffer_arc_sweep(const BufferPiece *piece)
 {
   assert(piece); assert(piece->type == BUFFER_ARC);
   if (piece->ccw)
-    return angle_normalize(piece->theta2 - piece->theta1);
-  return angle_normalize(piece->theta1 - piece->theta2);
+    return angle_normalize(piece->theta1 - piece->theta0);
+  return angle_normalize(piece->theta0 - piece->theta1);
 }
 
 /**
@@ -2539,13 +2540,13 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
     double theta_start, theta_end;
     if (piece->ccw)
     {
-      theta_start = piece->theta1 + points[i].parameter;
-      theta_end = piece->theta1 + points[i + 1].parameter;
+      theta_start = piece->theta0 + points[i].parameter;
+      theta_end = piece->theta0 + points[i + 1].parameter;
     }
     else
     {
-      theta_start = piece->theta1 - points[i].parameter;
-      theta_end = piece->theta1 - points[i + 1].parameter;
+      theta_start = piece->theta0 - points[i].parameter;
+      theta_end = piece->theta0 - points[i + 1].parameter;
     }
     double sub_sweep = points[i + 1].parameter - points[i].parameter;
     if (sub_sweep <= MEOS_GEOM_TOLERANCE)
@@ -2566,8 +2567,8 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
     split.cx = piece->cx;
     split.cy = piece->cy;
     split.radius = piece->radius;
-    split.theta1 = theta_start;
-    split.theta2 = theta_end;
+    split.theta0 = theta_start;
+    split.theta1 = theta_end;
     split.ccw = piece->ccw;
     meos_array_add(result, &split);
   }
@@ -2599,9 +2600,8 @@ buffer_piece_from_edge(const Edge *edge, BufferPiece *piece)
     piece->cx = edge->cx;
     piece->cy = edge->cy;
     piece->radius = edge->radius;
-    /* An Edge names the arc angles theta0/theta1 and a piece theta1/theta2 */
-    piece->theta1 = edge->theta0;
-    piece->theta2 = edge->theta1;
+    piece->theta0 = edge->theta0;
+    piece->theta1 = edge->theta1;
     piece->ccw = edge->ccw;
   }
   else
@@ -2686,9 +2686,9 @@ buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
       return false;
     double theta;
     if (piece->ccw)
-      theta = piece->theta1 + sweep * 0.5;
+      theta = piece->theta0 + sweep * 0.5;
     else
-      theta = piece->theta1 - sweep * 0.5;
+      theta = piece->theta0 - sweep * 0.5;
     point->x = piece->cx + piece->radius * cos(theta);
     point->y = piece->cy + piece->radius * sin(theta);
     return true;
@@ -2760,9 +2760,9 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
       return false;
     double theta;
     if (piece->ccw)
-      theta = piece->theta1 + sweep * 0.5;
+      theta = piece->theta0 + sweep * 0.5;
     else
-      theta = piece->theta1 - sweep * 0.5;
+      theta = piece->theta0 - sweep * 0.5;
     /* Tangent to a circle */
     if (piece->ccw)
     {
@@ -3187,9 +3187,9 @@ buffer_piece_reverse(BufferPiece *piece)
   piece->y2 = tmp;
   if (piece->type == BUFFER_ARC)
   {
-    tmp = piece->theta1;
-    piece->theta1 = piece->theta2;
-    piece->theta2 = tmp;
+    tmp = piece->theta0;
+    piece->theta0 = piece->theta1;
+    piece->theta1 = tmp;
     piece->ccw = ! piece->ccw;
   }
 }
@@ -3210,7 +3210,7 @@ buffer_append_piece_to_curve(LWCOMPOUND *curve, int32_t srid,
     buffer_add_segment(curve, srid, p1, p2);
   else if (piece->type == BUFFER_ARC)
     buffer_add_arc(curve, srid, piece->cx, piece->cy, piece->radius,
-      piece->theta1, piece->theta2, piece->ccw, &p1, &p2);
+      piece->theta0, piece->theta1, piece->ccw, &p1, &p2);
 }
 
 /**
@@ -3247,8 +3247,8 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
     double sweep = buffer_arc_sweep(piece);
     if (sweep <= MEOS_GEOM_TOLERANCE)
       return false;
-    double theta = at_start ? piece->theta1 :
-      (piece->ccw ? piece->theta1 + sweep : piece->theta1 - sweep);
+    double theta = at_start ? piece->theta0 :
+      (piece->ccw ? piece->theta0 + sweep : piece->theta0 - sweep);
     if (piece->ccw)
     {
       tx = -sin(theta);
@@ -3938,8 +3938,8 @@ static double
 buffer_arc_signed_area(const BufferPiece *piece)
 {
   assert(piece); assert(piece->type == BUFFER_ARC);
-  double theta1 = piece->theta1;
-  double theta2 = piece->theta2;
+  double theta1 = piece->theta0;
+  double theta2 = piece->theta1;
   /* Directed angular sweep.
    * Unlike #buffer_arc_sweep(), the sign is retained because it
    * determines the orientation of the complete ring. */
@@ -4929,13 +4929,13 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
     piece->cx = edge->cx;
     piece->cy = edge->cy;
     piece->radius = r;
-    piece->theta1 = edge->theta0 + half;
-    piece->theta2 = edge->theta1 + half;
+    piece->theta0 = edge->theta0 + half;
+    piece->theta1 = edge->theta1 + half;
     piece->ccw = edge->ccw;
-    piece->x1 = edge->cx + r * cos(piece->theta1);
-    piece->y1 = edge->cy + r * sin(piece->theta1);
-    piece->x2 = edge->cx + r * cos(piece->theta2);
-    piece->y2 = edge->cy + r * sin(piece->theta2);
+    piece->x1 = edge->cx + r * cos(piece->theta0);
+    piece->y1 = edge->cy + r * sin(piece->theta0);
+    piece->x2 = edge->cx + r * cos(piece->theta1);
+    piece->y2 = edge->cy + r * sin(piece->theta1);
     return true;
   }
   return false;
@@ -5008,7 +5008,7 @@ buffer_piece_set_end(BufferPiece *piece, double x, double y)
   piece->x2 = x;
   piece->y2 = y;
   if (piece->type == BUFFER_ARC)
-    piece->theta2 = atan2(y - piece->cy, x - piece->cx);
+    piece->theta1 = atan2(y - piece->cy, x - piece->cx);
 }
 
 /**
@@ -5021,7 +5021,7 @@ buffer_piece_set_start(BufferPiece *piece, double x, double y)
   piece->x1 = x;
   piece->y1 = y;
   if (piece->type == BUFFER_ARC)
-    piece->theta1 = atan2(y - piece->cy, x - piece->cx);
+    piece->theta0 = atan2(y - piece->cy, x - piece->cx);
 }
 
 /**
@@ -5127,7 +5127,7 @@ buffer_piece_holds(const BufferPiece *piece, double x, double y)
 {
   assert(piece);
   if (piece->type == BUFFER_ARC)
-    return arc_span_contains(piece->theta1, piece->theta2, piece->ccw,
+    return arc_span_contains(piece->theta0, piece->theta1, piece->ccw,
       atan2(y - piece->cy, x - piece->cx));
   double dx = piece->x2 - piece->x1, dy = piece->y2 - piece->y1;
   double length2 = dx * dx + dy * dy;
