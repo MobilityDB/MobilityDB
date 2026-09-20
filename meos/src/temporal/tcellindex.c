@@ -51,6 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <pgtypes.h>
 #include "geo/geo_funcs.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
@@ -61,6 +62,11 @@
 #if QUADBIN
   #include <meos_quadbin.h>
 #endif
+
+/** @brief Largest number of vertices a cell boundary of any grid states: a
+ * quadbin tile has four, an S2 cell four, and an H3 cell ten where it bends
+ * across a face of the icosahedron */
+#define DGGS_MAX_CELL_VERTS 16
 
 /* Per-DGGS descriptors, defined in each family and referenced here under the
  * same build-flag guard that compiles the family. */
@@ -619,17 +625,58 @@ dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
     return false;
   arc->azimuth = sphere_direction(&g1, &g2, arc->dist);
   POINT3D a, normal;
-  geog2cart(&g1, &a);
-  /* The circle is the one the path follows: through its first endpoint and
-   * the point it reaches halfway, which also fixes it where the endpoints are
-   * antipodal and every great circle joins them */
-  if (sphere_project(&g1, arc->dist / 2.0, arc->azimuth, &gm) != LW_SUCCESS)
-    return false;
-  /* Read from the angles of the two points: the Cartesian cross product of
-   * two close unit vectors loses its precision to cancellation */
-  robust_cross_product(&g1, &gm, &normal);
+  /* The first endpoint as a unit vector, read from the DEGREES the path is
+   * stated in. `float8_cosd` and `float8_sind` answer a quarter turn exactly,
+   * where the cosine of pi/2 in a double is 6.12e-17 rather than zero: a
+   * point at longitude 90 then carries an x of 1e-17 instead of none, and a
+   * path along that meridian reads a height above the meridian's own plane
+   * which is not zero, so the walk leaves through an edge it runs along */
+  double clat = float8_cosd(lat1);
+  a.x = clat * float8_cosd(lon1);
+  a.y = clat * float8_sind(lon1);
+  a.z = float8_sind(lat1);
+  normalize(&a);
+  /* The circle is the one through the two ENDPOINTS, read from their angles:
+   * the Cartesian cross product of two close unit vectors loses its precision
+   * to cancellation. The endpoints are what the path is stated by, so a path
+   * along a meridian states one longitude twice and its circle comes out as
+   * exactly the plane of that meridian. A point projected halfway along the
+   * path carries the rounding of the projection instead, which leaves that
+   * plane by a few units of the last place and lifts the path off an edge it
+   * runs along, so the walk reads a crossing of an edge it never crosses */
+  if (lon1 == lon2 || fabs(lon1 - lon2) == 180.0)
+  {
+    /* The path states one meridian: the same longitude twice, or a longitude
+     * and the one half a turn from it, which lie in the same plane. That
+     * plane states its own normal. The cross product of the two endpoints has
+     * a third coordinate in which the same product is subtracted from itself,
+     * so it cancels EXACTLY, and the other two carry the sine and the cosine
+     * of the longitude, which `float8_sind` and `float8_cosd` answer exactly
+     * at a quarter turn. Read through the angles in radians instead, the same
+     * normal carries 6.12e-17 where it should carry none, and a walk along
+     * that meridian reads a height above the meridian's own plane which is
+     * not zero, so it leaves through an edge it runs along */
+    double c1 = float8_cosd(lat1), s1 = float8_sind(lat1);
+    double c2 = float8_cosd(lat2), s2 = float8_sind(lat2);
+    /* The far endpoint is on the opposite side of the axis when the two
+     * longitudes are half a turn apart */
+    double k = (lon1 == lon2) ? c1 * s2 - s1 * c2 : c1 * s2 + s1 * c2;
+    normal.x = float8_sind(lon1) * k;
+    normal.y = -float8_cosd(lon1) * k;
+    normal.z = 0.0;
+  }
+  else
+    robust_cross_product(&g1, &g2, &normal);
   if (normal.x == 0.0 && normal.y == 0.0 && normal.z == 0.0)
-    return false;
+  {
+    /* The endpoints are antipodal and every great circle joins them, so the
+     * one the path follows is fixed by the point it reaches halfway */
+    if (sphere_project(&g1, arc->dist / 2.0, arc->azimuth, &gm) != LW_SUCCESS)
+      return false;
+    robust_cross_product(&g1, &gm, &normal);
+    if (normal.x == 0.0 && normal.y == 0.0 && normal.z == 0.0)
+      return false;
+  }
   normalize(&normal);
   arc->a[0] = a.x; arc->a[1] = a.y; arc->a[2] = a.z;
   arc->normal[0] = normal.x;
@@ -662,25 +709,28 @@ dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
 }
 
 /**
- * @brief Return where a geodetic path leaves a convex cell, read as the
- * intersection of the hemispheres its edge circles bound
+ * @brief Return where a geodetic path leaves a convex cell given the inward
+ * normals of its edge planes
  * @details A convex cell is the intersection of the hemispheres its edge
- * circles bound, each read on the side the centre of its vertices lies on, so
- * a path inside it leaves where it first leaves any of them. Along the path
- * `p(theta) = a cos(theta) + b sin(theta)`, with `b` the direction the path
- * travels at its first endpoint, the height `<m, p>` above the plane of an
- * edge of inward normal `m` is `R cos(theta - phi)`, which falls through zero
- * at `theta = phi + pi/2` alone: that is where the path leaves the hemisphere.
- * A path on or outside the circle of an edge at `tmin` and heading outward
- * leaves there, as a line starting on a tile boundary and heading across it
- * leaves the tile at once. A path running along the circle of an edge never
- * leaves through it, as a line running along a tile boundary never crosses
- * it: its height and slope above the plane of that edge are then the rounding
- * of unit vectors, whose signs state no side.
+ * circles bound, so a path inside it leaves where it first leaves any of
+ * them. Along the path `p(theta) = a cos(theta) + b sin(theta)`, with `b` the
+ * direction the path travels at its first endpoint, the height `<m, p>` above
+ * the plane of an edge of inward normal `m` is `R cos(theta - phi)` with
+ * `R = hypot(<m, a>, <m, b>)` and `phi = atan2(<m, b>, <m, a>)`. It falls
+ * through zero at `theta = phi + pi/2` alone: that is where the path leaves
+ * the hemisphere, and the exit is the first such angle ahead of `tmin`.
+ *
+ * `R` is zero exactly when the path lies in the plane of the edge, and then
+ * the height is zero everywhere and the path never leaves through that edge,
+ * as a line running along a tile boundary never crosses it. The test is the
+ * exact `R == 0`, the one #dggs_arc_plane_params applies to the same
+ * quantity: a path lying in the plane has to be stated as lying in it, by a
+ * normal the plane itself gives, rather than recognised inside a band around
+ * zero, which a normal read from rounded vertices escapes.
  * @param[in] arc Path
- * @param[in] lons,lats Vertices of the cell boundary in radians, in the
- * order they join
- * @param[in] count Number of vertices
+ * @param[in] normals Inward unit normal of each edge plane, three coordinates
+ * each, the edge from vertex `i` at `normals[3 * i]`
+ * @param[in] count Number of edges
  * @param[in] tmin Parameter at which the path entered the cell
  * @param[in] entry Mask of the edges the path entered the cell through, bit
  * `i` for the edge from vertex `i`, which it never leaves through: a line
@@ -691,23 +741,15 @@ dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
  * ends inside the cell
  */
 double
-dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
-  const double *lats, int count, double tmin, uint32 entry, int *edge)
+dggs_arc_normals_exit_param(const DggsArc *arc, const double *normals,
+  int count, double tmin, uint32 entry, int *edge)
 {
-  assert(arc); assert(lons); assert(lats);
+  assert(arc); assert(normals);
   POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
   POINT3D normal = { .x = arc->normal[0], .y = arc->normal[1],
     .z = arc->normal[2] };
   POINT3D b;
   dggs_vec_cross(&normal, &a, &b);
-  POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
-  for (int i = 0; i < count; i++)
-  {
-    GEOGRAPHIC_POINT g = { .lat = lats[i], .lon = lons[i] };
-    POINT3D v;
-    geog2cart(&g, &v);
-    centre.x += v.x; centre.y += v.y; centre.z += v.z;
-  }
   double theta0 = tmin * arc->dist;
   double c0 = cos(theta0), s0 = sin(theta0);
   double best = 2.0;
@@ -715,27 +757,25 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
   {
     if (entry & (1u << i))
       continue;
-    int j = (i + 1) % count;
-    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
-    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
-    POINT3D m;
-    /* Read from the angles of the vertices, as #dggs_arc_exit_param does */
-    robust_cross_product(&gi, &gj, &m);
+    POINT3D m = { .x = normals[3 * i], .y = normals[3 * i + 1],
+      .z = normals[3 * i + 2] };
     if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
       continue;
-    normalize(&m);
-    if (dggs_vec_dot(&m, &centre) < 0.0)
-    {
-      m.x = -m.x; m.y = -m.y; m.z = -m.z;
-    }
     double ma = dggs_vec_dot(&m, &a), mb = dggs_vec_dot(&m, &b);
-    if (fabs(ma) <= MEOS_GEOM_TOLERANCE && fabs(mb) <= MEOS_GEOM_TOLERANCE)
-      continue;              /* the edge lies on the circle of the path */
+    if (hypot(ma, mb) == 0.0)
+      continue;              /* the path lies in the plane of the edge */
     double t;
-    /* The height at `tmin` and its slope along the path */
+    /* The height above the plane at `tmin` and the rate it changes at. A path
+     * at or outside the plane and DESCENDING through it leaves the cell at
+     * `tmin` itself, as a line starting on a tile boundary and heading across
+     * it leaves the tile at once: the exit is that parameter and never the one
+     * after it. The rate separates the two ways a path can sit on an edge by
+     * their kind and not by any magnitude: a path CROSSING the edge descends
+     * at the rate of the path itself, while a path RUNNING ALONG it holds a
+     * height of zero and a rate of zero */
     double f = ma * c0 + mb * s0, d = mb * c0 - ma * s0;
-    if (f <= 0.0 && d <= 0.0)
-      t = nextafter(tmin, 2.0);
+    if (f <= 0.0 && d < 0.0)
+      t = tmin;
     else
     {
       double theta = atan2(mb, ma) + M_PI_2;
@@ -753,6 +793,60 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
     }
   }
   return best;
+}
+
+/**
+ * @brief Return where a geodetic path leaves a convex cell, read as the
+ * intersection of the hemispheres its edge circles bound
+ * @details The cell is stated by its vertices, and the inward normal of each
+ * edge plane is the cross product of the two vertices that join along it,
+ * taken on the side the centre of the vertices lies on.
+ * #dggs_arc_normals_exit_param states the exit from those normals.
+ * @param[in] arc Path
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in the
+ * order they join
+ * @param[in] count Number of vertices
+ * @param[in] tmin Parameter at which the path entered the cell
+ * @param[in] entry Mask of the edges the path entered the cell through, bit
+ * `i` for the edge from vertex `i`
+ * @param[out] edge When not `NULL`, the edge crossed at the exit
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+double
+dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
+  const double *lats, int count, double tmin, uint32 entry, int *edge)
+{
+  assert(arc); assert(lons); assert(lats);
+  POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
+  for (int i = 0; i < count; i++)
+  {
+    GEOGRAPHIC_POINT g = { .lat = lats[i], .lon = lons[i] };
+    POINT3D v;
+    geog2cart(&g, &v);
+    centre.x += v.x; centre.y += v.y; centre.z += v.z;
+  }
+  assert(count <= DGGS_MAX_CELL_VERTS);
+  double normals[3 * DGGS_MAX_CELL_VERTS];
+  for (int i = 0; i < count; i++)
+  {
+    int j = (i + 1) % count;
+    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
+    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
+    POINT3D m;
+    /* Read from the angles of the vertices, as #dggs_arc_exit_param does */
+    robust_cross_product(&gi, &gj, &m);
+    if (! (m.x == 0.0 && m.y == 0.0 && m.z == 0.0))
+    {
+      normalize(&m);
+      if (dggs_vec_dot(&m, &centre) < 0.0)
+      {
+        m.x = -m.x; m.y = -m.y; m.z = -m.z;
+      }
+    }
+    normals[3 * i] = m.x; normals[3 * i + 1] = m.y; normals[3 * i + 2] = m.z;
+  }
+  return dggs_arc_normals_exit_param(arc, normals, count, tmin, entry, edge);
 }
 
 /**

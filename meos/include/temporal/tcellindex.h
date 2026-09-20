@@ -246,6 +246,8 @@ extern double dggs_arc_exit_param(const DggsArc *arc, const double *lons,
 extern double dggs_arc_hemisphere_exit_param(const DggsArc *arc,
   const double *lons, const double *lats, int count, double tmin,
   uint32 entry, int *edge);
+extern double dggs_arc_normals_exit_param(const DggsArc *arc,
+  const double *normals, int count, double tmin, uint32 entry, int *edge);
 extern bool dggs_line_init(double lon1, double lat1, double lon2,
   double lat2, DggsLine *line);
 extern void dggs_line_point(const DggsLine *line, double t, double *lon,
