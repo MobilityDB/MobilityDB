@@ -1150,28 +1150,92 @@ ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Construct the result of the tdwithin function of a segment from
- * the solutions of the quadratic equation found previously
- * @return Number of sequences of the result
+ * @brief State of a walk emitting the sequences of a tdwithin result
+ * @details Consecutive segments of a lifted walk mostly take the same value,
+ * and the constant sequences they yield are joined again by the @p NORMALIZE
+ * the sequence set is built with. The walk therefore HOLDS a constant
+ * sequence instead of emitting it, and extends it while the segments keep the
+ * value, so it allocates one sequence per run of equal value rather than one
+ * per segment.
+ *
+ * Holding changes no answer: a run is extended only where
+ * #tsequence_join_test joins, that is where the held sequence and the next
+ * one are adjacent and take the same value, and the sequence set is still
+ * built with @p NORMALIZE, which joins whatever the walk leaves unjoined. A
+ * held sequence also states step interpolation validly whatever its bounds,
+ * its two instants taking the same value.
  */
-int
-tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
-  TimestampTz t2, TInstant **instants, TSequence **result)
+typedef struct
+{
+  TSequence **result;  /**< Array the emitted sequences are stored in */
+  int nseqs;           /**< Number of sequences emitted so far */
+  TInstant **instants; /**< Scratch instants an emission is built from */
+  bool held;           /**< True when a constant sequence is held */
+  Datum value;         /**< Value the held sequence takes */
+  TimestampTz lower;   /**< Start of the held sequence */
+  TimestampTz upper;   /**< End of the held sequence */
+  bool lower_inc;      /**< Whether the held sequence contains its start */
+  bool upper_inc;      /**< Whether the held sequence contains its end */
+} TDwithinRun;
+
+/**
+ * @brief Emit the constant sequence a walk holds, where it holds one
+ */
+static void
+tdwithin_run_flush(TDwithinRun *run)
+{
+  if (! run->held)
+    return;
+  tinstant_set(run->instants[0], run->value, run->lower);
+  tinstant_set(run->instants[1], run->value, run->upper);
+  run->result[run->nseqs++] = tsequence_make(run->instants, 2, run->lower_inc,
+    run->upper_inc, STEP, NORMALIZE_NO);
+  run->held = false;
+  return;
+}
+
+/**
+ * @brief Add to a walk the constant sequence a segment yields
+ * @details The sequence extends the held one where the two are adjacent and
+ * take the same value, which is where #tsequence_join_test joins them
+ */
+static void
+tdwithin_run_add(TDwithinRun *run, Datum value, TimestampTz lower,
+  TimestampTz upper, bool lower_inc, bool upper_inc)
+{
+  if (run->held && run->upper == lower &&
+      (run->upper_inc || lower_inc) && datum_eq(run->value, value, T_BOOL))
+  {
+    run->upper = upper;
+    run->upper_inc = upper_inc;
+    return;
+  }
+  tdwithin_run_flush(run);
+  run->held = true;
+  run->value = value;
+  run->lower = lower;
+  run->upper = upper;
+  run->lower_inc = lower_inc;
+  run->upper_inc = upper_inc;
+  return;
+}
+
+/**
+ * @brief Add to a walk the result of the tdwithin function of a segment from
+ * the solutions of the quadratic equation found previously
+ */
+static void
+tdwithin_add_solutions_run(int solutions, TimestampTz lower,
+  TimestampTz upper, bool lower_inc, bool upper_inc, bool upper_inc1,
+  TimestampTz t1, TimestampTz t2, TDwithinRun *run)
 {
   const Datum datum_true = BoolGetDatum(true);
   const Datum datum_false = BoolGetDatum(false);
-  int nseqs = 0;
   /* <  F  > */
   if (solutions == 0 ||
   (solutions == 1 && ((t1 == lower && ! lower_inc) ||
     (t1 == upper && ! upper_inc))))
-  {
-    tinstant_set(instants[0], datum_false, lower);
-    tinstant_set(instants[1], datum_false, upper);
-    result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc1, STEP,
-      NORMALIZE_NO);
-  }
+    tdwithin_run_add(run, datum_false, lower, upper, lower_inc, upper_inc1);
   /*
    *  <  T  >               2 solutions, lower == t1, upper == t2
    *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
@@ -1183,23 +1247,39 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
    */
   else
   {
+    /* The scratch instants a held sequence is emitted from are the ones this
+     * branch overwrites, so the walk emits before writing them */
+    tdwithin_run_flush(run);
     int ninsts = 0;
     if (t1 != lower)
-      tinstant_set(instants[ninsts++], datum_false, lower);
-    tinstant_set(instants[ninsts++], datum_true, t1);
+      tinstant_set(run->instants[ninsts++], datum_false, lower);
+    tinstant_set(run->instants[ninsts++], datum_true, t1);
     if (solutions == 2 && t1 != t2)
-      tinstant_set(instants[ninsts++], datum_true, t2);
-    result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
-      (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
+      tinstant_set(run->instants[ninsts++], datum_true, t2);
+    run->result[run->nseqs++] = tsequence_make(run->instants, ninsts,
+      lower_inc, (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
     if (t2 != upper)
-    {
-      tinstant_set(instants[0], datum_false, t2);
-      tinstant_set(instants[1], datum_false, upper);
-      result[nseqs++] = tsequence_make(instants, 2, false, upper_inc1, STEP,
-        NORMALIZE_NO);
-    }
+      tdwithin_run_add(run, datum_false, t2, upper, false, upper_inc1);
   }
-  return nseqs;
+  return;
+}
+
+/**
+ * @brief Construct the result of the tdwithin function of a segment from
+ * the solutions of the quadratic equation found previously
+ * @return Number of sequences of the result
+ */
+int
+tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
+  bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
+  TimestampTz t2, TInstant **instants, TSequence **result)
+{
+  TDwithinRun run = { .result = result, .nseqs = 0, .instants = instants,
+    .held = false };
+  tdwithin_add_solutions_run(solutions, lower, upper, lower_inc, upper_inc,
+    upper_inc1, t1, t2, &run);
+  tdwithin_run_flush(&run);
+  return run.nseqs;
 }
 
 /**
@@ -1229,7 +1309,6 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
     return 1;
   }
 
-  int nseqs = 0;
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   Datum sv1 = tinstant_value_p(start1);
@@ -1245,6 +1324,8 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
   instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
+  TDwithinRun run = { .result = result, .nseqs = 0, .instants = instants,
+    .held = false };
   for (int i = 1; i < seq1->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
@@ -1257,13 +1338,8 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
 
     /* Both segments are constant */
     if (datum_eq(sv1, ev1, basetype) && datum_eq(sv2, ev2, basetype))
-    {
-      Datum value = func(sv1, sv2, dist);
-      tinstant_set(instants[0], value, lower);
-      tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, STEP,
-        NORMALIZE_NO);
-    }
+      tdwithin_run_add(&run, func(sv1, sv2, dist), lower, upper, lower_inc,
+        upper_inc);
     /* General case */
     else
     {
@@ -1274,14 +1350,15 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tpfn(sv1, sev1, sv2, sev2, dist, lower, upper, &t1, &t2);
       bool upper_inc1 = linear1 && linear2 && upper_inc;
-      nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
+      tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
+        upper_inc, upper_inc1, t1, t2, &run);
       /* Add extra final point if only one segment is linear */
       if (upper_inc && (! linear1 || ! linear2))
       {
         Datum value = func(ev1, ev2, dist);
+        tdwithin_run_flush(&run);
         tinstant_set(instants[0], value, upper);
-        result[nseqs++] = tinstant_as_tsequence(instants[0], STEP);
+        run.result[run.nseqs++] = tinstant_as_tsequence(instants[0], STEP);
       }
     }
     sv1 = ev1;
@@ -1289,8 +1366,9 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
     lower = upper;
     lower_inc = true;
   }
+  tdwithin_run_flush(&run);
   pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
-  return nseqs;
+  return run.nseqs;
 }
 
 /**
@@ -1368,7 +1446,6 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
     return 1;
   }
 
-  int nseqs = 0;
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
@@ -1381,6 +1458,8 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
   instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
+  TDwithinRun run = { .result = result, .nseqs = 0, .instants = instants,
+    .held = false };
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
@@ -1391,13 +1470,8 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
 
     /* Segment is constant or has step interpolation */
     if (datum_eq(startvalue, endvalue, basetype))
-    {
-      Datum value = func(startvalue, point, dist);
-      tinstant_set(instants[0], value, lower);
-      tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, STEP,
-        NORMALIZE_NO);
-    }
+      tdwithin_run_add(&run, func(startvalue, point, dist), lower, upper,
+        lower_inc, upper_inc);
     /* General case */
     else
     {
@@ -1407,15 +1481,16 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
       int solutions = tpfn(startvalue, endvalue, point, point, dist, lower,
         upper, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
-      nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
+      tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
+        upper_inc, upper_inc1, t1, t2, &run);
     }
     startvalue = endvalue;
     lower = upper;
     lower_inc = true;
   }
+  tdwithin_run_flush(&run);
   pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
-  return nseqs;
+  return run.nseqs;
 }
 
 /**
