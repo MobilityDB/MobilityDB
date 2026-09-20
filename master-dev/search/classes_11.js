@@ -2,7 +2,7 @@ var searchData=
 [
   ['s2cell_5fbuf_0',['s2cell_buf',['../structs2cell__buf.html',1,'']]],
   ['s2cellsplitstate_1',['S2cellSplitState',['../structS2cellSplitState.html',1,'']]],
-  ['s2pathat_2',['S2PathAt',['../structS2PathAt.html',1,'']]],
+  ['s2segmentpath_2',['S2SegmentPath',['../structS2SegmentPath.html',1,'']]],
   ['scalarmcvitem_3',['ScalarMCVItem',['../structScalarMCVItem.html',1,'']]],
   ['schema_5fentry_4',['schema_entry',['../structschema__entry.html',1,'']]],
   ['segbox_5',['SegBox',['../structSegBox.html',1,'']]],
