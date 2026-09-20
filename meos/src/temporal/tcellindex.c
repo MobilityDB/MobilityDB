@@ -1229,15 +1229,19 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
     dggs_line_height(line, m, t, &f, &d);
     if (f <= 0.0)
     {
-      /* A position on the plane within its rounding: the path leaves here
-       * unless it heads inward */
+      /* A path at or outside the plane and heading out leaves THERE, at the
+       * parameter it already holds, as a line starting on a tile boundary and
+       * heading across it leaves the tile at once. The exit is that parameter
+       * and never the one after it: a segment beginning exactly on a boundary
+       * is the same path as the stretch of a longer segment running through
+       * that boundary, so the two state the same cells */
       if (d <= 0.0)
-        return (t > tmin) ? t : nextafter(tmin, 2.0);
+        return t;
       f = 0.0;
     }
     double h = (d + sqrt(d * d + 2.0 * mm * f)) / mm;
-    if (h <= 1e-15)
-      return (t > tmin) ? t : nextafter(tmin, 2.0);
+    if (h <= 0.0)
+      return t;
     t += h;
   }
   return (t > 1.0) ? 2.0 : t;
@@ -1262,7 +1266,12 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
   for (int i = 0; i < 1024 && t <= 1.0; i++)
   {
     double g = side * f, e = side * d;
-    if (g <= 0.0 && t > tmin)
+    /* A path at or beyond the plane leaves THERE, at the parameter it already
+     * holds. At `tmin` that reads the height AND its rate: a path sitting on
+     * the plane and heading across it leaves at once, while one heading along
+     * or back stays, which is the rule #dggs_arc_normals_exit_param applies to
+     * the same two quantities */
+    if (g <= 0.0 && (t > tmin || e < 0.0))
       return t;
     if (g < 0.0)
       g = 0.0;
