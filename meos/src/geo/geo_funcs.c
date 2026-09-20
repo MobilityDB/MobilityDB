@@ -10208,6 +10208,8 @@ typedef struct
                           context states the edges of the geometry it was made
                           from and does not outlive it */
   void *ctx;         /**< Context holding the edges it is read as */
+  uint64_t sig;      /**< Signature of the key, which tells a value that
+                          differs from it apart without comparing either */
   uint64_t hits;     /**< Questions answered from this entry */
   int busy;          /**< Calls reading these edges right now */
 } RelateCtxCacheEntry;
@@ -10222,16 +10224,45 @@ typedef struct
  * exactly the small-geometry corpora whose reuse is highest. */
 #define RELATE_CTX_CACHE_SIZE 256
 
+/* AN ENTRY IS FILLED BY THE SECOND QUESTION ABOUT A VALUE, NEVER THE FIRST.
+ * What a kept reading saves is the readings of the calls that FOLLOW it, so a
+ * value asked about once pays the copy, the reading and the entry for nothing,
+ * and a caller asking about a new value every call -- the lifted walk, which
+ * asks about the point of each instant -- fills the cache with values nothing
+ * asks for again and scans them on every call after. The signatures below
+ * record a value the FIRST time it is asked about and admit it the next, so
+ * such a walk fills no entry and scans none, while a value that comes back is
+ * kept as it is without them, one question later. The table is read at the
+ * signature itself, so it costs one slot whatever it holds */
+#define RELATE_CTX_SEEN 4096
+
 /**
- * @brief The edges kept for the geometries asked about
- * @note The entries are few, so they are scanned linearly
+ * @brief A value the cache has been asked about, and the entry holding it
+ * @details A slot is read at the signature of the value, so a question costs
+ * ONE slot whatever the cache holds: a walk asking about thousands of values
+ * pays no scan for them
  */
 typedef struct
 {
-  /* The geometries asked about recently, keyed by their SERIALIZED value, so a
-   * hit is decided without reading anything out of them. Few enough to scan. */
+  uint64_t sig;  /**< Signature of the value the slot stands for */
+  int32_t at;    /**< Entry holding it, -1 where the value is asked about once
+                      and no entry holds it yet */
+} RelateCtxSeen;
+
+/**
+ * @brief The edges kept for the geometries asked about
+ */
+typedef struct
+{
+  /* The geometries the cache holds, keyed by their SERIALIZED value, so a hit
+   * is decided without reading anything out of them */
   RelateCtxCacheEntry entries[RELATE_CTX_CACHE_SIZE];
   uint32_t count;
+  /* The entry a full cache gives way at next, which walks round the entries so
+   * that admitting a value costs one of them rather than a pass over all */
+  uint32_t next;
+  /* Where a value is looked up and where it is admitted from */
+  RelateCtxSeen seen[RELATE_CTX_SEEN];
 } RelateCtxCache;
 
 /* Global variable to hold the contexts cache */
@@ -10250,6 +10281,120 @@ relate_ctx_same(const GSERIALIZED *g1, const GSERIALIZED *g2)
   if (VARSIZE(g1) != VARSIZE(g2))
     return false;
   return memcmp(g1, g2, VARSIZE(g1)) == 0;
+}
+
+/**
+ * @brief Return a value two different serialized geometries rarely share
+ * @details The size and three words of the value, read at places every
+ * geometry carries: the head, which holds its box where it has one, the
+ * middle and the end of its coordinates. Two values with different signatures
+ * are different values, so a signature answers most of the pairs a scan would
+ * compare byte for byte; the pairs it leaves standing are decided by
+ * #relate_ctx_same, which is what the answer rests on either way
+ * @param[in] gs Serialized geometry
+ */
+static uint64_t
+relate_ctx_signature(const GSERIALIZED *gs)
+{
+  size_t size = VARSIZE(gs);
+  uint64_t sig = (uint64_t) size;
+  size_t word = sizeof(uint64_t);
+  if (size >= VARHDRSZ + word)
+  {
+    const size_t at[3] = { VARHDRSZ, VARHDRSZ + (size - VARHDRSZ - word) / 2,
+      size - word };
+    for (int i = 0; i < 3; i++)
+    {
+      uint64_t w;
+      memcpy(&w, (const char *) gs + at[i], word);
+      sig = sig * UINT64CONST(31) + w;
+    }
+  }
+  return sig;
+}
+
+/**
+ * @brief Return the entry holding a value, where the cache holds it
+ * @details The slot the signature names says which entry to ask, so the
+ * question costs one slot and one comparison of the value against that entry.
+ * A slot two values share answers the wrong entry, which #relate_ctx_same
+ * refuses, and the question reads as a first sighting
+ * @param[in] cache Cache of the geometries asked about, NULL where none is
+ * built yet
+ * @param[in] gs Serialized geometry
+ * @param[in] sig Its signature
+ */
+static RelateCtxCacheEntry *
+relate_ctx_held(RelateCtxCache *cache, const GSERIALIZED *gs, uint64_t sig)
+{
+  if (! cache)
+    return NULL;
+  RelateCtxSeen *slot = &cache->seen[sig % RELATE_CTX_SEEN];
+  if (slot->sig != sig || slot->at < 0)
+    return NULL;
+  RelateCtxCacheEntry *e = &cache->entries[slot->at];
+  if (! e->key || e->sig != sig || ! relate_ctx_same(e->key, gs))
+    return NULL;
+  return e;
+}
+
+/**
+ * @brief Return true if a value is one the cache has been asked about before
+ * @details A value the table does not hold is recorded there and answers
+ * false, so the entry it would fill waits for the question that comes back.
+ * A slot two values share admits the second of them one question early, which
+ * keeps a reading asked for once; it never keeps a wrong one, since the entry
+ * is recognised by #relate_ctx_same as any other
+ * @param[in] cache Cache of the geometries asked about
+ * @param[in] sig Signature of the value
+ */
+static bool
+relate_ctx_returns(RelateCtxCache *cache, uint64_t sig)
+{
+  RelateCtxSeen *slot = &cache->seen[sig % RELATE_CTX_SEEN];
+  if (slot->sig == sig)
+    return true;
+  slot->sig = sig;
+  slot->at = -1;
+  return false;
+}
+
+/**
+ * @brief Return the entry a value is filled into, or NULL where every one of
+ * them is being read
+ * @details An empty entry is taken while the cache has one. Once it is full
+ * the entries give way in turn, each admission costing the one the turn
+ * reaches rather than a pass over all of them; an entry a call is READING is
+ * never displaced, and the turn moves on to the next
+ * @param[in] cache Cache of the geometries asked about
+ */
+static RelateCtxCacheEntry *
+relate_ctx_victim(RelateCtxCache *cache)
+{
+  if (cache->count < RELATE_CTX_CACHE_SIZE)
+    return &cache->entries[cache->count++];
+  for (uint32_t i = 0; i < RELATE_CTX_CACHE_SIZE; i++)
+  {
+    RelateCtxCacheEntry *e = &cache->entries[cache->next];
+    cache->next = (cache->next + 1) % RELATE_CTX_CACHE_SIZE;
+    if (! e->busy)
+      return e;
+  }
+  return NULL;
+}
+
+/**
+ * @brief Point the slot of a value at the entry that holds it
+ * @param[in] cache Cache of the geometries asked about
+ * @param[in] e Entry, which carries the signature of the value it holds
+ */
+static void
+relate_ctx_hold(RelateCtxCache *cache, RelateCtxCacheEntry *e)
+{
+  RelateCtxSeen *slot = &cache->seen[e->sig % RELATE_CTX_SEEN];
+  slot->sig = e->sig;
+  slot->at = (int32_t) (e - cache->entries);
+  return;
 }
 
 /**
@@ -10315,17 +10460,8 @@ relate_ctx_borrow(const GSERIALIZED *gs, void **entry, LWGEOM **made)
    * ONCE and answered from thereafter. A caller that deserializes its operands
    * first pays that reading on every call the cache exists to save. */
   RelateCtxCache *cache = MEOS_RELATE_CTX_CACHE;
-  RelateCtxCacheEntry *seen = NULL;
-  if (cache)
-    for (uint32_t i = 0; i < cache->count; i++)
-    {
-      RelateCtxCacheEntry *e = &cache->entries[i];
-      if (e->key && relate_ctx_same(e->key, gs))
-      {
-        seen = e;
-        break;
-      }
-    }
+  uint64_t sig = relate_ctx_signature(gs);
+  RelateCtxCacheEntry *seen = relate_ctx_held(cache, gs, sig);
   if (seen && seen->ctx)
   {
     seen->hits++;
@@ -10365,35 +10501,23 @@ relate_ctx_borrow(const GSERIALIZED *gs, void **entry, LWGEOM **made)
     MEOS_RELATE_CTX_CACHE = cache;
   }
 
-  /* FILL ON FIRST USE. The edges are read to answer THIS call whatever the
-   * cache does, so keeping what the reading produced costs nothing beyond the
-   * entry: one reading per geometry rather than one per pair it appears in.
+  /* FILL FOR THE QUESTION THAT COMES BACK. The edges are read to answer THIS
+   * call whatever the cache does, so keeping what the reading produced costs
+   * nothing beyond the entry: one reading per geometry rather than one per
+   * pair it appears in. The entry is filled once the value is asked about
+   * again, so a walk asking about each value once keeps none of them.
    * This is not the eager cache that loses 16.8x on well-separated data --
    * that one built every geometry's context UP FRONT, outside the call path,
    * so the bounding-box test in front of the relationship saved nothing. The
    * box short-circuit sits BEFORE this borrow, so a pair that never computes
-   * never reaches it, and filling on first use stays at or below the
-   * extraction count of a cache-less engine in every regime. */
+   * never reaches it, and filling here stays at or below the extraction count
+   * of a cache-less engine in every regime. */
   RelateCtxCacheEntry *e = seen;
-  if (! e)
+  if (! e && relate_ctx_returns(cache, sig))
   {
-    if (cache->count < RELATE_CTX_CACHE_SIZE)
-      e = &cache->entries[cache->count++];
-    else
-    {
-      /* An entry a call is READING is never displaced; the least asked-about
-       * of the rest gives way */
-      for (uint32_t i = 0; i < RELATE_CTX_CACHE_SIZE; i++)
-      {
-        RelateCtxCacheEntry *c = &cache->entries[i];
-        if (c->busy)
-          continue;
-        if (! e || c->hits < e->hits)
-          e = c;
-      }
-      if (e)
-        relate_ctx_cache_clear_entry(e);
-    }
+    e = relate_ctx_victim(cache);
+    if (e && (e->key || e->ctx || e->geom))
+      relate_ctx_cache_clear_entry(e);
   }
 
   void *ctx = NULL;
@@ -10414,6 +10538,8 @@ relate_ctx_borrow(const GSERIALIZED *gs, void **entry, LWGEOM **made)
     {
       e->key = palloc(VARSIZE(gs));
       memcpy(e->key, gs, VARSIZE(gs));
+      e->sig = sig;
+      relate_ctx_hold(cache, e);
     }
     if (! e->geom)
       e->geom = lwgeom_from_gserialized(e->key);
@@ -10468,48 +10594,31 @@ relate_ctx_borrow_geom(const GSERIALIZED *gs, void **entry, LWGEOM **made)
   *made = NULL;
 
   RelateCtxCache *cache = MEOS_RELATE_CTX_CACHE;
-  if (cache)
-    for (uint32_t i = 0; i < cache->count; i++)
-    {
-      RelateCtxCacheEntry *e = &cache->entries[i];
-      if (e->key && e->geom && relate_ctx_same(e->key, gs))
-      {
-        e->hits++;
-        e->busy++;
-        *entry = e;
-        return e->geom;
-      }
-    }
+  uint64_t sig = relate_ctx_signature(gs);
+  RelateCtxCacheEntry *held = relate_ctx_held(cache, gs, sig);
+  if (held && held->geom)
+  {
+    held->hits++;
+    held->busy++;
+    *entry = held;
+    return held->geom;
+  }
 
 #if ! MEOS
   MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
 #endif
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  if (! geom)
-  {
-#if ! MEOS
-    MemoryContextSwitchTo(oldctx);
-#endif
-    return NULL;
-  }
   if (! cache)
   {
     cache = palloc0(sizeof(RelateCtxCache));
     MEOS_RELATE_CTX_CACHE = cache;
   }
-  RelateCtxCacheEntry *e = NULL;
-  if (cache->count < RELATE_CTX_CACHE_SIZE)
-    e = &cache->entries[cache->count++];
-  else
-    for (uint32_t i = 0; i < RELATE_CTX_CACHE_SIZE; i++)
-    {
-      RelateCtxCacheEntry *c = &cache->entries[i];
-      if (c->busy)
-        continue;
-      if (! e || c->hits < e->hits)
-        e = c;
-    }
-  if (e && ! e->busy)
+  /* THE VALUE IS READ ONCE, out of whichever copy the reading is a view over:
+   * the entry's where one keeps it, the caller's where none does. A value
+   * asked about for the first time is read for this call alone, so nothing is
+   * copied and nothing is read twice */
+  RelateCtxCacheEntry *e = relate_ctx_returns(cache, sig) ?
+    relate_ctx_victim(cache) : NULL;
+  if (e)
   {
     /* Read from the entry's OWN copy, for the reason #relate_ctx_borrow
      * states: a geometry is a view over the bytes it was read from */
@@ -10517,8 +10626,17 @@ relate_ctx_borrow_geom(const GSERIALIZED *gs, void **entry, LWGEOM **made)
       relate_ctx_cache_clear_entry(e);
     e->key = palloc(VARSIZE(gs));
     memcpy(e->key, gs, VARSIZE(gs));
-    lwgeom_free(geom);
+    e->sig = sig;
+    relate_ctx_hold(cache, e);
     e->geom = lwgeom_from_gserialized(e->key);
+    if (! e->geom)
+    {
+      relate_ctx_cache_clear_entry(e);
+#if ! MEOS
+      MemoryContextSwitchTo(oldctx);
+#endif
+      return NULL;
+    }
     e->hits = 1;
     e->busy = 1;
     *entry = e;
@@ -10530,11 +10648,13 @@ relate_ctx_borrow_geom(const GSERIALIZED *gs, void **entry, LWGEOM **made)
 #endif
     return e->geom;
   }
+  /* No entry holds this value, so the caller is handed its own reading and
+   * releases it. It is read under the context the kept ones are read under,
+   * since liblwgeom attaches boxes to what it measures */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
 #if ! MEOS
   MemoryContextSwitchTo(oldctx);
 #endif
-  if (*entry)
-    return geom;
   *made = geom;
   return geom;
 }
