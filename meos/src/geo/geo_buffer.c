@@ -2906,6 +2906,210 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
 }
 
 /**
+ * @brief One end of a boundary piece, as the node index holds it
+ */
+typedef struct
+{
+  uint32_t piece;  /**< Piece the end belongs to */
+  int32_t next;    /**< Next end in the same bucket, -1 at the end of a chain */
+  double x;        /**< The end itself, which the index never rounds */
+  double y;
+} BufferNodeEnd;
+
+/**
+ * @brief The ends of a ring's boundary pieces, read by the node they sit at
+ * @details Chaining a ring asks, once per step, which unused piece continues
+ * the boundary at the node the walk stands on. Asking it of every piece makes
+ * the walk quadratic in the pieces, which is where a buffer of a real polygon
+ * spends most of its time.
+ *
+ * The index answers it from a uniform grid of square cells. THE GRID IS A
+ * FILTER AND NEVER A TOLERANCE: it only narrows which ends are compared, and
+ * #buffer_points_equal still decides every one of them, so a cell gathering
+ * too much costs a comparison and never an answer. What the grid must
+ * guarantee is the other direction, that it gathers ENOUGH, and it is sized
+ * for that the way #relate_edges_init sizes the edge index: from the WIDEST
+ * tolerance anything in the array is compared at, never from
+ * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
+ * too small. A cell is therefore as wide as the largest tolerance any pair of
+ * these ends reads, so two ends #buffer_points_equal accepts differ by no more
+ * than a cell along each axis and lie in the same cell or in one touching it.
+ * Reading the nine cells around a node is exhaustive.
+ */
+typedef struct
+{
+  BufferNodeEnd *ends;  /**< Two per piece, its start and its end */
+  int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
+  uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
+  uint32_t nends;       /**< Ends held, twice the pieces */
+  double cell;          /**< Side of a cell, never below the tolerance */
+  uint32_t *cand;       /**< Scratch the candidates of one node are read into */
+  uint32_t *stamp;      /**< Generation a piece was last gathered in */
+  uint32_t gen;         /**< Generation of the node being read */
+} BufferNodeIndex;
+
+/**
+ * @brief Return which cell a coordinate falls in along one axis
+ * @details The cell is counted as a whole number and carried as a double,
+ * which holds one exactly and adds one exactly well past the count any extent
+ * divided by its own tolerance reaches, so stepping to a neighbouring cell
+ * lands on the number that cell's own points count themselves as. The zero
+ * cell is returned with one sign, both zeroes standing for it.
+ */
+static double
+buffer_node_cell(double v, double cell)
+{
+  double c = floor(v / cell);
+  return (c == 0.0) ? 0.0 : c;
+}
+
+/**
+ * @brief Return the bucket the cell (@p i, @p j) chains from
+ * @details The cell numbers are read as the bit patterns they are, which is
+ * how #relate_ctx_signature reads the bytes it mixes
+ */
+static uint32_t
+buffer_node_bucket(const BufferNodeIndex *ix, double i, double j)
+{
+  uint64_t hi, hj;
+  memcpy(&hi, &i, sizeof(uint64_t));
+  memcpy(&hj, &j, sizeof(uint64_t));
+  uint64_t h = hi * UINT64CONST(0x9E3779B97F4A7C15) ^
+    hj * UINT64CONST(0xC2B2AE3D27D4EB4F);
+  h ^= h >> 29;
+  h *= UINT64CONST(0xBF58476D1CE4E5B9);
+  h ^= h >> 32;
+  return (uint32_t) (h & (uint64_t) (ix->ncells - 1));
+}
+
+/**
+ * @brief Add one end of a piece to a node index
+ */
+static void
+buffer_node_index_add(BufferNodeIndex *ix, uint32_t piece, POINT2D p)
+{
+  uint32_t at = ix->nends++;
+  ix->ends[at].piece = piece;
+  ix->ends[at].x = p.x;
+  ix->ends[at].y = p.y;
+  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
+    buffer_node_cell(p.y, ix->cell));
+  ix->ends[at].next = ix->cells[b];
+  ix->cells[b] = (int32_t) at;
+  return;
+}
+
+/**
+ * @brief Build the node index of a ring's boundary pieces
+ * @param[out] ix Index to build
+ * @param[in] pieces Boundary pieces, whose own order the index reports back
+ */
+static void
+buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
+{
+  assert(ix); assert(pieces);
+  uint32_t npieces = pieces->count;
+  /* The cell is sized from the LARGEST coordinate any end carries, which
+   * bounds the tolerance every comparison among them reads:
+   * #buffer_node_tolerance grows with the coordinate and #buffer_points_equal
+   * takes the larger of the two tolerances it is given */
+  double scale = 0.0;
+  for (uint32_t i = 0; i < npieces; i++)
+  {
+    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    POINT2D s = buffer_piece_start(piece), e = buffer_piece_end(piece);
+    scale = Max(scale, Max(fabs(s.x), fabs(s.y)));
+    scale = Max(scale, Max(fabs(e.x), fabs(e.y)));
+  }
+  ix->cell = buffer_node_tolerance(scale, scale);
+  ix->ncells = 16;
+  while (ix->ncells < 2 * npieces)
+    ix->ncells *= 2;
+  ix->cells = palloc(sizeof(int32_t) * ix->ncells);
+  for (uint32_t i = 0; i < ix->ncells; i++)
+    ix->cells[i] = -1;
+  ix->ends = palloc(sizeof(BufferNodeEnd) * 2 * Max(npieces, 1u));
+  ix->nends = 0;
+  ix->cand = palloc(sizeof(uint32_t) * Max(npieces, 1u));
+  ix->stamp = palloc0(sizeof(uint32_t) * Max(npieces, 1u));
+  ix->gen = 0;
+  for (uint32_t i = 0; i < npieces; i++)
+  {
+    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    buffer_node_index_add(ix, i, buffer_piece_start(piece));
+    buffer_node_index_add(ix, i, buffer_piece_end(piece));
+  }
+  return;
+}
+
+/**
+ * @brief Release what a node index holds
+ */
+static void
+buffer_node_index_free(BufferNodeIndex *ix)
+{
+  assert(ix);
+  pfree(ix->cells); pfree(ix->ends); pfree(ix->cand); pfree(ix->stamp);
+  ix->cells = NULL; ix->ends = NULL; ix->cand = NULL; ix->stamp = NULL;
+  return;
+}
+
+/**
+ * @brief Return the pieces that can meet a node, in the order a walk over
+ * every piece reaches them
+ * @details The candidates are gathered from the nine cells around the node and
+ * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
+ * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
+ * so any other order decides a tie differently and chains another ring.
+ * @param[in,out] ix Index to read
+ * @param[in] point Node to read it at
+ * @param[out] ncand Candidates gathered
+ * @return The candidates, held in the index's own scratch
+ */
+static const uint32_t *
+buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
+{
+  assert(ix); assert(ncand);
+  double ci = buffer_node_cell(point.x, ix->cell);
+  double cj = buffer_node_cell(point.y, ix->cell);
+  uint32_t n = 0;
+  ix->gen++;
+  for (int di = -1; di <= 1; di++)
+  {
+    for (int dj = -1; dj <= 1; dj++)
+    {
+      uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
+      for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
+      {
+        const BufferNodeEnd *end = &ix->ends[at];
+        /* Both ends of one piece can reach the node, and a bucket gathers
+         * whatever cells collide into it, so a piece is reported once */
+        if (ix->stamp[end->piece] == ix->gen)
+          continue;
+        /* The buckets bound which ends the walk sees; an end is kept only
+         * where the cell it truly sits in is one of the nine */
+        double ei = buffer_node_cell(end->x, ix->cell) - ci;
+        double ej = buffer_node_cell(end->y, ix->cell) - cj;
+        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
+          continue;
+        ix->stamp[end->piece] = ix->gen;
+        /* Ascending order, by insertion: a node holds two ends where the
+         * boundary runs through it and a handful where it pinches */
+        uint32_t k = n++;
+        while (k > 0 && ix->cand[k - 1] > end->piece)
+        {
+          ix->cand[k] = ix->cand[k - 1];
+          k--;
+        }
+        ix->cand[k] = end->piece;
+      }
+    }
+  }
+  *ncand = n;
+  return ix->cand;
+}
+
+/**
  * @brief Return the piece a boundary continues into at a node, and whether it
  * is traversed in reverse
  * @details WHERE MORE THAN TWO PIECE-ENDS MEET AT ONE NODE the boundary pinches
@@ -2917,6 +3121,8 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
  * A node where exactly two ends meet has one candidate and the rule does not
  * arise
  * @param[in] pieces Boundary pieces
+ * @param[in,out] ix The pieces read by the node they meet at, which reports
+ * the ones that can meet this node in the order this walk reaches them
  * @param[in] used Which of them the walk has taken
  * @param[in] point The node the walk stands on
  * @param[in] from_dx,from_dy The direction the walk arrived in, zero for the
@@ -2924,10 +3130,11 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
  * @param[out] reverse Set when the piece is traversed from its end
  */
 static int
-buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
-  POINT2D point, double from_dx, double from_dy, bool want_left, bool *reverse)
+buffer_find_connected_piece(const MeosArray *pieces, BufferNodeIndex *ix,
+  const bool *used, POINT2D point, double from_dx, double from_dy,
+  bool want_left, bool *reverse)
 {
-  assert(pieces); assert(used); assert(reverse);
+  assert(pieces); assert(ix); assert(used); assert(reverse);
   int best = -1;
   bool best_reverse = false;
   double best_turn = 0.0;
@@ -2937,8 +3144,11 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
    * decides exactly the case the ordering cannot */
   bool have_framed = false;
   bool have_direction = (from_dx != 0.0 || from_dy != 0.0);
-  for (uint32_t i = 0; i < pieces->count; i++)
+  uint32_t ncand;
+  const uint32_t *cand = buffer_node_index_at(ix, point, &ncand);
+  for (uint32_t c = 0; c < ncand; c++)
   {
+    uint32_t i = cand[c];
     if (used[i])
       continue;
     const BufferPiece *piece = (BufferPiece *) meos_array_get(pieces, i);
@@ -3020,10 +3230,10 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
  * The input array is never modified.
  */
 static LWCOMPOUND *
-buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
-  uint32_t start_index, int32_t srid, MeosArray *ordered)
+buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
+  bool *used, uint32_t start_index, int32_t srid, MeosArray *ordered)
 {
-  assert(pieces); assert(used); assert(ordered);
+  assert(pieces); assert(ix); assert(used); assert(ordered);
   assert(start_index < pieces->count);
   const BufferPiece *first = (const BufferPiece *) meos_array_get(pieces,
     start_index);
@@ -3051,8 +3261,8 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
   while (! buffer_points_equal(current, start))
   {
     bool reverse = false;
-    int index = buffer_find_connected_piece(pieces, used, current, -from_dx,
-      -from_dy, want_left, &reverse);
+    int index = buffer_find_connected_piece(pieces, ix, used, current,
+      -from_dx, -from_dy, want_left, &reverse);
     if (index < 0)
     {
       lwgeom_free(lwcompound_as_lwgeom(curve));
@@ -3092,6 +3302,10 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
   if (pieces->count == 0)
     return true;
   bool *used = palloc0(sizeof(bool) * pieces->count);
+  /* Every ring chained here reads the same pieces, so the node index is built
+   * once for all of them rather than once per ring */
+  BufferNodeIndex ix;
+  buffer_node_index_make(&ix, pieces);
   uint32_t used_count = 0;
   while (used_count < pieces->count)
   {
@@ -3109,14 +3323,14 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
     MeosArray *ordered = meos_array_create(sizeof(BufferPiece));
     if (! ordered)
     {
-      pfree(used);
+      pfree(used); buffer_node_index_free(&ix);
       return false;
     }
-    LWCOMPOUND *ring = buffer_chain_ring_with_pieces(pieces, used, start_index,
-      srid, ordered);
+    LWCOMPOUND *ring = buffer_chain_ring_with_pieces(pieces, &ix, used,
+      start_index, srid, ordered);
     if (! ring)
     {
-      meos_array_destroy(ordered); pfree(used);
+      meos_array_destroy(ordered); pfree(used); buffer_node_index_free(&ix);
       return false;
     }
     /* Count the pieces consumed by this ring */
@@ -3129,7 +3343,7 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
     if (new_used_count == used_count)
     {
       lwgeom_free(lwcompound_as_lwgeom(ring));
-      meos_array_destroy(ordered); pfree(used);
+      meos_array_destroy(ordered); pfree(used); buffer_node_index_free(&ix);
       return false;
     }
     used_count = new_used_count;
@@ -3142,7 +3356,7 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
     info.shell = -1;
     meos_array_add(rings, &info);
   }
-  pfree(used);
+  pfree(used); buffer_node_index_free(&ix);
   return used_count == pieces->count;
 }
 
