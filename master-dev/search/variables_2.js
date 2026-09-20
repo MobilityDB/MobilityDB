@@ -9,13 +9,14 @@ var searchData=
   ['answer_5fleft_6',['answer_left',['../structBufferPiece_a7e1eba57d0cb5e576291c37a1696adec.html#a7e1eba57d0cb5e576291c37a1696adec',1,'BufferPiece']]],
   ['arc_7',['arc',['../structH3SegmentPath_a7ac44f44ec65edd71b6b9f57eb1005f5.html#a7ac44f44ec65edd71b6b9f57eb1005f5',1,'H3SegmentPath::arc()'],['../structQuadbinArcAt_a3dcec4b743b254cc6ff185667779f046.html#a3dcec4b743b254cc6ff185667779f046',1,'QuadbinArcAt::arc()'],['../structS2PathAt_ae0fcc2bc8b3749f75f83bf5216417c4a.html#ae0fcc2bc8b3749f75f83bf5216417c4a',1,'S2PathAt::arc()']]],
   ['argtype_8',['argtype',['../structLiftedFunctionInfo_ab12b24200762a4bec3b00c72bee67883.html#ab12b24200762a4bec3b00c72bee67883',1,'LiftedFunctionInfo']]],
-  ['arr_9',['arr',['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()'],['../structBufferLocator_a7272246bcaa80a8b2975529a4659ef91.html#a7272246bcaa80a8b2975529a4659ef91',1,'BufferLocator::arr()'],['../structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb',1,'RelateOperand::arr()'],['../structRelateComp_a9eb7a38c5709472f946690405a29105f.html#a9eb7a38c5709472f946690405a29105f',1,'RelateComp::arr()'],['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()']]],
-  ['auth_5fname_10',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
-  ['auth_5fsrid_11',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
-  ['authority_12',['authority',['../structGeoPoseFrame_a95f46868917d2a1a7359ce81453dcdf7.html#a95f46868917d2a1a7359ce81453dcdf7',1,'GeoPoseFrame']]],
-  ['authtext_13',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
-  ['awgs_14',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
-  ['axes_15',['axes',['../structRTree_ad46e95b19824fd38b82c1abe46281a1e.html#ad46e95b19824fd38b82c1abe46281a1e',1,'RTree']]],
-  ['axis_16',['axis',['../structBboxSplitContext_a6607fbd270f3de7d03e785e5c09b471e.html#a6607fbd270f3de7d03e785e5c09b471e',1,'BboxSplitContext::axis()'],['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx::axis()']]],
-  ['azimuth_17',['azimuth',['../structDggsArc_a53213b4be27a9fd74b6881d905d78be5.html#a53213b4be27a9fd74b6881d905d78be5',1,'DggsArc']]]
+  ['arr_9',['arr',['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()'],['../structRelateComp_a9eb7a38c5709472f946690405a29105f.html#a9eb7a38c5709472f946690405a29105f',1,'RelateComp::arr()'],['../structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb',1,'RelateOperand::arr()'],['../structBufferLocator_a7272246bcaa80a8b2975529a4659ef91.html#a7272246bcaa80a8b2975529a4659ef91',1,'BufferLocator::arr()'],['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()']]],
+  ['at_10',['at',['../structRelateCtxSeen_a11478404d69d8739c0532a7b18b4ded9.html#a11478404d69d8739c0532a7b18b4ded9',1,'RelateCtxSeen']]],
+  ['auth_5fname_11',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
+  ['auth_5fsrid_12',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
+  ['authority_13',['authority',['../structGeoPoseFrame_a95f46868917d2a1a7359ce81453dcdf7.html#a95f46868917d2a1a7359ce81453dcdf7',1,'GeoPoseFrame']]],
+  ['authtext_14',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
+  ['awgs_15',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
+  ['axes_16',['axes',['../structRTree_ad46e95b19824fd38b82c1abe46281a1e.html#ad46e95b19824fd38b82c1abe46281a1e',1,'RTree']]],
+  ['axis_17',['axis',['../structBboxSplitContext_a6607fbd270f3de7d03e785e5c09b471e.html#a6607fbd270f3de7d03e785e5c09b471e',1,'BboxSplitContext::axis()'],['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx::axis()']]],
+  ['azimuth_18',['azimuth',['../structDggsArc_a53213b4be27a9fd74b6881d905d78be5.html#a53213b4be27a9fd74b6881d905d78be5',1,'DggsArc']]]
 ];
