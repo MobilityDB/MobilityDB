@@ -272,6 +272,9 @@ buffer_make_arc(int32_t srid, double cx, double cy, double radius,
  */
 /* Defined with the ring walk that shares its question of node identity */
 static bool buffer_points_equal(POINT2D p1, POINT2D p2);
+/* Defined with the ring walk, and read by the node index that precedes it */
+static POINT2D buffer_piece_start(const BufferPiece *piece);
+static POINT2D buffer_piece_end(const BufferPiece *piece);
 
 /**
  * @brief Write a piece's start as the point the curve already ends at
@@ -1954,6 +1957,361 @@ buffer_piece_array_contains(const MeosArray *pieces, const BufferPiece *piece)
   return false;
 }
 
+/**
+ * @brief One node the index holds, and what stands at it
+ */
+typedef struct
+{
+  uint32_t id;     /**< What stands there: a piece, or an intersection */
+  int32_t next;    /**< Next node in the same bucket, -1 at the end of a chain */
+  double x;        /**< The node itself, which the index never rounds */
+  double y;
+} BufferNodeEnd;
+
+/**
+ * @brief The ends of a ring's boundary pieces, read by the node they sit at
+ * @details Chaining a ring asks, once per step, which unused piece continues
+ * the boundary at the node the walk stands on. Asking it of every piece makes
+ * the walk quadratic in the pieces, which is where a buffer of a real polygon
+ * spends most of its time.
+ *
+ * The index answers it from a uniform grid of square cells. THE GRID IS A
+ * FILTER AND NEVER A TOLERANCE: it only narrows which ends are compared, and
+ * #buffer_points_equal still decides every one of them, so a cell gathering
+ * too much costs a comparison and never an answer. What the grid must
+ * guarantee is the other direction, that it gathers ENOUGH, and it is sized
+ * for that the way #relate_edges_init sizes the edge index: from the WIDEST
+ * tolerance anything in the array is compared at, never from
+ * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
+ * too small. A cell is therefore as wide as the largest tolerance any pair of
+ * these ends reads, so two ends #buffer_points_equal accepts differ by no more
+ * than a cell along each axis and lie in the same cell or in one touching it.
+ * Reading the nine cells around a node is exhaustive.
+ */
+typedef struct
+{
+  BufferNodeEnd *ends;  /**< Two per piece, its start and its end */
+  int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
+  uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
+  uint32_t nends;       /**< Ends held, twice the pieces */
+  double cell;          /**< Side of a cell, never below the tolerance */
+  uint32_t *cand;       /**< Scratch the candidates of one node are read into */
+  uint32_t *stamp;      /**< Generation a piece was last gathered in */
+  uint32_t gen;         /**< Generation of the node being read */
+} BufferNodeIndex;
+
+/**
+ * @brief Return which cell a coordinate falls in along one axis
+ * @details The cell is counted as a whole number and carried as a double,
+ * which holds one exactly and adds one exactly well past the count any extent
+ * divided by its own tolerance reaches, so stepping to a neighbouring cell
+ * lands on the number that cell's own points count themselves as. The zero
+ * cell is returned with one sign, both zeroes standing for it.
+ */
+static double
+buffer_node_cell(double v, double cell)
+{
+  double c = floor(v / cell);
+  return (c == 0.0) ? 0.0 : c;
+}
+
+/**
+ * @brief Return the bucket the cell (@p i, @p j) chains from
+ * @details The cell numbers are read as the bit patterns they are, which is
+ * how #relate_ctx_signature reads the bytes it mixes
+ */
+static uint32_t
+buffer_node_bucket(const BufferNodeIndex *ix, double i, double j)
+{
+  uint64_t hi, hj;
+  memcpy(&hi, &i, sizeof(uint64_t));
+  memcpy(&hj, &j, sizeof(uint64_t));
+  uint64_t h = hi * UINT64CONST(0x9E3779B97F4A7C15) ^
+    hj * UINT64CONST(0xC2B2AE3D27D4EB4F);
+  h ^= h >> 29;
+  h *= UINT64CONST(0xBF58476D1CE4E5B9);
+  h ^= h >> 32;
+  return (uint32_t) (h & (uint64_t) (ix->ncells - 1));
+}
+
+/**
+ * @brief Add one end of a piece to a node index
+ */
+static void
+buffer_node_index_add(BufferNodeIndex *ix, uint32_t id, POINT2D p)
+{
+  uint32_t at = ix->nends++;
+  ix->ends[at].id = id;
+  ix->ends[at].x = p.x;
+  ix->ends[at].y = p.y;
+  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
+    buffer_node_cell(p.y, ix->cell));
+  ix->ends[at].next = ix->cells[b];
+  ix->cells[b] = (int32_t) at;
+  return;
+}
+
+/**
+ * @brief Give a node index its grid and its scratch
+ * @param[out] ix Index to prepare
+ * @param[in] nids Ids it reports, which is what one query can gather at most
+ * @param[in] nnodes Nodes it holds
+ * @param[in] scale Largest coordinate any of them carries, which is what the
+ * cell is sized from
+ */
+static void
+buffer_node_index_alloc(BufferNodeIndex *ix, uint32_t nids, uint32_t nnodes,
+  double scale)
+{
+  assert(ix);
+  ix->cell = buffer_node_tolerance(scale, scale);
+  ix->ncells = 16;
+  while (ix->ncells < 2 * nnodes)
+    ix->ncells *= 2;
+  ix->cells = palloc(sizeof(int32_t) * ix->ncells);
+  for (uint32_t i = 0; i < ix->ncells; i++)
+    ix->cells[i] = -1;
+  ix->ends = palloc(sizeof(BufferNodeEnd) * Max(nnodes, 1u));
+  ix->nends = 0;
+  ix->cand = palloc(sizeof(uint32_t) * Max(nids, 1u));
+  ix->stamp = palloc0(sizeof(uint32_t) * Max(nids, 1u));
+  ix->gen = 0;
+  return;
+}
+
+/**
+ * @brief Build the node index of a ring's boundary pieces
+ * @param[out] ix Index to build
+ * @param[in] pieces Boundary pieces, whose own order the index reports back
+ */
+static void
+buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
+{
+  assert(ix); assert(pieces);
+  uint32_t npieces = pieces->count;
+  /* The cell is sized from the LARGEST coordinate any end carries, which
+   * bounds the tolerance every comparison among them reads:
+   * #buffer_node_tolerance grows with the coordinate and #buffer_points_equal
+   * takes the larger of the two tolerances it is given */
+  double scale = 0.0;
+  for (uint32_t i = 0; i < npieces; i++)
+  {
+    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    POINT2D s = buffer_piece_start(piece), e = buffer_piece_end(piece);
+    scale = Max(scale, Max(fabs(s.x), fabs(s.y)));
+    scale = Max(scale, Max(fabs(e.x), fabs(e.y)));
+  }
+  buffer_node_index_alloc(ix, npieces, 2 * npieces, scale);
+  for (uint32_t i = 0; i < npieces; i++)
+  {
+    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    buffer_node_index_add(ix, i, buffer_piece_start(piece));
+    buffer_node_index_add(ix, i, buffer_piece_end(piece));
+  }
+  return;
+}
+
+/**
+ * @brief Build the node index of the intersections a boundary is split at
+ * @param[out] ix Index to build
+ * @param[in] points Intersection points, whose own order the index reports back
+ */
+static void
+buffer_node_index_nodes(BufferNodeIndex *ix, const MeosArray *points)
+{
+  assert(ix); assert(points);
+  uint32_t n = points->count;
+  double scale = 0.0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *p = (const POINT2D *) meos_array_get(points, i);
+    scale = Max(scale, Max(fabs(p->x), fabs(p->y)));
+  }
+  buffer_node_index_alloc(ix, n, n, scale);
+  for (uint32_t i = 0; i < n; i++)
+    buffer_node_index_add(ix, i, *(POINT2D *) meos_array_get(points, i));
+  return;
+}
+
+/**
+ * @brief Release what a node index holds
+ */
+static void
+buffer_node_index_free(BufferNodeIndex *ix)
+{
+  assert(ix);
+  pfree(ix->cells); pfree(ix->ends); pfree(ix->cand); pfree(ix->stamp);
+  ix->cells = NULL; ix->ends = NULL; ix->cand = NULL; ix->stamp = NULL;
+  return;
+}
+
+/**
+ * @brief Return the pieces that can meet a node, in the order a walk over
+ * every piece reaches them
+ * @details The candidates are gathered from the nine cells around the node and
+ * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
+ * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
+ * so any other order decides a tie differently and chains another ring.
+ * @param[in,out] ix Index to read
+ * @param[in] point Node to read it at
+ * @param[out] ncand Candidates gathered
+ * @return The candidates, held in the index's own scratch
+ */
+static const uint32_t *
+buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
+{
+  assert(ix); assert(ncand);
+  double ci = buffer_node_cell(point.x, ix->cell);
+  double cj = buffer_node_cell(point.y, ix->cell);
+  uint32_t n = 0;
+  ix->gen++;
+  for (int di = -1; di <= 1; di++)
+  {
+    for (int dj = -1; dj <= 1; dj++)
+    {
+      uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
+      for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
+      {
+        const BufferNodeEnd *end = &ix->ends[at];
+        /* Both ends of one piece can reach the node, and a bucket gathers
+         * whatever cells collide into it, so a piece is reported once */
+        if (ix->stamp[end->id] == ix->gen)
+          continue;
+        /* The buckets bound which ends the walk sees; an end is kept only
+         * where the cell it truly sits in is one of the nine */
+        double ei = buffer_node_cell(end->x, ix->cell) - ci;
+        double ej = buffer_node_cell(end->y, ix->cell) - cj;
+        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
+          continue;
+        ix->stamp[end->id] = ix->gen;
+        /* Ascending order, by insertion: a node holds two ends where the
+         * boundary runs through it and a handful where it pinches */
+        uint32_t k = n++;
+        while (k > 0 && ix->cand[k - 1] > end->id)
+        {
+          ix->cand[k] = ix->cand[k - 1];
+          k--;
+        }
+        ix->cand[k] = end->id;
+      }
+    }
+  }
+  *ncand = n;
+  return ix->cand;
+}
+
+/**
+ * @brief Return the nodes standing in a box, in the order a walk over every
+ * node reaches them
+ * @details The box is the extent a piece is split along, grown by the caller
+ * to cover whatever a node may stand off it by. The cells it spans are read
+ * whole, so the answer holds every node of the box and some beyond it, which
+ * the caller's own test then decides, and it is reported in ASCENDING NODE
+ * ORDER, the order the nodes themselves stand in.
+ * @param[in,out] ix Index to read
+ * @param[in] xmin,ymin,xmax,ymax Box to read it over
+ * @param[out] ncand Nodes gathered
+ * @return The nodes, held in the index's own scratch
+ */
+static const uint32_t *
+buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
+  double xmax, double ymax, uint32_t *ncand)
+{
+  assert(ix); assert(ncand);
+  double c0 = buffer_node_cell(xmin, ix->cell);
+  double c1 = buffer_node_cell(xmax, ix->cell);
+  double d0 = buffer_node_cell(ymin, ix->cell);
+  double d1 = buffer_node_cell(ymax, ix->cell);
+  uint32_t n = 0;
+  ix->gen++;
+  /* A piece spanning more cells than the index holds nodes is read by walking
+   * the NODES instead, which costs what the grid is there to avoid only where
+   * the grid would cost more */
+  double cells = (c1 - c0 + 1.0) * (d1 - d0 + 1.0);
+  if (cells > (double) ix->nends)
+  {
+    for (uint32_t at = 0; at < ix->nends; at++)
+    {
+      const BufferNodeEnd *node = &ix->ends[at];
+      if (node->x < xmin || node->x > xmax || node->y < ymin || node->y > ymax)
+        continue;
+      if (ix->stamp[node->id] == ix->gen)
+        continue;
+      ix->stamp[node->id] = ix->gen;
+      uint32_t k = n++;
+      while (k > 0 && ix->cand[k - 1] > node->id)
+      {
+        ix->cand[k] = ix->cand[k - 1];
+        k--;
+      }
+      ix->cand[k] = node->id;
+    }
+    *ncand = n;
+    return ix->cand;
+  }
+  for (double ci = c0; ci <= c1; ci += 1.0)
+  {
+    for (double cj = d0; cj <= d1; cj += 1.0)
+    {
+      uint32_t b = buffer_node_bucket(ix, ci, cj);
+      for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
+      {
+        const BufferNodeEnd *node = &ix->ends[at];
+        if (ix->stamp[node->id] == ix->gen)
+          continue;
+        /* A bucket gathers whatever cells collide into it, so the node is
+         * kept only where it stands in the box the caller asked about */
+        if (node->x < xmin || node->x > xmax || node->y < ymin || node->y > ymax)
+          continue;
+        ix->stamp[node->id] = ix->gen;
+        uint32_t k = n++;
+        while (k > 0 && ix->cand[k - 1] > node->id)
+        {
+          ix->cand[k] = ix->cand[k - 1];
+          k--;
+        }
+        ix->cand[k] = node->id;
+      }
+    }
+  }
+  *ncand = n;
+  return ix->cand;
+}
+
+/**
+ * @brief Return the intersections that can lie on a piece, in the order a walk
+ * over every intersection reaches them
+ * @details The extent read is the piece's own, grown by the tolerance
+ * #buffer_piece_contains_point accepts a node off it by, so every node that
+ * test accepts is gathered and the test still decides each one. A segment is
+ * bounded by its ends; an arc by the box of its whole circle, which holds it
+ * whatever part of the circle it runs along.
+ */
+static const uint32_t *
+buffer_node_index_cand(const BufferPiece *piece, BufferNodeIndex *ix,
+  uint32_t *ncand)
+{
+  assert(piece); assert(ix); assert(ncand);
+  double xmin, ymin, xmax, ymax;
+  if (piece->type == BUFFER_ARC)
+  {
+    xmin = piece->cx - piece->radius; xmax = piece->cx + piece->radius;
+    ymin = piece->cy - piece->radius; ymax = piece->cy + piece->radius;
+  }
+  else
+  {
+    xmin = Min(piece->x1, piece->x2); xmax = Max(piece->x1, piece->x2);
+    ymin = Min(piece->y1, piece->y2); ymax = Max(piece->y1, piece->y2);
+  }
+  /* The tolerance the test reads grows with the coordinates, so the extent is
+   * grown by the widest one anything in the box carries */
+  double pad = Max(coordinate_tolerance(xmin, xmax),
+    coordinate_tolerance(ymin, ymax));
+  pad = Max(pad, MEOS_GEOM_TOLERANCE);
+  return buffer_node_index_box(ix, xmin - pad, ymin - pad, xmax + pad,
+    ymax + pad, ncand);
+}
+
 /*****************************************************************************
  * Native buffer boundary splitting
  *****************************************************************************/
@@ -2090,21 +2448,23 @@ buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
  */
 static void
 buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
-  MeosArray *result)
+  BufferNodeIndex *ix, MeosArray *result)
 {
-  assert(piece); assert(intersections); assert(result);
+  assert(piece); assert(intersections); assert(ix); assert(result);
   assert(piece->type == BUFFER_SEGMENT);
-  /* At most all intersection points plus the two endpoints */
-  uint32_t capacity = intersections->count + 2;
+  uint32_t ncand;
+  const uint32_t *cand = buffer_node_index_cand(piece, ix, &ncand);
+  /* At most the nodes reaching this piece plus its two endpoints */
+  uint32_t capacity = ncand + 2;
   BufferSplitPoint *points = palloc(sizeof(BufferSplitPoint) * capacity);
   uint32_t count = 0;
   POINT2D start = {piece->x1, piece->y1};
   POINT2D end = {piece->x2, piece->y2};
   buffer_split_point_add(points, &count, capacity, &start, 0.0);
   buffer_split_point_add(points, &count, capacity, &end, 1.0);
-  for (uint32_t i = 0; i < intersections->count; i++)
+  for (uint32_t c = 0; c < ncand; c++)
   {
-    POINT2D *point = (POINT2D *) meos_array_get(intersections, i);
+    POINT2D *point = (POINT2D *) meos_array_get(intersections, cand[c]);
     if (! buffer_piece_contains_point(piece, point))
       continue;
     double parameter = buffer_segment_parameter(piece, point->x, point->y);
@@ -2143,11 +2503,13 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
  */
 static void
 buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
-  MeosArray *result)
+  BufferNodeIndex *ix, MeosArray *result)
 {
-  assert(piece); assert(intersections); assert(result);
+  assert(piece); assert(intersections); assert(ix); assert(result);
   assert(piece->type == BUFFER_ARC);
-  uint32_t capacity = intersections->count + 2;
+  uint32_t ncand;
+  const uint32_t *cand = buffer_node_index_cand(piece, ix, &ncand);
+  uint32_t capacity = ncand + 2;
   BufferSplitPoint *points = palloc(sizeof(BufferSplitPoint) * capacity);
   uint32_t count = 0;
   POINT2D start = {piece->x1, piece->y1};
@@ -2155,9 +2517,9 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
   double sweep = buffer_arc_sweep(piece);
   buffer_split_point_add(points, &count, capacity, &start, 0.0);
   buffer_split_point_add(points, &count, capacity, &end, sweep);
-  for (uint32_t i = 0; i < intersections->count; i++)
+  for (uint32_t c = 0; c < ncand; c++)
   {
-    POINT2D *point = (POINT2D *) meos_array_get(intersections, i);
+    POINT2D *point = (POINT2D *) meos_array_get(intersections, cand[c]);
     if (! buffer_piece_contains_point(piece, point))
       continue;
     double parameter = buffer_arc_parameter(piece, point);
@@ -2280,16 +2642,21 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   MeosArray *result)
 {
   assert(pieces); assert(intersections); assert(result);
+  /* Every piece is split at the same intersections, so they are indexed once
+   * for all of them rather than scanned once per piece */
+  BufferNodeIndex ix;
+  buffer_node_index_nodes(&ix, intersections);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
     const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
     if (! piece)
       continue;
     if (piece->type == BUFFER_SEGMENT)
-      buffer_split_segment(piece, intersections, result);
+      buffer_split_segment(piece, intersections, &ix, result);
     else if (piece->type == BUFFER_ARC)
-      buffer_split_arc(piece, intersections, result);
+      buffer_split_arc(piece, intersections, &ix, result);
   }
+  buffer_node_index_free(&ix);
 }
 
 /*****************************************************************************
@@ -2903,210 +3270,6 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
   *dx = sign * tx / length;
   *dy = sign * ty / length;
   return true;
-}
-
-/**
- * @brief One end of a boundary piece, as the node index holds it
- */
-typedef struct
-{
-  uint32_t piece;  /**< Piece the end belongs to */
-  int32_t next;    /**< Next end in the same bucket, -1 at the end of a chain */
-  double x;        /**< The end itself, which the index never rounds */
-  double y;
-} BufferNodeEnd;
-
-/**
- * @brief The ends of a ring's boundary pieces, read by the node they sit at
- * @details Chaining a ring asks, once per step, which unused piece continues
- * the boundary at the node the walk stands on. Asking it of every piece makes
- * the walk quadratic in the pieces, which is where a buffer of a real polygon
- * spends most of its time.
- *
- * The index answers it from a uniform grid of square cells. THE GRID IS A
- * FILTER AND NEVER A TOLERANCE: it only narrows which ends are compared, and
- * #buffer_points_equal still decides every one of them, so a cell gathering
- * too much costs a comparison and never an answer. What the grid must
- * guarantee is the other direction, that it gathers ENOUGH, and it is sized
- * for that the way #relate_edges_init sizes the edge index: from the WIDEST
- * tolerance anything in the array is compared at, never from
- * @p MEOS_GEOM_TOLERANCE, which at projected coordinates is thousands of times
- * too small. A cell is therefore as wide as the largest tolerance any pair of
- * these ends reads, so two ends #buffer_points_equal accepts differ by no more
- * than a cell along each axis and lie in the same cell or in one touching it.
- * Reading the nine cells around a node is exhaustive.
- */
-typedef struct
-{
-  BufferNodeEnd *ends;  /**< Two per piece, its start and its end */
-  int32_t *cells;       /**< First end of a bucket, -1 where it holds none */
-  uint32_t ncells;      /**< Buckets, a power of two so the hash masks */
-  uint32_t nends;       /**< Ends held, twice the pieces */
-  double cell;          /**< Side of a cell, never below the tolerance */
-  uint32_t *cand;       /**< Scratch the candidates of one node are read into */
-  uint32_t *stamp;      /**< Generation a piece was last gathered in */
-  uint32_t gen;         /**< Generation of the node being read */
-} BufferNodeIndex;
-
-/**
- * @brief Return which cell a coordinate falls in along one axis
- * @details The cell is counted as a whole number and carried as a double,
- * which holds one exactly and adds one exactly well past the count any extent
- * divided by its own tolerance reaches, so stepping to a neighbouring cell
- * lands on the number that cell's own points count themselves as. The zero
- * cell is returned with one sign, both zeroes standing for it.
- */
-static double
-buffer_node_cell(double v, double cell)
-{
-  double c = floor(v / cell);
-  return (c == 0.0) ? 0.0 : c;
-}
-
-/**
- * @brief Return the bucket the cell (@p i, @p j) chains from
- * @details The cell numbers are read as the bit patterns they are, which is
- * how #relate_ctx_signature reads the bytes it mixes
- */
-static uint32_t
-buffer_node_bucket(const BufferNodeIndex *ix, double i, double j)
-{
-  uint64_t hi, hj;
-  memcpy(&hi, &i, sizeof(uint64_t));
-  memcpy(&hj, &j, sizeof(uint64_t));
-  uint64_t h = hi * UINT64CONST(0x9E3779B97F4A7C15) ^
-    hj * UINT64CONST(0xC2B2AE3D27D4EB4F);
-  h ^= h >> 29;
-  h *= UINT64CONST(0xBF58476D1CE4E5B9);
-  h ^= h >> 32;
-  return (uint32_t) (h & (uint64_t) (ix->ncells - 1));
-}
-
-/**
- * @brief Add one end of a piece to a node index
- */
-static void
-buffer_node_index_add(BufferNodeIndex *ix, uint32_t piece, POINT2D p)
-{
-  uint32_t at = ix->nends++;
-  ix->ends[at].piece = piece;
-  ix->ends[at].x = p.x;
-  ix->ends[at].y = p.y;
-  uint32_t b = buffer_node_bucket(ix, buffer_node_cell(p.x, ix->cell),
-    buffer_node_cell(p.y, ix->cell));
-  ix->ends[at].next = ix->cells[b];
-  ix->cells[b] = (int32_t) at;
-  return;
-}
-
-/**
- * @brief Build the node index of a ring's boundary pieces
- * @param[out] ix Index to build
- * @param[in] pieces Boundary pieces, whose own order the index reports back
- */
-static void
-buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
-{
-  assert(ix); assert(pieces);
-  uint32_t npieces = pieces->count;
-  /* The cell is sized from the LARGEST coordinate any end carries, which
-   * bounds the tolerance every comparison among them reads:
-   * #buffer_node_tolerance grows with the coordinate and #buffer_points_equal
-   * takes the larger of the two tolerances it is given */
-  double scale = 0.0;
-  for (uint32_t i = 0; i < npieces; i++)
-  {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
-    POINT2D s = buffer_piece_start(piece), e = buffer_piece_end(piece);
-    scale = Max(scale, Max(fabs(s.x), fabs(s.y)));
-    scale = Max(scale, Max(fabs(e.x), fabs(e.y)));
-  }
-  ix->cell = buffer_node_tolerance(scale, scale);
-  ix->ncells = 16;
-  while (ix->ncells < 2 * npieces)
-    ix->ncells *= 2;
-  ix->cells = palloc(sizeof(int32_t) * ix->ncells);
-  for (uint32_t i = 0; i < ix->ncells; i++)
-    ix->cells[i] = -1;
-  ix->ends = palloc(sizeof(BufferNodeEnd) * 2 * Max(npieces, 1u));
-  ix->nends = 0;
-  ix->cand = palloc(sizeof(uint32_t) * Max(npieces, 1u));
-  ix->stamp = palloc0(sizeof(uint32_t) * Max(npieces, 1u));
-  ix->gen = 0;
-  for (uint32_t i = 0; i < npieces; i++)
-  {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
-    buffer_node_index_add(ix, i, buffer_piece_start(piece));
-    buffer_node_index_add(ix, i, buffer_piece_end(piece));
-  }
-  return;
-}
-
-/**
- * @brief Release what a node index holds
- */
-static void
-buffer_node_index_free(BufferNodeIndex *ix)
-{
-  assert(ix);
-  pfree(ix->cells); pfree(ix->ends); pfree(ix->cand); pfree(ix->stamp);
-  ix->cells = NULL; ix->ends = NULL; ix->cand = NULL; ix->stamp = NULL;
-  return;
-}
-
-/**
- * @brief Return the pieces that can meet a node, in the order a walk over
- * every piece reaches them
- * @details The candidates are gathered from the nine cells around the node and
- * reported in ASCENDING PIECE ORDER, which is the order the pieces stand in.
- * #buffer_find_connected_piece keeps the FIRST of several candidates that tie,
- * so any other order decides a tie differently and chains another ring.
- * @param[in,out] ix Index to read
- * @param[in] point Node to read it at
- * @param[out] ncand Candidates gathered
- * @return The candidates, held in the index's own scratch
- */
-static const uint32_t *
-buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
-{
-  assert(ix); assert(ncand);
-  double ci = buffer_node_cell(point.x, ix->cell);
-  double cj = buffer_node_cell(point.y, ix->cell);
-  uint32_t n = 0;
-  ix->gen++;
-  for (int di = -1; di <= 1; di++)
-  {
-    for (int dj = -1; dj <= 1; dj++)
-    {
-      uint32_t b = buffer_node_bucket(ix, ci + di, cj + dj);
-      for (int32_t at = ix->cells[b]; at >= 0; at = ix->ends[at].next)
-      {
-        const BufferNodeEnd *end = &ix->ends[at];
-        /* Both ends of one piece can reach the node, and a bucket gathers
-         * whatever cells collide into it, so a piece is reported once */
-        if (ix->stamp[end->piece] == ix->gen)
-          continue;
-        /* The buckets bound which ends the walk sees; an end is kept only
-         * where the cell it truly sits in is one of the nine */
-        double ei = buffer_node_cell(end->x, ix->cell) - ci;
-        double ej = buffer_node_cell(end->y, ix->cell) - cj;
-        if (ei < -1.0 || ei > 1.0 || ej < -1.0 || ej > 1.0)
-          continue;
-        ix->stamp[end->piece] = ix->gen;
-        /* Ascending order, by insertion: a node holds two ends where the
-         * boundary runs through it and a handful where it pinches */
-        uint32_t k = n++;
-        while (k > 0 && ix->cand[k - 1] > end->piece)
-        {
-          ix->cand[k] = ix->cand[k - 1];
-          k--;
-        }
-        ix->cand[k] = end->piece;
-      }
-    }
-  }
-  *ncand = n;
-  return ix->cand;
 }
 
 /**
