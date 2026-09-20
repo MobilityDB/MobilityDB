@@ -803,7 +803,8 @@ s2cell_line_cells(double lon1, double lat1, double lon2, double lat2,
     s2cell_cell_xyz_vertices(cur, verts);
     double lons[4], lats[4];
     s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
-    double texit = dggs_line_exit_param(&line, lons, lats, 4, t, true);
+    double texit = dggs_line_exit_param(&line, lons, lats, 4, t, true, 0,
+      NULL);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
     /* The nudge of the geodetic walk, measured along the line */
@@ -916,7 +917,8 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
     double lons[4], lats[4];
     s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
     /* An S2 cell is convex, bounded by four arcs of great circles */
-    double texit = dggs_arc_exit_param(&arc, lons, lats, 4, t, true);
+    double texit = dggs_arc_exit_param(&arc, lons, lats, 4, t, true, 0,
+      NULL);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
     /* A nudge past the crossing lands inside the next cell without reaching

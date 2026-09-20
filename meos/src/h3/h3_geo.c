@@ -286,8 +286,6 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 typedef struct
 {
   bool geodetic;          /**< True when the path is a great circle */
-  double lon1, lat1;      /**< First endpoint, in degrees */
-  double dlon, dlat;      /**< Planar path: the step to the second endpoint */
   DggsLine line;          /**< Planar path: its straight line */
   DggsArc arc;            /**< Geodetic path: its great circle */
 } H3SegmentPath;
@@ -324,118 +322,174 @@ h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
 {
   memset(path, 0, sizeof(H3SegmentPath));
   path->geodetic = geodetic;
-  path->lon1 = lon1; path->lat1 = lat1;
-  path->dlon = lon2 - lon1; path->dlat = lat2 - lat1;
   if (! geodetic)
     return dggs_line_init(lon1, lat1, lon2, lat2, &path->line);
   return dggs_arc_init(lon1, lat1, lon2, lat2, &path->arc);
 }
 
 /**
- * @brief Return the cell holding the position a path reaches at a parameter
- * @details A geodetic position is the point `sphere_project` reaches along
- * the great circle at that fraction of the path's angle, the one
- * `pointsegm_interpolate` answers for a temporal geodetic point.
+ * @brief Return true if the boundary of a cell is convex
+ * @details A cell is a hexagon or a pentagon whose edges are arcs of great
+ * circles, and it is convex unless it spans two faces of the icosahedron,
+ * where its boundary bends at the vertices it crosses between them and holds
+ * more vertices than the cell has edges
+ */
+static bool
+h3_cell_is_convex(H3Index cell, const CellBoundary *bnd)
+{
+  return bnd->numVerts == (isPentagon(cell) ? 5 : 6);
+}
+
+/**
+ * @brief Return where the path of a segment leaves a cell, and in the last
+ * argument the edge of the cell boundary it crosses there
+ * @details A geodetic path leaves where its great circle first leaves the
+ * hemisphere of an edge, found in closed form by
+ * #dggs_arc_hemisphere_exit_param, or for a bent cell where it first crosses
+ * an edge, by #dggs_arc_exit_param. A
+ * planar path is a straight line in longitude and latitude, which a cell edge
+ * is not, so its exit is searched for along it by #dggs_line_exit_param. The
+ * exit lies strictly ahead of `tmin`, or at `tmin` for a path on the boundary
+ * there and heading out, and never on an edge the path entered the cell
+ * through. A cell spanning two faces of the icosahedron bends at the vertices
+ * where it crosses between them, so a crossing counts there where it lies on
+ * its edge.
+ * @param[in] cell Cell
+ * @param[in] bnd Boundary of the cell
+ * @param[in] entry Mask of the edges of @p bnd the path entered the cell
+ * through
+ * @param[in] path Path of the segment
+ * @param[in] tmin Parameter at which the path entered the cell
+ * @param[out] edge Edge of @p bnd crossed at the exit
+ * @return the path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+static double
+h3_cell_exit_param(H3Index cell, const CellBoundary *bnd, uint32 entry,
+  const H3SegmentPath *path, double tmin, int *edge)
+{
+  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
+  for (int i = 0; i < bnd->numVerts; i++)
+  {
+    lons[i] = bnd->verts[i].lng;
+    lats[i] = bnd->verts[i].lat;
+  }
+  bool convex = h3_cell_is_convex(cell, bnd);
+  if (path->geodetic)
+    return convex ?
+      dggs_arc_hemisphere_exit_param(&path->arc, lons, lats, bnd->numVerts,
+        tmin, entry, edge) :
+      dggs_arc_exit_param(&path->arc, lons, lats, bnd->numVerts, tmin, false,
+        entry, edge);
+  return dggs_line_exit_param(&path->line, lons, lats, bnd->numVerts, tmin,
+    convex, entry, edge);
+}
+
+/**
+ * @brief Return true if a directed edge of the grid holds a vertex of a cell
+ * boundary
+ * @details The boundary of a cell and the boundary of each of its directed
+ * edges state a shared vertex by the same computation, so a vertex of one is
+ * a vertex of the other exactly
+ */
+static bool
+h3_edge_holds_vertex(const CellBoundary *edge, const LatLng *vertex)
+{
+  for (int k = 0; k < edge->numVerts; k++)
+    if (memcmp(&edge->verts[k], vertex, sizeof(LatLng)) == 0)
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return the cell lying across an edge of the boundary of a cell, or 0
+ * when the position across that edge holds no cell
+ * @details The GRID states which cells adjoin a cell, and the walk steps to
+ * the one across the edge it crosses by asking it: the directed edges of the
+ * cell name its neighbours, and the boundary of a directed edge shares both
+ * vertices of exactly the boundary edge it runs along, which is the match
+ * #h3_cell_entry_edges makes to read the edges a neighbour is reached
+ * through. The neighbour is the destination of that directed edge.
+ *
+ * A POSITION CONSTRUCTED ACROSS THE EDGE AND HANDED BACK TO #latLngToCell
+ * states the neighbour only as closely as the construction lands: a centre
+ * reflected through the midpoint of an edge carries the rounding of the
+ * vertices, of the reflection, and of the angles it is turned back into, and
+ * at a CORNER, where three cells meet within a last place of one another, the
+ * cell holding that position is decided by that rounding. The grid's own
+ * adjacency is exact and answers with no position at all, as
+ * #s2cell_edge_neighbors answers for an S2 cell and a step of one tile
+ * answers for a quadbin one.
+ * @param[in] cell Cell the walk stands in
+ * @param[in] bnd Boundary of @p cell
+ * @param[in] edge Edge of @p bnd, from vertex @p edge to the one after it
  */
 static H3Index
-h3_segment_path_cell(const H3SegmentPath *path, double t, int32 resolution)
+h3_cell_across_edge(H3Index cell, const CellBoundary *bnd, int edge)
 {
-  if (! path->geodetic)
-    return h3_latlng_deg_to_cell(path->lat1 + t * path->dlat,
-      path->lon1 + t * path->dlon, resolution);
-  double lon, lat;
-  if (! dggs_arc_point(&path->arc, t, &lon, &lat))
+  H3Index edges[6];
+  if (originToDirectedEdges(cell, edges) != E_SUCCESS)
     return (H3Index) 0;
-  LatLng ll = { .lat = lat, .lng = lon };
-  H3Index cell;
-  if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
-    return (H3Index) 0;
-  return cell;
-}
-
-/** @brief A path of a segment and the resolution its cells are read at, the
- * state #dggs_crossing_param() reads a cell of the path from */
-typedef struct
-{
-  const H3SegmentPath *path; /**< Path of the segment */
-  int32 resolution;          /**< Resolution of the grid */
-} H3PathAt;
-
-/**
- * @brief Return the cell the path of a segment holds at a parameter, or 0 when
- * the position cannot be projected
- */
-static uint64
-h3_path_cell_at(void *state, double t)
-{
-  const H3PathAt *at = (const H3PathAt *) state;
-  return (uint64) h3_segment_path_cell(at->path, t, at->resolution);
-}
-
-/**
- * @brief Return where a geodetic path leaves the cell holding it
- * @details A cell edge is an arc of a great circle, as the path is, so the
- * circle of each edge meets the circle of the path at two antipodal points,
- * along the intersection of their planes. The exit is the nearest of those
- * points that lies on its edge and strictly ahead of `tmin` on the path; its
- * parameter is the fraction of the path's angle reached there.
- * @return the path parameter of the exit, or a value above 1 when the path
- * ends inside the cell
- */
-static double
-h3_cell_exit_param_geodetic(H3Index cell, const H3SegmentPath *path,
-  double tmin)
-{
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
-    return 2.0;
-  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
-  for (int i = 0; i < bnd.numVerts; i++)
+  const LatLng *v0 = &bnd->verts[edge];
+  const LatLng *v1 = &bnd->verts[(edge + 1) % bnd->numVerts];
+  for (int k = 0; k < 6; k++)
   {
-    lons[i] = bnd.verts[i].lng;
-    lats[i] = bnd.verts[i].lat;
+    CellBoundary eb;
+    if (edges[k] == (H3Index) 0 ||
+        directedEdgeToBoundary(edges[k], &eb) != E_SUCCESS)
+      continue;
+    if (! h3_edge_holds_vertex(&eb, v0) || ! h3_edge_holds_vertex(&eb, v1))
+      continue;
+    H3Index ends[2];
+    if (directedEdgeToCells(edges[k], ends) != E_SUCCESS)
+      return (H3Index) 0;
+    return ends[1];
   }
-  return dggs_arc_exit_param(&path->arc, lons, lats, bnd.numVerts, tmin,
-    false);
+  return (H3Index) 0;
 }
 
 /**
- * @brief Return where a planar path leaves the cell holding it
- * @details A cell edge is an arc of a great circle, which the straight line in
- * longitude and latitude of the path is not, so the exit is searched for along
- * the path by #dggs_line_exit_param: the nearest crossing of an edge strictly
- * ahead of `tmin`. A cell spanning two faces of the icosahedron bends at the
- * vertices where it crosses between them, so the crossing counts where it lies
- * on its edge.
- * @return the path parameter of the exit, or a value above 1 when the path
- * ends inside the cell
+ * @brief Return the mask of the edges of the boundary of a cell it shares
+ * with a neighbour, bit `i` for the edge from vertex `i`
+ * @details The edges shared with a neighbour are those of the directed edge
+ * from the cell to it; a cell bent across a face of the icosahedron states
+ * that edge in two pieces
  */
-static double
-h3_cell_exit_param_planar(H3Index cell, const H3SegmentPath *path,
-  double tmin)
+static uint32
+h3_cell_entry_edges(H3Index cell, const CellBoundary *bnd, H3Index neighbour)
 {
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
-    return 2.0;
-  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
-  for (int i = 0; i < bnd.numVerts; i++)
-  {
-    lons[i] = bnd.verts[i].lng;
-    lats[i] = bnd.verts[i].lat;
-  }
-  return dggs_line_exit_param(&path->line, lons, lats, bnd.numVerts, tmin,
-    false);
+  H3Index dedge;
+  CellBoundary eb;
+  if (cellsToDirectedEdge(cell, neighbour, &dedge) != E_SUCCESS ||
+      directedEdgeToBoundary(dedge, &eb) != E_SUCCESS)
+    return 0;
+  uint32 mask = 0;
+  for (int i = 0; i < bnd->numVerts; i++)
+    if (h3_edge_holds_vertex(&eb, &bnd->verts[i]) &&
+        h3_edge_holds_vertex(&eb, &bnd->verts[(i + 1) % bnd->numVerts]))
+      mask |= 1u << i;
+  return mask;
 }
 
 /**
  * @brief Fill `cells` with every cell the segment crosses, and `enter` with
  * the segment parameter at which it reaches each
- * @details A traversal, not a sampling walk: from the cell in hand the walk
- * leaves through its boundary, and the cell just beyond that crossing is a
- * NEIGHBOUR of it, so no cell between the two can be passed over. A sampling
- * walk has no such property at any spacing, because a segment clips a cell
- * corner over an arbitrarily short chord and every spacing is longer than
- * some chord.
+ * @details The traversal of a grid by a line, as the split of a temporal point
+ * by a space grid walks its tiles: from the cell in hand, the path leaves
+ * through the edge it crosses first, and the cell across that edge is the
+ * next one, so each cell of the walk is a neighbour of the one before it and
+ * no cell between the two is passed over, however short the chord the path
+ * clips from it. The walk ends at the cell of the far endpoint. A path never
+ * leaves a cell through the edge it entered it by, as a line never crosses
+ * back over the tile boundary it has just crossed: across a face of the
+ * icosahedron the two cells sharing an edge state it apart, one bent at the
+ * face and the other not, so the crossing of one lies just outside the other.
+ *
+ * A crossing is the parameter at which the path meets the edge, and a cell is
+ * entered there. A path passing through a vertex, where three cells meet,
+ * leaves through one of the two edges meeting there and reaches the third
+ * cell from the second at the same parameter, as a line through the corner of
+ * four tiles passes one of the two side tiles for no length.
  *
  * The walk follows the path the point moves along: the straight line in
  * longitude and latitude of a planar point, the great circle of a geodetic
@@ -465,63 +519,39 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   H3SegmentPath path;
   if (! h3_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
     return n;
-  /* The length of the path in degrees */
-  double seg = geodetic ? rad2deg(path.arc.dist) :
-    sqrt(path.dlon * path.dlon + path.dlat * path.dlat);
-  /* A nudge past the crossing lands inside the next cell without reaching
-   * the one after it: a ten-thousandth of a cell edge is far below the
-   * width of any cell and far above the rounding of the crossing itself */
-  double edge_m;
-  if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
-    edge_m = 1000.0;
-  double nudge = (edge_m / 111320.0) * 1e-4 / seg;
-  if (nudge <= 0.0 || nudge >= 1.0)
-    nudge = 1e-9;
-
   /* A cell is convex, on the plane and on the sphere, so a path whose far
    * endpoint lies in the same cell as its near one never leaves it and there
    * is no boundary to find. That is the common case wherever the positions
    * are closer together than a cell is wide, and reading the boundary for it
    * costs more than the whole answer is worth */
-  if (h3_latlng_deg_to_cell(lat2, lon2, resolution) == cur)
+  H3Index end = h3_latlng_deg_to_cell(lat2, lon2, resolution);
+  if (end == cur)
     return n;
 
-  H3PathAt at = { .path = &path, .resolution = resolution };
   double t = 0.0;
-  while (n < maxout)
+  H3Index prev = (H3Index) 0;
+  while (n < maxout && cur != end)
   {
-    double texit = geodetic ? h3_cell_exit_param_geodetic(cur, &path, t) :
-      h3_cell_exit_param_planar(cur, &path, t);
-    if (texit > 1.0)
-      break;                 /* the segment ends inside this cell */
-    double tn = texit + nudge, tin = texit;
-    H3Index next = (H3Index) 0;
-    /* A nudge that lands back in the cell just left says the crossing sits
-     * within its own rounding, so widen it rather than stall */
-    for (int k = 0; k < 8 && tn < 1.0; k++)
-    {
-      next = h3_segment_path_cell(&path, tn, resolution);
-      if (next != (H3Index) 0 && next != cur)
-        break;
-      tin = tn;
-      tn += nudge * (double) (1 << k);
-      next = (H3Index) 0;
-    }
-    if (next == (H3Index) 0 || tn >= 1.0)
+    CellBoundary bnd;
+    if (cellToBoundary(cur, &bnd) != E_SUCCESS || bnd.numVerts < 3)
       break;
-    /* A crossing the path is still in the cell past is one the rounding of an
-     * edge the path runs along places where the path is: the probes bracket
-     * the crossing, and halving the bracket closes on it */
+    uint32 entry = prev ? h3_cell_entry_edges(cur, &bnd, prev) : 0;
+    int edge = -1;
+    double texit = h3_cell_exit_param(cur, &bnd, entry, &path, t, &edge);
+    if (texit > 1.0 || edge < 0)
+      break;                 /* the segment ends inside this cell */
+    H3Index next = h3_cell_across_edge(cur, &bnd, edge);
+    if (next == (H3Index) 0)
+      break;
     cells[n] = next;
-    enter[n] = (tin > texit) ?
-      dggs_crossing_param(tin, tn, cur, &h3_path_cell_at, &at) : texit;
+    enter[n] = texit;
     n++;
+    prev = cur;
     cur = next;
-    t = tn;
+    t = texit;
   }
   return n;
 }
-
 
 /*****************************************************************************
  * Geometry to cell set
