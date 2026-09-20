@@ -878,10 +878,13 @@ s2cell_segment_cells(double lon1, double lat1, double lon2, double lat2,
         pfree(nb);
       break;
     }
-    /* The edge shared with the cell the path came from, which it does not
-     * leave through */
+    /* A geodetic path is a great circle and a cell is convex for it, so it
+     * leaves through the edge it came in by only at the parameter it came in
+     * at, and the edge is held out of the search. A planar path is no great
+     * circle and a cell is not convex for it: such a path leaves a cell and
+     * comes back, through that very edge, and the search keeps it */
     uint32 entry = 0;
-    if (prev != (S2CellId) 0)
+    if (path.geodetic && prev != (S2CellId) 0)
       for (int k = 0; k < 4; k++)
         if (nb[k] == prev)
         {
