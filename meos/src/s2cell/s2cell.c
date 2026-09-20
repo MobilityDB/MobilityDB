@@ -797,8 +797,10 @@ s2cell_cell_exit_param(S2CellId cell, uint32 entry,
   if (path->geodetic)
     return dggs_arc_normals_exit_param(&path->arc, normals, 4, tmin, entry,
       edge);
-  return dggs_line_normals_exit_param(&path->line, normals, 4, tmin, entry,
-    edge);
+  /* A cube face states the plane of an edge THROUGH THE CENTRE of the
+   * sphere, exactly, so its height needs no position to be read from */
+  return dggs_line_normals_exit_param(&path->line, normals, NULL, 4, tmin,
+    entry, edge);
 }
 
 /**
