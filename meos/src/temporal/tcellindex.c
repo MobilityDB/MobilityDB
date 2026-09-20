@@ -1486,7 +1486,16 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
     if (g < 0.0)
       g = 0.0;
     double h = (e + sqrt(e * e + 2.0 * mm * g)) / mm;
-    t += (h > 1e-15) ? h : 1e-15;
+    /* A height ABOVE the plane leaves the step a positive length, so a step
+     * that reads zero there is one the search has shortened onto the crossing
+     * until the height it carries stands a last place above the plane: the
+     * sign changes THERE, which is the step #dggs_line_plane_param reads the
+     * same way. The step is zero for a path lying IN the plane and not
+     * leaving it only where the height is zero as well, and such a path
+     * crosses nowhere */
+    if (h <= 0.0)
+      return (g > 0.0) ? t : 2.0;
+    t += h;
     dggs_line_height(line, m, t, &f, &d);
   }
   return (t > 1.0) ? 2.0 : t;
