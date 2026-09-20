@@ -657,43 +657,6 @@ s2cell_cell_vertices(S2CellId cell, double *longitudes, double *latitudes)
  *****************************************************************************/
 
 /**
- * @brief Set the last argument to the four vertices of an S2 cell as unit
- * vectors
- * @details Each vertex has three coordinates, and the vertices are in the
- * order #s2cell_cell_vertices states them.
- */
-static void
-s2cell_cell_xyz_vertices(S2CellId cell, double *verts)
-{
-  double umin, vmin, umax, vmax;
-  uint32_t face = s2cell_cell_uv(cell, &umin, &vmin, &umax, &vmax);
-  const double us[4] = { umin, umax, umax, umin };
-  const double vs[4] = { vmin, vmin, vmax, vmax };
-  for (int k = 0; k < 4; k++)
-    s2cell_face_uv_to_xyz(face, us[k], vs[k], &verts[3 * k]);
-  return;
-}
-
-/**
- * @brief Set the last two arguments to the longitudes and latitudes in
- * radians of four cell vertices given by their `(x, y, z)` coordinates
- * @details The conversion is the one #s2cell_xyz_to_lonlat performs in
- * degrees.
- */
-static void
-s2cell_xyz_vertices_to_lonlat(const double *verts, double *lons,
-  double *lats)
-{
-  for (int k = 0; k < 4; k++)
-  {
-    const double *p = &verts[3 * k];
-    lons[k] = atan2(p[1], p[0]);
-    lats[k] = atan2(p[2], sqrt(p[0] * p[0] + p[1] * p[1]));
-  }
-  return;
-}
-
-/**
  * @brief Set the last argument to the inward unit normal of the plane of each
  * edge of a cell, three coordinates each, the edge from vertex `k` at
  * `normals[3 * k]`
@@ -829,17 +792,12 @@ static double
 s2cell_cell_exit_param(S2CellId cell, uint32 entry,
   const S2SegmentPath *path, double tmin, int *edge)
 {
+  double normals[12];
+  s2cell_cell_edge_normals(cell, normals);
   if (path->geodetic)
-  {
-    double normals[12];
-    s2cell_cell_edge_normals(cell, normals);
     return dggs_arc_normals_exit_param(&path->arc, normals, 4, tmin, entry,
       edge);
-  }
-  double verts[12], lons[4], lats[4];
-  s2cell_cell_xyz_vertices(cell, verts);
-  s2cell_xyz_vertices_to_lonlat(verts, lons, lats);
-  return dggs_line_exit_param(&path->line, lons, lats, 4, tmin, true, entry,
+  return dggs_line_normals_exit_param(&path->line, normals, 4, tmin, entry,
     edge);
 }
 
