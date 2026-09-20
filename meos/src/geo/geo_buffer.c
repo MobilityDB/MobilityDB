@@ -649,7 +649,7 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
        * the kernel behind it ask one question. Bounding the reject tighter --
        * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
        * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = fmax(fmax(a->tol, b->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(a->tol, b->tol), MEOS_GEOM_TOLERANCE);
       if (a->xmax < b->xmin - band ||
           b->xmax < a->xmin - band ||
           a->ymax < b->ymin - band ||
@@ -824,7 +824,7 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
        * the kernel behind it ask one question. Bounding the reject tighter --
        * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
        * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
       if (e1->xmax < e2->xmin - band ||
           e2->xmax < e1->xmin - band ||
           e1->ymax < e2->ymin - band ||
@@ -1189,7 +1189,7 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
         continue;
       /* Two edges whose boxes lie apart cannot meet, read at the band the
        * meeting test itself works to */
-      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
       if (e1->xmax < e2->xmin - band ||
           e2->xmax < e1->xmin - band ||
           e1->ymax < e2->ymin - band ||
@@ -2598,7 +2598,7 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
        * the kernel behind it ask one question. Bounding the reject tighter --
        * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
        * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
       if (e1->xmax < e2->xmin - band ||
           e2->xmax < e1->xmin - band ||
           e1->ymax < e2->ymin - band ||
@@ -4149,7 +4149,7 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
         continue;
       /* Two edges whose boxes lie apart cannot meet, read at the band the
        * meeting test itself works to */
-      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
       if (e1->xmax < e2->xmin - band ||
           e2->xmax < e1->xmin - band ||
           e1->ymax < e2->ymin - band ||
@@ -5358,7 +5358,7 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
        * the kernel behind it ask one question. Bounding the reject tighter --
        * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
        * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
       if (e1->xmax < e2->xmin - band ||
           e2->xmax < e1->xmin - band ||
           e1->ymax < e2->ymin - band ||
