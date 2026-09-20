@@ -15,7 +15,7 @@ var searchData=
   ['elem_5fsize_12',['elem_size',['../structMeosArray_a67927efdb9241fa114ac0572d753ed06.html#a67927efdb9241fa114ac0572d753ed06',1,'MeosArray']]],
   ['elems_13',['elems',['../structSpanSet_a0d045c4a4e812e0fe731c04825b0b8ce.html#a0d045c4a4e812e0fe731c04825b0b8ce',1,'SpanSet::elems()'],['../structMeosArray_a195c60abaca0f18638d3deb88d19ab38.html#a195c60abaca0f18638d3deb88d19ab38',1,'MeosArray::elems()'],['../structSkipList_a24a8fa2faf2c840073582801c3cc9eee.html#a24a8fa2faf2c840073582801c3cc9eee',1,'SkipList::elems()']]],
   ['empty_14',['empty',['../structBufferExtent_a715438974dad3cdfa030e0953b6e9c54.html#a715438974dad3cdfa030e0953b6e9c54',1,'BufferExtent']]],
-  ['ends_15',['ends',['../structBufferNodeIndex_a4083e734da51ec2717c4eb1fe74ca757.html#a4083e734da51ec2717c4eb1fe74ca757',1,'BufferNodeIndex']]],
+  ['ends_15',['ends',['../structLinearEndIndex_a3a43c09407f211f9d9b50d7dec0c3566.html#a3a43c09407f211f9d9b50d7dec0c3566',1,'LinearEndIndex::ends()'],['../structBufferNodeIndex_a4083e734da51ec2717c4eb1fe74ca757.html#a4083e734da51ec2717c4eb1fe74ca757',1,'BufferNodeIndex::ends()']]],
   ['entries_16',['entries',['../structRelateCtxCache_a9f4a3d4297ea7157777ebf338f2ba723.html#a9f4a3d4297ea7157777ebf338f2ba723',1,'RelateCtxCache']]],
   ['entries_5fcount_17',['entries_count',['../structConsiderSplitContext_a0002c5137cf8c702a60caedd15535145.html#a0002c5137cf8c702a60caedd15535145',1,'ConsiderSplitContext']]],
   ['entriescount_18',['entriesCount',['../structBboxSplitContext_a7ec8c2e0d8cbe04abdf44816c0719567.html#a7ec8c2e0d8cbe04abdf44816c0719567',1,'BboxSplitContext']]],
