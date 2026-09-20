@@ -51,6 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "geo/geo_funcs.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
@@ -661,6 +662,100 @@ dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
 }
 
 /**
+ * @brief Return where a geodetic path leaves a convex cell, read as the
+ * intersection of the hemispheres its edge circles bound
+ * @details A convex cell is the intersection of the hemispheres its edge
+ * circles bound, each read on the side the centre of its vertices lies on, so
+ * a path inside it leaves where it first leaves any of them. Along the path
+ * `p(theta) = a cos(theta) + b sin(theta)`, with `b` the direction the path
+ * travels at its first endpoint, the height `<m, p>` above the plane of an
+ * edge of inward normal `m` is `R cos(theta - phi)`, which falls through zero
+ * at `theta = phi + pi/2` alone: that is where the path leaves the hemisphere.
+ * A path on or outside the circle of an edge at `tmin` and heading outward
+ * leaves there, as a line starting on a tile boundary and heading across it
+ * leaves the tile at once. A path running along the circle of an edge never
+ * leaves through it, as a line running along a tile boundary never crosses
+ * it: its height and slope above the plane of that edge are then the rounding
+ * of unit vectors, whose signs state no side.
+ * @param[in] arc Path
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in the
+ * order they join
+ * @param[in] count Number of vertices
+ * @param[in] tmin Parameter at which the path entered the cell
+ * @param[in] entry Mask of the edges the path entered the cell through, bit
+ * `i` for the edge from vertex `i`, which it never leaves through: a line
+ * does not cross back over the tile boundary it has just crossed
+ * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
+ * from vertex `edge` to the next vertex
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+double
+dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
+  const double *lats, int count, double tmin, uint32 entry, int *edge)
+{
+  assert(arc); assert(lons); assert(lats);
+  POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
+  POINT3D normal = { .x = arc->normal[0], .y = arc->normal[1],
+    .z = arc->normal[2] };
+  POINT3D b;
+  dggs_vec_cross(&normal, &a, &b);
+  POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
+  for (int i = 0; i < count; i++)
+  {
+    GEOGRAPHIC_POINT g = { .lat = lats[i], .lon = lons[i] };
+    POINT3D v;
+    geog2cart(&g, &v);
+    centre.x += v.x; centre.y += v.y; centre.z += v.z;
+  }
+  double theta0 = tmin * arc->dist;
+  double c0 = cos(theta0), s0 = sin(theta0);
+  double best = 2.0;
+  for (int i = 0; i < count; i++)
+  {
+    if (entry & (1u << i))
+      continue;
+    int j = (i + 1) % count;
+    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
+    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
+    POINT3D m;
+    /* Read from the angles of the vertices, as #dggs_arc_exit_param does */
+    robust_cross_product(&gi, &gj, &m);
+    if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
+      continue;
+    normalize(&m);
+    if (dggs_vec_dot(&m, &centre) < 0.0)
+    {
+      m.x = -m.x; m.y = -m.y; m.z = -m.z;
+    }
+    double ma = dggs_vec_dot(&m, &a), mb = dggs_vec_dot(&m, &b);
+    if (fabs(ma) <= MEOS_GEOM_TOLERANCE && fabs(mb) <= MEOS_GEOM_TOLERANCE)
+      continue;              /* the edge lies on the circle of the path */
+    double t;
+    /* The height at `tmin` and its slope along the path */
+    double f = ma * c0 + mb * s0, d = mb * c0 - ma * s0;
+    if (f <= 0.0 && d <= 0.0)
+      t = nextafter(tmin, 2.0);
+    else
+    {
+      double theta = atan2(mb, ma) + M_PI_2;
+      /* The first such angle strictly ahead of `tmin` */
+      theta += 2.0 * M_PI * ceil((theta0 - theta) / (2.0 * M_PI));
+      if (theta <= theta0)
+        theta += 2.0 * M_PI;
+      t = theta / arc->dist;
+    }
+    if (t <= 1.0 && t < best)
+    {
+      best = t;
+      if (edge)
+        *edge = i;
+    }
+  }
+  return best;
+}
+
+/**
  * @brief Return where a geodetic path leaves a cell
  * @details A cell edge is an arc of a great circle, as the path is, so the
  * circle of each edge meets the circle of the path at two antipodal points,
@@ -680,12 +775,18 @@ dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
  * @param[in] count Number of vertices
  * @param[in] tmin Parameter the exit lies strictly ahead of
  * @param[in] convex True when the cell is convex
+ * @param[in] entry Mask of the edges the path entered the cell through, bit
+ * `i` for the edge from vertex `i`, which it never leaves through: a line
+ * does not cross back over the tile boundary it has just crossed
+ * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
+ * from vertex `edge` to the next vertex
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
 double
 dggs_arc_exit_param(const DggsArc *arc, const double *lons,
-  const double *lats, int count, double tmin, bool convex)
+  const double *lats, int count, double tmin, bool convex, uint32 entry,
+  int *edge)
 {
   assert(arc); assert(lons); assert(lats);
   POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
@@ -694,6 +795,8 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
   double best = 2.0;
   for (int i = 0; i < count; i++)
   {
+    if (entry & (1u << i))
+      continue;
     int j = (i + 1) % count;
     GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
     GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
@@ -731,7 +834,11 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
       double t = atan2(dggs_vec_dot(&c, &normal), dggs_vec_dot(&a, &p)) /
         arc->dist;
       if (t > tmin && t <= 1.0 && t < best)
+      {
         best = t;
+        if (edge)
+          *edge = i;
+      }
     }
   }
   return best;
@@ -1079,11 +1186,13 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
  */
 static double
 dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
-  const double *lats, int count, double tmin)
+  const double *lats, int count, double tmin, uint32 entry, int *edge)
 {
   double best = 2.0;
   for (int i = 0; i < count; i++)
   {
+    if (entry & (1u << i))
+      continue;
     int j = (i + 1) % count;
     GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
     GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
@@ -1115,6 +1224,8 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
       if (dggs_vec_dot(&c, &m) < 0.0)
         continue;
       best = t;
+      if (edge)
+        *edge = i;
       break;
     }
   }
@@ -1136,16 +1247,23 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
  * @param[in] count Number of vertices
  * @param[in] tmin Parameter the exit lies strictly ahead of
  * @param[in] convex True when the cell is convex
+ * @param[in] entry Mask of the edges the path entered the cell through, bit
+ * `i` for the edge from vertex `i`, which it never leaves through: a line
+ * does not cross back over the tile boundary it has just crossed
+ * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
+ * from vertex `edge` to the next vertex
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
 double
 dggs_line_exit_param(const DggsLine *line, const double *lons,
-  const double *lats, int count, double tmin, bool convex)
+  const double *lats, int count, double tmin, bool convex, uint32 entry,
+  int *edge)
 {
   assert(line); assert(lons); assert(lats);
   if (! convex)
-    return dggs_line_exit_param_edges(line, lons, lats, count, tmin);
+    return dggs_line_exit_param_edges(line, lons, lats, count, tmin, entry,
+      edge);
   /* The interior lies on the side of every edge circle the centre of the
    * vertices lies on */
   POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
@@ -1159,6 +1277,8 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
   double best = 2.0;
   for (int i = 0; i < count; i++)
   {
+    if (entry & (1u << i))
+      continue;
     int j = (i + 1) % count;
     GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
     GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
@@ -1174,7 +1294,11 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
     }
     double t = dggs_line_plane_param(line, &m, tmin);
     if (t < best)
+    {
       best = t;
+      if (edge)
+        *edge = i;
+    }
   }
   return best;
 }

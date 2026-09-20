@@ -165,6 +165,54 @@ SELECT name, res, count(*) FILTER (WHERE o.interior) AS interior,
 FROM shared o FULL JOIN cover v USING (name, res, c)
 GROUP BY name, res ORDER BY name, res;
 
+-- The boundary of a cell runs along the edges of the cells one and two
+-- resolutions finer, and its cover states the cells that boundary reaches: a
+-- cell the grid assigns a point of the boundary to is in the cover (missed),
+-- and every cell of the cover reaches the boundary (overclaim). The cells
+-- reached are read from points the boundary ITSELF holds, walked along it,
+-- since only a point of the geometry states which cell the geometry reaches.
+-- A position shared by two outlines is a CONSTRUCTION of them and lies off
+-- the boundary by the rounding of that construction, so the grid answers for
+-- where the construction landed rather than for the boundary: the outlines of
+-- two neighbouring cells state the vertex they share a few units of the last
+-- place apart, which is enough for one to reach into the other. The number of
+-- cells the cover holds is not stated: which cell holds a point on a vertex
+-- of the grid is the rounding of the H3 library
+WITH c(cell, res) AS (VALUES
+  (h3index '871f23485ffffff', 8), (h3index '871f23485ffffff', 9),
+  (h3index '891f23485c7ffff', 10), (h3index '891f23485c7ffff', 11),
+  (h3index '8b1f23485d5bfff', 13)),
+-- A cell is reached where the grid assigns a POINT OF THE BOUNDARY to it, so
+-- the cells reached are read from points the boundary itself holds, walked
+-- along it. Those points are the positions an interpolation of the ring
+-- states together with the vertices the ring holds: a vertex lies at no
+-- fraction the interpolation names, and the ring states it without
+-- constructing it, so the grid answers for the vertex itself. A cell whose
+-- outline merely meets the boundary is not reached by it: the shared position
+-- is a construction of the two outlines, off the boundary by the rounding of
+-- that construction, and the grid answers for where the construction landed
+-- rather than for the boundary.
+reached AS (
+  SELECT DISTINCT c.cell, c.res, latLngToCell(ST_LineInterpolatePoint(
+    ST_Boundary(cellToBoundary(c.cell)), s / 10000.0), c.res) AS x
+  FROM c, generate_series(0, 10000) AS s
+  UNION
+  SELECT DISTINCT c.cell, c.res, latLngToCell(
+    (ST_DumpPoints(ST_Boundary(cellToBoundary(c.cell)))).geom, c.res)
+  FROM c),
+cover AS (
+  SELECT cell, res, unnest(geoToH3IndexSet(cellToBoundary(cell), res)) AS x
+  FROM c)
+SELECT c.cell, c.res,
+  (SELECT count(*) FROM reached k WHERE (k.cell, k.res) = (c.cell, c.res)
+     AND NOT EXISTS (SELECT 1 FROM cover v
+       WHERE (v.cell, v.res, v.x) = (k.cell, k.res, k.x))) AS missed,
+  (SELECT count(*) FROM cover v WHERE (v.cell, v.res) = (c.cell, c.res)
+     AND NOT ST_Intersects(cellToBoundary(v.x), cellToBoundary(c.cell))
+     AND NOT EXISTS (SELECT 1 FROM reached k
+       WHERE (k.cell, k.res, k.x) = (v.cell, v.res, v.x))) AS overclaim
+FROM c ORDER BY c.cell, c.res;
+
 -------------------------------------------------------------------------------
 -- MULTIPOINT → union of per-point cells
 -------------------------------------------------------------------------------

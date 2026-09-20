@@ -148,6 +148,49 @@ GROUP BY name, res ORDER BY name, res;
  sliver 5 m  |   9 |       72 |    72 |      0 |         0 |       0
 (21 rows)
 
+WITH c(cell, res) AS (VALUES
+  (h3index '871f23485ffffff', 8), (h3index '871f23485ffffff', 9),
+  (h3index '891f23485c7ffff', 10), (h3index '891f23485c7ffff', 11),
+  (h3index '8b1f23485d5bfff', 13)),
+-- A cell is reached where the grid assigns a POINT OF THE BOUNDARY to it, so
+-- the cells reached are read from points the boundary itself holds, walked
+-- along it. Those points are the positions an interpolation of the ring
+-- states together with the vertices the ring holds: a vertex lies at no
+-- fraction the interpolation names, and the ring states it without
+-- constructing it, so the grid answers for the vertex itself. A cell whose
+-- outline merely meets the boundary is not reached by it: the shared position
+-- is a construction of the two outlines, off the boundary by the rounding of
+-- that construction, and the grid answers for where the construction landed
+-- rather than for the boundary.
+reached AS (
+  SELECT DISTINCT c.cell, c.res, latLngToCell(ST_LineInterpolatePoint(
+    ST_Boundary(cellToBoundary(c.cell)), s / 10000.0), c.res) AS x
+  FROM c, generate_series(0, 10000) AS s
+  UNION
+  SELECT DISTINCT c.cell, c.res, latLngToCell(
+    (ST_DumpPoints(ST_Boundary(cellToBoundary(c.cell)))).geom, c.res)
+  FROM c),
+cover AS (
+  SELECT cell, res, unnest(geoToH3IndexSet(cellToBoundary(cell), res)) AS x
+  FROM c)
+SELECT c.cell, c.res,
+  (SELECT count(*) FROM reached k WHERE (k.cell, k.res) = (c.cell, c.res)
+     AND NOT EXISTS (SELECT 1 FROM cover v
+       WHERE (v.cell, v.res, v.x) = (k.cell, k.res, k.x))) AS missed,
+  (SELECT count(*) FROM cover v WHERE (v.cell, v.res) = (c.cell, c.res)
+     AND NOT ST_Intersects(cellToBoundary(v.x), cellToBoundary(c.cell))
+     AND NOT EXISTS (SELECT 1 FROM reached k
+       WHERE (k.cell, k.res, k.x) = (v.cell, v.res, v.x))) AS overclaim
+FROM c ORDER BY c.cell, c.res;
+      cell       | res | missed | overclaim 
+-----------------+-----+--------+-----------
+ 8b1f23485d5bfff |  13 |      0 |         0
+ 891f23485c7ffff |  10 |      0 |         0
+ 891f23485c7ffff |  11 |      0 |         0
+ 871f23485ffffff |   8 |      0 |         0
+ 871f23485ffffff |   9 |      0 |         0
+(5 rows)
+
 SELECT numvalues(
   geoToH3IndexSet(
     geometry 'SRID=4326;MULTIPOINT((4.35 50.85), (4.40 50.90))', 7));
