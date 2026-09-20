@@ -260,8 +260,10 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
       "Raster has a non-positive extent; cannot derive its QUADBIN cell");
     return false;
   }
-  /* A QUADBIN tile is square */
-  if (fabs(ext_x - ext_y) > 1e-6 * ext_x)
+  /* A QUADBIN tile is square. The extent either IS the tile's or it is not:
+   * a band around the difference accepts a raster that is not a tile and
+   * answers a tile for it, which is the coercion this function refuses */
+  if (ext_x != ext_y)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster is not a square Web-Mercator tile; cannot derive its QUADBIN cell");
@@ -271,7 +273,7 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
   double world = 2.0 * QB_MERC_MAX;
   double zf = log2(world / ext_x);
   long z = lround(zf);
-  if (fabs(zf - (double) z) > 1e-6 || z < 0 || z > 26)
+  if ((double) z != zf || z < 0 || z > 26)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster extent does not match a QUADBIN zoom level");
@@ -283,7 +285,7 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
   double tyf = (QB_MERC_MAX - origin_y) / side;
   long tx = lround(txf);
   long ty = lround(tyf);
-  if (fabs(txf - (double) tx) > 1e-6 || fabs(tyf - (double) ty) > 1e-6)
+  if ((double) tx != txf || (double) ty != tyf)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster origin is not aligned to the QUADBIN tile grid");
