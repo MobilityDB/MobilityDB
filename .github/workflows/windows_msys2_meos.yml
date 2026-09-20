@@ -77,8 +77,10 @@ jobs:
         # build needs the C library alone: the h3 PostgreSQL extension the
         # control file names is a requirement of the extension target, which
         # this job does not build.
+        # The version is the one the libh3-dev package of the other jobs
+        # carries, so that a cell boundary is the same boundary in every job.
         run: |
-          git clone --depth 1 --branch v4.2.1 https://github.com/uber/h3.git h3-src
+          git clone --depth 1 --branch v4.5.0 https://github.com/uber/h3.git h3-src
           cmake -S h3-src -B h3-build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
