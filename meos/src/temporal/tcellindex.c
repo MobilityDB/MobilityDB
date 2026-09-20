@@ -1299,6 +1299,83 @@ dggs_line_height(const DggsLine *line, const POINT3D *m, double t,
   return;
 }
 
+/** @brief Number of crossings a planar path states in closed form at most */
+#define DGGS_MAX_PLANE_ROOTS 8
+
+/**
+ * @brief Set `roots` to every parameter in `[0, 1]` at which a planar path
+ * meets the plane of normal `m` through the centre, in closed form, and
+ * return how many, or -1 when the path states no closed form
+ * @details A planar path carries a longitude AND a latitude each linear in
+ * the parameter, so its height above a plane holds both angles and is no
+ * sinusoid. Where one of the two is CONSTANT the other alone is left, the
+ * height is a single sinusoid, and the inverse of a cosine states its zeros
+ * exactly:
+ *
+ * - a path of constant latitude has the height
+ *   `cos(φ) R cos(λ − ψ) + m₂ sin(φ)`, with `R = hypot(m₀, m₁)` and
+ *   `ψ = atan2(m₁, m₀)`, which is zero at the longitudes
+ *   `ψ ± acos(−m₂ tan(φ) / R)`, each of them once a turn;
+ * - a path of constant longitude has the height `A cos(φ) + m₂ sin(φ)`, with
+ *   `A = m₀ cos(λ) + m₁ sin(λ)`, which is zero at the latitudes
+ *   `−atan2(A, m₂)`, once a half turn.
+ *
+ * A SEARCH along the path steps by a bound on its curvature, and the LENGTH
+ * of the path sets that bound: over a long path every step is short and the
+ * steps shrink onto a crossing until one reaches zero, where the search
+ * states no crossing though the path makes one. The closed form holds however
+ * long the path is.
+ * @param[in] line Path
+ * @param[in] m Unit normal of the plane
+ * @param[out] roots Parameters of the crossings, #DGGS_MAX_PLANE_ROOTS at most
+ * @return The number of crossings, or -1 when both the longitude and the
+ * latitude of the path move and no closed form states them
+ */
+static int
+dggs_line_plane_closed(const DggsLine *line, const double m[3], double *roots)
+{
+  assert(line); assert(m); assert(roots);
+  int n = 0;
+  if (line->dlat == 0.0 && line->dlon != 0.0)
+  {
+    double cl = cos(line->lat), sl = sin(line->lat);
+    double r = hypot(m[0], m[1]);
+    /* The plane of the equator holds no longitude, and a path at a pole
+     * states none: neither carries the sinusoid the closed form reads */
+    if (r == 0.0 || cl == 0.0)
+      return -1;
+    double rhs = -m[2] * sl / (cl * r);
+    if (fabs(rhs) > 1.0)
+      return 0;                  /* the path never reaches the plane */
+    double psi = atan2(m[1], m[0]), half = acos(rhs);
+    double lo = (line->dlon > 0.0) ? line->lon : line->lon + line->dlon;
+    double hi = (line->dlon > 0.0) ? line->lon + line->dlon : line->lon;
+    for (int s = -1; s <= 1; s += 2)
+    {
+      double base = psi + s * half;
+      double kmin = ceil((lo - base) / (2.0 * M_PI));
+      double kmax = floor((hi - base) / (2.0 * M_PI));
+      for (double k = kmin; k <= kmax && n < DGGS_MAX_PLANE_ROOTS; k += 1.0)
+        roots[n++] = (base + 2.0 * M_PI * k - line->lon) / line->dlon;
+    }
+    return n;
+  }
+  if (line->dlon == 0.0 && line->dlat != 0.0)
+  {
+    double a = m[0] * cos(line->lon) + m[1] * sin(line->lon);
+    if (hypot(a, m[2]) == 0.0)
+      return -1;               /* the path lies in the plane of the edge */
+    double base = -atan2(a, m[2]);
+    double lo = (line->dlat > 0.0) ? line->lat : line->lat + line->dlat;
+    double hi = (line->dlat > 0.0) ? line->lat + line->dlat : line->lat;
+    double kmin = ceil((lo - base) / M_PI), kmax = floor((hi - base) / M_PI);
+    for (double k = kmin; k <= kmax && n < DGGS_MAX_PLANE_ROOTS; k += 1.0)
+      roots[n++] = (base + M_PI * k - line->lat) / line->dlat;
+    return n;
+  }
+  return -1;
+}
+
 /**
  * @brief Return the first parameter strictly ahead of `tmin` at which a
  * planar path reaches the plane of normal `m` from its positive side
@@ -1315,6 +1392,33 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
 {
   double t = tmin, f, d;
   double mm = line->curvature;
+  /* Where the path states its crossings in closed form they are read there,
+   * as a search along a long path steps too short to reach them */
+  const double mv[3] = { m->x, m->y, m->z };
+  double roots[DGGS_MAX_PLANE_ROOTS];
+  int nroots = dggs_line_plane_closed(line, mv, roots);
+  if (nroots >= 0)
+  {
+    dggs_line_height(line, m, tmin, &f, &d);
+    if (f <= 0.0 && d <= 0.0)
+      return tmin;
+    /* The cell lies where the height is positive, so it is LEFT where the
+     * path descends through the plane and entered where it rises through it.
+     * A path starting outside and heading in meets the plane twice, and the
+     * exit is the second of the two: the rate at the crossing tells them
+     * apart, as it does in the search below */
+    double best = 2.0;
+    for (int i = 0; i < nroots; i++)
+    {
+      if (roots[i] <= tmin || roots[i] > 1.0 || roots[i] >= best)
+        continue;
+      double rf, rd;
+      dggs_line_height(line, m, roots[i], &rf, &rd);
+      if (rd <= 0.0)
+        best = roots[i];
+    }
+    return best;
+  }
   for (int i = 0; i < 1024 && t <= 1.0; i++)
   {
     dggs_line_height(line, m, t, &f, &d);
@@ -1354,6 +1458,21 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
   dggs_line_height(line, m, t, &f, &d);
   /* A start on the plane lies on the side the path heads to */
   double side = (f > 0.0 || (f == 0.0 && d >= 0.0)) ? 1.0 : -1.0;
+  /* Where the path states its crossings in closed form they are read there,
+   * as a search along a long path steps too short to reach them */
+  const double mv[3] = { m->x, m->y, m->z };
+  double roots[DGGS_MAX_PLANE_ROOTS];
+  int nroots = dggs_line_plane_closed(line, mv, roots);
+  if (nroots >= 0)
+  {
+    if (side * f <= 0.0 && side * d < 0.0)
+      return tmin;
+    double best = 2.0;
+    for (int i = 0; i < nroots; i++)
+      if (roots[i] > tmin && roots[i] <= 1.0 && roots[i] < best)
+        best = roots[i];
+    return best;
+  }
   for (int i = 0; i < 1024 && t <= 1.0; i++)
   {
     double g = side * f, e = side * d;
