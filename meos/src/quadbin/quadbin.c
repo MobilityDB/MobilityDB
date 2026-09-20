@@ -611,6 +611,12 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 }
 
 
+/** @brief The boundaries of a tile, in the order the exit reports them */
+#define QUADBIN_EDGE_WEST   0
+#define QUADBIN_EDGE_EAST   1
+#define QUADBIN_EDGE_NORTH  2
+#define QUADBIN_EDGE_SOUTH  3
+
 /**
  * @brief Return where a geodetic path leaves the tile holding it, in the grid
  * of `n` tiles a side
@@ -625,85 +631,57 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
  */
 static double
 quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
-  double n, double tmin)
+  double n, double tmin, uint32 entry, int *edge)
 {
   double best = 2.0, t;
   if (n > 1.0)
   {
-    for (int k = 0; k < 2; k++)
+    /* A meridian bounds a HEMISPHERE, and its plane is a whole great circle
+     * holding the opposite meridian too, so a crossing half a world away
+     * would name a tile the path never reaches. The hemisphere form states
+     * the exit, and states a path running ALONG a meridian as such */
+    double lonw = (double) x / n * 2.0 * M_PI - M_PI;
+    double lone = ((double) x + 1.0) / n * 2.0 * M_PI - M_PI;
+    const double normals[6] = { -sin(lonw), cos(lonw), 0.0,
+      sin(lone), -cos(lone), 0.0 };
+    int which = -1;
+    t = dggs_arc_normals_exit_param(arc, normals, 2, tmin,
+      entry & ((1u << QUADBIN_EDGE_WEST) | (1u << QUADBIN_EDGE_EAST)), &which);
+    if (t < best && which >= 0)
     {
-      double lon = ((double) x + k) / n * 2.0 * M_PI - M_PI;
-      const double m[3] = { -sin(lon), cos(lon), 0.0 };
-      t = dggs_arc_plane_param(arc, m, 0.0, tmin);
-      if (t < best)
-        best = t;
+      best = t;
+      *edge = (which == 0) ? QUADBIN_EDGE_WEST : QUADBIN_EDGE_EAST;
     }
   }
+  /* A parallel is ONE circle, so its first crossing ahead of `tmin` is the
+   * one the path makes */
   const double pole[3] = { 0.0, 0.0, 1.0 };
-  if (y > 0)
+  if (y > 0 && ! (entry & (1u << QUADBIN_EDGE_NORTH)))
   {
     t = dggs_arc_plane_param(arc, pole,
       sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), tmin);
     if (t < best)
+    {
       best = t;
+      *edge = QUADBIN_EDGE_NORTH;
+    }
   }
-  if ((double) y + 1.0 < n)
+  if ((double) y + 1.0 < n && ! (entry & (1u << QUADBIN_EDGE_SOUTH)))
   {
     t = dggs_arc_plane_param(arc, pole,
       sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), tmin);
     if (t < best)
+    {
       best = t;
+      *edge = QUADBIN_EDGE_SOUTH;
+    }
   }
   return best;
 }
 
-/**
- * @brief Return the cell holding the position a geodetic path reaches at a
- * parameter, or 0 when the position cannot be projected
- */
-static Quadbin
-quadbin_arc_cell(const DggsArc *arc, double t, uint32_t resolution)
-{
-  double lon, lat;
-  if (! dggs_arc_point(arc, t, &lon, &lat))
-    return (Quadbin) 0;
-  return quadbin_point_to_cell(lon * 180.0 / M_PI, lat * 180.0 / M_PI,
-    resolution);
-}
 
-/** @brief A geodetic path and the resolution its tiles are read at, the state
- * #dggs_crossing_param() reads a tile of the path from */
-typedef struct
-{
-  const DggsArc *arc;        /**< Path of a geodetic segment */
-  uint32_t resolution;       /**< Resolution of the grid */
-} QuadbinArcAt;
 
-/**
- * @brief Return the tile the path of a geodetic segment holds at a parameter,
- * or 0 when the position cannot be projected
- */
-static uint64
-quadbin_arc_cell_at(void *state, double t)
-{
-  const QuadbinArcAt *path = (const QuadbinArcAt *) state;
-  return (uint64) quadbin_arc_cell(path->arc, t, path->resolution);
-}
 
-/**
- * @brief Return the angle subtended by the shortest side of a tile, in the
- * grid of `n` tiles a side
- */
-static double
-quadbin_tile_shortest_side(uint32_t y, double n)
-{
-  double north = quadbin_row_latitude((double) y, n) * M_PI / 180.0;
-  double south = quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0;
-  double width = 2.0 * M_PI / n *
-    cos(fabs(north) > fabs(south) ? north : south);
-  double height = north - south;
-  return (width < height) ? width : height;
-}
 
 /**
  * @brief Fill `cells` with every cell a geodetic segment crosses, and `enter`
@@ -735,67 +713,41 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
    * through a crossing no search strictly ahead of the start states: the walk
    * leaves from the tile just past the start, entered where the halving of
    * #dggs_crossing_param() places the crossing */
-  QuadbinArcAt path = { .arc = &arc, .resolution = resolution };
   double t = 0.0;
-  quadbin_cell_tile(cur, &x, &y, &z);
-  double t0 = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
-  if (t0 < 1.0)
-  {
-    Quadbin first = quadbin_arc_cell(&arc, t0, resolution);
-    if (first != (Quadbin) 0 && first != cur && count < maxout)
-    {
-      cells[count] = first;
-      enter[count++] = dggs_crossing_param(0.0, t0, cur, &quadbin_arc_cell_at,
-        &path);
-      cur = first;
-      t = t0;
-    }
-  }
+  uint32 entry = 0;
   while (count < maxout)
   {
     quadbin_cell_tile(cur, &x, &y, &z);
-    double texit = quadbin_tile_exit_param_geodetic(&arc, x, y, n, t);
-    if (texit > 1.0)
+    int edge = -1;
+    double texit = quadbin_tile_exit_param_geodetic(&arc, x, y, n, t, entry,
+      &edge);
+    if (texit > 1.0 || edge < 0)
       break;                 /* the segment ends inside this tile */
-    /* A nudge past the crossing lands inside the next tile without reaching
-     * the one after it: a ten-thousandth of the shortest side of the tile is
-     * far below the width of a neighbouring tile and far above the rounding
-     * of the crossing itself */
-    double nudge = quadbin_tile_shortest_side(y, n) * 1e-4 / arc.dist;
-    double tn = texit + nudge, tin = texit;
-    Quadbin next = (Quadbin) 0;
-    /* A nudge that lands back in the tile just left says the crossing sits
-     * within its own rounding, so widen it rather than stall. A crossing
-     * nearer the end of the segment than the nudge reads the tile of the end,
-     * which is the tile the path enters there */
-    for (int k = 0; k < 8; k++)
+    /* The tile across the boundary crossed, and the boundary of that tile the
+     * path enters it through, which is the one opposite */
+    uint32_t nx = x, ny = y;
+    switch (edge)
     {
-      if (tn > 1.0)
-        tn = 1.0;
-      next = quadbin_arc_cell(&arc, tn, resolution);
-      if (next == (Quadbin) 0 || next != cur || tn >= 1.0)
-        break;
-      tin = tn;
-      tn += nudge * (double) (1 << k);
+      case QUADBIN_EDGE_WEST:
+        nx = (x == 0) ? (uint32_t) n - 1 : x - 1;
+        entry = 1u << QUADBIN_EDGE_EAST; break;
+      case QUADBIN_EDGE_EAST:
+        nx = ((double) x + 1.0 >= n) ? 0 : x + 1;
+        entry = 1u << QUADBIN_EDGE_WEST; break;
+      case QUADBIN_EDGE_NORTH:
+        ny = y - 1;
+        entry = 1u << QUADBIN_EDGE_SOUTH; break;
+      default:
+        ny = y + 1;
+        entry = 1u << QUADBIN_EDGE_NORTH; break;
     }
-    if (next == (Quadbin) 0)
-      break;                 /* the position cannot be projected */
-    if (next == cur)
-    {
-      /* A path past a crossing still in the tile is one the rounding places
-       * on a boundary plane the path runs along or touches, so the walk goes
-       * on from that crossing */
-      t = texit;
-      continue;
-    }
-    /* A crossing the path is still in the tile past is one the rounding of a
-     * boundary the path runs along places where the path is: the probes
-     * bracket the crossing, and halving the bracket closes on it */
+    Quadbin next = quadbin_tile_to_cell(nx, ny, resolution);
+    if (next == (Quadbin) 0 || next == cur)
+      break;
     cells[count] = next;
-    enter[count++] = (tin > texit) ?
-      dggs_crossing_param(tin, tn, cur, &quadbin_arc_cell_at, &path) : texit;
+    enter[count++] = texit;
     cur = next;
-    t = tn;
+    t = texit;
   }
   return count;
 }
