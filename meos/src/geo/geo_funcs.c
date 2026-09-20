@@ -11220,12 +11220,153 @@ linear_chain_reverse(LinearChain *chain)
 }
 
 /**
+ * @brief One end of a piece, as the endpoint index holds it
+ */
+typedef struct
+{
+  uint32_t piece;  /**< Piece the end belongs to */
+  int32_t next;    /**< Next end in the same bucket, -1 at the end of a chain */
+  double x;        /**< The end itself */
+  double y;
+} LinearEnd;
+
+/**
+ * @brief The ends of a set of pieces, read by the point they sit at
+ * @details Sewing asks, once per attachment, which unused piece continues the
+ * chain at one of its two ends, and answering it by walking every piece makes
+ * the sewing quadratic in the pieces.
+ *
+ * The ends are read out of a hash of their coordinates instead. THE HASH IS
+ * EXACT, not a filter over a tolerance: #linear_union_same_point accepts two
+ * points only where both coordinates are EQUAL, so two ends that attach carry
+ * the same bits and fall in the same bucket. Nothing outside a bucket can
+ * attach, and a bucket's own entries are still compared, so a collision costs
+ * a comparison and never an answer.
+ */
+typedef struct
+{
+  LinearEnd *ends;   /**< Two per piece, its first point and its last */
+  int32_t *buckets;  /**< First end of a bucket, -1 where it holds none */
+  uint32_t nbuckets; /**< Buckets, a power of two so the hash masks */
+  uint32_t nends;    /**< Ends held */
+} LinearEndIndex;
+
+/**
+ * @brief Return the bucket a point chains from
+ * @details The coordinates are read as the bit patterns they are, which is
+ * what makes the lookup exact
+ */
+static uint32_t
+linear_end_bucket(const LinearEndIndex *ix, double x, double y)
+{
+  uint64_t hx, hy;
+  memcpy(&hx, &x, sizeof(uint64_t));
+  memcpy(&hy, &y, sizeof(uint64_t));
+  /* A zero carries a sign in its bits while #linear_union_same_point reads the
+   * two zeroes as ONE point, so the negative one is hashed as the positive.
+   * The bits are what is corrected: the two doubles compare equal already, so
+   * a comparison between them can express nothing */
+  if (hx == UINT64CONST(0x8000000000000000)) hx = 0;
+  if (hy == UINT64CONST(0x8000000000000000)) hy = 0;
+  uint64_t h = hx * UINT64CONST(0x9E3779B97F4A7C15) ^
+    hy * UINT64CONST(0xC2B2AE3D27D4EB4F);
+  h ^= h >> 29;
+  h *= UINT64CONST(0xBF58476D1CE4E5B9);
+  h ^= h >> 32;
+  return (uint32_t) (h & (uint64_t) (ix->nbuckets - 1));
+}
+
+/**
+ * @brief Build the endpoint index of a set of pieces
+ * @details A piece drawing no line attaches nothing, so it is marked taken
+ * here and never enters the index, which is where the walk this replaces
+ * marked it the first time it reached it
+ * @param[out] ix Index to build
+ * @param[in] pieces,npieces Pieces to index
+ * @param[in,out] used Which pieces are taken
+ */
+static void
+linear_end_index_make(LinearEndIndex *ix, LWGEOM **pieces, int npieces,
+  bool *used)
+{
+  assert(ix); assert(pieces); assert(used);
+  ix->nbuckets = 16;
+  while (ix->nbuckets < 4 * (uint32_t) npieces)
+    ix->nbuckets *= 2;
+  ix->buckets = palloc(sizeof(int32_t) * ix->nbuckets);
+  for (uint32_t i = 0; i < ix->nbuckets; i++)
+    ix->buckets[i] = -1;
+  ix->ends = palloc(sizeof(LinearEnd) * 2 *
+    (size_t) (npieces > 0 ? npieces : 1));
+  ix->nends = 0;
+  for (int p = 0; p < npieces; p++)
+  {
+    const POINTARRAY *pa = ((const LWLINE *) pieces[p])->points;
+    if (pieces[p]->type != LINETYPE || pa->npoints < 2)
+    {
+      used[p] = true;
+      continue;
+    }
+    const POINT2D *ends[2] = { getPoint2d_cp(pa, 0),
+      getPoint2d_cp(pa, pa->npoints - 1) };
+    for (int e = 0; e < 2; e++)
+    {
+      uint32_t at = ix->nends++;
+      ix->ends[at].piece = (uint32_t) p;
+      ix->ends[at].x = ends[e]->x;
+      ix->ends[at].y = ends[e]->y;
+      uint32_t b = linear_end_bucket(ix, ends[e]->x, ends[e]->y);
+      ix->ends[at].next = ix->buckets[b];
+      ix->buckets[b] = (int32_t) at;
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Release what an endpoint index holds
+ */
+static void
+linear_end_index_free(LinearEndIndex *ix)
+{
+  assert(ix);
+  pfree(ix->buckets); pfree(ix->ends);
+  ix->buckets = NULL; ix->ends = NULL;
+  return;
+}
+
+/**
+ * @brief Return the lowest-numbered unused piece meeting a point, or -1
+ * @details The walk this replaces takes the pieces in order and stops at the
+ * first that attaches, so the piece it reaches is the lowest-numbered one
+ * meeting either end of the chain. Reading that same piece out of the index
+ * keeps the curve the sewing draws
+ */
+static int
+linear_end_index_at(const LinearEndIndex *ix, const bool *used, POINT2D p)
+{
+  assert(ix); assert(used);
+  int best = -1;
+  for (int32_t at = ix->buckets[linear_end_bucket(ix, p.x, p.y)]; at >= 0;
+       at = ix->ends[at].next)
+  {
+    const LinearEnd *end = &ix->ends[at];
+    if (used[end->piece] || (best >= 0 && (int) end->piece > best))
+      continue;
+    if (end->x == p.x && end->y == p.y)
+      best = (int) end->piece;
+  }
+  return best;
+}
+
+/**
  * @brief Sew a set of pieces into the curves they draw
  * @details Each piece continues a chain at one of its two ends, in either
- * direction, and the scan restarts whenever one attaches, the enlarged chain
- * reaching further than it did. A piece continuing neither end of the chain
- * under construction starts a chain of its own, so a set drawing a fork is
- * answered as the several curves it takes to walk it rather than refused
+ * direction, and the piece that does is read out of an index of the ends, the
+ * enlarged chain reaching further than it did. A piece continuing neither end
+ * of the chain under construction starts a chain of its own, so a set drawing
+ * a fork is answered as the several curves it takes to walk it rather than
+ * refused
  * @param[in] pieces,npieces Pieces to sew, which stay the caller's
  * @param[in] srid Spatial reference identifier
  * @param[out] result Curves drawn, allocated here and owned by the caller
@@ -11242,6 +11383,10 @@ linear_union_chain_all(LWGEOM **pieces, int npieces, int32_t srid,
   bool *used = palloc0(sizeof(bool) * (size_t) npieces);
   LWGEOM **out = palloc(sizeof(LWGEOM *) * (size_t) npieces);
   int nout = 0;
+  /* Every chain is sewn from the same pieces, so their ends are indexed once
+   * for all of them rather than walked once per attachment */
+  LinearEndIndex ix;
+  linear_end_index_make(&ix, pieces, npieces, used);
 
   for (int seed = 0; seed < npieces; seed++)
   {
@@ -11265,35 +11410,34 @@ linear_union_chain_all(LWGEOM **pieces, int npieces, int32_t srid,
     while (attached)
     {
       attached = false;
-      for (int p = 0; p < npieces && ! attached; p++)
-      {
-        if (used[p])
-          continue;
-        const POINTARRAY *ppa = ((const LWLINE *) pieces[p])->points;
-        if (pieces[p]->type != LINETYPE || ppa->npoints < 2)
-        {
-          used[p] = true;
-          continue;
-        }
-        /* The two ends are COPIED: appending may move the chain in memory */
-        POINT2D head = chain.points[0], tail = chain.points[chain.count - 1];
-        const POINT2D *first = getPoint2d_cp(ppa, 0);
-        const POINT2D *last = getPoint2d_cp(ppa, ppa->npoints - 1);
-        if (linear_union_same_point(&head, first) ||
-            linear_union_same_point(&head, last))
-          linear_chain_reverse(&chain);
-        else if (! linear_union_same_point(&tail, first) &&
-                 ! linear_union_same_point(&tail, last))
-          continue;
-        POINT2D end = chain.points[chain.count - 1];
-        if (linear_union_same_point(&end, first))
-          for (uint32_t i = 1; i < ppa->npoints; i++)
-            linear_chain_append(&chain, getPoint2d_cp(ppa, i));
-        else
-          for (int i = (int) ppa->npoints - 2; i >= 0; i--)
-            linear_chain_append(&chain, getPoint2d_cp(ppa, i));
-        used[p] = true; attached = true;
-      }
+      /* The two ends are COPIED: appending may move the chain in memory */
+      POINT2D head = chain.points[0], tail = chain.points[chain.count - 1];
+      /* The walk took the lowest-numbered piece meeting EITHER end and tried
+       * the head first, so the index is asked at both and the lower answer
+       * wins, the head keeping it where the two are the same piece */
+      int at_head = linear_end_index_at(&ix, used, head);
+      int at_tail = linear_end_index_at(&ix, used, tail);
+      int p;
+      if (at_head >= 0 && (at_tail < 0 || at_head <= at_tail))
+        p = at_head;
+      else
+        p = at_tail;
+      if (p < 0)
+        break;
+      const POINTARRAY *ppa = ((const LWLINE *) pieces[p])->points;
+      const POINT2D *first = getPoint2d_cp(ppa, 0);
+      const POINT2D *last = getPoint2d_cp(ppa, ppa->npoints - 1);
+      if (linear_union_same_point(&head, first) ||
+          linear_union_same_point(&head, last))
+        linear_chain_reverse(&chain);
+      POINT2D end = chain.points[chain.count - 1];
+      if (linear_union_same_point(&end, first))
+        for (uint32_t i = 1; i < ppa->npoints; i++)
+          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+      else
+        for (int i = (int) ppa->npoints - 2; i >= 0; i--)
+          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+      used[p] = true; attached = true;
     }
 
     POINTARRAY *pa = ptarray_construct_empty(0, 0, (uint32_t) chain.count);
@@ -11309,6 +11453,7 @@ linear_union_chain_all(LWGEOM **pieces, int npieces, int32_t srid,
     out[nout++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
   }
   pfree(used);
+  linear_end_index_free(&ix);
   if (nout == 0)
   {
     pfree(out);
