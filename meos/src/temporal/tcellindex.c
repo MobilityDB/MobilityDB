@@ -1244,6 +1244,15 @@ dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin, double ymin,
  * the squared norm `(Δλ² + Δφ²)² cos² φ + (4 Δλ² Δφ² + Δφ⁴) sin² φ`, which is
  * at most the larger of its two coefficients: the bound the exit search steps
  * by.
+ *
+ * The step is the DIFFERENCE OF THE CONVERTED ENDPOINTS, never the conversion
+ * of their difference, so the path holds each endpoint exactly at its own
+ * parameter, the way #interpolate_point4d reaches the far end of a segment by
+ * `A + (B - A) F`. A step converted on its own is rounded apart from the
+ * endpoint it is a step to, and the position the path holds at `t = 1` is then
+ * not the position the cell of that endpoint is read from. The two part by a
+ * last place, which is the whole height a path running up to a cell boundary
+ * has left there, so a boundary the segment ENDS on reads as one it crosses.
  * @param[in] lon1,lat1,lon2,lat2 Endpoints in degrees
  * @param[out] line Path
  * @return False when the path has no length, since it then leaves no cell
@@ -1256,8 +1265,8 @@ dggs_line_init(double lon1, double lat1, double lon2, double lat2,
   memset(line, 0, sizeof(DggsLine));
   line->lon = deg2rad(lon1);
   line->lat = deg2rad(lat1);
-  line->dlon = deg2rad(lon2 - lon1);
-  line->dlat = deg2rad(lat2 - lat1);
+  line->dlon = deg2rad(lon2) - line->lon;
+  line->dlat = deg2rad(lat2) - line->lat;
   double a2 = line->dlon * line->dlon, b2 = line->dlat * line->dlat;
   line->length = sqrt(a2 + b2);
   if (line->length <= 0.0)
