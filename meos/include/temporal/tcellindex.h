@@ -261,6 +261,10 @@ extern double dggs_crossing_param(double tin, double tout, uint64 cell,
   uint64 (*cell_at)(void *, double), void *state);
 extern int dggs_arc_plane_params(const DggsArc *arc, const double m[3],
   double c, double *params);
+extern double dggs_arc_plane_exit_param(const DggsArc *arc, const double m[3],
+  double c, bool above, double tmin);
+extern double dggs_arc_pole_param(const DggsArc *arc, bool north,
+  double tmin);
 extern double dggs_arc_plane_param(const DggsArc *arc, const double m[3],
   double c, double tmin);
 extern int dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin,

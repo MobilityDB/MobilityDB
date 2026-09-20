@@ -1047,6 +1047,97 @@ dggs_arc_plane_param(const DggsArc *arc, const double m[3], double c,
 }
 
 /**
+ * @brief Return where a geodetic path reaches a pole, or a value above 1 when
+ * it reaches none ahead of a parameter
+ * @details A path reaches a pole exactly when the circle it follows holds the
+ * axis of the sphere, which its normal states by a third coordinate of zero.
+ * #dggs_arc_init reads the normal of a path along one meridian from the
+ * ANGLES of its endpoints, where that coordinate cancels exactly, so the test
+ * is the exact `normal[2] == 0` and no magnitude decides it.
+ *
+ * Every meridian meets at a pole, so a path reaching one leaves the meridians
+ * bounding its cell ALL AT THE SAME PARAMETER, and every cell between the one
+ * it arrives in and the one it leaves by is held for no time. The path
+ * continues along the meridian half a turn from the one it arrived by.
+ * @param[in] arc Path
+ * @param[in] north True for the north pole, false for the south
+ * @param[in] tmin Parameter the pole lies strictly ahead of
+ * @return The path parameter at the pole, or a value above 1
+ */
+double
+dggs_arc_pole_param(const DggsArc *arc, bool north, double tmin)
+{
+  assert(arc);
+  if (arc->normal[2] != 0.0)
+    return 2.0;                /* the circle does not hold the axis */
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  /* The height above the equator is `a[2] cos(theta) + b[2] sin(theta)`, and
+   * it reaches the pole where that height is at its extreme */
+  double theta = north ? atan2(b[2], a[2]) : atan2(-b[2], -a[2]);
+  if (theta < 0.0)
+    theta += 2.0 * M_PI;
+  double t = theta / arc->dist;
+  return (t > tmin && t <= 1.0) ? t : 2.0;
+}
+
+/**
+ * @brief Return where a geodetic path leaves the side of a plane through the
+ * sphere that a cell lies on
+ * @details The crossing of #dggs_arc_plane_param, and @p tmin itself for a
+ * path that already sits ON the plane there and heads across it, which is the
+ * rule #dggs_arc_normals_exit_param reads from the height and its rate for a
+ * plane through the centre. A path reaching a CORNER of a cell crosses two of
+ * its boundaries at ONE parameter, so the second is crossed exactly at the
+ * parameter the first was: a search strictly ahead of that parameter states no
+ * crossing, and the walk steps through one boundary and never through the
+ * other.
+ * @param[in] arc Path
+ * @param[in] m Unit normal of the plane
+ * @param[in] c Offset of the plane from the centre
+ * @param[in] above True when the cell lies where the height of a position
+ * above the plane is greater than @p c
+ * @param[in] tmin Parameter the crossing lies at or ahead of
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * stays on its side of the plane through the end
+ */
+double
+dggs_arc_plane_exit_param(const DggsArc *arc, const double m[3], double c,
+  bool above, double tmin)
+{
+  assert(arc); assert(m);
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  double ma = a[0] * m[0] + a[1] * m[1] + a[2] * m[2];
+  double mb = b[0] * m[0] + b[1] * m[1] + b[2] * m[2];
+  double theta0 = tmin * arc->dist;
+  double c0 = cos(theta0), s0 = sin(theta0);
+  /* The height of the path above the plane on the side the cell lies, and the
+   * rate it changes at. The side sets the sign of both, as the inward normal
+   * does for a plane through the centre */
+  double sign = above ? 1.0 : -1.0;
+  double f = sign * (ma * c0 + mb * s0 - c);
+  double d = sign * (mb * c0 - ma * s0);
+  if (f <= 0.0 && d < 0.0)
+    return tmin;
+  /* The crossing a path makes at a CORNER lies at the parameter the other
+   * boundary was crossed at, so it is taken AT `tmin` and not only ahead of
+   * it. Which of the two holds reads from the RATE and never from the height:
+   * a path DESCENDING toward the plane there is leaving through it, while one
+   * that entered the cell through it rises away and keeps its crossing
+   * strictly ahead. The height at a corner is a residue of the last place,
+   * and no magnitude of it decides anything */
+  double params[2], best = 2.0;
+  int count = dggs_arc_plane_params(arc, m, c, params);
+  for (int i = 0; i < count; i++)
+    if ((d < 0.0 ? params[i] >= tmin : params[i] > tmin) && params[i] < best)
+      best = params[i];
+  return best;
+}
+
+/**
  * @brief Return true if a position lies in a box of longitudes and latitudes
  */
 static bool
