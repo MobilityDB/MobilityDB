@@ -1336,14 +1336,64 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
 }
 
 /**
- * @brief Return where a planar path leaves a cell
+ * @brief Return where a planar path leaves a convex cell stated by the plane
+ * of each of its edges
  * @details A convex cell is the intersection of the hemispheres its edge
  * circles bound, so a path inside it leaves it where it first reaches any of
- * their planes. A cell that is not convex is left where the path first crosses
- * an edge: a crossing of the circle of an edge counts where it lies between the
- * two vertices of the edge, as #dggs_arc_exit_param tests it. The straight line
- * in longitude and latitude is no great circle, so a crossing has no closed
- * form and is searched for along the path.
+ * their planes. The straight line in longitude and latitude is no great
+ * circle, so a crossing has no closed form and is searched for along the path
+ * by #dggs_line_plane_param.
+ *
+ * The normals are the planes THEMSELVES, not planes read back from the angles
+ * of rounded vertices. A grid stating an edge in closed form passes them here,
+ * and the height of a path running along such an edge then reads the exact
+ * zero the plane gives rather than the last-place residue a vertex turned into
+ * an angle and back into a direction leaves behind.
+ * @param[in] line Path
+ * @param[in] normals Inward unit normal of each edge plane, three coordinates
+ * each, the edge from vertex `i` at `normals[3 * i]`
+ * @param[in] count Number of edges
+ * @param[in] tmin Parameter the exit lies strictly ahead of
+ * @param[in] entry Mask of the edges the path entered the cell through, bit
+ * `i` for the edge from vertex `i`, which it never leaves through: a line
+ * does not cross back over the tile boundary it has just crossed
+ * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
+ * from vertex `edge` to the next vertex
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+double
+dggs_line_normals_exit_param(const DggsLine *line, const double *normals,
+  int count, double tmin, uint32 entry, int *edge)
+{
+  assert(line); assert(normals);
+  double best = 2.0;
+  for (int i = 0; i < count; i++)
+  {
+    if (entry & (1u << i))
+      continue;
+    POINT3D m = { .x = normals[3 * i], .y = normals[3 * i + 1],
+      .z = normals[3 * i + 2] };
+    if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
+      continue;
+    double t = dggs_line_plane_param(line, &m, tmin);
+    if (t < best)
+    {
+      best = t;
+      if (edge)
+        *edge = i;
+    }
+  }
+  return best;
+}
+
+/**
+ * @brief Return where a planar path leaves a convex cell stated by its
+ * vertices
+ * @details The plane of each edge is read from the angles of the two vertices
+ * it joins and turned inward, and #dggs_line_normals_exit_param states the
+ * exit from those normals. A grid holding the plane of an edge in closed form
+ * states it exactly and calls that function with its own normals.
  * @param[in] line Path
  * @param[in] lons,lats Vertices of the cell boundary in radians, in the order
  * they join
@@ -1377,33 +1427,28 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
     geog2cart(&g, &v);
     centre.x += v.x; centre.y += v.y; centre.z += v.z;
   }
-  double best = 2.0;
+  assert(count <= DGGS_MAX_CELL_VERTS);
+  double normals[3 * DGGS_MAX_CELL_VERTS];
   for (int i = 0; i < count; i++)
   {
-    if (entry & (1u << i))
-      continue;
     int j = (i + 1) % count;
     GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
     GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
     POINT3D m;
     /* Read from the angles of the vertices, as #dggs_arc_exit_param does */
     robust_cross_product(&gi, &gj, &m);
-    if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
-      continue;
-    normalize(&m);
-    if (dggs_vec_dot(&m, &centre) < 0.0)
+    if (! (m.x == 0.0 && m.y == 0.0 && m.z == 0.0))
     {
-      m.x = -m.x; m.y = -m.y; m.z = -m.z;
+      normalize(&m);
+      if (dggs_vec_dot(&m, &centre) < 0.0)
+      {
+        m.x = -m.x; m.y = -m.y; m.z = -m.z;
+      }
     }
-    double t = dggs_line_plane_param(line, &m, tmin);
-    if (t < best)
-    {
-      best = t;
-      if (edge)
-        *edge = i;
-    }
+    normals[3 * i] = m.x; normals[3 * i + 1] = m.y; normals[3 * i + 2] = m.z;
   }
-  return best;
+  return dggs_line_normals_exit_param(line, normals, count, tmin, entry,
+    edge);
 }
 
 /*****************************************************************************/

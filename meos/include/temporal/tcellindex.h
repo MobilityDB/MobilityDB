@@ -255,6 +255,8 @@ extern void dggs_line_point(const DggsLine *line, double t, double *lon,
 extern double dggs_line_exit_param(const DggsLine *line, const double *lons,
   const double *lats, int count, double tmin, bool convex, uint32 entry,
   int *edge);
+extern double dggs_line_normals_exit_param(const DggsLine *line,
+  const double *normals, int count, double tmin, uint32 entry, int *edge);
 extern double dggs_crossing_param(double tin, double tout, uint64 cell,
   uint64 (*cell_at)(void *, double), void *state);
 extern int dggs_arc_plane_params(const DggsArc *arc, const double m[3],
