@@ -1291,15 +1291,31 @@ dggs_line_point(const DggsLine *line, double t, double *lon, double *lat)
 
 /**
  * @brief Return in the last two arguments the value and the derivative at a
- * parameter of the height of a planar path above the plane of normal `m`
+ * parameter of the height of a planar path above the plane of normal `m`,
+ * measured from a position @p org the plane HOLDS
+ * @details The plane passes through @p org, so the height above it is the same
+ * quantity read from the centre of the sphere or read from @p org, and the
+ * second is the one the doubles carry: measuring a position FROM ONE THE PLANE
+ * HOLDS makes the difference the size of the STRETCH between them rather than
+ * of the radius they both stand at, which is the cancellation
+ * #emit_arc_edge measures its arc centre from a point of the arc to avoid. A
+ * path AT @p org then reads a height of exactly zero, since the difference is
+ * exactly zero, where a height read from the centre leaves the residue of a
+ * dot product of two unit vectors and states a side no vertex of an edge has.
+ * @param[in] org Position the plane holds, or NULL for a plane through the
+ * centre of the sphere stated by a normal of its own
  */
 static void
-dggs_line_height(const DggsLine *line, const POINT3D *m, double t,
-  double *value, double *slope)
+dggs_line_height(const DggsLine *line, const POINT3D *m, const POINT3D *org,
+  double t, double *value, double *slope)
 {
   double lon = line->lon + t * line->dlon, lat = line->lat + t * line->dlat;
   double cl = cos(lon), sl = sin(lon), cp = cos(lat), sp = sin(lat);
   POINT3D p = { .x = cp * cl, .y = cp * sl, .z = sp };
+  if (org)
+  {
+    p.x -= org->x; p.y -= org->y; p.z -= org->z;
+  }
   POINT3D d = { .x = -line->dlat * sp * cl - line->dlon * cp * sl,
     .y = -line->dlat * sp * sl + line->dlon * cp * cl,
     .z = line->dlat * cp };
@@ -1397,7 +1413,8 @@ dggs_line_plane_closed(const DggsLine *line, const double m[3], double *roots)
  * the plane. Near a crossing the steps shrink quadratically onto it.
  */
 static double
-dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
+dggs_line_plane_param(const DggsLine *line, const POINT3D *m,
+  const POINT3D *org, double tmin)
 {
   double t = tmin, f, d;
   double mm = line->curvature;
@@ -1408,7 +1425,7 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
   int nroots = dggs_line_plane_closed(line, mv, roots);
   if (nroots >= 0)
   {
-    dggs_line_height(line, m, tmin, &f, &d);
+    dggs_line_height(line, m, org, tmin, &f, &d);
     if (f <= 0.0 && d <= 0.0)
       return tmin;
     /* The cell lies where the height is positive, so it is LEFT where the
@@ -1422,7 +1439,7 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
       if (roots[i] <= tmin || roots[i] > 1.0 || roots[i] >= best)
         continue;
       double rf, rd;
-      dggs_line_height(line, m, roots[i], &rf, &rd);
+      dggs_line_height(line, m, org, roots[i], &rf, &rd);
       if (rd <= 0.0)
         best = roots[i];
     }
@@ -1430,7 +1447,7 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
   }
   for (int i = 0; i < 1024 && t <= 1.0; i++)
   {
-    dggs_line_height(line, m, t, &f, &d);
+    dggs_line_height(line, m, org, t, &f, &d);
     if (f <= 0.0)
     {
       /* A path at or outside the plane and heading out leaves THERE, at the
@@ -1460,11 +1477,11 @@ dggs_line_plane_param(const DggsLine *line, const POINT3D *m, double tmin)
  */
 static double
 dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
-  double tmin)
+  const POINT3D *org, double tmin)
 {
   double t = tmin, f, d;
   double mm = line->curvature;
-  dggs_line_height(line, m, t, &f, &d);
+  dggs_line_height(line, m, org, t, &f, &d);
   /* A start on the plane lies on the side the path heads to */
   double side = (f > 0.0 || (f == 0.0 && d >= 0.0)) ? 1.0 : -1.0;
   /* Where the path states its crossings in closed form they are read there,
@@ -1505,7 +1522,7 @@ dggs_line_plane_sign_change(const DggsLine *line, const POINT3D *m,
     if (h <= 0.0)
       return (g > 0.0) ? t : 2.0;
     t += h;
-    dggs_line_height(line, m, t, &f, &d);
+    dggs_line_height(line, m, org, t, &f, &d);
   }
   return (t > 1.0) ? 2.0 : t;
 }
@@ -1540,7 +1557,7 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
     double t = tmin;
     for (int k = 0; k < 8; k++)
     {
-      t = dggs_line_plane_sign_change(line, &m, t);
+      t = dggs_line_plane_sign_change(line, &m, &vi, t);
       if (t > 1.0 || t >= best)
         break;
       double lon, lat;
@@ -1592,7 +1609,7 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
  */
 double
 dggs_line_normals_exit_param(const DggsLine *line, const double *normals,
-  int count, double tmin, uint32 entry, int *edge)
+  const double *origins, int count, double tmin, uint32 entry, int *edge)
 {
   assert(line); assert(normals);
   double best = 2.0;
@@ -1604,7 +1621,14 @@ dggs_line_normals_exit_param(const DggsLine *line, const double *normals,
       .z = normals[3 * i + 2] };
     if (m.x == 0.0 && m.y == 0.0 && m.z == 0.0)
       continue;
-    double t = dggs_line_plane_param(line, &m, tmin);
+    POINT3D org;
+    if (origins)
+    {
+      org.x = origins[3 * i]; org.y = origins[3 * i + 1];
+      org.z = origins[3 * i + 2];
+    }
+    double t = dggs_line_plane_param(line, &m,
+      origins ? &org : NULL, tmin);
     if (t < best)
     {
       best = t;
@@ -1657,6 +1681,7 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
   }
   assert(count <= DGGS_MAX_CELL_VERTS);
   double normals[3 * DGGS_MAX_CELL_VERTS];
+  double origins[3 * DGGS_MAX_CELL_VERTS];
   for (int i = 0; i < count; i++)
   {
     int j = (i + 1) % count;
@@ -1674,9 +1699,14 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
       }
     }
     normals[3 * i] = m.x; normals[3 * i + 1] = m.y; normals[3 * i + 2] = m.z;
+    /* The plane of an edge HOLDS both of its vertices, and the height of the
+     * path is read from the first of them */
+    POINT3D vi;
+    geog2cart(&gi, &vi);
+    origins[3 * i] = vi.x; origins[3 * i + 1] = vi.y; origins[3 * i + 2] = vi.z;
   }
-  return dggs_line_normals_exit_param(line, normals, count, tmin, entry,
-    edge);
+  return dggs_line_normals_exit_param(line, normals, origins, count, tmin,
+    entry, edge);
 }
 
 /*****************************************************************************/
