@@ -689,6 +689,10 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return -1;
+
   /* Native running ever/always contains, exactly consistent with the temporal
    * contains; a geometry that has no edge decomposition keeps the
    * traversed-area path. */
@@ -921,6 +925,10 @@ acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return -1;
+
   /* Native running ever/always covers (contains up to boundary tangency),
    * exactly consistent with the temporal covers; a geometry that has no edge
    * decomposition keeps the traversed-area path. */
