@@ -5492,18 +5492,21 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
   /* The scratch array the collectors write into, reused across the walk: its
    * contents belong to the pair being examined, its storage to none of them */
   MeosArray *points = meos_array_create(sizeof(POINT2D));
+  /* Every pair of edges is read, so the edges are read where the array holds
+   * them rather than through a call per read */
+  const Edge *all = (const Edge *) arr->elems;
   for (uint32_t i = 0; i < n; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get_intl(arr, i);
-    if (! e1 || ! buffer_is_boundary_edge(e1))
+    const Edge *e1 = &all[i];
+    if (! buffer_is_boundary_edge(e1))
       continue;
     Edge piece;
     buffer_piece_from_edge(e1, &piece);
     meos_array_add(pieces, &piece);
     for (uint32_t j = i + 1; j < n; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get_intl(arr, j);
-      if (! e2 || ! buffer_is_boundary_edge(e2))
+      const Edge *e2 = &all[j];
+      if (! buffer_is_boundary_edge(e2))
         continue;
       /* Two edges whose boxes lie apart cannot meet. The band is the one the
        * meeting test itself works to: each Edge carries the tolerance
