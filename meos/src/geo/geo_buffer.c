@@ -4887,8 +4887,8 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
     /* Offsetting into an arc by more than it turns on carries the offset past
      * the centre, where it comes out on the far side at the distance it
      * overshot by and points the other way. That curve is nearer the arc than
-     * the buffer distance, so it bounds nothing and #buffer_ring_resolve
-     * drops it; it is built rather than refused so that the ring it belongs
+     * the buffer distance, so it bounds nothing and
+     * #buffer_ring_rebuild_at_nodes drops it; it is built rather than refused so that the ring it belongs
      * to is closed and the rest of it can be read */
     double half = 0.0;
     if (r <= MEOS_GEOM_TOLERANCE)
@@ -4901,8 +4901,8 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
          * point of the offset onto the centre, so the offset IS that point.
          * A point bounds nothing, which is the case above one step further,
          * and it is emitted as a piece of no length for the same reason: the
-         * ring stays closed and #buffer_ring_resolve drops what bounds
-         * nothing. Refusing it loses a buffer that exists on both sides of
+         * ring stays closed and #buffer_ring_rebuild_at_nodes drops what
+         * bounds nothing. Refusing it loses a buffer that exists on both sides of
          * this radius */
         piece->etype = EDGE_POLYSEG;
         piece->x1 = piece->x2 = edge->cx;
@@ -5472,8 +5472,8 @@ buffer_point_edges_nearer(double x, double y, const MeosArray *edges,
  * @return @p NULL when the pieces kept do not chain into a closed ring
  */
 static LWGEOM *
-buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
-  int32_t srid)
+buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
+  double radius, int32_t srid)
 {
   assert(raw); assert(edges); assert(radius > 0.0);
   MeosArray *arr = geom_extract_edges(raw);
@@ -5574,22 +5574,23 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
  * @details Where a geometry turns tighter than the buffer distance its
  * offsets cross, and the loop the crossing leaves lies inside the buffer
  * rather than on its boundary. Naming what the crossing leaves is what
- * #buffer_ring_resolve does, so a ring meeting itself is resolved rather than
- * reported as not supported
+ * #buffer_ring_rebuild_at_nodes does, so a ring meeting itself is resolved
+ * rather than reported as not supported
  * @param[in] raw Ring of offsets, released here
  * @param[in] input Geometry the buffer is taken of
  * @param[in] radius Buffer distance
  * @param[in] srid SRID of the answer
  */
 static LWGEOM *
-buffer_ring_resolved(LWGEOM *raw, const LWGEOM *input, double radius,
+buffer_ring_resolve(LWGEOM *raw, const LWGEOM *input, double radius,
   int32_t srid)
 {
   assert(raw); assert(input);
   if (! buffer_boundary_self_intersects(raw))
     return raw;
   MeosArray *edges = geom_extract_edges(input);
-  LWGEOM *result = edges ? buffer_ring_resolve(raw, edges, radius, srid) : NULL;
+  LWGEOM *result = edges ?
+    buffer_ring_rebuild_at_nodes(raw, edges, radius, srid) : NULL;
   if (edges)
     meos_array_destroy(edges);
   lwgeom_free(raw);
@@ -5742,7 +5743,7 @@ meos_buffer_curve(const LWGEOM *geom, double radius, JoinStyle join_style,
   LWCURVEPOLY *curvepoly = lwcurvepoly_construct_empty(srid, 0, 0);
   buffer_curvepoly_add_ring(curvepoly, ring);
   LWGEOM *result = lwcurvepoly_as_lwgeom(curvepoly);
-  return buffer_ring_resolved(result, geom, radius, srid);
+  return buffer_ring_resolve(result, geom, radius, srid);
 }
 
 /**
@@ -5790,7 +5791,7 @@ meos_buffer_curvepoly(const LWCURVEPOLY *curvepoly, double radius,
     buffer_curvepoly_add_ring(result, ring);
   }
   LWGEOM *geom = lwcurvepoly_as_lwgeom(result);
-  return buffer_ring_resolved(geom, lwcurvepoly_as_lwgeom(
+  return buffer_ring_resolve(geom, lwcurvepoly_as_lwgeom(
     (LWCURVEPOLY *) curvepoly), radius, srid);
 }
 
@@ -6523,7 +6524,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   /* The offsets of two segments meeting at a sharp turn cross on the inner
    * side, and the loop they leave is not part of the buffer */
   LWGEOM *result = lwcurvepoly_as_lwgeom(curvepoly);
-  return buffer_ring_resolved(result, lwline_as_lwgeom((LWLINE *) line),
+  return buffer_ring_resolve(result, lwline_as_lwgeom((LWLINE *) line),
     radius, srid);
 }
 
@@ -6907,7 +6908,7 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
    * into one another, and what a crossing encloses lies inside the buffer
    * rather than on its boundary */
   return inward ? geom :
-    buffer_ring_resolved(geom, (const LWGEOM *) poly, radius, srid);
+    buffer_ring_resolve(geom, (const LWGEOM *) poly, radius, srid);
 }
 
 /*****************************************************************************
