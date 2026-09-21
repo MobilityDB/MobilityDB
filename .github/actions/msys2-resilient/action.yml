@@ -1,0 +1,115 @@
+# SPDX-License-Identifier: PostgreSQL
+
+name: Resilient MSYS2
+description: >
+  Make MSYS2 answer for the packages this project installs, and say so in the
+  step that installs them. MSYS2 is a rolling repository whose packages are
+  rebuilt one at a time, so one package can require an EXACT revision of
+  another that the repository has already moved past. pacman then warns,
+  SKIPS the package that wanted it, and still exits 0 -- so the package is
+  simply absent, and the job fails much later in find_package() as though the
+  build had never asked for it. This asks again for whatever is missing with
+  those exact revisions taken as satisfied by what is installed, and fails
+  here, naming the package, if the repository still does not provide it.
+
+inputs:
+  packages:
+    description: The packages the job requires, whitespace separated
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Complete any install the MSYS2 repository left unfinished
+      shell: msys2 {0}
+      run: |
+        # A skipped package is invisible at this point -- pacman has already
+        # exited 0 -- so the only way to find one is to ask for each package
+        # by name.
+        missing=""
+        for package in ${{ inputs.packages }}; do
+          pacman -Qi "$package" > /dev/null 2>&1 || missing="$missing $package"
+        done
+
+        if [ -n "$missing" ]; then
+          echo "the MSYS2 repository has not provided:$missing"
+
+          # Ask for them, and keep what pacman says about it. Its status is
+          # NOT taken: it exits non-zero for exactly the reason its report is
+          # wanted -- it cannot resolve something -- and this shell runs with
+          # `set -e -o pipefail`, so taking the status ends the step holding
+          # the output it exists to read. --noconfirm is what makes the report
+          # arrive at all: a package with several providers otherwise stops at
+          # a prompt this shell can answer only with end of input, and the
+          # report never reaches the lines below.
+          report=$(pacman -S --noconfirm --needed --overwrite '*' $missing 2>&1 || true)
+          printf '%s\n' "$report" | sed 's/^/  | /'
+
+          unresolved=$(printf '%s\n' "$report" |
+            sed -n 's/.*cannot resolve "\([^"]*\)".*/\1/p' |
+            sort -u)
+
+          # Of those, only a pin on a package that IS INSTALLED, at some other
+          # revision, is satisfied by what is installed: the revision differs
+          # but the upstream version is the same one, so the installed copy
+          # serves. A BARE NAME is a package that is genuinely absent, and
+          # assuming it installs whatever wanted it against a library that is
+          # not there -- which is how a dependency comes to be dropped rather
+          # than resolved. Unblocking the pins alone is enough, because a
+          # revision pin no package can satisfy is what stops the rest of the
+          # dependency chain from resolving at all.
+          assume=""
+          for pin in $unresolved; do
+            name=${pin%%[<>=]*}
+            if [ "$name" = "$pin" ]; then
+              echo "not assuming $pin: it names no revision, so it is absent"
+              continue
+            fi
+            # A pinned package that is absent is asked for BY NAME first. The
+            # repository holds it at its current revision, and the pin names an
+            # older one of the same upstream version, so installing it is what
+            # makes the pin satisfiable -- and it installs the real library
+            # rather than pretending it is there. This is the packaging
+            # transition case: a package split out of another one is no longer
+            # pulled in by it, while everything built before the split still
+            # asks for the exact revision it was built against.
+            if ! pacman -Qi "$name" > /dev/null 2>&1; then
+              echo "$name is not installed; asking for it by name"
+              pacman -S --noconfirm --needed --overwrite '*' "$name" 2>&1 \
+                | sed 's/^/  | /' || true
+            fi
+
+            if pacman -Qi "$name" > /dev/null 2>&1; then
+              echo "assuming $pin, satisfied by $(pacman -Q "$name")"
+              assume="$assume --assume-installed $pin"
+            else
+              echo "not assuming $pin: the repository does not provide $name"
+            fi
+          done
+
+          # Ask once more with those pins satisfied. The status is left alone
+          # here as well: the report below is what says which packages
+          # arrived, and it can only say so if the step reaches it.
+          if [ -n "$assume" ]; then
+            pacman -S --noconfirm --needed --overwrite '*' $assume $missing 2>&1 \
+              | sed 's/^/  | /' || true
+          else
+            echo "no unsatisfiable revision pin to assume"
+          fi
+        fi
+
+        # Whatever the repository holds, the job now states what it has. A
+        # package still absent is a real failure and belongs HERE, where its
+        # cause is the step that installed it, rather than in the configure
+        # step that reads it.
+        status=0
+        for package in ${{ inputs.packages }}; do
+          if pacman -Qi "$package" > /dev/null 2>&1; then
+            printf 'provided: %s\n' \
+              "$(pacman -Q "$package")"
+          else
+            echo "::error::the MSYS2 repository did not provide $package"
+            status=1
+          fi
+        done
+        exit $status

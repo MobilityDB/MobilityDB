@@ -36,6 +36,29 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
+    env:
+      # Stated once, so that what is installed and what is then required to be
+      # present cannot drift apart. GEOS, PROJ and GDAL arrive with postgis,
+      # but CMake asks for each of them BY NAME, so each is named here: a
+      # dependency reached only through another package disappears without a
+      # word when that package's own dependencies cannot be resolved.
+      MSYS2_PACKAGES: >-
+        git
+        autoconf
+        automake
+        libtool
+        make
+        diffutils
+        mingw-w64-ucrt-x86_64-gcc
+        mingw-w64-ucrt-x86_64-cmake
+        mingw-w64-ucrt-x86_64-ninja
+        mingw-w64-ucrt-x86_64-postgresql
+        mingw-w64-ucrt-x86_64-postgis
+        mingw-w64-ucrt-x86_64-geos
+        mingw-w64-ucrt-x86_64-proj
+        mingw-w64-ucrt-x86_64-gdal
+        mingw-w64-ucrt-x86_64-libxml2
+        mingw-w64-ucrt-x86_64-zlib
 
     steps:
       - name: Checkout repository
@@ -46,20 +69,11 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: >-
-            git
-            autoconf
-            automake
-            libtool
-            make
-            diffutils
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-postgresql
-            mingw-w64-ucrt-x86_64-postgis
-            mingw-w64-ucrt-x86_64-libxml2
-            mingw-w64-ucrt-x86_64-zlib
+          install: ${{ env.MSYS2_PACKAGES }}
+
+      - uses: ./.github/actions/msys2-resilient
+        with:
+          packages: ${{ env.MSYS2_PACKAGES }}
 
       - uses: ./.github/actions/msys2-toolchain-report
 

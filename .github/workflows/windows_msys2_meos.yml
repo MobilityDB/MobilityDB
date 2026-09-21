@@ -47,6 +47,20 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
+    env:
+      # Stated once, so that what is installed and what is then required to be
+      # present cannot drift apart
+      MSYS2_PACKAGES: >-
+        git
+        mingw-w64-ucrt-x86_64-gcc
+        mingw-w64-ucrt-x86_64-cmake
+        mingw-w64-ucrt-x86_64-ninja
+        mingw-w64-ucrt-x86_64-json-c
+        mingw-w64-ucrt-x86_64-geos
+        mingw-w64-ucrt-x86_64-proj
+        mingw-w64-ucrt-x86_64-gdal
+        mingw-w64-ucrt-x86_64-libxml2
+        mingw-w64-ucrt-x86_64-zlib
 
     steps:
       - name: Checkout repository
@@ -57,17 +71,11 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: >-
-            git
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-json-c
-            mingw-w64-ucrt-x86_64-geos
-            mingw-w64-ucrt-x86_64-proj
-            mingw-w64-ucrt-x86_64-gdal
-            mingw-w64-ucrt-x86_64-libxml2
-            mingw-w64-ucrt-x86_64-zlib
+          install: git ${{ env.MSYS2_PACKAGES }}
+
+      - uses: ./.github/actions/msys2-resilient
+        with:
+          packages: ${{ env.MSYS2_PACKAGES }}
 
       - uses: ./.github/actions/msys2-toolchain-report
 
