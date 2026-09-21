@@ -108,6 +108,11 @@
  *   @defgroup meos_internal_text Functions for the text type
  *   @ingroup meos_internal_base
  *   @brief Functions for the text type
+ *
+ * @defgroup meos_internal_misc Miscellaneous functions
+ * @ingroup meos_internal
+ * @brief Miscellaneous functions, for callers that have validated their
+ * arguments
  */
 
 /*****************************************************************************/
