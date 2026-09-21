@@ -2032,7 +2032,7 @@ hull_features(const MeosArray *edges, int *nfeats)
   int narcs = 0;
   for (int i = 0; i < nedges; i++)
   {
-    const Edge *e = (Edge *) meos_array_get(edges, i);
+    const Edge *e = (Edge *) meos_array_get_intl(edges, i);
     add_edge_points(e, points, &npoints);
     if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
       narcs++;
@@ -2052,7 +2052,7 @@ hull_features(const MeosArray *edges, int *nfeats)
   }
   for (int i = 0; i < nedges; i++)
   {
-    const Edge *e = (Edge *) meos_array_get(edges, i);
+    const Edge *e = (Edge *) meos_array_get_intl(edges, i);
     if (e->etype != EDGE_LINEARC && e->etype != EDGE_POLYARC)
       continue;
     result[n].x = e->cx; result[n].y = e->cy; result[n].radius = e->radius;
@@ -2498,7 +2498,7 @@ meos_oriented_envelope(const LWGEOM *geom)
   /* Extract the exact extremal points */
   for (uint32_t i = 0; i < nedges; i++)
   {
-    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    const Edge *e = (Edge *) meos_array_get_intl(edge_array, i);
     add_edge_points(e, points, &npoints);
   }
 
@@ -2564,7 +2564,7 @@ meos_oriented_envelope(const LWGEOM *geom)
   nedges = edge_array->count;
   for (uint32_t i = 0; i < nedges; i++)
   {
-    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    const Edge *e = (Edge *) meos_array_get_intl(edge_array, i);
     /* Only directions which can define a support side need to be considered */
     mrr_add_edge_directions(e, angles, &nangles);
   }
@@ -2704,7 +2704,7 @@ convex_hull(const LWGEOM *geom)
   /* Extract the exact extremal points */
   for (uint32_t i = 0; i < nedges; i++)
   {
-    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    const Edge *e = (Edge *) meos_array_get_intl(edge_array, i);
     add_edge_points(e, points, &npoints);
   }
 
@@ -3116,7 +3116,7 @@ meos_multicurve_members_meet_at_ends(const LWCOLLECTION *coll, bool *result)
     nedges[i] = (int) arrs[i]->count;
     edges[i] = palloc(sizeof(Edge *) * Max(nedges[i], 1));
     for (int k = 0; k < nedges[i]; k++)
-      edges[i][k] = (Edge *) meos_array_get(arrs[i], k);
+      edges[i][k] = (Edge *) meos_array_get_intl(arrs[i], k);
   }
   for (uint32_t i = 0; i < coll->ngeoms && ok; i++)
     for (uint32_t j = i + 1; j < coll->ngeoms && ok; j++)
@@ -3150,7 +3150,7 @@ meos_curved_is_simple(const LWGEOM *geom, bool *result)
   int n = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * Max(n, 1));
   for (int i = 0; i < n; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
+    edges[i] = (Edge *) meos_array_get_intl(arr, i);
   *result = meos_curve_edges_simple(edges, n);
   pfree(edges);
   meos_array_destroy(arr);
@@ -5397,7 +5397,7 @@ relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
+    edges[i] = (Edge *) meos_array_get_intl(arr, i);
 
   /* Each point lies in the interior of the linear geometry, on its Mod-2
    * boundary, or outside it. A point geometry has an empty boundary, so its
@@ -5453,7 +5453,7 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
+    edges[i] = (Edge *) meos_array_get_intl(arr, i);
 
   /* Each point lies in the interior of the area, on its boundary, or outside
    * it. A point geometry has an empty boundary, so its boundary row stays F */
@@ -6344,9 +6344,9 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
   Edge **e1 = palloc(sizeof(Edge *) * (size_t) (n1 + 1));
   Edge **e2 = palloc(sizeof(Edge *) * (size_t) (n2 + 1));
   for (int i = 0; i < n1; i++)
-    e1[i] = (Edge *) meos_array_get(a1, i);
+    e1[i] = (Edge *) meos_array_get_intl(a1, i);
   for (int i = 0; i < n2; i++)
-    e2[i] = (Edge *) meos_array_get(a2, i);
+    e2[i] = (Edge *) meos_array_get_intl(a2, i);
 
   /* The Mod-2 boundary of each operand, empty for closed components */
   int nb1, nb2;
@@ -6506,9 +6506,9 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
   Edge **lines = palloc(sizeof(Edge *) * nl);
   Edge **area_edges = palloc(sizeof(Edge *) * na);
   for (int i = 0; i < nl; i++)
-    lines[i] = (Edge *) meos_array_get(la, i);
+    lines[i] = (Edge *) meos_array_get_intl(la, i);
   for (int i = 0; i < na; i++)
-    area_edges[i] = (Edge *) meos_array_get(aa, i);
+    area_edges[i] = (Edge *) meos_array_get_intl(aa, i);
   /* Whether an endpoint of a linear edge is on the boundary of the linear
    * geometry is asked for every endpoint, and read from the endpoints sorted
    * once rather than from a scan of every edge each time */
@@ -7778,9 +7778,9 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
   Edge **e1 = palloc(sizeof(Edge *) * n1);
   Edge **e2 = palloc(sizeof(Edge *) * n2);
   for (int i = 0; i < n1; i++)
-    e1[i] = (Edge *) meos_array_get(a1, i);
+    e1[i] = (Edge *) meos_array_get_intl(a1, i);
   for (int i = 0; i < n2; i++)
-    e2[i] = (Edge *) meos_array_get(a2, i);
+    e2[i] = (Edge *) meos_array_get_intl(a2, i);
 
   /* Every question this matrix asks about one point reads one of the two edge
    * arrays, and asks it once per edge of the other, so an unindexed walk costs
@@ -7961,7 +7961,7 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
   c->nedges = (int) c->arr->count;
   c->edges = palloc(sizeof(Edge *) * Max(c->nedges, 1));
   for (int i = 0; i < c->nedges; i++)
-    c->edges[i] = (Edge *) meos_array_get(c->arr, i);
+    c->edges[i] = (Edge *) meos_array_get_intl(c->arr, i);
   relate_edges_init(&c->re, c->edges, c->nedges, index);
   c->xmin = c->ymin = DBL_MAX;
   c->xmax = c->ymax = -DBL_MAX;
@@ -8690,7 +8690,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
    * and leaves out the ones it would only reject */
   Edge **edges = palloc(sizeof(Edge *) * Max(nall, 1));
   for (int i = 0; i < nall; i++)
-    edges[i] = (Edge *) meos_array_get(all, i);
+    edges[i] = (Edge *) meos_array_get_intl(all, i);
   RelateEdges re;
   relate_edges_init(&re, edges, nall, index);
   MeosArray *candidates = re.index ? index_result_create() : NULL;
@@ -8776,7 +8776,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
       /* A portion two components bound alike is bounded once by the union */
       bool seen = false;
       for (uint32_t q = 0; q < result->count && ! seen; q++)
-        seen = relate_same_portion((Edge *) meos_array_get(result, q), &piece);
+        seen = relate_same_portion((Edge *) meos_array_get_intl(result, q),
+          &piece);
       if (! seen)
         meos_array_add(result, &piece);
     }
@@ -8922,7 +8923,7 @@ relate_boundary_dimension(const LWGEOM *geom)
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
+    edges[i] = (Edge *) meos_array_get_intl(arr, i);
   int count;
   POINT2D *points = relate_linear_boundary_points(edges, nedges, &count);
   pfree(points); pfree(edges); meos_array_destroy(arr);
@@ -9014,7 +9015,7 @@ relate_comp_covered(const LWGEOM *comp, const RelateComp *comps, int ncomp,
   bool result = (n > 0);
   for (int i = 0; i < n && result; i++)
   {
-    Edge *e = (Edge *) meos_array_get(arr, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(arr, i);
     if (e->etype == EDGE_POINT)
     {
       result = relate_in_area_union(e->x1, e->y1, comps, ncomp) ||
@@ -9082,7 +9083,7 @@ relate_stratum(const LWGEOM *geom, int dim, int ncomps, const LWGEOM *area,
     int nledges = larr ? (int) larr->count : 0;
     Edge **ledges = palloc(sizeof(Edge *) * Max(nledges, 1));
     for (int i = 0; i < nledges; i++)
-      ledges[i] = (Edge *) meos_array_get(larr, i);
+      ledges[i] = (Edge *) meos_array_get_intl(larr, i);
     int nkept = 0;
     for (int i = 0; i < ncomp; i++)
       if (! relate_comp_covered(comps[i], areal, nareal, ledges, nledges))
@@ -11115,7 +11116,8 @@ linear_union_uncovered(const Edge *b, const MeosArray *edges,
   {
     LinearStretch s;
     int j = which ? which[k] : k;
-    if (! linear_union_cover(b, (const Edge *) meos_array_get(edges, j), &s))
+    if (! linear_union_cover(b, (const Edge *) meos_array_get_intl(edges, j),
+        &s))
       continue;
     int q = ncover - 1;
     while (q >= 0 && cover[q].lo > s.lo)
@@ -11157,7 +11159,7 @@ linear_union_straight(const MeosArray *edges)
   if (edges->count == 0)
     return false;
   for (int i = 0; i < (int) edges->count; i++)
-    if (((const Edge *) meos_array_get(edges, i))->etype != EDGE_LINESEG)
+    if (((const Edge *) meos_array_get_intl(edges, i))->etype != EDGE_LINESEG)
       return false;
   return true;
 }
@@ -11501,7 +11503,7 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
   LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (n1 + 1));
   int npieces = 0;
   for (int j = 0; j < n2; j++)
-    npieces += linear_union_uncovered((const Edge *) meos_array_get(e2, j),
+    npieces += linear_union_uncovered((const Edge *) meos_array_get_intl(e2, j),
       e1, NULL, n1, cover, &pieces[npieces], srid);
   pfree(cover);
   meos_array_destroy(e1); meos_array_destroy(e2);
@@ -11560,7 +11562,7 @@ linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
   RTree *rtree = rtree_create_stbox();
   for (int i = 0; i < nedges; i++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     STBox box;
     stbox_set(true, false, false, 0, e->xmin, e->xmax, e->ymin, e->ymax, 0, 0,
       NULL, &box);
@@ -11573,7 +11575,7 @@ linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
   LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) maxpieces);
   for (int i = 0; i < nedges; i++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     STBox query;
     stbox_set(true, false, false, 0, e->xmin, e->xmax, e->ymin, e->ymax, 0, 0,
       NULL, &query);
@@ -11674,13 +11676,13 @@ meos_linear_union(const LWGEOM *geom)
     bool haslength = false;
     for (int e = 0; straight && e < (int) edges->count && ! haslength; e++)
     {
-      const Edge *edge = (const Edge *) meos_array_get(edges, e);
+      const Edge *edge = (const Edge *) meos_array_get_intl(edges, e);
       haslength = edge->dx != 0.0 || edge->dy != 0.0;
     }
     if (straight && haslength)
     {
       for (int e = 0; e < (int) edges->count; e++)
-        meos_array_add(lineedges, meos_array_get(edges, e));
+        meos_array_add(lineedges, meos_array_get_intl(edges, e));
       meos_array_destroy(edges);
       continue;
     }
@@ -12219,7 +12221,8 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   geom_ptarrays(geom, arrays);
   int nvertices = 0;
   for (int i = 0; i < meos_array_count(arrays); i++)
-    nvertices += (int) (*(POINTARRAY **) meos_array_get(arrays, i))->npoints;
+    nvertices +=
+      (int) (*(POINTARRAY **) meos_array_get_intl(arrays, i))->npoints;
 
   /* The extent of each geometry, read once for the whole walk. A vertex
    * outside one lies on nothing it draws, so the geometries a handful of
@@ -12234,7 +12237,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   int nvertex = 0;
   for (int i = 0; i < meos_array_count(arrays); i++)
   {
-    const POINTARRAY *pa = *(POINTARRAY **) meos_array_get(arrays, i);
+    const POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(arrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
     {
       POINT4D p;
@@ -12282,7 +12285,7 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
   nvertex = 0;
   for (int i = 0; i < meos_array_count(outarrays); i++)
   {
-    POINTARRAY *pa = *(POINTARRAY **) meos_array_get(outarrays, i);
+    POINTARRAY *pa = *(POINTARRAY **) meos_array_get_intl(outarrays, i);
     for (uint32_t j = 0; j < pa->npoints; j++)
     {
       POINT4D p;

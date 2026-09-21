@@ -721,6 +721,8 @@ typedef struct MeosArray
  */
 #define INDEX_RESULT_ID_N(result, n) (((const int64 *) (result)->elems)[(n)])
 
+extern void *meos_array_get_intl(const MeosArray *array, int n);
+
 
 /*****************************************************************************/
 

@@ -173,6 +173,28 @@ meos_array_add(MeosArray *array, void *value)
 }
 
 /**
+ * @ingroup meos_internal_misc
+ * @brief Get the n-th element of the array (0-based), for a caller that has
+ * validated the index
+ * @details The read #meos_array_get makes once it has checked the index
+ * against the count, for the callers inside MEOS that walk an array by
+ * indices they bound by its own count
+ * @param[in] array Array
+ * @param[in] n Index, below the count of the array
+ * @return For fixed-size arrays, a pointer to the element in the internal
+ * buffer. For varlength arrays, the stored pointer
+ */
+void *
+meos_array_get_intl(const MeosArray *array, int n)
+{
+  assert(array); assert(n >= 0 && (size_t) n < array->count);
+  void *slot = array_slot(array, n);
+  if (array->varlength)
+    return (void *) (*(Datum *) slot);
+  return slot;
+}
+
+/**
  * @ingroup meos_misc
  * @brief Get the n-th element of the array (0-based)
  * @param[in] array Array
@@ -184,17 +206,15 @@ meos_array_add(MeosArray *array, void *value)
 void *
 meos_array_get(const MeosArray *array, int n)
 {
-  assert(array);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(array, NULL);
   if (n < 0 || (size_t) n >= array->count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid array index %d", n);
     return NULL;
   }
-  void *slot = array_slot(array, n);
-  if (array->varlength)
-    return (void *) (*(Datum *) slot);
-  return slot;
+  return meos_array_get_intl(array, n);
 }
 
 /**
@@ -224,7 +244,7 @@ meos_array_reset_intl(MeosArray *array, bool free_elems)
   if (free_elems && array->varlength)
   {
     for (size_t i = 0; i < array->count; i++)
-      pfree(meos_array_get(array, (int) i));
+      pfree(meos_array_get_intl(array, (int) i));
   }
   array->count = 0;
 }

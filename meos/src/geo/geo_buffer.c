@@ -613,9 +613,9 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
   Edge **e1 = palloc(sizeof(Edge *) * n1);
   Edge **e2 = palloc(sizeof(Edge *) * n2);
   for (int i = 0; i < n1; i++)
-    e1[i] = (Edge *) meos_array_get(a1, i);
+    e1[i] = (Edge *) meos_array_get_intl(a1, i);
   for (int i = 0; i < n2; i++)
-    e2[i] = (Edge *) meos_array_get(a2, i);
+    e2[i] = (Edge *) meos_array_get_intl(a2, i);
   bool result = false;
   for (int i = 0; i < n1 && ! result; i++)
   {
@@ -797,12 +797,12 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
   uint32_t n2 = a2->count;
   for (uint32_t i = 0; i < n1; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get(a1, i);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
     if (! e1)
       continue;
     for (uint32_t j = 0; j < n2; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get(a2, j);
+      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
       if (! e2)
         continue;
       /* Two edges whose boxes lie apart cannot meet. The band is the one the
@@ -848,7 +848,7 @@ buffer_areal_representative_point(const LWGEOM *geom, double *x, double *y)
     meos_array_destroy(arr);
     return false;
   }
-  const Edge *edge = (const Edge *) meos_array_get(arr, 0);
+  const Edge *edge = (const Edge *) meos_array_get_intl(arr, 0);
   if (edge->etype == EDGE_POLYSEG || edge->etype == EDGE_LINESEG)
   {
     *x = (edge->x1 + edge->x2) * 0.5;
@@ -890,7 +890,7 @@ buffer_areal_contains_point(const LWGEOM *geom, double x, double y)
   }
   Edge **edges = palloc(sizeof(Edge *) * nedges);
   for (int i = 0; i < nedges; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
+    edges[i] = (Edge *) meos_array_get_intl(arr, i);
   if (relate_point_on_boundary(x, y, edges, nedges, false))
   {
     pfree(edges);
@@ -1160,12 +1160,12 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
   bool result = false;
   for (uint32_t i = 0; i < edges->count && ! result; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get(edges, i);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(edges, i);
     if (! e1 || ! buffer_is_boundary_edge(e1))
       continue;
     for (uint32_t j = i + 1; j < edges->count; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get(edges, j);
+      const Edge *e2 = (const Edge *) meos_array_get_intl(edges, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
       /* Only two consecutive edges meet by construction, which is where the
@@ -1237,7 +1237,7 @@ buffer_boundary_representative_point(const LWGEOM *geom, double *x, double *y)
   MeosArray *edges = geom_extract_edges(geom);
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     if (! buffer_is_boundary_edge(edge))
       continue;
 
@@ -1436,7 +1436,7 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
     {
       loc->edges = palloc(sizeof(Edge *) * nedges);
       for (int i = 0; i < nedges; i++)
-        loc->edges[i] = (Edge *) meos_array_get(loc->arr, i);
+        loc->edges[i] = (Edge *) meos_array_get_intl(loc->arr, i);
     }
     /* The index removes the product of the points asked and the edges each
      * one would otherwise walk, so that product is what has to clear the
@@ -1474,7 +1474,7 @@ buffer_is_contained(const LWGEOM *inner, const LWGEOM *outer)
   const Edge *representative = NULL;
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     if (! buffer_is_boundary_edge(edge))
       continue;
     representative = edge;
@@ -1555,7 +1555,7 @@ buffer_component_extent(const LWGEOM *geom, BufferExtent *ext)
   MeosArray *edges = geom_extract_edges(geom);
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     if (! e)
       continue;
     ext->empty = false;
@@ -1665,7 +1665,7 @@ buffer_intersections_add(MeosArray *array, double x, double y)
   /* Avoid inserting the same node more than once */
   for (uint32_t i = 0; i < array->count; i++)
   {
-    const POINT2D *point = (POINT2D *) meos_array_get(array, i);
+    const POINT2D *point = (POINT2D *) meos_array_get_intl(array, i);
     double tol = buffer_node_tolerance(x, y);
     if (fabs(point->x - x) <= tol && fabs(point->y - y) <= tol)
       return;
@@ -1685,7 +1685,7 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
   assert(points);
   for (uint32_t i = 0; i < points->count; i++)
   {
-    const POINT2D *p = (const POINT2D *) meos_array_get(points, i);
+    const POINT2D *p = (const POINT2D *) meos_array_get_intl(points, i);
     double tol = buffer_node_tolerance(x, y);
     if (fabs(p->x - x) <= tol && fabs(p->y - y) <= tol)
       return;
@@ -1934,7 +1934,7 @@ buffer_piece_array_contains(const MeosArray *pieces, const Edge *piece)
   assert(pieces); assert(piece);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const Edge *piece_i = (Edge *) meos_array_get(pieces, i);
+    const Edge *piece_i = (Edge *) meos_array_get_intl(pieces, i);
     if (buffer_pieces_equal(piece_i, piece))
       return true;
   }
@@ -2080,7 +2080,7 @@ buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
   double scale = 0.0;
   for (uint32_t i = 0; i < npieces; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     POINT2D s = buffer_piece_start(piece), e = buffer_piece_end(piece);
     scale = Max(scale, Max(fabs(s.x), fabs(s.y)));
     scale = Max(scale, Max(fabs(e.x), fabs(e.y)));
@@ -2088,7 +2088,7 @@ buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
   buffer_node_index_alloc(ix, npieces, 2 * npieces, scale);
   for (uint32_t i = 0; i < npieces; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     buffer_node_index_add(ix, i, buffer_piece_start(piece));
     buffer_node_index_add(ix, i, buffer_piece_end(piece));
   }
@@ -2108,12 +2108,12 @@ buffer_node_index_nodes(BufferNodeIndex *ix, const MeosArray *points)
   double scale = 0.0;
   for (uint32_t i = 0; i < n; i++)
   {
-    const POINT2D *p = (const POINT2D *) meos_array_get(points, i);
+    const POINT2D *p = (const POINT2D *) meos_array_get_intl(points, i);
     scale = Max(scale, Max(fabs(p->x), fabs(p->y)));
   }
   buffer_node_index_alloc(ix, n, n, scale);
   for (uint32_t i = 0; i < n; i++)
-    buffer_node_index_add(ix, i, *(POINT2D *) meos_array_get(points, i));
+    buffer_node_index_add(ix, i, *(POINT2D *) meos_array_get_intl(points, i));
   return;
 }
 
@@ -2448,7 +2448,7 @@ buffer_split_segment(const Edge *piece, const MeosArray *intersections,
   buffer_split_point_add(points, &count, capacity, &end, 1.0);
   for (uint32_t c = 0; c < ncand; c++)
   {
-    POINT2D *point = (POINT2D *) meos_array_get(intersections, cand[c]);
+    POINT2D *point = (POINT2D *) meos_array_get_intl(intersections, cand[c]);
     if (! buffer_piece_contains_point(piece, point))
       continue;
     double parameter = buffer_segment_parameter(piece, point->x, point->y);
@@ -2503,7 +2503,7 @@ buffer_split_arc(const Edge *piece, const MeosArray *intersections,
   buffer_split_point_add(points, &count, capacity, &end, sweep);
   for (uint32_t c = 0; c < ncand; c++)
   {
-    POINT2D *point = (POINT2D *) meos_array_get(intersections, cand[c]);
+    POINT2D *point = (POINT2D *) meos_array_get_intl(intersections, cand[c]);
     if (! buffer_piece_contains_point(piece, point))
       continue;
     double parameter = buffer_arc_parameter(piece, point);
@@ -2604,7 +2604,7 @@ buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
     return false;
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     if (! edge || ! buffer_is_boundary_edge(edge))
       continue;
     Edge piece;
@@ -2631,7 +2631,7 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   buffer_node_index_nodes(&ix, intersections);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     if (! piece)
       continue;
     if (piece->etype == EDGE_POLYSEG)
@@ -2934,12 +2934,12 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
   }
   for (uint32_t i = 0; i < a1->count; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get(a1, i);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
     if (! e1 || ! buffer_is_boundary_edge(e1))
       continue;
     for (uint32_t j = 0; j < a2->count; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get(a2, j);
+      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
       /* Two edges whose boxes lie apart cannot meet. The band is the one the
@@ -2970,7 +2970,7 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
       /* Transfer the points to the intersection array */
       for (uint32_t k = 0; k < points->count; k++)
       {
-        const POINT2D *point = (const POINT2D *) meos_array_get(points, k);
+        const POINT2D *point = (const POINT2D *) meos_array_get_intl(points, k);
         if (point)
           buffer_intersections_add(intersections, point->x, point->y);
       }
@@ -3069,7 +3069,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   /* Pieces belonging to A */
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
-    Edge *piece = (Edge *) meos_array_get(pieces_a, i);
+    Edge *piece = (Edge *) meos_array_get_intl(pieces_a, i);
     EdgeLocation location = buffer_classify_piece(piece, loc_b);
     if (location == keep_a)
       buffer_add_selected_piece(result, piece, loc_a, false);
@@ -3085,7 +3085,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   /* Pieces belonging to B */
   for (uint32_t i = 0; i < pieces_b->count; i++)
   {
-    Edge *piece = (Edge *) meos_array_get(pieces_b, i);
+    Edge *piece = (Edge *) meos_array_get_intl(pieces_b, i);
     EdgeLocation location = buffer_classify_piece(piece, loc_a);
     if (location == keep_b)
       buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE);
@@ -3298,7 +3298,8 @@ buffer_find_connected_piece(const MeosArray *pieces, BufferNodeIndex *ix,
     uint32_t i = cand[c];
     if (used[i])
       continue;
-    const BufferSelected *sel = (BufferSelected *) meos_array_get(pieces, i);
+    const BufferSelected *sel =
+      (BufferSelected *) meos_array_get_intl(pieces, i);
     const Edge *piece = &sel->e;
     POINT2D start = buffer_piece_start(piece);
     POINT2D end = buffer_piece_end(piece);
@@ -3383,8 +3384,8 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
 {
   assert(pieces); assert(ix); assert(used); assert(ordered);
   assert(start_index < pieces->count);
-  const BufferSelected *first = (const BufferSelected *) meos_array_get(pieces,
-    start_index);
+  const BufferSelected *first =
+    (const BufferSelected *) meos_array_get_intl(pieces, start_index);
   if (! first)
     return NULL;
   LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
@@ -3416,8 +3417,8 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
       lwgeom_free(lwcompound_as_lwgeom(curve));
       return NULL;
     }
-    const BufferSelected *next = (const BufferSelected *) meos_array_get(pieces,
-      (uint32_t) index);
+    const BufferSelected *next =
+      (const BufferSelected *) meos_array_get_intl(pieces, (uint32_t) index);
     if (! next)
     {
       lwgeom_free(lwcompound_as_lwgeom(curve));
@@ -3547,7 +3548,7 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
   }
   for (uint32_t i = 0; i < arr->count; i++)
   {
-    Edge *edge = (Edge *) meos_array_get(arr, i);
+    Edge *edge = (Edge *) meos_array_get_intl(arr, i);
     if (! edge)
       continue;
 
@@ -3702,7 +3703,7 @@ buffer_ring_infos_destroy(MeosArray *rings)
   assert(rings);
   for (uint32_t i = 0; i < rings->count; i++)
   {
-    BufferRingInfo *info = (BufferRingInfo *) meos_array_get(rings, i);
+    BufferRingInfo *info = (BufferRingInfo *) meos_array_get_intl(rings, i);
     if (info)
       buffer_ring_info_release(info);
   }
@@ -3753,7 +3754,8 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
   uint32_t kept = 0;
   for (uint32_t i = 0; i < count; i++)
   {
-    BufferRingInfo *ring_info = (BufferRingInfo *) meos_array_get(rings, i);
+    BufferRingInfo *ring_info =
+      (BufferRingInfo *) meos_array_get_intl(rings, i);
     if (! ring_info || ! ring_info->ring || ! ring_info->pieces)
     {
       buffer_ring_infos_free(info, kept);
@@ -3957,7 +3959,7 @@ buffer_ring_signed_area(const MeosArray *pieces)
   double area = 0.0;
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     if (! piece)
       continue;
     if (piece->etype == EDGE_POLYSEG)
@@ -3984,7 +3986,7 @@ buffer_reverse_ring_pieces(const MeosArray *pieces)
   for (uint32_t i = pieces->count; i > 0; i--)
   {
     const Edge *source = 
-      (const Edge *) meos_array_get(pieces, i - 1);
+      (const Edge *) meos_array_get_intl(pieces, i - 1);
     if (! source)
     {
       meos_array_destroy(reversed);
@@ -4011,7 +4013,7 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
     return NULL;
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     if (! piece)
     {
       lwgeom_free(lwcompound_as_lwgeom(ring));
@@ -4072,7 +4074,8 @@ buffer_normalize_ring_orientations(MeosArray *classified, int32_t srid)
   assert(classified);
   for (uint32_t i = 0; i < classified->count; i++)
   {
-    BufferRingInfo *info = (BufferRingInfo *) meos_array_get(classified, i);
+    BufferRingInfo *info =
+      (BufferRingInfo *) meos_array_get_intl(classified, i);
     if (! info)
       return false; 
     if (! buffer_normalize_ring_orientation(info, srid))
@@ -4100,7 +4103,7 @@ buffer_build_surfaces_from_classified_rings(MeosArray *classified,
   for (uint32_t i = 0; i < classified->count; i++)
   {
     const BufferRingInfo *info =
-      (const BufferRingInfo *) meos_array_get(classified, i);
+      (const BufferRingInfo *) meos_array_get_intl(classified, i);
     if (! info)
       return NULL;
     if ((info->depth & 1) == 0)
@@ -4114,7 +4117,8 @@ buffer_build_surfaces_from_classified_rings(MeosArray *classified,
   /* Construct one CURVEPOLYGON for every shell */
   for (uint32_t i = 0; i < classified->count; i++)
   {
-    BufferRingInfo *shell = (BufferRingInfo *) meos_array_get(classified, i);
+    BufferRingInfo *shell =
+      (BufferRingInfo *) meos_array_get_intl(classified, i);
     if (! shell)
       goto fail;
     /* Odd depth means hole */
@@ -4139,7 +4143,8 @@ buffer_build_surfaces_from_classified_rings(MeosArray *classified,
     /* Attach only the holes whose immediate shell is this shell */
     for (uint32_t j = 0; j < classified->count; j++)
     {
-      BufferRingInfo *hole = (BufferRingInfo *) meos_array_get(classified, j);
+      BufferRingInfo *hole =
+        (BufferRingInfo *) meos_array_get_intl(classified, j);
       if (! hole)
       {
         lwgeom_free(lwcurvepoly_as_lwgeom(polygon));
@@ -4287,12 +4292,12 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
   bool point_intersection = false;
   for (uint32_t i = 0; i < a1->count && ! point_intersection; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get(a1, i);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
     if (! e1 || ! buffer_is_boundary_edge(e1))
       continue;
     for (uint32_t j = 0; j < a2->count; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get(a2, j);
+      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
       /* Two edges whose boxes lie apart cannot meet, read at the band the
@@ -4337,13 +4342,13 @@ buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
     return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, 0, 0));
   if (count == 1)
   {
-    const POINT2D *p = (const POINT2D *) meos_array_get(nodes, 0);
+    const POINT2D *p = (const POINT2D *) meos_array_get_intl(nodes, 0);
     return lwpoint_as_lwgeom(lwpoint_make2d(srid, p->x, p->y));
   }
   LWGEOM **points = palloc(sizeof(LWGEOM *) * count);
   for (uint32_t i = 0; i < count; i++)
   {
-    const POINT2D *p = (const POINT2D *) meos_array_get(nodes, i);
+    const POINT2D *p = (const POINT2D *) meos_array_get_intl(nodes, i);
     points[i] = lwpoint_as_lwgeom(lwpoint_make2d(srid, p->x, p->y));
   }
   /* #lwcollection_construct keeps the array it is given */
@@ -4397,7 +4402,7 @@ buffer_shared_geometry(const MeosArray *pieces, int32_t srid)
   uint32_t ncurves = 0;
   for (uint32_t i = 0; i < count; i++)
   {
-    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     if (! buffer_piece_draws_a_curve(piece))
       continue;
     LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
@@ -5156,7 +5161,7 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
   bool *join = palloc0(sizeof(bool) * count);
   for (uint32_t i = 0; i < count; i++)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     if (! edge || ! buffer_offset_edge(edge, radius, left, &pieces[i]))
     {
       pfree(pieces); pfree(join);
@@ -5169,8 +5174,8 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
   for (uint32_t i = 0; i < njunctions; i++)
   {
     uint32_t next = (i + 1) % count;
-    const Edge *e1 = (const Edge *) meos_array_get(edges, i);
-    const Edge *e2 = (const Edge *) meos_array_get(edges, next);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(edges, i);
+    const Edge *e2 = (const Edge *) meos_array_get_intl(edges, next);
     double in_dx, in_dy, out_dx, out_dy;
     buffer_edge_end_tangent(e1, &in_dx, &in_dy);
     buffer_edge_start_tangent(e2, &out_dx, &out_dy);
@@ -5211,7 +5216,7 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
     if (! join[i])
       continue;
     uint32_t next = (i + 1) % count;
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     POINT2D vertex = { edge->x2, edge->y2 };
     POINT2D p1 = { pieces[i].x2, pieces[i].y2 };
     POINT2D p2 = { pieces[next].x1, pieces[next].y1 };
@@ -5271,7 +5276,7 @@ buffer_edges_reversed(const MeosArray *edges)
     return NULL;
   for (uint32_t i = edges->count; i > 0; i--)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i - 1);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i - 1);
     if (! edge)
       continue;
     Edge reversed = *edge;
@@ -5294,7 +5299,7 @@ buffer_ring_edges_outward_left(const MeosArray *edges)
     return false;
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *edge = (const Edge *) meos_array_get(edges, i);
+    const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
     if (! edge)
       continue;
     Edge piece;
@@ -5378,7 +5383,7 @@ buffer_point_edges_distance(double x, double y, const MeosArray *edges)
   double result = DBL_MAX;
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     if (! e || e->etype == EDGE_POINT)
       continue;
     double d = buffer_point_edge_distance(x, y, e);
@@ -5402,7 +5407,7 @@ buffer_edges_index(const MeosArray *edges)
   RTree *index = rtree_create_stbox();
   for (uint32_t i = 0; i < edges->count; i++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     if (! e || e->etype == EDGE_POINT)
       continue;
     double pad = e->tol + 16.0 * DBL_EPSILON * (fabs(e->xmin) +
@@ -5449,7 +5454,7 @@ buffer_point_edges_nearer(double x, double y, const MeosArray *edges,
   int nc = rtree_search_intl(index, INDEX_OVERLAPS, &query, found);
   for (int c = 0; c < nc; c++)
   {
-    const Edge *e = (const Edge *) meos_array_get(edges,
+    const Edge *e = (const Edge *) meos_array_get_intl(edges,
       (int) INDEX_RESULT_ID_N(found, c));
     if (e && e->etype != EDGE_POINT &&
         buffer_point_edge_distance(x, y, e) < limit)
@@ -5489,7 +5494,7 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
   MeosArray *points = meos_array_create(sizeof(POINT2D));
   for (uint32_t i = 0; i < n; i++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get(arr, i);
+    const Edge *e1 = (const Edge *) meos_array_get_intl(arr, i);
     if (! e1 || ! buffer_is_boundary_edge(e1))
       continue;
     Edge piece;
@@ -5497,7 +5502,7 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
     meos_array_add(pieces, &piece);
     for (uint32_t j = i + 1; j < n; j++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get(arr, j);
+      const Edge *e2 = (const Edge *) meos_array_get_intl(arr, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
       /* Two edges whose boxes lie apart cannot meet. The band is the one the
@@ -5519,7 +5524,7 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
       buffer_collect_edge_intersections(e1, e2, points);
       for (int k = 0; k < meos_array_count(points); k++)
       {
-        const POINT2D *p = (const POINT2D *) meos_array_get(points,
+        const POINT2D *p = (const POINT2D *) meos_array_get_intl(points,
           (uint32_t) k);
         if (p)
           buffer_intersections_add(nodes, p->x, p->y);
@@ -5542,7 +5547,7 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
   MeosArray *found = index_result_create();
   for (int i = 0; i < meos_array_count(split); i++)
   {
-    Edge *piece = (Edge *) meos_array_get(split, (uint32_t) i);
+    Edge *piece = (Edge *) meos_array_get_intl(split, (uint32_t) i);
     POINT2D mid;
     if (! piece || ! buffer_piece_midpoint(piece, &mid))
       continue;
@@ -5645,8 +5650,9 @@ meos_buffer_curve(const LWGEOM *geom, double radius, JoinStyle join_style,
       meos_array_destroy(edges);
     return NULL;
   }
-  const Edge *first = (const Edge *) meos_array_get(edges, 0);
-  const Edge *last = (const Edge *) meos_array_get(edges, edges->count - 1);
+  const Edge *first = (const Edge *) meos_array_get_intl(edges, 0);
+  const Edge *last =
+    (const Edge *) meos_array_get_intl(edges, edges->count - 1);
   bool closed = buffer_nodes_equal(first->x1, first->y1, last->x2, last->y2);
 
   if (closed)

@@ -1101,7 +1101,7 @@ geo_edge_ctx_make(const GSERIALIZED *gs)
   /* Transform the edge array into an edge pointer array */
   ctx->edge_ptrs = palloc(sizeof(Edge *) * ctx->nedges);
   for (int i = 0; i < ctx->nedges; i++)
-    ctx->edge_ptrs[i] = (Edge *) meos_array_get(ctx->edges, i);
+    ctx->edge_ptrs[i] = (Edge *) meos_array_get_intl(ctx->edges, i);
 
   /* Index the edges only when there are enough of them to compensate the
    * overhead of the tree construction and destruction */
@@ -1204,7 +1204,7 @@ geo_every_part_bounds_area(const GSERIALIZED *gs)
   {
     for (uint32_t i = 0; result && i < edges->count; i++)
     {
-      const Edge *edge = (const Edge *) meos_array_get(edges, i);
+      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
       if (! edge ||
           (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC))
         result = false;
@@ -1496,7 +1496,7 @@ intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
     bool held = false;
     for (uint32_t q = 0; q < intervals->count && ! held; q++)
     {
-      const Span *sp = (const Span *) meos_array_get(intervals, q);
+      const Span *sp = (const Span *) meos_array_get_intl(intervals, q);
       double lo = DatumGetFloat8(sp->lower), hi = DatumGetFloat8(sp->upper);
       held = (meets[k] >= lo - MEOS_GEOM_TOLERANCE &&
         meets[k] <= hi + MEOS_GEOM_TOLERANCE);
@@ -1563,8 +1563,9 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
   POINT2D prev = { 0, 0 };
   for (int i = 0; i < npieces; i++)
   {
-    POINT2D *p0 = (POINT2D *) meos_array_get((MeosArray *) pieces, 2 * i);
-    POINT2D *p1 = (POINT2D *) meos_array_get((MeosArray *) pieces, 2 * i + 1);
+    POINT2D *p0 = (POINT2D *) meos_array_get_intl((MeosArray *) pieces, 2 * i);
+    POINT2D *p1 =
+      (POINT2D *) meos_array_get_intl((MeosArray *) pieces, 2 * i + 1);
     bool weld = pa && fabs(p0->x - prev.x) <= MEOS_GEOM_TOLERANCE &&
       fabs(p0->y - prev.y) <= MEOS_GEOM_TOLERANCE;
     if (! weld)
@@ -1602,13 +1603,13 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
   int npts = 0;
   for (int i = 0; i < ntouch; i++)
   {
-    POINT2D *t = (POINT2D *) meos_array_get((MeosArray *) touches, i);
+    POINT2D *t = (POINT2D *) meos_array_get_intl((MeosArray *) touches, i);
     bool covered = false;
     for (int j = 0; j < npieces && ! covered; j++)
     {
-      const POINT2D *q0 = (const POINT2D *) meos_array_get(
+      const POINT2D *q0 = (const POINT2D *) meos_array_get_intl(
         (MeosArray *) pieces, 2 * j);
-      const POINT2D *q1 = (const POINT2D *) meos_array_get(
+      const POINT2D *q1 = (const POINT2D *) meos_array_get_intl(
         (MeosArray *) pieces, 2 * j + 1);
       covered = point_on_segment_pts(t, q0, q1);
     }
@@ -1630,7 +1631,8 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
     POINTARRAY *apa = ptarray_construct_empty(0, 0, 3);
     for (int k = 0; k < 3; k++)
     {
-      const POINT2D *q = (const POINT2D *) meos_array_get((MeosArray *) arcs,
+      const POINT2D *q =
+        (const POINT2D *) meos_array_get_intl((MeosArray *) arcs,
         3 * i + k);
       POINT4D p4 = { q->x, q->y, 0.0, 0.0 };
       ptarray_append_point(apa, &p4, LW_TRUE);
@@ -1824,7 +1826,7 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
     int sn = (int) sarr->count;
     for (int i = 0; i < sn; i++)
     {
-      Edge *se = (Edge *) meos_array_get(sarr, i);
+      Edge *se = (Edge *) meos_array_get_intl(sarr, i);
       intervals->count = 0;
       if (se->etype == EDGE_POLYARC || se->etype == EDGE_LINEARC)
       {
@@ -2071,7 +2073,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
   int n = (int) edges->count;
   Edge **ptr = palloc(sizeof(Edge *) * n);
   for (int i = 0; i < n; i++)
-    ptr[i] = (Edge *) meos_array_get(edges, i);
+    ptr[i] = (Edge *) meos_array_get_intl(edges, i);
 
   bool result = false;
 
@@ -2353,9 +2355,9 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   Edge **aedges = palloc(sizeof(Edge *) * na);
   Edge **bedges = palloc(sizeof(Edge *) * nb);
   for (int i = 0; i < na; i++)
-    aedges[i] = (Edge *) meos_array_get(edges1, i);
+    aedges[i] = (Edge *) meos_array_get_intl(edges1, i);
   for (int i = 0; i < nb; i++)
-    bedges[i] = (Edge *) meos_array_get(edges2, i);
+    bedges[i] = (Edge *) meos_array_get_intl(edges2, i);
   bool has_area = edges_have_area(aedges, na);
 
   bool result = true;
@@ -3406,7 +3408,7 @@ tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
   lwgeom_free(geom);
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   for (int i = 0; i < (int) edges->count; i++)
-    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
+    edge_ptrs[i] = (Edge *) meos_array_get_intl(edges, i);
 
   /* Static array accumulating the per-segment candidate turning times */
   events = meos_array_create(sizeof(double));
