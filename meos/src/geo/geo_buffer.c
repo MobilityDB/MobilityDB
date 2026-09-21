@@ -77,20 +77,14 @@ typedef enum
 } EndCapStyle;
 
 /**
- * @brief Type of a buffer boundary piece
- */
-typedef enum
-{
-  BUFFER_SEGMENT,
-  BUFFER_ARC
-} BufferPieceType;
-
-/**
  * @brief A piece of a buffer boundary
+ * @details A piece is typed as #Edge types a region boundary, which is what
+ * #geom_extract_edges() gives back when the finished buffer is read again:
+ * see #buffer_is_boundary_edge()
  */
 typedef struct
 {
-  BufferPieceType type;
+  EdgeType etype;
   double x1;
   double y1;
   double x2;
@@ -1221,7 +1215,7 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
 static double
 buffer_segment_parameter(const BufferPiece *piece, double x, double y)
 {
-  assert(piece); assert(piece->type == BUFFER_SEGMENT);
+  assert(piece); assert(piece->etype == EDGE_POLYSEG);
   double dx = piece->x2 - piece->x1;
   double dy = piece->y2 - piece->y1;
   if (fabs(dx) >= fabs(dy))
@@ -1830,7 +1824,7 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
 static bool
 buffer_point_on_arc(const BufferPiece *arc, double x, double y)
 {
-  assert(arc); assert(arc->type == BUFFER_ARC);
+  assert(arc); assert(arc->etype == EDGE_POLYARC);
   return arc_span_contains(arc->theta0, arc->theta1, arc->ccw,
     atan2(y - arc->cy, x - arc->cx));
 }
@@ -1866,7 +1860,7 @@ static bool
 buffer_segments_equal(const BufferPiece *a, const BufferPiece *b)
 {
   assert(a); assert(b);
-  if (a->type != BUFFER_SEGMENT || b->type != BUFFER_SEGMENT)
+  if (a->etype != EDGE_POLYSEG || b->etype != EDGE_POLYSEG)
     return false;
   if (buffer_piece_points_equal(a->x1, a->y1, b->x1, b->y1) &&
       buffer_piece_points_equal(a->x2, a->y2, b->x2, b->y2))
@@ -1883,7 +1877,7 @@ static bool
 buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
 {
   assert(a); assert(b);
-  if (a->type != BUFFER_ARC || b->type != BUFFER_ARC)
+  if (a->etype != EDGE_POLYARC || b->etype != EDGE_POLYARC)
     return false;
   return
     buffer_values_equal(a->cx, b->cx) &&
@@ -1933,11 +1927,11 @@ static bool
 buffer_pieces_equal(const BufferPiece *a, const BufferPiece *b)
 {
   assert(a); assert(b);
-  if (a->type != b->type)
+  if (a->etype != b->etype)
     return false;
-  if (a->type == BUFFER_SEGMENT)
+  if (a->etype == EDGE_POLYSEG)
     return buffer_segments_equal(a, b);
-  if (a->type == BUFFER_ARC)
+  if (a->etype == EDGE_POLYARC)
     return buffer_arcs_equal(a, b);
   return false;
 }
@@ -2294,7 +2288,7 @@ buffer_node_index_cand(const BufferPiece *piece, BufferNodeIndex *ix,
 {
   assert(piece); assert(ix); assert(ncand);
   double xmin, ymin, xmax, ymax;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
   {
     xmin = piece->cx - piece->radius; xmax = piece->cx + piece->radius;
     ymin = piece->cy - piece->radius; ymax = piece->cy + piece->radius;
@@ -2340,7 +2334,7 @@ buffer_pieces_add_unique(MeosArray *pieces, BufferPiece *piece)
 static double
 buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
 {
-  assert(piece); assert(point); assert(piece->type == BUFFER_ARC);
+  assert(piece); assert(point); assert(piece->etype == EDGE_POLYARC);
   double theta = atan2(point->y - piece->cy, point->x - piece->cx);
   if (piece->ccw)
     return angle_normalize(theta - piece->theta0);
@@ -2353,7 +2347,7 @@ buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
 static double
 buffer_arc_sweep(const BufferPiece *piece)
 {
-  assert(piece); assert(piece->type == BUFFER_ARC);
+  assert(piece); assert(piece->etype == EDGE_POLYARC);
   if (piece->ccw)
     return angle_normalize(piece->theta1 - piece->theta0);
   return angle_normalize(piece->theta0 - piece->theta1);
@@ -2369,7 +2363,7 @@ static bool
 buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
 {
   assert(piece); assert(point);
-  if (piece->type == BUFFER_SEGMENT)
+  if (piece->etype == EDGE_POLYSEG)
     /* The node the splitter asks about was placed by the arithmetic of the
      * boundary that produced it, so it lies off the piece by the rounding of
      * ITS OWN COORDINATES rather than by the size of the piece. Bounding the
@@ -2379,7 +2373,7 @@ buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
     return point_on_segment(point->x, point->y, piece->x1, piece->y1,
       piece->x2, piece->y2);
 
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
   {
     double dx = point->x - piece->cx;
     double dy = point->y - piece->cy;
@@ -2452,7 +2446,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
   BufferNodeIndex *ix, MeosArray *result)
 {
   assert(piece); assert(intersections); assert(ix); assert(result);
-  assert(piece->type == BUFFER_SEGMENT);
+  assert(piece->etype == EDGE_POLYSEG);
   uint32_t ncand;
   const uint32_t *cand = buffer_node_index_cand(piece, ix, &ncand);
   /* At most the nodes reaching this piece plus its two endpoints */
@@ -2489,7 +2483,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
       continue;
     BufferPiece split;
     memset(&split, 0, sizeof(BufferPiece));
-    split.type = BUFFER_SEGMENT;
+    split.etype = EDGE_POLYSEG;
     split.x1 = p1.x;
     split.y1 = p1.y;
     split.x2 = p2.x;
@@ -2507,7 +2501,7 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
   BufferNodeIndex *ix, MeosArray *result)
 {
   assert(piece); assert(intersections); assert(ix); assert(result);
-  assert(piece->type == BUFFER_ARC);
+  assert(piece->etype == EDGE_POLYARC);
   uint32_t ncand;
   const uint32_t *cand = buffer_node_index_cand(piece, ix, &ncand);
   uint32_t capacity = ncand + 2;
@@ -2559,7 +2553,7 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
     POINT2D p2 = points[i + 1].point;
     BufferPiece split;
     memset(&split, 0, sizeof(BufferPiece));
-    split.type = BUFFER_ARC;
+    split.etype = EDGE_POLYARC;
     split.x1 = p1.x;
     split.y1 = p1.y;
     split.x2 = p2.x;
@@ -2596,7 +2590,7 @@ buffer_piece_from_edge(const Edge *edge, BufferPiece *piece)
   piece->y2 = edge->y2;
   if (edge->etype == EDGE_POLYARC || edge->etype == EDGE_LINEARC)
   {
-    piece->type = BUFFER_ARC;
+    piece->etype = EDGE_POLYARC;
     piece->cx = edge->cx;
     piece->cy = edge->cy;
     piece->radius = edge->radius;
@@ -2605,7 +2599,7 @@ buffer_piece_from_edge(const Edge *edge, BufferPiece *piece)
     piece->ccw = edge->ccw;
   }
   else
-    piece->type = BUFFER_SEGMENT;
+    piece->etype = EDGE_POLYSEG;
 }
 
 /**
@@ -2651,9 +2645,9 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
     const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
     if (! piece)
       continue;
-    if (piece->type == BUFFER_SEGMENT)
+    if (piece->etype == EDGE_POLYSEG)
       buffer_split_segment(piece, intersections, &ix, result);
-    else if (piece->type == BUFFER_ARC)
+    else if (piece->etype == EDGE_POLYARC)
       buffer_split_arc(piece, intersections, &ix, result);
   }
   buffer_node_index_free(&ix);
@@ -2673,13 +2667,13 @@ static bool
 buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
 {
   assert(piece); assert(point);
-  if (piece->type == BUFFER_SEGMENT)
+  if (piece->etype == EDGE_POLYSEG)
   {
     point->x = (piece->x1 + piece->x2) * 0.5;
     point->y = (piece->y1 + piece->y2) * 0.5;
     return true;
   }
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
   {
     double sweep = buffer_arc_sweep(piece);
     if (sweep <= MEOS_GEOM_TOLERANCE)
@@ -2748,12 +2742,12 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
   if (! buffer_piece_midpoint(piece, &midpoint))
     return false;
   double tx, ty;
-  if (piece->type == BUFFER_SEGMENT)
+  if (piece->etype == EDGE_POLYSEG)
   {
     tx = piece->x2 - piece->x1;
     ty = piece->y2 - piece->y1;
   }
-  else if (piece->type == BUFFER_ARC)
+  else if (piece->etype == EDGE_POLYARC)
   {
     double sweep = buffer_arc_sweep(piece);
     if (sweep <= MEOS_GEOM_TOLERANCE)
@@ -2812,7 +2806,7 @@ buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
   double scale = 1.0;
   double dx = piece->x2 - piece->x1;
   double dy = piece->y2 - piece->y1;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
     scale = piece->radius;
   else
     scale = hypot(dx, dy);
@@ -3185,7 +3179,7 @@ buffer_piece_reverse(BufferPiece *piece)
   tmp = piece->y1;
   piece->y1 = piece->y2;
   piece->y2 = tmp;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
   {
     tmp = piece->theta0;
     piece->theta0 = piece->theta1;
@@ -3206,9 +3200,9 @@ buffer_append_piece_to_curve(LWCOMPOUND *curve, int32_t srid,
   assert(curve); assert(piece);
   POINT2D p1 = buffer_piece_start(piece);
   POINT2D p2 = buffer_piece_end(piece);
-  if (piece->type == BUFFER_SEGMENT)
+  if (piece->etype == EDGE_POLYSEG)
     buffer_add_segment(curve, srid, p1, p2);
-  else if (piece->type == BUFFER_ARC)
+  else if (piece->etype == EDGE_POLYARC)
     buffer_add_arc(curve, srid, piece->cx, piece->cy, piece->radius,
       piece->theta0, piece->theta1, piece->ccw, &p1, &p2);
 }
@@ -3237,12 +3231,12 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
 {
   assert(piece); assert(dx); assert(dy);
   double tx, ty;
-  if (piece->type == BUFFER_SEGMENT)
+  if (piece->etype == EDGE_POLYSEG)
   {
     tx = piece->x2 - piece->x1;
     ty = piece->y2 - piece->y1;
   }
-  else if (piece->type == BUFFER_ARC)
+  else if (piece->etype == EDGE_POLYARC)
   {
     double sweep = buffer_arc_sweep(piece);
     if (sweep <= MEOS_GEOM_TOLERANCE)
@@ -3923,7 +3917,7 @@ static double
 buffer_segment_signed_area(const BufferPiece *piece)
 {
   assert(piece);
-  assert(piece->type == BUFFER_SEGMENT);
+  assert(piece->etype == EDGE_POLYSEG);
   return 0.5 * (piece->x1 * piece->y2 - piece->x2 * piece->y1);
 }
 
@@ -3937,7 +3931,7 @@ buffer_segment_signed_area(const BufferPiece *piece)
 static double
 buffer_arc_signed_area(const BufferPiece *piece)
 {
-  assert(piece); assert(piece->type == BUFFER_ARC);
+  assert(piece); assert(piece->etype == EDGE_POLYARC);
   double theta1 = piece->theta0;
   double theta2 = piece->theta1;
   /* Directed angular sweep.
@@ -3975,9 +3969,9 @@ buffer_ring_signed_area(const MeosArray *pieces)
     const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
     if (! piece)
       continue;
-    if (piece->type == BUFFER_SEGMENT)
+    if (piece->etype == EDGE_POLYSEG)
       area += buffer_segment_signed_area(piece);
-    else if (piece->type == BUFFER_ARC)
+    else if (piece->etype == EDGE_POLYARC)
       area += buffer_arc_signed_area(piece);
   }
   return area;
@@ -4382,7 +4376,7 @@ buffer_piece_draws_a_curve(const BufferPiece *piece)
   POINT2D mid;
   if (! buffer_piece_midpoint(piece, &mid))
     return false;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
     return true;
   return ! buffer_piece_points_equal(piece->x1, piece->y1, piece->x2,
     piece->y2);
@@ -4888,7 +4882,7 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
       nx = -nx;
       ny = -ny;
     }
-    piece->type = BUFFER_SEGMENT;
+    piece->etype = EDGE_POLYSEG;
     piece->x1 = edge->x1 + radius * nx;
     piece->y1 = edge->y1 + radius * ny;
     piece->x2 = edge->x2 + radius * nx;
@@ -4919,13 +4913,13 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
          * ring stays closed and #buffer_ring_resolve drops what bounds
          * nothing. Refusing it loses a buffer that exists on both sides of
          * this radius */
-        piece->type = BUFFER_SEGMENT;
+        piece->etype = EDGE_POLYSEG;
         piece->x1 = piece->x2 = edge->cx;
         piece->y1 = piece->y2 = edge->cy;
         return true;
       }
     }
-    piece->type = BUFFER_ARC;
+    piece->etype = EDGE_POLYARC;
     piece->cx = edge->cx;
     piece->cy = edge->cy;
     piece->radius = r;
@@ -5007,7 +5001,7 @@ buffer_piece_set_end(BufferPiece *piece, double x, double y)
   assert(piece);
   piece->x2 = x;
   piece->y2 = y;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
     piece->theta1 = atan2(y - piece->cy, x - piece->cx);
 }
 
@@ -5020,7 +5014,7 @@ buffer_piece_set_start(BufferPiece *piece, double x, double y)
   assert(piece);
   piece->x1 = x;
   piece->y1 = y;
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
     piece->theta0 = atan2(y - piece->cy, x - piece->cx);
 }
 
@@ -5057,7 +5051,7 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
   double best = 0.0;
 
   /* Two straight supports meet in one point */
-  if (a->type == BUFFER_SEGMENT && b->type == BUFFER_SEGMENT)
+  if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
   {
     POINT2D p = { a->x1, a->y1 }, q = { b->x1, b->y1 };
     POINT2D result;
@@ -5070,10 +5064,10 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
   }
 
   /* A straight support and a circular one meet in at most two points */
-  if (a->type != b->type)
+  if (a->etype != b->etype)
   {
-    const BufferPiece *line = a->type == BUFFER_SEGMENT ? a : b;
-    const BufferPiece *arc = a->type == BUFFER_SEGMENT ? b : a;
+    const BufferPiece *line = a->etype == EDGE_POLYSEG ? a : b;
+    const BufferPiece *arc = a->etype == EDGE_POLYSEG ? b : a;
     double dx = line->x2 - line->x1, dy = line->y2 - line->y1;
     double length = hypot(dx, dy);
     if (length <= MEOS_GEOM_TOLERANCE)
@@ -5126,7 +5120,7 @@ static bool
 buffer_piece_holds(const BufferPiece *piece, double x, double y)
 {
   assert(piece);
-  if (piece->type == BUFFER_ARC)
+  if (piece->etype == EDGE_POLYARC)
     return arc_span_contains(piece->theta0, piece->theta1, piece->ccw,
       atan2(y - piece->cy, x - piece->cx));
   double dx = piece->x2 - piece->x1, dy = piece->y2 - piece->y1;
