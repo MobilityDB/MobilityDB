@@ -77,31 +77,20 @@ typedef enum
 } EndCapStyle;
 
 /**
- * @brief A piece of a buffer boundary
- * @details A piece is typed as #Edge types a region boundary, which is what
- * #geom_extract_edges() gives back when the finished buffer is read again:
- * see #buffer_is_boundary_edge()
+ * @brief An edge of a buffer boundary the overlay has selected, with the side
+ * the answer lies on
+ * @details The geometry is an #Edge, as every other part of the engine states a
+ * boundary.  The selection knows which side of it the answer lies on and the
+ * chaining walk needs it, and it is state of this overlay alone: see
+ * #buffer_add_selected_piece()
  */
 typedef struct
 {
-  EdgeType etype;
-  double x1;
-  double y1;
-  double x2;
-  double y2;
-  /* Parameters used only for circular arcs, named as #Edge names them: the
-   * angle the arc starts at and the one it ends at */
-  double cx;
-  double cy;
-  double radius;
-  double theta0;
-  double theta1;
-  bool ccw;
-  /* Set where, IN THE DIRECTION THIS PIECE IS STORED IN, the answer lies to
-   * its left. The selection knows it and the chaining walk needs it: see
-   * #buffer_add_selected_piece() */
+  Edge e;
+  /* Set where, IN THE DIRECTION THIS EDGE IS STORED IN, the answer lies to
+   * its left */
   bool answer_left;
-} BufferPiece;
+} BufferSelected;
 
 /**
  * @brief Add a point to a local parameterized node array
@@ -121,7 +110,7 @@ typedef enum
   BUFFER_PIECE_EXTERIOR = 0,
   BUFFER_PIECE_INTERIOR = 1,
   BUFFER_PIECE_BOUNDARY = 2
-} BufferPieceLocation;
+} EdgeLocation;
 
 /**
  * @brief Topological classification of a closed buffer boundary ring
@@ -129,7 +118,7 @@ typedef enum
  * - ring Boundary ring
  * - pieces The ordered pieces used to construct the ring. The ring owns the
  *   geometric representation, while this array contains copies of the
- *   BufferPiece descriptors needed by later topology stages.
+ *   Edge descriptors needed by later topology stages.
  * - parent is the index of the immediately containing ring, or -1 when
  *   the ring has no containing ring.
  * - depth is the number of containing rings between the ring and the
@@ -268,8 +257,8 @@ buffer_make_arc(int32_t srid, double cx, double cy, double radius,
 /* Defined with the ring walk that shares its question of node identity */
 static bool buffer_points_equal(POINT2D p1, POINT2D p2);
 /* Defined with the ring walk, and read by the node index that precedes it */
-static POINT2D buffer_piece_start(const BufferPiece *piece);
-static POINT2D buffer_piece_end(const BufferPiece *piece);
+static POINT2D buffer_piece_start(const Edge *piece);
+static POINT2D buffer_piece_end(const Edge *piece);
 
 /**
  * @brief Write a piece's start as the point the curve already ends at
@@ -1213,7 +1202,7 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
  * @details The returned parameter is approximately in [0,1].
  */
 static double
-buffer_segment_parameter(const BufferPiece *piece, double x, double y)
+buffer_segment_parameter(const Edge *piece, double x, double y)
 {
   assert(piece); assert(piece->etype == EDGE_POLYSEG);
   double dx = piece->x2 - piece->x1;
@@ -1822,7 +1811,7 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
  * angular half through #arc_span_contains(), the one statement of it
  */
 static bool
-buffer_point_on_arc(const BufferPiece *arc, double x, double y)
+buffer_point_on_arc(const Edge *arc, double x, double y)
 {
   assert(arc); assert(arc->etype == EDGE_POLYARC);
   return arc_span_contains(arc->theta0, arc->theta1, arc->ccw,
@@ -1857,7 +1846,7 @@ buffer_piece_points_equal(double x1, double y1, double x2, double y2)
  * segment, independently of orientation
  */
 static bool
-buffer_segments_equal(const BufferPiece *a, const BufferPiece *b)
+buffer_segments_equal(const Edge *a, const Edge *b)
 {
   assert(a); assert(b);
   if (a->etype != EDGE_POLYSEG || b->etype != EDGE_POLYSEG)
@@ -1874,7 +1863,7 @@ buffer_segments_equal(const BufferPiece *a, const BufferPiece *b)
  * @brief Return true if two circular buffer pieces lie on the same circle
  */
 static bool
-buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
+buffer_arcs_same_circle(const Edge *a, const Edge *b)
 {
   assert(a); assert(b);
   if (a->etype != EDGE_POLYARC || b->etype != EDGE_POLYARC)
@@ -1890,7 +1879,7 @@ buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
  * independently of traversal direction
  */
 static bool
-buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
+buffer_arcs_equal(const Edge *a, const Edge *b)
 {
   assert(a); assert(b);
   if (! buffer_arcs_same_circle(a, b))
@@ -1924,7 +1913,7 @@ buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
  * @details The orientation of the pieces is ignored.
  */
 static bool
-buffer_pieces_equal(const BufferPiece *a, const BufferPiece *b)
+buffer_pieces_equal(const Edge *a, const Edge *b)
 {
   assert(a); assert(b);
   if (a->etype != b->etype)
@@ -1940,12 +1929,12 @@ buffer_pieces_equal(const BufferPiece *a, const BufferPiece *b)
  * @brief Return true if a piece is already present in an array
  */
 static bool
-buffer_piece_array_contains(const MeosArray *pieces, const BufferPiece *piece)
+buffer_piece_array_contains(const MeosArray *pieces, const Edge *piece)
 {
   assert(pieces); assert(piece);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const BufferPiece *piece_i = (BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece_i = (Edge *) meos_array_get(pieces, i);
     if (buffer_pieces_equal(piece_i, piece))
       return true;
   }
@@ -2091,7 +2080,7 @@ buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
   double scale = 0.0;
   for (uint32_t i = 0; i < npieces; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     POINT2D s = buffer_piece_start(piece), e = buffer_piece_end(piece);
     scale = Max(scale, Max(fabs(s.x), fabs(s.y)));
     scale = Max(scale, Max(fabs(e.x), fabs(e.y)));
@@ -2099,7 +2088,7 @@ buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
   buffer_node_index_alloc(ix, npieces, 2 * npieces, scale);
   for (uint32_t i = 0; i < npieces; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     buffer_node_index_add(ix, i, buffer_piece_start(piece));
     buffer_node_index_add(ix, i, buffer_piece_end(piece));
   }
@@ -2283,7 +2272,7 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
  * whatever part of the circle it runs along.
  */
 static const uint32_t *
-buffer_node_index_cand(const BufferPiece *piece, BufferNodeIndex *ix,
+buffer_node_index_cand(const Edge *piece, BufferNodeIndex *ix,
   uint32_t *ncand)
 {
   assert(piece); assert(ix); assert(ncand);
@@ -2316,7 +2305,7 @@ buffer_node_index_cand(const BufferPiece *piece, BufferNodeIndex *ix,
  * already present
  */
 static void
-buffer_pieces_add_unique(MeosArray *pieces, BufferPiece *piece)
+buffer_pieces_add_unique(MeosArray *pieces, Edge *piece)
 {
   assert(pieces); assert(piece);
   if (! buffer_piece_array_contains(pieces, piece))
@@ -2332,7 +2321,7 @@ buffer_pieces_add_unique(MeosArray *pieces, BufferPiece *piece)
  * The result is normalized to [0, 2*pi).
  */
 static double
-buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
+buffer_arc_parameter(const Edge *piece, POINT2D *point)
 {
   assert(piece); assert(point); assert(piece->etype == EDGE_POLYARC);
   double theta = atan2(point->y - piece->cy, point->x - piece->cx);
@@ -2345,7 +2334,7 @@ buffer_arc_parameter(const BufferPiece *piece, POINT2D *point)
  * @brief Return the total angular sweep of an arc
  */
 static double
-buffer_arc_sweep(const BufferPiece *piece)
+buffer_arc_sweep(const Edge *piece)
 {
   assert(piece); assert(piece->etype == EDGE_POLYARC);
   if (piece->ccw)
@@ -2360,7 +2349,7 @@ buffer_arc_sweep(const BufferPiece *piece)
  * boundary piece before splitting it.
  */
 static bool
-buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
+buffer_piece_contains_point(const Edge *piece, POINT2D *point)
 {
   assert(piece); assert(point);
   if (piece->etype == EDGE_POLYSEG)
@@ -2442,7 +2431,7 @@ buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
  * @brief Split a linear buffer piece at the supplied intersection nodes
  */
 static void
-buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
+buffer_split_segment(const Edge *piece, const MeosArray *intersections,
   BufferNodeIndex *ix, MeosArray *result)
 {
   assert(piece); assert(intersections); assert(ix); assert(result);
@@ -2481,8 +2470,8 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
     POINT2D p2 = points[i + 1].point;
     if (hypot(p2.x - p1.x, p2.y - p1.y) <= MEOS_GEOM_TOLERANCE)
       continue;
-    BufferPiece split;
-    memset(&split, 0, sizeof(BufferPiece));
+    Edge split;
+    memset(&split, 0, sizeof(Edge));
     split.etype = EDGE_POLYSEG;
     split.x1 = p1.x;
     split.y1 = p1.y;
@@ -2497,7 +2486,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
  * @brief Split a circular buffer piece at supplied intersection nodes
  */
 static void
-buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
+buffer_split_arc(const Edge *piece, const MeosArray *intersections,
   BufferNodeIndex *ix, MeosArray *result)
 {
   assert(piece); assert(intersections); assert(ix); assert(result);
@@ -2551,8 +2540,8 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
      * the exact node shared with another boundary piece. */
     POINT2D p1 = points[i].point;
     POINT2D p2 = points[i + 1].point;
-    BufferPiece split;
-    memset(&split, 0, sizeof(BufferPiece));
+    Edge split;
+    memset(&split, 0, sizeof(Edge));
     split.etype = EDGE_POLYARC;
     split.x1 = p1.x;
     split.y1 = p1.y;
@@ -2580,10 +2569,10 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
  * curve, and the union of two buffers has holes and several surfaces.
  */
 static void
-buffer_piece_from_edge(const Edge *edge, BufferPiece *piece)
+buffer_piece_from_edge(const Edge *edge, Edge *piece)
 {
   assert(edge); assert(piece);
-  memset(piece, 0, sizeof(BufferPiece));
+  memset(piece, 0, sizeof(Edge));
   piece->x1 = edge->x1;
   piece->y1 = edge->y1;
   piece->x2 = edge->x2;
@@ -2618,7 +2607,7 @@ buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
     const Edge *edge = (const Edge *) meos_array_get(edges, i);
     if (! edge || ! buffer_is_boundary_edge(edge))
       continue;
-    BufferPiece piece;
+    Edge piece;
     buffer_piece_from_edge(edge, &piece);
     meos_array_add(pieces, &piece);
   }
@@ -2642,7 +2631,7 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   buffer_node_index_nodes(&ix, intersections);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     if (! piece)
       continue;
     if (piece->etype == EDGE_POLYSEG)
@@ -2664,7 +2653,7 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
  * circle and does not approximate the arc by a chord.
  */
 static bool
-buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
+buffer_piece_midpoint(const Edge *piece, POINT2D *point)
 {
   assert(piece); assert(point);
   if (piece->etype == EDGE_POLYSEG)
@@ -2701,8 +2690,8 @@ buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
  * - BOUNDARY  -> the piece coincides with, or touches, the other boundary.
  *   This case is retained for the later coincident-boundary handling.
  */
-static BufferPieceLocation
-buffer_classify_piece(const BufferPiece *piece, BufferLocator *other)
+static EdgeLocation
+buffer_classify_piece(const Edge *piece, BufferLocator *other)
 {
   assert(piece); assert(other);
   POINT2D midpoint;
@@ -2734,7 +2723,7 @@ buffer_classify_piece(const BufferPiece *piece, BufferLocator *other)
  * determine which side of a coincident boundary the other buffer occupies.
  */
 static bool
-buffer_piece_side_points(const BufferPiece *piece, double epsilon,
+buffer_piece_side_points(const Edge *piece, double epsilon,
   POINT2D *left, POINT2D *right)
 {
   assert(piece); assert(left); assert(right);
@@ -2799,7 +2788,7 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
  * still falls on the boundary, the offset distance is increased.
  */
 static int
-buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
+buffer_piece_interior_side(const Edge *piece, BufferLocator *geom)
 {
   assert(piece); assert(geom);
   /* Start with a small displacement relative to the piece itself */
@@ -2852,7 +2841,7 @@ buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
  *   internal to the union.
  */
 static int
-buffer_classify_coincident_piece(const BufferPiece *piece, BufferLocator *owner,
+buffer_classify_coincident_piece(const Edge *piece, BufferLocator *owner,
   BufferLocator *other)
 {
   assert(piece); assert(owner); assert(other);
@@ -2882,7 +2871,7 @@ buffer_classify_coincident_piece(const BufferPiece *piece, BufferLocator *owner,
  * from being inserted twice when processing the second buffer.
  */
 static bool
-buffer_resolve_coincident_piece(BufferPiece *piece, BufferLocator *owner,
+buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
   BufferLocator *other, ClipOper oper, MeosArray *result)
 {
   assert(piece); assert(owner); assert(other); assert(result);
@@ -3048,12 +3037,13 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * the ordering by itself, which is what it has to go on today.
  */
 static void
-buffer_add_selected_piece(MeosArray *result, const BufferPiece *piece,
+buffer_add_selected_piece(MeosArray *result, const Edge *piece,
   BufferLocator *own, bool inverted)
 {
   assert(result); assert(piece); assert(own);
-  BufferPiece kept = *piece;
-  int side = buffer_piece_interior_side(&kept, own);
+  BufferSelected kept;
+  kept.e = *piece;
+  int side = buffer_piece_interior_side(&kept.e, own);
   /* 0 = the geometry's interior lies LEFT of the piece, 1 = RIGHT */
   kept.answer_left = (side == 0 || side == 1) ?
     ((side == 0) != inverted) : false;
@@ -3070,17 +3060,17 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   *coincident = false;
   /* The pieces each boundary reports as lying on the other, kept apart so that
    * only what BOTH report reaches @p shared */
-  MeosArray *bnd_a = meos_array_create(sizeof(BufferPiece));
+  MeosArray *bnd_a = meos_array_create(sizeof(Edge));
   /* The side of the other geometry each of the two boundaries contributes */
-  BufferPieceLocation keep_a = (oper == CL_INTERSECTION) ?
+  EdgeLocation keep_a = (oper == CL_INTERSECTION) ?
     BUFFER_PIECE_INTERIOR : BUFFER_PIECE_EXTERIOR;
-  BufferPieceLocation keep_b = (oper == CL_UNION) ?
+  EdgeLocation keep_b = (oper == CL_UNION) ?
     BUFFER_PIECE_EXTERIOR : BUFFER_PIECE_INTERIOR;
   /* Pieces belonging to A */
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
-    BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_a, i);
-    BufferPieceLocation location = buffer_classify_piece(piece, loc_b);
+    Edge *piece = (Edge *) meos_array_get(pieces_a, i);
+    EdgeLocation location = buffer_classify_piece(piece, loc_b);
     if (location == keep_a)
       buffer_add_selected_piece(result, piece, loc_a, false);
     else if (location == BUFFER_PIECE_BOUNDARY)
@@ -3095,8 +3085,8 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   /* Pieces belonging to B */
   for (uint32_t i = 0; i < pieces_b->count; i++)
   {
-    BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_b, i);
-    BufferPieceLocation location = buffer_classify_piece(piece, loc_a);
+    Edge *piece = (Edge *) meos_array_get(pieces_b, i);
+    EdgeLocation location = buffer_classify_piece(piece, loc_a);
     if (location == keep_b)
       buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE);
     else if (location == BUFFER_PIECE_BOUNDARY)
@@ -3141,7 +3131,7 @@ buffer_points_equal(POINT2D p1, POINT2D p2)
  * @brief Return the start point of a buffer piece
  */
 static POINT2D
-buffer_piece_start(const BufferPiece *piece)
+buffer_piece_start(const Edge *piece)
 {
   assert(piece);
   POINT2D result;
@@ -3154,7 +3144,7 @@ buffer_piece_start(const BufferPiece *piece)
  * @brief Return the end point of a buffer piece
  */
 static POINT2D
-buffer_piece_end(const BufferPiece *piece)
+buffer_piece_end(const Edge *piece)
 {
   assert(piece);
   POINT2D result;
@@ -3169,7 +3159,7 @@ buffer_piece_end(const BufferPiece *piece)
  * Therefore theta1/theta2 are exchanged and ccw is inverted.
  */
 static void
-buffer_piece_reverse(BufferPiece *piece)
+buffer_piece_reverse(Edge *piece)
 {
   assert(piece);
   double tmp;
@@ -3195,7 +3185,7 @@ buffer_piece_reverse(BufferPiece *piece)
  */
 static void
 buffer_append_piece_to_curve(LWCOMPOUND *curve, int32_t srid,
-  const BufferPiece *piece)
+  const Edge *piece)
 {
   assert(curve); assert(piece);
   POINT2D p1 = buffer_piece_start(piece);
@@ -3226,7 +3216,7 @@ buffer_append_piece_to_curve(LWCOMPOUND *curve, int32_t srid,
  * @param[out] dx,dy Unit direction
  */
 static bool
-buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
+buffer_piece_end_direction(const Edge *piece, bool at_start,
   double *dx, double *dy)
 {
   assert(piece); assert(dx); assert(dy);
@@ -3308,7 +3298,8 @@ buffer_find_connected_piece(const MeosArray *pieces, BufferNodeIndex *ix,
     uint32_t i = cand[c];
     if (used[i])
       continue;
-    const BufferPiece *piece = (BufferPiece *) meos_array_get(pieces, i);
+    const BufferSelected *sel = (BufferSelected *) meos_array_get(pieces, i);
+    const Edge *piece = &sel->e;
     POINT2D start = buffer_piece_start(piece);
     POINT2D end = buffer_piece_end(piece);
     bool rev;
@@ -3319,7 +3310,7 @@ buffer_find_connected_piece(const MeosArray *pieces, BufferNodeIndex *ix,
     else
       continue;
     /* Traversing a piece backwards puts the answer on its other side */
-    bool framed = (piece->answer_left != rev) == want_left;
+    bool framed = (sel->answer_left != rev) == want_left;
     if (have_framed && ! framed)
       continue;
     if (framed && ! have_framed)
@@ -3392,28 +3383,28 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
 {
   assert(pieces); assert(ix); assert(used); assert(ordered);
   assert(start_index < pieces->count);
-  const BufferPiece *first = (const BufferPiece *) meos_array_get(pieces,
+  const BufferSelected *first = (const BufferSelected *) meos_array_get(pieces,
     start_index);
   if (! first)
     return NULL;
   LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
   if (! curve)
     return NULL;
-  BufferPiece oriented = *first;
+  BufferSelected oriented = *first;
   /* The ring takes its first piece as it stands, so THAT piece fixes the side
    * this ring keeps the answer on. Reading the frame off the ring rather than
    * imposing one leaves every start vertex where it was */
   bool want_left = oriented.answer_left;
-  buffer_append_piece_to_curve(curve, srid, &oriented);
+  buffer_append_piece_to_curve(curve, srid, &oriented.e);
   meos_array_add(ordered, &oriented);
   used[start_index] = true;
-  POINT2D start = buffer_piece_start(&oriented);
-  POINT2D current = buffer_piece_end(&oriented);
+  POINT2D start = buffer_piece_start(&oriented.e);
+  POINT2D current = buffer_piece_end(&oriented.e);
   /* The direction the walk arrives in, which is what decides its turn at a
    * node several pieces share. It is read from the piece just taken, in the
    * orientation it was taken in */
   double from_dx = 0.0, from_dy = 0.0;
-  if (! buffer_piece_end_direction(&oriented, false, &from_dx, &from_dy))
+  if (! buffer_piece_end_direction(&oriented.e, false, &from_dx, &from_dy))
     from_dx = from_dy = 0.0;
   while (! buffer_points_equal(current, start))
   {
@@ -3425,22 +3416,22 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
       lwgeom_free(lwcompound_as_lwgeom(curve));
       return NULL;
     }
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces,
+    const BufferSelected *next = (const BufferSelected *) meos_array_get(pieces,
       (uint32_t) index);
-    if (! piece)
+    if (! next)
     {
       lwgeom_free(lwcompound_as_lwgeom(curve));
       return NULL;
     }
-    oriented = *piece;
+    oriented = *next;
     /* Reverse only the local copy. The input pieces must remain unchanged. */
     if (reverse)
-      buffer_piece_reverse(&oriented);
-    buffer_append_piece_to_curve(curve, srid, &oriented);
+      buffer_piece_reverse(&oriented.e);
+    buffer_append_piece_to_curve(curve, srid, &oriented.e);
     meos_array_add(ordered, &oriented);
     used[(uint32_t) index] = true;
-    current = buffer_piece_end(&oriented);
-    if (! buffer_piece_end_direction(&oriented, false, &from_dx, &from_dy))
+    current = buffer_piece_end(&oriented.e);
+    if (! buffer_piece_end_direction(&oriented.e, false, &from_dx, &from_dy))
       from_dx = from_dy = 0.0;
   }
   return curve;
@@ -3477,7 +3468,7 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
     }
     if (start_index == UINT32_MAX)
       break;
-    MeosArray *ordered = meos_array_create(sizeof(BufferPiece));
+    MeosArray *ordered = meos_array_create(sizeof(BufferSelected));
     if (! ordered)
     {
       pfree(used); buffer_node_index_free(&ix);
@@ -3914,7 +3905,7 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
  * along the segment.
  */
 static double
-buffer_segment_signed_area(const BufferPiece *piece)
+buffer_segment_signed_area(const Edge *piece)
 {
   assert(piece);
   assert(piece->etype == EDGE_POLYSEG);
@@ -3929,7 +3920,7 @@ buffer_segment_signed_area(const BufferPiece *piece)
  * the traversal direction: positive for CCW and negative for CW.
  */
 static double
-buffer_arc_signed_area(const BufferPiece *piece)
+buffer_arc_signed_area(const Edge *piece)
 {
   assert(piece); assert(piece->etype == EDGE_POLYARC);
   double theta1 = piece->theta0;
@@ -3966,7 +3957,7 @@ buffer_ring_signed_area(const MeosArray *pieces)
   double area = 0.0;
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     if (! piece)
       continue;
     if (piece->etype == EDGE_POLYSEG)
@@ -3987,19 +3978,19 @@ static MeosArray *
 buffer_reverse_ring_pieces(const MeosArray *pieces)
 {
   assert(pieces);
-  MeosArray *reversed = meos_array_create(sizeof(BufferPiece));
+  MeosArray *reversed = meos_array_create(sizeof(Edge));
   if (! reversed)
     return NULL;
   for (uint32_t i = pieces->count; i > 0; i--)
   {
-    const BufferPiece *source = 
-      (const BufferPiece *) meos_array_get(pieces, i - 1);
+    const Edge *source = 
+      (const Edge *) meos_array_get(pieces, i - 1);
     if (! source)
     {
       meos_array_destroy(reversed);
       return NULL;
     }
-    BufferPiece piece = *source;
+    Edge piece = *source;
     buffer_piece_reverse(&piece);
     meos_array_add(reversed, &piece);
   }
@@ -4020,7 +4011,7 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
     return NULL;
   for (uint32_t i = 0; i < pieces->count; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     if (! piece)
     {
       lwgeom_free(lwcompound_as_lwgeom(ring));
@@ -4370,7 +4361,7 @@ buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
  * while carrying one point twice.
  */
 static bool
-buffer_piece_draws_a_curve(const BufferPiece *piece)
+buffer_piece_draws_a_curve(const Edge *piece)
 {
   assert(piece);
   POINT2D mid;
@@ -4406,7 +4397,7 @@ buffer_shared_geometry(const MeosArray *pieces, int32_t srid)
   uint32_t ncurves = 0;
   for (uint32_t i = 0; i < count; i++)
   {
-    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    const Edge *piece = (const Edge *) meos_array_get(pieces, i);
     if (! buffer_piece_draws_a_curve(piece))
       continue;
     LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
@@ -4510,8 +4501,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   }
 
   /* Extract and split both complete boundaries */
-  MeosArray *raw_a = meos_array_create(sizeof(BufferPiece));
-  MeosArray *raw_b = meos_array_create(sizeof(BufferPiece));
+  MeosArray *raw_a = meos_array_create(sizeof(Edge));
+  MeosArray *raw_b = meos_array_create(sizeof(Edge));
   if (! buffer_pieces_from_geometry(geom1, raw_a) ||
       ! buffer_pieces_from_geometry(geom2, raw_b))
   {
@@ -4520,15 +4511,15 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     return NULL;
   }
 
-  MeosArray *split_a = meos_array_create(sizeof(BufferPiece));
-  MeosArray *split_b = meos_array_create(sizeof(BufferPiece));
+  MeosArray *split_a = meos_array_create(sizeof(Edge));
+  MeosArray *split_b = meos_array_create(sizeof(Edge));
   buffer_split_pieces(raw_a, intersections, split_a);
   buffer_split_pieces(raw_b, intersections, split_b);
 
   /* Select the portions of both boundaries the operation keeps */
-  MeosArray *selected = meos_array_create(sizeof(BufferPiece));
-  MeosArray *boundary = meos_array_create(sizeof(BufferPiece));
-  MeosArray *shared = meos_array_create(sizeof(BufferPiece));
+  MeosArray *selected = meos_array_create(sizeof(BufferSelected));
+  MeosArray *boundary = meos_array_create(sizeof(Edge));
+  MeosArray *shared = meos_array_create(sizeof(Edge));
   bool coincident;
   /* Each operand's edges are read at most once for the whole selection, which
    * locates a point per piece against one of them and up to eight more per
@@ -4866,10 +4857,10 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
  */
 static bool
 buffer_offset_edge(const Edge *edge, double radius, bool left,
-  BufferPiece *piece)
+  Edge *piece)
 {
   assert(edge); assert(piece);
-  memset(piece, 0, sizeof(BufferPiece));
+  memset(piece, 0, sizeof(Edge));
   if (edge->etype == EDGE_POLYSEG || edge->etype == EDGE_LINESEG)
   {
     double length = hypot(edge->x2 - edge->x1, edge->y2 - edge->y1);
@@ -4996,7 +4987,7 @@ buffer_edge_end_tangent(const Edge *edge, double *dx, double *dy)
  * @brief Move the end point of an offset piece onto a point of its support
  */
 static void
-buffer_piece_set_end(BufferPiece *piece, double x, double y)
+buffer_piece_set_end(Edge *piece, double x, double y)
 {
   assert(piece);
   piece->x2 = x;
@@ -5009,7 +5000,7 @@ buffer_piece_set_end(BufferPiece *piece, double x, double y)
  * @brief Move the start point of an offset piece onto a point of its support
  */
 static void
-buffer_piece_set_start(BufferPiece *piece, double x, double y)
+buffer_piece_set_start(Edge *piece, double x, double y)
 {
   assert(piece);
   piece->x1 = x;
@@ -5043,7 +5034,7 @@ buffer_keep_closest(double x, double y, double px, double py, double *bestx,
  * beyond the ends of both pieces, which is what shortens them.
  */
 static bool
-buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
+buffer_pieces_meet(const Edge *a, const Edge *b, double vx,
   double vy, double *x, double *y)
 {
   assert(a); assert(b); assert(x); assert(y);
@@ -5066,8 +5057,8 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
   /* A straight support and a circular one meet in at most two points */
   if (a->etype != b->etype)
   {
-    const BufferPiece *line = a->etype == EDGE_POLYSEG ? a : b;
-    const BufferPiece *arc = a->etype == EDGE_POLYSEG ? b : a;
+    const Edge *line = a->etype == EDGE_POLYSEG ? a : b;
+    const Edge *arc = a->etype == EDGE_POLYSEG ? b : a;
     double dx = line->x2 - line->x1, dy = line->y2 - line->y1;
     double length = hypot(dx, dy);
     if (length <= MEOS_GEOM_TOLERANCE)
@@ -5117,7 +5108,7 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
  * belongs to a part of the support the offset never reaches.
  */
 static bool
-buffer_piece_holds(const BufferPiece *piece, double x, double y)
+buffer_piece_holds(const Edge *piece, double x, double y)
 {
   assert(piece);
   if (piece->etype == EDGE_POLYARC)
@@ -5161,7 +5152,7 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
   uint32_t count = edges->count;
   if (count == 0)
     return false;
-  BufferPiece *pieces = palloc(sizeof(BufferPiece) * count);
+  Edge *pieces = palloc(sizeof(Edge) * count);
   bool *join = palloc0(sizeof(bool) * count);
   for (uint32_t i = 0; i < count; i++)
   {
@@ -5298,7 +5289,7 @@ static bool
 buffer_ring_edges_outward_left(const MeosArray *edges)
 {
   assert(edges);
-  MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
+  MeosArray *pieces = meos_array_create(sizeof(Edge));
   if (! pieces)
     return false;
   for (uint32_t i = 0; i < edges->count; i++)
@@ -5306,7 +5297,7 @@ buffer_ring_edges_outward_left(const MeosArray *edges)
     const Edge *edge = (const Edge *) meos_array_get(edges, i);
     if (! edge)
       continue;
-    BufferPiece piece;
+    Edge piece;
     buffer_piece_from_edge(edge, &piece);
     meos_array_add(pieces, &piece);
   }
@@ -5492,7 +5483,7 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
 
   /* Where the ring meets itself */
   MeosArray *nodes = meos_array_create(sizeof(POINT2D));
-  MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
+  MeosArray *pieces = meos_array_create(sizeof(Edge));
   /* The scratch array the collectors write into, reused across the walk: its
    * contents belong to the pair being examined, its storage to none of them */
   MeosArray *points = meos_array_create(sizeof(POINT2D));
@@ -5501,7 +5492,7 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
     const Edge *e1 = (const Edge *) meos_array_get(arr, i);
     if (! e1 || ! buffer_is_boundary_edge(e1))
       continue;
-    BufferPiece piece;
+    Edge piece;
     buffer_piece_from_edge(e1, &piece);
     meos_array_add(pieces, &piece);
     for (uint32_t j = i + 1; j < n; j++)
@@ -5538,7 +5529,7 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
   meos_array_destroy(points);
   meos_array_destroy(arr);
 
-  MeosArray *split = meos_array_create(sizeof(BufferPiece));
+  MeosArray *split = meos_array_create(sizeof(Edge));
   buffer_split_pieces(pieces, nodes, split);
 
   /* A piece the geometry comes nearer to than the buffer distance lies inside
@@ -5546,12 +5537,12 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
    * middle of the piece, which the splitting above leaves wholly on one side
    * of the question */
   double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
-  MeosArray *keep = meos_array_create(sizeof(BufferPiece));
+  MeosArray *keep = meos_array_create(sizeof(Edge));
   RTree *index = buffer_edges_index(edges);
   MeosArray *found = index_result_create();
   for (int i = 0; i < meos_array_count(split); i++)
   {
-    BufferPiece *piece = (BufferPiece *) meos_array_get(split, (uint32_t) i);
+    Edge *piece = (Edge *) meos_array_get(split, (uint32_t) i);
     POINT2D mid;
     if (! piece || ! buffer_piece_midpoint(piece, &mid))
       continue;
@@ -6785,7 +6776,7 @@ buffer_ring_encloses_no_area(const LWCOMPOUND *ring, int32_t srid)
   LWCURVEPOLY *probe = lwcurvepoly_construct_empty(srid, 0, 0);
   lwcurvepoly_add_ring(probe, lwgeom_clone_deep(lwcompound_as_lwgeom(
     (LWCOMPOUND *) ring)));
-  MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
+  MeosArray *pieces = meos_array_create(sizeof(Edge));
   LWGEOM *geom = lwcurvepoly_as_lwgeom(probe);
   bool result = ! buffer_pieces_from_geometry(geom, pieces) ||
     fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE;
