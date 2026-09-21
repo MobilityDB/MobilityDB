@@ -9,7 +9,7 @@ var searchData=
   ['bufferlocator_6',['BufferLocator',['../structBufferLocator.html',1,'']]],
   ['buffernodeend_7',['BufferNodeEnd',['../structBufferNodeEnd.html',1,'']]],
   ['buffernodeindex_8',['BufferNodeIndex',['../structBufferNodeIndex.html',1,'']]],
-  ['bufferpiece_9',['BufferPiece',['../structBufferPiece.html',1,'']]],
-  ['bufferringinfo_10',['BufferRingInfo',['../structBufferRingInfo.html',1,'']]],
+  ['bufferringinfo_9',['BufferRingInfo',['../structBufferRingInfo.html',1,'']]],
+  ['bufferselected_10',['BufferSelected',['../structBufferSelected.html',1,'']]],
   ['buffersplitpoint_11',['BufferSplitPoint',['../structBufferSplitPoint.html',1,'']]]
 ];

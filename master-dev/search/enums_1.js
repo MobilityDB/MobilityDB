@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['clipoper_0',['ClipOper',['../geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4',1,'geo_poly_clip.h']]],
-  ['compoper_1',['CompOper',['../meos_2include_2temporal_2temporal_8h_ae8ccf22e7a234d746205612bfa9a235a.html#ae8ccf22e7a234d746205612bfa9a235a',1,'temporal.h']]]
+  ['edgelocation_0',['EdgeLocation',['../geo__buffer_8c_a7baebb97fc88c074dc65f891dabbf1ec.html#a7baebb97fc88c074dc65f891dabbf1ec',1,'geo_buffer.c']]],
+  ['edgetype_1',['EdgeType',['../geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4',1,'geo_funcs.h']]],
+  ['endcapstyle_2',['EndCapStyle',['../geo__buffer_8c_a86f08a9480ea92952cca8145ef3d4251.html#a86f08a9480ea92952cca8145ef3d4251',1,'geo_buffer.c']]],
+  ['errorcode_3',['errorCode',['../meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056',1,'meos_error.h']]]
 ];

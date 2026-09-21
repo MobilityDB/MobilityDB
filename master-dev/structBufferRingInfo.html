@@ -100,7 +100,7 @@ Data Fields</h2></td></tr>
 <div class="textblock"><p >Topological classification of a closed buffer boundary ring. </p>
 <ul>
 <li>ring Boundary ring</li>
-<li>pieces The ordered pieces used to construct the ring. The ring owns the geometric representation, while this array contains copies of the <a class="el" href="structBufferPiece.html" title="A piece of a buffer boundary.">BufferPiece</a> descriptors needed by later topology stages.</li>
+<li>pieces The ordered pieces used to construct the ring. The ring owns the geometric representation, while this array contains copies of the <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> descriptors needed by later topology stages.</li>
 <li>parent is the index of the immediately containing ring, or -1 when the ring has no containing ring.</li>
 <li>depth is the number of containing rings between the ring and the exterior. Even depth means shell, odd depth means hole.</li>
 <li>shell identifies the shell which directly owns the ring when the ring is a hole. It is -1 for shells. </li>

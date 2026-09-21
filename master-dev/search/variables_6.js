@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['e_0',['e',['../structSPHEROID_a28208acb56e6812ee392d12778f825e6.html#a28208acb56e6812ee392d12778f825e6',1,'SPHEROID']]],
+  ['e_0',['e',['../structBufferSelected_aec02c0404737860e0804efdfcf9ef677.html#aec02c0404737860e0804efdfcf9ef677',1,'BufferSelected::e()'],['../structSPHEROID_a28208acb56e6812ee392d12778f825e6.html#a28208acb56e6812ee392d12778f825e6',1,'SPHEROID::e()']]],
   ['e1x_1',['e1x',['../structEndpointEdgeState_a72fb9ce36675b8e96d6045a3899f1a0a.html#a72fb9ce36675b8e96d6045a3899f1a0a',1,'EndpointEdgeState']]],
   ['e1y_2',['e1y',['../structEndpointEdgeState_a6a209e92834624b6a3065d24882bb8e4.html#a6a209e92834624b6a3065d24882bb8e4',1,'EndpointEdgeState']]],
   ['e2x_3',['e2x',['../structEndpointEdgeState_a666c613fd2c1b4691ff4448420bebcf0.html#a666c613fd2c1b4691ff4448420bebcf0',1,'EndpointEdgeState']]],
@@ -15,7 +15,7 @@ var searchData=
   ['elem_5fsize_12',['elem_size',['../structMeosArray_a67927efdb9241fa114ac0572d753ed06.html#a67927efdb9241fa114ac0572d753ed06',1,'MeosArray']]],
   ['elems_13',['elems',['../structSpanSet_a0d045c4a4e812e0fe731c04825b0b8ce.html#a0d045c4a4e812e0fe731c04825b0b8ce',1,'SpanSet::elems()'],['../structMeosArray_a195c60abaca0f18638d3deb88d19ab38.html#a195c60abaca0f18638d3deb88d19ab38',1,'MeosArray::elems()'],['../structSkipList_a24a8fa2faf2c840073582801c3cc9eee.html#a24a8fa2faf2c840073582801c3cc9eee',1,'SkipList::elems()']]],
   ['empty_14',['empty',['../structBufferExtent_a715438974dad3cdfa030e0953b6e9c54.html#a715438974dad3cdfa030e0953b6e9c54',1,'BufferExtent']]],
-  ['ends_15',['ends',['../structLinearEndIndex_a3a43c09407f211f9d9b50d7dec0c3566.html#a3a43c09407f211f9d9b50d7dec0c3566',1,'LinearEndIndex::ends()'],['../structBufferNodeIndex_a4083e734da51ec2717c4eb1fe74ca757.html#a4083e734da51ec2717c4eb1fe74ca757',1,'BufferNodeIndex::ends()']]],
+  ['ends_15',['ends',['../structBufferNodeIndex_a4083e734da51ec2717c4eb1fe74ca757.html#a4083e734da51ec2717c4eb1fe74ca757',1,'BufferNodeIndex::ends()'],['../structLinearEndIndex_a3a43c09407f211f9d9b50d7dec0c3566.html#a3a43c09407f211f9d9b50d7dec0c3566',1,'LinearEndIndex::ends()']]],
   ['entries_16',['entries',['../structRelateCtxCache_a9f4a3d4297ea7157777ebf338f2ba723.html#a9f4a3d4297ea7157777ebf338f2ba723',1,'RelateCtxCache']]],
   ['entries_5fcount_17',['entries_count',['../structConsiderSplitContext_a0002c5137cf8c702a60caedd15535145.html#a0002c5137cf8c702a60caedd15535145',1,'ConsiderSplitContext']]],
   ['entriescount_18',['entriesCount',['../structBboxSplitContext_a7ec8c2e0d8cbe04abdf44816c0719567.html#a7ec8c2e0d8cbe04abdf44816c0719567',1,'BboxSplitContext']]],
@@ -24,7 +24,7 @@ var searchData=
   ['eqwgs_21',['eqwgs',['../projection__gk_8c_a90d0feca775a837e1f929d514954029a.html#a90d0feca775a837e1f929d514954029a',1,'projection_gk.c']]],
   ['error_22',['error',['../structh3__buf_adead8d8aaa3d7fedc519d8325c09d852.html#adead8d8aaa3d7fedc519d8325c09d852',1,'h3_buf::error()'],['../structquadbin__buf_a255ad7044eab6909272a06b008ac41a4.html#a255ad7044eab6909272a06b008ac41a4',1,'quadbin_buf::error()'],['../structs2cell__buf_aca8b363d21664a054c472035f5008361.html#aca8b363d21664a054c472035f5008361',1,'s2cell_buf::error()'],['../structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333',1,'wkb_parse_state::error()']]],
   ['errors_23',['errors',['../structworker__arg_ab31952db5f848e9461f8504b3496c7f5.html#ab31952db5f848e9461f8504b3496c7f5',1,'worker_arg::errors()'],['../nan__input__test_8c_a433c7fadd13f3a906e01c9d9f5c8fb09.html#a433c7fadd13f3a906e01c9d9f5c8fb09',1,'errors():&#160;nan_input_test.c']]],
-  ['etype_24',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge::etype()'],['../structBufferPiece_afeda5b05385eadce999fb8e0abd9ffb9.html#afeda5b05385eadce999fb8e0abd9ffb9',1,'BufferPiece::etype()']]],
+  ['etype_24',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge']]],
   ['events_25',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'tpoint_geom_clip.c']]],
   ['ever_26',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo']]],
   ['ex_27',['ex',['../structEdge_abb675272acf5d396d22957cb03319882.html#abb675272acf5d396d22957cb03319882',1,'Edge']]],
