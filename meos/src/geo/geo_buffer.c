@@ -1521,6 +1521,16 @@ buffer_edge_normals(const Edge *edge, double *nx, double *ny)
  * answered out of one on the same terms, and one that is not reads the array
  * whole exactly as before
  */
+/**
+ * @brief Points located times edges at which a BufferLocator indexes its
+ * edges
+ * @details A buffer locates its points against the rings it is building, a few
+ * hundred edges asked a few hundred points, where the relate engine's own
+ * threshold leaves every point scanning every edge. The index costs a packing
+ * of the edges once, which a hundred points against a hundred edges repay
+ */
+#define BUFFER_LOCATOR_INDEX_MIN_PAIRS 10000
+
 typedef struct
 {
   const LWGEOM *geom;   /**< The geometry points are located against */
@@ -1608,7 +1618,7 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
      * one would otherwise walk, so that product is what has to clear the
      * threshold -- the same rule, on this engine's two quantities */
     bool index = nedges > 0 &&
-      (double) loc->npoints * (double) nedges >= RELATE_INDEX_MIN_PAIRS;
+      (double) loc->npoints * (double) nedges >= BUFFER_LOCATOR_INDEX_MIN_PAIRS;
     relate_edges_init(&loc->re, loc->edges, nedges, index);
     loc->ready = true;
   }
@@ -1621,7 +1631,7 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
    * which is what #RelateEdges guarantees */
   loc->nlocated++;
   if (! loc->re.index && (double) loc->nlocated * (double) loc->re.nedges >=
-      RELATE_INDEX_MIN_PAIRS)
+      BUFFER_LOCATOR_INDEX_MIN_PAIRS)
   {
     relate_edges_clear(&loc->re);
     relate_edges_init(&loc->re, loc->edges, loc->re.nedges, true);
