@@ -36,7 +36,18 @@ SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,
   0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
-</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5449"></a><p>Return the region two geometries share</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_relate"></a><a class="indexterm" name="id5449"></a><p>Return the DE-9IM intersection matrix of two geometries</p><pre class="programlisting">
+relate(geometry,geometry) → text
+</pre><p>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <code class="literal">F</code> where they share nothing, <code class="literal">0</code>, <code class="literal">1</code> or <code class="literal">2</code> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members.</p><pre class="programlisting">
+SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
+-- 1020F1102
+SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  geometry 'Polygon((2 0,4 0,4 2,2 2,2 0))');
+-- FF2F11212
+SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
+  geometry 'Point(2 1.9)');
+-- 0F2FF1FF2
+</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5461"></a><p>Return the region two geometries share</p><pre class="programlisting">
 intersection(geometry,geometry) → geometry
 </pre><p>The four Boolean operations of this section answer over the (multi)polygons the temporal types whose values are regions carry, and each takes the name of the PostGIS function it answers for without the <code class="varname">ST_</code> prefix, so a query reaches this engine by dropping the prefix and PostGIS by keeping it. They are planar and two-dimensional: a geography, a Z dimension and a geometry that is not a (multi)polygon are refused. An empty result is answered as <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -48,13 +59,13 @@ SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5459"></a><p>Return the region two geometries cover together</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5471"></a><p>Return the region two geometries cover together</p><pre class="programlisting">
 geoUnion(geometry,geometry) → geometry
 </pre><p><code class="varname">UNION</code> is a reserved word of SQL, so this one carries the name of the type it answers over, as <code class="varname">setUnion</code> and <code class="varname">spanUnion</code> do. Two geometries that do not meet are answered as a multipolygon.</p><pre class="programlisting">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
-</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5470"></a><p>Return the region of the first geometry that the second does not cover</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5482"></a><p>Return the region of the first geometry that the second does not cover</p><pre class="programlisting">
 difference(geometry,geometry) → geometry
 </pre><p>A second geometry lying inside the first leaves a hole rather than dividing it.</p><pre class="programlisting">
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -63,7 +74,7 @@ SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
 -- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
-</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5478"></a><p>Return the region exactly one of two geometries covers</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5490"></a><p>Return the region exactly one of two geometries covers</p><pre class="programlisting">
 symDifference(geometry,geometry) → geometry
 </pre><p>It is the union of the two geometries less the region they share, so a geometry against itself is answered as <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
