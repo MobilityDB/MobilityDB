@@ -5690,7 +5690,13 @@ static RTree *
 buffer_edges_index(const MeosArray *edges)
 {
   RTree *index = rtree_create_stbox();
-  for (uint32_t i = 0; i < edges->count; i++)
+  /* Every box is known before the first query, so the tree is packed from
+   * all of them at once rather than grown by one insertion each */
+  uint32_t n = (uint32_t) edges->count;
+  STBox *boxes = palloc(sizeof(STBox) * Max(n, 1u));
+  int64 *ids = palloc(sizeof(int64) * Max(n, 1u));
+  int count = 0;
+  for (uint32_t i = 0; i < n; i++)
   {
     const Edge *e = (const Edge *) meos_array_get_intl(edges, i);
     if (! e || e->etype == EDGE_POINT)
@@ -5699,11 +5705,13 @@ buffer_edges_index(const MeosArray *edges)
       fabs(e->xmax) + fabs(e->ymin) + fabs(e->ymax));
     if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
       pad += 16.0 * DBL_EPSILON * e->radius;
-    STBox box;
     stbox_set(true, false, false, 0, e->xmin - pad, e->xmax + pad,
-      e->ymin - pad, e->ymax + pad, 0, 0, NULL, &box);
-    rtree_insert(index, &box, i);
+      e->ymin - pad, e->ymax + pad, 0, 0, NULL, &boxes[count]);
+    ids[count++] = i;
   }
+  if (count > 0)
+    rtree_load(index, boxes, ids, count);
+  pfree(boxes); pfree(ids);
   return index;
 }
 
