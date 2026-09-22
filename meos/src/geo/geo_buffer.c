@@ -2334,6 +2334,56 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
 }
 
 /**
+ * @brief Add to an array of nodes each of the points given, in their order,
+ * unless a node already added lies within the tolerance of it
+ * @details The answer is the one #buffer_intersections_add gives called on
+ * each point in turn: whether a node lies within the tolerance of a point
+ * does not depend on the order the nodes are read in, and the points are
+ * taken in the order given, which decides the copy a node found twice keeps.
+ * The nodes are read out of a node index rather than all of them. Its cell
+ * is sized from the largest coordinate of any point, and the tolerance grows
+ * with the coordinate, so no tolerance a point reads is wider than a cell and
+ * the nine cells around a point hold every node within it; the test itself
+ * decides each node the index gathers.
+ * @param[in] points Points, in the order they are found
+ * @param[in,out] nodes Array the nodes are added to, empty on entry
+ */
+static void
+buffer_intersections_add_all(const MeosArray *points, MeosArray *nodes)
+{
+  assert(points); assert(nodes); assert(nodes->count == 0);
+  uint32_t n = (uint32_t) points->count;
+  if (n == 0)
+    return;
+  const POINT2D *pts = (const POINT2D *) points->elems;
+  double scale = 0.0;
+  for (uint32_t i = 0; i < n; i++)
+    scale = Max(scale, Max(fabs(pts[i].x), fabs(pts[i].y)));
+  BufferNodeIndex ix;
+  buffer_node_index_alloc(&ix, n, n, scale);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    double x = pts[i].x, y = pts[i].y;
+    double tol = buffer_node_tolerance(x, y);
+    uint32_t ncand;
+    const uint32_t *cand = buffer_node_index_at(&ix, pts[i], &ncand);
+    const POINT2D *kept = (const POINT2D *) nodes->elems;
+    bool found = false;
+    for (uint32_t c = 0; c < ncand && ! found; c++)
+    {
+      const POINT2D *p = &kept[cand[c]];
+      found = (fabs(p->x - x) <= tol && fabs(p->y - y) <= tol);
+    }
+    if (found)
+      continue;
+    buffer_node_index_add(&ix, (uint32_t) nodes->count, pts[i]);
+    meos_array_add(nodes, (void *) &pts[i]);
+  }
+  buffer_node_index_free(&ix);
+  return;
+}
+
+/**
  * @brief Gather one node of an index into the candidates of a box read,
  * where it stands in the box and has not been gathered yet
  */
@@ -5699,7 +5749,9 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
     return NULL;
   uint32_t n = meos_array_count(arr);
 
-  /* Where the ring meets itself */
+  /* Where the ring meets itself, every crossing as each pair finds it, then
+   * each node once */
+  MeosArray *crossings = meos_array_create(sizeof(POINT2D));
   MeosArray *nodes = meos_array_create(sizeof(POINT2D));
   MeosArray *pieces = meos_array_create(sizeof(Edge));
   /* The scratch array the collectors write into, reused across the walk: its
@@ -5747,13 +5799,16 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
       const POINT2D *p = (const POINT2D *) meos_array_get_intl(points,
         (uint32_t) m);
       if (p)
-        buffer_intersections_add(nodes, p->x, p->y);
+        meos_array_add(crossings, (void *) p);
     }
   }
   if (pairs)
     pfree(pairs);
   meos_array_destroy(points);
   meos_array_destroy(arr);
+  /* A node found by several pairs is kept once, as the first pair found it */
+  buffer_intersections_add_all(crossings, nodes);
+  meos_array_destroy(crossings);
 
   MeosArray *split = meos_array_create(sizeof(Edge));
   buffer_split_pieces(pieces, nodes, split);
