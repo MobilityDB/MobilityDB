@@ -1144,6 +1144,121 @@ buffer_nodes_equal(double x1, double y1, double x2, double y2)
 }
 
 /**
+ * @brief An edge of a boundary as the pair sweep orders it
+ */
+typedef struct
+{
+  double xmin;      /**< Left end of its box */
+  double xmax;      /**< Right end of its box */
+  uint32_t id;      /**< Position of the edge in its array */
+} BufferSweepEdge;
+
+/**
+ * @brief Order the edges of a sweep by the left end of their box, then by
+ * their position, which makes the order total
+ */
+static int
+buffer_sweep_edge_cmp(const void *a, const void *b)
+{
+  const BufferSweepEdge *e1 = (const BufferSweepEdge *) a;
+  const BufferSweepEdge *e2 = (const BufferSweepEdge *) b;
+  if (e1->xmin < e2->xmin)
+    return -1;
+  if (e1->xmin > e2->xmin)
+    return 1;
+  return (e1->id < e2->id) ? -1 : (e1->id > e2->id) ? 1 : 0;
+}
+
+/**
+ * @brief A pair of edges, by their positions, the first below the second
+ */
+typedef struct
+{
+  uint32_t i;       /**< Position of the first edge */
+  uint32_t j;       /**< Position of the second edge */
+} BufferEdgePair;
+
+/**
+ * @brief Order pairs of edges as a walk over every pair meets them
+ */
+static int
+buffer_edge_pair_cmp(const void *a, const void *b)
+{
+  const BufferEdgePair *p1 = (const BufferEdgePair *) a;
+  const BufferEdgePair *p2 = (const BufferEdgePair *) b;
+  if (p1->i != p2->i)
+    return (p1->i < p2->i) ? -1 : 1;
+  return (p1->j < p2->j) ? -1 : (p1->j > p2->j) ? 1 : 0;
+}
+
+/**
+ * @brief Return the pairs of boundary edges whose boxes may meet within the
+ * band the meeting test reads, in the order a walk over every pair meets them
+ * @details A walk over every pair of edges costs the square of their number
+ * while the pairs whose boxes meet are few. Sorting the edges by the left end
+ * of their box, the edges a given one can meet follow it until the left end
+ * of one passes its right end by the widest band any pair reads, and none
+ * after that can. THE SWEEP IS A FILTER AND NEVER A TEST: it keeps every pair
+ * the caller's own box test keeps, since the band it stops at is no narrower
+ * than the band of any pair and a subtraction rounds monotonically, and the
+ * caller still decides each pair it returns. The pairs are returned sorted by
+ * their positions, so a caller whose answer depends on the order it meets
+ * them in meets them in the order of the walk it replaces.
+ * @param[in] all Edges, held in place
+ * @param[in] n Number of edges
+ * @param[out] npairs Number of pairs returned
+ * @return The pairs, to be freed by the caller, or @p NULL when there are none
+ */
+static BufferEdgePair *
+buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
+{
+  assert(all || n == 0); assert(npairs);
+  *npairs = 0;
+  BufferSweepEdge *sweep = palloc(sizeof(BufferSweepEdge) * Max(n, 1u));
+  uint32_t nsweep = 0;
+  double bandmax = MEOS_GEOM_TOLERANCE;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (! buffer_is_boundary_edge(&all[i]))
+      continue;
+    sweep[nsweep].xmin = all[i].xmin;
+    sweep[nsweep].xmax = all[i].xmax;
+    sweep[nsweep].id = i;
+    nsweep++;
+    bandmax = Max(bandmax, all[i].tol);
+  }
+  qsort(sweep, nsweep, sizeof(BufferSweepEdge), buffer_sweep_edge_cmp);
+  uint32_t maxpairs = Max(nsweep, 16u), count = 0;
+  BufferEdgePair *pairs = palloc(sizeof(BufferEdgePair) * maxpairs);
+  for (uint32_t a = 0; a < nsweep; a++)
+  {
+    for (uint32_t b = a + 1; b < nsweep; b++)
+    {
+      if (sweep[a].xmax < sweep[b].xmin - bandmax)
+        break;
+      if (count == maxpairs)
+      {
+        maxpairs *= 2;
+        pairs = repalloc(pairs, sizeof(BufferEdgePair) * maxpairs);
+      }
+      uint32_t i = sweep[a].id, j = sweep[b].id;
+      pairs[count].i = Min(i, j);
+      pairs[count].j = Max(i, j);
+      count++;
+    }
+  }
+  pfree(sweep);
+  if (count == 0)
+  {
+    pfree(pairs);
+    return NULL;
+  }
+  qsort(pairs, count, sizeof(BufferEdgePair), buffer_edge_pair_cmp);
+  *npairs = count;
+  return pairs;
+}
+
+/**
  * @brief Return true if the boundary of a geometry crosses itself
  * @details Two edges of one ring that are not consecutive must not meet: an
  * offset ring that crosses itself does not bound a surface, and resolving it
@@ -1158,37 +1273,35 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
   if (! edges)
     return false;
   bool result = false;
-  for (uint32_t i = 0; i < edges->count && ! result; i++)
+  /* Whether any pair meets does not depend on the order the pairs are met
+   * in, so only the pairs whose boxes may meet are read */
+  const Edge *all = (const Edge *) edges->elems;
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs(all, (uint32_t) edges->count,
+    &npairs);
+  for (uint32_t k = 0; k < npairs && ! result; k++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get_intl(edges, i);
-    if (! e1 || ! buffer_is_boundary_edge(e1))
+    const Edge *e1 = &all[pairs[k].i];
+    const Edge *e2 = &all[pairs[k].j];
+    /* Only two consecutive edges meet by construction, which is where the
+     * end of one is the start of the other. Two that share a start or an
+     * end point instead meet where the boundary touches itself. */
+    if (buffer_nodes_equal(e1->x2, e1->y2, e2->x1, e2->y1) ||
+        buffer_nodes_equal(e2->x2, e2->y2, e1->x1, e1->y1))
       continue;
-    for (uint32_t j = i + 1; j < edges->count; j++)
-    {
-      const Edge *e2 = (const Edge *) meos_array_get_intl(edges, j);
-      if (! e2 || ! buffer_is_boundary_edge(e2))
-        continue;
-      /* Only two consecutive edges meet by construction, which is where the
-       * end of one is the start of the other. Two that share a start or an
-       * end point instead meet where the boundary touches itself. */
-      if (buffer_nodes_equal(e1->x2, e1->y2, e2->x1, e2->y1) ||
-          buffer_nodes_equal(e2->x2, e2->y2, e1->x1, e1->y1))
-        continue;
-      /* Two edges whose boxes lie apart cannot meet, read at the band the
-       * meeting test itself works to */
-      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
-      if (e1->xmax < e2->xmin - band ||
-          e2->xmax < e1->xmin - band ||
-          e1->ymax < e2->ymin - band ||
-          e2->ymax < e1->ymin - band)
-        continue;
-      if (buffer_boundary_intersection(e1, e2) >= 0)
-      {
-        result = true;
-        break;
-      }
-    }
+    /* Two edges whose boxes lie apart cannot meet, read at the band the
+     * meeting test itself works to */
+    double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+    if (e1->xmax < e2->xmin - band ||
+        e2->xmax < e1->xmin - band ||
+        e1->ymax < e2->ymin - band ||
+        e2->ymax < e1->ymin - band)
+      continue;
+    if (buffer_boundary_intersection(e1, e2) >= 0)
+      result = true;
   }
+  if (pairs)
+    pfree(pairs);
   meos_array_destroy(edges);
   return result;
 }
@@ -5492,48 +5605,53 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
   /* The scratch array the collectors write into, reused across the walk: its
    * contents belong to the pair being examined, its storage to none of them */
   MeosArray *points = meos_array_create(sizeof(POINT2D));
-  /* Every pair of edges is read, so the edges are read where the array holds
-   * them rather than through a call per read */
+  /* The edges are read where the array holds them rather than through a call
+   * per read */
   const Edge *all = (const Edge *) arr->elems;
   for (uint32_t i = 0; i < n; i++)
   {
-    const Edge *e1 = &all[i];
-    if (! buffer_is_boundary_edge(e1))
+    if (! buffer_is_boundary_edge(&all[i]))
       continue;
     Edge piece;
-    buffer_piece_from_edge(e1, &piece);
+    buffer_piece_from_edge(&all[i], &piece);
     meos_array_add(pieces, &piece);
-    for (uint32_t j = i + 1; j < n; j++)
+  }
+  /* Only the pairs whose boxes may meet are read, in the order a walk over
+   * every pair meets them: a node found twice keeps the first copy found, so
+   * that order decides which coordinates the node carries */
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs(all, n, &npairs);
+  for (uint32_t k = 0; k < npairs; k++)
+  {
+    const Edge *e1 = &all[pairs[k].i];
+    const Edge *e2 = &all[pairs[k].j];
+    /* Two edges whose boxes lie apart cannot meet. The band is the one the
+     * meeting test itself works to: each Edge carries the tolerance
+     * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+     * the kernel behind it ask one question. Bounding the reject tighter --
+     * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+     * orders of magnitude smaller -- discards pairs the kernel answers */
+    double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+    if (e1->xmax < e2->xmin - band ||
+        e2->xmax < e1->xmin - band ||
+        e1->ymax < e2->ymin - band ||
+        e2->ymax < e1->ymin - band)
+      continue;
+    /* #buffer_add_intersection_point scans up to the count to reject a
+     * duplicate before adding, so a pair must start from an empty array or
+     * a point of an earlier pair suppresses a genuine one of this pair */
+    meos_array_reset(points);
+    buffer_collect_edge_intersections(e1, e2, points);
+    for (int m = 0; m < meos_array_count(points); m++)
     {
-      const Edge *e2 = &all[j];
-      if (! buffer_is_boundary_edge(e2))
-        continue;
-      /* Two edges whose boxes lie apart cannot meet. The band is the one the
-       * meeting test itself works to: each Edge carries the tolerance
-       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
-       * the kernel behind it ask one question. Bounding the reject tighter --
-       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
-       * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
-      if (e1->xmax < e2->xmin - band ||
-          e2->xmax < e1->xmin - band ||
-          e1->ymax < e2->ymin - band ||
-          e2->ymax < e1->ymin - band)
-        continue;
-      /* #buffer_add_intersection_point scans up to the count to reject a
-       * duplicate before adding, so a pair must start from an empty array or
-       * a point of an earlier pair suppresses a genuine one of this pair */
-      meos_array_reset(points);
-      buffer_collect_edge_intersections(e1, e2, points);
-      for (int k = 0; k < meos_array_count(points); k++)
-      {
-        const POINT2D *p = (const POINT2D *) meos_array_get_intl(points,
-          (uint32_t) k);
-        if (p)
-          buffer_intersections_add(nodes, p->x, p->y);
-      }
+      const POINT2D *p = (const POINT2D *) meos_array_get_intl(points,
+        (uint32_t) m);
+      if (p)
+        buffer_intersections_add(nodes, p->x, p->y);
     }
   }
+  if (pairs)
+    pfree(pairs);
   meos_array_destroy(points);
   meos_array_destroy(arr);
 
