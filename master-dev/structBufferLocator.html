@@ -75,9 +75,6 @@ $(function() {
   <div class="headertitle"><div class="title">BufferLocator Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p>The edges of one geometry, extracted once and reused by every point located against it.  
- <a href="structBufferLocator.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
@@ -90,6 +87,9 @@ Data Fields</h2></td></tr>
 <tr class="memitem:ac39fe9fc2ab3ec4181f80ec2e36094b2"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBufferLocator_ac39fe9fc2ab3ec4181f80ec2e36094b2.html#ac39fe9fc2ab3ec4181f80ec2e36094b2">geom</a></td></tr>
 <tr class="memdesc:ac39fe9fc2ab3ec4181f80ec2e36094b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The geometry points are located against.  <a href="structBufferLocator_ac39fe9fc2ab3ec4181f80ec2e36094b2.html#ac39fe9fc2ab3ec4181f80ec2e36094b2">More...</a><br /></td></tr>
 <tr class="separator:ac39fe9fc2ab3ec4181f80ec2e36094b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b3e231c86c99054fdd2502ddd132240"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBufferLocator_a0b3e231c86c99054fdd2502ddd132240.html#a0b3e231c86c99054fdd2502ddd132240">nlocated</a></td></tr>
+<tr class="memdesc:a0b3e231c86c99054fdd2502ddd132240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Points located against it so far.  <a href="structBufferLocator_a0b3e231c86c99054fdd2502ddd132240.html#a0b3e231c86c99054fdd2502ddd132240">More...</a><br /></td></tr>
+<tr class="separator:a0b3e231c86c99054fdd2502ddd132240"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a868fda19481573bf92706099d8edbdd3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBufferLocator_a868fda19481573bf92706099d8edbdd3.html#a868fda19481573bf92706099d8edbdd3">npoints</a></td></tr>
 <tr class="memdesc:a868fda19481573bf92706099d8edbdd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Points the caller expects to locate against it.  <a href="structBufferLocator_a868fda19481573bf92706099d8edbdd3.html#a868fda19481573bf92706099d8edbdd3">More...</a><br /></td></tr>
 <tr class="separator:a868fda19481573bf92706099d8edbdd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,11 +100,7 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a5d1d919156366c0776915508d56281e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">True once <code>re</code> holds the edges.  <a href="structBufferLocator_a5d1d919156366c0776915508d56281e9.html#a5d1d919156366c0776915508d56281e9">More...</a><br /></td></tr>
 <tr class="separator:a5d1d919156366c0776915508d56281e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The edges of one geometry, extracted once and reused by every point located against it. </p>
-<p >Locating a point needs the whole edge set, and the overlay locates MANY points against each of its two operands: a midpoint per piece to place it, and up to eight more per coincident piece to find which side each interior lies on. Extracting per point makes that cost pieces x edges, while the answer extraction gives is the same every time. Holding it per operand makes it edges + pieces.</p>
-<p >The extraction is LAZY &ndash; deferred to the first point actually asked &ndash; because a pair the overlay resolves without locating anything must not pay for a set nobody reads. What it reads them into is the same <a class="el" href="structRelateEdges.html" title="An edge array together with what a question about one point needs in order to read only the edges tha...">RelateEdges</a> the relate engine builds, so a question big enough to be worth an index is answered out of one on the same terms, and one that is not reads the array whole exactly as before </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/geo/<a class="el" href="geo__buffer_8c.html">geo_buffer.c</a></li>
 </ul>
 </div><!-- contents -->
