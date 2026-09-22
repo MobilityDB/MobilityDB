@@ -2753,6 +2753,78 @@ geo_collection_overlay(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
+ * @brief Return true if a geometry carries a Z or an M ordinate
+ */
+static bool
+geo_has_ordinates(const GSERIALIZED *gs)
+{
+  return gserialized_has_z(gs) || gserialized_has_m(gs);
+}
+
+/**
+ * @brief Return an overlay of two geometries of which one at least carries a Z
+ * or an M ordinate
+ * @details The overlay is computed on the PLANE, from the projections of the
+ * two geometries, and the ordinates are then read back onto its answer by
+ * #meos_lift_ordinates() from the geometries that carry them: an ordinate
+ * survives exactly where those determine one uniquely. A geometry carrying
+ * none determines none, so the answer keeps an ordinate only where every one
+ * of its vertices lies on a geometry carrying it -- the part of a line of
+ * elevations inside a flat surface keeps them, a region cut by a flat
+ * surface's boundary does not. Two geometries carrying different ordinates
+ * share none, and the answer is the planar figure
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] overlay The planar overlay
+ */
+static GSERIALIZED *geom_intersection2d_route(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2, bool fastpath);
+static GSERIALIZED *geom_difference2d_route(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2, bool fastpath);
+
+static GSERIALIZED *
+geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  GSERIALIZED *(*overlay)(const GSERIALIZED *, const GSERIALIZED *, bool))
+{
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  LWGEOM *plane1 = lwgeom_force_2d(geom1);
+  LWGEOM *plane2 = lwgeom_force_2d(geom2);
+  GSERIALIZED *gsplane1 = geo_serialize(plane1);
+  GSERIALIZED *gsplane2 = geo_serialize(plane2);
+  lwgeom_free(plane1); lwgeom_free(plane2);
+  GSERIALIZED *flat = overlay(gsplane1, gsplane2, false);
+  pfree(gsplane1); pfree(gsplane2);
+  if (! flat)
+  {
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    return NULL;
+  }
+
+  /* The geometries the ordinates are read from are those carrying them, and
+   * two of them are read together only where they carry the same ones */
+  const LWGEOM *inputs[2];
+  int ninputs = 0;
+  if (geo_has_ordinates(gs1))
+    inputs[ninputs++] = geom1;
+  if (geo_has_ordinates(gs2) && (ninputs == 0 ||
+      FLAGS_GET_ZM(geom2->flags) == FLAGS_GET_ZM(geom1->flags)))
+    inputs[ninputs++] = geom2;
+  else if (geo_has_ordinates(gs2))
+    ninputs = 0;
+  if (ninputs == 0)
+  {
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    return flat;
+  }
+  LWGEOM *lwflat = lwgeom_from_gserialized(flat);
+  LWGEOM *lifted = meos_lift_ordinates(lwflat, inputs, ninputs);
+  GSERIALIZED *result = geo_serialize(lifted);
+  lwgeom_free(lwflat); lwgeom_free(lifted); pfree(flat);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the intersection of two geometries
  * @param[in] gs1,gs2 Geometries
@@ -2772,8 +2844,28 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return NULL;
 
-  /* Clipper2 fast-path for 2D polygonal inputs */
-  if (geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
+  /* The overlay is computed on the plane, and the ordinates the geometries
+   * carry are read back onto its answer */
+  if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
+    return geo_overlay_lifted(gs1, gs2, geom_intersection2d_route);
+
+  return geom_intersection2d_route(gs1, gs2, true);
+}
+
+/**
+ * @brief Return the intersection of two planar geometries
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
+ */
+static GSERIALIZED *
+geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool fastpath)
+{
+  /* Clipper2 fast-path for 2D polygonal inputs. The PROJECTION of a pair
+   * carrying ordinates skips it: Clipper2 quantises the vertices it builds
+   * onto a grid of 1e-7, which leaves them off the edges of the geometries
+   * the ordinates are read from, so the answer would carry none of them */
+  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
   {
     GSERIALIZED *result = clip_poly_poly(gs1, gs2, CL_INTERSECTION);
     /* The region two surfaces share is empty where they meet without
@@ -2890,8 +2982,26 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return NULL;
 
-  /* Clipper2 fast-path for 2D polygonal inputs */
-  if (geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
+  /* The overlay is computed on the plane, and the ordinates the geometries
+   * carry are read back onto its answer */
+  if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
+    return geo_overlay_lifted(gs1, gs2, geom_difference2d_route);
+
+  return geom_difference2d_route(gs1, gs2, true);
+}
+
+/**
+ * @brief Return the difference of two planar geometries
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
+ */
+static GSERIALIZED *
+geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool fastpath)
+{
+  /* Clipper2 fast-path for 2D polygonal inputs, which the projection of a
+   * pair carrying ordinates skips, as #geom_intersection2d_route states */
+  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
     return clip_poly_poly(gs1, gs2, CL_DIFFERENCE);
 
   /* Difference takes the FIRST operand apart, so only its own kind decides */
