@@ -927,6 +927,20 @@ buffer_areal_representative_point(const LWGEOM *geom, double *x, double *y)
 }
 
 /**
+ * @brief Return true if the area the edges of an areal geometry bound
+ * contains a point in its interior, a point on the boundary not being in it
+ */
+static bool
+buffer_edges_contain_point(Edge **edges, int nedges, double x, double y)
+{
+  if (nedges == 0)
+    return false;
+  if (relate_point_on_boundary(x, y, edges, nedges, false))
+    return false;
+  return point_in_polygon(x, y, edges, nedges);
+}
+
+/**
  * @brief Return true if an areal geometry contains a point in its interior
  * @details This function deliberately treats boundary points as not being
  * interior. It is therefore suitable for determining strict containment.
@@ -937,21 +951,10 @@ buffer_areal_contains_point(const LWGEOM *geom, double x, double y)
   assert(geom);
   MeosArray *arr = geom_extract_edges(geom);
   int nedges = (int) arr->count;
-  if (nedges == 0)
-  {
-    meos_array_destroy(arr);
-    return false;
-  }
-  Edge **edges = palloc(sizeof(Edge *) * nedges);
+  Edge **edges = palloc(sizeof(Edge *) * Max(nedges, 1));
   for (int i = 0; i < nedges; i++)
     edges[i] = (Edge *) meos_array_get_intl(arr, i);
-  if (relate_point_on_boundary(x, y, edges, nedges, false))
-  {
-    pfree(edges);
-    meos_array_destroy(arr);
-    return false;
-  }
-  bool result = point_in_polygon(x, y, edges, nedges);
+  bool result = buffer_edges_contain_point(edges, nedges, x, y);
   pfree(edges); meos_array_destroy(arr);
   return result;
 }
@@ -3857,6 +3860,10 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
       meos_array_destroy(arr);
     return false;
   }
+  LWGEOM *polygon = NULL;
+  MeosArray *parr = NULL;
+  Edge **pedges = NULL;
+  int npedges = 0;
   for (uint32_t i = 0; i < arr->count; i++)
   {
     Edge *edge = (Edge *) meos_array_get_intl(arr, i);
@@ -3917,26 +3924,41 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
         double sign = side ? -1.0 : 1.0;
         double cx = mx + sign * nx * offsets[k];
         double cy = my + sign * ny * offsets[k];
-        /* The temporary areal geometry serves only the containment test */
-        LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(
-            lwcompound_as_lwgeom(ring));
-        LWGEOM *polygon = buffer_make_single_ring_polygon(copy, srid);
+        /* The areal geometry the ring bounds serves only the containment
+         * test, and every point tried is tested against the same one, so it
+         * and its edges are built at the first point tried and kept for the
+         * rest */
         if (! polygon)
         {
-          meos_array_destroy(arr);
-          return false;
+          LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(
+              lwcompound_as_lwgeom(ring));
+          polygon = buffer_make_single_ring_polygon(copy, srid);
+          if (! polygon)
+          {
+            meos_array_destroy(arr);
+            return false;
+          }
+          parr = geom_extract_edges(polygon);
+          npedges = (int) parr->count;
+          pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
+          for (int e = 0; e < npedges; e++)
+            pedges[e] = (Edge *) meos_array_get_intl(parr, e);
         }
-        bool inside = buffer_areal_contains_point(polygon, cx, cy);
-        lwgeom_free(polygon);
+        bool inside = buffer_edges_contain_point(pedges, npedges, cx, cy);
         if (inside)
         {
           *x = cx;
           *y = cy;
+          pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
           meos_array_destroy(arr);
           return true;
         }
       }
     }
+  }
+  if (polygon)
+  {
+    pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
   }
   meos_array_destroy(arr);
   return false;
