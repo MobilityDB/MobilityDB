@@ -2174,20 +2174,34 @@ int main(void)
    * surfaces above, so they go with the last reader of them */
   free(cube); free(adjsq); free(diag);
 
-  /* The overlay answers NULL for a geometry it cannot read -- a polyhedral
-   * surface reaches the default arm of LWGEOM2GEOS, whose lwerror the MEOS
-   * handler reports and returns from -- so the union has to answer the absence
-   * rather than read the null pointer it was handed. Every step after that
-   * read one, and the process died in lwgeom_set_geodetic */
+  /* The overlay on a precision grid answers NULL for a geometry it cannot
+   * read -- a polyhedral surface reaches the default arm of LWGEOM2GEOS, whose
+   * lwerror the MEOS handler reports and returns from, and a build without
+   * GEOS refuses the grid -- so the union has to answer the absence rather
+   * than read the null pointer it was handed. Every step after that read one,
+   * and the process died in lwgeom_set_geodetic */
   GSERIALIZED *phsurf = geom_in("PolyhedralSurface Z ("
     "((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)))", -1);
   assert(phsurf != NULL);
   meos_errno_reset();
-  GSERIALIZED *uu = geom_unary_union(phsurf, -1);
-  printf("geom_unary_union of a polyhedral surface: %s, errno %d\n",
+  GSERIALIZED *uu = geom_unary_union(phsurf, 0.0);
+  printf("geom_unary_union of a polyhedral surface on a grid: %s, errno %d\n",
     uu ? "answered" : "declined", meos_errno());
   assert(uu == NULL);
   assert(meos_errno() != 0);
+  /* With no grid the faces are dissolved on the plane: the vertical face
+   * projects onto an edge of the horizontal one, so the union is the unit
+   * square, and it is planar since the vertical face carries two elevations
+   * at each point of that edge */
+  meos_errno_reset();
+  uu = geom_unary_union(phsurf, -1);
+  assert(uu != NULL);
+  assert(meos_errno() == 0);
+  char *uutext = geo_as_text(uu, 6);
+  printf("geom_unary_union of a polyhedral surface: %s\n", uutext);
+  assert(strstr(uutext, " Z") == NULL);
+  assert(fabs(geom_area(uu) - 1.0) < 1e-12);
+  free(uutext); free(uu);
   /* The control is a geometry the overlay does read */
   meos_errno_reset();
   GSERIALIZED *mp = geom_in("MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)),"

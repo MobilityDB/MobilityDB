@@ -11629,11 +11629,10 @@ meos_linear_union(const LWGEOM *geom)
   if (lwgeom_is_empty(geom))
     return NULL;
 
-  /* One component is its own union */
-  if (linear_union_type(geom->type))
+  /* A point is its own union */
+  if (geom->type == POINTTYPE)
     return lwgeom_clone_deep(geom);
-  if (geom->type != MULTIPOINTTYPE && geom->type != MULTILINETYPE &&
-      geom->type != MULTICURVETYPE && geom->type != COLLECTIONTYPE)
+  if (! linear_union_type(geom->type) && geom->type != COLLECTIONTYPE)
     return NULL;
 
   int maxcomp = 8, ncomp = 0;
@@ -11643,7 +11642,10 @@ meos_linear_union(const LWGEOM *geom)
     pfree(comps);
     return NULL;
   }
-  if (ncomp == 1)
+  /* A single component is its own union, except a line of straight segments,
+   * which may walk a stretch of itself twice and is dissolved below like the
+   * lines of several components */
+  if (ncomp == 1 && comps[0]->type != LINETYPE)
   {
     LWGEOM *result = lwgeom_clone_deep(comps[0]);
     pfree(comps);

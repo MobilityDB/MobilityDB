@@ -3713,6 +3713,88 @@ geog_array_union(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return true if a polygonal part bounds a region
+ * @details #geom_extract_edges says which of the two every ring is -- a ring
+ * of no area yields LINE edges where one bounding a region yields POLY ones --
+ * so this reads the engine's own classification, as
+ * #geo_every_part_bounds_area does
+ */
+static bool
+geo_part_bounds_area(const LWGEOM *part)
+{
+  MeosArray *edges = geom_extract_edges(part);
+  bool result = edges && meos_array_count(edges) > 0;
+  if (edges)
+  {
+    for (uint32_t i = 0; result && i < edges->count; i++)
+    {
+      const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
+      if (edge->etype != EDGE_POLYSEG && edge->etype != EDGE_POLYARC)
+        result = false;
+    }
+    meos_array_destroy(edges);
+  }
+  return result;
+}
+
+/**
+ * @brief Return a geometry whose polygons of no area are written as the lines
+ * their rings trace, or NULL where it holds none
+ * @details A part enclosing NO area is not a region but its own boundary. The
+ * projection of a surface standing upright -- a wall of a polyhedral surface
+ * or a TIN -- is one such part, and read as a polygon it would stay in a union
+ * as a region of no area beside the regions that cover it
+ * @param[in] geom Geometry
+ */
+static LWGEOM *
+geo_arealess_parts_as_lines(const LWGEOM *geom)
+{
+  uint8_t type = geom->type;
+  if (type != MULTIPOLYGONTYPE && type != TINTYPE &&
+      type != POLYHEDRALSURFACETYPE && type != COLLECTIONTYPE)
+    return NULL;
+  const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+  bool changed = false;
+  for (uint32_t i = 0; i < coll->ngeoms && ! changed; i++)
+  {
+    uint8_t ptype = coll->geoms[i]->type;
+    if ((ptype == POLYGONTYPE || ptype == TRIANGLETYPE) &&
+        ! lwgeom_is_empty(coll->geoms[i]) &&
+        ! geo_part_bounds_area(coll->geoms[i]))
+      changed = true;
+  }
+  if (! changed)
+    return NULL;
+
+  int32_t srid = lwgeom_get_srid(geom);
+  LWCOLLECTION *result = lwcollection_construct_empty(COLLECTIONTYPE, srid,
+    FLAGS_GET_Z(geom->flags), FLAGS_GET_M(geom->flags));
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    const LWGEOM *part = coll->geoms[i];
+    uint8_t ptype = part->type;
+    if ((ptype != POLYGONTYPE && ptype != TRIANGLETYPE) ||
+        lwgeom_is_empty(part) || geo_part_bounds_area(part))
+    {
+      result = lwcollection_add_lwgeom(result, lwgeom_clone_deep(part));
+      continue;
+    }
+    if (ptype == TRIANGLETYPE)
+    {
+      const LWTRIANGLE *tri = (const LWTRIANGLE *) part;
+      result = lwcollection_add_lwgeom(result, lwline_as_lwgeom(
+        lwline_construct(srid, NULL, ptarray_clone_deep(tri->points))));
+      continue;
+    }
+    const LWPOLY *poly = (const LWPOLY *) part;
+    for (uint32_t r = 0; r < poly->nrings; r++)
+      result = lwcollection_add_lwgeom(result, lwline_as_lwgeom(
+        lwline_construct(srid, NULL, ptarray_clone_deep(poly->rings[r]))));
+  }
+  return lwcollection_as_lwgeom(result);
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the unary union of a geometry
  * @param[in] gs Geometry
@@ -3728,12 +3810,54 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
     return NULL;
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs) ;
+  /* The native routes dissolve the PROJECTION of a geometry carrying Z or M,
+   * and the ordinates it determines are read back onto the answer below */
+  bool owned = FLAGS_GET_Z(lwgeom->flags) || FLAGS_GET_M(lwgeom->flags);
+  LWGEOM *plane = owned ? lwgeom_force_2d(lwgeom) : lwgeom;
+  /* A part of no area, which is what an upright surface projects to, is the
+   * linework its rings trace */
+  LWGEOM *lines = geo_arealess_parts_as_lines(plane);
+  if (lines)
+  {
+    if (owned)
+      lwgeom_free(plane);
+    plane = lines;
+    owned = true;
+  }
+  GSERIALIZED *gsplane = owned ? geo_serialize(plane) : (GSERIALIZED *) gs;
   /* The dissolve of a geometry whose components are surfaces is read from
    * their boundaries, which keeps a circular arc on its own circle where a
    * linearization would put the chain of segments approximating it in its
    * place. A precision model is not something it answers for, and neither is a
    * geometry carrying a component that is not a surface */
-  LWGEOM *lwresult = (prec < 0) ? meos_areal_union(lwgeom) : NULL;
+  LWGEOM *lwresult = (prec < 0) ? meos_areal_union(plane) : NULL;
+  /* A geometry whose components are linework and points is dissolved the same
+   * way, each point of the answer walked once */
+  if (! lwresult && prec < 0)
+    lwresult = meos_linear_union(plane);
+  /* A collection whose components fall on both sides of the areal boundary is
+   * the union of its components, which the array union answers */
+  if (! lwresult && prec < 0)
+  {
+    int nparts;
+    GSERIALIZED **parts = geo_collection_components(gsplane, &nparts);
+    if (parts)
+    {
+      GSERIALIZED *united = (nparts > 1) ?
+        geom_array_union_shared(parts, nparts) : NULL;
+      if (united)
+      {
+        LWGEOM *read = lwgeom_from_gserialized(united);
+        lwresult = lwgeom_clone_deep(read);
+        lwgeom_free(read); pfree(united);
+      }
+      geo_free_array(parts, nparts);
+    }
+  }
+  if (owned)
+  {
+    lwgeom_free(plane); pfree(gsplane);
+  }
   if (! lwresult)
   {
 #if GEOS
@@ -3758,8 +3882,8 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
 #else /* ! GEOS */
     lwgeom_free(lwgeom);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The unary union of a geometry whose components are not all surfaces, "
-      "and the one asked for on a precision grid, are answered by the GEOS "
+      "The unary union asked for on a precision grid, and the one of a "
+      "geometry none of the native routes reads, are answered by the GEOS "
       "library, which this build excludes: configure with -DGEOS=ON");
     return NULL;
 #endif /* GEOS */
