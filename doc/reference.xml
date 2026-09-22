@@ -954,6 +954,9 @@
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Return the geometry holding every point within a distance of a geometry</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_relate"><varname>relate</varname></link>: Return the DE-9IM intersection matrix of two geometries</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>

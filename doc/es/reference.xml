@@ -954,6 +954,9 @@
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_relate"><varname>relate</varname></link>: Devuelve la matriz de intersección DE-9IM de dos geometrías</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>

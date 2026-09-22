@@ -114,6 +114,25 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_relate">
+				<indexterm significance="normal"><primary><varname>relate</varname></primary></indexterm>
+				<para>Devuelve la matriz de intersección DE-9IM de dos geometrías</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+relate(geometry,geometry) → text
+</programlisting>
+				<para>La matriz indica, para cada par formado por el interior, la frontera y el exterior de la primera geometría y de la segunda, la dimensión de lo que comparten: <literal>F</literal> cuando no comparten nada, <literal>0</literal>, <literal>1</literal> o <literal>2</literal> cuando comparten puntos, una curva o un área. Un arco circular se lee sobre su propio círculo y no sobre una cadena de segmentos que lo aproxima, y el interior y la frontera de una colección de geometrías son los de la unión de sus miembros.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
+-- 1020F1102
+SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  geometry 'Polygon((2 0,4 0,4 2,2 2,2 0))');
+-- FF2F11212
+SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
+  geometry 'Point(2 1.9)');
+-- 0F2FF1FF2
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Devuelve la región que dos geometrías comparten</para>
