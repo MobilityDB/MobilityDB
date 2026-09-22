@@ -297,6 +297,28 @@ buffer_add_segment(LWCOMPOUND *curve, int32_t srid, POINT2D p1, POINT2D p2)
   buffer_snap_to_curve_end(curve, &p1);
   if (hypot(p2.x - p1.x, p2.y - p1.y) <= MEOS_GEOM_TOLERANCE)
     return;
+  /* A segment starting exactly where a straight member of the curve ends
+   * continues that member: the line gains the one vertex, which is the
+   * vertex the curve would carry as the end of one member and the start of
+   * the next. A box already read off the line or the curve no longer holds
+   * the vertex, so it is dropped */
+  if (curve->ngeoms > 0 && curve->geoms[curve->ngeoms - 1] &&
+      curve->geoms[curve->ngeoms - 1]->type == LINETYPE)
+  {
+    LWLINE *prev = (LWLINE *) curve->geoms[curve->ngeoms - 1];
+    if (prev->points && prev->points->npoints > 0)
+    {
+      const POINT2D *end = getPoint2d_cp(prev->points,
+        prev->points->npoints - 1);
+      if (end->x == p1.x && end->y == p1.y)
+      {
+        buffer_append_point(prev->points, p2.x, p2.y);
+        lwgeom_drop_bbox(lwline_as_lwgeom(prev));
+        lwgeom_drop_bbox(lwcompound_as_lwgeom(curve));
+        return;
+      }
+    }
+  }
   LWLINE *line = buffer_make_segment(srid, p1, p2);
   if (lwcompound_add_lwgeom(curve, lwline_as_lwgeom(line)) != LW_SUCCESS)
     lwline_free(line);
