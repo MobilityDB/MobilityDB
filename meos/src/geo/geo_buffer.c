@@ -1150,6 +1150,8 @@ typedef struct
 {
   double xmin;      /**< Left end of its box */
   double xmax;      /**< Right end of its box */
+  double ymin;      /**< Bottom of its box */
+  double ymax;      /**< Top of its box */
   uint32_t id;      /**< Position of the edge in its array */
 } BufferSweepEdge;
 
@@ -1177,19 +1179,6 @@ typedef struct
   uint32_t i;       /**< Position of the first edge */
   uint32_t j;       /**< Position of the second edge */
 } BufferEdgePair;
-
-/**
- * @brief Order pairs of edges as a walk over every pair meets them
- */
-static int
-buffer_edge_pair_cmp(const void *a, const void *b)
-{
-  const BufferEdgePair *p1 = (const BufferEdgePair *) a;
-  const BufferEdgePair *p2 = (const BufferEdgePair *) b;
-  if (p1->i != p2->i)
-    return (p1->i < p2->i) ? -1 : 1;
-  return (p1->j < p2->j) ? -1 : (p1->j > p2->j) ? 1 : 0;
-}
 
 /**
  * @brief Return the pairs of boundary edges whose boxes may meet within the
@@ -1223,6 +1212,8 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
       continue;
     sweep[nsweep].xmin = all[i].xmin;
     sweep[nsweep].xmax = all[i].xmax;
+    sweep[nsweep].ymin = all[i].ymin;
+    sweep[nsweep].ymax = all[i].ymax;
     sweep[nsweep].id = i;
     nsweep++;
     bandmax = Max(bandmax, all[i].tol);
@@ -1236,6 +1227,10 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
     {
       if (sweep[a].xmax < sweep[b].xmin - bandmax)
         break;
+      /* The boxes apart along y are dropped at the same widest band */
+      if (sweep[a].ymax < sweep[b].ymin - bandmax ||
+          sweep[b].ymax < sweep[a].ymin - bandmax)
+        continue;
       if (count == maxpairs)
       {
         maxpairs *= 2;
@@ -1253,9 +1248,36 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
     pfree(pairs);
     return NULL;
   }
-  qsort(pairs, count, sizeof(BufferEdgePair), buffer_edge_pair_cmp);
+  /* The pairs are put in the order of the walk by their first edge, counted
+   * and placed, then by their second within each first, which a handful of
+   * pairs share */
+  uint32_t *start = palloc0(sizeof(uint32_t) * (n + 1));
+  for (uint32_t k = 0; k < count; k++)
+    start[pairs[k].i + 1]++;
+  for (uint32_t i = 0; i < n; i++)
+    start[i + 1] += start[i];
+  BufferEdgePair *sorted = palloc(sizeof(BufferEdgePair) * count);
+  uint32_t *fill = palloc(sizeof(uint32_t) * Max(n, 1u));
+  memcpy(fill, start, sizeof(uint32_t) * n);
+  for (uint32_t k = 0; k < count; k++)
+    sorted[fill[pairs[k].i]++] = pairs[k];
+  for (uint32_t i = 0; i < n; i++)
+  {
+    for (uint32_t k = start[i] + 1; k < start[i + 1]; k++)
+    {
+      BufferEdgePair p = sorted[k];
+      uint32_t m = k;
+      while (m > start[i] && sorted[m - 1].j > p.j)
+      {
+        sorted[m] = sorted[m - 1];
+        m--;
+      }
+      sorted[m] = p;
+    }
+  }
+  pfree(pairs); pfree(start); pfree(fill);
   *npairs = count;
-  return pairs;
+  return sorted;
 }
 
 /**
