@@ -1,15 +1,5 @@
 var searchData=
 [
-  ['raquet_0',['Raquet',['../meos__raster_8h_a82bc18d6228bd1c7229a47fd763cd791.html#a82bc18d6228bd1c7229a47fd763cd791',1,'meos_raster.h']]],
-  ['raster_1',['Raster',['../meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00',1,'meos_raster.h']]],
-  ['raster_5fcross_5ffn_2',['raster_cross_fn',['../raster__quadbin_8h_a40699c74d8b24ed7b8a70900c8e0b94d.html#a40699c74d8b24ed7b8a70900c8e0b94d',1,'raster_quadbin.h']]],
-  ['raster_5fgrid_5ffn_3',['raster_grid_fn',['../raster__quadbin_8h_a7e81a09b3ef2c217db95c42a98bfa4ef.html#a7e81a09b3ef2c217db95c42a98bfa4ef',1,'raster_quadbin.h']]],
-  ['raster_5fpixel_5ffn_4',['raster_pixel_fn',['../raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c',1,'raster_quadbin.h']]],
-  ['raster_5fpoint_5ffn_5',['raster_point_fn',['../raster__quadbin_8h_a2d93fafd5797ff86e8b0fde841bb152d.html#a2d93fafd5797ff86e8b0fde841bb152d',1,'raster_quadbin.h']]],
-  ['rastergridops_6',['RasterGridOps',['../raster__quadbin_8h_addb16eddd3035ecea62f83d39a5a4c9a.html#addb16eddd3035ecea62f83d39a5a4c9a',1,'raster_quadbin.h']]],
-  ['residual_5ffn_7',['residual_fn',['../meos_2src_2rgeo_2trgeo__geom__clip_8c_a56035d2d4d20fa3229c263a28ff3a7dc.html#a56035d2d4d20fa3229c263a28ff3a7dc',1,'trgeo_geom_clip.c']]],
-  ['rtree_8',['RTree',['../meos_8h_a3dbd73b6367ac05a5b7a41205de49460.html#a3dbd73b6367ac05a5b7a41205de49460',1,'meos.h']]],
-  ['rtreenncursor_9',['RTreeNNCursor',['../meos_8h_a1a246a111be2aaddf6a8a458906ee4b6.html#a1a246a111be2aaddf6a8a458906ee4b6',1,'meos.h']]],
-  ['rtreennentry_10',['RTreeNNEntry',['../temporal__rtree_8c_aa0e2f15c4fc62314de4552df6fc15b31.html#aa0e2f15c4fc62314de4552df6fc15b31',1,'temporal_rtree.c']]],
-  ['rtreenode_11',['RTreeNode',['../temporal__rtree_8h_afe479577f2d312dc7122eeb5e6d51a4d.html#afe479577f2d312dc7122eeb5e6d51a4d',1,'temporal_rtree.h']]]
+  ['qsort_5fcomparator_0',['qsort_comparator',['../meos_2include_2temporal_2temporal_8h_a246157a928d0486ed01fdddcebcb55ba.html#a246157a928d0486ed01fdddcebcb55ba',1,'temporal.h']]],
+  ['quadbin_1',['Quadbin',['../meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a',1,'meos_quadbin.h']]]
 ];

@@ -1,17 +1,16 @@
 var searchData=
 [
-  ['tboxgridstate_0',['TboxGridState',['../temporal__tile_8h_ac535cd7c14f21ac0c5784dd467856e5d.html#ac535cd7c14f21ac0c5784dd467856e5d',1,'temporal_tile.h']]],
-  ['temporal_5funnest_5ffn_1',['temporal_unnest_fn',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_af6c740a063bad7f87b89010a222d4c30.html#af6c740a063bad7f87b89010a222d4c30',1,'temporal.h']]],
-  ['text_2',['text',['../postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1',1,'postgres_ext_defs.in.h']]],
-  ['text_5fin_5ffn_3',['text_in_fn',['../cellset__text__io__test_8c_ac369b9d05bb66fb5a9b05d210386cbe5.html#ac369b9d05bb66fb5a9b05d210386cbe5',1,'text_in_fn():&#160;cellset_text_io_test.c'],['../temporal__text__io__test_8c_a373877ae89a6abadf66fb77a66602998.html#a373877ae89a6abadf66fb77a66602998',1,'text_in_fn():&#160;temporal_text_io_test.c']]],
-  ['text_5fout_5ffn_4',['text_out_fn',['../cellset__text__io__test_8c_a5a1d6a679796a633c899d3befae2bc0a.html#a5a1d6a679796a633c899d3befae2bc0a',1,'text_out_fn():&#160;cellset_text_io_test.c'],['../temporal__text__io__test_8c_a00ab7d84d07b433da1f84c62d17982d9.html#a00ab7d84d07b433da1f84c62d17982d9',1,'text_out_fn():&#160;temporal_text_io_test.c']]],
-  ['tilerestrictfn_5',['TileRestrictFn',['../tgeo__tile_8h_a4f1e9f7ac06915c5609b855fb5e09d80.html#a4f1e9f7ac06915c5609b855fb5e09d80',1,'tgeo_tile.h']]],
-  ['timeadt_6',['TimeADT',['../postgres__ext__defs_8in_8h_ac855d2530925e3123cb4be1a069b8b6a.html#ac855d2530925e3123cb4be1a069b8b6a',1,'postgres_ext_defs.in.h']]],
-  ['timeoffset_7',['TimeOffset',['../postgres__ext__defs_8in_8h_afeeec9fef4965fff91ab315ec70c1e9b.html#afeeec9fef4965fff91ab315ec70c1e9b',1,'postgres_ext_defs.in.h']]],
-  ['timestamp_8',['Timestamp',['../postgres__ext__defs_8in_8h_a073f186f9dddbefc6d819f25c6ccaa00.html#a073f186f9dddbefc6d819f25c6ccaa00',1,'postgres_ext_defs.in.h']]],
-  ['timestamptz_9',['TimestampTz',['../postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe',1,'postgres_ext_defs.in.h']]],
-  ['tpfunc_5fbase_10',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a14e8d51921d33d20867929767d50f51d.html#a14e8d51921d33d20867929767d50f51d',1,'temporal.h']]],
-  ['tpfunc_5fset_11',['tpfunc_set',['../meos_2include_2temporal_2temporal_8h_a2990d3ea6bfc0f45f5e477e6b950bf5f.html#a2990d3ea6bfc0f45f5e477e6b950bf5f',1,'temporal.h']]],
-  ['tpfunc_5ftemp_12',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_a73d8710f730e73a0865d3d6200b6910c.html#a73d8710f730e73a0865d3d6200b6910c',1,'temporal.h']]],
-  ['tpfunc_5funary_13',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_adf54be09a1497705df4940d4bab7ecd5.html#adf54be09a1497705df4940d4bab7ecd5',1,'temporal.h']]]
+  ['s2cellid_0',['S2CellId',['../meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0',1,'meos_s2cell.h']]],
+  ['schema_5fentry_1',['schema_entry',['../schema__hook_8c_a22da830b30ce894f875c9c28f452a193.html#a22da830b30ce894f875c9c28f452a193',1,'schema_hook.c']]],
+  ['seglb_5ffunc_2',['seglb_func',['../tgeo__distance_8h_a9c1f4b48dd999fa0f02bb4f1b4ef4793.html#a9c1f4b48dd999fa0f02bb4f1b4ef4793',1,'tgeo_distance.h']]],
+  ['skiplist_3',['SkipList',['../meos_8h_a858adc77f7cd174c10775a2fbde9db0b.html#a858adc77f7cd174c10775a2fbde9db0b',1,'meos.h']]],
+  ['sortedspan_4',['SortedSpan',['../span__index_8h_acf5c1ab3bbaa9c32e3050cfc3d729c59.html#acf5c1ab3bbaa9c32e3050cfc3d729c59',1,'span_index.h']]],
+  ['sortedstbox_5',['SortedSTbox',['../stbox__index_8h_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d',1,'stbox_index.h']]],
+  ['sortedtbox_6',['SortedTbox',['../tbox__index_8h_ab1a422b8ed01b47432d699799c93e735.html#ab1a422b8ed01b47432d699799c93e735',1,'tbox_index.h']]],
+  ['spanbinstate_7',['SpanBinState',['../temporal__tile_8h_a9071c4f5008bf99bdddb32174095b44a.html#a9071c4f5008bf99bdddb32174095b44a',1,'temporal_tile.h']]],
+  ['spnncursor_8',['SPNNCursor',['../meos_8h_a328e93a8d8a910e7605fe36376822876.html#a328e93a8d8a910e7605fe36376822876',1,'meos.h']]],
+  ['spnnentry_9',['SPNNEntry',['../temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a',1,'temporal_sptree.c']]],
+  ['spnode_10',['SPNode',['../temporal__sptree_8h_a541b943b3f5f7a1c831e4b4612b5ee5c.html#a541b943b3f5f7a1c831e4b4612b5ee5c',1,'temporal_sptree.h']]],
+  ['sptree_11',['SPTree',['../meos_8h_a2270a5e067ab26c981228dec4ed29a62.html#a2270a5e067ab26c981228dec4ed29a62',1,'meos.h']]],
+  ['stboxgridstate_12',['STboxGridState',['../tgeo__tile_8h_a7d93e4a3fe1eb5f6dd67ee98ba5c127e.html#a7d93e4a3fe1eb5f6dd67ee98ba5c127e',1,'tgeo_tile.h']]]
 ];

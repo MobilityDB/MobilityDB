@@ -1,16 +1,15 @@
 var searchData=
 [
-  ['s2cellid_0',['S2CellId',['../meos__s2cell_8h_a9a8453f0346dd25aebb50117a6b810e0.html#a9a8453f0346dd25aebb50117a6b810e0',1,'meos_s2cell.h']]],
-  ['schema_5fentry_1',['schema_entry',['../schema__hook_8c_a22da830b30ce894f875c9c28f452a193.html#a22da830b30ce894f875c9c28f452a193',1,'schema_hook.c']]],
-  ['seglb_5ffunc_2',['seglb_func',['../tgeo__distance_8h_a9c1f4b48dd999fa0f02bb4f1b4ef4793.html#a9c1f4b48dd999fa0f02bb4f1b4ef4793',1,'tgeo_distance.h']]],
-  ['skiplist_3',['SkipList',['../meos_8h_a858adc77f7cd174c10775a2fbde9db0b.html#a858adc77f7cd174c10775a2fbde9db0b',1,'meos.h']]],
-  ['sortedspan_4',['SortedSpan',['../span__index_8h_acf5c1ab3bbaa9c32e3050cfc3d729c59.html#acf5c1ab3bbaa9c32e3050cfc3d729c59',1,'span_index.h']]],
-  ['sortedstbox_5',['SortedSTbox',['../stbox__index_8h_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d',1,'stbox_index.h']]],
-  ['sortedtbox_6',['SortedTbox',['../tbox__index_8h_ab1a422b8ed01b47432d699799c93e735.html#ab1a422b8ed01b47432d699799c93e735',1,'tbox_index.h']]],
-  ['spanbinstate_7',['SpanBinState',['../temporal__tile_8h_a9071c4f5008bf99bdddb32174095b44a.html#a9071c4f5008bf99bdddb32174095b44a',1,'temporal_tile.h']]],
-  ['spnncursor_8',['SPNNCursor',['../meos_8h_a328e93a8d8a910e7605fe36376822876.html#a328e93a8d8a910e7605fe36376822876',1,'meos.h']]],
-  ['spnnentry_9',['SPNNEntry',['../temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a',1,'temporal_sptree.c']]],
-  ['spnode_10',['SPNode',['../temporal__sptree_8h_a541b943b3f5f7a1c831e4b4612b5ee5c.html#a541b943b3f5f7a1c831e4b4612b5ee5c',1,'temporal_sptree.h']]],
-  ['sptree_11',['SPTree',['../meos_8h_a2270a5e067ab26c981228dec4ed29a62.html#a2270a5e067ab26c981228dec4ed29a62',1,'meos.h']]],
-  ['stboxgridstate_12',['STboxGridState',['../tgeo__tile_8h_a7d93e4a3fe1eb5f6dd67ee98ba5c127e.html#a7d93e4a3fe1eb5f6dd67ee98ba5c127e',1,'tgeo_tile.h']]]
+  ['raquet_0',['Raquet',['../meos__raster_8h_a82bc18d6228bd1c7229a47fd763cd791.html#a82bc18d6228bd1c7229a47fd763cd791',1,'meos_raster.h']]],
+  ['raster_1',['Raster',['../meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00',1,'meos_raster.h']]],
+  ['raster_5fcross_5ffn_2',['raster_cross_fn',['../raster__quadbin_8h_a40699c74d8b24ed7b8a70900c8e0b94d.html#a40699c74d8b24ed7b8a70900c8e0b94d',1,'raster_quadbin.h']]],
+  ['raster_5fgrid_5ffn_3',['raster_grid_fn',['../raster__quadbin_8h_a7e81a09b3ef2c217db95c42a98bfa4ef.html#a7e81a09b3ef2c217db95c42a98bfa4ef',1,'raster_quadbin.h']]],
+  ['raster_5fpixel_5ffn_4',['raster_pixel_fn',['../raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c',1,'raster_quadbin.h']]],
+  ['raster_5fpoint_5ffn_5',['raster_point_fn',['../raster__quadbin_8h_a2d93fafd5797ff86e8b0fde841bb152d.html#a2d93fafd5797ff86e8b0fde841bb152d',1,'raster_quadbin.h']]],
+  ['rastergridops_6',['RasterGridOps',['../raster__quadbin_8h_addb16eddd3035ecea62f83d39a5a4c9a.html#addb16eddd3035ecea62f83d39a5a4c9a',1,'raster_quadbin.h']]],
+  ['residual_5ffn_7',['residual_fn',['../meos_2src_2rgeo_2trgeo__geom__clip_8c_a56035d2d4d20fa3229c263a28ff3a7dc.html#a56035d2d4d20fa3229c263a28ff3a7dc',1,'trgeo_geom_clip.c']]],
+  ['rtree_8',['RTree',['../meos_8h_a3dbd73b6367ac05a5b7a41205de49460.html#a3dbd73b6367ac05a5b7a41205de49460',1,'meos.h']]],
+  ['rtreenncursor_9',['RTreeNNCursor',['../meos_8h_a1a246a111be2aaddf6a8a458906ee4b6.html#a1a246a111be2aaddf6a8a458906ee4b6',1,'meos.h']]],
+  ['rtreennentry_10',['RTreeNNEntry',['../temporal__rtree_8c_aa0e2f15c4fc62314de4552df6fc15b31.html#aa0e2f15c4fc62314de4552df6fc15b31',1,'temporal_rtree.c']]],
+  ['rtreenode_11',['RTreeNode',['../temporal__rtree_8h_afe479577f2d312dc7122eeb5e6d51a4d.html#afe479577f2d312dc7122eeb5e6d51a4d',1,'temporal_rtree.h']]]
 ];
