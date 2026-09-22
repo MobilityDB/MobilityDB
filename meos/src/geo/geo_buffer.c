@@ -2582,8 +2582,9 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
  * @details The extent read is the piece's own, grown by the tolerance
  * #buffer_piece_contains_point accepts a node off it by, so every node that
  * test accepts is gathered and the test still decides each one. A segment is
- * bounded by its ends; an arc by the box of its whole circle, which holds it
- * whatever part of the circle it runs along.
+ * bounded by its ends; an arc by its own extent, its ends and the extremes of
+ * its circle it passes through, grown by what the test accepts a node off
+ * the circle and past its ends by.
  */
 static const uint32_t *
 buffer_node_index_cand(const Edge *piece, BufferNodeIndex *ix,
@@ -2606,6 +2607,21 @@ buffer_node_index_cand(const Edge *piece, BufferNodeIndex *ix,
   double pad = Max(coordinate_tolerance(xmin, xmax),
     coordinate_tolerance(ymin, ymax));
   pad = Max(pad, MEOS_GEOM_TOLERANCE);
+  if (piece->etype == EDGE_POLYARC)
+  {
+    /* An arc is read over its own extent rather than its whole circle. The
+     * test keeps a node off the circle by at most the tolerance of the
+     * coordinates, bounded by the pad read over the whole circle, and past
+     * the end of the arc by at most the angle #arc_span_contains allows plus
+     * the rounding of that angle, which along a circle is no longer than the
+     * arc it subtends. The extent is grown by both */
+    Edge arc = *piece;
+    arc_set_bbox(&arc);
+    double margin = 2.0 * pad + (piece->radius + pad) *
+      (MEOS_GEOM_TOLERANCE + 64.0 * DBL_EPSILON);
+    return buffer_node_index_box(ix, arc.xmin - margin, arc.ymin - margin,
+      arc.xmax + margin, arc.ymax + margin, ncand);
+  }
   return buffer_node_index_box(ix, xmin - pad, ymin - pad, xmax + pad,
     ymax + pad, ncand);
 }
