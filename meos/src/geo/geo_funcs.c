@@ -11966,35 +11966,58 @@ arc_ordinates_at(const POINT4D *p0, const POINT4D *p1, const POINT4D *p2,
 }
 
 /**
- * @brief Return the ordinates a point array determines at a point
+ * @brief Read one pair of ordinates determined at a point into what is
+ * already determined there
+ * @details The first pair read gives the ordinates, and a pair differing from
+ * them reports the conflict, which is separate for each of the two: two
+ * surfaces meeting at one elevation may carry different measures
+ * @param[in,out] state Ordinates determined at the point
+ * @param[in] z,m Ordinates read
+ */
+static void
+lift_point_take(LiftPoint *state, double z, double m)
+{
+  if (! state->found)
+  {
+    state->found = true;
+    state->z = z; state->m = m;
+    return;
+  }
+  if (fabs(z - state->z) > coordinate_tolerance(z, state->z))
+    state->zconflict = true;
+  if (fabs(m - state->m) > coordinate_tolerance(m, state->m))
+    state->mconflict = true;
+  return;
+}
+
+/**
+ * @brief Read what a point array determines at a point into what the arrays
+ * already read determine there
  * @details A vertex of the array determines its own ordinates, and a point
- * between two of them reads them along the curve that joins them
+ * between two of them reads them along the curve that joins them. EVERY
+ * vertex and every piece of the array passing through the point is read: a
+ * curve may pass through one point of the plane twice at two elevations, and
+ * it then determines no single one there
  * @param[in] pa Point array
  * @param[in] circular True where the array reads as arcs rather than segments
  * @param[in] px,py Point
- * @param[out] z,m Ordinates the array determines there
- * @return True if the point lies on what the array draws
+ * @param[in,out] state Ordinates determined at the point
  */
-static bool
-ptarray_ordinates_at(const POINTARRAY *pa, bool circular, double px, double py,
-  double *z, double *m)
+static void
+lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
+  LiftPoint *state)
 {
-  assert(pa); assert(z); assert(m);
-  /* A vertex carries its ordinates rather than reading them from a curve, and
-   * an answer keeps the vertices of its inputs, so this is where the walk ends
-   * for all but the nodes an overlay adds */
+  assert(pa); assert(state);
   for (uint32_t i = 0; i < pa->npoints; i++)
   {
     POINT4D p;
     getPoint4d_p(pa, i, &p);
     if (fabs(p.x - px) <= coordinate_tolerance(p.x, px) &&
         fabs(p.y - py) <= coordinate_tolerance(p.y, py))
-    {
-      *z = p.z; *m = p.m;
-      return true;
-    }
+      lift_point_take(state, p.z, p.m);
   }
 
+  double z, m;
   if (circular)
   {
     /* An arc is read from three points, the last of one being the first of the
@@ -12005,10 +12028,10 @@ ptarray_ordinates_at(const POINTARRAY *pa, bool circular, double px, double py,
       getPoint4d_p(pa, i, &p0);
       getPoint4d_p(pa, i + 1, &p1);
       getPoint4d_p(pa, i + 2, &p2);
-      if (arc_ordinates_at(&p0, &p1, &p2, px, py, z, m))
-        return true;
+      if (arc_ordinates_at(&p0, &p1, &p2, px, py, &z, &m))
+        lift_point_take(state, z, m);
     }
-    return false;
+    return;
   }
 
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
@@ -12020,42 +12043,8 @@ ptarray_ordinates_at(const POINTARRAY *pa, bool circular, double px, double py,
       continue;
     POINT2D q = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
     double f = (double) closest_point2d_on_segment_ratio(&q, &a, &b, &closest);
-    *z = p0.z + f * (p1.z - p0.z);
-    *m = p0.m + f * (p1.m - p0.m);
-    return true;
+    lift_point_take(state, p0.z + f * (p1.z - p0.z), p0.m + f * (p1.m - p0.m));
   }
-  return false;
-}
-
-/**
- * @brief Read what a point array determines at a point into what the arrays
- * already read determine there
- * @details The first array to determine the ordinates gives them, and one
- * determining others reports the conflict, which is separate for each of the
- * two: two surfaces meeting at one elevation may carry different measures
- * @param[in] pa Point array
- * @param[in] circular True where the array reads as arcs rather than segments
- * @param[in] px,py Point
- * @param[in,out] state Ordinates determined at the point
- */
-static void
-lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
-  LiftPoint *state)
-{
-  assert(pa); assert(state);
-  double z, m;
-  if (! ptarray_ordinates_at(pa, circular, px, py, &z, &m))
-    return;
-  if (! state->found)
-  {
-    state->found = true;
-    state->z = z; state->m = m;
-    return;
-  }
-  if (fabs(z - state->z) > coordinate_tolerance(z, state->z))
-    state->zconflict = true;
-  if (fabs(m - state->m) > coordinate_tolerance(m, state->m))
-    state->mconflict = true;
   return;
 }
 
