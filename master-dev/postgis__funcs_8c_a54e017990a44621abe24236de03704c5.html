@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: itree_pip_covers</title>
+<title>MobilityDB: geo_arealess_parts_as_lines</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga271a5a7161444390c12e4d4b089c7783.html#ga271a5a7161444390c12e4d4b089c7783">gbox_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga25f17a8aa694050180826528d80e825d.html#ga25f17a8aa694050180826528d80e825d">gbox_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gab2b7f79b9772a38b6f402d55add45f65.html#gab2b7f79b9772a38b6f402d55add45f65">gbox_out</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a54e017990a44621abe24236de03704c5.html#a54e017990a44621abe24236de03704c5">geo_arealess_parts_as_lines</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a54e017990a44621abe24236de03704c5.html#a54e017990a44621abe24236de03704c5">geo_arealess_parts_as_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga802185c15f1554f7cf15d9f27d373ffb.html#ga802185c15f1554f7cf15d9f27d373ffb">geo_as_ewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga5f8d097b5007ddb13ac5202901fd33d4.html#ga5f8d097b5007ddb13ac5202901fd33d4">geo_as_ewkt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gadb7a11e2276cbe7adbf3c62c2c3efc3e.html#gadb7a11e2276cbe7adbf3c62c2c3efc3e">geo_as_geojson</a></td></tr>
@@ -197,7 +197,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a2ade9b89fcbff53e1fc14a20dcbca128.html#a2ade9b89fcbff53e1fc14a20dcbca128">gserialized_is_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5e32921f0eabf36201d8c711d8149f89.html#a5e32921f0eabf36201d8c711d8149f89">gserialized_is_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae645f786e5b039504f61f38b1308d9bd.html#ae645f786e5b039504f61f38b1308d9bd">itree_pip_contains</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_accc992d99a78b9d2522ad0d8091e637d.html#accc992d99a78b9d2522ad0d8091e637d">itree_pip_covers</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_accc992d99a78b9d2522ad0d8091e637d.html#accc992d99a78b9d2522ad0d8091e637d">itree_pip_covers</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a1c8a6266ace643165708eca25f84315c.html#a1c8a6266ace643165708eca25f84315c">itree_pip_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a845b6989fc3568c2c6339068dba22ba4.html#a845b6989fc3568c2c6339068dba22ba4">itree_pip_touches</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5a85427fdf2021b563f66e972704f7ad.html#ga5a85427fdf2021b563f66e972704f7ad">line_interpolate_point</a></td></tr>
@@ -233,33 +233,37 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="accc992d99a78b9d2522ad0d8091e637d" name="accc992d99a78b9d2522ad0d8091e637d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#accc992d99a78b9d2522ad0d8091e637d">&#9670;&#160;</a></span>itree_pip_covers()</h2>
+<a id="a54e017990a44621abe24236de03704c5" name="a54e017990a44621abe24236de03704c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54e017990a44621abe24236de03704c5">&#9670;&#160;</a></span>geo_arealess_parts_as_lines()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool itree_pip_covers </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * geo_arealess_parts_as_lines </td>
           <td>(</td>
-          <td class="paramtype">const IntervalTree *&#160;</td>
-          <td class="paramname"><em>itree</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lwpoints</em>&#160;</td>
-        </tr>
-        <tr>
+          <td class="paramname"><em>geom</em></td><td>)</td>
           <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>If any point in the point/multipoint is outside the polygon, then the polygon does not cover the point/multipoint. </p>
+<p>Return a geometry whose polygons of no area are written as the lines their rings trace, or NULL where it holds none. </p>
+<p >A part enclosing NO area is not a region but its own boundary. The projection of a surface standing upright &ndash; a wall of a polyhedral surface or a TIN &ndash; is one such part, and read as a polygon it would stay in a union as a region of no area beside the regions that cover it </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Geometry </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
