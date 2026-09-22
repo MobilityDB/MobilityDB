@@ -783,6 +783,34 @@ buffer_edges_intersect(const Edge *e1, const Edge *e2)
 }
 
 /**
+ * @brief An edge of a boundary as the pair sweep orders it
+ */
+typedef struct
+{
+  double xmin;      /**< Left end of its box */
+  double xmax;      /**< Right end of its box */
+  double ymin;      /**< Bottom of its box */
+  double ymax;      /**< Top of its box */
+  uint32_t id;      /**< Position of the edge in its array */
+} BufferSweepEdge;
+
+/**
+ * @brief Order the edges of a sweep by the left end of their box, then by
+ * their position, which makes the order total
+ */
+static int
+buffer_sweep_edge_cmp(const void *a, const void *b)
+{
+  const BufferSweepEdge *e1 = (const BufferSweepEdge *) a;
+  const BufferSweepEdge *e2 = (const BufferSweepEdge *) b;
+  if (e1->xmin < e2->xmin)
+    return -1;
+  if (e1->xmin > e2->xmin)
+    return 1;
+  return (e1->id < e2->id) ? -1 : (e1->id > e2->id) ? 1 : 0;
+}
+
+/**
  * @brief Return true if two sets of buffer edges intersect
  * @details The edges are extracted from the two geometries and tested pairwise
  * using the line/arc intersection functions.
@@ -795,16 +823,41 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
   MeosArray *a2 = geom_extract_edges(geom2);
   uint32_t n1 = a1->count;
   uint32_t n2 = a2->count;
-  for (uint32_t i = 0; i < n1; i++)
+  const Edge *all1 = (const Edge *) a1->elems;
+  const Edge *all2 = (const Edge *) a2->elems;
+  /* Whether any pair meets does not depend on the order the pairs are met
+   * in, so the edges of both sets are swept together by the left end of
+   * their box and only the pairs of one edge of each set whose boxes may
+   * meet are read, as #buffer_edge_pairs reads the pairs of one set */
+  uint32_t nsweep = n1 + n2;
+  BufferSweepEdge *sweep = palloc(sizeof(BufferSweepEdge) * Max(nsweep, 1u));
+  double bandmax = MEOS_GEOM_TOLERANCE;
+  for (uint32_t k = 0; k < nsweep; k++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
-    if (! e1)
-      continue;
-    for (uint32_t j = 0; j < n2; j++)
+    const Edge *e = (k < n1) ? &all1[k] : &all2[k - n1];
+    sweep[k].xmin = e->xmin; sweep[k].xmax = e->xmax;
+    sweep[k].ymin = e->ymin; sweep[k].ymax = e->ymax;
+    sweep[k].id = k;
+    bandmax = Max(bandmax, e->tol);
+  }
+  qsort(sweep, nsweep, sizeof(BufferSweepEdge), buffer_sweep_edge_cmp);
+  bool result = false;
+  for (uint32_t a = 0; a < nsweep && ! result; a++)
+  {
+    for (uint32_t b = a + 1; b < nsweep; b++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
-      if (! e2)
+      if (sweep[a].xmax < sweep[b].xmin - bandmax)
+        break;
+      /* A pair is one edge of each set */
+      if ((sweep[a].id < n1) == (sweep[b].id < n1))
         continue;
+      if (sweep[a].ymax < sweep[b].ymin - bandmax ||
+          sweep[b].ymax < sweep[a].ymin - bandmax)
+        continue;
+      uint32_t i = Min(sweep[a].id, sweep[b].id);
+      uint32_t j = Max(sweep[a].id, sweep[b].id) - n1;
+      const Edge *e1 = &all1[i];
+      const Edge *e2 = &all2[j];
       /* Two edges whose boxes lie apart cannot meet. The band is the one the
        * meeting test itself works to: each Edge carries the tolerance
        * #edge_set_tolerance reads off its OWN coordinates, so the reject and
@@ -819,13 +872,14 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
         continue;
       if (buffer_edges_intersect(e1, e2))
       {
-        meos_array_destroy(a1); meos_array_destroy(a2);
-        return true;
+        result = true;
+        break;
       }
     }
   }
+  pfree(sweep);
   meos_array_destroy(a1); meos_array_destroy(a2);
-  return false;
+  return result;
 }
 
 /*****************************************************************************
@@ -1141,34 +1195,6 @@ static inline bool
 buffer_nodes_equal(double x1, double y1, double x2, double y2)
 {
   return fabs(x1 - x2) <= MEOS_GEOM_TOLERANCE && fabs(y1 - y2) <= MEOS_GEOM_TOLERANCE;
-}
-
-/**
- * @brief An edge of a boundary as the pair sweep orders it
- */
-typedef struct
-{
-  double xmin;      /**< Left end of its box */
-  double xmax;      /**< Right end of its box */
-  double ymin;      /**< Bottom of its box */
-  double ymax;      /**< Top of its box */
-  uint32_t id;      /**< Position of the edge in its array */
-} BufferSweepEdge;
-
-/**
- * @brief Order the edges of a sweep by the left end of their box, then by
- * their position, which makes the order total
- */
-static int
-buffer_sweep_edge_cmp(const void *a, const void *b)
-{
-  const BufferSweepEdge *e1 = (const BufferSweepEdge *) a;
-  const BufferSweepEdge *e2 = (const BufferSweepEdge *) b;
-  if (e1->xmin < e2->xmin)
-    return -1;
-  if (e1->xmin > e2->xmin)
-    return 1;
-  return (e1->id < e2->id) ? -1 : (e1->id > e2->id) ? 1 : 0;
 }
 
 /**
