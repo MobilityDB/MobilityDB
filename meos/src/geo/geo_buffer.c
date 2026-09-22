@@ -1528,6 +1528,7 @@ typedef struct
   Edge **edges;         /**< Pointers into @p arr, in its order */
   RelateEdges re;       /**< The edges and what reading them selectively needs */
   int npoints;          /**< Points the caller expects to locate against it */
+  int nlocated;         /**< Points located against it so far */
   bool ready;           /**< True once @p re holds the edges */
 } BufferLocator;
 
@@ -1548,6 +1549,7 @@ buffer_locator_make(BufferLocator *loc, const LWGEOM *geom, int npoints)
   loc->arr = NULL;
   loc->edges = NULL;
   loc->npoints = npoints;
+  loc->nlocated = 0;
   loc->ready = false;
 }
 
@@ -1612,6 +1614,18 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
   }
   if (loc->re.nedges == 0)
     return 2;
+  /* The points a caller expects is an estimate, and a caller locating a
+   * point per piece plus more for every coincident piece asks more than it
+   * expected, so the index is built once the points located clear the same
+   * threshold. The answer does not depend on whether the index is built,
+   * which is what #RelateEdges guarantees */
+  loc->nlocated++;
+  if (! loc->re.index && (double) loc->nlocated * (double) loc->re.nedges >=
+      RELATE_INDEX_MIN_PAIRS)
+  {
+    relate_edges_clear(&loc->re);
+    relate_edges_init(&loc->re, loc->edges, loc->re.nedges, true);
+  }
   return relate_point_in_area_index(x, y, &loc->re, false);
 }
 
