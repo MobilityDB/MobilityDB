@@ -2066,6 +2066,31 @@ typedef struct
 } BufferNodeEnd;
 
 /**
+ * @brief A node of an index as a read over a box orders it
+ */
+typedef struct
+{
+  double x;        /**< The x of the node */
+  uint32_t at;     /**< Where the index holds the node */
+} BufferNodeByX;
+
+/**
+ * @brief Order the nodes of an index by their x, then by where the index
+ * holds them, which makes the order total
+ */
+static int
+buffer_node_byx_cmp(const void *a, const void *b)
+{
+  const BufferNodeByX *n1 = (const BufferNodeByX *) a;
+  const BufferNodeByX *n2 = (const BufferNodeByX *) b;
+  if (n1->x < n2->x)
+    return -1;
+  if (n1->x > n2->x)
+    return 1;
+  return (n1->at < n2->at) ? -1 : (n1->at > n2->at) ? 1 : 0;
+}
+
+/**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
  * @details Chaining a ring asks, once per step, which unused piece continues
  * the boundary at the node the walk stands on. Asking it of every piece makes
@@ -2095,6 +2120,10 @@ typedef struct
   uint32_t *cand;       /**< Scratch the candidates of one node are read into */
   uint32_t *stamp;      /**< Generation a piece was last gathered in */
   uint32_t gen;         /**< Generation of the node being read */
+  BufferNodeByX *byx;   /**< Nodes by x, built by the first box read */
+  uint32_t nbyx;        /**< Nodes held by x */
+  uint32_t *nanx;       /**< Nodes whose x is not a number */
+  uint32_t nnanx;       /**< Nodes whose x is not a number */
 } BufferNodeIndex;
 
 /**
@@ -2173,6 +2202,8 @@ buffer_node_index_alloc(BufferNodeIndex *ix, uint32_t nids, uint32_t nnodes,
   ix->cand = palloc(sizeof(uint32_t) * Max(nids, 1u));
   ix->stamp = palloc0(sizeof(uint32_t) * Max(nids, 1u));
   ix->gen = 0;
+  ix->byx = NULL; ix->nbyx = 0;
+  ix->nanx = NULL; ix->nnanx = 0;
   return;
 }
 
@@ -2239,6 +2270,11 @@ buffer_node_index_free(BufferNodeIndex *ix)
   assert(ix);
   pfree(ix->cells); pfree(ix->ends); pfree(ix->cand); pfree(ix->stamp);
   ix->cells = NULL; ix->ends = NULL; ix->cand = NULL; ix->stamp = NULL;
+  if (ix->byx)
+    pfree(ix->byx);
+  if (ix->nanx)
+    pfree(ix->nanx);
+  ix->byx = NULL; ix->nanx = NULL;
   return;
 }
 
@@ -2298,6 +2334,31 @@ buffer_node_index_at(BufferNodeIndex *ix, POINT2D point, uint32_t *ncand)
 }
 
 /**
+ * @brief Gather one node of an index into the candidates of a box read,
+ * where it stands in the box and has not been gathered yet
+ */
+static inline void
+buffer_node_index_gather(BufferNodeIndex *ix, uint32_t at, double xmin,
+  double ymin, double xmax, double ymax, uint32_t *n)
+{
+  const BufferNodeEnd *node = &ix->ends[at];
+  if (node->x < xmin || node->x > xmax || node->y < ymin || node->y > ymax)
+    return;
+  if (ix->stamp[node->id] == ix->gen)
+    return;
+  ix->stamp[node->id] = ix->gen;
+  /* Ascending order, by insertion */
+  uint32_t k = (*n)++;
+  while (k > 0 && ix->cand[k - 1] > node->id)
+  {
+    ix->cand[k] = ix->cand[k - 1];
+    k--;
+  }
+  ix->cand[k] = node->id;
+  return;
+}
+
+/**
  * @brief Return the nodes standing in a box, in the order a walk over every
  * node reaches them
  * @details The box is the extent a piece is split along, grown by the caller
@@ -2325,6 +2386,45 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
    * the NODES instead, which costs what the grid is there to avoid only where
    * the grid would cost more */
   double cells = (c1 - c0 + 1.0) * (d1 - d0 + 1.0);
+  if (cells > (double) ix->nends && ! isnan(xmin) && ! isnan(xmax))
+  {
+    /* The nodes are read by x, from the first at or past the left of the box
+     * to the last at or before its right, which is every node the test below
+     * keeps whose x is a number; one whose x is not passes the comparisons on
+     * x and is read apart. The same test decides each, so the nodes gathered
+     * are the ones a walk over every node gathers */
+    if (! ix->byx)
+    {
+      ix->byx = palloc(sizeof(BufferNodeByX) * Max(ix->nends, 1u));
+      ix->nanx = palloc(sizeof(uint32_t) * Max(ix->nends, 1u));
+      for (uint32_t at = 0; at < ix->nends; at++)
+      {
+        if (isnan(ix->ends[at].x))
+          ix->nanx[ix->nnanx++] = at;
+        else
+        {
+          ix->byx[ix->nbyx].x = ix->ends[at].x;
+          ix->byx[ix->nbyx++].at = at;
+        }
+      }
+      qsort(ix->byx, ix->nbyx, sizeof(BufferNodeByX), buffer_node_byx_cmp);
+    }
+    uint32_t lo = 0, hi = ix->nbyx;
+    while (lo < hi)
+    {
+      uint32_t mid = lo + (hi - lo) / 2;
+      if (ix->byx[mid].x < xmin)
+        lo = mid + 1;
+      else
+        hi = mid;
+    }
+    for (uint32_t k = lo; k < ix->nbyx && ix->byx[k].x <= xmax; k++)
+      buffer_node_index_gather(ix, ix->byx[k].at, xmin, ymin, xmax, ymax, &n);
+    for (uint32_t k = 0; k < ix->nnanx; k++)
+      buffer_node_index_gather(ix, ix->nanx[k], xmin, ymin, xmax, ymax, &n);
+    *ncand = n;
+    return ix->cand;
+  }
   if (cells > (double) ix->nends)
   {
     for (uint32_t at = 0; at < ix->nends; at++)
