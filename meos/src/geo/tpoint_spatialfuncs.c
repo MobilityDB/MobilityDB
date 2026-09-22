@@ -734,11 +734,15 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
   GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
   GSERIALIZED **lines = palloc(sizeof(GSERIALIZED *) * ss->count);
   int npoints = 0, nlines = 0;
-  /* Iterate as in #tpointseq_linear_trajectory accumulating the results */
+  /* Iterate as in #tpointseq_linear_trajectory accumulating the results. The
+   * union of the sequences' unions is the union of their trajectories, so the
+   * union is taken once, of the whole: the union of one sequence may answer
+   * without the elevation another keeps, and the collection of the two would
+   * mix dimensions */
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    GSERIALIZED *gs = tpointseq_linear_trajectory(seq, unary_union);
+    GSERIALIZED *gs = tpointseq_linear_trajectory(seq, false);
     if (gserialized_get_type(gs) == POINTTYPE)
       points[npoints++] = gs;
     else
