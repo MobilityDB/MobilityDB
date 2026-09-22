@@ -6014,7 +6014,7 @@ lwgeom_mec_supported_type(const LWGEOM *geom)
  *   in Computer Science, 555 (1991) 359-370.
  */
 GSERIALIZED *
-geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
+geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(radius, NULL);

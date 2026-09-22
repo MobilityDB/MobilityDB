@@ -411,7 +411,7 @@ extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED 
 extern bool geom_is_simple(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
+extern GSERIALIZED *geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius);
 extern GSERIALIZED *geom_oriented_envelope(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
