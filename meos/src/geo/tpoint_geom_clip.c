@@ -1578,16 +1578,22 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
     }
     POINT4D q1 = { p1->x, p1->y, 0.0, 0.0 };
     /* A vertex the two pieces meeting at it do not turn at draws nothing, so
-     * the weld leaves the line the shape it already had */
+     * the weld leaves the line the shape it already had. A piece running BACK
+     * along the one before it turns at that vertex by half a turn, which
+     * leaves the cross product zero like a straight continuation and the DOT
+     * product negative: dropping the vertex there would draw the walk to the
+     * turn and back as the single point it starts from */
     if (pa->npoints >= 2)
     {
       const POINT2D *u = getPoint2d_cp(pa, pa->npoints - 2);
       const POINT2D *v = getPoint2d_cp(pa, pa->npoints - 1);
       double cross = (v->x - u->x) * (q1.y - v->y) -
         (v->y - u->y) * (q1.x - v->x);
+      double dot = (v->x - u->x) * (q1.x - v->x) +
+        (v->y - u->y) * (q1.y - v->y);
       double scale = fmax(fabs(v->x - u->x) + fabs(v->y - u->y),
         fabs(q1.x - v->x) + fabs(q1.y - v->y));
-      if (fabs(cross) <= MEOS_GEOM_TOLERANCE * fmax(scale, 1.0))
+      if (dot > 0.0 && fabs(cross) <= MEOS_GEOM_TOLERANCE * fmax(scale, 1.0))
       {
         ptarray_remove_point(pa, pa->npoints - 1);
       }
