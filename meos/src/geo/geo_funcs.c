@@ -11842,6 +11842,23 @@ meos_linear_union(const LWGEOM *geom)
   }
   LWGEOM **kept = palloc(sizeof(LWGEOM *) * nkept);
   int k = 0;
+  /* A curve the dissolve builds is read from EDGES, which carry no ordinate,
+   * so it draws the plane where a component kept as it stands carries the
+   * ordinates it came with. The answer is ONE figure, of one dimension
+   * throughout: where the two meet it is the planar one, and the ordinates
+   * its inputs determine are read back onto it by #meos_lift_ordinates(),
+   * the post-pass every caller of this applies */
+  bool onplane = false, withordinates = false;
+  for (int i = 0; i < ncomp; i++)
+  {
+    if (dropped[i])
+      continue;
+    if (FLAGS_GET_Z(cur[i]->flags) || FLAGS_GET_M(cur[i]->flags))
+      withordinates = true;
+    else
+      onplane = true;
+  }
+  bool toplane = onplane && withordinates;
   for (int pass = 0; pass < 2; pass++)
     for (int i = 0; i < ncomp; i++)
     {
@@ -11850,7 +11867,8 @@ meos_linear_union(const LWGEOM *geom)
       bool ispoint = cur[i]->type == POINTTYPE;
       if ((pass == 0) != ispoint)
         continue;
-      kept[k++] = lwgeom_clone_deep(cur[i]);
+      kept[k++] = toplane ? lwgeom_force_2d(cur[i]) :
+        lwgeom_clone_deep(cur[i]);
     }
   for (int i = 0; i < ncomp; i++)
     if (owned[i])
