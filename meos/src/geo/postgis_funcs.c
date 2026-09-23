@@ -2776,6 +2776,8 @@ geo_has_ordinates(const GSERIALIZED *gs)
  * @param[in] gs1,gs2 Geometries
  * @param[in] overlay The planar overlay
  */
+static LWGEOM *geo_arealess_parts_as_lines(const LWGEOM *geom);
+
 static GSERIALIZED *geom_intersection2d_route(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2, bool fastpath);
 static GSERIALIZED *geom_difference2d_route(const GSERIALIZED *gs1,
@@ -2913,6 +2915,30 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   if (geo_clip_subject(gs2) && geo_meos_coverage(gs1) == 1)
     return geo_clip_linear_geom(gs2, gs1, true);
 
+  /* A part enclosing NO area is not a region but its own boundary, so an
+   * operand holding one is read with that part written as the linework its
+   * rings trace, and the routes above answer it: what the two share of such a
+   * part is a stretch of that linework, never a region */
+  for (int i = 0; i < 2; i++)
+  {
+    const GSERIALIZED *subj = i ? gs2 : gs1;
+    if (! geo_is_planar_areal(subj) || geo_is_empty(subj) ||
+        geo_every_part_bounds_area(subj))
+      continue;
+    LWGEOM *operand = lwgeom_from_gserialized(subj);
+    LWGEOM *lines = geo_arealess_parts_as_lines(operand);
+    lwgeom_free(operand);
+    if (! lines)
+      continue;
+    GSERIALIZED *written = geo_serialize(lines);
+    lwgeom_free(lines);
+    GSERIALIZED *result = i ?
+      geom_intersection2d_route(gs1, written, fastpath) :
+      geom_intersection2d_route(written, gs2, fastpath);
+    pfree(written);
+    return result;
+  }
+
   /* An areal pair the native overlay reads is answered on the circles its
    * operands carry, where the route below reads an arc as the chain of chords
    * a linearization puts in its place. It declines a pair whose boundaries run
@@ -3009,6 +3035,26 @@ geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     return geo_points_covered(gs1, gs2, false);
   if (geo_clip_subject(gs1) && geo_meos_coverage(gs2) == 1)
     return geo_clip_linear_geom(gs1, gs2, false);
+
+  /* A part enclosing NO area is not a region but its own boundary, so a
+   * subject holding one is read with that part written as the linework its
+   * rings trace, and the routes above answer it: the clip takes the stretch
+   * of it that it covers, where a region would lose nothing */
+  if (geo_is_planar_areal(gs1) && ! geo_is_empty(gs1) &&
+      ! geo_every_part_bounds_area(gs1))
+  {
+    LWGEOM *subject = lwgeom_from_gserialized(gs1);
+    LWGEOM *lines = geo_arealess_parts_as_lines(subject);
+    lwgeom_free(subject);
+    if (lines)
+    {
+      GSERIALIZED *written = geo_serialize(lines);
+      lwgeom_free(lines);
+      GSERIALIZED *result = geom_difference2d_route(written, gs2, fastpath);
+      pfree(written);
+      return result;
+    }
+  }
 
   /* A region loses no area to a clip that covers none. A point set and a curve
    * are of lower dimension than the plane, so what they take from a region is
@@ -3877,6 +3923,20 @@ static LWGEOM *
 geo_arealess_parts_as_lines(const LWGEOM *geom)
 {
   uint8_t type = geom->type;
+  /* A surface standing alone is read the same way: where it encloses no area
+   * it is the linework its rings trace, which the collection of one answers */
+  if (type == POLYGONTYPE || type == TRIANGLETYPE)
+  {
+    if (lwgeom_is_empty(geom) || geo_part_bounds_area(geom))
+      return NULL;
+    LWCOLLECTION *one = lwcollection_construct_empty(COLLECTIONTYPE,
+      lwgeom_get_srid(geom), FLAGS_GET_Z(geom->flags),
+      FLAGS_GET_M(geom->flags));
+    one = lwcollection_add_lwgeom(one, lwgeom_clone_deep(geom));
+    LWGEOM *lines = geo_arealess_parts_as_lines(lwcollection_as_lwgeom(one));
+    lwcollection_free(one);
+    return lines;
+  }
   if (type != MULTIPOLYGONTYPE && type != TINTYPE &&
       type != POLYHEDRALSURFACETYPE && type != COLLECTIONTYPE)
     return NULL;
