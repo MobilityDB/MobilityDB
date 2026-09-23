@@ -192,6 +192,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a399fc09d87fddc25f636a634df78e838.html#a399fc09d87fddc25f636a634df78e838">incircle_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac6f38ed3d9b4f6b3c6e08cb286231d17.html#ac6f38ed3d9b4f6b3c6e08cb286231d17">incircle_sign_exact</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a86f3a9a29c7fa938aa4ff25dfe1e9689.html#a86f3a9a29c7fa938aa4ff25dfe1e9689">lift_point_read</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a58a841924816d4d888d3d387875f1eea.html#a58a841924816d4d888d3d387875f1eea">lift_point_take</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aace79c7a493abb3a897893ec0d2a3fb0.html#aace79c7a493abb3a897893ec0d2a3fb0">linear_chain_append</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a707f7bd54768c1c05cba75d9277e03e7.html#a707f7bd54768c1c05cba75d9277e03e7">linear_chain_reverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac94f2630a2ead30e61ec791335952b4b.html#ac94f2630a2ead30e61ec791335952b4b">linear_end_bucket</a></td></tr>
@@ -260,7 +261,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5e95b828b7461ad3f5a8f652cb946d00.html#a5e95b828b7461ad3f5a8f652cb946d00">pointarr_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac1bdc24701fea9de48925518d2a680f4.html#ac1bdc24701fea9de48925518d2a680f4">pointarrs_meet_at_ends</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a86ebb16f8be2b1e54dcd1c9a4961102c.html#a86ebb16f8be2b1e54dcd1c9a4961102c">ptarray_is_simple</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0933ccdbee0911b307f525d21e77a177.html#a0933ccdbee0911b307f525d21e77a177">ptarray_ordinates_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aeafc8f7229e813829cfdb7a9773c5b59.html#aeafc8f7229e813829cfdb7a9773c5b59">ray_in_wedge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1b71faeb736f9678327974c11e64976b.html#a1b71faeb736f9678327974c11e64976b">ray_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6ed43fd7d2260d074d3b7d18a6187c53.html#a6ed43fd7d2260d074d3b7d18a6187c53">ray_turn</a></td></tr>
@@ -483,7 +483,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Read what a point array determines at a point into what the arrays already read determine there. </p>
-<p >The first array to determine the ordinates gives them, and one determining others reports the conflict, which is separate for each of the two: two surfaces meeting at one elevation may carry different measures </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A vertex of the array determines its own ordinates, and a point between two of them reads them along the curve that joins them. EVERY vertex and every piece of the array passing through the point is read: a curve may pass through one point of the plane twice at two elevations, and it then determines no single one there </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Point array </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">circular</td><td>True where the array reads as arcs rather than segments </td></tr>

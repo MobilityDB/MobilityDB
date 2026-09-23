@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ptarray_ordinates_at</title>
+<title>MobilityDB: lift_point_take</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -192,6 +192,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a399fc09d87fddc25f636a634df78e838.html#a399fc09d87fddc25f636a634df78e838">incircle_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac6f38ed3d9b4f6b3c6e08cb286231d17.html#ac6f38ed3d9b4f6b3c6e08cb286231d17">incircle_sign_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a86f3a9a29c7fa938aa4ff25dfe1e9689.html#a86f3a9a29c7fa938aa4ff25dfe1e9689">lift_point_read</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a58a841924816d4d888d3d387875f1eea.html#a58a841924816d4d888d3d387875f1eea">lift_point_take</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aace79c7a493abb3a897893ec0d2a3fb0.html#aace79c7a493abb3a897893ec0d2a3fb0">linear_chain_append</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a707f7bd54768c1c05cba75d9277e03e7.html#a707f7bd54768c1c05cba75d9277e03e7">linear_chain_reverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac94f2630a2ead30e61ec791335952b4b.html#ac94f2630a2ead30e61ec791335952b4b">linear_end_bucket</a></td></tr>
@@ -260,7 +261,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5e95b828b7461ad3f5a8f652cb946d00.html#a5e95b828b7461ad3f5a8f652cb946d00">pointarr_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac1bdc24701fea9de48925518d2a680f4.html#ac1bdc24701fea9de48925518d2a680f4">pointarrs_meet_at_ends</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a86ebb16f8be2b1e54dcd1c9a4961102c.html#a86ebb16f8be2b1e54dcd1c9a4961102c">ptarray_is_simple</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0933ccdbee0911b307f525d21e77a177.html#a0933ccdbee0911b307f525d21e77a177">ptarray_ordinates_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aeafc8f7229e813829cfdb7a9773c5b59.html#aeafc8f7229e813829cfdb7a9773c5b59">ray_in_wedge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1b71faeb736f9678327974c11e64976b.html#a1b71faeb736f9678327974c11e64976b">ray_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6ed43fd7d2260d074d3b7d18a6187c53.html#a6ed43fd7d2260d074d3b7d18a6187c53">ray_turn</a></td></tr>
@@ -430,8 +430,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0933ccdbee0911b307f525d21e77a177" name="a0933ccdbee0911b307f525d21e77a177"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0933ccdbee0911b307f525d21e77a177">&#9670;&#160;</a></span>ptarray_ordinates_at()</h2>
+<a id="a58a841924816d4d888d3d387875f1eea" name="a58a841924816d4d888d3d387875f1eea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58a841924816d4d888d3d387875f1eea">&#9670;&#160;</a></span>lift_point_take()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -440,39 +440,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool ptarray_ordinates_at </td>
+          <td class="memname">static void lift_point_take </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *&#160;</td>
-          <td class="paramname"><em>pa</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>circular</em>, </td>
+          <td class="paramtype"><a class="el" href="structLiftPoint.html">LiftPoint</a> *&#160;</td>
+          <td class="paramname"><em>state</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>px</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>py</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
           <td class="paramname"><em>z</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
+          <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>m</em>&#160;</td>
         </tr>
         <tr>
@@ -488,17 +470,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the ordinates a point array determines at a point. </p>
-<p >A vertex of the array determines its own ordinates, and a point between two of them reads them along the curve that joins them </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Read one pair of ordinates determined at a point into what is already determined there. </p>
+<p >The first pair read gives the ordinates, and a pair differing from them reports the conflict, which is separate for each of the two: two surfaces meeting at one elevation may carry different measures </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Point array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">circular</td><td>True where the array reads as arcs rather than segments </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">px,py</td><td>Point </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">z,m</td><td>Ordinates the array determines there </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Ordinates determined at the point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">z,m</td><td>Ordinates read </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the point lies on what the array draws </dd></dl>
 
 </div>
 </div>
