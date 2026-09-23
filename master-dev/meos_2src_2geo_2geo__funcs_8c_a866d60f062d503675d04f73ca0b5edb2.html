@@ -204,7 +204,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa0fbd4db43ab2f41250fd87e5f99ab29.html#aa0fbd4db43ab2f41250fd87e5f99ab29">linear_union_cover</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad969646782b535cee5d596b5bbdb828b.html#ad969646782b535cee5d596b5bbdb828b">linear_union_covers</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a944d81139195196ffa4793ac9ded1b9b.html#a944d81139195196ffa4793ac9ded1b9b">linear_union_dissolve_edges</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a61b78b82dacd0945bede1e2db7011ee8.html#a61b78b82dacd0945bede1e2db7011ee8">linear_union_merge</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a866d60f062d503675d04f73ca0b5edb2.html#a866d60f062d503675d04f73ca0b5edb2">linear_union_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a91cbb37ddd6d6608151b166fa90d21cc.html#a91cbb37ddd6d6608151b166fa90d21cc">linear_union_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac32aaf21817e1aac2a2fb5b744282ce2.html#ac32aaf21817e1aac2a2fb5b744282ce2">linear_union_position</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a04be751a44f433619dd07e6b5f553a66.html#a04be751a44f433619dd07e6b5f553a66">linear_union_same_point</a></td></tr>
@@ -430,8 +430,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a61b78b82dacd0945bede1e2db7011ee8" name="a61b78b82dacd0945bede1e2db7011ee8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a61b78b82dacd0945bede1e2db7011ee8">&#9670;&#160;</a></span>linear_union_merge()</h2>
+<a id="a866d60f062d503675d04f73ca0b5edb2" name="a866d60f062d503675d04f73ca0b5edb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a866d60f062d503675d04f73ca0b5edb2">&#9670;&#160;</a></span>linear_union_merge()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -440,7 +440,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * linear_union_merge </td>
+          <td class="memname">static int linear_union_merge </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
           <td class="paramname"><em>geom1</em>, </td>
@@ -449,7 +449,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom2</em>&#160;</td>
+          <td class="paramname"><em>geom2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> ***&#160;</td>
+          <td class="paramname"><em>curves</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -468,10 +474,11 @@ $(function() {
 <p >Two surfaces whose interiors meet become ONE surface under <a class="el" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a" title="Return the union of the areal components of a geometry.">meos_areal_union()</a>, and a pair of curves sharing more than a finite set of points is the same question one dimension down. The union is read as the first geometry plus the parts of the second it does not already cover: each segment of <code>geom2</code> keeps the parameters no segment of <code>geom1</code> overlaps, and #linear_union_chain() sews what remains onto the curve it continues </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">geom1,geom2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">curves</td><td>The curves the union draws, which the caller owns </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The union as a single line, or <code>NULL</code> where either geometry carries an edge that is not a straight segment, and where what the two draw together is more than one line &ndash; a fork cannot be walked as one curve, and a caller that has another way to answer may take it </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>How many curves it takes, MORE THAN ONE where the two fork &ndash; a stretch they share with a branch leaving it is two curves and no single one, and a component stands for more than one where it needs to, as the dissolve of a doubled walk already does &ndash; or 0 where either geometry carries an edge that is not a straight segment, which this does not answer </dd></dl>
 
 </div>
 </div>
