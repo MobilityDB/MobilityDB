@@ -11476,22 +11476,26 @@ linear_union_chain_all(LWGEOM **pieces, int npieces, int32_t srid,
  * and #linear_union_chain() sews what remains onto the curve it
  * continues
  * @param[in] geom1,geom2 Geometries
- * @return The union as a single line, or @p NULL where either geometry carries
- * an edge that is not a straight segment, and where what the two draw together
- * is more than one line -- a fork cannot be walked as one curve, and a caller
- * that has another way to answer may take it
+ * @param[out] curves The curves the union draws, which the caller owns
+ * @return How many curves it takes, MORE THAN ONE where the two fork -- a
+ * stretch they share with a branch leaving it is two curves and no single one,
+ * and a component stands for more than one where it needs to, as the dissolve
+ * of a doubled walk already does -- or 0 where either geometry carries an edge
+ * that is not a straight segment, which this does not answer
  */
-static LWGEOM *
-linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
+static int
+linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2,
+  LWGEOM ***curves)
 {
-  assert(geom1); assert(geom2);
+  assert(geom1); assert(geom2); assert(curves);
+  *curves = NULL;
   MeosArray *e1 = geom_extract_edges(geom1);
   MeosArray *e2 = geom_extract_edges(geom2);
   if (! e1 || ! e2 || ! linear_union_straight(e1) || ! linear_union_straight(e2))
   {
     if (e1) meos_array_destroy(e1);
     if (e2) meos_array_destroy(e2);
-    return NULL;
+    return 0;
   }
   int n1 = (int) e1->count, n2 = (int) e2->count;
   int32_t srid = lwgeom_get_srid(geom1);
@@ -11515,22 +11519,13 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
   for (int p = 0; p < npieces; p++)
     all[p + 1] = pieces[p];
   pfree(pieces);
-  LWGEOM **curves = NULL;
-  int ncurves = linear_union_chain_all(all, npieces + 1, srid, &curves);
+  int ncurves = linear_union_chain_all(all, npieces + 1, srid, curves);
   for (int p = 0; p <= npieces; p++)
     lwgeom_free(all[p]);
   pfree(all);
-  /* What the two draw together is a single curve, or it is a fork this entry
-   * does not answer */
-  LWGEOM *merged = NULL;
-  if (ncurves == 1)
-    merged = curves[0];
-  else
-    for (int c = 0; c < ncurves; c++)
-      lwgeom_free(curves[c]);
-  if (curves)
-    pfree(curves);
-  return merged;
+  /* What the two draw together is however many curves the sewing takes: one
+   * where they continue into each other, and several where they fork */
+  return ncurves;
 }
 
 /**
@@ -11774,18 +11769,43 @@ meos_linear_union(const LWGEOM *geom)
          * @p 1 where they share a curve, @p 0 where they share only points */
         if (matrix[0] == '1')
         {
-          LWGEOM *merged = linear_union_merge(cur[i], cur[j]);
-          if (! merged)
+          LWGEOM **merged = NULL;
+          int nmerged = linear_union_merge(cur[i], cur[j], &merged);
+          if (nmerged == 0)
           {
             declined = true;
             break;
           }
+          /* The pair becomes the curves their union draws: the first takes
+           * the slot they merged from, and a fork's other curves take slots
+           * of their own, which is what the dissolve of a doubled walk does
+           * with the curves it leaves */
           if (owned[i])
             lwgeom_free(owned[i]);
-          owned[i] = merged;
-          cur[i] = merged;
+          owned[i] = merged[0];
+          cur[i] = merged[0];
           together[i] = false;
           dropped[j] = true;
+          for (int m = 1; m < nmerged; m++)
+          {
+            if (ncomp == maxcur)
+            {
+              maxcur *= 2;
+              cur = repalloc(cur, sizeof(LWGEOM *) * (size_t) maxcur);
+              owned = repalloc(owned, sizeof(LWGEOM *) * (size_t) maxcur);
+              together = repalloc(together, sizeof(bool) * (size_t) maxcur);
+              boxes = repalloc(boxes, sizeof(GBOX) * (size_t) maxcur);
+              hasbox = repalloc(hasbox, sizeof(bool) * (size_t) maxcur);
+              dropped = repalloc(dropped, sizeof(bool) * (size_t) maxcur);
+            }
+            owned[ncomp] = merged[m];
+            cur[ncomp] = merged[m];
+            together[ncomp] = false;
+            hasbox[ncomp] = false;
+            dropped[ncomp] = false;
+            ncomp++;
+          }
+          pfree(merged);
           again = true;
           break;
         }
