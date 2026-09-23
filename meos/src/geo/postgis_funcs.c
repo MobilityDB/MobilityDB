@@ -3407,10 +3407,27 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
   for (int i = 0; i < nacomps; i++)
     members[nmembers++] = lwgeom_clone_deep(acomps[i]);
   pfree(dropped); pfree(ocomps); pfree(acomps);
-  /* #union_collection_make() takes ownership of the array it is given. The two
-   * halves are each a collection, and yet what they draw together need not be:
-   * a surface carrying Z and a line that does not are two answers no single
-   * collection holds, and that array is left to the caller as the halves were */
+  /* The answer is ONE figure, of one dimension throughout. A half the arm
+   * REBUILDS is read from edges, which carry no ordinate, while a half kept as
+   * it stands carries the ordinates it came with, so where the two meet the
+   * answer is the planar one and #meos_lift_ordinates() reads the ordinates
+   * its inputs determine back onto it, as it does for either half alone */
+  bool onplane = false, withordinates = false;
+  for (int i = 0; i < nmembers; i++)
+  {
+    if (FLAGS_GET_Z(members[i]->flags) || FLAGS_GET_M(members[i]->flags))
+      withordinates = true;
+    else
+      onplane = true;
+  }
+  if (onplane && withordinates)
+    for (int i = 0; i < nmembers; i++)
+    {
+      LWGEOM *flat = lwgeom_force_2d(members[i]);
+      lwgeom_free(members[i]);
+      members[i] = flat;
+    }
+  /* #union_collection_make() takes ownership of the array it is given */
   LWCOLLECTION *coll = union_collection_make(members, (uint32_t) nmembers,
     srid);
   if (! coll)
