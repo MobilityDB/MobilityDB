@@ -581,20 +581,111 @@ arc_contains_angle(const Edge *e, double phi)
 }
 
 /**
+ * @brief Return true if an arc edge reaches the direction of an axis from its
+ * centre, that direction given as one of the four cardinal vectors
+ * @details The extremes of an arc's box lie either at its two ends or at a
+ * point of its circle whose radius points along an axis, and which of those
+ * four points the arc reaches is a question about the arc's OWN ENDPOINTS:
+ * whether the direction falls in the turn from the start to the end. The
+ * angles #arc_span_contains reads are not those endpoints -- #emit_arc_edge
+ * computes them from the endpoints with atan2, so they carry its rounding, and
+ * reading them back needs a band to cover it.
+ *
+ * Asked of the endpoints themselves it is the sign of a cross product, which
+ * every double the edge holds answers exactly and which needs no band at all.
+ * A cardinal direction has one zero component, so each cross product with it
+ * reduces to a single coordinate difference, and the SIGN of a difference is
+ * the comparison of two doubles rather than their subtraction. The turn of the
+ * arc itself is the one cross product left, which #cross_product_sign decides
+ * on the same filtered-then-exact terms as every other side question here.
+ * This is the shape lw_arc_calculate_gbox_cartesian_2d gives the box of a
+ * circular string: an exact side, and no angle anywhere.
+ *
+ * The turn belongs to the arc and not to the direction, so it is read once per
+ * arc into an #ArcTurn and the four directions are then answered from it.
+ */
+typedef struct
+{
+  int ux, uy;   /**< Where the start stands from the centre, along each axis */
+  int vx, vy;   /**< Where the end stands from the centre, along each axis */
+  int turn;     /**< The turn from the start to the end around the centre */
+} ArcTurn;
+
+/**
+ * @brief Read the turn of an arc edge around its centre, in the sense the arc
+ * is traversed
+ * @param[in] e Arc edge
+ * @param[out] t Turn the arc makes
+ */
+static inline void
+arc_turn_read(const Edge *e, ArcTurn *t)
+{
+  /* Where each end stands from the centre along each axis, exactly */
+  int ux = (e->x1 > e->cx) - (e->x1 < e->cx);
+  int uy = (e->y1 > e->cy) - (e->y1 < e->cy);
+  int vx = (e->x2 > e->cx) - (e->x2 < e->cx);
+  int vy = (e->y2 > e->cy) - (e->y2 < e->cy);
+  int turn = cross_product_sign(e->cx, e->cy, e->x1, e->y1, e->cx, e->cy,
+    e->x2, e->y2);
+  if (e->ccw)
+  {
+    t->ux = ux; t->uy = uy; t->vx = vx; t->vy = vy; t->turn = turn;
+  }
+  else
+  {
+    /* An arc traversed clockwise from its start to its end covers what the
+     * same arc traversed the other way covers from its end to its start */
+    t->ux = vx; t->uy = vy; t->vx = ux; t->vy = uy; t->turn = - turn;
+  }
+  return;
+}
+
+/**
+ * @brief Return true if an arc making a turn reaches a cardinal direction
+ * @param[in] t Turn the arc makes, from #arc_turn_read
+ * @param[in] wx,wy Cardinal direction, one of whose components is zero
+ */
+static inline bool
+arc_turn_reaches(const ArcTurn *t, int wx, int wy)
+{
+  /* The direction seen from each end: the cross product of the start with it,
+   * and of it with the end, each keeping the one component that survives */
+  int su = wy ? wy * t->ux : - wx * t->uy;
+  int sv = wx ? wx * t->vy : - wy * t->vx;
+  int turn = t->turn;
+  if (turn > 0)
+    /* The arc turns through less than a half circle, so it reaches the
+     * direction only by that lying after its start and before its end */
+    return su >= 0 && sv >= 0;
+  if (turn < 0)
+    /* Through more than a half circle, where those two conditions hold
+     * together outside the arc rather than inside it */
+    return su >= 0 || sv >= 0;
+  /* The ends stand on one line through the centre: a half circle where they
+   * stand on opposite sides of it, and no extent where they stand together */
+  if (t->ux == - t->vx && t->uy == - t->vy)
+    return su >= 0;
+  return su == 0 && sv == 0;
+}
+
+/**
  * @brief Set the bounding box of an arc edge
  * @details The box spans the two endpoints plus any of the four cardinal
- * extreme points of the circle that fall within the arc's angular span
+ * extreme points of the circle that the arc reaches
  */
 static inline void
 arc_set_bbox(Edge *e)
 {
   double xmin = Min(e->x1, e->x2), xmax = Max(e->x1, e->x2);
   double ymin = Min(e->y1, e->y2), ymax = Max(e->y1, e->y2);
-  const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
+  const int wx[4] = {1, 0, -1, 0};
+  const int wy[4] = {0, 1, 0, -1};
   const double ex[4] = {e->cx + e->radius, e->cx, e->cx - e->radius, e->cx};
   const double ey[4] = {e->cy, e->cy + e->radius, e->cy, e->cy - e->radius};
+  ArcTurn turn;
+  arc_turn_read(e, &turn);
   for (int k = 0; k < 4; k++)
-    if (arc_contains_angle(e, ang[k]))
+    if (arc_turn_reaches(&turn, wx[k], wy[k]))
     {
       if (ex[k] < xmin) xmin = ex[k];
       if (ex[k] > xmax) xmax = ex[k];
