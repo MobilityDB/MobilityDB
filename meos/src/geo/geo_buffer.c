@@ -820,17 +820,26 @@ typedef struct
  * @brief Order the edges of a sweep by the left end of their box, then by
  * their position, which makes the order total
  */
-static int
-buffer_sweep_edge_cmp(const void *a, const void *b)
+static inline int
+buffer_sweep_edge_cmp(const BufferSweepEdge *e1, const BufferSweepEdge *e2)
 {
-  const BufferSweepEdge *e1 = (const BufferSweepEdge *) a;
-  const BufferSweepEdge *e2 = (const BufferSweepEdge *) b;
   if (e1->xmin < e2->xmin)
     return -1;
   if (e1->xmin > e2->xmin)
     return 1;
   return (e1->id < e2->id) ? -1 : (e1->id > e2->id) ? 1 : 0;
 }
+
+/* Sort the edges of a sweep with their order written into the sort, which
+ * spends on the record itself what a sort reached through a comparator
+ * pointer spends on the call and on moving the record a word at a time */
+#define ST_SORT buffer_sweep_edge_sort
+#define ST_ELEMENT_TYPE BufferSweepEdge
+#define ST_COMPARE(a, b) buffer_sweep_edge_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
 
 /**
  * @brief Return true if two sets of buffer edges intersect
@@ -862,7 +871,7 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
     sweep[k].id = k;
     bandmax = Max(bandmax, e->tol);
   }
-  qsort(sweep, nsweep, sizeof(BufferSweepEdge), buffer_sweep_edge_cmp);
+  buffer_sweep_edge_sort(sweep, nsweep);
   bool result = false;
   for (uint32_t a = 0; a < nsweep && ! result; a++)
   {
@@ -1269,7 +1278,7 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
     nsweep++;
     bandmax = Max(bandmax, all[i].tol);
   }
-  qsort(sweep, nsweep, sizeof(BufferSweepEdge), buffer_sweep_edge_cmp);
+  buffer_sweep_edge_sort(sweep, nsweep);
   uint32_t maxpairs = Max(nsweep, 16u), count = 0;
   BufferEdgePair *pairs = palloc(sizeof(BufferEdgePair) * maxpairs);
   for (uint32_t a = 0; a < nsweep; a++)
@@ -2175,17 +2184,24 @@ typedef struct
  * @brief Order the nodes of an index by their x, then by where the index
  * holds them, which makes the order total
  */
-static int
-buffer_node_byx_cmp(const void *a, const void *b)
+static inline int
+buffer_node_byx_cmp(const BufferNodeByX *n1, const BufferNodeByX *n2)
 {
-  const BufferNodeByX *n1 = (const BufferNodeByX *) a;
-  const BufferNodeByX *n2 = (const BufferNodeByX *) b;
   if (n1->x < n2->x)
     return -1;
   if (n1->x > n2->x)
     return 1;
   return (n1->at < n2->at) ? -1 : (n1->at > n2->at) ? 1 : 0;
 }
+
+/* Sort the nodes of an index with their order written into the sort */
+#define ST_SORT buffer_node_byx_sort
+#define ST_ELEMENT_TYPE BufferNodeByX
+#define ST_COMPARE(a, b) buffer_node_byx_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
 
 /**
  * @brief The ends of a ring's boundary pieces, read by the node they sit at
@@ -2554,7 +2570,7 @@ buffer_node_index_box(BufferNodeIndex *ix, double xmin, double ymin,
           ix->byx[ix->nbyx++].at = at;
         }
       }
-      qsort(ix->byx, ix->nbyx, sizeof(BufferNodeByX), buffer_node_byx_cmp);
+      buffer_node_byx_sort(ix->byx, ix->nbyx);
     }
     uint32_t lo = 0, hi = ix->nbyx;
     while (lo < hi)
@@ -2758,18 +2774,25 @@ buffer_piece_contains_point(const Edge *piece, POINT2D *point)
 /**
  * @brief Sort split points according to their position on a boundary piece
  */
-static int
-buffer_split_point_cmp(const void *a, const void *b)
+static inline int
+buffer_split_point_cmp(const BufferSplitPoint *p1, const BufferSplitPoint *p2)
 {
-  assert(a); assert(b);
-  const BufferSplitPoint *p1 = (const BufferSplitPoint *) a;
-  const BufferSplitPoint *p2 = (const BufferSplitPoint *) b;
+  assert(p1); assert(p2);
   if (p1->parameter < p2->parameter)
     return -1;
   if (p1->parameter > p2->parameter)
     return 1;
   return 0;
 }
+
+/* Sort the split points of a piece with their order written into the sort */
+#define ST_SORT buffer_split_point_sort
+#define ST_ELEMENT_TYPE BufferSplitPoint
+#define ST_COMPARE(a, b) buffer_split_point_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
 
 /**
  * @brief Add a split point if it is not already present
@@ -2837,7 +2860,7 @@ buffer_split_segment(const Edge *piece, const MeosArray *intersections,
       parameter = 1.0;
     buffer_split_point_add(points, &count, capacity, point, parameter);
   }
-  qsort(points, count, sizeof(BufferSplitPoint), buffer_split_point_cmp);
+  buffer_split_point_sort(points, count);
 
   /* Generate one segment between every pair of consecutive nodes */
   for (uint32_t i = 0; i + 1 < count; i++)
@@ -2892,7 +2915,7 @@ buffer_split_arc(const Edge *piece, const MeosArray *intersections,
       parameter = sweep;
     buffer_split_point_add(points, &count, capacity, point, parameter);
   }
-  qsort(points, count, sizeof(BufferSplitPoint), buffer_split_point_cmp);
+  buffer_split_point_sort(points, count);
   /* Generate one circular arc between every consecutive pair of nodes */
   for (uint32_t i = 0; i + 1 < count; i++)
   {
@@ -3915,17 +3938,29 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
   double *x, double *y)
 {
   assert(ring); assert(x); assert(y);
-  MeosArray *arr = geom_extract_edges(lwcompound_as_lwgeom(ring));
+  /* Each candidate is read off a piece of the ring and located against the
+   * area the ring bounds, and that area carries the SAME pieces: a curve
+   * polygon whose one ring is this one. Its edges answer both questions, so
+   * they are read once rather than once as the ring and again as the polygon.
+   * The displacement a candidate stands at is taken along the piece's own
+   * geometry, which an edge carries whichever of the two types the extraction
+   * tags it with, and which is why the walk below reads both */
+  LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(lwcompound_as_lwgeom(ring));
+  LWGEOM *polygon = buffer_make_single_ring_polygon(copy, srid);
+  if (! polygon)
+    return false;
+  MeosArray *arr = geom_extract_edges(polygon);
   if (! arr || arr->count == 0)
   {
     if (arr)
       meos_array_destroy(arr);
+    lwgeom_free(polygon);
     return false;
   }
-  LWGEOM *polygon = NULL;
-  MeosArray *parr = NULL;
-  Edge **pedges = NULL;
-  int npedges = 0;
+  int npedges = (int) arr->count;
+  Edge **pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
+  for (int e = 0; e < npedges; e++)
+    pedges[e] = (Edge *) meos_array_get_intl(arr, e);
   for (uint32_t i = 0; i < arr->count; i++)
   {
     Edge *edge = (Edge *) meos_array_get_intl(arr, i);
@@ -3986,42 +4021,19 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
         double sign = side ? -1.0 : 1.0;
         double cx = mx + sign * nx * offsets[k];
         double cy = my + sign * ny * offsets[k];
-        /* The areal geometry the ring bounds serves only the containment
-         * test, and every point tried is tested against the same one, so it
-         * and its edges are built at the first point tried and kept for the
-         * rest */
-        if (! polygon)
-        {
-          LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(
-              lwcompound_as_lwgeom(ring));
-          polygon = buffer_make_single_ring_polygon(copy, srid);
-          if (! polygon)
-          {
-            meos_array_destroy(arr);
-            return false;
-          }
-          parr = geom_extract_edges(polygon);
-          npedges = (int) parr->count;
-          pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
-          for (int e = 0; e < npedges; e++)
-            pedges[e] = (Edge *) meos_array_get_intl(parr, e);
-        }
         bool inside = buffer_edges_contain_point(pedges, npedges, cx, cy);
         if (inside)
         {
           *x = cx;
           *y = cy;
-          pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
+          pfree(pedges); lwgeom_free(polygon);
           meos_array_destroy(arr);
           return true;
         }
       }
     }
   }
-  if (polygon)
-  {
-    pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
-  }
+  pfree(pedges); lwgeom_free(polygon);
   meos_array_destroy(arr);
   return false;
 }
