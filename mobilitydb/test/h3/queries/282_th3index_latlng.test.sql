@@ -331,4 +331,24 @@ SELECT count(*) AS fragments
 FROM h3Split(tgeompoint
   'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
 
+-- A cell bent across a face of the icosahedron is not convex, and a geodetic
+-- trajectory leaves it through an edge whose two vertices its great circle
+-- separates. The trajectory below crosses the bent cell 850aad43fffffff at
+-- resolution 5; it is cut at every instant its temporal cell states, and the
+-- piece starting at each cut holds the cell of its own position at every
+-- sampled timestamp
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 5))) AS other_cell
+FROM (SELECT p, th3index(p, 5) AS c FROM (
+  SELECT atTime(tp, span(s, endTimestamp(tp), true, true)) AS p
+  FROM (SELECT tp, unnest(timestamps(th3index(tp, 5))) AS s FROM (VALUES
+    (tgeogpoint '[Point(96.66541614764914 61.740097256632552)@2001-01-01,
+      Point(96.704586592854426 61.600263880361084)@2001-01-03]')) AS v(tp))
+    AS cuts
+  WHERE s > startTimestamp(tp) AND s < endTimestamp(tp)) AS pieces) AS q,
+  generate_series(timestamptz '2001-01-01 00:07', '2001-01-02 23:53',
+    interval '17 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+
 -------------------------------------------------------------------------------

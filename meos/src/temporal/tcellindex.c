@@ -851,18 +851,56 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
 
 /**
  * @brief Return where a geodetic path leaves a cell
- * @details A cell edge is an arc of a great circle, as the path is, so the
- * circle of each edge meets the circle of the path at two antipodal points,
- * along the intersection of their planes. The exit is the nearest of those
- * points that lies on its edge and strictly ahead of `tmin` on the path; its
- * parameter is the fraction of the path's angle reached there. A convex cell
- * needs no test of lying on the edge and is answered by
- * #dggs_arc_hemisphere_exit_param; this function answers a cell that is not.
+ * @details A cell edge is an arc of a great circle, as the path is. The
+ * decisions of the exit are signs on the input, the vertices of the cell and
+ * the circle of the path, each decided exactly (#dot_product_sign,
+ * #triple_product_sign); only the parameter of the exit is computed in
+ * floating point.
+ *
+ * WHICH EDGES THE CIRCLE LEAVES THROUGH. The circle of the path meets an edge
+ * exactly when it separates the edge's two vertices, the sign of the dot
+ * product of the normal of the circle and each vertex. A vertex ON the circle
+ * counts on its right, as if the path ran an infinitesimal distance to its
+ * left, so each edge holds its first vertex and a crossing at a vertex belongs
+ * to exactly one of the two edges meeting there. With the vertices in
+ * counterclockwise order the cell lies on the left of each edge, so the
+ * circle crosses the edge outward exactly where the edge runs from the right
+ * of the path to its left. Holding its first vertex, the edge also holds the
+ * crossing of a path passing through that vertex, and a path running along an
+ * edge has both vertices on its right and never leaves through it.
+ *
+ * WHERE. The height of the path above the plane of the edge, `<m, p>` for the
+ * inward normal `m`, is `f` at `tmin` and changes at the rate `d` there, so
+ * it falls through zero at the angle `atan2(f, -d)` ahead of `tmin`: the
+ * crossing the edge holds, since the circle crosses the edge's plane
+ * downward once a turn. Where `d < 0` that zero lies within a quarter turn of
+ * `tmin`, on either side of it: behind, `f < 0`, the path is past the plane
+ * of the edge and heading further out, which in a cell that is not convex is
+ * a crossing already passed, and near `tmin` rounding cannot tell the side at
+ * all. The input decides it:
+ *
+ * - Past an entry edge adjoining the edge at a vertex, the path met both
+ *   edges, and the turn of the boundary at that vertex orders the two
+ *   crossings: where it turns left, the corner is convex and the cell lies
+ *   between the edges, so the path enters and then leaves, and the exit is
+ *   at `tmin` or ahead of it; where it turns right, the path leaves and then
+ *   enters again, and the exit through that edge is behind it.
+ * - At the first endpoint, which no entry edge states, the side of the edge's
+ *   plane the endpoint lies on decides; an endpoint beyond that plane is
+ *   outside the cell exactly when it lies in the sector of that edge, the
+ *   cone from the centre of the cell through the edge's two vertices, since
+ *   a cell is star-shaped from the sum of its vertices, even one bent across
+ *   a face of the icosahedron, and holds of that sector only the side of the
+ *   edge it lies on. The path then leaves at once.
+ * - Any other edge shares no vertex with the edge the path entered through,
+ *   so its crossing lies away from `tmin` by the distance between the two
+ *   edges, and the side the computed angle reads is the side it lies on.
+ *
  * @param[in] arc Path
- * @param[in] lons,lats Vertices of the cell boundary in radians, in the
- * order they join
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in
+ * counterclockwise order
  * @param[in] count Number of vertices
- * @param[in] tmin Parameter the exit lies strictly ahead of
+ * @param[in] tmin Parameter at which the path entered the cell
  * @param[in] entry Mask of the edges the path entered the cell through, bit
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
@@ -876,53 +914,79 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
   const double *lats, int count, double tmin, uint32 entry, int *edge)
 {
   assert(arc); assert(lons); assert(lats);
+  assert(count <= DGGS_MAX_CELL_VERTS);
   POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
   POINT3D normal = { .x = arc->normal[0], .y = arc->normal[1],
     .z = arc->normal[2] };
+  POINT3D b;
+  dggs_vec_cross(&normal, &a, &b);
+  double theta0 = tmin * arc->dist;
+  double c0 = cos(theta0), s0 = sin(theta0);
+  POINT3D v[DGGS_MAX_CELL_VERTS], centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
+  bool left[DGGS_MAX_CELL_VERTS];
+  for (int i = 0; i < count; i++)
+  {
+    GEOGRAPHIC_POINT g = { .lat = lats[i], .lon = lons[i] };
+    geog2cart(&g, &v[i]);
+    centre.x += v[i].x; centre.y += v[i].y; centre.z += v[i].z;
+    left[i] = dot_product_sign(&normal, &v[i]) > 0;
+  }
+  bool start = (entry == 0 && tmin == 0.0);
   double best = 2.0;
   for (int i = 0; i < count; i++)
   {
-    if (entry & (1u << i))
-      continue;
     int j = (i + 1) % count;
+    if ((entry & (1u << i)) || left[i] || ! left[j])
+      continue;
     GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
     GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
-    POINT3D vi, vj, m, d, c;
-    geog2cart(&gi, &vi);
-    geog2cart(&gj, &vj);
+    POINT3D m;
     /* The normal of the circle of the edge, read from the angles of its
      * vertices: their Cartesian cross product loses to cancellation all but
      * the rounding of a unit vector, which on the edge of a fine cell places
      * the circle millimetres off the vertices */
     robust_cross_product(&gi, &gj, &m);
-    dggs_vec_cross(&normal, &m, &d);
-    if (d.x == 0.0 && d.y == 0.0 && d.z == 0.0)
-      continue;              /* the edge lies on the circle of the path */
-    for (int s = 0; s < 2; s++)
+    double ma = dggs_vec_dot(&m, &a), mb = dggs_vec_dot(&m, &b);
+    double f = ma * c0 + mb * s0, d = mb * c0 - ma * s0;
+    double delta = atan2(f, -d);
+    if (d < 0.0)
     {
-      POINT3D p = d;
-      if (s)
+      /* The falling zero lies within a quarter turn of `tmin`, on either
+       * side */
+      int prev = (i + count - 1) % count, next = (j + 1) % count;
+      if ((entry & (1u << prev)) && left[prev])
       {
-        p.x = -d.x; p.y = -d.y; p.z = -d.z;
+        /* Entered through the edge ending at vertex `i` */
+        if (triple_product_sign(&v[prev], &v[i], &v[j]) <= 0)
+          continue;
+        delta = fmax(delta, 0.0);
       }
-      /* On the edge: between its two vertices along the circle of the edge */
-      dggs_vec_cross(&vi, &p, &c);
-      if (dggs_vec_dot(&c, &m) < 0.0)
-        continue;
-      dggs_vec_cross(&p, &vj, &c);
-      if (dggs_vec_dot(&c, &m) < 0.0)
-        continue;
-      /* Ahead on the path: the angle from its first endpoint, measured in the
-       * direction the path travels */
-      dggs_vec_cross(&a, &p, &c);
-      double t = atan2(dggs_vec_dot(&c, &normal), dggs_vec_dot(&a, &p)) /
-        arc->dist;
-      if (t > tmin && t <= 1.0 && t < best)
+      else if ((entry & (1u << j)) && ! left[next])
       {
-        best = t;
-        if (edge)
-          *edge = i;
+        /* Entered through the edge starting at vertex `j` */
+        if (triple_product_sign(&v[i], &v[j], &v[next]) <= 0)
+          continue;
+        delta = fmax(delta, 0.0);
       }
+      else if (start)
+      {
+        if (triple_product_sign(&v[i], &v[j], &a) < 0 &&
+            ! (triple_product_sign(&centre, &v[i], &a) >= 0 &&
+               triple_product_sign(&centre, &v[j], &a) < 0))
+          continue;
+        delta = fmax(delta, 0.0);
+      }
+      else if (delta < 0.0)
+        continue;
+    }
+    else if (delta < 0.0)
+      delta += 2.0 * M_PI;
+    double t = (theta0 + delta) / arc->dist;
+    if (t <= 1.0 && t < best)
+    {
+      best = t;
+      if (edge)
+        *edge = i;
     }
   }
   return best;

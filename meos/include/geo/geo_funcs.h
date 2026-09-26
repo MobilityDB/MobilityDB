@@ -169,6 +169,9 @@ extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
+extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
+extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
+  const POINT3D *r);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
 extern int arc_circle_side(const Edge *e, double qx, double qy);
 extern bool arc_same_circle(const Edge *a, const Edge *b);
@@ -408,6 +411,64 @@ cross_product_sign(double ax, double ay, double bx, double by, double cx,
   if (left == 0.0 && right == 0.0)
     return 0;
   return cross_product_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
+}
+
+/**
+ * @brief Return the sign of the dot product of two vectors
+ * @details The coordinates are exact rationals, so the sign has one answer. A
+ * filter gives it where the double evaluation carries it: the rounding of a
+ * sum of three products is bounded by three roundings of the sum of their
+ * magnitudes. Where the filter cannot tell, #dot_product_sign_exact decides
+ * the same dot product exactly. With `p` the normal of a plane the sign is
+ * the side of that plane `q` lies on
+ * @note Exact where no product of coordinates overflows or underflows
+ * @return 1 or -1, 0 exactly where the vectors are orthogonal
+ */
+static inline int
+dot_product_sign(const POINT3D *p, const POINT3D *q)
+{
+  double xx = p->x * q->x, yy = p->y * q->y, zz = p->z * q->z;
+  double dot = xx + yy + zz;
+  double bound = (2.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(xx) + fabs(yy) + fabs(zz));
+  if (dot > bound)
+    return 1;
+  if (dot < - bound)
+    return -1;
+  return dot_product_sign_exact(p, q);
+}
+
+/**
+ * @brief Return the sign of the triple product `<p, q x r>` of three vectors
+ * @details The coordinates are exact rationals, so the sign has one answer. A
+ * filter gives it where the double evaluation carries it: Shewchuk's bound on
+ * the rounding of a three-by-three determinant, computed from the magnitudes
+ * of its terms. Where the filter cannot tell, #triple_product_sign_exact
+ * decides the same determinant exactly. With `p` and `q` two points of a unit
+ * sphere the sign is the side of the great circle through them, taken from
+ * `p` to `q`, that `r` lies on
+ * @note Exact where no product of coordinates overflows or underflows
+ * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
+ * cross product points to, -1 on the other, 0 exactly where the three vectors
+ * are coplanar
+ */
+static inline int
+triple_product_sign(const POINT3D *p, const POINT3D *q, const POINT3D *r)
+{
+  double qyrz = q->y * r->z, qzry = q->z * r->y;
+  double qzrx = q->z * r->x, qxrz = q->x * r->z;
+  double qxry = q->x * r->y, qyrx = q->y * r->x;
+  double det = p->x * (qyrz - qzry) + p->y * (qzrx - qxrz) +
+    p->z * (qxry - qyrx);
+  double bound = (3.5 + 28.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(p->x) * (fabs(qyrz) + fabs(qzry)) +
+     fabs(p->y) * (fabs(qzrx) + fabs(qxrz)) +
+     fabs(p->z) * (fabs(qxry) + fabs(qyrx)));
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return triple_product_sign_exact(p, q, r);
 }
 
 /**
