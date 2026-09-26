@@ -108,13 +108,20 @@ bitmatrix_get(const BitMatrix *bm, const int *coords)
 
 /**
  * @brief Set the value of the bit in the bit matrix
+ * @details A position on an upper border the grid leaves out lies in the tile
+ * just past the last one #tile_dim_count lays along that dimension, which the
+ * matrix does not hold, so it sets no bit
  */
 static void
 bitmatrix_set_cell(BitMatrix *bm, const int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->ndims; i++)
-    assert(coords[i] <= bm->count[i]);
+  {
+    assert(coords[i] >= 0 && coords[i] <= bm->count[i]);
+    if (coords[i] == bm->count[i])
+      return;
+  }
   for (i = 0; i < bm->ndims - 1; i++)
   {
     int offset = coords[i];
@@ -358,6 +365,30 @@ fastvoxel_bm(int *coords1, const double *eps1, int *coords2, const double *eps2,
  *****************************************************************************/
 
 /**
+ * @brief Return the number of tiles a grid lays along one dimension of a box
+ * @details The tiles run from the one holding the lower bound of the box,
+ * which starts at `binmin`, to the one holding its upper bound, which starts
+ * at `binmax`. A box that does not contain its upper border meets the last of
+ * them only where its upper bound IS the lower bound of that tile and the box
+ * extends along the dimension: that tile then holds nothing of the box but
+ * the border it leaves out, and is no part of the grid. A tile the upper bound
+ * lies inside holds the box up to that bound, and is part of it
+ * @param[in] lower,upper Bounds of the box along the dimension
+ * @param[in] binmin,binmax Lower bounds of the tiles holding them
+ * @param[in] size Tile size
+ * @param[in] border_inc True when the box contains its upper border
+ */
+static int
+tile_dim_count(double lower, double upper, double binmin, double binmax,
+  double size, bool border_inc)
+{
+  int result = (int) ceil((binmax - binmin) / size) + 1;
+  if (! border_inc && upper > lower && upper == binmax)
+    result--;
+  return result;
+}
+
+/**
  * @brief Create the initial state that persists across multiple calls of the
  * function
  * @param[in] temp Temporal point to split, may be `NULL`
@@ -399,16 +430,14 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     state->ysize = ysize;
     state->box.xmin = float_get_bin(box->xmin, xsize, sorigin.x);
     state->box.xmax = float_get_bin(box->xmax, xsize, sorigin.x);
-    state->max_coords[0] = ceil((state->box.xmax - state->box.xmin) / xsize);
-    if (border_inc)
-      state->max_coords[0] += 1;
-    state->ntiles *= (state->max_coords[0] + 1);
+    state->max_coords[0] = tile_dim_count(box->xmin, box->xmax,
+      state->box.xmin, state->box.xmax, xsize, border_inc);
+    state->ntiles *= state->max_coords[0];
     state->box.ymin = float_get_bin(box->ymin, ysize, sorigin.y);
     state->box.ymax = float_get_bin(box->ymax, ysize, sorigin.y);
-    state->max_coords[1] = ceil((state->box.ymax - state->box.ymin) / ysize);
-    if (border_inc)
-      state->max_coords[1] += 1;
-    state->ntiles *= (state->max_coords[1] + 1);
+    state->max_coords[1] = tile_dim_count(box->ymin, box->ymax,
+      state->box.ymin, state->box.ymax, ysize, border_inc);
+    state->ntiles *= state->max_coords[1];
     state->box.srid = box->srid;
     state->box.flags = box->flags;
     state->x = state->box.xmin;
@@ -423,10 +452,9 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
         state->zsize = zsize;
         state->box.zmin = float_get_bin(box->zmin, zsize, sorigin.z);
         state->box.zmax = float_get_bin(box->zmax, zsize, sorigin.z);
-        state->max_coords[dim] = ceil((state->box.zmax - state->box.zmin) / zsize);
-        if (border_inc)
-          state->max_coords[dim] += 1;
-        state->ntiles *= (state->max_coords[dim] + 1);
+        state->max_coords[dim] = tile_dim_count(box->zmin, box->zmax,
+          state->box.zmin, state->box.zmax, zsize, border_inc);
+        state->ntiles *= state->max_coords[dim];
         state->z = state->box.zmin;
         dim++;
       }
@@ -469,12 +497,13 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
         DatumGetTimestampTz(box->period.lower), state->tunits, torigin));
       state->box.period.upper = TimestampTzGetDatum(timestamptz_bin_start(
         DatumGetTimestampTz(box->period.upper), state->tunits, torigin));
-      state->max_coords[dim] =
-        ceil((state->box.period.upper - state->box.period.lower) /
-          state->tunits);
-      if (border_inc)
-        state->max_coords[dim] += 1;
-      state->ntiles *= (state->max_coords[dim] + 1);
+      state->max_coords[dim] = tile_dim_count(
+        (double) DatumGetTimestampTz(box->period.lower),
+        (double) DatumGetTimestampTz(box->period.upper),
+        (double) DatumGetTimestampTz(state->box.period.lower),
+        (double) DatumGetTimestampTz(state->box.period.upper),
+        (double) state->tunits, border_inc);
+      state->ntiles *= state->max_coords[dim];
       state->t = DatumGetTimestampTz(state->box.period.lower);
     }
     else
@@ -737,33 +766,10 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   bool hasx = MEOS_FLAGS_GET_X(state->box.flags);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
-  int cellcount[MAXDIMS];
-  int count1 = 1;
-  /* xsize is equal to 0.0 for time boxes */
-  if (xsize == 0.0)
-  {
-    cellcount[0] = cellcount[1] = 1;
-    if (hasz)
-      cellcount[2] = 1;
-  }
-  else
-  {
-    cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->xsize) + 1;
-    cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->ysize) + 1;
-    count1 = cellcount[0] * cellcount[1];
-    if (hasz)
-    {
-      cellcount[2] = ceil((state->box.zmax - state->box.zmin) / state->zsize) + 1;
-      count1 *= cellcount[2];
-    }
-  }
-  if (hast)
-  {
-    TimestampTz duration1 = (DatumGetTimestampTz(state->box.period.upper) -
-      DatumGetTimestampTz(state->box.period.lower));
-    cellcount[3] = ceil((double) duration1 / state->tunits) + 1;
-    count1 *= cellcount[3];
-  }
+  /* The grid states the tiles it lays over the box, and the number of them,
+   * which leaves out the tiles holding only an upper border the box does not
+   * contain */
+  int count1 = state->ntiles;
   STBox *result = palloc0(sizeof(STBox) * count1);
   /* Stop when we've used up all the grid tiles */
   for (int i = 0; i < count1; i++)

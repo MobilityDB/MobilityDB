@@ -84,3 +84,13 @@ FROM unnest(spaceBoxes(
  -3.006659 | 3.006659
 (1 row)
 
+SELECT borderInc, array_length(spaceBoxes(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(8.5 0),0)@2001-01-02]',
+  2.0, 2.0, 2.0, borderInc := borderInc), 1) AS boxes
+FROM (VALUES (true), (false)) AS b(borderInc) ORDER BY borderInc;
+ borderinc | boxes 
+-----------+-------
+ f         |     5
+ t         |     5
+(2 rows)
+

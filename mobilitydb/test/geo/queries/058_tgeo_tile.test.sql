@@ -145,4 +145,13 @@ SELECT spaceTimeSplit(tgeometry 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, interv
 SELECT spaceSplit(tgeompoint 'SRID=25832;[Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-01 01:00]', 0.0);
 SELECT spaceTimeSplit(tgeompoint 'SRID=25832;[Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-01 01:00]', 0.0, NULL);
 
+-- Without the upper border of its extent, a split keeps every tile the value
+-- passes through and loses only the instant it ends on that border
+SELECT borderInc, count(*) AS fragments
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceSplit(tgeometry
+    '[Point(1 1)@2001-01-01, Point(7 3)@2001-01-02, Point(10 2)@2001-01-03]',
+    5.0, borderInc := b.borderInc) s
+GROUP BY borderInc ORDER BY borderInc;
+
 -------------------------------------------------------------------------------

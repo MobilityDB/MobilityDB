@@ -82,4 +82,11 @@ FROM unnest(spaceBoxes(
   trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
   2.0)) b;
 
+-- Without the upper border of its extent, a value still keeps the box of the
+-- tile its upper bound lies inside
+SELECT borderInc, array_length(spaceBoxes(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(8.5 0),0)@2001-01-02]',
+  2.0, 2.0, 2.0, borderInc := borderInc), 1) AS boxes
+FROM (VALUES (true), (false)) AS b(borderInc) ORDER BY borderInc;
+
 -------------------------------------------------------------------------------

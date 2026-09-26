@@ -126,26 +126,26 @@ tiling_families:
   - lit: "/**\n * @file\n * @brief Tile functions for temporal geometries/geographies\n */\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\n"
   - fns:
     - {sig: "spaceBoxes(tgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_boxes"}
-    - {sig: "spaceBoxes(tgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceBoxes(tgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceBoxes(tgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceBoxes(tgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\n"
   - fns:
     - {sig: "timeBoxes(tgeometry, interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_time_boxes"}
   - lit: "\n"
   - fns:
     - {sig: "spaceTimeBoxes(tgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_time_boxes"}
-    - {sig: "spaceTimeBoxes(tgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeBoxes(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(tgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/\n\nCREATE TYPE point_tgeo AS (\n  point geometry,\n  tgeo tgeometry\n);\n\n"
   - fns:
     - {sig: "spaceSplit(tgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sym: "Tgeo_space_split"}
-    - {sig: "spaceSplit(tgeometry, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceSplit(tgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceSplit(tgeometry, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceSplit(tgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\nCREATE TYPE point_time_tgeo AS (\n  point geometry,\n  time timestamptz,\n  tgeo tgeometry\n);\n\n"
   - fns:
     - {sig: "spaceTimeSplit(tgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sym: "Tgeo_space_time_split"}
-    - {sig: "spaceTimeSplit(tgeometry, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeSplit(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeometry, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/"
 - family: trgeo_tile
   file: mobilitydb/sql/rgeo/158_trgeo_tile.in.sql
@@ -156,16 +156,16 @@ tiling_families:
   - lit: "/**\n * @file\n * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries\n */\n\n"
   - fns:
     - {sig: "spaceBoxes(trgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_boxes"}
-    - {sig: "spaceBoxes(trgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceBoxes(trgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceBoxes(trgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceBoxes(trgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\n"
   - fns:
     - {sig: "timeBoxes(trgeometry, interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeo_time_boxes"}
   - lit: "\n"
   - fns:
     - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_time_boxes"}
-    - {sig: "spaceTimeBoxes(trgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(trgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/"
 - family: tpoint_tile
   file: mobilitydb/sql/geo/058_tpoint_tile.in.sql
@@ -216,36 +216,36 @@ tiling_families:
   - lit: "\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "spaceBoxes(tgeompoint, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_boxes"}
-    - {sig: "spaceBoxes(tgeompoint, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceBoxes(tgeompoint, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceBoxes(tgeompoint, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceBoxes(tgeompoint, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\n"
   - fns:
     - {sig: "timeBoxes(tgeompoint, interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_time_boxes"}
   - lit: "\n"
   - fns:
     - {sig: "spaceTimeBoxes(tgeompoint, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_time_boxes"}
-    - {sig: "spaceTimeBoxes(tgeompoint, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeBoxes(tgeompoint, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(tgeompoint, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeBoxes(tgeompoint, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/\n\nCREATE TYPE point_tpoint AS (\n  point geometry,\n  tpoint tgeompoint\n);\n\n"
   - fns:
     - {sig: "spaceSplit(tgeompoint, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sym: "Tgeo_space_split"}
-    - {sig: "spaceSplit(tgeompoint, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceSplit(tgeompoint, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceSplit(tgeompoint, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceSplit(tgeompoint, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\nCREATE TYPE point_tgeogpoint AS (\n  point geography,\n  tpoint tgeogpoint\n);\n\n"
   - fns:
     - {sig: "spaceSplit(tgeogpoint, xsize float, ysize float, zsize float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sym: "Tgeo_space_split"}
-    - {sig: "spaceSplit(tgeogpoint, size float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
-    - {sig: "spaceSplit(tgeogpoint, xsize float, ysize float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
+    - {sig: "spaceSplit(tgeogpoint, size float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4, $5)"}
+    - {sig: "spaceSplit(tgeogpoint, xsize float, ysize float,\n    sorigin geography DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeogpoint", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5, $6)"}
   - lit: "\nCREATE TYPE point_time_tpoint AS (\n  point geometry,\n  time timestamptz,\n  tpoint tgeompoint\n);\n\n"
   - fns:
     - {sig: "spaceTimeSplit(tgeompoint, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sym: "Tgeo_space_time_split"}
-    - {sig: "spaceTimeSplit(tgeompoint, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeSplit(tgeompoint, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeompoint, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeompoint, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\nCREATE TYPE point_time_tgeogpoint AS (\n  point geography,\n  time timestamptz,\n  tpoint tgeogpoint\n);\n\n"
   - fns:
     - {sig: "spaceTimeSplit(tgeogpoint, xsize float, ysize float,\n    zsize float, interval, sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sym: "Tgeo_space_time_split"}
-    - {sig: "spaceTimeSplit(tgeogpoint, size float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
-    - {sig: "spaceTimeSplit(tgeogpoint, xsize float, ysize float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeogpoint, size float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6, $7)"}
+    - {sig: "spaceTimeSplit(tgeogpoint, xsize float, ysize float, interval,\n    sorigin geography DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeogpoint", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/"
 - family: tpose_tile
   file: mobilitydb/sql/pose/119_tpose_tile.in.sql
