@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_ad11dc1128d345941fa52bc18ddd27005.html#ad11dc1128d345941fa52bc18ddd27005">dggs_arc_exit_param</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_aca731708c4528ed5d5ed49c2a7bf9619.html#aca731708c4528ed5d5ed49c2a7bf9619">dggs_arc_exit_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_ae9ee40b11f260989b59d1238ff0f2411.html#ae9ee40b11f260989b59d1238ff0f2411">dggs_arc_hemisphere_exit_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a43dcb10f74cfeeb1ef478a5736989951.html#a43dcb10f74cfeeb1ef478a5736989951">dggs_arc_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_ad0f076f07cdb6e19430f3b4a98d0b46c.html#ad0f076f07cdb6e19430f3b4a98d0b46c">dggs_arc_lat_extreme</a></td></tr>
@@ -136,8 +136,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad11dc1128d345941fa52bc18ddd27005" name="ad11dc1128d345941fa52bc18ddd27005"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad11dc1128d345941fa52bc18ddd27005">&#9670;&#160;</a></span>dggs_arc_exit_param()</h2>
+<a id="aca731708c4528ed5d5ed49c2a7bf9619" name="aca731708c4528ed5d5ed49c2a7bf9619"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca731708c4528ed5d5ed49c2a7bf9619">&#9670;&#160;</a></span>dggs_arc_exit_param()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -175,12 +175,6 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>convex</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">uint32&#160;</td>
           <td class="paramname"><em>entry</em>, </td>
         </tr>
@@ -199,14 +193,12 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return where a geodetic path leaves a cell. </p>
-<p >A cell edge is an arc of a great circle, as the path is, so the circle of each edge meets the circle of the path at two antipodal points, along the intersection of their planes. The exit is the nearest of those points that lies on its edge and strictly ahead of <code>tmin</code> on the path; its parameter is the fraction of the path's angle reached there.</p>
-<p >A convex cell is the intersection of the hemispheres its edge circles bound, so a path inside it leaves it where it first crosses any of those circles, and that crossing lies on its edge by construction. The test of lying on the edge reads the sign of a rounded product, which a crossing at a vertex can fail, as for a path running along one cell edge and meeting the next edge at its vertex; a convex cell does without it. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A cell edge is an arc of a great circle, as the path is, so the circle of each edge meets the circle of the path at two antipodal points, along the intersection of their planes. The exit is the nearest of those points that lies on its edge and strictly ahead of <code>tmin</code> on the path; its parameter is the fraction of the path's angle reached there. A convex cell needs no test of lying on the edge and is answered by <a class="el" href="tcellindex_8c_ae9ee40b11f260989b59d1238ff0f2411.html#ae9ee40b11f260989b59d1238ff0f2411" title="Return where a geodetic path leaves a convex cell, read as the intersection of the hemispheres its ed...">dggs_arc_hemisphere_exit_param</a>; this function answers a cell that is not. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">arc</td><td>Path </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lons,lats</td><td>Vertices of the cell boundary in radians, in the order they join </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of vertices </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tmin</td><td>Parameter the exit lies strictly ahead of </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">convex</td><td>True when the cell is convex </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">entry</td><td>Mask of the edges the path entered the cell through, bit <code>i</code> for the edge from vertex <code>i</code>, which it never leaves through: a line does not cross back over the tile boundary it has just crossed </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">edge</td><td>When not <code>NULL</code>, the edge crossed at the exit, the one from vertex <code>edge</code> to the next vertex </td></tr>
   </table>
