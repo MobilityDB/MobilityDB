@@ -337,4 +337,10 @@ FROM (VALUES (true), (false)) AS m(bitmatrix),
     5.0, bitmatrix := m.bitmatrix, borderInc := b.borderInc) s
 GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
 
+-- Every form of spaceTiles takes the border by the name borderInc, the one
+-- with the three sizes included
+SELECT count(*) AS tiles
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
+  borderInc := false);
+
 -------------------------------------------------------------------------------

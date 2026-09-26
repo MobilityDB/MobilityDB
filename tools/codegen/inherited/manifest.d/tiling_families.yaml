@@ -175,7 +175,7 @@ tiling_families:
   blocks:
   - lit: "/**\n * @file\n * @brief Tile functions for temporal points\n */\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE index_stbox AS (\n  index integer,\n  tile stbox\n);\n\n"
   - fns:
-    - {sig: "spaceTiles(bounds stbox, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', borderIinc boolean DEFAULT TRUE)", ret: "SETOF index_stbox", sym: "Stbox_space_tiles"}
+    - {sig: "spaceTiles(bounds stbox, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)", ret: "SETOF index_stbox", sym: "Stbox_space_tiles"}
     - {sig: "spaceTiles(bounds stbox, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)", ret: "SETOF index_stbox", sql: "SELECT @extschema@.spaceTiles($1, $2, $2, $2, $3, $4)"}
     - {sig: "spaceTiles(bounds stbox, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)", ret: "SETOF index_stbox", sql: "SELECT @extschema@.spaceTiles($1, $2, $3, $2, $4, $5)"}
   - lit: "\n"
