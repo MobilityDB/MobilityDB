@@ -135,6 +135,24 @@ FROM (SELECT p, tquadbin(p, 4) AS c FROM (VALUES
     interval '37 minutes') AS t
 WHERE valueAtTimestamp(p, t) IS NOT NULL;
 
+-- A geodetic trajectory starting on a cell edge and heading across it leaves
+-- the cell at once. The trajectory below is cut at every instant its temporal
+-- cell states, where it crosses an edge, and the piece starting at each cut
+-- holds the cell of its own position at every sampled timestamp
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t)::geometry, 12)) AS other_cell
+FROM (SELECT p, tquadbin(p, 12) AS c FROM (
+  SELECT atTime(tp, span(s, endTimestamp(tp), true, true)) AS p
+  FROM (SELECT tp, unnest(timestamps(tquadbin(tp, 12))) AS s FROM (VALUES
+    (tgeogpoint '[Point(53.173654593142516 -34.305628987171517)@2001-01-01,
+      Point(52.993753159788319 -34.341760215601774)@2001-01-03]')) AS v(tp))
+    AS cuts
+  WHERE s > startTimestamp(tp) AND s < endTimestamp(tp)) AS pieces) AS q,
+  generate_series(timestamptz '2001-01-01 00:07', '2001-01-02 23:53',
+    interval '17 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+
 -- The last cell holds to the end of the trajectory, so the temporal cell spans
 -- the period of the trajectory under an inclusive and an exclusive upper bound
 SELECT getTime(tquadbin(p, 10)) = getTime(p) FROM (VALUES

@@ -249,6 +249,24 @@ FROM (SELECT p, th3index(p, 9) AS c FROM (VALUES
   AS v(p)) AS q, generate_series(timestamptz '2001-01-01 00:17',
     '2001-01-02 23:43', interval '37 minutes') AS t;
 
+-- A geodetic trajectory starting on a cell edge and heading across it leaves
+-- the cell at once. The trajectory below is cut at every instant its temporal
+-- cell states, where it crosses an edge, and the piece starting at each cut
+-- holds the cell of its own position at every sampled timestamp
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 9))) AS other_cell
+FROM (SELECT p, th3index(p, 9) AS c FROM (
+  SELECT atTime(tp, span(s, endTimestamp(tp), true, true)) AS p
+  FROM (SELECT tp, unnest(timestamps(th3index(tp, 9))) AS s FROM (VALUES
+    (tgeogpoint '[Point(149.45010199900838 27.375474295623718)@2001-01-01,
+      Point(149.45471155183114 27.379491831050462)@2001-01-03]')) AS v(tp))
+    AS cuts
+  WHERE s > startTimestamp(tp) AND s < endTimestamp(tp)) AS pieces) AS q,
+  generate_series(timestamptz '2001-01-01 00:07', '2001-01-02 23:53',
+    interval '17 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+
 -- A planar trajectory moves along the straight line in longitude and latitude,
 -- which crosses a cell edge where the great-circle arc of the edge lies, not
 -- where the straight chord between its vertices does. At resolution 1 the
