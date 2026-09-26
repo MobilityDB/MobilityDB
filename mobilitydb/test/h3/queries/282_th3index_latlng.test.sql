@@ -290,6 +290,20 @@ FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
   generate_series(timestamptz '2001-01-01 00:07:30',
     timestamptz '2001-01-01 23:52:30', interval '15 minutes') AS t;
 
+-- A planar trajectory between two positions of one cell bows off the
+-- great-circle arc joining them and can leave that cell and come back. The
+-- trajectory below runs from one vertex of a cell to the next, inside the
+-- neighbouring cell the whole way, and holds that neighbour at every sampled
+-- timestamp
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 5))) AS other_cell
+FROM (SELECT p, th3index(p, 5) AS c FROM (VALUES (tgeompoint
+  'SRID=4326;[Point(-36.006078674350391 -45.009967218319247)@2001-01-01,
+    Point(-36.056619492072663 -44.926892365766449)@2001-01-03]')) AS v(p))
+  AS q, generate_series(timestamptz '2001-01-01 00:17', '2001-01-02 23:43',
+    interval '37 minutes') AS t;
+
 -------------------------------------------------------------------------------
 
 -- The cover of a trajectory cut at half-open periods merges into the cover of

@@ -251,6 +251,10 @@ extern bool dggs_line_init(double lon1, double lat1, double lon2,
   double lat2, DggsLine *line);
 extern void dggs_line_point(const DggsLine *line, double t, double *lon,
   double *lat);
+extern void dggs_cell_edge_planes(const double *lons, const double *lats,
+  int count, double *normals, double *origins);
+extern bool dggs_line_stays_in_planes(const DggsLine *line,
+  const double *normals, const double *origins, int count);
 extern double dggs_line_exit_param(const DggsLine *line, const double *lons,
   const double *lats, int count, double tmin, bool convex, uint32 entry,
   int *edge);
