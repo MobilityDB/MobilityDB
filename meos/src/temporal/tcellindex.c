@@ -783,6 +783,16 @@ dggs_arc_normals_exit_param(const DggsArc *arc, const double *normals,
       theta += 2.0 * M_PI * ceil((theta0 - theta) / (2.0 * M_PI));
       if (theta <= theta0)
         theta += 2.0 * M_PI;
+      /* A path inside the plane and descending toward it, `f > 0` and
+       * `d < 0`, reaches it less than a quarter turn ahead, since the height
+       * `f cos(delta) + d sin(delta)` falls to zero at `delta = atan2(f, -d)`,
+       * which lies strictly between 0 and pi/2. The angle read from `phi`
+       * loses that distance where it is below the last place of `phi`, and
+       * the zero it states then falls at or behind `tmin` and is carried a
+       * whole turn on. The distance is read from the height and rate at
+       * `tmin` instead, where it is stated to its own precision */
+      if (f > 0.0 && d < 0.0 && theta >= theta0 + M_PI)
+        theta = theta0 + atan2(f, -d);
       t = theta / arc->dist;
     }
     if (t <= 1.0 && t < best)
