@@ -241,8 +241,7 @@ extern bool dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
 extern bool dggs_arc_point(const DggsArc *arc, double t, double *lon,
   double *lat);
 extern double dggs_arc_exit_param(const DggsArc *arc, const double *lons,
-  const double *lats, int count, double tmin, bool convex, uint32 entry,
-  int *edge);
+  const double *lats, int count, double tmin, uint32 entry, int *edge);
 extern double dggs_arc_hemisphere_exit_param(const DggsArc *arc,
   const double *lons, const double *lats, int count, double tmin,
   uint32 entry, int *edge);

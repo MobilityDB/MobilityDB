@@ -379,8 +379,8 @@ h3_cell_exit_param(H3Index cell, const CellBoundary *bnd, uint32 entry,
     return convex ?
       dggs_arc_hemisphere_exit_param(&path->arc, lons, lats, bnd->numVerts,
         tmin, entry, edge) :
-      dggs_arc_exit_param(&path->arc, lons, lats, bnd->numVerts, tmin, false,
-        entry, edge);
+      dggs_arc_exit_param(&path->arc, lons, lats, bnd->numVerts, tmin, entry,
+        edge);
   return dggs_line_exit_param(&path->line, lons, lats, bnd->numVerts, tmin,
     convex, entry, edge);
 }

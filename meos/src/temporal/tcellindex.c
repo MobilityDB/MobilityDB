@@ -855,20 +855,14 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
  * circle of each edge meets the circle of the path at two antipodal points,
  * along the intersection of their planes. The exit is the nearest of those
  * points that lies on its edge and strictly ahead of `tmin` on the path; its
- * parameter is the fraction of the path's angle reached there.
- *
- * A convex cell is the intersection of the hemispheres its edge circles bound,
- * so a path inside it leaves it where it first crosses any of those circles,
- * and that crossing lies on its edge by construction. The test of lying on the
- * edge reads the sign of a rounded product, which a crossing at a vertex can
- * fail, as for a path running along one cell edge and meeting the next edge
- * at its vertex; a convex cell does without it.
+ * parameter is the fraction of the path's angle reached there. A convex cell
+ * needs no test of lying on the edge and is answered by
+ * #dggs_arc_hemisphere_exit_param; this function answers a cell that is not.
  * @param[in] arc Path
  * @param[in] lons,lats Vertices of the cell boundary in radians, in the
  * order they join
  * @param[in] count Number of vertices
  * @param[in] tmin Parameter the exit lies strictly ahead of
- * @param[in] convex True when the cell is convex
  * @param[in] entry Mask of the edges the path entered the cell through, bit
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
@@ -879,8 +873,7 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
  */
 double
 dggs_arc_exit_param(const DggsArc *arc, const double *lons,
-  const double *lats, int count, double tmin, bool convex, uint32 entry,
-  int *edge)
+  const double *lats, int count, double tmin, uint32 entry, int *edge)
 {
   assert(arc); assert(lons); assert(lats);
   POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
@@ -913,15 +906,12 @@ dggs_arc_exit_param(const DggsArc *arc, const double *lons,
         p.x = -d.x; p.y = -d.y; p.z = -d.z;
       }
       /* On the edge: between its two vertices along the circle of the edge */
-      if (! convex)
-      {
-        dggs_vec_cross(&vi, &p, &c);
-        if (dggs_vec_dot(&c, &m) < 0.0)
-          continue;
-        dggs_vec_cross(&p, &vj, &c);
-        if (dggs_vec_dot(&c, &m) < 0.0)
-          continue;
-      }
+      dggs_vec_cross(&vi, &p, &c);
+      if (dggs_vec_dot(&c, &m) < 0.0)
+        continue;
+      dggs_vec_cross(&p, &vj, &c);
+      if (dggs_vec_dot(&c, &m) < 0.0)
+        continue;
       /* Ahead on the path: the angle from its first endpoint, measured in the
        * direction the path travels */
       dggs_vec_cross(&a, &p, &c);
