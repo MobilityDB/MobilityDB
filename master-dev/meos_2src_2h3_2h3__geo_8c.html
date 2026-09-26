@@ -78,7 +78,8 @@ $(function() {
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">h3_geo.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -113,6 +114,9 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structh3__stack.html">h3_stack</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Growable stack of the cells a fill has still to read.  <a href="structh3__stack.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structH3CellPlanes.html">H3CellPlanes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Planes of the edges of a convex cell, as <a class="el" href="tcellindex_8h_ad63afcfc75754e51bd280d6993d4bdba.html#ad63afcfc75754e51bd280d6993d4bdba" title="Fill normals with the inward unit normal of the plane of each edge of a convex cell and origins with ...">dggs_cell_edge_planes</a> states them.  <a href="structH3CellPlanes.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structH3SegmentPath.html">H3SegmentPath</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Path a segment follows between its two endpoints.  <a href="structH3SegmentPath.html#details">More...</a><br /></td></tr>
@@ -171,6 +175,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a0842f1e49261f0fe3bdc2349b31947be"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3__geo_8c_a0842f1e49261f0fe3bdc2349b31947be.html#a0842f1e49261f0fe3bdc2349b31947be">h3_cell_neighbours</a> (H3Index cell, H3Index *neighbours)</td></tr>
 <tr class="memdesc:a0842f1e49261f0fe3bdc2349b31947be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the neighbours of a cell, the null cell filling the unused entries.  <a href="meos_2src_2h3_2h3__geo_8c_a0842f1e49261f0fe3bdc2349b31947be.html#a0842f1e49261f0fe3bdc2349b31947be">More...</a><br /></td></tr>
 <tr class="separator:a0842f1e49261f0fe3bdc2349b31947be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9239d3136864734fb50c218b2fab3b8"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structH3CellPlanes.html">H3CellPlanes</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3__geo_8c_ac9239d3136864734fb50c218b2fab3b8.html#ac9239d3136864734fb50c218b2fab3b8">h3_cell_planes</a> (H3Index cell)</td></tr>
+<tr class="memdesc:ac9239d3136864734fb50c218b2fab3b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the planes of the edges of a convex cell, or NULL for a cell bent across a face of the icosahedron.  <a href="meos_2src_2h3_2h3__geo_8c_ac9239d3136864734fb50c218b2fab3b8.html#ac9239d3136864734fb50c218b2fab3b8">More...</a><br /></td></tr>
+<tr class="separator:ac9239d3136864734fb50c218b2fab3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3dfaffc9b181872492b373032f604165"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3__geo_8c_a3dfaffc9b181872492b373032f604165.html#a3dfaffc9b181872492b373032f604165">h3_cellset_add</a> (<a class="el" href="structh3__cellset.html">h3_cellset</a> *<a class="el" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>, H3Index cell)</td></tr>
 <tr class="memdesc:a3dfaffc9b181872492b373032f604165"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a cell to a hash set.  <a href="meos_2src_2h3_2h3__geo_8c_a3dfaffc9b181872492b373032f604165.html#a3dfaffc9b181872492b373032f604165">More...</a><br /></td></tr>
 <tr class="separator:a3dfaffc9b181872492b373032f604165"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -222,6 +229,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ab0c09e9c750197a5ea07843059693440"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3__geo_8c_ab0c09e9c750197a5ea07843059693440.html#ab0c09e9c750197a5ea07843059693440">segment_to_cells_into</a> (double lon1, double lat1, double lon2, double lat2, bool geodetic, int32 resolution, <a class="el" href="structh3__buf.html">h3_buf</a> *out)</td></tr>
 <tr class="memdesc:ab0c09e9c750197a5ea07843059693440"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push the cells a segment passes through into the accumulator.  <a href="meos_2src_2h3_2h3__geo_8c_ab0c09e9c750197a5ea07843059693440.html#ab0c09e9c750197a5ea07843059693440">More...</a><br /></td></tr>
 <tr class="separator:ab0c09e9c750197a5ea07843059693440"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a0d9d178505e3d4f3eef12606e7550cd0"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> <a class="el" href="structH3CellPlanes.html">H3CellPlanes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2h3_2h3__geo_8c_a0d9d178505e3d4f3eef12606e7550cd0.html#a0d9d178505e3d4f3eef12606e7550cd0">h3_last_planes</a> = { .cell = 0 }</td></tr>
+<tr class="memdesc:a0d9d178505e3d4f3eef12606e7550cd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Planes of the last convex cell asked for, per thread.  <a href="meos_2src_2h3_2h3__geo_8c_a0d9d178505e3d4f3eef12606e7550cd0.html#a0d9d178505e3d4f3eef12606e7550cd0">More...</a><br /></td></tr>
+<tr class="separator:a0d9d178505e3d4f3eef12606e7550cd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Public API: static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> geometry → set of H3 cells. </p>
