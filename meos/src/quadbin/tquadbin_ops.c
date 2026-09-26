@@ -224,11 +224,10 @@ tquadbin_cell_to_quadkey(const Temporal *temp)
  * @details A cell's entry time is interpolated from the parameter at which the
  * path reaches it, while a timestamp holds whole microseconds, so two
  * crossings closer together than one microsecond round to the same instant.
- * The second is placed one microsecond after the first: that is the smallest
- * separation the type can state, so a cell left again before it holds any
- * time is not part of the result: the cell entered at that instant replaces
- * it, as a crossing within #MEOS_EPSILON of the end of a segment is no
- * crossing for #tgeogpointsegm_distance_turnpt()
+ * A microsecond is the smallest separation the type can state, so a cell left
+ * again before it holds any time is not part of the result: the cell entered
+ * at that instant replaces it, as a crossing within #MEOS_EPSILON of the end
+ * of a segment is no crossing for #tgeogpointsegm_distance_turnpt()
  */
 static void
 tquadbin_entry_append(TInstant ***instants, int *count, int *size,
