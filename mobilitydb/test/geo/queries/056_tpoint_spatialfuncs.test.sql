@@ -1105,6 +1105,32 @@ WITH temp(trip, box) AS (
 SELECT trip = merge(atStbox(trip, box), minusStbox(trip,box))
 FROM temp;
 
+-- A chord of the box shorter than a microsecond, entered through a border the
+-- box leaves out, holds no instant and is no part of the answer. The segment
+-- reaches y = 0 at 00:00:00.000003 and x = 90 at 00:00:00.0000035, which
+-- truncates to the same microsecond
+SELECT asText(atStbox(tgeompoint
+  '[Point(135 45)@2001-01-01 00:00:00.000002+00, Point(75 -45)@2001-01-01 00:00:00.000004+00]',
+  stbox 'STBOX X((90,-90),(180,0))', false));
+SELECT count(*) AS fragments
+FROM spaceSplit(tgeompoint
+  '[Point(135 45)@2001-01-01 00:00:00.000002+00, Point(75 -45)@2001-01-01 00:00:00.000004+00]',
+  90.0);
+-- The same holds for a chord dated at the instant the segment starts at,
+-- though it starts inside the segment: the segment below reaches x = 90 and
+-- x = 0 within its single microsecond
+SELECT asText(atStbox(tgeompoint
+  '[Point(165 0)@2001-01-01 00:00:00.000001+00, Point(-45 -30)@2001-01-01 00:00:00.000002+00]',
+  stbox 'STBOX X((0,-90),(90,0))', false));
+-- A trip whose lower bound is exclusive holds every later instant it starts a
+-- segment at. The first segment below never meets the box, and the chord of
+-- the second, entered through the border y = 0 the box holds and left
+-- through y = 90 within its single microsecond, is dated at the instant that
+-- segment starts at, which the trip holds
+SELECT asText(atStbox(tgeompoint
+  '(Point(120 -45)@2001-01-01 00:00:00.000001+00, Point(-45 -45)@2001-01-01 00:00:00.000002+00, Point(-45 150)@2001-01-01 00:00:00.000003+00]',
+  stbox 'STBOX X((-90,0),(0,90))', false));
+
 -------------------------------------------------------------------------------
 -- atElevation, minusElevation
 -------------------------------------------------------------------------------
