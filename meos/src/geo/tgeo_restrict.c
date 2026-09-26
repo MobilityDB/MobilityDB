@@ -1081,6 +1081,21 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           pfree(inst1_2d); pfree(inst2_2d);
         }
         pfree(p3); pfree(p4);
+        /* A chord of the box shorter than a microsecond dates both its
+         * crossings at one instant, which may be the instant the segment
+         * starts at though the chord starts inside it. Entered through a
+         * border the box leaves out, it holds no instant: the truncated
+         * instant dates the entry, at which the trip is not yet in the box,
+         * and nothing of the chord is left after it. It is no part of the
+         * answer, as a crossing landing on the instant already stated is no
+         * crossing (#tsegment_intersection) */
+        if (t1 == t2 && ! p3_inc)
+        {
+          assert(ninsts == 0);
+          inst1 = inst2;
+          p1 = DatumGetGserializedP(tinstant_value_p(inst2));
+          continue;
+        }
         /* Project the segment to the timestamps if necessary and add the
          * instants */
         Datum inter1 = 0, inter2; /* make compiler quiet */
@@ -1090,8 +1105,11 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t1 == inst1->t)
           {
+            /* The trip holds the first instant of a segment as its own lower
+             * bound states for the first segment alone: every later segment
+             * starts at an instant inside the trip */
             instants[ninsts++] = (TInstant *) inst1;
-            lower_inc &= p3_inc;
+            lower_inc = ((i == 1) ? seq->period.lower_inc : true) && p3_inc;
           }
           else if (t1 != inst2->t)
           {
