@@ -42,7 +42,7 @@ CREATE TYPE index_stbox AS (
 );
 
 CREATE FUNCTION spaceTiles(bounds stbox, xsize float, ysize float, zsize float,
-    sorigin geometry DEFAULT 'Point(0 0 0)', borderIinc boolean DEFAULT TRUE)
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'Stbox_space_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

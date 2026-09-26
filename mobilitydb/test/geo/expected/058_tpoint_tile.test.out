@@ -711,3 +711,11 @@ SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
  (0101000020E6100000000000000000E03F000000000000E03F,"0101000020E6100000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST")
 (1 row)
 
+SELECT count(*) AS tiles
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
+  borderInc := false);
+ tiles 
+-------
+     2
+(1 row)
+
