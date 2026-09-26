@@ -311,4 +311,10 @@ FROM spaceTimeSplit(tgeogpoint
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
   geography 'SRID=4326;Point(0.5 0.5)');
 
+-- Every form of spaceTiles takes the border by the name borderInc, the one
+-- with the three sizes included
+SELECT count(*) AS tiles
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
+  borderInc := false);
+
 -------------------------------------------------------------------------------
