@@ -311,4 +311,30 @@ FROM spaceTimeSplit(tgeogpoint
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
   geography 'SRID=4326;Point(0.5 0.5)');
 
+-- Without its upper border a box leaves out only a tile holding nothing of it
+-- but that border: a box reaching into a tile keeps it, and a box ending on a
+-- tile boundary drops the tile starting there
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(7,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(10,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+
+-- A trajectory split without the upper border of its extent keeps every tile
+-- it passes through, with or without the bit matrix, and loses only the
+-- instant it ends on that border
+SELECT bitmatrix, borderInc, count(*) AS fragments,
+  array_agg(ST_AsText(s.point) ORDER BY ST_AsText(s.point)) AS tiles
+FROM (VALUES (true), (false)) AS m(bitmatrix),
+  (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceSplit(tgeompoint
+    '[Point(1 1)@2001-01-01, Point(7 3)@2001-01-02, Point(10 2)@2001-01-03]',
+    5.0, bitmatrix := m.bitmatrix, borderInc := b.borderInc) s
+GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
+
 -------------------------------------------------------------------------------

@@ -711,3 +711,41 @@ SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
  (0101000020E6100000000000000000E03F000000000000E03F,"0101000020E6100000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST")
 (1 row)
 
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(7,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+ borderinc | tiles |                      tiles                       
+-----------+-------+--------------------------------------------------
+ f         |     2 | {"STBOX X((0,0),(5,5))","STBOX X((5,0),(10,5))"}
+ t         |     2 | {"STBOX X((0,0),(5,5))","STBOX X((5,0),(10,5))"}
+(2 rows)
+
+SELECT borderInc, count(*) AS tiles, array_agg(tile ORDER BY tile) AS tiles
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceTiles(stbox 'STBOX X((1,1),(10,3))', 5.0,
+    borderInc := b.borderInc) AS tile
+GROUP BY borderInc ORDER BY borderInc;
+ borderinc | tiles |                                   tiles                                   
+-----------+-------+---------------------------------------------------------------------------
+ f         |     2 | {"STBOX X((0,0),(5,5))","STBOX X((5,0),(10,5))"}
+ t         |     3 | {"STBOX X((0,0),(5,5))","STBOX X((5,0),(10,5))","STBOX X((10,0),(15,5))"}
+(2 rows)
+
+SELECT bitmatrix, borderInc, count(*) AS fragments,
+  array_agg(ST_AsText(s.point) ORDER BY ST_AsText(s.point)) AS tiles
+FROM (VALUES (true), (false)) AS m(bitmatrix),
+  (VALUES (true), (false)) AS b(borderInc),
+  LATERAL spaceSplit(tgeompoint
+    '[Point(1 1)@2001-01-01, Point(7 3)@2001-01-02, Point(10 2)@2001-01-03]',
+    5.0, bitmatrix := m.bitmatrix, borderInc := b.borderInc) s
+GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
+ bitmatrix | borderinc | fragments |                   tiles                   
+-----------+-----------+-----------+-------------------------------------------
+ f         | f         |         2 | {"POINT(0 0)","POINT(5 0)"}
+ f         | t         |         3 | {"POINT(0 0)","POINT(10 0)","POINT(5 0)"}
+ t         | f         |         2 | {"POINT(0 0)","POINT(5 0)"}
+ t         | t         |         3 | {"POINT(0 0)","POINT(10 0)","POINT(5 0)"}
+(4 rows)
+
