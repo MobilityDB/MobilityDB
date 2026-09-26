@@ -312,6 +312,19 @@ FROM (SELECT p, r, th3index(p, r) AS c FROM (VALUES
       768 |          0
 (1 row)
 
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 5))) AS other_cell
+FROM (SELECT p, th3index(p, 5) AS c FROM (VALUES (tgeompoint
+  'SRID=4326;[Point(-36.006078674350391 -45.009967218319247)@2001-01-01,
+    Point(-36.056619492072663 -44.926892365766449)@2001-01-03]')) AS v(p))
+  AS q, generate_series(timestamptz '2001-01-01 00:17', '2001-01-02 23:43',
+    interval '37 minutes') AS t;
+ instants | other_cell 
+----------+------------
+       77 |          0
+(1 row)
+
 WITH trip(tp) AS (
   SELECT tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'
 ), periods(period) AS (VALUES

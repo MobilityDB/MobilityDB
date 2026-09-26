@@ -341,6 +341,52 @@ h3_cell_is_convex(H3Index cell, const CellBoundary *bnd)
 }
 
 /**
+ * @brief Planes of the edges of a convex cell, as #dggs_cell_edge_planes
+ * states them
+ */
+typedef struct
+{
+  H3Index cell;                             /**< Cell, or 0 when none */
+  int count;                                /**< Number of edges */
+  double normals[3 * MAX_CELL_BNDRY_VERTS]; /**< Inward unit normals */
+  double origins[3 * MAX_CELL_BNDRY_VERTS]; /**< A position of each plane */
+} H3CellPlanes;
+
+/** @brief Planes of the last convex cell asked for, per thread */
+static MEOS_TLS H3CellPlanes h3_last_planes = { .cell = 0 };
+
+/**
+ * @brief Return the planes of the edges of a convex cell, or NULL for a cell
+ * bent across a face of the icosahedron
+ * @details The planes are a function of the cell alone, so those of the last
+ * cell asked for answer again for the same cell: consecutive segments of a
+ * trajectory mostly lie in one cell, and reading its boundary and turning it
+ * into planes costs more than the rest of the answer for such a segment
+ * @param[in] cell Cell
+ */
+static const H3CellPlanes *
+h3_cell_planes(H3Index cell)
+{
+  if (h3_last_planes.cell == cell)
+    return &h3_last_planes;
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS ||
+      ! h3_cell_is_convex(cell, &bnd))
+    return NULL;
+  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
+  for (int i = 0; i < bnd.numVerts; i++)
+  {
+    lons[i] = bnd.verts[i].lng;
+    lats[i] = bnd.verts[i].lat;
+  }
+  dggs_cell_edge_planes(lons, lats, bnd.numVerts, h3_last_planes.normals,
+    h3_last_planes.origins);
+  h3_last_planes.count = bnd.numVerts;
+  h3_last_planes.cell = cell;
+  return &h3_last_planes;
+}
+
+/**
  * @brief Return where the path of a segment leaves a cell, and in the last
  * argument the edge of the cell boundary it crosses there
  * @details A geodetic path leaves where its great circle first leaves the
@@ -519,18 +565,31 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   H3SegmentPath path;
   if (! h3_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
     return n;
-  /* A cell is convex, on the plane and on the sphere, so a path whose far
-   * endpoint lies in the same cell as its near one never leaves it and there
-   * is no boundary to find. That is the common case wherever the positions
-   * are closer together than a cell is wide, and reading the boundary for it
-   * costs more than the whole answer is worth */
+  /* A great circle meets a convex cell in a single arc, so a geodetic path
+   * whose far endpoint lies in the same cell as its near one never leaves it
+   * and there is no boundary to find. That is the common case wherever the
+   * positions are closer together than a cell is wide, and reading the
+   * boundary for it costs more than the whole answer is worth. A straight
+   * line in longitude and latitude is no great circle: between two positions
+   * of one cell it bows off the arc joining them and can leave the cell and
+   * come back. It stays inside where both endpoints lie deeper inside every
+   * edge than it can bow, which #dggs_line_stays_in_planes reads from the
+   * planes of the edges without searching the path; any other planar path is
+   * followed until it ends inside the cell it stands in */
   H3Index end = h3_latlng_deg_to_cell(lat2, lon2, resolution);
   if (end == cur)
-    return n;
+  {
+    if (geodetic)
+      return n;
+    const H3CellPlanes *planes = h3_cell_planes(cur);
+    if (planes && dggs_line_stays_in_planes(&path.line, planes->normals,
+        planes->origins, planes->count))
+      return n;
+  }
 
   double t = 0.0;
   H3Index prev = (H3Index) 0;
-  while (n < maxout && cur != end)
+  while (n < maxout && (! geodetic || cur != end))
   {
     CellBoundary bnd;
     if (cellToBoundary(cur, &bnd) != E_SUCCESS || bnd.numVerts < 3)

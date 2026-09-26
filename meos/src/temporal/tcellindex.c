@@ -40,6 +40,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <string.h>
@@ -1659,8 +1660,75 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
   if (! convex)
     return dggs_line_exit_param_edges(line, lons, lats, count, tmin, entry,
       edge);
-  /* The interior lies on the side of every edge circle the centre of the
-   * vertices lies on */
+  assert(count <= DGGS_MAX_CELL_VERTS);
+  double normals[3 * DGGS_MAX_CELL_VERTS];
+  double origins[3 * DGGS_MAX_CELL_VERTS];
+  dggs_cell_edge_planes(lons, lats, count, normals, origins);
+  return dggs_line_normals_exit_param(line, normals, origins, count, tmin,
+    entry, edge);
+}
+
+/**
+ * @brief Return true if a planar path stays inside a convex cell over its
+ * whole length
+ * @details The height `f` of the path above the plane of an edge has a second
+ * derivative of norm at most the curvature bound `M` of the path, which
+ * #dggs_line_plane_param steps by. The height therefore departs from the
+ * straight line joining its values at the two endpoints by at most
+ * `M t (1 - t) / 2`, which is at most `M / 8`, so it stays above
+ * `min(f(0), f(1)) - M / 8`. Where that is positive for every edge the path
+ * never reaches the boundary of the cell and leaves it nowhere. The heights
+ * are read as #dggs_line_height reads them, from the endpoints the path
+ * holds at its parameters 0 and 1, and a margin of a few last places of a
+ * unit vector covers their rounding: the test only chooses between answering
+ * at once and walking the path, and the walk answers the same for a path
+ * that stays inside.
+ * @param[in] line Path
+ * @param[in] normals,origins Planes of the edges of the cell, as
+ * #dggs_cell_edge_planes states them
+ * @param[in] count Number of edges
+ */
+bool
+dggs_line_stays_in_planes(const DggsLine *line, const double *normals,
+  const double *origins, int count)
+{
+  assert(line); assert(normals); assert(origins);
+  double p[2][3];
+  for (int k = 0; k < 2; k++)
+  {
+    double lon = line->lon + k * line->dlon, lat = line->lat + k * line->dlat;
+    double cl = cos(lon), sl = sin(lon), cp = cos(lat), sp = sin(lat);
+    p[k][0] = cp * cl; p[k][1] = cp * sl; p[k][2] = sp;
+  }
+  double least = line->curvature / 8.0 + 16.0 * DBL_EPSILON;
+  for (int i = 0; i < count; i++)
+  {
+    const double *m = &normals[3 * i], *o = &origins[3 * i];
+    for (int k = 0; k < 2; k++)
+    {
+      double f = m[0] * (p[k][0] - o[0]) + m[1] * (p[k][1] - o[1]) +
+        m[2] * (p[k][2] - o[2]);
+      if (f <= least)
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Fill `normals` with the inward unit normal of the plane of each edge
+ * of a convex cell and `origins` with a position each plane holds
+ * @details The interior lies on the side of every edge circle the centre of
+ * the vertices lies on
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in the order
+ * they join
+ * @param[in] count Number of vertices
+ * @param[out] normals,origins Arrays of `3 * count` coordinates
+ */
+void
+dggs_cell_edge_planes(const double *lons, const double *lats, int count,
+  double *normals, double *origins)
+{
   POINT3D centre = { .x = 0.0, .y = 0.0, .z = 0.0 };
   for (int i = 0; i < count; i++)
   {
@@ -1669,9 +1737,6 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
     geog2cart(&g, &v);
     centre.x += v.x; centre.y += v.y; centre.z += v.z;
   }
-  assert(count <= DGGS_MAX_CELL_VERTS);
-  double normals[3 * DGGS_MAX_CELL_VERTS];
-  double origins[3 * DGGS_MAX_CELL_VERTS];
   for (int i = 0; i < count; i++)
   {
     int j = (i + 1) % count;
@@ -1695,8 +1760,7 @@ dggs_line_exit_param(const DggsLine *line, const double *lons,
     geog2cart(&gi, &vi);
     origins[3 * i] = vi.x; origins[3 * i + 1] = vi.y; origins[3 * i + 2] = vi.z;
   }
-  return dggs_line_normals_exit_param(line, normals, origins, count, tmin,
-    entry, edge);
+  return;
 }
 
 /*****************************************************************************/
