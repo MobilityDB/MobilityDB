@@ -1006,6 +1006,93 @@ expansion_product(int elen, const double *e, int flen, const double *f,
 }
 
 /**
+ * @brief Return the sign of the dot product of two vectors, computed exactly
+ * @details Each product of two coordinates is its rounded value plus its
+ * error (#two_product), and the six terms are added into an expansion whose
+ * last component carries the sign of the whole. #dot_product_sign calls it
+ * where its filter cannot tell
+ * @note Exact where no product of coordinates overflows or underflows
+ * @return 1 or -1, 0 exactly where the vectors are orthogonal
+ */
+int
+dot_product_sign_exact(const POINT3D *p, const POINT3D *q)
+{
+  const double pc[3] = {p->x, p->y, p->z}, qc[3] = {q->x, q->y, q->z};
+  double buf1[6], buf2[6], *cur = buf1, *nxt = buf2;
+  int len = 0;
+  for (int k = 0; k < 3; k++)
+  {
+    double x, y;
+    two_product(pc[k], qc[k], &x, &y);
+    if (y != 0.0)
+    {
+      len = grow_expansion(len, cur, y, nxt);
+      double *swap = cur; cur = nxt; nxt = swap;
+    }
+    if (x != 0.0)
+    {
+      len = grow_expansion(len, cur, x, nxt);
+      double *swap = cur; cur = nxt; nxt = swap;
+    }
+  }
+  if (len == 0)
+    return 0;
+  double top = cur[len - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief Return the sign of the triple product `<p, q x r>` of three vectors,
+ * computed exactly
+ * @details The triple product is the determinant of the three vectors, a sum
+ * of six products of three coordinates. Each product of two of them is its
+ * rounded value plus its error (#two_product), that pair times the third is
+ * again an expansion (#scale_expansion), and the six are added into one whose
+ * last component carries the sign of the whole. #triple_product_sign calls it
+ * where its filter cannot tell
+ * @note Exact where no product of coordinates overflows or underflows
+ * @return 1 where `r` lies on the side of the plane of `p` and `q` that their
+ * cross product points to, -1 on the other, 0 exactly where the three vectors
+ * are coplanar
+ */
+int
+triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
+  const POINT3D *r)
+{
+  /* The six terms, each a coordinate of `p` times a product of a coordinate
+   * of `q` and one of `r`, with its sign */
+  const double f[6] = {p->x, - p->x, p->y, - p->y, p->z, - p->z};
+  const double g[6] = {q->y, q->z, q->z, q->x, q->x, q->y};
+  const double h[6] = {r->z, r->y, r->x, r->z, r->y, r->x};
+  double acc[24], tmp[24];
+  int len = 0;
+  for (int k = 0; k < 6; k++)
+  {
+    double x, y, e[2], term[4];
+    two_product(g[k], h[k], &x, &y);
+    int elen = 0;
+    if (y != 0.0)
+      e[elen++] = y;
+    if (x != 0.0)
+      e[elen++] = x;
+    if (elen == 0 || f[k] == 0.0)
+      continue;
+    int tlen = scale_expansion(elen, e, f[k], term);
+    if (len == 0)
+    {
+      memcpy(acc, term, (size_t) tlen * sizeof(double));
+      len = tlen;
+    }
+    else
+      len = expansion_sum(len, acc, tlen, term, acc, tmp);
+  }
+  if (len == 0)
+    return 0;
+  double top = acc[len - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
  * @brief Return the sign of the incircle determinant of four points, computed
  * exactly from their coordinates
  * @details Each coordinate difference is its rounded value plus the error of

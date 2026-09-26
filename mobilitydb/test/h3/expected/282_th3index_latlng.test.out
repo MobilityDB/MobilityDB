@@ -418,3 +418,21 @@ FROM h3Split(tgeompoint
         16
 (1 row)
 
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 5))) AS other_cell
+FROM (SELECT p, th3index(p, 5) AS c FROM (
+  SELECT atTime(tp, span(s, endTimestamp(tp), true, true)) AS p
+  FROM (SELECT tp, unnest(timestamps(th3index(tp, 5))) AS s FROM (VALUES
+    (tgeogpoint '[Point(96.66541614764914 61.740097256632552)@2001-01-01,
+      Point(96.704586592854426 61.600263880361084)@2001-01-03]')) AS v(tp))
+    AS cuts
+  WHERE s > startTimestamp(tp) AND s < endTimestamp(tp)) AS pieces) AS q,
+  generate_series(timestamptz '2001-01-01 00:07', '2001-01-02 23:53',
+    interval '17 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+ instants | other_cell 
+----------+------------
+      166 |          0
+(1 row)
+
