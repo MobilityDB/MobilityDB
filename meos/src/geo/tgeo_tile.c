@@ -349,6 +349,28 @@ fastvoxel_bm(int *coords1, const double *eps1, int *coords2, const double *eps2,
       if (tMax[j] < tMax[idx])
         idx = j;
     }
+    /* A line crossing the boundaries of two dimensions at one parameter
+     * passes through the corner where they meet, and the tile holding that
+     * corner, the one whose lower bounds meet there, is the tile the line
+     * leaves, the one past both boundaries, or the one past either of them
+     * alone. The parameters of the two
+     * crossings carry the rounding of the fractional positions they are read
+     * from, so they compare either way at such a corner, and the tile past the
+     * other boundary alone is set as well wherever the two lie within that
+     * rounding. The matrix states the tiles the split restricts the value to,
+     * so a tile it sets that the line does not reach answers nothing there,
+     * while a tile holding the corner that it leaves out loses the instant
+     * the value passes through it */
+    for (int j = 0; j < ndims; ++j)
+    {
+      if (j == idx || next[j] == 0 ||
+          tMax[j] - tMax[idx] > (tMax[j] + tMax[idx]) * 32 * DBL_EPSILON)
+        continue;
+      coords[j] += next[j];
+      bitmatrix_set_cell(bm, coords, true);
+      result++;
+      coords[j] -= next[j];
+    }
     /* Progress to the next cell in that dimension */
     tMax[idx] += tDelta[idx];
     coords[idx] += next[idx];
