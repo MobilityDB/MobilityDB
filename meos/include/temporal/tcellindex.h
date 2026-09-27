@@ -199,6 +199,10 @@ typedef struct
   double azimuth;         /**< Azimuth of the path at its first endpoint */
   double a[3];            /**< First endpoint, a unit vector */
   double normal[3];       /**< Unit normal of the circle of the path */
+  double endlon[2];       /**< Longitudes of the endpoints as stated, in
+                               degrees */
+  double endlat[2];       /**< Latitudes of the endpoints as stated, in
+                               degrees */
 } DggsArc;
 
 /**
@@ -271,8 +275,20 @@ extern double dggs_arc_pole_param(const DggsArc *arc, bool north,
   double tmin);
 extern double dggs_arc_plane_param(const DggsArc *arc, const double m[3],
   double c, double tmin);
+extern bool dggs_arc_end_on_meridian(const DggsArc *arc, int end,
+  double lon);
+extern bool dggs_arc_end_on_parallel(const DggsArc *arc, int end,
+  double lat);
+extern bool dggs_arc_passes_through(const DggsArc *arc, double lon,
+  double lat);
+extern void dggs_arc_heading_at(const DggsArc *arc, double lon, double lat,
+  int *east, int *north);
+extern int dggs_arc_meridian_params(const DggsArc *arc, double lon,
+  double *params);
+extern int dggs_arc_parallel_params(const DggsArc *arc, double lat,
+  double *params);
 extern int dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin,
-  double ymin, double xmax, double ymax, double *tin, double *tout,
-  int maxout);
+  double ymin, double xmax, double ymax, bool border_inc, double *tin,
+  double *tout, bool *tin_upper, bool *tout_upper, int maxout);
 
 #endif /* __TCELLINDEX_H__ */

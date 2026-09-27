@@ -621,6 +621,13 @@ dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
   geographic_point_init(lon2, lat2, &g2);
   arc->lon = g1.lon;
   arc->lat = g1.lat;
+  arc->endlon[0] = lon1; arc->endlat[0] = lat1;
+  arc->endlon[1] = lon2; arc->endlat[1] = lat2;
+  /* Two endpoints stating one position span no path: a pole stated at two
+   * longitudes, or a position stated at longitudes a turn apart, which the
+   * angles place a rounding apart instead */
+  if (lat1 == lat2 && (fabs(lat1) == 90.0 || fabs(lon1 - lon2) == 360.0))
+    return false;
   arc->dist = sphere_distance(&g1, &g2);
   if (arc->dist <= 0.0)
     return false;
@@ -1090,6 +1097,264 @@ dggs_arc_plane_params(const DggsArc *arc, const double m[3], double c,
 }
 
 /**
+ * @brief Return true if an endpoint of a geodetic path lies on a meridian,
+ * read from the degrees both are stated in
+ * @details The longitudes -180 and 180 state one meridian, and a pole lies on
+ * every meridian
+ * @param[in] arc Path
+ * @param[in] end 0 for the first endpoint, 1 for the second one
+ * @param[in] lon Longitude of the meridian, in degrees
+ */
+bool
+dggs_arc_end_on_meridian(const DggsArc *arc, int end, double lon)
+{
+  assert(arc); assert(end == 0 || end == 1);
+  double elon = arc->endlon[end], elat = arc->endlat[end];
+  return fabs(elat) == 90.0 || elon == lon || fabs(elon - lon) == 360.0;
+}
+
+/**
+ * @brief Return true if an endpoint of a geodetic path lies on a parallel,
+ * read from the degrees both are stated in
+ * @param[in] arc Path
+ * @param[in] end 0 for the first endpoint, 1 for the second one
+ * @param[in] lat Latitude of the parallel, in degrees
+ */
+bool
+dggs_arc_end_on_parallel(const DggsArc *arc, int end, double lat)
+{
+  assert(arc); assert(end == 0 || end == 1);
+  return arc->endlat[end] == lat;
+}
+
+/**
+ * @brief Return 1 when a geodetic path passes north of a latitude between its
+ * endpoints, -1 when it passes south of it, and 0 otherwise
+ * @details The path passes beyond the latitude where its circle reaches an
+ * extreme of latitude between its endpoints lying beyond it, the extremes
+ * being the ones #dggs_lonlat_segment_extend_box reads, so the box bounding
+ * the path and the sides of a parallel the path reaches state one path
+ * @param[in] arc Path
+ * @param[in] lat Latitude, in degrees
+ */
+static int
+dggs_arc_passes_beyond(const DggsArc *arc, double lat)
+{
+  double end1[3], end2[3], ext;
+  dggs_lonlat_to_xyz(arc->endlon[0], arc->endlat[0], end1);
+  dggs_lonlat_to_xyz(arc->endlon[1], arc->endlat[1], end2);
+  if (dggs_arc_lat_extreme(end1, end2, true, &ext) && ext > lat)
+    return 1;
+  if (dggs_arc_lat_extreme(end1, end2, false, &ext) && ext < lat)
+    return -1;
+  return 0;
+}
+
+/**
+ * @brief Return in the last argument the direction from the centre of the
+ * sphere of a position stated in degrees
+ * @details Read from the degrees as #dggs_arc_init reads the first endpoint of
+ * a path, through `float8_sind` and `float8_cosd`, which answer a quarter
+ * turn exactly; the vector is not normalized, since the signs it serves are
+ * read from directions alone
+ */
+static void
+dggs_lonlat_direction(double lon, double lat, POINT3D *p)
+{
+  double clat = float8_cosd(lat);
+  p->x = clat * float8_cosd(lon);
+  p->y = clat * float8_sind(lon);
+  p->z = float8_sind(lat);
+}
+
+/**
+ * @brief Return true if a geodetic path passes through a position strictly
+ * between its endpoints
+ * @details The position lies on the circle of the path when the directions of
+ * the two endpoints and of the position are coplanar, the sign
+ * #triple_product_sign decides exactly on the directions read from the
+ * degrees each is stated in. It lies between the endpoints when it lies on
+ * the side of the first endpoint's plane with the second endpoint and on the
+ * side of the second endpoint's plane with the first, which is decided away
+ * from zero since the position is apart from both.
+ * @param[in] arc Path
+ * @param[in] lon,lat Position, in degrees
+ */
+bool
+dggs_arc_passes_through(const DggsArc *arc, double lon, double lat)
+{
+  assert(arc);
+  if ((lon == arc->endlon[0] && lat == arc->endlat[0]) ||
+      (lon == arc->endlon[1] && lat == arc->endlat[1]))
+    return false;
+  POINT3D a, b, v, n, av, vb;
+  dggs_lonlat_direction(arc->endlon[0], arc->endlat[0], &a);
+  dggs_lonlat_direction(arc->endlon[1], arc->endlat[1], &b);
+  dggs_lonlat_direction(lon, lat, &v);
+  if (triple_product_sign(&a, &b, &v) != 0)
+    return false;
+  dggs_vec_cross(&a, &b, &n);
+  dggs_vec_cross(&a, &v, &av);
+  dggs_vec_cross(&v, &b, &vb);
+  return dggs_vec_dot(&av, &n) > 0.0 && dggs_vec_dot(&vb, &n) > 0.0;
+}
+
+/**
+ * @brief Return in the last two arguments the signs of the eastward and of
+ * the northward heading of a geodetic path at a position on its circle
+ * @details The path travels its circle in the direction of the normal of the
+ * circle crossed with the position, as #dggs_arc_normals_exit_param reads it
+ * at the first endpoint. Its eastward heading is the component of that
+ * direction along the normal of the position's meridian, and its northward
+ * heading is the height the direction gains, since the direction is
+ * perpendicular to the position. A sign is zero where the path runs along
+ * the meridian or along the parallel there
+ * @param[in] arc Path
+ * @param[in] lon,lat Position on the circle of the path, in degrees
+ * @param[out] east,north Signs of the two headings
+ */
+void
+dggs_arc_heading_at(const DggsArc *arc, double lon, double lat, int *east,
+  int *north)
+{
+  assert(arc); assert(east); assert(north);
+  POINT3D v, dir;
+  const POINT3D normal = { .x = arc->normal[0], .y = arc->normal[1],
+    .z = arc->normal[2] };
+  const POINT3D m = { .x = -float8_sind(lon), .y = float8_cosd(lon),
+    .z = 0.0 };
+  dggs_lonlat_direction(lon, lat, &v);
+  dggs_vec_cross(&normal, &v, &dir);
+  double e = dggs_vec_dot(&dir, &m);
+  *east = (e > 0.0) - (e < 0.0);
+  *north = (dir.z > 0.0) - (dir.z < 0.0);
+}
+
+/**
+ * @brief Return in @p params the parameters at which a geodetic path meets the
+ * plane of a meridian, and their number
+ * @details The path leaves the hemisphere on one side of the plane where
+ * #dggs_arc_normals_exit_param states for the normal of the plane read from
+ * the degrees the meridian is stated in, and it leaves the hemisphere on the
+ * other side where the same function states for the opposite normal, which is
+ * how a walk of a grid reads a tile boundary. An endpoint the path states on
+ * the meridian meets the plane there, at its own parameter: the plane passes
+ * through the centre, so the path meets it nowhere else, and the parameter
+ * the angles state for it instead is rounded to either side of the endpoint,
+ * which dates the crossing a microsecond before the instant the trip states
+ * it at, or past the end of the path.
+ * @param[in] arc Path
+ * @param[in] lon Longitude of the meridian, in degrees
+ * @param[out] params Array of at least two parameters, in `[0, 1]`
+ * @return Number of parameters written
+ */
+int
+dggs_arc_meridian_params(const DggsArc *arc, double lon, double *params)
+{
+  assert(arc); assert(params);
+  bool on1 = dggs_arc_end_on_meridian(arc, 0, lon);
+  bool on2 = dggs_arc_end_on_meridian(arc, 1, lon);
+  if (on1 && on2)
+    return 0;                /* the path runs along the meridian */
+  if (on1 || on2)
+  {
+    params[0] = on1 ? 0.0 : 1.0;
+    return 1;
+  }
+  const double normals[6] = { -float8_sind(lon), float8_cosd(lon), 0.0,
+    float8_sind(lon), -float8_cosd(lon), 0.0 };
+  int count = 0;
+  for (int s = 0; s < 2; s++)
+  {
+    double t = dggs_arc_normals_exit_param(arc, &normals[3 * s], 1, 0.0, 0,
+      NULL);
+    if (t <= 1.0)
+      params[count++] = t;
+  }
+  return count;
+}
+
+/**
+ * @brief Return in @p params the parameters at which a geodetic path meets a
+ * parallel, and their number
+ * @details The crossings #dggs_arc_plane_params states for the plane of
+ * constant height of the parallel. An endpoint the path states on the parallel
+ * meets it there, at its own parameter: of the two angles at which the circle
+ * of the path meets the parallel, the one nearer the endpoint is that
+ * endpoint's, and the other one is the crossing the path makes elsewhere.
+ * @param[in] arc Path
+ * @param[in] lat Latitude of the parallel, in degrees
+ * @param[out] params Array of at least two parameters, in `[0, 1]` and
+ * ascending
+ * @return Number of parameters written
+ */
+int
+dggs_arc_parallel_params(const DggsArc *arc, double lat, double *params)
+{
+  assert(arc); assert(params);
+  bool on1 = dggs_arc_end_on_parallel(arc, 0, lat);
+  bool on2 = dggs_arc_end_on_parallel(arc, 1, lat);
+  const double pole[3] = { 0.0, 0.0, 1.0 };
+  if (! on1 && ! on2)
+    return dggs_arc_plane_params(arc, pole, sin(lat * M_PI / 180.0), params);
+  if (on1 && on2)
+  {
+    /* Both endpoints lie on the parallel, which the circle of the path meets
+     * at those two positions alone */
+    params[0] = 0.0; params[1] = 1.0;
+    return 2;
+  }
+  /* A path passing beyond the parallel through one of its endpoints nowhere
+   * (#dggs_arc_passes_beyond) meets it at that endpoint alone: a crossing
+   * the angles place beside an endpoint where the path touches the parallel
+   * is none */
+  if (dggs_arc_passes_beyond(arc, lat) == 0)
+  {
+    params[0] = on1 ? 0.0 : 1.0;
+    return 1;
+  }
+  /* The two angles at which the circle of the path meets the parallel, as
+   * #dggs_arc_plane_params reads them */
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  double c = sin(lat * M_PI / 180.0);
+  double r = hypot(a[2], b[2]);
+  double other = -1.0;
+  if (r > 0.0 && fabs(c) <= r)
+  {
+    double base = atan2(b[2], a[2]), half = acos(c / r);
+    double theta[2];
+    for (int s = 0; s < 2; s++)
+    {
+      theta[s] = fmod(base + (2 * s - 1) * half, 2.0 * M_PI);
+      if (theta[s] < 0.0)
+        theta[s] += 2.0 * M_PI;
+    }
+    /* The angle of the endpoint on the parallel, 0 or that of the path */
+    double at = on1 ? 0.0 : arc->dist;
+    double d0 = fabs(theta[0] - at), d1 = fabs(theta[1] - at);
+    d0 = Min(d0, 2.0 * M_PI - d0);
+    d1 = Min(d1, 2.0 * M_PI - d1);
+    double t = ((d0 <= d1) ? theta[1] : theta[0]) / arc->dist;
+    if (t >= 0.0 && t <= 1.0)
+      other = t;
+  }
+  int count = 0;
+  if (on1)
+    params[count++] = 0.0;
+  if (other >= 0.0)
+    params[count++] = other;
+  if (on2)
+    params[count++] = 1.0;
+  if (count == 2 && params[0] > params[1])
+  {
+    double swap = params[0]; params[0] = params[1]; params[1] = swap;
+  }
+  return count;
+}
+
+/**
  * @brief Return where a geodetic path first reaches a plane through the centre
  * of the sphere after a parameter
  * @param[in] arc Path
@@ -1217,82 +1482,348 @@ dggs_lonlat_box_holds(double lon, double lat, double xmin, double ymin,
  * @brief Return in @p tin and @p tout the parameters between which a geodetic
  * path lies in a box of longitudes and latitudes
  * @details The function also returns the number of such spans. A box is
- * bounded by the planes of two meridians, which pass through
- * the centre of the sphere, and by the planes of constant height of two
- * parallels. The path meets each of them at parameters #dggs_arc_plane_params
- * states, and those parameters cut the path into pieces that lie wholly inside
- * the box or wholly outside it, so the position halfway along a piece says
- * which. A path is therefore clipped where it crosses the box and not where a
- * straight line in longitude and latitude would, which no geodetic path
- * follows.
+ * bounded by the planes of two meridians, which pass through the centre of
+ * the sphere, and by the planes of constant height of two parallels. The path
+ * meets each of them at parameters that cut it into pieces lying wholly
+ * inside the box or wholly outside it, so the position halfway along a piece
+ * says which. A path is therefore clipped where it crosses the box and not
+ * where a straight line in longitude and latitude would, which no geodetic
+ * path follows.
+ *
+ * A meridian is crossed where #dggs_arc_meridian_params states and a parallel
+ * where #dggs_arc_parallel_params states, which are the crossings a walk of a
+ * grid on the sphere reads for the boundaries of its tiles, so a box and a
+ * tile sharing a boundary are met at the same parameter, and an endpoint the
+ * path states on a boundary meets it at its own parameter.
+ *
+ * A bound of a span lies on the upper border of the box when a crossing of
+ * the east meridian or of the north parallel is at that parameter, so a box
+ * leaving its upper border out states which bounds it leaves out. The plane of
+ * a meridian holds the meridian half a turn from it too, and a crossing of that
+ * one bounds no side of the box.
  * @param[in] arc Path
  * @param[in] xmin,ymin,xmax,ymax Bounds of the box, in degrees
+ * @param[in] border_inc True when the box contains its upper border, which
+ * a path running along that border then lies in
  * @param[out] tin,tout Arrays of at least @p maxout parameters
- * @param[in] maxout Capacity of both arrays
+ * @param[out] tin_upper,tout_upper Arrays of at least @p maxout flags, true
+ * when the bound lies on the upper border of the box
+ * @param[in] maxout Capacity of the arrays
  * @return Number of spans written
  */
 int
 dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin, double ymin,
-  double xmax, double ymax, double *tin, double *tout, int maxout)
+  double xmax, double ymax, bool border_inc, double *tin, double *tout,
+  bool *tin_upper, bool *tout_upper, int maxout)
 {
-  assert(arc); assert(tin); assert(tout);
+  assert(arc); assert(tin); assert(tout); assert(tin_upper);
+  assert(tout_upper);
   if (maxout < 1)
     return 0;
-  /* The parameters at which the path reaches a bound of the box */
-  double cuts[12], params[2];
-  int ncuts = 0;
-  cuts[ncuts++] = 0.0;
-  cuts[ncuts++] = 1.0;
+  /* The crossings of the two meridians and of the two parallels of the box,
+   * each crossing of a meridian with whether it lies on that meridian rather
+   * than on the one half a turn from it */
+  const double lons[2] = { xmin, xmax }, lats[2] = { ymin, ymax };
+  double mer[2][2], par[2][2];
+  bool side[2][2];
+  int nmer[2], npar[2];
   for (int k = 0; k < 2; k++)
   {
-    double lon = (k == 0 ? xmin : xmax) * M_PI / 180.0;
-    const double m[3] = { -sin(lon), cos(lon), 0.0 };
-    int count = dggs_arc_plane_params(arc, m, 0.0, params);
-    for (int i = 0; i < count; i++)
-      cuts[ncuts++] = params[i];
+    nmer[k] = dggs_arc_meridian_params(arc, lons[k], mer[k]);
+    for (int i = 0; i < nmer[k]; i++)
+    {
+      double plon, plat;
+      side[k][i] = dggs_arc_point(arc, mer[k][i], &plon, &plat) &&
+        cos(plon - lons[k] * M_PI / 180.0) > 0.0;
+    }
+    npar[k] = dggs_arc_parallel_params(arc, lats[k], par[k]);
   }
-  const double pole[3] = { 0.0, 0.0, 1.0 };
+  /* A path running along a meridian of the box states it by the longitude of
+   * both endpoints, a pole standing on every meridian, and one running along
+   * a parallel does so on the equator alone, the one parallel that is a great
+   * circle. Its position there is the line itself, which the angles of a
+   * position halfway along state to either side of it, and it lies on the
+   * upper border of the box when that line is the east meridian or the north
+   * parallel. The longitude is the one the endpoints state: a box holds the
+   * longitudes it bounds as they are stated, so the antimeridian stated at
+   * 180 lies in the tile starting at 180 and not in the one starting at
+   * -180 */
+  bool along_lon[2], along_lat[2];
+  bool pole1 = fabs(arc->endlat[0]) == 90.0, pole2 = fabs(arc->endlat[1]) == 90.0;
   for (int k = 0; k < 2; k++)
   {
-    double lat = (k == 0 ? ymin : ymax) * M_PI / 180.0;
-    int count = dggs_arc_plane_params(arc, pole, sin(lat), params);
-    for (int i = 0; i < count; i++)
-      cuts[ncuts++] = params[i];
+    along_lon[k] = ! (pole1 && pole2) &&
+      (pole1 || arc->endlon[0] == lons[k]) &&
+      (pole2 || arc->endlon[1] == lons[k]);
+    along_lat[k] = lats[k] == 0.0 && dggs_arc_end_on_parallel(arc, 0, 0.0) &&
+      dggs_arc_end_on_parallel(arc, 1, 0.0);
+  }
+  if (! border_inc && (along_lon[1] || along_lat[1]))
+    return 0;
+  /* A path through a corner of the box crosses its meridian and its parallel
+   * at one position, which the angles of the two state at parameters rounded
+   * apart, so the path would hold a neighbouring box for no time between
+   * them. The path passes through the corner when #dggs_arc_passes_through
+   * decides so exactly, or when the angles state the two crossings at one
+   * parameter, which is then one position on both lines. The crossing is
+   * then the one of the meridian, which the parallel states as well. The box
+   * holds the corner though the path holds no piece of it, and the corner is
+   * then held for that instant alone */
+  double corner[4];
+  bool corner_upper[4];
+  int ncorners = 0;
+  for (int kx = 0; kx < 2; kx++)
+  {
+    for (int ky = 0; ky < 2; ky++)
+    {
+      /* A path running along one of the two lines meets the other one there
+       * and crosses nothing else */
+      if (fabs(lats[ky]) == 90.0 || along_lon[kx] || along_lat[ky])
+        continue;
+      /* The position a path passes through on the antimeridian is stated at
+       * 180, and lies in the tile starting there */
+      if (lons[kx] == -180.0)
+        continue;
+      int im = -1;
+      for (int i = 0; i < nmer[kx]; i++)
+        if (side[kx][i])
+          im = i;
+      if (im < 0)
+        continue;
+      double tv = mer[kx][im];
+      if (tv <= 0.0 || tv >= 1.0)
+        continue;            /* an endpoint states its own position */
+      int ip = -1;
+      for (int i = 0; i < npar[ky]; i++)
+        if (ip < 0 || fabs(par[ky][i] - tv) < fabs(par[ky][ip] - tv))
+          ip = i;
+      if (! (ip >= 0 && par[ky][ip] == tv) &&
+          ! dggs_arc_passes_through(arc, lons[kx], lats[ky]))
+        continue;
+      if (ip >= 0)
+        par[ky][ip] = tv;
+      corner[ncorners] = tv;
+      corner_upper[ncorners++] = (kx == 1 || ky == 1);
+    }
+  }
+  /* The parameters at which the path reaches a bound of the box, each with
+   * whether it lies on the upper border and with the lines it crosses there,
+   * bit `k` for the west meridian, the east one, the south parallel and the
+   * north one in turn */
+  double cuts[12];
+  bool upper[12];
+  int flips[12];
+  int ncuts = 0;
+  cuts[ncuts] = 0.0; upper[ncuts] = false; flips[ncuts++] = 0;
+  cuts[ncuts] = 1.0; upper[ncuts] = false; flips[ncuts++] = 0;
+  for (int k = 0; k < 2; k++)
+  {
+    for (int i = 0; i < nmer[k]; i++)
+    {
+      cuts[ncuts] = mer[k][i]; upper[ncuts] = (k == 1) && side[k][i];
+      flips[ncuts++] = 1 << k;
+    }
+    for (int i = 0; i < npar[k]; i++)
+    {
+      cuts[ncuts] = par[k][i]; upper[ncuts] = (k == 1);
+      flips[ncuts++] = 1 << (2 + k);
+    }
   }
   /* In ascending order, which is the order the path passes them */
   for (int i = 1; i < ncuts; i++)
   {
     double v = cuts[i];
+    bool u = upper[i];
+    int f = flips[i];
     int j = i - 1;
     while (j >= 0 && cuts[j] > v)
     {
-      cuts[j + 1] = cuts[j]; j--;
+      cuts[j + 1] = cuts[j]; upper[j + 1] = upper[j]; flips[j + 1] = flips[j];
+      j--;
     }
-    cuts[j + 1] = v;
+    cuts[j + 1] = v; upper[j + 1] = u; flips[j + 1] = f;
   }
-  /* A piece between two cuts lies wholly inside the box or wholly outside it,
-   * and the position halfway along it says which; a piece following one that
-   * is inside extends its span */
-  int nspans = 0;
-  for (int i = 0; i + 1 < ncuts; i++)
+  /* The crossings at one parameter state one position, which lies on the upper
+   * border when any of them does. A line met twice there is touched and not
+   * crossed */
+  int nuniq = 0;
+  for (int i = 0; i < ncuts; i++)
   {
-    if (cuts[i + 1] <= cuts[i])
-      continue;
-    double lon, lat;
-    if (! dggs_arc_point(arc, (cuts[i] + cuts[i + 1]) / 2.0, &lon, &lat))
-      continue;
-    if (! dggs_lonlat_box_holds(lon * 180.0 / M_PI, lat * 180.0 / M_PI, xmin,
-          ymin, xmax, ymax))
+    if (nuniq > 0 && cuts[nuniq - 1] == cuts[i])
+    {
+      upper[nuniq - 1] |= upper[i];
+      flips[nuniq - 1] ^= flips[i];
+    }
+    else
+    {
+      cuts[nuniq] = cuts[i]; upper[nuniq] = upper[i];
+      flips[nuniq++] = flips[i];
+    }
+  }
+  /* A box narrower than half a turn holds the longitudes of the two
+   * hemispheres its meridians bound, and the path changes side of a line
+   * exactly where it crosses that line, so the side of each line a piece
+   * lies on follows from the side the path starts on and from the lines
+   * crossed before the piece, in the order the path crosses them. A piece
+   * whose two cuts are rounded apart is then read on the side the order of
+   * the crossings puts it, as a walk of the grid reads it, where the angles
+   * of its halfway position may state the other side. The side the path
+   * starts on is read from the degrees of its first endpoint, and from its
+   * heading when that endpoint lies on the line; a path running along a line
+   * lies on the box's side of it. A wider box is read from the position
+   * halfway along each piece */
+  bool narrow = xmax - xmin < 180.0 && xmin >= -180.0 && xmax <= 180.0;
+  int state = 0;
+  if (narrow)
+  {
+    double lon1 = arc->endlon[0], lat1 = arc->endlat[0];
+    int east, north;
+    dggs_arc_heading_at(arc, lon1, lat1, &east, &north);
+    /* A path starting on a parallel heads first to the side of it that it
+     * passes beyond (#dggs_arc_passes_beyond), and toward its other endpoint
+     * when it passes beyond neither. Its heading there is otherwise read
+     * from a direction that is due east or west where the path starts at an
+     * extreme of latitude */
+    north = dggs_arc_passes_beyond(arc, lat1);
+    if (north == 0)
+      north = (arc->endlat[1] > lat1) - (arc->endlat[1] < lat1);
+    /* A path leaving a pole runs along the meridian of its other endpoint,
+     * whichever longitude states the pole, and lies on the side of each
+     * meridian of the box that that one lies on */
+    double slon = (fabs(lat1) == 90.0) ? arc->endlon[1] : lon1;
+    for (int k = 0; k < 2; k++)
+    {
+      /* The side of the meridian's plane, read from the difference of the
+       * longitudes: the start lies on the plane on the meridian itself and
+       * on the one half a turn from it, where heading east leaves the plane
+       * to the west of the meridian */
+      double d = slon - lons[k];
+      if (d > 180.0)
+        d -= 360.0;
+      else if (d <= -180.0)
+        d += 360.0;
+      double d2 = arc->endlon[1] - lons[k];
+      if (d2 > 180.0)
+        d2 -= 360.0;
+      else if (d2 <= -180.0)
+        d2 += 360.0;
+      int s = (d > 0.0 && d < 180.0) ? 1 : ((d < 0.0) ? -1 : 0);
+      /* A pole lies on every meridian, on no side of one */
+      int s2 = (fabs(arc->endlat[1]) == 90.0) ? 0 :
+        ((d2 > 0.0 && d2 < 180.0) ? 1 : ((d2 < 0.0 && d2 > -180.0) ? -1 : 0));
+      /* A path with both endpoints on the plane of the meridian runs along
+       * that plane and lies on neither side of it, which its heading states
+       * only to the last place of the normal of its circle; a path starting
+       * on the plane and leaving it heads to the side it goes on to */
+      if (s == 0 && s2 != 0)
+        s = (d == 0.0) ? east : -east;
+      /* The side the path ends on follows from the side it starts on and
+       * from the crossings of the line between them. A crossing the angles
+       * state at or before the start of a path starting a rounding away from
+       * the line is lost, and the path then starts on the side the crossings
+       * and its end state, where the end lies farther from the line than the
+       * start */
+      int ncross = 0;
+      for (int i = 0; i < nmer[k]; i++)
+        ncross += (mer[k][i] > 0.0 && mer[k][i] < 1.0);
+      if (s != 0 && s2 != 0 && d != 0.0 && fabs(lat1) != 90.0 &&
+          ((ncross % 2 == 1) != (s != s2)) && fabs(d) <= fabs(d2))
+        s = -s;
+      /* East of the west meridian and west of the east one. A path lying on
+       * the plane of the meridian runs along the meridian as its endpoints
+       * state it, or along the meridian half a turn from it, which a box
+       * narrower than half a turn does not hold */
+      if (s == 0 ? along_lon[k] : (k == 0 ? s > 0 : s < 0))
+        state |= 1 << k;
+      int t = (lat1 > lats[k]) ? 1 : ((lat1 < lats[k]) ? -1 : north);
+      /* The same reading of the sides of a parallel */
+      double lat2 = arc->endlat[1];
+      int t2 = (lat2 > lats[k]) - (lat2 < lats[k]);
+      ncross = 0;
+      for (int i = 0; i < npar[k]; i++)
+        ncross += (par[k][i] > 0.0 && par[k][i] < 1.0);
+      if (t != 0 && t2 != 0 && lat1 != lats[k] &&
+          ((ncross % 2 == 1) != (t != t2)) &&
+          fabs(lat1 - lats[k]) <= fabs(lat2 - lats[k]))
+        t = -t;
+      /* North of the south parallel and south of the north one */
+      if (t == 0 || (k == 0 ? t > 0 : t < 0))
+        state |= 1 << (2 + k);
+      /* A path running along a line lies on it, which its heading states to
+       * the last place of the normal of its circle */
+      if (along_lon[k])
+        state |= 1 << k;
+      if (along_lat[k])
+        state |= 1 << (2 + k);
+    }
+  }
+  /* A piece between two cuts lies wholly inside the box or wholly outside
+   * it; a piece following one that is inside extends its span */
+  int nspans = 0;
+  for (int i = 0; i + 1 < nuniq; i++)
+  {
+    bool inside;
+    if (narrow)
+    {
+      if (cuts[i] > 0.0)
+        state ^= flips[i];
+      inside = (state == 15);
+    }
+    else
+    {
+      double lon, lat;
+      if (! dggs_arc_point(arc, (cuts[i] + cuts[i + 1]) / 2.0, &lon, &lat))
+        continue;
+      lon *= 180.0 / M_PI;
+      lat *= 180.0 / M_PI;
+      for (int k = 0; k < 2; k++)
+      {
+        if (along_lon[k])
+          lon = lons[k];
+        if (along_lat[k])
+          lat = lats[k];
+      }
+      inside = dggs_lonlat_box_holds(lon, lat, xmin, ymin, xmax, ymax);
+    }
+    if (! inside)
       continue;
     if (nspans > 0 && tout[nspans - 1] == cuts[i])
+    {
       tout[nspans - 1] = cuts[i + 1];
+      tout_upper[nspans - 1] = upper[i + 1];
+    }
     else if (nspans < maxout)
     {
-      tin[nspans] = cuts[i];
-      tout[nspans++] = cuts[i + 1];
+      tin[nspans] = cuts[i]; tin_upper[nspans] = upper[i];
+      tout[nspans] = cuts[i + 1]; tout_upper[nspans++] = upper[i + 1];
     }
     else
       break;
+  }
+  /* A corner no span reaches is held for its instant alone, in the order of
+   * the spans */
+  for (int c = 0; c < ncorners; c++)
+  {
+    double tv = corner[c];
+    int pos = 0;
+    bool held = false;
+    for (int i = 0; i < nspans; i++)
+    {
+      if (tin[i] <= tv && tv <= tout[i])
+        held = true;
+      if (tin[i] < tv)
+        pos = i + 1;
+    }
+    if (held || nspans >= maxout)
+      continue;
+    for (int i = nspans; i > pos; i--)
+    {
+      tin[i] = tin[i - 1]; tin_upper[i] = tin_upper[i - 1];
+      tout[i] = tout[i - 1]; tout_upper[i] = tout_upper[i - 1];
+    }
+    tin[pos] = tout[pos] = tv;
+    tin_upper[pos] = tout_upper[pos] = corner_upper[c];
+    nspans++;
   }
   return nspans;
 }

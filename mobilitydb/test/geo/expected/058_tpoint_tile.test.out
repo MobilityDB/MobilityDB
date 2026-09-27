@@ -684,7 +684,7 @@ FROM (SELECT tgeogpoint
   LATERAL spaceSplit(t.tp, 2.0) s;
  fragments | fragments_stating_another_value 
 -----------+---------------------------------
-        22 |                               0
+        23 |                               0
 (1 row)
 
 SELECT count(DISTINCT ST_X(s.point::geometry)) AS columns_of_tiles
@@ -692,7 +692,7 @@ FROM spaceSplit(tgeogpoint '[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-0
   2.0) s;
  columns_of_tiles 
 ------------------
-               10
+               12
 (1 row)
 
 SELECT count(*) AS fragments
@@ -701,7 +701,23 @@ FROM spaceTimeSplit(tgeogpoint
   interval '1 day') s;
  fragments 
 -----------
-        23
+        25
+(1 row)
+
+WITH trips(tp) AS (VALUES
+  (tgeogpoint '[Point(30 60)@2001-01-01, Point(30 90)@2001-01-02,
+    Point(0 90)@2001-01-03, Point(0 60)@2001-01-04]'),
+  (tgeogpoint '[Point(-120 -30)@2001-01-01, Point(150 0)@2001-01-02]'),
+  (tgeogpoint '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]'))
+SELECT count(*) AS trips,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS splits_not_partitioning
+FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
+    sum(duration(getTime(s.tpoint))) AS total
+  FROM trips, LATERAL spaceSplit(tp, 30.0) s GROUP BY tp) AS q;
+ trips | splits_not_partitioning 
+-------+-------------------------
+     3 |                       0
 (1 row)
 
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
