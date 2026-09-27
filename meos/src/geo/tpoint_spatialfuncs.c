@@ -309,6 +309,28 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
   {
     p->x = rad2deg(longitude_radians_normalize(g.lon));
     p->y = rad2deg(latitude_radians_normalize(g.lat));
+    /* A path between two positions of one meridian runs along that meridian
+     * and a path between two positions of the equator runs along the
+     * equator, as #dggs_arc_init states them, so the position keeps the
+     * longitude, or the latitude, the two state, which the angles state to
+     * the last place instead */
+    if (p1->x == p2->x && fabs(p1->y) != 90.0 && fabs(p2->y) != 90.0)
+      p->x = p1->x;
+    /* A path leaving or reaching a pole runs along the meridian of its other
+     * endpoint, whichever longitude states the pole, where the projection
+     * from a pole reads its longitude from the one stating the pole */
+    else if (fabs(p1->y) == 90.0 && fabs(p2->y) != 90.0)
+      p->x = p2->x;
+    else if (fabs(p2->y) == 90.0 && fabs(p1->y) != 90.0)
+      p->x = p1->x;
+    if (p1->y == 0.0 && p2->y == 0.0 && fabs(p1->x - p2->x) != 180.0)
+      p->y = 0.0;
+    /* Two equal positions state that position throughout */
+    if (p1->x == p2->x && p1->y == p2->y)
+    {
+      p->x = p1->x;
+      p->y = p1->y;
+    }
   }
   return;
 }
