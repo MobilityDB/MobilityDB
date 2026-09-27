@@ -364,11 +364,21 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
       seq->period.upper_inc, interp, NORMALIZE);
   }
 
-  /* Linear interpolation, at least two instants: upper bound on the number
-   * of result instants is the two endpoints of every segment plus, per edge,
-   * up to eleven straight-edge or fourteen arc-edge turning points */
+  /* Linear interpolation, at least two instants. Per edge the candidate solver
+   * proposes up to eleven straight-edge or fourteen arc-edge turning
+   * parameters, so one segment offers at most `cap` of them; the loop below
+   * discards every candidate outside the open segment, every duplicate within
+   * MEOS_EPSILON and every one that does not advance the timestamp, so `cap`
+   * bounds the CANDIDATES of one segment and never the result. Sizing the
+   * result array by the product of the instant count and that bound asks for
+   * memory neither the result nor the candidates ever need, and the request
+   * grows with the geometry: against one sequence of an 18971-instant trip it
+   * reaches 1.08 GB for an area of 457 points and 2.93 GB for one of 1215
+   * points, which palloc refuses. The array therefore holds what a result
+   * certainly carries and grows on demand, doubling as the dynamic arrays of
+   * geo_funcs.c do. */
   int cap = g->n * 16 + 4;
-  int maxinsts = 1 + (seq->count - 1) * cap;
+  int maxinsts = seq->count + 64;
   TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
   int ninsts = 0;
   double *cand = palloc(sizeof(double) * cap);
@@ -397,6 +407,14 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
           c2->radius, e, cand, &nc);
     }
     qsort(cand, nc, sizeof(double), tcbufferdist_cand_cmp);
+
+    /* This segment appends at most one instant per surviving candidate plus its
+     * end instant */
+    if (ninsts + nc + 1 > maxinsts)
+    {
+      maxinsts = Max(ninsts + nc + 1, 2 * maxinsts);
+      instants = repalloc(instants, sizeof(TInstant *) * maxinsts);
+    }
 
     const double duration = (double) (inst2->t - inst1->t);
     TimestampTz prevt = inst1->t;

@@ -3329,9 +3329,18 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
     return res;
   }
 
-  /* Upper bound on the number of result instants: the two endpoints of every
-   * segment plus up to six interior turning points per edge and per segment */
-  int maxinsts = 1 + (seq->count - 1) * (nedges * 6 + 3);
+  /* One segment offers at most six interior turning parameters per edge, but
+   * the loop below discards every candidate outside the open segment, every
+   * duplicate within MEOS_GEOM_TOLERANCE and every one that does not advance
+   * the timestamp, so that count bounds the CANDIDATES of one segment and never
+   * the result. Sizing the result array by the product of the instant count and
+   * that bound asks for memory neither the result nor the candidates ever need,
+   * and the request grows with the geometry: one sequence of an 18971-instant
+   * trip reaches 1.10 GB against an area of 1215 points, which palloc refuses,
+   * while the same trip answers for an area of 789. The array therefore holds
+   * what a result certainly carries and grows on demand, doubling as the
+   * dynamic arrays of geo_funcs.c do. */
+  int maxinsts = seq->count + 64;
   TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
   int ninsts = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -3355,6 +3364,15 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
      * with the exact distance to the whole geometry */
     qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
     const double *ev = (double *) events->elems;
+
+    /* This segment appends at most one instant per surviving candidate plus its
+     * end instant */
+    if (ninsts + (int) events->count + 1 > maxinsts)
+    {
+      maxinsts = Max(ninsts + (int) events->count + 1, 2 * maxinsts);
+      instants = repalloc(instants, sizeof(TInstant *) * maxinsts);
+    }
+
     const double duration = (double) (inst2->t - inst1->t);
     TimestampTz prevt = inst1->t;
     for (int k = 0; k < (int) events->count; k++)
