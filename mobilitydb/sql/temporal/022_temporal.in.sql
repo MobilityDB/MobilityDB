@@ -1515,12 +1515,12 @@ CREATE FUNCTION shiftScaleTime(ttext, interval, interval)
 
 CREATE FUNCTION tprecision(tint, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
-  RETURNS tint
+  RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tbigint, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
-  RETURNS tbigint
+  RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tfloat, duration interval,

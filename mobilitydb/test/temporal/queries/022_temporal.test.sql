@@ -1912,6 +1912,13 @@ SELECT tprecision(tint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 m
 SELECT tprecision(tint '[-4@2001-01-01, -4@2001-01-03]', interval '1 day');
 SELECT tprecision(tbigint '[-4@2001-01-01, -4@2001-01-03]', interval '1 day');
 SELECT tprecision(tbigint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 minutes', '2001-01-01');
+-- The result is a temporal float for every subtype, so the functions of a
+-- temporal float read its averages, an instant included
+SELECT pg_typeof(tprecision(tint '5@2001-01-01 10:00', '1 day')),
+  maxValue(tprecision(tint '5@2001-01-01 10:00', '1 day'));
+SELECT maxValue(tprecision(tint '{1@2001-01-01 00:00, 2@2001-01-01 00:05}', '10 minutes'));
+SELECT maxValue(tprecision(tint '[1@2001-01-01 00:00, 3@2001-01-01 00:05, 3@2001-01-01 00:10]', '10 minutes'));
+SELECT maxValue(tprecision(tbigint '[1@2001-01-01 00:00, 2@2001-01-01 00:05, 2@2001-01-01 00:10]', '10 minutes'));
 
 -- Which bin ends on the bound follows from the bin width, so the containment
 -- holds over a sweep of widths rather than at one of them

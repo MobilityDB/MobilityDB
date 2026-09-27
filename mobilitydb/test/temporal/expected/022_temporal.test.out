@@ -8040,6 +8040,31 @@ SELECT tprecision(tbigint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '1
  {53@Tue Feb 27 16:15:00 2001 PST}
 (1 row)
 
+SELECT pg_typeof(tprecision(tint '5@2001-01-01 10:00', '1 day')),
+  maxValue(tprecision(tint '5@2001-01-01 10:00', '1 day'));
+ pg_typeof | maxvalue 
+-----------+----------
+ tfloat    |        5
+(1 row)
+
+SELECT maxValue(tprecision(tint '{1@2001-01-01 00:00, 2@2001-01-01 00:05}', '10 minutes'));
+ maxvalue 
+----------
+      1.5
+(1 row)
+
+SELECT maxValue(tprecision(tint '[1@2001-01-01 00:00, 3@2001-01-01 00:05, 3@2001-01-01 00:10]', '10 minutes'));
+ maxvalue 
+----------
+        3
+(1 row)
+
+SELECT maxValue(tprecision(tbigint '[1@2001-01-01 00:00, 2@2001-01-01 00:05, 2@2001-01-01 00:10]', '10 minutes'));
+ maxvalue 
+----------
+        2
+(1 row)
+
 SELECT d, getTime(tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)', d, '2001-01-01'))
   <@ getTime(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)') AS covered
 FROM (VALUES (interval '1 day'), (interval '2 days'), (interval '4 days'),

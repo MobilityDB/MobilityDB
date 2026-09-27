@@ -514,6 +514,9 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
 
 /**
  * @brief Return a temporal instant with the precision set to a time bin
+ * @details The value of the bin is the time-weighted average of the values it
+ * holds, as #tsequence_tprecision states it, so a temporal integer answers it
+ * as a temporal float
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
@@ -524,6 +527,9 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 {
   assert(inst); assert(duration); assert(positive_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
+  if (inst->temptype == T_TINT || inst->temptype == T_TBIGINT)
+    return tinstant_make(Float8GetDatum(datum_double(tinstant_value_p(inst),
+      temptype_basetype(inst->temptype))), T_TFLOAT, lower);
   return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
 
@@ -1012,6 +1018,9 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 /**
  * @ingroup meos_temporal_analytics_reduction
  * @brief Return a temporal value with the precision set to time bins
+ * @details The value of a bin is the time-weighted average of the values it
+ * holds, which an integer need not be, so a temporal integer yields a temporal
+ * float, as #tnumber_twavg yields a float
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins

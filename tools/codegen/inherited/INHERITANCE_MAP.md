@@ -343,7 +343,7 @@ pose into its position and a circular mean of its angle.
 
 | type | summary | status |
 |---|---|---|
-| tnumber, tgeompoint/tgeogpoint | average / centroid | carried |
+| tnumber, tgeompoint/tgeogpoint | average / centroid; the average of a temporal integer is a temporal float, one numeric `gen` chunk returning tfloat | carried |
 | tcbuffer, tpose, trgeometry | per-parameter summary | carried |
 | **tnpoint** | position averages on the route the bin shares | carried; a bin spanning two routes has no network point to answer with and raises, the rule the sequence constructor already states |
 | **tposechain** | per-link pose average, the chain keeping its shape | carried; link count is an invariant of the whole value, so link *n* always has a counterpart |
