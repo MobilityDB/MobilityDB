@@ -25,10 +25,13 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
 -- Interp=Step;{[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04], [POINT(3 3)@2001-01-07]}
 </pre><p>La <a class="xref" href="ch09s02.html#fig_tsample" title="Figura 9.2. Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.">Figura 9.2, “Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.”</a> ilustra el muestreo para números flotantes temporales con varias interpolaciones. Como ilustra la figura, la operación de muestreo es más adecuada para valores temporales con interpolación continua.</p><div class="figure-float"><div class="figure"><a name="fig_tsample"></a><p class="title"><b>Figura 9.2. Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="../images/tsample.svg" width="405"></object></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="ttype_tprecision"></a><a class="indexterm" name="id6266"></a><p>Reduce la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</p><pre class="programlisting">
 tprecision({tnumber,tgeompoint,tcbuffer,tpose,tgeo,trgeometry},duration interval,
-  torigin timestamptz='2000-01-03') → {tnumber,tpoint,tcbuffer,tpose,tgeo,trgeometry}
-</pre><p>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</p><pre class="programlisting">
+  torigin timestamptz='2000-01-03') → {tfloat,tpoint,tcbuffer,tpose,tgeo,trgeometry}
+</pre><p>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero. Un número temporal da un flotante temporal, ya que el promedio ponderado por el tiempo de los valores de un intervalo no es necesariamente un entero, como <code class="varname">twAvg</code> da un flotante.</p><pre class="programlisting">
 SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day', '2001-01-01');
 -- Interp=Step;[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]
+SELECT tprecision(tint '[1@2001-01-01 00:00, 3@2001-01-01 00:05, 3@2001-01-01 00:10]',
+  '10 minutes');
+-- Interp=Step;[2@2001-01-01 00:00:00, 3@2001-01-01 00:10:00]
 SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','1 day',
   '2001-01-01');
 -- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08]
