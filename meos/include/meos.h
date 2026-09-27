@@ -2014,6 +2014,7 @@ extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *temporal_tcount_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *temporal_to_taggstate(const Temporal *temp);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmax_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tfloat_tmin_transfn(SkipList *state, const Temporal *temp);

@@ -991,6 +991,66 @@ temporal_tagg_finalfn(SkipList *state)
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the aggregate state holding the values of a temporal value,
+ * the inverse of #temporal_tagg_finalfn
+ * @details The state holds the instants of a discrete sequence and the
+ * sequences of a continuous one or of a sequence set, as the state the final
+ * function reads does, so that a partial aggregate travels as the temporal
+ * value the final function returns and two of them are combined by the
+ * combine function of the aggregate. The state is built as the PostgreSQL
+ * aggregates deserialize theirs, by splicing the values into an empty skiplist.
+ * The combine function answers one of the two states it takes, and
+ * #temporal_tagg_finalfn releases the other one.
+ * @param[in] temp Temporal value
+ * @errval NULL
+ */
+SkipList *
+temporal_to_taggstate(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+
+  int count;
+  const Temporal **values;
+  if (temp->subtype == TINSTANT)
+  {
+    count = 1;
+    values = palloc(sizeof(Temporal *));
+    values[0] = temp;
+  }
+  else if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+    {
+      count = seq->count;
+      values = palloc(sizeof(Temporal *) * count);
+      for (int i = 0; i < count; i++)
+        values[i] = (const Temporal *) TSEQUENCE_INST_N(seq, i);
+    }
+    else
+    {
+      count = 1;
+      values = palloc(sizeof(Temporal *));
+      values[0] = temp;
+    }
+  }
+  else /* temp->subtype == TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    count = ss->count;
+    values = palloc(sizeof(Temporal *) * count);
+    for (int i = 0; i < count; i++)
+      values[i] = (const Temporal *) TSEQUENCESET_SEQ_N(ss, i);
+  }
+  SkipList *result = temporal_skiplist_make();
+  temporal_skiplist_splice(result, (void **) values, count, NULL, false);
+  pfree(values);
+  return result;
+}
+
 /*****************************************************************************
  * Generic functions for aggregating temporal values that require a
  * transformation to be applied to each composing instant/sequence

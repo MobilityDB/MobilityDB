@@ -3348,6 +3348,23 @@ int main(void)
   printf("%s\n", char_result);
   free(tint_result); free(char_result);
 
+  /* SkipList *temporal_to_taggstate(const Temporal *temp); */
+  /* Each value aggregated apart, the partial results carried as temporal
+   * values and combined answer the aggregate of both */
+  Temporal *tint_part1 = temporal_tagg_finalfn(temporal_tcount_transfn(NULL, tfloat1));
+  Temporal *tint_part2 = temporal_tagg_finalfn(temporal_tcount_transfn(NULL, tfloat2));
+  SkipList *sklist1 = temporal_to_taggstate(tint_part1);
+  SkipList *sklist2 = temporal_to_taggstate(tint_part2);
+  sklist = temporal_tcount_combinefn(sklist1, sklist2);
+  /* The combine function answers one of its two states, and the final
+   * function releases the other one */
+  free(temporal_tagg_finalfn(sklist == sklist1 ? sklist2 : sklist1));
+  tint_result = temporal_tagg_finalfn(sklist);
+  char_result = tint_out(tint_result);
+  printf("temporal_tcount combined from two partial results\n");
+  printf("%s\n", char_result);
+  free(tint_part1); free(tint_part2); free(tint_result); free(char_result);
+
   /* SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp); */
   sklist = tfloat_tmax_transfn(NULL, tfloat1);
   sklist = tfloat_tmax_transfn(sklist, tfloat2);
