@@ -140,7 +140,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the values of a raster band read along a trajectory. </p>
-<p >A position reads the pixel it falls in, or, with <code>resample</code> stating the bilinear read, the value the four pixels around it interpolate, as <code>ST_Value</code> reads it. A bilinear value varies within a pixel, so along a segment of a moving trajectory it varies quadratically in time, which a temporal float cannot state: such a trajectory raises an error rather than answering the values at its instants alone </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A position reads the pixel it falls in, or, with <code>resample</code> stating the bilinear read, the value the four pixels around it interpolate, as <code>ST_Value</code> reads it. A bilinear value varies within a pixel, and along a segment of a moving trajectory it is a polynomial of degree two in time over each half-pixel square the segment crosses. The answer then holds the value at the instants of the trajectory, where it crosses the pixel edges and the lines through the pixel centres, and at the extremum of each of those pieces, and is linear between them, as the product of two temporal floats is. It is the value itself where the trajectory moves along a grid axis, over which the value is linear </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (temporal geometry point) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>

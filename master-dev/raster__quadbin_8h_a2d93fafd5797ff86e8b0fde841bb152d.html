@@ -84,6 +84,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_ae709b0e8dde408c796650e09c705037f.html#ae709b0e8dde408c796650e09c705037f">raster_affine_cross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a80d7258a95114f6ca98a5b8388ff8a24.html#a80d7258a95114f6ca98a5b8388ff8a24">raster_at_value_sampler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a40699c74d8b24ed7b8a70900c8e0b94d.html#a40699c74d8b24ed7b8a70900c8e0b94d">raster_cross_fn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_aae11f3cbdc4589863201e9aa65017f5c.html#aae11f3cbdc4589863201e9aa65017f5c">raster_data_fn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a7e81a09b3ef2c217db95c42a98bfa4ef.html#a7e81a09b3ef2c217db95c42a98bfa4ef">raster_grid_fn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a82ac20ee6f0c36ff75e2882818a153a1.html#a82ac20ee6f0c36ff75e2882818a153a1">raster_minus_value_sampler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c">raster_pixel_fn</a></td></tr>
@@ -111,7 +112,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Callback returning the value a raster states at a position named by its grid coordinates, inside the grid, for a value that varies within a pixel: return true and set <code>value</code>, or return false when the position carries no value. </p>
-<p >The traversal of a moving trajectory reads the pixels it crosses, so a grid answering this callback is read at the instants of a trajectory alone, and its caller refuses a moving one </p>
+<p >The value is the bilinear interpolation of the four pixels around the position, as the raster core reads it: the pixel the position falls in and the three beside it on the side of the quarter it falls in, a pixel outside the grid or holding nodata taking the value of the pixel the position falls in. Over each half-pixel square of the grid it is therefore one polynomial a + b col + c row + d col row </p>
 
 </div>
 </div>
