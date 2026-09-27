@@ -666,3 +666,15 @@ SELECT tnumber_extent_combinefn(tbox 'TBOXINT X([1,2])', NULL::tbox);
 SELECT tnumber_extent_combinefn(NULL::tbox, NULL::tbox);
 
 -------------------------------------------------------------------------------
+
+-- A skiplist holding more elements than its initial capacity grows its element
+-- array, and an element placed in the grown space holds no key, so the
+-- aggregate answers the same on memory an earlier aggregate released
+SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
+  timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
+  interval '1 minute') t;
+SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
+  timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
+  interval '1 minute') t;
+
+-------------------------------------------------------------------------------
