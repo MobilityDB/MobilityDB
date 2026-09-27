@@ -106,7 +106,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_gabc8ab7a0d4f69e9343bd50304d34fefb.html#gabc8ab7a0d4f69e9343bd50304d34fefb">tgeo_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga064e0be85bcdb251bbe3f2ab27d89e2e.html#ga064e0be85bcdb251bbe3f2ab27d89e2e">tgeo_restrict_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga65b014734c0fac3611b05670c3ec422f.html#ga65b014734c0fac3611b05670c3ec422f">tgeo_value_at_timestamptz</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_ade76d63114c7f12856b1c5c85cfaf314.html#ade76d63114c7f12856b1c5c85cfaf314">tgeogpointsegm_timestamp_at_param</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__restrict_8c_a489aa4253139ee3283f14f5016e626be.html#a489aa4253139ee3283f14f5016e626be">tgeogpointsegm_timestamp_at_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga47dec455c48a6ea5d2395e9328d57ca6.html#ga47dec455c48a6ea5d2395e9328d57ca6">tgeoinst_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__restrict_8c_adc6bfa782148ab76fb0c20ee35d57eb0.html#adc6bfa782148ab76fb0c20ee35d57eb0">tgeoinst_restrict_geom_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga6f56afc6938be9418e6535a8cb46b581.html#ga6f56afc6938be9418e6535a8cb46b581">tgeoinst_restrict_stbox</a></td></tr>
@@ -151,8 +151,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ade76d63114c7f12856b1c5c85cfaf314" name="ade76d63114c7f12856b1c5c85cfaf314"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade76d63114c7f12856b1c5c85cfaf314">&#9670;&#160;</a></span>tgeogpointsegm_timestamp_at_param()</h2>
+<a id="a489aa4253139ee3283f14f5016e626be" name="a489aa4253139ee3283f14f5016e626be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a489aa4253139ee3283f14f5016e626be">&#9670;&#160;</a></span>tgeogpointsegm_timestamp_at_param()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -175,20 +175,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structDggsArc.html">DggsArc</a> *&#160;</td>
-          <td class="paramname"><em>arc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>param</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
+          <td class="paramname"><em>param</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -204,12 +192,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the instant at which a geodetic segment reaches a parameter of its path. </p>
-<p >The parameter states a position, and the position states the instant through <a class="el" href="tgeo__restrict_8c_aafc66b9ecf61afefe04046727056627d.html#aafc66b9ecf61afefe04046727056627d" title="Return the timestamp at which a segment of a temporal point takes a base value (iterator function)">tpointsegm_timestamp_at_value1_iter()</a>, the dating every clip of a segment in this file uses. A parameter at an end of the segment states the instant of that end, and a position the dating does not find falls back on the parameter itself </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The parameter is the fraction of the path's angle, which is the fraction of the segment's duration at which <code>pointsegm_interpolate</code> places the position, so the instant is that fraction of the duration, truncated to the microsecond as <a class="el" href="tgeo__restrict_8c_ad17958794ced5426ebe912140f84b089.html#ad17958794ced5426ebe912140f84b089" title="Restrict the temporal point to the spatial dimensions of a spatiotemporal box.">tpointseq_linear_at_stbox_xyz</a> dates the crossings of a planar segment and the walks of the cell grids date theirs. Reading the parameter back out of the position it states instead loses its low digits to the coordinates that carry it, and the crossing then falls a microsecond before the instant it happens </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">inst1,inst2</td><td>Bounds of the segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">arc</td><td>Path of the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">param</td><td>Parameter along the path </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the temporal point </td></tr>
   </table>
   </dd>
 </dl>
