@@ -144,12 +144,15 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
 				<para>Reduce la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tprecision({tnumber,tgeompoint,tcbuffer,tpose,tgeo,trgeometry},duration interval,
-  torigin timestamptz='2000-01-03') → {tnumber,tpoint,tcbuffer,tpose,tgeo,trgeometry}
+  torigin timestamptz='2000-01-03') → {tfloat,tpoint,tcbuffer,tpose,tgeo,trgeometry}
 </programlisting>
-				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero. Un número temporal da un flotante temporal, ya que el promedio ponderado por el tiempo de los valores de un intervalo no es necesariamente un entero, como <varname>twAvg</varname> da un flotante.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day', '2001-01-01');
 -- Interp=Step;[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]
+SELECT tprecision(tint '[1@2001-01-01 00:00, 3@2001-01-01 00:05, 3@2001-01-01 00:10]',
+  '10 minutes');
+-- Interp=Step;[2@2001-01-01 00:00:00, 3@2001-01-01 00:10:00]
 SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','1 day',
   '2001-01-01');
 -- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08]
