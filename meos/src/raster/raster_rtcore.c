@@ -2064,6 +2064,27 @@ raster_value_bilinear(void *ctxp, double col, double row, double *value)
 }
 
 /**
+ * @brief Raster data callback answering whether a pixel of a PostGIS raster
+ * holds data, as the bilinear read of the raster core tells a pixel holding
+ * data from one it replaces by the pixel a position falls in
+ */
+static bool
+raster_value_data(void *ctxp, int col, int row)
+{
+  RasterSampleState *state = (RasterSampleState *) ctxp;
+  if (state->unreadable)
+    return false;
+  double value;
+  int isnodata;
+  if (rt_band_get_pixel(state->band, col, row, &value, &isnodata) != ES_NONE)
+  {
+    state->unreadable = true;
+    return false;
+  }
+  return ! isnodata;
+}
+
+/**
  * @brief Build the sampling state and the extent pre-filter shared by every
  * raster sampling function
  * @param[in] traj Trajectory (temporal geometry point)
@@ -2142,6 +2163,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   ops->grid = &raster_value_grid;
   ops->pixel = &raster_value_pixel;
   ops->point = bilinear ? &raster_value_bilinear : NULL;
+  ops->data = bilinear ? &raster_value_data : NULL;
   ops->cross = &raster_value_cross;
   ops->ctx = state;
   ops->width = (int) rt_raster_get_width(raster);
@@ -2225,9 +2247,13 @@ raster_resample_bilinear(const char *resample, bool *bilinear)
  * @details A position reads the pixel it falls in, or, with @p resample
  * stating the bilinear read, the value the four pixels around it
  * interpolate, as `ST_Value` reads it. A bilinear value varies within a
- * pixel, so along a segment of a moving trajectory it varies quadratically
- * in time, which a temporal float cannot state: such a trajectory raises an
- * error rather than answering the values at its instants alone
+ * pixel, and along a segment of a moving trajectory it is a polynomial of
+ * degree two in time over each half-pixel square the segment crosses. The
+ * answer then holds the value at the instants of the trajectory, where it
+ * crosses the pixel edges and the lines through the pixel centres, and at
+ * the extremum of each of those pieces, and is linear between them, as the
+ * product of two temporal floats is. It is the value itself where the
+ * trajectory moves along a grid axis, over which the value is linear
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
@@ -2249,14 +2275,6 @@ raster_value(const Temporal *traj, const Raster *rast, int band,
   bool bilinear = false;
   if (resample && ! raster_resample_bilinear(resample, &bilinear))
     return NULL;
-  /* Raised before the raster is read, so that nothing is held */
-  if (bilinear && MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR)
-  {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "A bilinear value varies quadratically along a moving trajectory, "
-      "which a temporal float cannot state");
-    return NULL;
-  }
 
   RasterSampleState state;
   RasterGridOps ops;

@@ -430,18 +430,90 @@ SELECT (SELECT merge(array_agg(rasterValue(atTime(tp, period), rast) ORDER BY pe
     FROM periods) = rasterValue(tp, rast) AS periods_as_whole
 FROM r, trip;
 
--- A bilinear value varies quadratically in time along a trip that moves
--- between its instants, which a temporal float cannot state, and a read the
--- raster does not know is refused rather than taken for another.
+-- A bilinear value along a trip that moves between its instants is a
+-- polynomial of degree two in time over each half-pixel square it crosses.
+-- Along a grid axis it is linear, so the answer is the value itself at every
+-- instant: the trip runs along the row of pixels 10, 20, 30 at y = 2.25, a
+-- quarter pixel below their centres, and reads what ST_Value reads at the
+-- positions of eleven instants, between the crossings as well as at them.
 WITH rast AS (
-  SELECT ST_AddBand(
-    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
-    '32BF'::text, 0.0::float8, NULL::float8
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(0.25 2.25)@2001-01-01,
+    POINT(2.75 2.25)@2001-01-11]' AS t
+)
+SELECT round(rasterValue(t, r, 1, true, 'bilinear'), 6)::text AS along_row,
+  bool_and(round(valueAtTimestamp(rasterValue(t, r, 1, true, 'bilinear'),
+    ts)::numeric, 6) = round(ST_Value(r, 1, valueAtTimestamp(t, ts), true,
+    'bilinear')::numeric, 6)) AS as_postgis
+FROM rast, trip, generate_series(timestamptz '2001-01-01',
+  '2001-01-11', interval '1 day') ts
+GROUP BY r, t;
+
+-- Across a grid axis the value reaches an extremum inside a half-pixel
+-- square where its four pixels do not lie on a plane, and the answer holds it
+-- beside the instants of the trip and the lines it crosses, linear between
+-- those, as the product of two temporal floats holds its extremum. Between
+-- the centres of the four pixels the value is 10 + 10u + 10v - 20uv, so the
+-- trip, moving by u = s and v = 0.4s, reads 10 + 14s - 8s^2, whose maximum
+-- 16.125 it reaches at s = 0.875, past the pixel edge it crosses at s = 0.5.
+-- Every instant of the answer reads what ST_Value reads at the position of
+-- the trip then.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4],
+          [20.0::float4, 10.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(0.5 1.5)@2001-01-01,
+    POINT(1.5 1.1)@2001-01-03]' AS t
+), val AS (
+  SELECT r, t, rasterValue(t, r, 1, true, 'bilinear') AS v
+  FROM rast, trip
+)
+SELECT round(v, 6)::text AS across_grid,
+  (SELECT bool_and(round(getValue(i)::numeric, 6) =
+     round(ST_Value(r, 1, valueAtTimestamp(t, getTimestamp(i)), true,
+     'bilinear')::numeric, 6)) FROM unnest(instants(v)) i) AS as_postgis,
+  round(maxValue(v)::numeric, 6) AS maximum
+FROM val;
+
+-- Across a pixel edge the value jumps where a pixel read there holds nodata,
+-- which takes the value of the pixel the position falls in, and a new
+-- sequence starts at the instant the trip crosses the edge. A nodata pixel
+-- the trip passes over carries no value.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -1.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [-1.0::float4, 40.0::float4, -1.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
-  POINT(2.5 0.5)@2001-01-03]', r, 1, true, 'bilinear')
+SELECT round(rasterValue(tgeompoint 'SRID=4326;[POINT(0.25 1.25)@2001-01-01,
+    POINT(2.75 1.25)@2001-01-11]', r, 1, true, 'bilinear'), 6)::text AS jump,
+  round(rasterValue(tgeompoint 'SRID=4326;[POINT(0.25 0.25)@2001-01-01,
+    POINT(2.75 0.25)@2001-01-11]', r, 1, true, 'bilinear'), 6)::text AS nodata
 FROM rast;
+
+-- A read the raster does not know is refused rather than taken for another.
 WITH rast AS (
   SELECT ST_AddBand(
     ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),

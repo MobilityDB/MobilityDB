@@ -575,15 +575,22 @@ int main(void)
   assert(tfloat_start_value(bilin) == 18.125);
   free(bilin); free(traj_bilinear);
 
-  /* A bilinear value varies quadratically along a moving trajectory, which a
-   * temporal float cannot state, and a read the raster does not know is
-   * refused rather than taken for another */
-  Temporal *traj_moving = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
-    " POINT(2.5 0.5)@2001-01-03]");
+  /* Along a moving trajectory a bilinear read answers a linear temporal
+   * float starting with the value read at its first position, and a read the
+   * raster does not know is refused rather than taken for another */
+  Temporal *traj_moving = tgeompoint_in("SRID=4326;[POINT(0.75 2.25)@2001-01-01,"
+    " POINT(0.75 1.75)@2001-01-03]");
   assert(traj_moving != NULL);
   meos_errno_reset();
-  assert(raster_value(traj_moving, rast_values, 1, true, "bilinear") == NULL);
-  assert(meos_errno() != 0);
+  Temporal *bilin_moving = raster_value(traj_moving, rast_values, 1, true,
+    "bilinear");
+  assert(bilin_moving != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_value(raster, 1, bilinear) along a trajectory: %f\n",
+    tfloat_start_value(bilin_moving));
+  assert(strcmp(temporal_interp(bilin_moving), "Linear") == 0);
+  assert(tfloat_start_value(bilin_moving) == 18.125);
+  free(bilin_moving);
   meos_errno_reset();
   assert(raster_value(traj_values, rast_values, 1, true, "cubic") == NULL);
   assert(meos_errno() != 0);

@@ -481,6 +481,7 @@ raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
   ops->grid = &raquet_grid;
   ops->pixel = &raquet_pixel;
   ops->point = NULL;
+  ops->data = NULL;
   ops->cross = &raquet_cross;
   ops->ctx = state;
   ops->width = state->width;
@@ -906,6 +907,336 @@ tpointseq_raster_value_traverse(const TSequence *seq, const RasterGridOps *ops,
 }
 
 /**
+ * @brief Return the index of the half-pixel square holding a grid coordinate,
+ * a coordinate outside the grid naming the square just outside it, see
+ * #raster_cell_index()
+ * @param[in] g Grid coordinate
+ * @param[in] n Number of cells along the axis
+ */
+static int
+raster_half_index(double g, int n)
+{
+  /* The negated test also sends a NaN outside */
+  if (! (g >= 0.0))
+    return -1;
+  if (g >= (double) n)
+    return 2 * n;
+  return (int) floor(2.0 * g);
+}
+
+/**
+ * @brief Return the first of the two pixels along an axis that the read of a
+ * position interpolates over a half-pixel square
+ * @details The first half of pixel c reads pixels c - 1 and c, its second
+ * half pixels c and c + 1
+ * @param[in] h Index of the half-pixel square along the axis
+ */
+static int
+raster_half_stencil(int h)
+{
+  return (h + 1) / 2 - 1;
+}
+
+/**
+ * @brief Return whether the pixel holding a half-pixel square carries a
+ * value
+ */
+static bool
+raster_half_value(const RasterGridOps *ops, int hc, int hr)
+{
+  if (hc < 0 || hc >= 2 * ops->width || hr < 0 || hr >= 2 * ops->height)
+    return false;
+  double value;
+  return ops->pixel(ops->ctx, hc / 2, hr / 2, &value);
+}
+
+/**
+ * @brief Return whether the read of a position is continuous where a segment
+ * passes from one half-pixel square into another, both carrying a value
+ * @details Each square reads one polynomial from the four pixels around it,
+ * a pixel outside the grid or holding nodata taking the value of the pixel
+ * holding the square, see ::raster_point_fn. A square passes into the other
+ * half of the same pixel across the line through the centre of the pixel,
+ * where the pixels the two polynomials do not share weigh nothing, so the
+ * read is continuous there. Across the edge between two pixels the two
+ * squares read the same four pixels, but a pixel holding no data takes the
+ * value of a different pixel on each side, so the read is continuous there
+ * when every pixel read holds data, and may jump otherwise.
+ */
+static bool
+raster_half_joins(const RasterGridOps *ops, int hc0, int hr0, int hc1,
+  int hr1)
+{
+  /* The line between squares h and h + 1 passes through the centre of a
+   * pixel when h is even */
+  bool edge = (hc0 != hc1 && Min(hc0, hc1) % 2 != 0) ||
+    (hr0 != hr1 && Min(hr0, hr1) % 2 != 0);
+  if (! edge)
+    return true;
+  int c0 = raster_half_stencil(Min(hc0, hc1));
+  int c1 = raster_half_stencil(Max(hc0, hc1)) + 1;
+  int r0 = raster_half_stencil(Min(hr0, hr1));
+  int r1 = raster_half_stencil(Max(hr0, hr1)) + 1;
+  for (int col = c0; col <= c1; col++)
+    for (int row = r0; row <= r1; row++)
+      if (col < 0 || col >= ops->width || row < 0 || row >= ops->height ||
+          ! ops->data(ops->ctx, col, row))
+        return false;
+  return true;
+}
+
+/**
+ * @brief Return the value a half-pixel square reads at the parameter @p s of
+ * a segment
+ * @details The position is held inside the square, so that at an end of the
+ * piece of the segment crossing the square the value is the one the
+ * polynomial of the square takes there, whichever square a position on its
+ * edge belongs to
+ * @param[in] ops Grid the value is read from
+ * @param[in] g1,g2 Grid coordinates of the endpoints of the segment
+ * @param[in] s Parameter along the segment
+ * @param[in] hc,hr Half-pixel square
+ * @param[out] value Value read
+ */
+static bool
+raster_half_read(const RasterGridOps *ops, const double *g1, const double *g2,
+  double s, int hc, int hr, double *value)
+{
+  double g[2] = {g1[0] + s * (g2[0] - g1[0]), g1[1] + s * (g2[1] - g1[1])};
+  const int h[2] = {hc, hr};
+  for (int axis = 0; axis < 2; axis++)
+  {
+    double lo = 0.5 * h[axis];
+    double hi = nextafter(0.5 * (h[axis] + 1), lo);
+    if (g[axis] < lo)
+      g[axis] = lo;
+    else if (g[axis] > hi)
+      g[axis] = hi;
+  }
+  return ops->point(ops->ctx, g[0], g[1], value);
+}
+
+/**
+ * @brief Append to a run the extremum of the value read along the piece of a
+ * segment crossing a half-pixel square
+ * @details Over the square the value is a + b col + c row + d col row, and
+ * along the piece the grid coordinates are affine in time, so the value is a
+ * polynomial of degree two in time: linear where the segment runs along a
+ * grid axis or where d is zero, and otherwise reaching one extremum. The
+ * values at the ends and at the middle of the piece state the polynomial,
+ * and the extremum, when it falls inside the piece, is read at its instant,
+ * as #tfloat_arithop_turnpt() places the extremum of the product of two
+ * temporal floats.
+ */
+static void
+raster_half_turnpt(const RasterGridOps *ops, const double *g1,
+  const double *g2, double sa, double sb, int hc, int hr, TimestampTz t1,
+  double dt, RasterRun *run)
+{
+  double fa, fm, fb;
+  if (! (sb > sa) ||
+      ! raster_half_read(ops, g1, g2, sa, hc, hr, &fa) ||
+      ! raster_half_read(ops, g1, g2, 0.5 * (sa + sb), hc, hr, &fm) ||
+      ! raster_half_read(ops, g1, g2, sb, hc, hr, &fb))
+    return;
+  /* The value along the piece is fa + b u + d u^2 for u in [0, 1] */
+  double d = 2.0 * (fa + fb - 2.0 * fm);
+  if (d == 0.0)
+    return;
+  double b = fb - fa - d;
+  double u = -b / (2.0 * d);
+  if (u <= MEOS_EPSILON || u >= 1.0 - MEOS_EPSILON)
+    /* The extremum lies outside the piece */
+    return;
+  double s = sa + u * (sb - sa);
+  TimestampTz t = t1 + (TimestampTz) (dt * s);
+  /* An extremum that rounds onto an instant already stated or onto the end
+   * of the piece holds no time of its own */
+  if ((run->count > 0 && t <= run->insts[run->count - 1]->t) ||
+      t >= t1 + (TimestampTz) (dt * sb))
+    return;
+  double value;
+  if (raster_half_read(ops, g1, g2, s, hc, hr, &value))
+    raster_run_push(run, value, t);
+  return;
+}
+
+/**
+ * @brief Close a run of a linear temporal float and append it to the answer
+ * @details The last instant of the run is its end, which the run holds when
+ * @p upper_inc is true. A run of one instant holds it only when both of its
+ * bounds are inclusive, and holds no time otherwise.
+ */
+static void
+raster_run_close_linear(RasterRun *run, bool upper_inc, RasterAnswer *answer)
+{
+  if (run->count == 0)
+    return;
+  if (run->count == 1 && ! (run->lower_inc && upper_inc))
+  {
+    pfree(run->insts[0]);
+    pfree(run->insts);
+    run->insts = NULL;
+    run->count = run->size = 0;
+    return;
+  }
+  if (answer->count >= answer->size)
+  {
+    answer->size *= 2;
+    answer->seqs = repalloc(answer->seqs,
+      sizeof(TSequence *) * (size_t) answer->size);
+  }
+  answer->seqs[answer->count++] = tsequence_make_free(run->insts, run->count,
+    run->lower_inc, upper_inc, LINEAR, NORMALIZE);
+  run->insts = NULL;
+  run->count = run->size = 0;
+  return;
+}
+
+/**
+ * @brief Return the values a raster read at a position holds along a
+ * linearly interpolated sequence, as the sequences of a linear temporal float
+ * @details The read of a position interpolates the four pixels around it,
+ * and over each half-pixel square of the grid it is one polynomial, see
+ * ::raster_point_fn. Each segment is therefore traversed square by square,
+ * as #tpointseq_raster_value_traverse() traverses it pixel by pixel, with the
+ * lines through the pixel centres beside the pixel edges. Along the piece of
+ * a segment crossing a square the value is a polynomial of degree two in
+ * time, whose extremum #raster_half_turnpt() adds. The answer thus holds the
+ * value at the instants of the trip, at every line it crosses and at every
+ * extremum between them, and is linear between those. It is the value itself
+ * wherever the trip runs along a grid axis, where the polynomial is linear.
+ *
+ * The value is continuous across the lines through the pixel centres, and
+ * across a pixel edge unless a pixel read there holds no data. There it may
+ * jump, so a new sequence starts at the instant the trip crosses the edge,
+ * holding from that instant on the value of the square the trip enters, as a
+ * step read holds the value of the pixel the trip enters.
+ * @param[in] seq Trajectory sequence with linear interpolation
+ * @param[in] ops Grid the values are read from
+ * @param[in,out] answer Sequences of the answer, appended to
+ */
+static void
+tpointseq_raster_point_traverse(const TSequence *seq, const RasterGridOps *ops,
+  RasterAnswer *answer)
+{
+  RasterRun run = {NULL, 0, 0, seq->period.lower_inc};
+  /* The positions are borrowed, as in #tpointseq_raster_value_traverse() */
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const POINT2D *p1 = GSERIALIZED_POINT2D_P(
+    (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst1)));
+  double g1[2];
+  ops->grid(ops->ctx, p1->x, p1->y, &g1[0], &g1[1]);
+  int hc = raster_half_index(g1[0], ops->width);
+  int hr = raster_half_index(g1[1], ops->height);
+  bool in = raster_half_value(ops, hc, hr);
+  double value;
+  /* The trip starts with the value at its first position */
+  if (in && ops->point(ops->ctx, g1[0], g1[1], &value))
+    raster_run_push(&run, value, inst1->t);
+
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst2)));
+    double g2[2];
+    ops->grid(ops->ctx, p2->x, p2->y, &g2[0], &g2[1]);
+    int hce = raster_half_index(g2[0], ops->width);
+    int hre = raster_half_index(g2[1], ops->height);
+    double dt = (double) (inst2->t - inst1->t);
+    double s_prev = 0.0;
+    /* A segment lying on one side outside the grid along its whole length
+     * meets no square, see #tpointseq_raster_value_traverse() */
+    bool outside = (hc == hce && (hc < 0 || hc >= 2 * ops->width)) ||
+      (hr == hre && (hr < 0 || hr >= 2 * ops->height));
+    if (! outside)
+    {
+      int stepc = (hce > hc) ? 1 : ((hce < hc) ? -1 : 0);
+      int stepr = (hre > hr) ? 1 : ((hre < hr) ? -1 : 0);
+      /* One step for each line the segment crosses bounds the walk */
+      int guard = abs(hce - hc) + abs(hre - hr);
+      while ((hc != hce || hr != hre) && guard-- > 0)
+      {
+        double sc = (hc == hce) ? DBL_MAX :
+          raster_cross_param(ops, p1, p2, g1, g2, 0,
+            0.5 * ((stepc > 0) ? hc + 1 : hc));
+        double sr = (hr == hre) ? DBL_MAX :
+          raster_cross_param(ops, p1, p2, g1, g2, 1,
+            0.5 * ((stepr > 0) ? hr + 1 : hr));
+        if (sc == DBL_MAX && sr == DBL_MAX)
+          break;
+        /* A segment passing through a corner of the squares crosses both
+         * lines at once */
+        int hc1 = (sc <= sr) ? hc + stepc : hc;
+        int hr1 = (sr <= sc) ? hr + stepr : hr;
+        double s = Min(sc, sr);
+        /* Rounding may place a crossing a hair before the previous one or
+         * past the end of the segment */
+        if (s < s_prev)
+          s = s_prev;
+        if (s > 1.0)
+          s = 1.0;
+        if (in)
+          raster_half_turnpt(ops, g1, g2, s_prev, s, hc, hr, inst1->t, dt,
+            &run);
+        TimestampTz t = inst1->t + (TimestampTz) (dt * s);
+        bool in1 = raster_half_value(ops, hc1, hr1);
+        if (in && in1 && raster_half_joins(ops, hc, hr, hc1, hr1))
+        {
+          if (raster_half_read(ops, g1, g2, s, hc1, hr1, &value))
+            raster_run_push(&run, value, t);
+        }
+        else
+        {
+          /* The value the trip leaves holds up to the crossing, and the one
+           * it enters from the crossing on */
+          if (in)
+          {
+            if (raster_half_read(ops, g1, g2, s, hc, hr, &value))
+              raster_run_push(&run, value, t);
+            raster_run_close_linear(&run, false, answer);
+          }
+          run.lower_inc = true;
+          if (in1 && raster_half_read(ops, g1, g2, s, hc1, hr1, &value))
+            raster_run_push(&run, value, t);
+        }
+        hc = hc1;
+        hr = hr1;
+        in = in1;
+        s_prev = s;
+      }
+    }
+    if (hc != hce || hr != hre)
+    {
+      /* The walk stops short of the square holding the end of the segment
+       * only where rounding defeats it, and the run ends there */
+      raster_run_close_linear(&run, false, answer);
+      run.lower_inc = true;
+      hc = hce;
+      hr = hre;
+      in = raster_half_value(ops, hc, hr);
+      s_prev = 1.0;
+    }
+    /* The segment ends with the value at its last position */
+    if (in)
+    {
+      raster_half_turnpt(ops, g1, g2, s_prev, 1.0, hc, hr, inst1->t, dt,
+        &run);
+      if (ops->point(ops->ctx, g2[0], g2[1], &value))
+        raster_run_push(&run, value, inst2->t);
+    }
+    /* The next segment starts where this one ends */
+    inst1 = inst2;
+    p1 = p2;
+    g1[0] = g2[0];
+    g1[1] = g2[1];
+  }
+  raster_run_close_linear(&run, seq->period.upper_inc, answer);
+  return;
+}
+
+/**
  * @brief Return the values of a raster read along a trajectory
  * @details The pixel access is delegated to the grid descriptor so that the
  * one algorithm serves any raster engine: a PostGIS raster is read through
@@ -949,7 +1280,12 @@ raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
     answer.count = 0;
     answer.seqs = palloc(sizeof(TSequence *) * (size_t) answer.size);
     for (int i = 0; i < nseqs_in; i++)
-      tpointseq_raster_value_traverse(seqs[i], ops, &answer);
+    {
+      if (ops->point)
+        tpointseq_raster_point_traverse(seqs[i], ops, &answer);
+      else
+        tpointseq_raster_value_traverse(seqs[i], ops, &answer);
+    }
     pfree(seqs);
     if (answer.count == 0)
     {
