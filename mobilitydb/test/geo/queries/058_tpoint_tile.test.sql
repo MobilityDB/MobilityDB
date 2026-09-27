@@ -337,6 +337,19 @@ FROM (VALUES (true), (false)) AS m(bitmatrix),
     5.0, bitmatrix := m.bitmatrix, borderInc := b.borderInc) s
 GROUP BY bitmatrix, borderInc ORDER BY bitmatrix, borderInc;
 
+-- A trajectory passing through the corner where four tiles meet holds the
+-- tile whose lower bounds meet there at that instant, which the bit matrix
+-- sets as the split without it reads it: the trajectory below crosses the
+-- corner (-90 0) halfway, and the tile from (-90 0) holds it then
+SELECT bitmatrix, count(*) AS fragments,
+  array_agg(ST_AsText(s.point) || ' ' || asText(s.tpoint)
+    ORDER BY ST_AsText(s.point)) AS fragments
+FROM (VALUES (true), (false)) AS m(bitmatrix),
+  LATERAL spaceSplit(tgeompoint
+    '[Point(-135 10)@2001-01-01, Point(-45 -10)@2001-01-03]',
+    90.0, bitmatrix := m.bitmatrix) s
+GROUP BY bitmatrix ORDER BY bitmatrix;
+
 -- Every form of spaceTiles takes the border by the name borderInc, the one
 -- with the three sizes included
 SELECT count(*) AS tiles
