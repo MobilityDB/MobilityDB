@@ -1762,12 +1762,16 @@ dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin, double ymin,
        * state at or before the start of a path starting a rounding away from
        * the line is lost, and the path then starts on the side the crossings
        * and its end state, where the end lies farther from the line than the
-       * start */
+       * start. The line is the plane of the meridian, which holds the
+       * meridian half a turn from it too, so the distance of a position to it
+       * is the smaller of its longitude difference to either */
       int ncross = 0;
       for (int i = 0; i < nmer[k]; i++)
         ncross += (mer[k][i] > 0.0 && mer[k][i] < 1.0);
+      double dist1 = Min(fabs(d), 180.0 - fabs(d));
+      double dist2 = Min(fabs(d2), 180.0 - fabs(d2));
       if (s != 0 && s2 != 0 && d != 0.0 && fabs(lat1) != 90.0 &&
-          ((ncross % 2 == 1) != (s != s2)) && fabs(d) <= fabs(d2))
+          ((ncross % 2 == 1) != (s != s2)) && dist1 <= dist2)
         s = -s;
       /* East of the west meridian and west of the east one. A path lying on
        * the plane of the meridian runs along the meridian as its endpoints
@@ -1823,7 +1827,15 @@ dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin, double ymin,
         if (along_lat[k])
           lat = lats[k];
       }
-      inside = dggs_lonlat_box_holds(lon, lat, xmin, ymin, xmax, ymax);
+      /* A box starting at or past the antimeridian holds the longitudes the
+       * positions state, of which 180 alone is one: a piece lies there only
+       * running along the antimeridian as its endpoints state it, and a
+       * position halfway along any other piece reads 180 only to the rounding
+       * of its angles */
+      if (xmin >= 180.0 && ! along_lon[0])
+        inside = false;
+      else
+        inside = dggs_lonlat_box_holds(lon, lat, xmin, ymin, xmax, ymax);
     }
     if (! inside)
       continue;

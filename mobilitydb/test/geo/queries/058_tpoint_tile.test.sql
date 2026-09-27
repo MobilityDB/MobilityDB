@@ -324,6 +324,22 @@ FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
     sum(duration(getTime(s.tpoint))) AS total
   FROM trips, LATERAL spaceSplit(tp, 30.0) s GROUP BY tp) AS q;
 
+-- The fragments of the space-time split of a geodetic trip partition its
+-- period too: the trip starting at the southernmost position of its great
+-- circle is cut at the bounds of the periods into parts whose arcs carry
+-- extremes of their own, and the trip crossing the antimeridian is cut into a
+-- part ending a rounding away from the plane of the meridian 15
+WITH trips(tp) AS (VALUES
+  (tgeogpoint '[Point(-30 -30)@2001-01-01 17:00:00+00, Point(60 0)@2001-01-02 01:00:00+00]'),
+  (tgeogpoint '[Point(150 15)@2001-01-03 11:00:00+00, Point(-120 15)@2001-01-04 15:00:00+00]'))
+SELECT count(*) AS trips,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS splits_not_partitioning
+FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
+    sum(duration(getTime(s.tpoint))) AS total
+  FROM trips, LATERAL spaceTimeSplit(tp, 15.0, interval '5 hours') s
+  GROUP BY tp) AS q;
+
 -- A grid is laid on a value of its own kind, so a geography origin is required
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
   geography 'SRID=4326;Point(0.5 0.5)');

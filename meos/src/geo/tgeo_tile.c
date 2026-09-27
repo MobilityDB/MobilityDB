@@ -1380,6 +1380,36 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
       return NULL;
   }
 
+  /* A geodetic trip is laid on the tiles of each period as the part of it in
+   * that period, which the restriction to a tile cuts at the bounds of the
+   * period and whose arcs from those cuts carry extremes of their own: the
+   * box of the part reads them, as #tgeo_restrict_stbox reads them for the
+   * part. The grid therefore holds the box of the part in every period
+   * besides the box of the trip, which reads the extremes of its whole arcs
+   * alone, so a part reaching past the box of the trip by the rounding of an
+   * extreme lies in a tile of the grid */
+  if (xsize && duration && MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      temporal_num_instants(temp) > 1)
+  {
+    int64 tunits = interval_units(duration);
+    TimestampTz upper = DatumGetTimestampTz(bounds.period.upper);
+    for (TimestampTz t = timestamptz_bin_start(
+           DatumGetTimestampTz(bounds.period.lower), tunits, torigin);
+         t <= upper; t += tunits)
+    {
+      Span p;
+      span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
+        false, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
+      Temporal *part = temporal_restrict_tstzspan(temp, &p, REST_AT);
+      if (! part)
+        continue;
+      STBox b;
+      tspatial_set_stbox(part, &b);
+      stbox_expand(&b, &bounds);
+      pfree(part);
+    }
+  }
+
   /* Disable the usage of bitmatrix for instantaneous temporal values, for
    * time only bins, for a value covering a region, or for a geodetic point:
    * the matrix is filled from the segments a POINT traverses in longitude and
