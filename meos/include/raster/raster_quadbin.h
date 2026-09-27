@@ -70,12 +70,22 @@ typedef bool (*raster_pixel_fn)(void *ctx, int col, int row, double *value);
  * its grid coordinates, inside the grid, for a value that varies within a
  * pixel: return true and set @p value, or return false when the position
  * carries no value
- * @details The traversal of a moving trajectory reads the pixels it crosses,
- * so a grid answering this callback is read at the instants of a trajectory
- * alone, and its caller refuses a moving one
+ * @details The value is the bilinear interpolation of the four pixels around
+ * the position, as the raster core reads it: the pixel the position falls in
+ * and the three beside it on the side of the quarter it falls in, a pixel
+ * outside the grid or holding nodata taking the value of the pixel the
+ * position falls in. Over each half-pixel square of the grid it is therefore
+ * one polynomial a + b col + c row + d col row
  */
 typedef bool (*raster_point_fn)(void *ctx, double col, double row,
   double *value);
+
+/**
+ * @brief Callback returning whether a pixel named by its column and its row,
+ * both inside the grid, holds data, whatever the sampling answers over a
+ * nodata pixel
+ */
+typedef bool (*raster_data_fn)(void *ctx, int col, int row);
 
 /**
  * @brief Callback returning the parameter at which the segment from
@@ -104,6 +114,8 @@ typedef struct RasterGridOps
   raster_pixel_fn pixel;    /**< Value of a pixel */
   raster_point_fn point;    /**< Value at a position, NULL where a position
                                  answers the value of the pixel it falls in */
+  raster_data_fn data;      /**< Whether a pixel holds data, NULL where
+                                 @p point is NULL */
   raster_cross_fn cross;   /**< Parameter at which a segment reaches a grid
                                  line, NULL to solve it from the grid
                                  coordinates of the endpoints */
