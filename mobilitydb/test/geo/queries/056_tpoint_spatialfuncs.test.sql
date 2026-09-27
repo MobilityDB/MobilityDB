@@ -1091,6 +1091,38 @@ WITH trip(tp) AS (
 SELECT timeSpan(merge(atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false),
   minusStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false))) = timeSpan(tp)
   AS at_and_minus_make_the_trip FROM trip;
+-- A box leaving its upper border out holds the trip as the planar box does:
+-- the trip ending on the east meridian leaves that end out, the trip leaving
+-- the box through the west meridian holds its first instant, and the trip
+-- running along the east meridian lies on the border and nowhere else
+SELECT asText(atStbox(tgeogpoint '[Point(45 30)@2001-01-01, Point(90 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(45 30)@2001-01-01, Point(90 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', true), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(0 30)@2001-01-01, Point(-45 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(90 10)@2001-01-01, Point(90 50)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(90 10)@2001-01-01, Point(90 50)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', true), 6);
+-- A trip through the corner of a box crosses its meridian and its parallel at
+-- that instant, and the box holding the corner holds the trip there though it
+-- holds no stretch of it
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false));
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((-90 0),(0 60))', false));
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0 -60),(90 0))', false));
+-- The trip from Point(-30 0) to Point(60 -30) ends at the southernmost
+-- position of its great circle, so it runs south throughout and never passes
+-- below the parallel of its end: the box south of that parallel holds none of
+-- it, as the box bounding the trip states
+SELECT asText(atStbox(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((30 -60),(60 -30))', true), 6);
+SELECT asText(atStbox(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((30 -30),(60 0))', false), 6);
+SELECT ymin(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]'::stbox);
 
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2001-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])'));

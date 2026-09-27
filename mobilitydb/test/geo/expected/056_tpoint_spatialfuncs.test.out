@@ -3822,16 +3822,16 @@ select astext(atStbox(tgeompoint '(Point(3 1)@2001-01-01, Point(3 1)@2001-01-02,
 
 SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
   stbox 'SRID=4326;GEODSTBOX X((-180 55),(-157.5 67))', false), 6);
-                                               astext                                               
-----------------------------------------------------------------------------------------------------
- {[POINT(-170 60)@Mon Jan 01 00:00:00 2001 PST, POINT(180 60.378348)@Mon Jan 01 12:00:00 2001 PST)}
+                                                   astext                                                   
+------------------------------------------------------------------------------------------------------------
+ {[POINT(-170 60)@Mon Jan 01 00:00:00 2001 PST, POINT(-180 60.378348)@Mon Jan 01 11:59:59.999999 2001 PST]}
 (1 row)
 
 SELECT asText(atStbox(tgeogpoint '[Point(-170 60)@2001-01-01, Point(170 60)@2001-01-02]',
   stbox 'SRID=4326;GEODSTBOX X((157.5 55),(180 67))', false), 6);
-                                              astext                                               
----------------------------------------------------------------------------------------------------
- {[POINT(180 60.378348)@Mon Jan 01 12:00:00 2001 PST, POINT(170 60)@Tue Jan 02 00:00:00 2001 PST]}
+                                                  astext                                                   
+-----------------------------------------------------------------------------------------------------------
+ {(POINT(-180 60.378348)@Mon Jan 01 11:59:59.999999 2001 PST, POINT(170 60)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 WITH trip(tp) AS (
@@ -3855,7 +3855,7 @@ SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01
   stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))', false), 6);
                                                                                                     astext                                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(10 60)@Mon Jan 01 00:00:00 2001 PST, POINT(18.168064 61)@Mon Jan 01 05:02:50.433397 2001 PST), [POINT(41.831936 61)@Mon Jan 01 18:57:09.566602 2001 PST, POINT(50 60)@Tue Jan 02 00:00:00 2001 PST]}
+ {[POINT(10 60)@Mon Jan 01 00:00:00 2001 PST, POINT(18.168064 61)@Mon Jan 01 05:02:50.433397 2001 PST), (POINT(41.831936 61)@Mon Jan 01 18:57:09.566602 2001 PST, POINT(50 60)@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 WITH trip(tp) AS (
@@ -3866,6 +3866,82 @@ SELECT timeSpan(merge(atStbox(tp, stbox 'SRID=4326;GEODSTBOX X((0 55),(60 61))',
  at_and_minus_make_the_trip 
 ----------------------------
  t
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(45 30)@2001-01-01, Point(90 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+                                          astext                                          
+------------------------------------------------------------------------------------------
+ {[POINT(45 30)@Mon Jan 01 00:00:00 2001 PST, POINT(90 30)@Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(45 30)@2001-01-01, Point(90 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', true), 6);
+                                          astext                                          
+------------------------------------------------------------------------------------------
+ {[POINT(45 30)@Mon Jan 01 00:00:00 2001 PST, POINT(90 30)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(0 30)@2001-01-01, Point(-45 30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+                    astext                    
+----------------------------------------------
+ {[POINT(0 30)@Mon Jan 01 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(90 10)@2001-01-01, Point(90 50)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false), 6);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(90 10)@2001-01-01, Point(90 50)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', true), 6);
+                                          astext                                          
+------------------------------------------------------------------------------------------
+ {[POINT(90 10)@Mon Jan 01 00:00:00 2001 PST, POINT(90 50)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0 0),(90 60))', false));
+                            gettime                             
+----------------------------------------------------------------
+ {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((-90 0),(0 60))', false));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atStbox(tgeogpoint '[Point(-45 30)@2001-01-01, Point(45 -30)@2001-01-03]',
+  stbox 'SRID=4326;GEODSTBOX X((0 -60),(90 0))', false));
+                            gettime                             
+----------------------------------------------------------------
+ {(Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((30 -60),(60 -30))', true), 6);
+                     astext                     
+------------------------------------------------
+ {[POINT(60 -30)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]',
+  stbox 'SRID=4326;GEODSTBOX X((30 -30),(60 0))', false), 6);
+                                                 astext                                                  
+---------------------------------------------------------------------------------------------------------
+ {[POINT(30 -26.565051)@Mon Jan 01 16:54:57.55087 2001 PST, POINT(60 -30)@Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT ymin(tgeogpoint '[Point(-30 0)@2001-01-01, Point(60 -30)@2001-01-02]'::stbox);
+ ymin 
+------
+  -30
 (1 row)
 
 /* Errors */

@@ -802,36 +802,25 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
 /**
  * @brief Return the instant at which a geodetic segment reaches a parameter of
  * its path
- * @details The parameter states a position, and the position states the
- * instant through #tpointsegm_timestamp_at_value1_iter(), the dating every
- * clip of a segment in this file uses. A parameter at an end of the segment
- * states the instant of that end, and a position the dating does not find
- * falls back on the parameter itself
+ * @details The parameter is the fraction of the path's angle, which is the
+ * fraction of the segment's duration at which `pointsegm_interpolate` places
+ * the position, so the instant is that fraction of the duration, truncated to
+ * the microsecond as #tpointseq_linear_at_stbox_xyz dates the crossings of a
+ * planar segment and the walks of the cell grids date theirs. Reading the
+ * parameter back out of the position it states instead loses its low digits
+ * to the coordinates that carry it, and the crossing then falls a microsecond
+ * before the instant it happens
  * @param[in] inst1,inst2 Bounds of the segment
- * @param[in] arc Path of the segment
  * @param[in] param Parameter along the path
- * @param[in] srid SRID of the temporal point
  */
 static TimestampTz
 tgeogpointsegm_timestamp_at_param(const TInstant *inst1, const TInstant *inst2,
-  const DggsArc *arc, double param, int32_t srid)
+  double param)
 {
   if (param <= 0.0)
     return inst1->t;
   if (param >= 1.0)
     return inst2->t;
-  double lon, lat;
-  TimestampTz result;
-  if (dggs_arc_point(arc, param, &lon, &lat))
-  {
-    GSERIALIZED *gs = geopoint_make(lon * 180.0 / M_PI, lat * 180.0 / M_PI,
-      0.0, false, true, srid);
-    bool found = tpointsegm_timestamp_at_value1_iter(inst1, inst2,
-      PointerGetDatum(gs), &result);
-    pfree(gs);
-    if (found)
-      return result;
-  }
   return inst1->t +
     (TimestampTz) ((double) (inst2->t - inst1->t) * param);
 }
@@ -877,8 +866,7 @@ tpointseq_linear_at_stbox_geodetic(const TSequence *seq, const STBox *box,
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR); assert(seq->count > 1);
 
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags) && MEOS_FLAGS_GET_Z(box->flags);
-  int32_t srid = tspatial_srid((Temporal *) seq);
-  Span *spans = palloc(sizeof(Span) * seq->count * 4);
+  Span *spans = palloc(sizeof(Span) * seq->count * 10);
   int nspans = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   for (int i = 1; i < seq->count; i++)
@@ -900,12 +888,15 @@ tpointseq_linear_at_stbox_geodetic(const TSequence *seq, const STBox *box,
       inst1 = inst2;
       continue;
     }
-    double tin[4], tout[4];
+    double tin[8], tout[8];
+    bool tin_upper[8], tout_upper[8];
     int count = dggs_arc_lonlat_box_spans(&arc, box->xmin, box->ymin,
-      box->xmax, box->ymax, tin, tout, 4);
+      box->xmax, box->ymax, border_inc, tin, tout, tin_upper, tout_upper,
+      8);
     /* The height of a geodetic point runs linearly in time, so the bounds of
      * the box admit one stretch of the segment, which every span meets in */
     double zlo = 0.0, zhi = 1.0;
+    bool zlo_upper = false, zhi_upper = false;
     if (hasz)
     {
       const POINT3DZ *r1 = GSERIALIZED_POINT3DZ_P(p1);
@@ -921,43 +912,74 @@ tpointseq_linear_at_stbox_geodetic(const TSequence *seq, const STBox *box,
         double a = (box->zmin - r1->z) / (r2->z - r1->z);
         double b = (box->zmax - r1->z) / (r2->z - r1->z);
         zlo = Min(a, b); zhi = Max(a, b);
+        zlo_upper = (zlo == b); zhi_upper = (zhi == b);
         if (zlo < 0.0) zlo = 0.0;
         if (zhi > 1.0) zhi = 1.0;
         if (zlo > zhi)
           count = 0;
       }
     }
+    /* The ends of the segment are the positions the trip states, so the box
+     * holds each by its own coordinates, and one the box holds is part of the
+     * answer though the path leaves the box at once */
+    bool hold1 = stbox_holds_lonlat(lon1, lat1, box, border_inc) && (! hasz ||
+      zlo == 0.0);
+    bool hold2 = stbox_holds_lonlat(lon2, lat2, box, border_inc) && (! hasz ||
+      zhi == 1.0);
+    bool span1 = false, span2 = false;
     for (int k = 0; k < count; k++)
     {
       if (hasz)
       {
-        if (tin[k] < zlo) tin[k] = zlo;
-        if (tout[k] > zhi) tout[k] = zhi;
+        if (tin[k] < zlo)
+        {
+          tin[k] = zlo; tin_upper[k] = zlo_upper;
+        }
+        if (tout[k] > zhi)
+        {
+          tout[k] = zhi; tout_upper[k] = zhi_upper;
+        }
         if (tin[k] > tout[k])
           continue;
       }
-      /* A crossing is dated from the position the path holds there, as the
-       * clip of a segment by a geometry dates the points it answers, so two
-       * boxes meeting at that position state the same instant and the pieces
-       * of a trip split by a grid merge back into it. A parameter at an end of
-       * the segment states the instant of that end */
-      TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
-        tin[k], srid);
-      TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
-        tout[k], srid);
-      bool lower_inc = (t1 == inst1->t && i == 1) ?
-        seq->period.lower_inc : true;
-      bool upper_inc = (t2 == inst2->t) ?
-        ((i == seq->count - 1) ? seq->period.upper_inc : false) : border_inc;
+      /* A crossing is dated from its parameter, so a box and a tile of a grid
+       * meeting at a boundary the path crosses at one parameter state the
+       * same instant, and the pieces of a trip split by a grid merge back
+       * into it. A bound is part of the span unless it lies on an upper
+       * border the box leaves out, as #liangBarskyClip states it for a planar
+       * segment, and an end of the segment is part of it when the box holds
+       * that end */
+      TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2,
+        tin[k]);
+      TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2,
+        tout[k]);
+      bool lower_inc = (tin[k] <= 0.0) ? hold1 :
+        (border_inc || ! tin_upper[k]);
+      bool upper_inc = (tout[k] >= 1.0) ? hold2 :
+        (border_inc || ! tout_upper[k]);
+      span1 |= (tin[k] <= 0.0);
+      span2 |= (tout[k] >= 1.0);
       if (t1 == t2)
       {
-        if (! lower_inc || ! upper_inc)
-          continue;          /* the path holds the box for no time at all */
+        /* A chord shorter than a microsecond holds the instant it is entered
+         * at when the box holds its entry, as #tpointseq_linear_at_stbox_xyz
+         * keeps it */
+        if (! lower_inc)
+          continue;
         upper_inc = true;
       }
       span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), lower_inc,
         upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
     }
+    /* An end the box holds and the path leaves at once is held for that
+     * instant alone. An end inside the trip is held whatever the bounds of the
+     * trip, which the restriction to its period applies at the end */
+    if (hold1 && ! span1)
+      span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst1->t),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+    if (hold2 && ! span2)
+      span_set(TimestampTzGetDatum(inst2->t), TimestampTzGetDatum(inst2->t),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
     inst1 = inst2;
   }
   if (nspans == 0)
@@ -2191,7 +2213,6 @@ static int
 tpointseq_at_geog_spans(const TSequence *seq, LWPOLY **polys, int npolys,
   Span *spans, int nspans)
 {
-  int32_t srid = tspatial_srid((Temporal *) seq);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   /* The instants of a sequence with discrete interpolation state positions of
    * their own and no path between them, so each one answers for itself */
@@ -2244,12 +2265,12 @@ tpointseq_at_geog_spans(const TSequence *seq, LWPOLY **polys, int npolys,
       int count = dggs_arc_geog_poly_spans(&arc, polys[j], tin, tout, 16);
       for (int k = 0; k < count; k++)
       {
-        /* A crossing is dated from the position the path holds there, so two
-         * regions meeting at that position state the same instant */
-        TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
-          tin[k], srid);
-        TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2, &arc,
-          tout[k], srid);
+        /* A crossing is dated from its parameter, so two regions meeting at
+         * an edge the path crosses at one parameter state the same instant */
+        TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2,
+          tin[k]);
+        TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2,
+          tout[k]);
         bool lower_inc = (t1 == inst1->t && i == 1) ?
           seq->period.lower_inc : true;
         bool upper_inc = (t2 == inst2->t) ?

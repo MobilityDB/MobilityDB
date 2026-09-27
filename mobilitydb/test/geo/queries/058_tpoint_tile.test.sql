@@ -307,6 +307,23 @@ FROM spaceTimeSplit(tgeogpoint
   '[Point(10 61)@2001-01-01, Point(50 61)@2001-01-03]', 2.0,
   interval '1 day') s;
 
+-- The fragments of the split of a geodetic trip partition its period: a trip
+-- holding the north pole, stated there at two longitudes, holds one position,
+-- a trip starting at the southernmost position of its great circle runs
+-- north throughout, and a trip leaving the pole runs along the meridian of
+-- its end
+WITH trips(tp) AS (VALUES
+  (tgeogpoint '[Point(30 60)@2001-01-01, Point(30 90)@2001-01-02,
+    Point(0 90)@2001-01-03, Point(0 60)@2001-01-04]'),
+  (tgeogpoint '[Point(-120 -30)@2001-01-01, Point(150 0)@2001-01-02]'),
+  (tgeogpoint '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]'))
+SELECT count(*) AS trips,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS splits_not_partitioning
+FROM (SELECT tp, spansetUnion(getTime(s.tpoint)) AS whole,
+    sum(duration(getTime(s.tpoint))) AS total
+  FROM trips, LATERAL spaceSplit(tp, 30.0) s GROUP BY tp) AS q;
+
 -- A grid is laid on a value of its own kind, so a geography origin is required
 SELECT spaceSplit(tgeogpoint 'Point(1 1)@2001-01-01', 2.0,
   geography 'SRID=4326;Point(0.5 0.5)');
