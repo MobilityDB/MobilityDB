@@ -1258,6 +1258,23 @@ SELECT st_astext(valueAtTimestamp(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point
 SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 88)@2001-01-01, Point(180 88)@2001-01-03]', timestamptz '2001-01-02 12:00'), 6);
 -- A geodetic trajectory a few centimetres from the pole keeps its distance to the pole
 SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 89.999999)@2001-01-01, Point(0 89.9999999)@2001-01-03]', timestamptz '2001-01-02'), 8);
+-- A geodetic trajectory leaving the pole runs along the meridian of its end,
+-- whichever longitude states the pole; one between two positions of a
+-- meridian keeps that longitude, one between two positions of the equator
+-- keeps its latitude, and one between two equal positions keeps that position
+SELECT ST_X(valueAtTimestamp(tgeogpoint
+    '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]',
+    timestamptz '2001-01-01 12:00')::geometry) = -60 AS leaves_the_pole_on_its_meridian,
+  ST_X(valueAtTimestamp(tgeogpoint
+    '[Point(60 30)@2001-01-01, Point(60 -15)@2001-01-03]',
+    timestamptz '2001-01-02 03:17')::geometry) = 60 AS keeps_its_meridian,
+  ST_Y(valueAtTimestamp(tgeogpoint
+    '[Point(-60 0)@2001-01-01, Point(45 0)@2001-01-03]',
+    timestamptz '2001-01-02 03:17')::geometry) = 0 AS keeps_the_equator,
+  valueAtTimestamp(tgeogpoint
+    '[Point(60 30)@2001-01-01, Point(60 30)@2001-01-02]',
+    timestamptz '2001-01-01 03:17')::geometry ~= geometry 'SRID=4326;Point(60 30)'
+    AS keeps_its_position;
 
 SELECT asText(minusTime(tgeompoint 'Point(1 1)@2001-01-01', timestamptz '2001-01-01'));
 SELECT asText(minusTime(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', timestamptz '2001-01-01'));

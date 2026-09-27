@@ -4122,6 +4122,24 @@ SELECT st_astext(valueAtTimestamp(tgeogpoint '[Point(0 89.999999)@2001-01-01, Po
  POINT(0 89.99999945)
 (1 row)
 
+SELECT ST_X(valueAtTimestamp(tgeogpoint
+    '[Point(0 90)@2001-01-01, Point(-60 30)@2001-01-02]',
+    timestamptz '2001-01-01 12:00')::geometry) = -60 AS leaves_the_pole_on_its_meridian,
+  ST_X(valueAtTimestamp(tgeogpoint
+    '[Point(60 30)@2001-01-01, Point(60 -15)@2001-01-03]',
+    timestamptz '2001-01-02 03:17')::geometry) = 60 AS keeps_its_meridian,
+  ST_Y(valueAtTimestamp(tgeogpoint
+    '[Point(-60 0)@2001-01-01, Point(45 0)@2001-01-03]',
+    timestamptz '2001-01-02 03:17')::geometry) = 0 AS keeps_the_equator,
+  valueAtTimestamp(tgeogpoint
+    '[Point(60 30)@2001-01-01, Point(60 30)@2001-01-02]',
+    timestamptz '2001-01-01 03:17')::geometry ~= geometry 'SRID=4326;Point(60 30)'
+    AS keeps_its_position;
+ leaves_the_pole_on_its_meridian | keeps_its_meridian | keeps_the_equator | keeps_its_position 
+---------------------------------+--------------------+-------------------+--------------------
+ t                               | t                  | t                 | t
+(1 row)
+
 SELECT asText(minusTime(tgeompoint 'Point(1 1)@2001-01-01', timestamptz '2001-01-01'));
  astext 
 --------
