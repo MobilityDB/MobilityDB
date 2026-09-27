@@ -1822,7 +1822,10 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
 /**
  * @brief Synchronize two temporal values and apply to them a lifted function
  * @note This function is called when one sequence has linear and the other
- * has step interpolation
+ * has step interpolation, in either order, and #tfunc_tcontseq_tcontseq_single
+ * when both have the same interpolation. The value of the step sequence
+ * changes at its instants, so a sequence of the result closes at each of
+ * them, while the instants of the linear sequence are kept inside it.
  */
 static int
 tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
@@ -1831,8 +1834,11 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   assert(interp1 != interp2);
-  /* Array that keeps the new instants to be accumulated */
-  TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
+  bool step1 = (interp1 != LINEAR);
+  /* Array that keeps the instants of a sequence of the result, which it
+   * gathers from the instants of both inputs */
+  TInstant **instants = palloc(sizeof(TInstant *) *
+    (seq1->count + seq2->count));
   /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
@@ -1877,13 +1883,14 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
       i++;
       end2 = tsegment_at_timestamptz(start2, end2, interp2, end1->t);
       tofree[nfree++] = end2;
+      makeseq = step1;
     }
     else
     {
       j++;
       end1 = tsegment_at_timestamptz(start1, end1, interp1, end2->t);
       tofree[nfree++] = end1;
-      makeseq = true;
+      makeseq = ! step1;
     }
     /* Compute the function at the end instant */
     Datum endvalue1 = tinstant_value_p(end1);
