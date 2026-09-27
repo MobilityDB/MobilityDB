@@ -115,9 +115,12 @@ def anchor(path: Path, n: int) -> str:
 
     A line number moves with any edit above it, so the baseline names the first
     thing the block declares instead; that survives the file growing elsewhere.
+    The window holds the first lines of code after the conditional, so a block
+    opening with a doxygen comment of any length is named by what it declares.
     """
     lines = path.read_text().splitlines()
-    window = lines[n:n + 10]
+    window = [ln for ln in lines[n:]
+              if ln.strip() and not ln.strip().startswith(("*", "/*", "//"))][:10]
     # the declarator names the block; the line before it holds the return type
     # alone, which several blocks in a file share
     for ln in window:
