@@ -247,11 +247,16 @@ skiplist_search(SkipList *list, void *key, void *value)
 
 /**
  * @brief Return the position to store an additional element in the skiplist
+ * @details The element at the position holds no key, no value and no
+ * successor, as the elements #skiplist_make creates do, whether it was left
+ * by a deleted element or lies in the space a growth of the element array
+ * added, which the reallocation leaves uninitialized.
  * @errval INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
 {
+  int pos;
   /* Increase the number of values stored in the skip list */
   list->length++;
 
@@ -259,7 +264,9 @@ skiplist_alloc(SkipList *list)
   if (list->freecount)
   {
     list->freecount--;
-    return list->freed[list->freecount];
+    pos = list->freed[list->freecount];
+    memset(&list->elems[pos], 0, sizeof(SkipListElem));
+    return pos;
   }
 
   /* If there is no more available space expand the list */
@@ -284,8 +291,9 @@ skiplist_alloc(SkipList *list)
   }
 
   /* Return the first available entry */
-  list->next++;
-  return list->next - 1;
+  pos = list->next++;
+  memset(&list->elems[pos], 0, sizeof(SkipListElem));
+  return pos;
 }
 
 /**
@@ -713,9 +721,8 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       {
         void *newkey = palloc(list->key_size);
         memcpy(newkey, keys[i], list->key_size);
+        newelem->key = newkey;
       }
-      else
-        newelem->key = NULL;
       void *newvalue = palloc(list->value_size);
       memcpy(newvalue, values[i], list->value_size);
       newelem->value = newvalue;

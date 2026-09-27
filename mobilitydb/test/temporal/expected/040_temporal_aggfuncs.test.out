@@ -1118,3 +1118,19 @@ SELECT tnumber_extent_combinefn(NULL::tbox, NULL::tbox);
  
 (1 row)
 
+SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
+  timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
+  interval '1 minute') t;
+ numinstants 
+-------------
+        3000
+(1 row)
+
+SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
+  timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
+  interval '1 minute') t;
+ numinstants 
+-------------
+        3000
+(1 row)
+
