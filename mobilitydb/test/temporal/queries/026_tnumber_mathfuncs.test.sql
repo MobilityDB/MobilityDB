@@ -309,6 +309,21 @@ SELECT tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04
 SELECT tfloat '[1@2001-01-01, -1@2001-01-03]' * tfloat '[1@2001-01-01, -1@2001-01-03]';
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' * tfloat '[3@2001-01-01, 1@2001-01-03]';
 
+-- A temporal float with step interpolation keeps its jumps when combined with
+-- one with linear interpolation, whichever of the two is the first operand, so
+-- addition and multiplication commute across the two interpolations
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' + tfloat '[1@2001-01-01, 3@2001-01-03]';
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' - tfloat '[1@2001-01-01, 3@2001-01-03]';
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' * tfloat '[1@2001-01-01, 3@2001-01-03]';
+SELECT round(tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' / tfloat '[1@2001-01-01, 3@2001-01-03]', 6);
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' + tfloat '[1@2001-01-01, 3@2001-01-03]' =
+  tfloat '[1@2001-01-01, 3@2001-01-03]' + tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]';
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]' * tfloat '[1@2001-01-01, 3@2001-01-03]' =
+  tfloat '[1@2001-01-01, 3@2001-01-03]' * tfloat 'Interp=Step;[2@2001-01-01, 4@2001-01-02, 4@2001-01-03]';
+-- A step value holding over many instants of the linear operand
+SELECT tfloat 'Interp=Step;[2@2001-01-01, 2@2001-01-05]' + tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04, 1@2001-01-05]';
+SELECT tfloat 'Interp=Step;{[2@2001-01-01, 4@2001-01-02, 4@2001-01-03], [1@2001-01-04, 1@2001-01-05]}' + tfloat '{[1@2001-01-01, 3@2001-01-03], [0@2001-01-04, 2@2001-01-05]}';
+
 -------------------------------------------------------------------------------
 -- Temporal division
 -------------------------------------------------------------------------------
