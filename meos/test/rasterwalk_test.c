@@ -274,7 +274,7 @@ int main(void)
   GSERIALIZED *tpos = geompoint_make2d(4326, tlon, tlat);
   TInstant *tinst = tpointinst_make(tpos, 0);
   int ncells = 0;
-  Temporal *tcells = tgeompoint_to_tquadbin((Temporal *) tinst, 12);
+  Temporal *tcells = tgeompoint_to_tquadbin((Temporal *) tinst, 12, true);
   Quadbin *cells = tquadbin_values(tcells, &ncells);
   const int tw = 32, th = 32;
   uint8_t *tpix = malloc((size_t) tw * th * 2);

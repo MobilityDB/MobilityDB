@@ -261,6 +261,115 @@ tpointinst_point2d(const TInstant *inst)
 }
 
 /**
+ * @brief Return true when the position where a trajectory crosses from a cell
+ * into the next belongs to the next one
+ * @details A tile holds the lower bounds of its tile coordinates, the column
+ * growing east and the row growing south, so the boundary between two tiles
+ * belongs to the one of higher index along the axis the crossing changes: a
+ * trajectory moving east or south enters the tile holding the boundary, and
+ * one moving west or north leaves it. A crossing through a corner reaches the
+ * tile holding the corner first, and the two tiles it steps between agree on
+ * which of them holds the crossing, since both coordinates move the same way
+ * relative to it
+ */
+static bool
+tquadbin_entered_holds(Quadbin cell, Quadbin next)
+{
+  uint32_t x1, y1, z1, x2, y2, z2;
+  quadbin_cell_tile(cell, &x1, &y1, &z1);
+  quadbin_cell_tile(next, &x2, &y2, &z2);
+  return x2 > x1 || (x2 == x1 && y2 > y1);
+}
+
+/**
+ * @brief Append to the visits of a trajectory the cell it enters at a
+ * timestamp, the previous visit ending there
+ * @details The crossing position belongs to one of the two cells
+ * (#tquadbin_entered_holds), which holds the crossing instant, the other one
+ * leaving it out. A crossing landing before the previous one, which the
+ * truncation of two crossings closer than a microsecond can give, lands on
+ * it: the instants are never moved past one another
+ */
+static void
+tquadbin_visit_append(DggsVisit **visits, int *count, int *size, Quadbin cell,
+  TimestampTz t)
+{
+  DggsVisit *prev = &(*visits)[*count - 1];
+  if (t < prev->lower)
+    t = prev->lower;
+  bool entered = tquadbin_entered_holds(DatumGetQuadbin(prev->cell), cell);
+  prev->upper = t;
+  prev->upper_inc = ! entered;
+  if (*count == *size)
+  {
+    *size *= 2;
+    *visits = repalloc(*visits, sizeof(DggsVisit) * (size_t) *size);
+  }
+  DggsVisit *v = &(*visits)[(*count)++];
+  v->cell = QuadbinGetDatum(cell);
+  v->lower = t;
+  v->lower_inc = entered;
+  return;
+}
+
+/**
+ * @brief Column and row of the tiles a grid leaves out of a trajectory whose
+ * extent does not contain its upper border, -1 where none is left out
+ */
+typedef struct
+{
+  long x;             /**< Column left out, or -1 */
+  long y;             /**< Row left out, or -1 */
+} QuadbinBorder;
+
+/**
+ * @brief Set the column and the row of the tiles holding only the upper border
+ * of the extent of a trajectory, which a grid not containing that border
+ * leaves out
+ * @details A tile holds the lower bounds of its tile coordinates, the column
+ * growing east and the row growing south, so the upper border of the extent
+ * is its easternmost longitude and its southernmost latitude. As the split of
+ * a temporal point by a space grid lays its tiles (#tile_dim_count), the tile
+ * starting at that border holds nothing of the extent but the border itself
+ * where the border lies exactly on a tile boundary and the extent spreads
+ * along that axis, and the grid leaves it out when it does not contain the
+ * border. The extent is the bounding box of the trajectory, which for a
+ * geodetic one holds its great circles
+ */
+static void
+tquadbin_border(const Temporal *temp, int32 resolution, bool border_inc,
+  QuadbinBorder *border)
+{
+  border->x = border->y = -1;
+  if (border_inc)
+    return;
+  STBox box;
+  tspatial_set_stbox(temp, &box);
+  double n = (double) (UINT64_C(1) << resolution);
+  double xwest, ynorth, xeast, ysouth;
+  quadbin_tile_coords(box.xmin, box.ymax, n, &xwest, &ynorth);
+  quadbin_tile_coords(box.xmax, box.ymin, n, &xeast, &ysouth);
+  if (xeast > xwest && xeast == floor(xeast) && xeast < n)
+    border->x = (long) xeast;
+  if (ysouth > ynorth && ysouth == floor(ysouth) && ysouth < n)
+    border->y = (long) ysouth;
+  return;
+}
+
+/**
+ * @brief Return true when a cell is a tile the grid leaves out
+ */
+static bool
+tquadbin_in_border(Quadbin cell, const QuadbinBorder *border)
+{
+  if (border->x < 0 && border->y < 0)
+    return false;
+  uint32_t x, y, z;
+  quadbin_cell_tile(cell, &x, &y, &z);
+  return (long) x == border->x || (long) y == border->y;
+}
+
+/**
  * @brief Return the temporal quadbin cell of a temporal point sequence at a
  * resolution
  * @details The result is NULL when the positions of the sequence are not in a
@@ -269,11 +378,16 @@ tpointinst_point2d(const TInstant *inst)
  * moves between two instants along the straight line in longitude and
  * latitude of a planar point, or the great circle of a geodetic one, and each
  * segment is traversed tile by tile, so the result holds every cell the
- * trajectory crosses and each of its instants marks the time the trajectory
- * enters that cell. The last cell holds to the end of the trajectory.
+ * trajectory crosses, each over the period the trajectory spends in it, as
+ * the split of a temporal point by a space grid states the fragment of each
+ * tile. A crossing instant belongs to the cell the grid assigns the crossing
+ * position to, so a trajectory crossing into a tile of lower index states the
+ * tile it leaves at that instant and the next one after it, which a sequence
+ * set holds.
  */
-static TSequence *
-tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
+static Temporal *
+tpointseq_to_tquadbin(const TSequence *seq, int32 resolution,
+  const QuadbinBorder *border)
 {
   /* The reference system is the one every instant carries, so the adapter
    * testing it reads the first instant alone */
@@ -282,24 +396,72 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
     DatumGetGserializedP(tinstant_value_p(inst)), resolution);
   if (cell == (Quadbin) 0)
     return NULL;
-  int size = seq->count + 1, count = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * (size_t) size);
-  tquadbin_entry_append(&instants, &count, &size, cell, inst->t);
-  Quadbin last = cell;
 
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (interp != LINEAR)
+  if (interp == DISCRETE)
   {
-    for (int i = 1; i < seq->count; i++)
+    /* The instants of the trajectory, those in a tile the grid leaves out
+     * dropped */
+    int size = seq->count + 1, count = 0;
+    TInstant **instants = palloc(sizeof(TInstant *) * (size_t) size);
+    for (int i = 0; i < seq->count; i++)
     {
       inst = TSEQUENCE_INST_N(seq, i);
       const POINT2D *p = tpointinst_point2d(inst);
-      tquadbin_entry_append(&instants, &count, &size,
-        quadbin_point_to_cell(p->x, p->y, (uint32_t) resolution), inst->t);
+      Quadbin c = quadbin_point_to_cell(p->x, p->y, (uint32_t) resolution);
+      if (! tquadbin_in_border(c, border))
+        tquadbin_entry_append(&instants, &count, &size, c, inst->t);
     }
-    return tsequence_make_free(instants, count, seq->period.lower_inc,
-      seq->period.upper_inc, interp, NORMALIZE);
+    if (count == 0)
+    {
+      pfree(instants);
+      return NULL;
+    }
+    return (Temporal *) tsequence_make_free(instants, count, true, true,
+      DISCRETE, NORMALIZE);
   }
+  if (interp == STEP)
+  {
+    /* A stepwise trajectory holds the cell of each instant up to the next
+     * one, and the cell of its last instant at that instant */
+    DggsVisit *visits = palloc(sizeof(DggsVisit) * (size_t) seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      inst = TSEQUENCE_INST_N(seq, i);
+      const POINT2D *p = tpointinst_point2d(inst);
+      visits[i].cell = QuadbinGetDatum(quadbin_point_to_cell(p->x, p->y,
+        (uint32_t) resolution));
+      visits[i].lower = inst->t;
+      visits[i].lower_inc = (i == 0) ? seq->period.lower_inc : true;
+      if (i + 1 < seq->count)
+      {
+        visits[i].upper = TSEQUENCE_INST_N(seq, i + 1)->t;
+        visits[i].upper_inc = false;
+      }
+      else
+      {
+        visits[i].upper = inst->t;
+        visits[i].upper_inc = seq->period.upper_inc;
+      }
+      /* A tile the grid leaves out holds no time */
+      if (tquadbin_in_border(DatumGetQuadbin(visits[i].cell), border))
+      {
+        visits[i].upper = visits[i].lower;
+        visits[i].lower_inc = false;
+      }
+    }
+    Temporal *result = dggs_visits_to_temporal(visits, seq->count,
+      T_TQUADBIN);
+    pfree(visits);
+    return result;
+  }
+
+  int vsize = seq->count + 1, nvisits = 1;
+  DggsVisit *visits = palloc(sizeof(DggsVisit) * (size_t) vsize);
+  visits[0].cell = QuadbinGetDatum(cell);
+  visits[0].lower = inst->t;
+  visits[0].lower_inc = seq->period.lower_inc;
+  Quadbin last = cell;
 
   /* The walk writes one entry per cell a segment crosses, into arrays that
    * grow until the whole segment fits, so no segment is cut short */
@@ -326,16 +488,11 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
     {
       if (cells[k] == last)
         continue;
-      /* A crossing the last microsecond of the segment holds is the end of
-       * the segment at the resolution a timestamp states, so it enters at
-       * that instant, as the clip of a segment by a geometry states a
-       * parameter of 1 as the instant of the second position. A cell is then
-       * entered at the same instant however the segment is cut */
+      /* The crossing is dated as the restriction of a trajectory to a tile
+       * dates it, truncating its parameter to the microsecond */
       TimestampTz tenter = inst1->t +
         (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]);
-      if (inst2->t - tenter <= 1)
-        tenter = inst2->t;
-      tquadbin_entry_append(&instants, &count, &size, cells[k], tenter);
+      tquadbin_visit_append(&visits, &nvisits, &vsize, cells[k], tenter);
       last = cells[k];
     }
     /* The endpoint's own cell closes the segment when the traversal stopped
@@ -345,50 +502,87 @@ tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
       (uint32_t) resolution);
     if (endcell != last)
     {
-      tquadbin_entry_append(&instants, &count, &size, endcell, inst2->t);
+      tquadbin_visit_append(&visits, &nvisits, &vsize, endcell, inst2->t);
       last = endcell;
     }
   }
   pfree(cells); pfree(enter);
 
-  /* The last cell holds to the end of the trajectory, which the closing
-   * instant states, since a sequence reaches no further than its last
-   * instant. Under an exclusive upper bound, a cell the trajectory reaches at
-   * its end is held for no time and is no part of the value */
+  /* The last cell holds to the end of the trajectory. A crossing dated at
+   * the first or the last instant of the trajectory holds that instant only
+   * where the trajectory does, as the restriction of the trajectory to a
+   * tile answers no instant outside its period */
+  TimestampTz tstart = TSEQUENCE_INST_N(seq, 0)->t;
   TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
-  if (! seq->period.upper_inc)
-    while (count > 1 && instants[count - 1]->t >= tend)
-      pfree(instants[--count]);
-  if (instants[count - 1]->t < tend)
-    tquadbin_entry_append(&instants, &count, &size,
-      DatumGetQuadbin(tinstant_value_p(instants[count - 1])), tend);
-  return tsequence_make_free(instants, count, seq->period.lower_inc,
-    seq->period.upper_inc, STEP, NORMALIZE);
+  visits[nvisits - 1].upper = tend;
+  visits[nvisits - 1].upper_inc = seq->period.upper_inc;
+  for (int i = 0; i < nvisits; i++)
+  {
+    if (visits[i].lower == tstart)
+      visits[i].lower_inc &= seq->period.lower_inc;
+    if (visits[i].upper == tend)
+      visits[i].upper_inc &= seq->period.upper_inc;
+    /* A tile the grid leaves out holds no time */
+    if (tquadbin_in_border(DatumGetQuadbin(visits[i].cell), border))
+    {
+      visits[i].upper = visits[i].lower;
+      visits[i].lower_inc = false;
+    }
+  }
+  Temporal *result = dggs_visits_to_temporal(visits, nvisits, T_TQUADBIN);
+  pfree(visits);
+  return result;
 }
 
 /**
  * @brief Return the temporal quadbin cell of a temporal point sequence set at
  * a resolution
  * @details Return NULL when its positions are not in a lon/lat reference
- * system.
+ * system. Each sequence answers a sequence, or a sequence set where a
+ * crossing instant belongs to the cell it leaves, and the answer holds all
+ * their sequences.
  */
 static TSequenceSet *
-tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution)
+tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution,
+  const QuadbinBorder *border)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) ss->count);
+  int size = ss->count, count = 0;
+  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) size);
   for (int i = 0; i < ss->count; i++)
   {
-    sequences[i] = tpointseq_to_tquadbin(TSEQUENCESET_SEQ_N(ss, i),
-      resolution);
-    if (sequences[i] == NULL)
+    Temporal *part = tpointseq_to_tquadbin(TSEQUENCESET_SEQ_N(ss, i),
+      resolution, border);
+    /* A sequence lying in the tiles the grid leaves out holds none */
+    if (part == NULL)
+      continue;
+    if (part->subtype == TSEQUENCE)
     {
-      for (int j = 0; j < i; j++)
-        pfree(sequences[j]);
-      pfree(sequences);
-      return NULL;
+      if (count == size)
+      {
+        size *= 2;
+        sequences = repalloc(sequences, sizeof(TSequence *) * (size_t) size);
+      }
+      sequences[count++] = (TSequence *) part;
+      continue;
     }
+    const TSequenceSet *pss = (const TSequenceSet *) part;
+    for (int j = 0; j < pss->count; j++)
+    {
+      if (count == size)
+      {
+        size *= 2;
+        sequences = repalloc(sequences, sizeof(TSequence *) * (size_t) size);
+      }
+      sequences[count++] = tsequence_copy(TSEQUENCESET_SEQ_N(pss, j));
+    }
+    pfree(part);
   }
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -396,10 +590,12 @@ tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution)
  * holding every cell the trajectory crosses
  */
 static Temporal *
-tpoint_to_tquadbin(const Temporal *temp, int32 resolution)
+tpoint_to_tquadbin(const Temporal *temp, int32 resolution, bool border_inc)
 {
   if (! ensure_valid_cell_resolution(T_TQUADBIN, resolution))
     return NULL;
+  QuadbinBorder border;
+  tquadbin_border(temp, resolution, border_inc, &border);
 
   switch (temp->subtype)
   {
@@ -412,11 +608,11 @@ tpoint_to_tquadbin(const Temporal *temp, int32 resolution)
         (Temporal *) tinstant_make(QuadbinGetDatum(cell), T_TQUADBIN, inst->t);
     }
     case TSEQUENCE:
-      return (Temporal *) tpointseq_to_tquadbin((const TSequence *) temp,
-        resolution);
+      return tpointseq_to_tquadbin((const TSequence *) temp, resolution,
+        &border);
     default: /* TSEQUENCESET */
       return (Temporal *) tpointseqset_to_tquadbin(
-        (const TSequenceSet *) temp, resolution);
+        (const TSequenceSet *) temp, resolution, &border);
   }
 }
 
@@ -424,17 +620,22 @@ tpoint_to_tquadbin(const Temporal *temp, int32 resolution)
  * @ingroup meos_quadbin_conversion
  * @brief Return the temporal quadbin cell of a temporal planar point in a
  * lon/lat reference system at a resolution
- * @details The result holds every cell the trajectory crosses.
+ * @details The result holds every cell the trajectory crosses, each over the
+ * period the split of the trajectory by a space grid states for its tile.
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
  * @csqlfn #Tgeompoint_to_tquadbin()
  */
 Temporal *
-tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
+tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution,
+  bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
-  return tpoint_to_tquadbin(temp, resolution);
+  return tpoint_to_tquadbin(temp, resolution, border_inc);
 }
 
 /**
@@ -442,17 +643,22 @@ tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
  * @brief Return the temporal quadbin cell of a temporal geodetic point at a
  * resolution
  * @details The result holds every cell the trajectory crosses along its great
- * circles.
+ * circles, each over the period the split of the trajectory by a space grid
+ * states for its tile.
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
  * @csqlfn #Tgeogpoint_to_tquadbin()
  */
 Temporal *
-tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution)
+tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution,
+  bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL);
-  return tpoint_to_tquadbin(temp, resolution);
+  return tpoint_to_tquadbin(temp, resolution, border_inc);
 }
 
 /*****************************************************************************
@@ -467,12 +673,12 @@ tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution)
  * it, so a fragment and the cover answer the same periods for a cell
  */
 static Temporal **
-tpoint_quadbin_split(const Temporal *temp, int32 resolution, Datum **cells,
-  int *count)
+tpoint_quadbin_split(const Temporal *temp, int32 resolution, bool border_inc,
+  Datum **cells, int *count)
 {
   assert(temp); assert(cells); assert(count);
   *count = 0;
-  Temporal *cover = tpoint_to_tquadbin(temp, resolution);
+  Temporal *cover = tpoint_to_tquadbin(temp, resolution, border_inc);
   if (! cover)
     return NULL;
   int ncells;
@@ -512,18 +718,21 @@ tpoint_quadbin_split(const Temporal *temp, int32 resolution, Datum **cells,
  * cells it crosses at a resolution, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeompoint_quadbin_split()
  */
 Temporal **
 tgeompoint_quadbin_split(const Temporal *temp, int32 resolution,
-  Datum **cells, int *count)
+  bool border_inc, Datum **cells, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_quadbin_split(temp, resolution, cells, count);
+  return tpoint_quadbin_split(temp, resolution, border_inc, cells, count);
 }
 
 /**
@@ -532,18 +741,21 @@ tgeompoint_quadbin_split(const Temporal *temp, int32 resolution,
  * quadbin cells it crosses at a resolution, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeogpoint_quadbin_split()
  */
 Temporal **
 tgeogpoint_quadbin_split(const Temporal *temp, int32 resolution,
-  Datum **cells, int *count)
+  bool border_inc, Datum **cells, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_quadbin_split(temp, resolution, cells, count);
+  return tpoint_quadbin_split(temp, resolution, border_inc, cells, count);
 }
 
 /*****************************************************************************/

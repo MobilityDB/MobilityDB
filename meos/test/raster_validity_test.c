@@ -95,7 +95,7 @@ int main(void)
   Span *vspan = floatspan_in("[0, 10]");
   const char *path = "no_such_raster.tif";
   int ntiles = 0;
-  Temporal *ttiles = tgeompoint_to_tquadbin(geom, 8);
+  Temporal *ttiles = tgeompoint_to_tquadbin(geom, 8, true);
   Quadbin *tiles = tquadbin_values(ttiles, &ntiles);
   assert(geom && geog && rast && vspan && tiles && ntiles > 0);
   uint8_t pixels[1] = { 7 };
