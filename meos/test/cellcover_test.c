@@ -157,8 +157,8 @@ quadbin_missing(const char *seg_wkt, const char *dense_wkt, uint32_t zoom)
   if (dense == NULL || seg == NULL)
     return 0;
   int ncover = 0, ntruth = 0;
-  Temporal *tcover = tgeompoint_to_tquadbin(seg, (int32) zoom);
-  Temporal *ttruth = tgeompoint_to_tquadbin(dense, (int32) zoom);
+  Temporal *tcover = tgeompoint_to_tquadbin(seg, (int32) zoom, true);
+  Temporal *ttruth = tgeompoint_to_tquadbin(dense, (int32) zoom, true);
   Quadbin *cover = tquadbin_values(tcover, &ncover);
   Quadbin *truth = tquadbin_values(ttruth, &ntruth);
   long missing = 0;
@@ -295,7 +295,7 @@ tquadbin_check(double lon0, double lat0, double lon1, double lat1,
     "Point(%.9f %.9f)@2020-01-01 01:00:00]", lon0, lat0, lon1, lat1);
   Temporal *seg = tgeompoint_in(wkt);
   Temporal *cover = (seg != NULL) ?
-    tgeompoint_to_tquadbin(seg, resolution) : NULL;
+    tgeompoint_to_tquadbin(seg, resolution, true) : NULL;
   if (cover == NULL)
   {
     (*none)++;

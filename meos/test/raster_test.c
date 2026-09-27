@@ -338,7 +338,7 @@ int main(void)
    * the value asserted beside them, which is what ties the decoding to the
    * byte order of the specification rather than to that of the machine */
   int zero_count;
-  Temporal *zero_tquadbin = tgeompoint_to_tquadbin(traj, 0);
+  Temporal *zero_tquadbin = tgeompoint_to_tquadbin(traj, 0, true);
   Quadbin *zero_quadbin = tquadbin_values(zero_tquadbin, &zero_count);
   assert(zero_quadbin != NULL && zero_count >= 1);
   const uint8_t pixel_int8[1] = {0xff};
@@ -428,8 +428,8 @@ int main(void)
     " Point(150.0 10.0)@2024-01-08, Point(170.0 10.0)@2024-01-09}");
   assert(traj_across != NULL && traj_sampled != NULL);
   int ncrossed, nsampled;
-  Temporal *tcrossed = tgeompoint_to_tquadbin(traj_across, 3);
-  Temporal *tsampled = tgeompoint_to_tquadbin(traj_sampled, 3);
+  Temporal *tcrossed = tgeompoint_to_tquadbin(traj_across, 3, true);
+  Temporal *tsampled = tgeompoint_to_tquadbin(traj_sampled, 3, true);
   Quadbin *crossed = tquadbin_values(tcrossed, &ncrossed);
   Quadbin *sampled = tquadbin_values(tsampled, &nsampled);
   printf("tquadbin_values(linear trip, 3): %d cell(s), sampled: %d\n",

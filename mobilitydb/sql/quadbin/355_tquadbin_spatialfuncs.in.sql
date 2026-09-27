@@ -82,12 +82,14 @@ CREATE FUNCTION cellToParent(tquadbin, integer)
  * the trajectory crosses.
  ******************************************************************************/
 
-CREATE FUNCTION tquadbin(tgeompoint, integer)
+CREATE FUNCTION tquadbin(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tquadbin(tgeogpoint, integer)
+CREATE FUNCTION tquadbin(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Tgeogpoint_to_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -111,12 +113,14 @@ CREATE TYPE quadbin_tgeogpoint AS (
   tpoint tgeogpoint
 );
 
-CREATE FUNCTION quadbinSplit(tgeompoint, integer)
+CREATE FUNCTION quadbinSplit(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF quadbin_tpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_quadbin_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbinSplit(tgeogpoint, integer)
+CREATE FUNCTION quadbinSplit(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF quadbin_tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeogpoint_quadbin_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

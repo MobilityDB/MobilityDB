@@ -1468,6 +1468,46 @@ dggs_arc_plane_exit_param(const DggsArc *arc, const double m[3], double c,
 }
 
 /**
+ * @brief Return where a geodetic path leaves the side of a parallel that a
+ * cell lies on
+ * @details The exit #dggs_arc_plane_exit_param states for the plane of
+ * constant height of the parallel, read from the crossings
+ * #dggs_arc_parallel_params states, so an endpoint the path states on the
+ * parallel meets it at its own parameter
+ * @param[in] arc Path
+ * @param[in] lat Latitude of the parallel, in degrees
+ * @param[in] above True when the cell lies north of the parallel
+ * @param[in] tmin Parameter the crossing lies at or ahead of
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * stays on its side of the parallel through the end
+ */
+double
+dggs_arc_parallel_exit_param(const DggsArc *arc, double lat, bool above,
+  double tmin)
+{
+  assert(arc);
+  const double *a = arc->a, *nm = arc->normal;
+  const double b[3] = { nm[1] * a[2] - nm[2] * a[1],
+    nm[2] * a[0] - nm[0] * a[2], nm[0] * a[1] - nm[1] * a[0] };
+  double c = sin(lat * M_PI / 180.0);
+  double theta0 = tmin * arc->dist;
+  double c0 = cos(theta0), s0 = sin(theta0);
+  /* The height of the path above the parallel on the side the cell lies, and
+   * the rate it changes at, as #dggs_arc_plane_exit_param reads them */
+  double sign = above ? 1.0 : -1.0;
+  double f = sign * (a[2] * c0 + b[2] * s0 - c);
+  double d = sign * (b[2] * c0 - a[2] * s0);
+  if (f <= 0.0 && d < 0.0)
+    return tmin;
+  double params[2], best = 2.0;
+  int count = dggs_arc_parallel_params(arc, lat, params);
+  for (int i = 0; i < count; i++)
+    if ((d < 0.0 ? params[i] >= tmin : params[i] > tmin) && params[i] < best)
+      best = params[i];
+  return best;
+}
+
+/**
  * @brief Return true if a position lies in a box of longitudes and latitudes
  */
 static bool
@@ -2370,6 +2410,99 @@ dggs_cell_edge_planes(const double *lons, const double *lats, int count,
 
 /*****************************************************************************/
 
+
+/*****************************************************************************
+ * Periods a trajectory holds its cells
+ *****************************************************************************/
+
+/**
+ * @brief Return the step temporal cell of the visits a trajectory makes to
+ * its cells, in the order it makes them
+ * @details Two consecutive visits meet at the instant of their crossing, and
+ * the grid gives that instant to one of them: the one it assigns the crossing
+ * position to, which holds it, the other leaving it out. A timestamp holds
+ * whole microseconds, so several crossings may fall at one instant. A visit
+ * then holding no time, an empty period, is no part of the answer, and where
+ * two visits both hold the instant they meet at, the later one holds it, as a
+ * value landing on the instant already stated replaces it
+ * (#raster_run_push). The periods then partition the time of the trajectory.
+ *
+ * The answer holds each cell over its period. A step sequence gives each of
+ * its instants to the value starting there, so it runs on while every
+ * crossing hands its instant to the cell entered there, and a crossing whose
+ * instant the cell left holds closes it, as #raster_run_close closes a run:
+ * the next sequence starts after that instant.
+ * @param[in,out] visits Visits in order, their periods rewritten in place
+ * @param[in] count Number of visits
+ * @param[in] temptype Temporal cell type of the answer
+ * @return A sequence, or a sequence set when a crossing gives its instant to
+ * the cell left, NULL when no visit holds any time
+ */
+Temporal *
+dggs_visits_to_temporal(DggsVisit *visits, int count, MeosType temptype)
+{
+  assert(visits); assert(count > 0);
+  /* The visits holding time, an instant two of them hold going to the later */
+  int n = 0;
+  for (int i = 0; i < count; i++)
+  {
+    DggsVisit v = visits[i];
+    if (v.lower == v.upper && ! (v.lower_inc && v.upper_inc))
+      continue;
+    while (n > 0 && visits[n - 1].upper == v.lower &&
+      visits[n - 1].upper_inc && v.lower_inc)
+    {
+      visits[n - 1].upper_inc = false;
+      if (visits[n - 1].lower < visits[n - 1].upper)
+        break;
+      n--;
+    }
+    visits[n++] = v;
+  }
+  if (n == 0)
+    return NULL;
+
+  TSequence **seqs = palloc(sizeof(TSequence *) * (size_t) n);
+  TInstant **insts = palloc(sizeof(TInstant *) * (size_t) (n + 1));
+  int nseqs = 0, ninsts = 0;
+  bool lower_inc = visits[0].lower_inc;
+  insts[ninsts++] = tinstant_make(visits[0].cell, temptype, visits[0].lower);
+  for (int i = 1; i <= n; i++)
+  {
+    const DggsVisit *prev = &visits[i - 1];
+    /* The cell entered holds the instant it is entered at: the sequence
+     * runs on */
+    if (i < n && prev->upper == visits[i].lower && ! prev->upper_inc &&
+        visits[i].lower_inc)
+    {
+      insts[ninsts++] = tinstant_make(visits[i].cell, temptype,
+        visits[i].lower);
+      continue;
+    }
+    /* The sequence ends on the cell it holds up to the end of that visit */
+    if (prev->upper > insts[ninsts - 1]->t)
+      insts[ninsts++] = tinstant_make(prev->cell, temptype, prev->upper);
+    bool upper_inc = prev->upper_inc;
+    if (ninsts == 1)
+      lower_inc = upper_inc = true;
+    seqs[nseqs++] = tsequence_make_free(insts, ninsts, lower_inc, upper_inc,
+      STEP, NORMALIZE);
+    if (i == n)
+      break;
+    insts = palloc(sizeof(TInstant *) * (size_t) (n - i + 1));
+    ninsts = 0;
+    lower_inc = visits[i].lower_inc;
+    insts[ninsts++] = tinstant_make(visits[i].cell, temptype,
+      visits[i].lower);
+  }
+  if (nseqs == 1)
+  {
+    Temporal *result = (Temporal *) seqs[0];
+    pfree(seqs);
+    return result;
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, nseqs, NORMALIZE);
+}
 
 /*****************************************************************************
  * Compaction of a set of cells of a quadtree grid

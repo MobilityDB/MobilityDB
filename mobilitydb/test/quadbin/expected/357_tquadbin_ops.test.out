@@ -194,9 +194,9 @@ SELECT endValue(tquadbin(tgeompoint
 
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2);
-                                                                   tquadbin                                                                    
------------------------------------------------------------------------------------------------------------------------------------------------
- [4828ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4823ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4823ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+                                                                                             tquadbin                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4828ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4829ffffffffffff@Tue Jan 02 00:00:00 2001 PST], (4823ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4823ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT valueAtTimestamp(tquadbin(tgeompoint
@@ -206,7 +206,7 @@ SELECT valueAtTimestamp(tquadbin(tgeompoint
   timestamptz '2001-01-02' + interval '1 microsecond'), 2) AS states_the_cell_entered;
  states_the_cell_entered 
 -------------------------
- t
+ f
 (1 row)
 
 SELECT valueAtTimestamp(tquadbin(tgeompoint
@@ -215,14 +215,14 @@ SELECT valueAtTimestamp(tquadbin(tgeompoint
   AS states_the_corner_owner;
  states_the_corner_owner 
 -------------------------
- f
+ t
 (1 row)
 
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(-45 -10)@2001-01-01, Point(-135 10)@2001-01-03]', 2);
-                                                                   tquadbin                                                                    
------------------------------------------------------------------------------------------------------------------------------------------------
- [4829ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4822ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4822ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+                                                                                             tquadbin                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4829ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4829ffffffffffff@Tue Jan 02 00:00:00 2001 PST], (4822ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4822ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 WITH trip(tp) AS (
@@ -247,7 +247,7 @@ SELECT count(*) FILTER (WHERE duration((u).time) = interval '0') AS cells_of_an_
 FROM trip, unnest(tquadbin(tp, 2)) u;
  cells_of_an_instant | cells_holding_time 
 ---------------------+--------------------
-                   0 |                  2
+                   1 |                  2
 (1 row)
 
 SELECT tquadbin(tgeompoint
@@ -270,25 +270,93 @@ FROM trip, unnest(tquadbin(tp, 2)) u;
 
 SELECT tquadbin(tgeompoint
   'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2);
-                                            tquadbin                                            
-------------------------------------------------------------------------------------------------
- [4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+                                                                     tquadbin                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[482cffffffffffff@Mon Jan 01 00:00:00 2001 PST], (4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 WITH trips(tp) AS (VALUES
   (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
   (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]'),
   (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
+  (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;(Point(0 30)@2001-01-01, Point(0 15)@2001-01-02,
+    Point(-45 0)@2001-01-03)')
+), mirrors(tp, mp) AS (
+  SELECT tp, (SELECT tgeompointSeq(array_agg(tgeompoint(ST_SetSRID(ST_MakePoint(
+    ST_X(getValue(i)), -ST_Y(getValue(i))), 4326), getTimestamp(i))
+    ORDER BY getTimestamp(i)), 'linear', lowerInc(tp), upperInc(tp))
+    FROM unnest(instants(tp)) i)
+  FROM trips
+), borders(b) AS (VALUES (true), (false)
+), tiles(b, tp, cell, time) AS (
+  SELECT b, tp, geoToQuadbinCell(ST_SetSRID(ST_MakePoint(ST_X((s).point) + 45,
+    CASE WHEN ST_Y((s).point) >= 0 THEN -30 ELSE 30 END), 4326), 2),
+    getTime((s).tpoint)
+  FROM mirrors, borders, spaceSplit(mp, 90.0, borderInc := b) s
+), cells(b, tp, cell, time) AS (
+  SELECT b, tp, (u).value, (u).time
+  FROM trips, borders, unnest(tquadbin(tp, 2, b)) u)
+SELECT b AS borderInc, count(*) AS cells,
+  count(*) FILTER (WHERE NOT EXISTS (SELECT 1 FROM tiles t WHERE t.b = c.b
+    AND t.tp = c.tp AND t.cell = c.cell AND c.time <@ t.time))
+    AS cells_outside_their_tile,
+  (SELECT count(*) FROM trips WHERE
+    (SELECT spansetUnion(time) FROM cells c2
+      WHERE c2.b = c.b AND c2.tp = trips.tp) IS DISTINCT FROM
+    (SELECT spansetUnion(time) FROM tiles t2
+      WHERE t2.b = c.b AND t2.tp = trips.tp)) AS trips_covering_other_time
+FROM cells c GROUP BY b ORDER BY b;
+ borderinc | cells | cells_outside_their_tile | trips_covering_other_time 
+-----------+-------+--------------------------+---------------------------
+ f         |    11 |                        0 |                         0
+ t         |    13 |                        0 |                         0
+(2 rows)
+
+SELECT borderInc, tquadbin(tgeompoint
+  'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2, borderInc)
+FROM (VALUES (true), (false)) AS b(borderInc);
+ borderinc |                                                                     tquadbin                                                                      
+-----------+---------------------------------------------------------------------------------------------------------------------------------------------------
+ t         | {[482cffffffffffff@Mon Jan 01 00:00:00 2001 PST], (4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+ f         | (4826ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4826ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(2 rows)
+
+SELECT borderInc, count(*) AS fragments
+FROM (VALUES (true), (false)) AS b(borderInc),
+  LATERAL quadbinSplit(tgeompoint
+    'SRID=4326;[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2,
+    borderInc) s
+GROUP BY borderInc ORDER BY borderInc;
+ borderinc | fragments 
+-----------+-----------
+ f         |         1
+ t         |         2
+(2 rows)
+
+SELECT borderInc, numValues(getValues(tquadbin(tgeogpoint
+  '[Point(0 0)@2001-01-01, Point(45 33.3)@2001-01-03]', 2, borderInc)))
+FROM (VALUES (true), (false)) AS b(borderInc);
+ borderinc | numvalues 
+-----------+-----------
+ t         |         2
+ f         |         1
+(2 rows)
+
+WITH trips(tp) AS (VALUES
+  (tgeompoint 'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]'),
+  (tgeompoint 'SRID=4326;[Point(-170 -60)@2001-01-01, Point(170 60)@2001-01-04]'),
   (tgeompoint 'SRID=4326;[Point(-45 -33.3)@2001-01-01, Point(0 0)@2001-01-03]')
 ), zooms(z) AS (VALUES (2), (4), (6))
-SELECT count(*) AS cells,
-  count(*) FILTER (WHERE (u).time <> getTime(atStbox(tp,
-    stbox(cellToBoundary((u).value)), duration((u).time) = interval '0')))
-  AS cells_stating_another_period
-FROM trips, zooms, unnest(tquadbin(tp, z)) u;
- cells | cells_stating_another_period 
--------+------------------------------
-   164 |                            0
+SELECT count(*) AS covers,
+  count(*) FILTER (WHERE whole <> getTime(tp) OR total <> duration(tp))
+  AS covers_not_partitioning
+FROM (SELECT tp, z, spansetUnion((u).time) AS whole,
+    sum(duration((u).time)) AS total
+  FROM trips, zooms, unnest(tquadbin(tp, z)) u GROUP BY tp, z) AS q;
+ covers | covers_not_partitioning 
+--------+-------------------------
+      9 |                       0
 (1 row)
 
 SELECT numSequences(tquadbin(tgeompoint
@@ -313,7 +381,7 @@ FROM (SELECT tquadbin(tgeogpoint
   '[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2) AS t) AS q;
  numinstants | numvalues | ?column? | numvalues 
 -------------+-----------+----------+-----------
-           4 |         2 | t        |         1
+           5 |         2 | t        |         1
 (1 row)
 
 SELECT numValues(getValues(tquadbin(tgeogpoint
@@ -322,7 +390,7 @@ SELECT numValues(getValues(tquadbin(tgeogpoint
     'SRID=4326;[Point(170 10)@2001-01-01, Point(-170 -10)@2001-01-02]', 3)));
  numvalues | numvalues 
 -----------+-----------
-         2 |         8
+         2 |         9
 (1 row)
 
 SELECT count(*) AS instants,
@@ -464,7 +532,7 @@ SELECT count(*) AS fragments,
 FROM trip, LATERAL quadbinSplit(tp, 2) s;
  fragments | fragments_stating_another_value | fragments_stating_another_period 
 -----------+---------------------------------+----------------------------------
-         2 |                               0 |                                0
+         3 |                               0 |                                0
 (1 row)
 
 WITH trip(tp) AS (

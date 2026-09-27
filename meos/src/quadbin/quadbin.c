@@ -552,7 +552,7 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
  * @brief Set the fractional tile column and row of a lon/lat position in the
  * grid of `n` tiles a side
  */
-static void
+void
 quadbin_tile_coords(double longitude, double latitude, double n, double *xf,
   double *yf)
 {
@@ -655,13 +655,34 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
     double lone = ((double) x + 1.0) / n * 360.0 - 180.0;
     const double normals[6] = { -float8_sind(lonw), float8_cosd(lonw), 0.0,
       float8_sind(lone), -float8_cosd(lone), 0.0 };
+    /* A meridian holding the far endpoint of the path is reached there, which
+     * #dggs_arc_meridian_params states at the endpoint's own parameter and no
+     * angle states to its last place. The tile east of the meridian holds the
+     * endpoint, so the path leaves the tile through its east meridian at the
+     * end, and never through its west one, which the plane of the meridian
+     * meets nowhere else. A pole lies on every meridian and is left as the
+     * pole is */
+    bool pole_end = fabs(arc->endlat[1]) == 90.0;
+    bool end_w = ! pole_end && dggs_arc_end_on_meridian(arc, 1, lonw);
+    bool end_e = ! pole_end && dggs_arc_end_on_meridian(arc, 1, lone);
+    uint32 mask = entry & ((1u << QUADBIN_EDGE_WEST) |
+      (1u << QUADBIN_EDGE_EAST));
+    if (end_w)
+      mask |= 1u << QUADBIN_EDGE_WEST;
+    if (end_e)
+      mask |= 1u << QUADBIN_EDGE_EAST;
     int which = -1;
-    t = dggs_arc_normals_exit_param(arc, normals, 2, tmin,
-      entry & ((1u << QUADBIN_EDGE_WEST) | (1u << QUADBIN_EDGE_EAST)), &which);
+    t = dggs_arc_normals_exit_param(arc, normals, 2, tmin, mask, &which);
     if (t < best && which >= 0)
     {
       best = t;
       *edge = (which == 0) ? QUADBIN_EDGE_WEST : QUADBIN_EDGE_EAST;
+    }
+    if (end_e && ! (entry & (1u << QUADBIN_EDGE_EAST)) && tmin <= 1.0 &&
+        1.0 < best)
+    {
+      best = 1.0;
+      *edge = QUADBIN_EDGE_EAST;
     }
   }
   /* A parallel is a SMALL circle, and a great circle meets one TWICE, going
@@ -671,13 +692,19 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
    * out of the search the way a meridian is. The closed form takes the first
    * crossing STRICTLY ahead of `tmin`, so the parallel just crossed states
    * the return and never the crossing already made */
-  const double pole[3] = { 0.0, 0.0, 1.0 };
+  /* A parallel holding the far endpoint of the path is reached there, which
+   * #dggs_arc_parallel_params states at the endpoint's own parameter. The
+   * tile south of the parallel holds the endpoint, so the path reaching it
+   * leaves the tile through its south parallel at the end, and not through
+   * its north one */
   if (y > 0)
   {
     /* The tile lies BELOW its north parallel, and is left where the path
      * rises through it */
-    t = dggs_arc_plane_exit_param(arc, pole,
-      sin(quadbin_row_latitude((double) y, n) * M_PI / 180.0), false, tmin);
+    double lat = quadbin_row_latitude((double) y, n);
+    t = dggs_arc_parallel_exit_param(arc, lat, false, tmin);
+    if (t == 1.0 && dggs_arc_end_on_parallel(arc, 1, lat))
+      t = 2.0;
     if (t < best)
     {
       best = t;
@@ -688,9 +715,8 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
   {
     /* The tile lies ABOVE its south parallel, and is left where the path
      * falls through it */
-    t = dggs_arc_plane_exit_param(arc, pole,
-      sin(quadbin_row_latitude((double) y + 1.0, n) * M_PI / 180.0), true,
-      tmin);
+    t = dggs_arc_parallel_exit_param(arc,
+      quadbin_row_latitude((double) y + 1.0, n), true, tmin);
     if (t < best)
     {
       best = t;
@@ -716,6 +742,92 @@ quadbin_tile_exit_param_geodetic(const DggsArc *arc, uint32_t x, uint32_t y,
 
 
 
+
+/**
+ * @brief Return true if a geodetic path leaving a tile through an edge passes
+ * through a corner of the tile on that edge, crossing both the meridian and
+ * the parallel meeting there
+ * @details The corner of a tile read as #dggs_arc_lonlat_box_spans reads the
+ * corner of a box: whether the path passes through it is decided exactly by
+ * #dggs_arc_passes_through, and the path crosses it at the crossing of the
+ * meridian on the side of the corner
+ * @param[in] arc Path
+ * @param[in] x,y Tile
+ * @param[in] n Number of tiles a side
+ * @param[in] edge Edge the path leaves the tile through
+ * @param[out] cx,cy Column boundary and row boundary of the corner
+ * @param[out] tv Parameter at which the path crosses the meridian of the
+ * corner
+ * @param[out] tp Parameter at which the path crosses the parallel of the
+ * corner
+ * @param[out] east,north Signs of the heading of the path at the corner
+ */
+static bool
+quadbin_arc_corner(const DggsArc *arc, uint32_t x, uint32_t y, double n,
+  int edge, uint32_t *cx, uint32_t *cy, double *tv, double *tp, int *east,
+  int *north)
+{
+  uint32_t xs[2], ys[2];
+  int nx = 0, ny = 0;
+  switch (edge)
+  {
+    case QUADBIN_EDGE_WEST:
+    case QUADBIN_EDGE_EAST:
+      xs[nx++] = (edge == QUADBIN_EDGE_WEST) ? x : x + 1;
+      ys[ny++] = y; ys[ny++] = y + 1;
+      break;
+    case QUADBIN_EDGE_NORTH:
+    case QUADBIN_EDGE_SOUTH:
+      ys[ny++] = (edge == QUADBIN_EDGE_NORTH) ? y : y + 1;
+      xs[nx++] = x; xs[nx++] = x + 1;
+      break;
+    default:
+      return false;          /* a pole is no corner of a tile */
+  }
+  for (int i = 0; i < nx; i++)
+  {
+    for (int j = 0; j < ny; j++)
+    {
+      /* The top and the bottom rows reach the poles, where no parallel
+       * bounds them */
+      if (ys[j] == 0 || (double) ys[j] >= n)
+        continue;
+      double lon = (double) xs[i] / n * 360.0 - 180.0;
+      double lat = quadbin_row_latitude((double) ys[j], n);
+      /* The crossing of the meridian on the side of the corner, and the
+       * crossing of the parallel nearest it */
+      double params[2], plon, plat;
+      int count = dggs_arc_meridian_params(arc, lon, params);
+      int im = -1;
+      for (int k = 0; k < count; k++)
+        if (dggs_arc_point(arc, params[k], &plon, &plat) &&
+            cos(plon - lon * M_PI / 180.0) > 0.0)
+          im = k;
+      if (im < 0 || params[im] <= 0.0 || params[im] >= 1.0)
+        continue;
+      *tv = params[im];
+      count = dggs_arc_parallel_params(arc, lat, params);
+      int ip = -1;
+      for (int k = 0; k < count; k++)
+        if (ip < 0 || fabs(params[k] - *tv) < fabs(params[ip] - *tv))
+          ip = k;
+      *tp = (ip >= 0) ? params[ip] : *tv;
+      /* The path passes through the corner when #dggs_arc_passes_through
+       * decides so exactly, or when the angles state the two crossings at one
+       * parameter */
+      if (! (ip >= 0 && *tp == *tv) &&
+          ! dggs_arc_passes_through(arc, lon, lat))
+        continue;
+      dggs_arc_heading_at(arc, lon, lat, east, north);
+      if (*east == 0 || *north == 0)
+        continue;            /* the path runs along one of the two lines */
+      *cx = xs[i];
+      *cy = ys[j];
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * @brief Fill `cells` with every cell a geodetic segment crosses, and `enter`
@@ -757,6 +869,44 @@ quadbin_arc_cells(double lon1, double lat1, double lon2, double lat2,
       &edge);
     if (texit > 1.0 || edge < 0)
       break;                 /* the segment ends inside this tile */
+    /* A path through a corner of the tile crosses its meridian and its
+     * parallel at one position, which the angles of the two state at
+     * parameters rounded apart, so the walk would pass through a neighbouring
+     * tile for no time between them. Whether it passes through the corner is
+     * decided exactly (#dggs_arc_passes_through), and the corner is then
+     * crossed at the parameter of the meridian, as #dggs_arc_lonlat_box_spans
+     * crosses the corner of a box. The tile east of the meridian and south of
+     * the parallel holds the corner at that instant, and the path goes on into
+     * the tile its heading there points to */
+    uint32_t cx, cy;
+    double tv, tp;
+    int east, north;
+    if (quadbin_arc_corner(&arc, x, y, n, edge, &cx, &cy, &tv, &tp, &east,
+        &north))
+    {
+      uint32_t hx = cx % (uint32_t) n;
+      uint32_t nx = (east > 0) ? hx : ((cx == 0) ? (uint32_t) n - 1 : cx - 1);
+      uint32_t ny = (north > 0) ? cy - 1 : cy;
+      Quadbin holder = quadbin_tile_to_cell(hx, cy, resolution);
+      Quadbin next = quadbin_tile_to_cell(nx, ny, resolution);
+      if (holder != cur)
+      {
+        cells[count] = holder;
+        enter[count++] = tv;
+      }
+      if (next != holder && count < maxout)
+      {
+        cells[count] = next;
+        enter[count++] = tv;
+      }
+      /* The path enters the tile through the meridian of the corner, which
+       * it does not cross back, and it is past the parallel of the corner
+       * once the angles of the parallel state it is */
+      entry = 1u << ((east > 0) ? QUADBIN_EDGE_WEST : QUADBIN_EDGE_EAST);
+      cur = next;
+      t = Max(tv, tp);
+      continue;
+    }
     /* The tile across the boundary crossed, and the boundary of that tile the
      * path enters it through, which is the one opposite */
     uint32_t nx = x, ny = y;

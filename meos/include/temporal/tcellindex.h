@@ -220,6 +220,27 @@ typedef struct
 } DggsLine;
 
 /*****************************************************************************
+ * Periods a trajectory holds its cells — shared by every DGGS walk.
+ *****************************************************************************/
+
+/**
+ * @brief Stretch of a trajectory in one cell: the cell, and the period the
+ * trajectory holds it with the bounds the grid's assignment of each crossing
+ * position gives
+ */
+typedef struct
+{
+  Datum cell;             /**< Cell */
+  TimestampTz lower;      /**< Instant the trajectory enters the cell */
+  TimestampTz upper;      /**< Instant the trajectory leaves the cell */
+  bool lower_inc;         /**< True when the cell holds its entry instant */
+  bool upper_inc;         /**< True when the cell holds its exit instant */
+} DggsVisit;
+
+extern Temporal *dggs_visits_to_temporal(DggsVisit *visits, int count,
+  MeosType temptype);
+
+/*****************************************************************************
  * Membership of a temporal cell index in a cell set — shared by every DGGS.
  *
  * The walk reads the values of the temporal value and the set alone, so one
@@ -287,6 +308,8 @@ extern int dggs_arc_meridian_params(const DggsArc *arc, double lon,
   double *params);
 extern int dggs_arc_parallel_params(const DggsArc *arc, double lat,
   double *params);
+extern double dggs_arc_parallel_exit_param(const DggsArc *arc, double lat,
+  bool above, double tmin);
 extern int dggs_arc_lonlat_box_spans(const DggsArc *arc, double xmin,
   double ymin, double xmax, double ymax, bool border_inc, double *tin,
   double *tout, bool *tin_upper, bool *tout_upper, int maxout);
