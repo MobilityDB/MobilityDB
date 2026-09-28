@@ -1026,6 +1026,17 @@ SELECT aIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- false
 </programlisting>
+				<para><varname>eDwithin</varname> y <varname>aDwithin</varname> utilizan la distancia temporal de <xref linkend="trgeometry_distance"/>, con los mismos requisitos sobre las geometrías. En el ejemplo, un cuadrado gira junto a un punto. Está a distancia 2 del punto en los dos instantes, pero se acerca a menos de 1.7 del punto entre ellos.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)', 1.7);
+-- true
+SELECT aDwithin(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)', 1.7);
+-- false
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -1055,6 +1066,14 @@ SELECT tIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-03]
+</programlisting>
+				<para><varname>tDwithin</varname> utiliza la distancia temporal de <xref linkend="trgeometry_distance"/>, con los mismos requisitos sobre las geometrías. Su resultado cambia en los instantes exactos en los que la distancia cruza la distancia dada. En el ejemplo, un cuadrado gira un cuarto de vuelta junto a un punto. Está a menos de 1.7 del punto desde las 07:26:20 hasta las 16:33:39.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tDwithin(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)', 1.7);
+-- {[f@2001-01-01, t@2001-01-01 07:26:20.193911, t@2001-01-01 16:33:39.806089],
+--  (f@2001-01-01 16:33:39.806089, f@2001-01-02]}
 </programlisting>
 			</listitem>
 		</itemizedlist>

@@ -52,6 +52,7 @@
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "temporal/temporal_aggfuncs.h"
+#include "temporal/temporal_compops.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
@@ -872,6 +873,70 @@ Temporal *
 tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   return dist_normalize(trgeo_tdistance_trgeo(temp1, temp2, -1.0));
+}
+
+/*****************************************************************************
+ * Temporal dwithin
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal rigid
+ * geometry and a geometry are within a distance
+ * @details The temporal distance has an instant at each time at which it
+ * crosses @p dist, thus the comparison of its linear interpolation with
+ * @p dist is exact.
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Tdwithin_trgeometry_geo()
+ */
+Temporal *
+tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist)
+{
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return NULL;
+  Temporal *tdist = trgeo_tdistance_geo(temp, gs, dist);
+  if (! tdist)
+    return NULL;
+  Temporal *result = tcomp_temporal_base(tdist, Float8GetDatum(dist), &datum2_le);
+  pfree(tdist);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal rigid geometry are within a distance
+ * @csqlfn #Tdwithin_geo_trgeometry()
+ */
+Temporal *
+tdwithin_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
+  double dist)
+{
+  return tdwithin_trgeometry_geo(temp, gs, dist);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal rigid
+ * geometries are within a distance
+ * @details See #tdwithin_trgeometry_geo()
+ * @csqlfn #Tdwithin_trgeometry_trgeometry()
+ */
+Temporal *
+tdwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
+  double dist)
+{
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return NULL;
+  Temporal *tdist = trgeo_tdistance_trgeo(temp1, temp2, dist);
+  if (! tdist)
+    return NULL;
+  Temporal *result = tcomp_temporal_base(tdist, Float8GetDatum(dist), &datum2_le);
+  pfree(tdist);
+  return result;
 }
 
 /*****************************************************************************

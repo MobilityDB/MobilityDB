@@ -103,4 +103,8 @@
  *   @defgroup meos_rgeo_rel_ever Ever/always relationship functions
  *   @ingroup meos_rgeo_rel
  *   @brief Ever/always relationship functions for temporal rigid geometries
+ *
+ *   @defgroup meos_rgeo_rel_temp Temporal relationship functions
+ *   @ingroup meos_rgeo_rel
+ *   @brief Temporal relationship functions for temporal rigid geometries
  */

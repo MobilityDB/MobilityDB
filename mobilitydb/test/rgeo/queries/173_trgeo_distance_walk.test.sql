@@ -149,6 +149,67 @@ SELECT round(tDistance(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1)@2001-01-02, Pose(Point(6 6),1)@2001-01-03]',
   trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(8 4),0)@2001-01-02, Pose(Point(8 4),0)@2001-01-03]'), 6);
 
+-- Ever, always and temporal dwithin
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)', 2.5),
+  aDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)', 2.5);
+SELECT eDwithin(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1.5 0),0)@2001-01-01, Pose(Point(1.5 0),0)@2001-01-02]', 1),
+  eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(5 3),0)@2001-01-01, Pose(Point(5 3),0)@2001-01-02]', 2.5);
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Point(0 3)', 2.5);
+SELECT tDwithin(
+  geometry 'Linestring(-5 4,5 4)',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]', 2.5);
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(0 4),-1)@2001-01-02]', 1);
+
+-- A threshold equal to the nearest approach distance.  The distance reaches
+-- the threshold at one time but does not cross it, thus tDwithin is true at
+-- that time.
+WITH c AS MATERIALIZED (
+  SELECT format('Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 %s),0.3)@2001-01-01, Pose(Point(0.5 %s),2.1)@2001-01-02]',
+    k * 0.37, -k * 0.21)::trgeometry AS trg,
+    geometry 'Point(4 0.3)' AS pt,
+    geometry 'Polygon((4 -1,6 -1,6 1,4 1,4 -1))' AS poly,
+    trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(5 0),0)@2001-01-01, Pose(Point(5 0),-1)@2001-01-02]' AS trg2
+  FROM generate_series(1, 20) k
+)
+SELECT count(*),
+  count(*) FILTER (WHERE tDwithin(trg, pt, nearestApproachDistance(trg, pt)) ?= true) AS point,
+  count(*) FILTER (WHERE tDwithin(trg, poly, nearestApproachDistance(trg, poly)) ?= true) AS polygon,
+  count(*) FILTER (WHERE tDwithin(trg, trg2, nearestApproachDistance(trg, trg2)) ?= true) AS trgeometry
+FROM c;
+
+-- tDwithin agrees with the distance at sampled times, for rotating bodies
+-- against lines
+WITH trg AS MATERIALIZED (
+  SELECT k, (format('Polygon((-2 -1,2 -1,2 1,-2 1,-2 -1));[Pose(Point(-8 %s),%s)@2001-01-01, Pose(Point(8 %s),%s)@2001-01-02]',
+    (k % 5) - 2, round(atan2(sin(k), cos(k))::numeric, 3),
+    2 - (k % 3), round(atan2(sin(2.5 * k), cos(2.5 * k))::numeric, 3)))::trgeometry AS trg,
+    format('Linestring(%s 3,0 %s,%s 3)', -6 + k % 4, 1 + (k % 3) * 0.5, 5 - k % 3)::geometry AS line
+  FROM generate_series(1, 10) k
+),
+r AS (
+  SELECT k, trg, line, tDwithin(trg, line, 1.0) AS tdw FROM trg
+)
+SELECT count(*) AS bodies,
+  bool_and((SELECT bool_and(valueAtTimestamp(tdw, t) =
+      (ST_Distance(valueAtTimestamp(trg, t), line) <= 1.0) OR
+      abs(ST_Distance(valueAtTimestamp(trg, t), line) - 1.0) < 1e-6)
+    FROM generate_series(timestamptz '2001-01-01', '2001-01-02', interval '5 minutes') t))
+    AS tdwithin_ok,
+  count(*) FILTER (WHERE eDwithin(trg, line, 1.0)) AS ever_within
+FROM r;
+
 -- Dense comparisons.  The bodies come from a fixed rule, so that the test is
 -- deterministic: convex polygons of five to seven vertices on an ellipse,
 -- that move and turn up to almost a half turn in each segment.  The CTEs are

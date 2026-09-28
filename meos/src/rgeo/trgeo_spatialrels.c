@@ -51,6 +51,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_distance.h"
 #include "rgeo/trgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -681,51 +682,30 @@ ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 
 /*****************************************************************************
  * Ever/always dwithin
+ *
+ * The functions use the temporal distance.  The bodies are ever within the
+ * distance if the minimum of the temporal distance is at most the distance.
+ * They are always within the distance if its maximum is at most the
+ * distance.  For the maximum, the temporal distance has an instant at each
+ * crossing of the distance, and at each extremum between two crossings, see
+ * trgeo_distance.c.  Thus the maximum of its instants is above the distance
+ * if the true distance is above it at some time, and the answer is exact.
  *****************************************************************************/
 
 /**
- * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a geometry and a temporal rigid geometry are ever within
- * the given distance, 0 if not, -1 on error
- * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
- * @param[in] dist Distance
- * @csqlfn #Edwithin_trgeometry_geo() #Edwithin_geo_trgeometry()
+ * @brief Return 1 if the minimum (@p ever) or the maximum of the temporal
+ * distance @p tdist is at most @p dist, 0 if not, -1 if @p tdist is NULL
+ * @param[in] tdist Temporal distance, freed
  */
-int
-edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
+static int
+ea_dwithin_tdist(Temporal *tdist, double dist, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! tdist)
     return -1;
-  return spatialrel_trgeo_trav_geo(temp, gs, Float8GetDatum(dist),
-    (varfunc) &datum_geom_dwithin2d, 3, INVERT_NO);
-}
-
-/**
- * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a geometry and a temporal rigid geometry are always
- * within a distance, 0 if not, -1 on error
- * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
- * @param[in] dist Distance
- * @csqlfn #Adwithin_trgeometry_geo() #Adwithin_geo_trgeometry()
- */
-int
-adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
-    return -1;
-
-  GSERIALIZED *buffer = geom_buffer(gs, dist, "");
-  datum_func2 func = &datum_geom_covers;
-  int result = spatialrel_trgeo_trav_geo(temp, buffer, (Datum) NULL,
-    (varfunc) func, 2, INVERT);
-  pfree(buffer);
-  return result;
+  double bound = DatumGetFloat8(ever ? temporal_min_value(tdist) :
+    temporal_max_value(tdist));
+  pfree(tdist);
+  return (bound <= dist) ? 1 : 0;
 }
 
 /**
@@ -740,214 +720,46 @@ int
 ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool ever)
 {
-  return ever ? edwithin_trgeometry_geo(temp, gs, dist) :
-    adwithin_trgeometry_geo(temp, gs, dist);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if the temporal rigid geometries are ever within a
- * distance
- * @param[in] inst1,inst2 Temporal rigid geometries
- * @param[in] dist Distance
- * @pre The temporal rigid geometries are synchronized
- */
-static bool
-ea_dwithin_trgeoinst_trgeoinst(const TInstant *inst1, const TInstant *inst2,
-  double dist)
-{
-  assert(inst1); assert(inst2);
-  /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(datum_geom_dwithin2d(tinstant_value_p(inst1),
-    tinstant_value_p(inst2), Float8GetDatum(dist)));
+  if (! ensure_valid_trgeo_geo(temp, gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+  return ea_dwithin_tdist(trgeo_tdistance_geo(temp, gs, ever ? -1.0 : dist),
+    dist, ever);
 }
 
 /**
- * @brief Return true if two temporal rigid geometries are ever within a
- * distance
- * @param[in] seq1,seq2 Temporal rigid geometries
+ * @ingroup meos_rgeo_rel_ever
+ * @brief Return 1 if a temporal rigid geometry and a geometry are ever within
+ * a distance, 0 if not, -1 on error
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
  * @param[in] dist Distance
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @pre The temporal rigid geometries are synchronized
- */
-static bool
-ea_dwithin_trgeoseq_trgeoseq_discstep(const TSequence *seq1,
-  const TSequence *seq2, double dist, bool ever)
-{
-  assert(seq1); assert(seq2);
-  bool ret_loop = ever ? true : false;
-  for (int i = 0; i < seq1->count; i++)
-  {
-    bool res = ea_dwithin_trgeoinst_trgeoinst(TSEQUENCE_INST_N(seq1, i),
-      TSEQUENCE_INST_N(seq2, i), dist);
-    if ((ever && res) || (! ever && ! res))
-      return ret_loop;
-  }
-  return ! ret_loop;
-}
-
-/**
- * @brief Return 1 or 2 if two temporal geometry segments are within a distance
- * during the period defined by the output timestamps, return 0 otherwise
- * @param[in] sv1,ev1 Points defining the first segment
- * @param[in] sv2,ev2 Points defining the second segment
- * @param[in] lower,upper Timestamps associated to the segments
- * @param[in] dist Distance
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
+ * @csqlfn #Edwithin_trgeometry_geo() #Edwithin_geo_trgeometry()
  */
 int
-tdwithin_trgeosegm_trgeosegm(Datum sv1 UNUSED, Datum ev1 UNUSED,
-  Datum sv2 UNUSED, Datum ev2 UNUSED, TimestampTz lower UNUSED,
-  TimestampTz upper UNUSED, double dist UNUSED, TimestampTz *t1 UNUSED,
-  TimestampTz *t2 UNUSED)
+edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented", __func__);
-  return 0;
+  return ea_dwithin_trgeo_geo(temp, gs, dist, EVER);
 }
 
 /**
- * @brief Return true if two temporal rigid geometries are ever within a
- * distance
- * @param[in] seq1,seq2 Temporal rigid geometries
+ * @ingroup meos_rgeo_rel_ever
+ * @brief Return 1 if a temporal rigid geometry and a geometry are always
+ * within a distance, 0 if not, -1 on error
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
  * @param[in] dist Distance
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @pre The temporal rigid geometries are synchronized
- */
-static bool
-ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1, const TSequence *seq2,
-  double dist, bool ever)
-{
-  assert(seq1); assert(seq2);
-
-  const TInstant *start1, *start2;
-  if (seq1->count == 1)
-  {
-    start1 = TSEQUENCE_INST_N(seq1, 0);
-    start2 = TSEQUENCE_INST_N(seq2, 0);
-    return ea_dwithin_trgeoinst_trgeoinst(start1, start2, dist);
-  }
-
-  start1 = TSEQUENCE_INST_N(seq1, 0);
-  start2 = TSEQUENCE_INST_N(seq2, 0);
-  Datum sv1 = tinstant_value_p(start1);
-  Datum sv2 = tinstant_value_p(start2);
-
-  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
-  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
-  TimestampTz lower = start1->t;
-  bool lower_inc = seq1->period.lower_inc;
-  bool ret_loop = ever ? true : false;
-  for (int i = 1; i < seq1->count; i++)
-  {
-    const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
-    const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_value_p(end1);
-    Datum ev2 = tinstant_value_p(end2);
-    TimestampTz upper = end1->t;
-    bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
-
-    /* Both segments are constant */
-    if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
-    {
-      bool res = DatumGetBool(datum_geom_dwithin2d(sv1, sv2,
-        Float8GetDatum(dist)));
-      if ((ever && res) || (! ever && ! res))
-        return ret_loop;
-    }
-
-    /* General case */
-    TimestampTz t1, t2;
-    Datum sev1 = linear1 ? ev1 : sv1;
-    Datum sev2 = linear2 ? ev2 : sv2;
-    /* Find the instants t1 and t2 (if any) during which the dwithin function
-     * is true */
-    int solutions = tdwithin_trgeosegm_trgeosegm(sv1, sev1, sv2, sev2,
-      lower, upper, dist, &t1, &t2);
-    /* The turning-point solver is a not-implemented stub returning 0; the
-     * guards remain so the evaluation is correct once it is implemented */
-    /* cppcheck-suppress-begin knownConditionTrueFalse */
-    bool res = (solutions == 2 ||
-      (solutions == 1 && ((t1 != lower || lower_inc) &&
-        (t1 != upper || upper_inc))));
-    if ((ever && res) || (! ever && ! res))
-      return ret_loop;
-    /* cppcheck-suppress-end knownConditionTrueFalse */
-
-    sv1 = ev1;
-    sv2 = ev2;
-    lower = upper;
-    lower_inc = true;
-  }
-  return ! ret_loop;
-}
-
-/**
- * @brief Return true if two temporal rigid geometries are ever within a
- * distance
- * @param[in] ss1,ss2 Temporal rigid geometries
- * @param[in] dist Distance
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @pre The temporal rigid geometries are synchronized
- */
-static bool
-ea_dwithin_trgeoseqset_trgeoseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, double dist, bool ever)
-{
-  assert(ss1); assert(ss2);
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->flags) ||
-    MEOS_FLAGS_LINEAR_INTERP(ss2->flags);
-  bool ret_loop = ever ? true : false;
-  for (int i = 0; i < ss1->count; i++)
-  {
-    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
-    const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    bool res = linear ?
-      ea_dwithin_trgeoseq_trgeoseq_cont(seq1, seq2, dist, ever) :
-      ea_dwithin_trgeoseq_trgeoseq_discstep(seq1, seq2, dist, ever);
-    if ((ever && res) || (! ever && ! res))
-      return ret_loop;
-  }
-  return ! ret_loop;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return 1 if two temporal rigid geometries are ever within a distance,
- * 0 if not, -1 if the temporal rigid geometries do not intersect on time
- * @pre The temporal rigid geometries are synchronized
+ * @csqlfn #Adwithin_trgeometry_geo() #Adwithin_geo_trgeometry()
  */
 int
-ea_dwithin_trgeo_trgeo_sync(const Temporal *sync1, const Temporal *sync2,
-  double dist, bool ever)
+adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  assert(temptype_subtype(sync1->subtype));
-  switch (sync1->subtype)
-  {
-    case TINSTANT:
-      return ea_dwithin_trgeoinst_trgeoinst((TInstant *) sync1,
-        (TInstant *) sync2, dist);
-    case TSEQUENCE:
-      return MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
-          MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
-        ea_dwithin_trgeoseq_trgeoseq_cont((TSequence *) sync1,
-          (TSequence *) sync2, dist, ever) :
-        ea_dwithin_trgeoseq_trgeoseq_discstep((TSequence *) sync1,
-          (TSequence *) sync2, dist, ever);
-    default: /* TSEQUENCESET */
-      return ea_dwithin_trgeoseqset_trgeoseqset((TSequenceSet *) sync1,
-        (TSequenceSet *) sync2, dist, ever);
-  }
+  return ea_dwithin_trgeo_geo(temp, gs, dist, ALWAYS);
 }
 
 /**
- * @ingroup meos_internal_geo_spatial_rel_ever
- * @brief Return 1 if two temporal rigid geometries are ever within a distance,
- * 0 if not, -1 on error or if they do not intersect on time
+ * @brief Return 1 if two temporal rigid geometries are ever or always within
+ * a distance, 0 if not, -1 on error or if they do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -956,44 +768,17 @@ int
 ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-
-  /* When both bodies move continuously the exact temporal distance carries the
-   * answer: the bodies are ever within the distance when its minimum is within
-   * it, and always within the distance when its maximum is */
-  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
-      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
-  {
-    Temporal *dist_temp = tdistance_trgeometry_trgeometry(temp1, temp2);
-    if (! dist_temp)
-      return -1;
-    double bound = DatumGetFloat8(ever ? temporal_min_value(dist_temp) :
-      temporal_max_value(dist_temp));
-    pfree(dist_temp);
-    return (bound <= dist) ? 1 : 0;
-  }
-
-  Temporal *sync1, *sync2;
-  /* Return NULL if the temporal rigid geometries do not intersect in time
-   * The operation is synchronization without adding crossings */
-  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
-    &sync1, &sync2))
-    return -1;
-
-  bool result = ea_dwithin_trgeo_trgeo_sync(sync1, sync2, dist, ever);
-  pfree(sync1); pfree(sync2);
-  return result ? 1 : 0;
+  return ea_dwithin_tdist(trgeo_tdistance_trgeo(temp1, temp2,
+    ever ? -1.0 : dist), dist, ever);
 }
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return whether two temporal rigid geometries are ever within a
- * distance
- * @details The result is 1 if they are, 0 if not, -1 on error or if the
- * temporal rigid geometries do not intersect on time.
+ * @brief Return 1 if two temporal rigid geometries are ever within a
+ * distance, 0 if not, -1 on error or if they do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Edwithin_trgeometry_trgeometry()
@@ -1007,7 +792,7 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if two temporal rigid geometries are always within a
- * distance, 0 if not, -1 on error or if they do not intersect on time
+ * distance, 0 if not, -1 on error or if they do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Adwithin_trgeometry_trgeometry()

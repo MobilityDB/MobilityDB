@@ -930,10 +930,15 @@ def render_tempspatialrels(fam: dict) -> str:
     units = []
     for pred in fam["predicates"]:
         if isinstance(pred, dict):
-            name, directions = pred["name"], pred["directions"]
+            name = pred["name"]
+            directions = pred["directions"] if "directions" in pred \
+                else fam["directions"]
+            # A predicate can override the impl of its family, for a
+            # relationship that the family computes itself
+            pimpl = pred.get("impl", impl)
         else:
-            name, directions = pred, fam["directions"]
-        if impl == "cast":
+            name, directions, pimpl = pred, fam["directions"], impl
+        if pimpl == "cast":
             units.append(banner.replace("{PRED}", name) + "\n\n" +
                          "\n".join(_tsr_cast_body(name, d, fam) for d in directions))
             continue

@@ -612,8 +612,9 @@ whole point of this section is that they do not coincide.
 These are orthogonal. An **area** type can share the **point** type's closed-form
 kernel — `tcbuffer` does, because its gap `dist(centre, gs) − r(t)` is still
 analytic with at most two turning points. And an area type can need a *different*
-kernel — `trgeometry` does, because a rotating rigid body has no closed-form
-distance. So "point versus area" predicts the *surface* but not the *strategy*;
+kernel — `trgeometry` does, because the distance of a rotating rigid body has
+several turning points per segment, which it finds with its own closest-feature
+walk. So "point versus area" predicts the *surface* but not the *strategy*;
 "analytic versus adaptive" predicts the *strategy* but not the *surface*. The two
 tables below record each axis for every temporal type, exhaustively.
 
@@ -656,7 +657,7 @@ and its box is radius-aware.
 | `tcbuffer` | closed-form unary, radius-aware | exact (planar) | synchronised running-min fast-path (shared radius-aware kernel) |
 | `tgeometry` | closed-form per-segment geo | exact (planar) | materialise `tdistance` + `min` |
 | `tgeography` | closed-form per-segment geo, chordal | approximate — as `tgeogpoint` | materialise `tdistance` + `min` |
-| `trgeometry` | adaptive ε-bisection (n ≥ 2 turning points, no closed form) | ε-bounded — converges within `MEOS_EPSILON` | vs geometry: materialise `tdistance` + `min`; vs `tpoint` / vs `trgeometry`: raises `NOT_IMPLEMENTED` |
+| `trgeometry` | closest-feature walk with certified root isolation (several turning points, one function family) | exact at every instant, every extremum kept (convex bodies) | materialise `tdistance` + `min`, for a geometry, a `tpoint` and a `trgeometry` |
 | `tpointcloud` | none — bounding-box distance (`nad_stbox_stbox`) | box lower bound, not point-exact | box-level, no `tdistance` |
 | `tbool`, `ttext`, `tjsonb`, `th3index`, `tquadbin` | — | — | none |
 
@@ -678,17 +679,15 @@ point types, `r(t)` for `tcbuffer`. It is exact in both cases. This is why a
 point family is the `r ≡ 0` special case of the area kernel (§2) rather than a
 separate problem, and why sharing the kernel does not merge the families.
 
-**`trgeometry` carries the reduction but not the two-moving-body kernel.** The
-generic adaptive turning-point strategy (`tfunc_tlinearseq_adaptive`, depth-bounded
-by `MEOS_ADAPTIVE_MAX_DEPTH`) and the running-min reduction are present, and the
-one-moving-body path `tdistance_trgeometry_geo` carries the pattern end to end
-through the `solve_s_tpoly_point` bisection. What raises `NOT_IMPLEMENTED` is the
-*two-moving-body* per-segment kernel — sampling `dist(trgeo₁@t, trgeo₂@t)` and
-bisecting the segment while both operands move — named in a code comment as
-`trgeo_pair_dist_adaptive` but not defined. It clones the one-moving bisection to
-sample both sequences. Its result is ε-bounded, so it is admissible only as a
-doc-marked convergent approximation, never silently, and it does not join the exact
-closed-form kernel of the point and disc types.
+**`trgeometry` has its own kernel.** Its distance comes from a walk over the
+closest features of the Minkowski difference of the two bodies, in which every
+equation is a function of one small family (a trigonometric polynomial with affine
+coefficients) solved by a certified root isolation. The result is exact at every
+instant and keeps every extremum, so the minimum is the nearest approach distance
+and the maximum is the largest distance. The walk also gives the exact times at
+which the distance crosses a threshold, which makes `eDwithin`, `aDwithin` and
+`tDwithin` exact. It needs convex bodies: a polygon that is not convex or has holes
+gives an error. See `meos/src/rgeo/trgeo_distance.txt`.
 
 **`tgeogpoint` and `tgeography` interior extrema are chordal, not geodetic.** The
 distance *values* at synchronised instants are exact geographic distances, but the

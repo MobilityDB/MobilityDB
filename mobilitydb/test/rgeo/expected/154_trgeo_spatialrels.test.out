@@ -414,7 +414,7 @@ SELECT eDwithin(
   3.0);
  edwithin 
 ----------
- f
+ t
 (1 row)
 
 SELECT aDwithin(
@@ -423,7 +423,7 @@ SELECT aDwithin(
   3.0);
  adwithin 
 ----------
- f
+ t
 (1 row)
 
 SELECT eContains(

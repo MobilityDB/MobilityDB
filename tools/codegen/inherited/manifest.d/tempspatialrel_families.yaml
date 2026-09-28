@@ -292,11 +292,22 @@ tempspatialrel_families:
           - {l: tposechain, r: tposechain}
     convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
 
+  # tDwithin is native: a tgeometry holds each geometry until the next instant,
+  # thus the cast loses the motion of the body between the instants.  The
+  # distance walk of the family finds the exact times at which the distance
+  # crosses the threshold, see meos/src/rgeo/trgeo_distance.txt.
   - family:  trgeometry
     impl:    cast
     file:    mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql
     brief:   "temporal rigid geometries"
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    predicates:
+      - tContains
+      - tCovers
+      - tDisjoint
+      - tIntersects
+      - tTouches
+      - name: tDwithin
+        impl: native
     directions:
       - {l: geometry,   r: trgeometry}
       - {l: trgeometry, r: geometry}

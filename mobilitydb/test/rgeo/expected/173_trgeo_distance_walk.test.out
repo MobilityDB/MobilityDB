@@ -179,6 +179,93 @@ SELECT round(tDistance(
  {[4.472136@Mon Jan 01 00:00:00 2001 PST, 1.706629@Mon Jan 01 08:51:21.555045 2001 PST, 1.62264@Mon Jan 01 13:21:30.615953 2001 PST, 1.621915@Mon Jan 01 13:28:01.116819 2001 PST, 2.045879@Mon Jan 01 16:15:37.516196 2001 PST, 4.828262@Tue Jan 02 00:00:00 2001 PST), [2.064715@Tue Jan 02 00:00:00 2001 PST, 0@Tue Jan 02 09:48:53.244146 2001 PST, 0@Tue Jan 02 21:10:25.0751 2001 PST, 0.381773@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)', 2.5),
+  aDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)', 2.5);
+ edwithin | adwithin 
+----------+----------
+ t        | f
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1.5 0),0)@2001-01-01, Pose(Point(1.5 0),0)@2001-01-02]', 1),
+  eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(5 3),0)@2001-01-01, Pose(Point(5 3),0)@2001-01-02]', 2.5);
+ edwithin | edwithin 
+----------+----------
+ t        | t
+(1 row)
+
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Point(0 3)', 2.5);
+                                                                                         tdwithin                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 07:21:24.284026 2001 PST, t@Mon Jan 01 16:28:46.723868 2001 PST], (f@Mon Jan 01 16:28:46.723868 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDwithin(
+  geometry 'Linestring(-5 4,5 4)',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]', 2.5);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(0 4),-1)@2001-01-02]', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+WITH c AS MATERIALIZED (
+  SELECT format('Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 %s),0.3)@2001-01-01, Pose(Point(0.5 %s),2.1)@2001-01-02]',
+    k * 0.37, -k * 0.21)::trgeometry AS trg,
+    geometry 'Point(4 0.3)' AS pt,
+    geometry 'Polygon((4 -1,6 -1,6 1,4 1,4 -1))' AS poly,
+    trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(5 0),0)@2001-01-01, Pose(Point(5 0),-1)@2001-01-02]' AS trg2
+  FROM generate_series(1, 20) k
+)
+SELECT count(*),
+  count(*) FILTER (WHERE tDwithin(trg, pt, nearestApproachDistance(trg, pt)) ?= true) AS point,
+  count(*) FILTER (WHERE tDwithin(trg, poly, nearestApproachDistance(trg, poly)) ?= true) AS polygon,
+  count(*) FILTER (WHERE tDwithin(trg, trg2, nearestApproachDistance(trg, trg2)) ?= true) AS trgeometry
+FROM c;
+ count | point | polygon | trgeometry 
+-------+-------+---------+------------
+    20 |    20 |      20 |         20
+(1 row)
+
+WITH trg AS MATERIALIZED (
+  SELECT k, (format('Polygon((-2 -1,2 -1,2 1,-2 1,-2 -1));[Pose(Point(-8 %s),%s)@2001-01-01, Pose(Point(8 %s),%s)@2001-01-02]',
+    (k % 5) - 2, round(atan2(sin(k), cos(k))::numeric, 3),
+    2 - (k % 3), round(atan2(sin(2.5 * k), cos(2.5 * k))::numeric, 3)))::trgeometry AS trg,
+    format('Linestring(%s 3,0 %s,%s 3)', -6 + k % 4, 1 + (k % 3) * 0.5, 5 - k % 3)::geometry AS line
+  FROM generate_series(1, 10) k
+),
+r AS (
+  SELECT k, trg, line, tDwithin(trg, line, 1.0) AS tdw FROM trg
+)
+SELECT count(*) AS bodies,
+  bool_and((SELECT bool_and(valueAtTimestamp(tdw, t) =
+      (ST_Distance(valueAtTimestamp(trg, t), line) <= 1.0) OR
+      abs(ST_Distance(valueAtTimestamp(trg, t), line) - 1.0) < 1e-6)
+    FROM generate_series(timestamptz '2001-01-01', '2001-01-02', interval '5 minutes') t))
+    AS tdwithin_ok,
+  count(*) FILTER (WHERE eDwithin(trg, line, 1.0)) AS ever_within
+FROM r;
+ bodies | tdwithin_ok | ever_within 
+--------+-------------+-------------
+     10 | t           |          10
+(1 row)
+
 WITH body AS MATERIALIZED (
   SELECT k,
     ('Polygon((' || string_agg(format('%s %s',
