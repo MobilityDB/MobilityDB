@@ -354,9 +354,10 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
  * #tcbuffersegm_length_roots discards by that sign. It returns the
  * sub-interval [t1, t2] of [lower, upper] during which the relation holds, so
  * the temporal contains and covers Boolean is true on a continuous interval
- * rather than only at the clearance minimum. With @p strict true an isolated
- * tangency (g = 0 at a single instant) does not count, matching the strict
- * interior of contains.
+ * rather than only at the clearance minimum. As #cbuffer_contains states it,
+ * contains is covers except for a point on the boundary of a disk of a
+ * strictly positive radius, so with @p strict true the isolated tangency
+ * (g = 0 at a single instant) of such a point does not count.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
@@ -374,21 +375,23 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   const Cbuffer *ev1 = DatumGetCbufferP(end1);
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
   const Cbuffer *ev2 = DatumGetCbufferP(end2);
-  bool is_strict = (DatumGetFloat8(strict) != 0);
+  bool contains = (DatumGetFloat8(strict) != 0);
+  /* Contains differs from covers only for a disk of a zero radius, a point,
+   * on the boundary of a disk of a strictly positive radius, as
+   * #cbuffer_contains states it. The radius of the second disk is affine and
+   * non-negative, so it is zero inside the segment only when it is zero at
+   * both ends; otherwise contains is covers there */
+  bool is_strict = contains && sv2->radius == 0.0 && ev2->radius == 0.0;
   /* Radius DIFFERENCE R1 - R2 (contains threshold), not the sum */
   long double roots[2];
   int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
     sv1->radius - sv2->radius, ev1->radius - ev2->radius, roots);
-  /* Contains/covers status at the two segment endpoints, read as
-   * #cbuffer_covers reads it: covers is dist + R2 <= R1 and strict contains is
-   * dist + R2 < R1, so identical or internally tangent disks (g == 0
-   * throughout) cover but never strictly contain */
-  double g_lower = hypot(sv2->x - sv1->x, sv2->y - sv1->y) + sv2->radius;
-  double g_upper = hypot(ev2->x - ev1->x, ev2->y - ev1->y) + ev2->radius;
-  bool in_lower = is_strict ? (g_lower < sv1->radius) :
-    (g_lower <= sv1->radius);
-  bool in_upper = is_strict ? (g_upper < ev1->radius) :
-    (g_upper <= ev1->radius);
+  /* Status at the two segment endpoints, read by the base predicates the
+   * instants of the result are read with */
+  bool in_lower = contains ? cbuffer_contains(sv1, sv2) :
+    cbuffer_covers(sv1, sv2);
+  bool in_upper = contains ? cbuffer_contains(ev1, ev2) :
+    cbuffer_covers(ev1, ev2);
   long double fstart, fend;
   if (nroots == 0)
   {
@@ -412,8 +415,10 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
     else
     {
       /* Isolated tangency: the disks graze from inside at a single instant.
-       * Covers holds there, strict contains does not. */
-      if (is_strict)
+       * Covers holds there; contains does not when a point touches the
+       * boundary of a disk of a strictly positive radius */
+      long double r1 = sv1->radius + roots[0] * (ev1->radius - sv1->radius);
+      if (is_strict && r1 > 0)
       {
         *t1 = *t2 = (TimestampTz) 0;
         return 0;

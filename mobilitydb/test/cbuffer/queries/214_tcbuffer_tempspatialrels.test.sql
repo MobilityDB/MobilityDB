@@ -79,10 +79,20 @@ SELECT tContains(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001
 -- crossings, not only at the closest-approach instant
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),5)@2001-01-01, Cbuffer(Point(0 0),5)@2001-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]');
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),5)@2001-01-01, Cbuffer(Point(0 0),5)@2001-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-03]');
--- Identical moving buffers cover each other throughout but never strictly
--- contain (the boundaries coincide)
+-- Identical moving buffers contain and cover each other throughout, as
+-- cbuffer_contains and cbuffer_covers read each of their instants
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]');
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]');
+-- A moving buffer tangent from inside to the one containing it throughout
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(10 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(1 0),2)@2001-01-01, Cbuffer(Point(11 0),2)@2001-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(10 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(1 0),2)@2001-01-01, Cbuffer(Point(11 0),2)@2001-01-03]');
+-- A moving point on the boundary of a moving buffer throughout is covered but
+-- not contained, the one case where the two relationships part
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 2),0)@2001-01-01, Cbuffer(Point(10 2),0)@2001-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 2),0)@2001-01-01, Cbuffer(Point(10 2),0)@2001-01-03]');
+-- A moving point grazing the boundary of a stationary buffer at one instant
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),0)@2001-01-01, Cbuffer(Point(5 2),0)@2001-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),0)@2001-01-01, Cbuffer(Point(5 2),0)@2001-01-03]');
 -- Crossings inside a segment at projected coordinates: the first centre jumps
 -- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
 -- the answers are those of the centres at the radii read as a distance, which
