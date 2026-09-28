@@ -952,6 +952,9 @@ tsequenceset_value_n_p(const TSequenceSet *ss, int n, Datum *result)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the time frame a temporal sequence set as a timestamptz span
  * set
+ * @details Consecutive sequences may meet at an instant, as in
+ * `{[a, b), [b, c]}` when the value jumps at `b`, so their periods are
+ * normalized into a single span
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_time()
  */
@@ -962,7 +965,7 @@ tsequenceset_time(const TSequenceSet *ss)
   Span *periods = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     periods[i] = (TSEQUENCESET_SEQ_N(ss, i))->period;
-  return spanset_make_free(periods, ss->count, NORMALIZE_NO, ORDER_NO);
+  return spanset_make_free(periods, ss->count, NORMALIZE, ORDER_NO);
 }
 
 /**

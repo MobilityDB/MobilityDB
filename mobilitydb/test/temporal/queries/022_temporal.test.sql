@@ -1309,6 +1309,10 @@ SELECT getTime(ttext 'AAA@2001-01-01');
 SELECT getTime(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}');
 SELECT getTime(ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]');
 SELECT getTime(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}');
+-- Sequences meeting at an instant yield a single span
+SELECT getTime(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02), [3.5@2001-01-02, 3.5@2001-01-03]}');
+SELECT getTime(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02), [3.5@2001-01-02, 3.5@2001-01-03), [4.5@2001-01-03, 4.5@2001-01-04]}') = tstzspanset '{[2001-01-01, 2001-01-04]}';
+SELECT getTime(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02), [3.5@2001-01-02, 3.5@2001-01-03), [4.5@2001-01-03, 4.5@2001-01-04]}') - tstzspanset '{[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06]}';
 
 SELECT duration(tbool 't@2001-01-01', true);
 SELECT duration(tbool '{t@2001-01-01, f@2001-01-02, t@2001-01-03}', true);
