@@ -635,15 +635,24 @@ Datum
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      LWGEOM *geo = lwgeom_from_gserialized(DatumGetGserializedP(d));
+      /* The geometry read from a serialization shares its coordinates, which
+       * lwgeom_transform rewrites in place, so it is read from a copy, as in
+       * #geo_transform */
+      GSERIALIZED *gs = geo_copy(DatumGetGserializedP(d));
+      LWGEOM *geo = lwgeom_from_gserialized(gs);
       if (! lwgeom_transform(geo, (LWPROJ *) pj))
+      {
+        lwgeom_free(geo);
+        pfree(gs);
         return PointerGetDatum(NULL);
+      }
       geo->srid = srid_to;
       /* Re-compute bbox if input had one (COMPUTE_BBOX TAINTING) */
       if (geo->bbox)
         lwgeom_refresh_bbox(geo);
       Datum result = PointerGetDatum(geo_serialize(geo));
       lwgeom_free(geo);
+      pfree(gs);
       return result;
     }
 #if CBUFFER

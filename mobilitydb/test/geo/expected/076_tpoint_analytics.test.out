@@ -521,6 +521,40 @@ SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST], [POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+DROP TABLE IF EXISTS tbl_transf_arg;
+NOTICE:  table "tbl_transf_arg" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_transf_arg(temp tgeompoint);
+CREATE TABLE
+INSERT INTO tbl_transf_arg VALUES
+  (tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+INSERT 0 1
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)')) FROM tbl_transf_arg;
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(2 2)@Mon Jan 01 00:00:00 2001 PST, POINT(4 4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)', geometry 'POINT(1 1)')) FROM tbl_transf_arg;
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(affine(temp, 1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 20, 0)) FROM tbl_transf_arg;
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ [POINT(11 21)@Mon Jan 01 00:00:00 2001 PST, POINT(12 22)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(temp) FROM tbl_transf_arg;
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+DROP TABLE tbl_transf_arg;
+DROP TABLE
 /* Errors */
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted

@@ -183,6 +183,17 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
 SELECT asEWKT(scale(tgeompoint 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
 
+-- A stored value keeps its coordinates after being scaled and moved
+DROP TABLE IF EXISTS tbl_transf_arg;
+CREATE TABLE tbl_transf_arg(temp tgeompoint);
+INSERT INTO tbl_transf_arg VALUES
+  (tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)')) FROM tbl_transf_arg;
+SELECT asEWKT(scale(temp, geometry 'POINT(2 2)', geometry 'POINT(1 1)')) FROM tbl_transf_arg;
+SELECT asEWKT(affine(temp, 1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 20, 0)) FROM tbl_transf_arg;
+SELECT asEWKT(temp) FROM tbl_transf_arg;
+DROP TABLE tbl_transf_arg;
+
 /* Errors */
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'Linestring(1 1,2 2)'));
