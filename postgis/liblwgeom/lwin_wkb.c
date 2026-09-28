@@ -144,7 +144,12 @@ uint8_t* bytes_from_hexbytes(const char *hexbuf, size_t hexsize)
 */
 static inline void wkb_parse_state_check(wkb_parse_state *s, size_t next)
 {
-	if( (s->pos + next) > (s->wkb + s->wkb_size) )
+	/* MEOS: compare with the bytes left rather than adding to the position,
+	 * so a request as large as the address space cannot wrap the pointer; the
+	 * offset is computed from the position since the parse state keeps the
+	 * layout that MEOS declares */
+	size_t pos_offset = (size_t) (s->pos - s->wkb); /* MEOS */
+	if (next > s->wkb_size || pos_offset > s->wkb_size - next) /* MEOS */
 	{
 		lwerror("WKB structure does not match expected size!");
 		s->error = LW_TRUE;
