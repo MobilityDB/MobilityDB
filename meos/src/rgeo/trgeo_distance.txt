@@ -380,6 +380,41 @@ paper:
   * The merge compares the distances of the parts with their exact values
     at the instants, not with their linear interpolations only.
 
+Code
+----
+
+The root finder
+...............
+
+meos/src/rgeo/trgeo_distsolve.c contains the function family and the root
+isolation.  It includes no PostgreSQL, PostGIS or MEOS header and does no
+allocation, so that it builds on its own, without libmeos.  Thus a test
+program can check the same code that MEOS uses, on many random functions.
+Do not add palloc, Assert or meos_error to this file: they need MEOS, and
+Assert and meos_error can jump out of a function, which changes the
+control flow between the two builds.
+
+The caller gives the arrays for the roots.  An array of DISTFUN_MAXROOTS
+roots is sufficient in practice.  A function with more roots gives the
+result DISTFUN_OVERFLOW, not a wrong answer.  The caller also gives the
+tolerance, because only the caller knows the size of the geometry.
+
+The solver must terminate.  Two roots closer than (hi - lo) * 1e-14 are
+the same root, and the number of cells has a limit.  A function that needs
+more cells gives the result DISTFUN_BUDGET.
+
+The test program meos/test/unit/rgeo/trgeo_distsolve_unit.c checks that the
+solver finds each change of sign of a dense scan, that each root is a
+root, that the crossings and their directions agree with the scan, and
+that a touch is not a crossing.  CMake builds it in a MEOS build with rigid
+geometries, and ctest runs it with a small number of trials.  To run it by
+hand with more trials:
+
+  gcc -O2 -Wall -I meos/include -o trgeo_distsolve_unit \
+      meos/test/unit/rgeo/trgeo_distsolve_unit.c \
+      meos/src/rgeo/trgeo_distsolve.c -lm
+  ./trgeo_distsolve_unit 20000
+
 Relation to the Paper
 ---------------------
 
