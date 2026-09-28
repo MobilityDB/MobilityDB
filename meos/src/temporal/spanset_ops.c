@@ -1226,36 +1226,38 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   while (i < ss1->count && j < ss2->count)
   {
     const Span *s1 = SPANSET_SP_N(ss1, i);
-    const Span *s2 = SPANSET_SP_N(ss2, j);
-    /* The spans do not overlap, copy the first span */
-    if (! overlaps_span_span(s1, s2))
+    /* Skip the spans in ss2 that are to the left of s1 */
+    if (left_span_span(SPANSET_SP_N(ss2, j), s1))
     {
-      spans[nspans++] = *s1;
-      i++;
+      j++;
+      continue;
     }
+    /* Find all spans in ss2 that overlap with s1
+     *                  i
+     *    |------------------------|
+     *      |-----|  |-----|          |---|
+     *         j                        k
+     */
+    int k;
+    for (k = j; k < ss2->count; k++)
+    {
+      if (! overlaps_span_span(s1, SPANSET_SP_N(ss2, k)))
+        break;
+    }
+    if (k == j)
+      /* No span in ss2 overlaps with s1, copy s1 */
+      spans[nspans++] = *s1;
     else
     {
-      /* Find all spans in ss2 that overlap with s1
-       *                  i
-       *    |------------------------|
-       *      |-----|  |-----|          |---|
-       *         j                        k
-       */
-      int k;
-      for (k = j; k < ss2->count; k++)
-      {
-        const Span *s3 = SPANSET_SP_N(ss2, k);
-        if (! overlaps_span_span(s1, s3))
-          break;
-      }
-      int to = Min(k, ss2->count);
       /* Compute the difference of the overlapping spans */
-      nspans += mi_span_spanset(s1, ss2, j, to, &spans[nspans]);
-      i++;
-      j = k;
+      nspans += mi_span_spanset(s1, ss2, j, k, &spans[nspans]);
+      /* The last overlapping span may also overlap with the next span of
+       * ss1, it is the first one to consider for it */
+      j = k - 1;
     }
+    i++;
   }
-  /* Copy the sequences after the span set */
+  /* Copy the spans after the span set */
   while (i < ss1->count)
     spans[nspans++] = *SPANSET_SP_N(ss1, i++);
   return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
