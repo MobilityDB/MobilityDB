@@ -2573,16 +2573,16 @@
 			<title>Distance Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance between two temporal rigid geometries</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Return the nearest approach distance</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Return the instant at which the two arguments are at their smallest mutual distance</para>
+					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Return the instant of the first argument at which the two arguments are nearest</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the two arguments at their nearest approach</para>
+					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Return the line between the nearest points of the two arguments at their nearest approach instant</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

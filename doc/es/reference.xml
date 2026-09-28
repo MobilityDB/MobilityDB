@@ -2564,16 +2564,16 @@
 			<title>Operaciones de distancia</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Devuelve el instante en el que los dos argumentos están a su menor distancia mutua</para>
+					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer argumento en el que los dos argumentos están más cerca</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta los dos argumentos en su aproximación más cercana</para>
+					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea entre los puntos más cercanos de los dos argumentos en su instante de aproximación más cercana</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

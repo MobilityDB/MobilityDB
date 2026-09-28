@@ -29,77 +29,23 @@
 
 /**
  * @file
- * @brief Distance functions for temporal rigid geometries
+ * @brief Internal distance functions for temporal rigid geometries
  */
 
 #ifndef __TRGEO_DISTANCE_H__
 #define __TRGEO_DISTANCE_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-/* PostGIS */
-#include <liblwgeom.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include "pose/pose.h"
 
-/*****************************************************************************
- * Struct definitions
- *****************************************************************************/
+/*****************************************************************************/
 
-/** Symbolic constants for temporal distance */
-#define MEOS_ANY             0
-#define MEOS_RIGHT           1
-#define MEOS_LEFT            2
-
-/** Symbolic constants for equation solving */
-#define MEOS_SOLVE_0         true
-#define MEOS_SOLVE_1         false
-
-/** Symbolic constants for cfp_elem */
-#define MEOS_CFP_STORE       true
-#define MEOS_CFP_STORE_NO    false
-
-#define MEOS_CFP_FREE        true
-#define MEOS_CFP_FREE_NO     false
-
-/* Closest features pair */
-
-typedef struct {
-  LWGEOM *geom_1;
-  LWGEOM *geom_2;
-  Pose *pose_1;
-  Pose *pose_2;
-  bool free_pose_1;
-  bool free_pose_2;
-  uint32_t cf_1;
-  uint32_t cf_2;
-  TimestampTz t;
-  bool store;
-} cfp_elem;
-
-/* List of CFPs */
-
-typedef struct {
-  size_t count;
-  size_t size;
-  cfp_elem *arr;
-} cfp_array;
-
-/* Closest features pair */
-
-typedef struct {
-  double dist;
-  TimestampTz t;
-} tdist_elem;
-
-/* List of CFPs */
-
-typedef struct {
-  size_t count;
-  size_t size;
-  tdist_elem *arr;
-} tdist_array;
+extern Temporal *trgeo_tdistance_geo(const Temporal *temp,
+  const GSERIALIZED *gs, double level);
+extern Temporal *trgeo_tdistance_tpoint(const Temporal *temp1,
+  const Temporal *temp2, double level);
+extern Temporal *trgeo_tdistance_trgeo(const Temporal *temp1,
+  const Temporal *temp2, double level);
 
 /*****************************************************************************/
 
