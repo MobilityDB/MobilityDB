@@ -256,3 +256,18 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexW
      0
 (1 row)
 
+SELECT ttextFromHexWKB(asHexWKB(ttext '""@2001-01-01', 'NDR')) = ttext '""@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT ttextFromHexWKB(overlay(asHexWKB(ttext 'AAA@2001-01-01', 'NDR') placing 'FFFFFFFFFFFFFFFF' from 9 for 16));
+ERROR:  WKB structure does not match expected size!
+SELECT ttextFromHexWKB(overlay(asHexWKB(ttext 'AAA@2001-01-01', 'NDR') placing 'FFFFFFFFFFFFFF7F' from 9 for 16));
+ERROR:  WKB structure does not match expected size!
+SELECT ttextFromHexWKB(left(asHexWKB(ttext 'AAA@2001-01-01', 'NDR'), 28));
+ERROR:  WKB structure does not match expected size!
+SELECT ttextFromHexWKB(overlay(asHexWKB(ttext '{AAA@2001-01-01}', 'NDR') placing 'FFFFFFFF' from 9 for 8));
+ERROR:  WKB structure does not match expected size!
