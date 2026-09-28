@@ -33,8 +33,11 @@
 # internal headers, so CMake builds them.  Their names end in _unit.c and not
 # in _test.c, so that CI does not take them for tests of the public API.
 #
-# The files under test are compiled into each program with NDEBUG not
-# defined, also in a release build, so that their assertions run.
+# The two files under test are compiled into each program with NDEBUG not
+# defined, also in a release build.  Then the functions of the walk compare
+# each result with a direct computation, see distwalk_check().  libmeos gives
+# the rest of MEOS, and the static libraries give the PostGIS and pgtypes
+# functions that libmeos does not export.
 #
 # Run them with
 #   ctest -R trgeo_dist
@@ -42,9 +45,24 @@
 # each program to about one second.  Run a program with a larger number for
 # a deeper check.
 
+set(TRGEO_DIST_UNDER_TEST
+  ${CMAKE_SOURCE_DIR}/meos/src/rgeo/trgeo_distsolve.c
+  ${CMAKE_SOURCE_DIR}/meos/src/rgeo/trgeo_distwalk.c)
+
+function(add_trgeo_dist_test name)
+  add_executable(${name} ${name}.c ${TRGEO_DIST_UNDER_TEST})
+  target_compile_options(${name} PRIVATE -UNDEBUG)
+  target_link_libraries(${name} ${MEOS_LIB_NAME} postgis pgtypes m)
+  add_test(NAME ${name} COMMAND ${name} ${ARGN})
+endfunction()
+
 # The root isolation builds with libm only, so that this remains possible
 add_executable(trgeo_distsolve_unit trgeo_distsolve_unit.c
   ${CMAKE_SOURCE_DIR}/meos/src/rgeo/trgeo_distsolve.c)
 target_compile_options(trgeo_distsolve_unit PRIVATE -UNDEBUG)
 target_link_libraries(trgeo_distsolve_unit m)
 add_test(NAME trgeo_distsolve_unit COMMAND trgeo_distsolve_unit 300)
+
+add_trgeo_dist_test(trgeo_distwalk_unit)
+add_trgeo_dist_test(trgeo_distwalk_rand_unit 1000)
+add_trgeo_dist_test(trgeo_distwalk_degen_unit)

@@ -415,6 +415,88 @@ hand with more trials:
       meos/src/rgeo/trgeo_distsolve.c -lm
   ./trgeo_distsolve_unit 20000
 
+The walk
+........
+
+meos/src/rgeo/trgeo_distwalk.c contains the functions of the walk and the
+walk in one segment.  It knows about poses and polygons, but not about
+time: it uses no TimestampTz and no TSequence.
+
+The walk uses one tolerance, ftol: a function value of at most ftol is
+zero.  Each function of the walk is a squared length.  Its terms are at
+most the square of the size of the configuration: the radii of the two
+bodies and the distance between their rotation centers.  ftol is 1e-14
+times this square, which is a small multiple of the rounding error of the
+terms.  Thus the tolerance is correct for bodies in meters and in degrees.
+
+A static polygon is placed relative to the mean of its vertices, not
+relative to the origin of its coordinates.  In projected coordinates, the
+vertices are in the millions, and the terms of the functions would be the
+square of the millions for a question about meters.
+
+The walk cleans a reference ring before it uses it.  It removes a vertex
+at a distance of at most 1e-12 of the size of the ring from the previous
+vertex, and a vertex whose turn has a sine of at most 1e-12 and that does
+not go back.  These vertices do not change the distance.  Without them,
+each edge has a direction and each vertex has a turn.  A vertex where the
+ring goes back on the same line is the end of a spike.  It stays, because
+it changes the distance, and the ring is then not convex.  The walk
+refuses a ring that is not convex.
+
+The walk limits its number of steps in a segment, so that a defect cannot
+make a query run forever.  The limit grows with the number of vertices,
+because a rotation passes each feature of the difference in turn.  The
+walk advances because each event is a crossing strictly after the current
+time.
+
+In debug builds, each function of the walk compares its result with a
+direct computation from the placed geometry.  Thus a wrong sign in a
+coefficient fails at once, and not as a wrong distance later.
+
+Tests
+.....
+
+The unit tests are in meos/test/unit/rgeo.  They test internal functions.
+The other programs of meos/test test the installed public API, and CI
+builds each of them alone against the installed library.  CMake builds
+the unit tests in a MEOS build with rigid geometries, with NDEBUG not
+defined, and ctest runs them:
+
+  cmake -S . -B build -DMEOS=ON -DPOSE=ON -DRGEO=ON
+  make -C build && (cd build && ctest -R trgeo_dist)
+
+The randomized tests take a number of trials.  ctest uses a small number,
+so that each test takes about one second.  Run a test by hand with a
+larger number for a deeper check.
+
+  * trgeo_distwalk_unit.c compares each function of the walk with a direct
+    computation.  It also compares the rotation of a segment with the
+    interpolation of the poses.  If the two differ, the walk computes the
+    distance to a body at another position than the database.
+
+  * trgeo_distwalk_rand_unit.c compares the walk with the true distance,
+    from a brute-force computation on the placed bodies, for random
+    segments.  The second body is a point, a segment or a polygon, static
+    or moving.  The checks are: each event has the true distance, the
+    events are in time order, the minimum of the events is the true
+    minimum, no event is below the true distance, the result is zero where
+    the bodies overlap, it is zero only where they overlap or touch, and it
+    is on the same side of a threshold as the true distance.
+
+  * trgeo_distwalk_degen_unit.c tests cases that random segments almost
+    never give: a point on a boundary at the start or at the end of a
+    segment, collinear vertices, rotations of exactly pi and pi/2, extrema
+    at t = 0 and t = 1, faces that stay parallel, a vertex that meets a
+    vertex, touches without overlap, overlaps at the start, at the end and
+    during the whole segment, bodies that cross with no vertex inside the
+    other, and a point that moves through a vertex or along the line of an
+    edge.
+
+The check that no event is below the true distance finds a specific
+defect.  On an edge, the distance is |G|/L, which is the distance to the
+line of the edge.  If the walk stays on an edge after the origin stops
+projecting on it, the distance is too small.
+
 Relation to the Paper
 ---------------------
 

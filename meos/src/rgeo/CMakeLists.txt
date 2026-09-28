@@ -31,6 +31,7 @@ set(RGEO_SOURCES
   trgeo_compops.c
   trgeo_distance.c
   trgeo_distsolve.c
+  trgeo_distwalk.c
   trgeo_geom_clip.c
   trgeo_inst.c
   trgeo_parser.c
