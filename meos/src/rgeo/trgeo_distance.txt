@@ -1,0 +1,415 @@
+meos/src/rgeo/trgeo_distance.txt
+
+Temporal Distance for Rigid Geometries
+======================================
+
+This file describes the algorithm that gives the temporal distance between
+a temporal rigid geometry and a geometry, a temporal point or another
+temporal rigid geometry.
+
+The algorithm follows the paper of Schoemans, Sakr and Zimanyi [1].  It
+follows the pair of closest features (vertices or edges) of the two bodies,
+and it gets the distance from this pair.  This file adds three things to
+the paper:
+
+  * All the equations of the algorithm are functions of one small family.
+    Thus one solver finds the changes of feature, the extrema of the
+    distance and the times of contact.
+
+  * The solver finds all the roots of a function, with a proof for each
+    part of the interval.  The paper uses a numerical method and assumes
+    that the method finds all the roots.
+
+  * The two bodies can overlap.  Then the distance is zero.  The paper
+    does not handle this case.
+
+The walk over the closest features and the complexity results of the paper
+do not change.
+
+Motion
+------
+
+A rigid geometry is a reference polygon and a temporal pose.  In a
+segment of the temporal pose, the time t goes from 0 to 1, and the pose
+changes linearly.  A point a of body A, relative to the rotation center of
+A, moves as
+
+    vA(t) = R(thA + wA*t) * a + cA + t*dA
+
+R(x) is the rotation by the angle x, cA is the rotation center at t = 0,
+dA is the displacement of the center, and wA is the rotation in the
+segment.  This is Equation (5) of the paper.  The body is rigid, thus the
+lengths and directions of its edges and the radii of its vertices are
+constants.
+
+The notation is:
+
+    u     = a_e - a_s     an edge of A, relative to the rotation center
+    L     = |u|           the length of the edge
+    beta  = angle(u)      the direction of the edge
+    b                     a vertex of B, relative to the rotation center of B
+    rho   = |b|           the radius of the vertex
+    alpha = angle(b)      the angle of the vertex
+    W(t)  = (cB - cA) + t*(dB - dA)     the offset between the two centers
+
+W(t) contains the two translations, and it is linear in t.
+
+The rotation in a segment takes the shorter way from the first angle to the
+second, and a very small rotation is zero, as in the interpolation of the
+poses.  Thus the algorithm places a body at the same position as the
+database.
+
+The Function Family
+-------------------
+
+Equation (8) of the paper gives the projection parameter s of a point p on
+an edge from vs to ve.  Its numerator is
+
+    N(t) = dot( p(t) - vs(t), ve(t) - vs(t) )
+
+         = L * [ Wx(t)*cos(thA + wA*t + beta) + Wy(t)*sin(thA + wA*t + beta) ]
+         + rho * L * cos( (wA - wB)*t + thA - thB + beta - alpha )
+         - dot(a_s, u)
+
+The cross product gives the signed distance from p to the line of the
+edge:
+
+    G(t) = cross( p(t) - vs(t), ve(t) - vs(t) )
+
+         = L * [ Wx(t)*sin(thA + wA*t + beta) - Wy(t)*cos(thA + wA*t + beta) ]
+         + rho * L * sin( (wA - wB)*t + thA - thB + beta - alpha )
+         - cross(a_s, u)
+
+The paper says that s(t) is not linear and uses a numerical method.  The
+expansion shows its form.  N and G are both functions of the family
+
+    F(t) = SUM_k [ (a1_k*t + a0_k)*cos(w_k*t) + (b1_k*t + b0_k)*sin(w_k*t) ]
+         + c2*t^2 + c1*t + c0
+
+In one segment, there are at most three frequencies: wA, wB and wA - wB.
+The squared distance between two moving vertices is also in the family.
+The derivative of a function of the family is in the family:
+
+    d/dt [ (a1*t + a0)*cos(w*t) + (b1*t + b0)*sin(w*t) ]
+      = (w*b1*t + a1 + w*b0)*cos(w*t) + (-w*a1*t + b1 - w*a0)*sin(w*t)
+
+Thus the derivative of a distance function comes from its coefficients,
+without sampling, and an extremum is a root of a function of the family.
+
+Two facts make the equations simpler:
+
+  * s = 0 is N = 0, and s = 1 is N = L^2.  Thus the two tests of Equations
+    (12) and (17) of the paper are one function at two levels.
+
+  * While 0 < s < 1, the distance from p to the edge is |G| / L.  Thus the
+    extrema of the distance to an edge are the roots of G', and the roots
+    of G are the contacts.  The paper does not give this derivation.
+
+Parallel Edges
+--------------
+
+Equations (18) and (19) of the paper test if an edge of A and an edge of B
+are parallel, and the paper solves them with a numerical method.  A
+rotation does not change a cross product, thus
+
+    P(t) = cross( uA(t), uB(t) )
+         = LA * LB * sin( (wB - wA)*t + thB - thA + betaB - betaA )
+
+P is a sinusoid of constant amplitude, and its roots have a closed form.
+If wA = wB, P is constant: the two edges are parallel during the whole
+segment or never.  This is the special case of Section 4.3.3 of the paper.
+
+Root Isolation
+--------------
+
+The solver must find all the roots of a function of the family on an
+interval.  A method that samples the function and looks for changes of
+sign does not do this.  It misses two roots between two samples, and it
+misses an extremum in the first or the last cell.
+
+The solver splits the interval into cells.  For each cell, it does one of
+these steps:
+
+  * If F changes sign in the cell, it refines the root with Newton's method
+    and bisection.
+
+  * If |F(m)| > (h/2) * max|F'|, with m the middle and h the width of the
+    cell, the cell has no root.  No point of the cell is farther than h/2
+    from m, thus F cannot reach zero.  The bound of |F'| comes from the
+    coefficients: a sine or a cosine is at most one, and an affine
+    coefficient has its extremes at the ends of the cell.
+
+  * If |F'(m)| > (h/2) * max|F''|, F is monotonic in the cell.  F does not
+    change sign in the cell, thus the cell has no root.
+
+  * Else, it splits the cell in two.
+
+Thus each cell gives a root, or a proof that it has no root.  The proof
+makes the result correct, not the number of cells.
+
+The first split uses cells of about a quarter turn of phase, which makes
+the proofs succeed with few splits.  Write one term as
+
+    L * [ Wx*cos(w*t + g) + Wy*sin(w*t + g) ]
+      = L * |W(t)| * cos(w*t + g - delta(t))
+
+with delta(t) = angle(W(t)).  W(t) moves on a line, thus |W|^2 is a
+convex quadratic and delta changes by less than pi.  Thus the phase of the
+terms changes by at most |w1| + |w2| + |w3| + pi.  A rotation takes the
+shorter way, thus |wA| and |wB| are at most pi, and the first split has at
+most 20 cells.
+
+In tests with random functions, a function had at most four roots in
+[0, 1].
+
+A touch of zero needs care.  Near a touch, F stays within the tolerance on
+a small interval, and each cell boundary in that interval is a root.  Thus
+a touch can give tens of roots.  Of a group of roots between which F stays
+within the tolerance, the solver keeps the first and the last.  For the
+crossings, the group is one root, see below, thus the two are sufficient.
+
+Crossings
+.........
+
+The walk needs the crossings of a level, not all the roots.  A touch of a
+boundary does not change the region.  The root at the time of the current
+event is the boundary that the walk just crossed.
+
+The solver finds all the roots, thus F has a constant sign between two
+consecutive roots.  The sign in the middle of each gap between two roots
+gives the sign in the whole gap.  A root is a crossing if the gaps before
+and after it have opposite signs.  The direction of the crossing is the
+sign after it.  A root at the start of the interval has no gap before it,
+thus it is not a crossing.  A touch has the same sign on the two sides,
+thus it is not a crossing.  A gap in which F stays within the tolerance
+has no sign, and a group of roots with such gaps between them counts as
+one root.
+
+The sign comes from values of F.  It does not come from F' at the root,
+because F' is zero at a touch and its sign is not reliable near a touch.
+
+Side after a time
+.................
+
+The walk must know on which side of a boundary the origin is just after
+the time t of an event.  At an event, the origin is often exactly on a
+boundary, thus the value alone cannot decide.  The side is the sign of the
+first term of the Taylor series at t that is not zero: the value, then
+F', then F''.  A crossing gets the sign of F', and a touch gets the sign
+of F''.  If the three terms are zero, the origin moves along the boundary,
+and a tie rule decides, see Ties.
+
+The Walk
+--------
+
+The distance between A and B is the distance from the origin to their
+Minkowski difference A - B.  If A and B are convex, A - B is a convex
+polygon.  Its edges, in counterclockwise order, are the edges of A and the
+reversed edges of B, sorted by direction.  Each edge of A goes with the
+vertex of B that supports it.  Each edge of B goes with the vertex of A that
+supports it.  Thus the features of A - B are pairs of features of A and B:
+
+    VV(i,j)  the vertex a_i - b_j
+    EV(i,j)  the edge from a_i - b_j to a_{i+1} - b_j
+    VE(i,j)  the edge from a_i - b_j to a_i - b_{j+1}
+
+These are the vertex-vertex, edge-vertex and vertex-edge pairs of Section
+4.3 of the paper.  The walk follows the feature of A - B that is closest
+to the origin.  Each quantity of the walk is a function of the family:
+
+    EV(i,j)   N and G of the vertex b_j and the edge i of A
+    VE(i,j)   N and G of the vertex a_i and the edge j of B
+    VV(i,j)   the squared distance between a_i and b_j
+
+For VE(i,j), N goes in the same direction along the reversed edge.
+
+If B is a point, it has one vertex and no edges, and A - B is A moved by
+-b.  Then the walk is the walk of a point and a polygon in the paper.
+
+If B is a segment, it is a convex polygon with two vertices and two edges
+in opposite directions.  The outside of each edge is the inside of the
+other edge, thus the body has no inside.  The walk needs no other change
+for a segment.
+
+Order of the edges
+..................
+
+The order of the edges of A - B changes when an edge of A and an edge of B
+become parallel.  Edge i of A comes before the reversed edge j of B if the
+angle from the first edge to the second edge is in [0, pi).
+
+  * While the angle is not 0 or pi, the sign of P gives the order.  The
+    cross product of edge i of A and the reversed edge j of B is -P.
+
+  * The roots of P give the times at which the order changes.
+
+  * If the two edges stay parallel, the sign of the cosine of the angle
+    separates 0 from pi.
+
+For a polygon B, the angle pi has no effect: the two reversed edges at a
+vertex of B are at less than a half turn from each other.  For a segment,
+they are at exactly a half turn.  Without the cosine, an edge of A that is
+parallel to the segment comes before the two reversed edges of the segment.
+
+Thus:
+
+  * EV(i,j) is an edge of A - B if edge i of A is between the reversed
+    edges j - 1 and j of B.  When edge i of A passes the reversed edge j,
+    the vertex of B that supports it changes to b_{j+1}.  For VE(i,j), the
+    same is true with A and B exchanged.
+
+  * The edges before and after the vertex VV(i,j) are the first and the last
+    of two candidates in this order.
+
+Events
+......
+
+The feature changes at these events:
+
+  * EV or VE: N crosses 0 down (to the start vertex) or L^2 up (to the end
+    vertex).  P crosses 0, which moves the supporting vertex.
+
+  * VV: N of the next edge crosses 0 up, or N of the previous edge crosses
+    L^2 down.  P crosses 0 for the edges around the vertex, which changes
+    the next or the previous edge but not the feature.
+
+In the paper, the walk passes through an edge-edge pair at these times.
+Here, an edge-edge pair is two edges of A - B on the same line, and the
+walk leaves it in the same step.
+
+While a feature does not change, the distance is one function of the
+family, and its extrema are the crossings of the derivative.
+
+At each event, the walk checks again that the origin is in the region of
+its feature, and it moves to a neighbor feature if the origin is not.
+Two events come from two different functions.  In a thin region, their
+times can differ by a rounding error, and the origin can already be past
+the next boundary when the walk arrives in the region.
+
+If the walk has no feature yet, or if the origin is inside the line of the
+edge of its feature, a scan of all the edges of A - B gives the closest
+feature, or tells that the origin is inside A - B.  The scan compares
+distances only, thus the local check also examines its result.
+
+Ties
+....
+
+If the origin moves along a boundary between two regions, the two
+features give the same distance.  Then fixed rules decide:
+
+  * Between a vertex and an edge, the walk takes the edge.  The walk finds
+    the entry of the origin into A - B on an edge.  Thus it must not stay on
+    a vertex through which the origin enters.  This can happen at a vertex
+    of A - B between two edges on the same line.  Also, the test to go from
+    a vertex to an edge is the exact opposite of the test to go back, thus
+    the walk cannot go back and forth.
+
+  * Between an edge of A and a reversed edge of B in the same direction,
+    the edge of A comes first.  Any fixed rule is correct, because the two
+    edges are then on the same line of A - B.  It is necessary that each
+    question gets the same answer.
+
+  * A point on the line of an edge is outside A - B.  Its distance is zero
+    for the two choices.
+
+Thresholds
+..........
+
+The walk can also give the times at which the distance crosses a
+threshold d.  For a vertex, the squared distance crosses d^2.  For an
+edge, G crosses d * L.  At these times, the distance is exactly d.
+
+Overlap
+-------
+
+Section 4.2 of the paper says that the algorithm fails if the bodies
+intersect.  V-Clip [2] is defined for disjoint bodies.  When the bodies
+overlap, there is no closest feature.  Here, an overlap is a state in which
+the distance is zero, and the walk finds its start and its end.
+
+  * Entry: while the feature is an edge, G crosses 0 down.  This also finds
+    an entry through a vertex, because the tie rule puts the walk on an
+    edge.  An entry at the time of an event is a crossing at the start of
+    the interval, which is not a crossing.  Then the origin is inside the
+    line of the edge, and the scan finds the entry.
+
+  * Exit: the origin leaves A - B through an edge.  Thus the exit is the
+    first crossing up of G of an edge feature, at a time at which the
+    feature is an edge of A - B and the origin projects on it.  The walk
+    examines each edge feature, which costs one root isolation for each of
+    the 2*n*m features.  The edge of the exit is the feature of the walk
+    after the exit.
+
+A faster exit is possible.  The signed separation
+
+    sigma(t) = max over the edge normals of A and B of the separation along
+               the normal
+
+is the distance when the bodies are disjoint, and minus the penetration
+depth when they overlap.  The normal that gives the maximum is a witness
+of the overlap, as the closest feature is a witness of the distance.  The
+walk can follow this normal from one segment to the next.  For an edge of
+A with unit normal n0, the separation along n0 is
+
+    gap(t) = dot( R(thA + wA*t)*n0, W(t) )
+           + min over the vertices b of B of
+               dot( R((thA - thB) + (wA - wB)*t)*n0, b )
+           - hA(n0)
+
+The first term is in the family.  The second term is the support function
+of B along a direction that turns at a constant rate.  It is a sinusoid
+of constant amplitude between two changes of the supporting vertex, and
+the changes have a closed form.  hA(n0) is a constant of A.  This is not
+implemented, because the simple exit is correct and costs time only while
+the bodies overlap.
+
+Non-Convex Bodies
+-----------------
+
+The walk needs convex bodies.  Section 4.4 of the paper splits a
+non-convex body into convex parts, computes the N*M distances between the
+parts, and merges them.  This design does not include that step.
+
+If the split into convex parts is added, two points can differ from the
+paper:
+
+  * A bounding volume hierarchy of the edges, relative to the rotation
+    center, removes most pairs of parts before the walk.  It is built once
+    for each reference geometry.
+
+  * The merge compares the distances of the parts with their exact values
+    at the instants, not with their linear interpolations only.
+
+Relation to the Paper
+---------------------
+
+In a revision of the paper, most of this file goes into existing
+sections:
+
+  * The expansion of N(t) comes after Equation (8), in Section 4.1.
+
+  * The closed form of Equations (18) and (19) replaces the numerical
+    method, in Section 4.3.2.
+
+  * The distance |G|/L and its extrema as the roots of G' go in Section
+    6.1, where the paper omits the derivation.
+
+Two parts need their own sections:
+
+  * The overlap state removes a limit of the algorithm, and needs a
+    section near Section 4.4.
+
+  * The root isolation is a numerical argument, and goes in an appendix,
+    with a reference from Section 4.2.1, where the paper assumes that the
+    solution of one equation has a constant cost.
+
+References
+----------
+
+[1] Maxime Schoemans, Mahmoud Sakr and Esteban Zimanyi.  On Computing the
+    Time-varying Distance between Moving Bodies.  ACM Transactions on
+    Spatial Algorithms and Systems 9(4), Article 29, November 2023.
+    https://doi.org/10.1145/3611010
+
+[2] Brian Mirtich.  V-Clip: Fast and Robust Polyhedral Collision Detection.
+    ACM Transactions on Graphics 17, 1998, 177-208.
