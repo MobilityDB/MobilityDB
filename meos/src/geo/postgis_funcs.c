@@ -1358,10 +1358,15 @@ geo_reverse(const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
 
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  /* The geometry read from a serialization shares its coordinates, which
+   * lwgeom_reverse_in_place rewrites, so it is read from a copy, as in
+   * #geo_transform */
+  GSERIALIZED *gs1 = geo_copy(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs1);
   lwgeom_reverse_in_place(geom);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
+  pfree(gs1);
   return result;
 }
 

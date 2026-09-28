@@ -51,6 +51,17 @@ SELECT asEWKT(transform(transform(geoset, 5676), 4326), 6) FROM test;
 -- Noop
 SELECT asEWKT(transform(geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}', 4326));
 
+-- A stored value keeps its coordinates after being transformed
+DROP TABLE IF EXISTS tbl_transform_arg;
+CREATE TABLE tbl_transform_arg(temp tgeompoint, gs geomset);
+INSERT INTO tbl_transform_arg VALUES
+  (tgeompoint 'SRID=4326;[Point(1.0 2.0 3.0)@2001-01-01, Point(4.0 5.0 6.0)@2001-01-02]',
+   geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}');
+SELECT asEWKT(transform(transform(temp, 5676), 4326), 6),
+  asEWKT(transform(transform(gs, 5676), 4326), 6) FROM tbl_transform_arg;
+SELECT asEWKT(temp), asEWKT(gs) FROM tbl_transform_arg;
+DROP TABLE tbl_transform_arg;
+
 -- Transform to ESRI:102004
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )

@@ -3640,6 +3640,19 @@ int main(void)
   meos_errno_reset();
   free(sb1); free(sb2); free(sb3); free(sbt);
 
+  /* A reversed line is a new geometry: the line it reverses keeps its vertex
+   * order */
+  GSERIALIZED *fwd = geom_in("Linestring(1 1,2 2,3 5)", -1);
+  assert(fwd != NULL);
+  GSERIALIZED *rev = geo_reverse(fwd);
+  assert(rev != NULL);
+  char *fwd_txt = geo_as_text(fwd, 6);
+  char *rev_txt = geo_as_text(rev, 6);
+  printf("geo_reverse: %s, argument after the call %s\n", rev_txt, fwd_txt);
+  assert(strcmp(rev_txt, "LINESTRING(3 5,2 2,1 1)") == 0);
+  assert(strcmp(fwd_txt, "LINESTRING(1 1,2 2,3 5)") == 0);
+  free(fwd); free(rev); free(fwd_txt); free(rev_txt);
+
   /* Finalize MEOS */
   meos_finalize();
 

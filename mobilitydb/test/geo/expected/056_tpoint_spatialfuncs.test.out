@@ -72,6 +72,30 @@ SELECT asEWKT(transform(geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 
  SRID=4326;{"POINT Z (1 2 3)", "POINT Z (4 5 6)"}
 (1 row)
 
+DROP TABLE IF EXISTS tbl_transform_arg;
+NOTICE:  table "tbl_transform_arg" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_transform_arg(temp tgeompoint, gs geomset);
+CREATE TABLE
+INSERT INTO tbl_transform_arg VALUES
+  (tgeompoint 'SRID=4326;[Point(1.0 2.0 3.0)@2001-01-01, Point(4.0 5.0 6.0)@2001-01-02]',
+   geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}');
+INSERT 0 1
+SELECT asEWKT(transform(transform(temp, 5676), 4326), 6),
+  asEWKT(transform(transform(gs, 5676), 4326), 6) FROM tbl_transform_arg;
+                                                 asewkt                                                 |                      asewkt                      
+--------------------------------------------------------------------------------------------------------+--------------------------------------------------
+ SRID=4326;[POINT Z (1 2 3)@Mon Jan 01 00:00:00 2001 PST, POINT Z (4 5 6)@Tue Jan 02 00:00:00 2001 PST] | SRID=4326;{"POINT Z (1 2 3)", "POINT Z (4 5 6)"}
+(1 row)
+
+SELECT asEWKT(temp), asEWKT(gs) FROM tbl_transform_arg;
+                                                 asewkt                                                 |                      asewkt                      
+--------------------------------------------------------------------------------------------------------+--------------------------------------------------
+ SRID=4326;[POINT Z (1 2 3)@Mon Jan 01 00:00:00 2001 PST, POINT Z (4 5 6)@Tue Jan 02 00:00:00 2001 PST] | SRID=4326;{"POINT Z (1 2 3)", "POINT Z (4 5 6)"}
+(1 row)
+
+DROP TABLE tbl_transform_arg;
+DROP TABLE
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
 SELECT asEWKT(transform(transform(geoset, 102004), 4326), 6) FROM test;

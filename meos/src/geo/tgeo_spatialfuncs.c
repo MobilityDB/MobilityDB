@@ -1123,12 +1123,16 @@ static void
 tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
 {
   assert(inst); assert(a); assert(tgeo_type_all(inst->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
+  /* The geometry read from a serialization shares its coordinates, which
+   * lwgeom_affine rewrites in place, so it is read from a copy, as in
+   * #geo_transform */
+  GSERIALIZED *gs = geo_copy(DatumGetGserializedP(tinstant_value_p(inst)));
   LWGEOM *geo = lwgeom_from_gserialized(gs);
   lwgeom_affine(geo, a);
   GSERIALIZED *gs1 = geo_serialize(geo);
   *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
   lwgeom_free(geo);
+  pfree(gs);
   return;
 }
 
@@ -1220,11 +1224,15 @@ static void
 tgeoinst_scale_iter(const TInstant *inst, const POINT4D *factors,
   TInstant **result)
 {
-  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
+  /* The geometry read from a serialization shares its coordinates, which
+   * lwgeom_scale rewrites in place, so it is read from a copy, as in
+   * #geo_transform */
+  GSERIALIZED *gs = geo_copy(DatumGetGserializedP(tinstant_value_p(inst)));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwgeom_scale(geom, factors);
   GSERIALIZED *gs1 = geo_serialize(geom);
   lwgeom_free(geom);
+  pfree(gs);
   *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
   return;
 }
@@ -1330,19 +1338,19 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
   else
     temp1 = (Temporal *) temp;
 
-  /* Scale the temporal point */
+  /* Scale the temporal geo, moved to the origin when there is one */
   Temporal *temp2;
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  assert(temptype_subtype(temp1->subtype));
+  switch (temp1->subtype)
   {
     case TINSTANT:
-      temp2 = (Temporal *) tgeoinst_scale((TInstant *) temp, &factors);
+      temp2 = (Temporal *) tgeoinst_scale((TInstant *) temp1, &factors);
       break;
     case TSEQUENCE:
-      temp2 = (Temporal *) tgeoseq_scale((TSequence *) temp, &factors);
+      temp2 = (Temporal *) tgeoseq_scale((TSequence *) temp1, &factors);
       break;
     default: /* TSEQUENCESET */
-      temp2 = (Temporal *) tgeoseqset_scale((TSequenceSet *) temp, &factors);
+      temp2 = (Temporal *) tgeoseqset_scale((TSequenceSet *) temp1, &factors);
   }
   
   /* Return to original origin after scaling */
