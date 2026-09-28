@@ -95,7 +95,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gaae8d62e23b393fdff5e0557c42396e63.html#gaae8d62e23b393fdff5e0557c42396e63">ea_intersects_tcbuffer_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga4fa2fc5110a8edb1ebfb8ec37532c41b.html#ga4fa2fc5110a8edb1ebfb8ec37532c41b">ea_intersects_tcbuffer_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga8c16ba87c7ae7638719e948baa589ff1.html#ga8c16ba87c7ae7638719e948baa589ff1">ea_intersects_tcbuffer_tcbuffer</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gad0afd6787bbfd731a5affc715623290c.html#gad0afd6787bbfd731a5affc715623290c">ea_spatialrel_tcbuffer_tcbuffer</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga0ed0e0bfa7ef4d2c6834c680c6c04251.html#ga0ed0e0bfa7ef4d2c6834c680c6c04251">ea_spatialrel_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga928fa6babc2d0e84c1146e0a26dc10f3.html#ga928fa6babc2d0e84c1146e0a26dc10f3">ea_touches_cbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gafba6de2173d21f1443ac9d31b91119f2.html#gafba6de2173d21f1443ac9d31b91119f2">ea_touches_geo_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga08f5138f25fbc3c86ee55296e5953cc8.html#ga08f5138f25fbc3c86ee55296e5953cc8">ea_touches_tcbuffer_cbuffer</a></td></tr>
@@ -109,8 +109,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gad0afd6787bbfd731a5affc715623290c" name="gad0afd6787bbfd731a5affc715623290c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gad0afd6787bbfd731a5affc715623290c">&#9670;&#160;</a></span>ea_spatialrel_tcbuffer_tcbuffer()</h2>
+<a id="ga0ed0e0bfa7ef4d2c6834c680c6c04251" name="ga0ed0e0bfa7ef4d2c6834c680c6c04251"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0ed0e0bfa7ef4d2c6834c680c6c04251">&#9670;&#160;</a></span>ea_spatialrel_tcbuffer_tcbuffer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -136,6 +136,18 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2temporal_8h_a73d8710f730e73a0865d3d6200b6910c.html#a73d8710f730e73a0865d3d6200b6910c">tpfunc_temp</a>&#160;</td>
+          <td class="paramname"><em>tpfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>param</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>ever</em>, </td>
         </tr>
@@ -154,10 +166,12 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if two temporal circular buffers ever/always satisfy a spatial relationship, 0 if not, and -1 on error. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A relationship may hold only inside a segment, as when one disc enters another between two instants at which it is outside it. The segment function <code>tpfn</code> returns where the relationship changes inside a segment, so the walk reads it there too, as it does for the within-distance relationship; when it is NULL the walk reads the synchronized instants and the crossings of the two values. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffers </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Spatial relationship function to be called </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tpfn</td><td>Segment function returning where the relationship changes, or NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">param</td><td>Parameter of the segment function </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bbox_test</td><td>True if a bounding text can be used for filtering @csqlfn <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga2e1d6fb8a01c1ed0964d7392b8d4e548.html#ga2e1d6fb8a01c1ed0964d7392b8d4e548" title="Return true if two temporal circular buffers always intersect @sqlfn aIntersects()">Aintersects_tcbuffer_tcbuffer()</a>, <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga9de6d71277f0643b2d2f6ca4594a4c5d.html#ga9de6d71277f0643b2d2f6ca4594a4c5d" title="Return true if a temporal circular buffer ever covers another one @sqlfn eCovers()">Ecovers_tcbuffer_tcbuffer()</a>, ... </td></tr>
   </table>
