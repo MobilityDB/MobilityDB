@@ -363,12 +363,74 @@ the changes have a closed form.  hA(n0) is a constant of A.  This is not
 implemented, because the simple exit is correct and costs time only while
 the bodies overlap.
 
+The Result
+----------
+
+The temporal distance is a temporal float with linear interpolation.  Its
+instants are:
+
+  * the start of each feature interval, and the end of each segment;
+  * each extremum of the distance in a feature interval;
+  * each entry into and exit from an overlap.
+
+The value at each instant comes from the function of the feature at that
+time.  Thus the result is exact at its instants.  It has all the extrema,
+thus its minimum is the nearest approach distance, and its maximum is the
+largest distance.  Between two instants, the linear interpolation is not
+exact when a body rotates.
+
+A contact where the distance touches zero is an extremum, thus it is an
+instant of the result.  Two instants at the same timestamp become one
+instant with the smaller value.  An event goes to the nearest microsecond.
+
+The internal result is not normalized.  The normalization of MEOS removes
+an instant whose value is within MEOS_EPSILON (1e-6) of the line through
+its neighbors, and such an instant can be the minimum or a crossing of a
+threshold.  Thus the nearest approach functions and the dwithin functions
+use the internal result.  Only the result of the temporal distance
+functions is normalized, as are the other temporal distances of MEOS.
+
+Static geometries
+.................
+
+A point, a segment and a convex polygon are convex bodies.  A line is a
+set of segments, and a multi geometry is a set of parts.  Thus the
+distance to a geometry is the minimum of the distances to its parts.
+
+The minimum of two linear interpolations has instants where they cross,
+and the value there comes from the interpolation.  Thus the algorithm
+computes each value of the minimum again, with PostGIS on the placed body.
+
+Interpolation
+.............
+
+A value with step interpolation keeps its value until the next instant.
+In each segment, the walk gives such a body a static motion at its value
+at the start of the segment.
+
+  * If no operand has linear interpolation, the distance is the distance
+    at each instant.
+
+  * If one operand has linear interpolation and the other operand has step
+    interpolation, the distance jumps at each instant.  Then the result is
+    a sequence set, with one sequence [t_i, t_{i+1}) for each segment and a
+    last sequence with the last instant, as for the temporal points.
+
+A temporal point is a body with one vertex and no rotation, with the
+motion of the point.
+
 Non-Convex Bodies
 -----------------
 
 The walk needs convex bodies.  Section 4.4 of the paper splits a
 non-convex body into convex parts, computes the N*M distances between the
 parts, and merges them.  This design does not include that step.
+
+The distance functions give an error for a polygon that is not convex or
+has holes, as the reference geometry of a temporal rigid geometry or as a
+static geometry.  The error also applies where the walk is not necessary,
+for example with step interpolation, so that the functions accept the same
+values in all cases.
 
 If the split into convex parts is added, two points can differ from the
 paper:
@@ -496,6 +558,30 @@ The check that no event is below the true distance finds a specific
 defect.  On an edge, the distance is |G|/L, which is the distance to the
 line of the edge.  If the walk stays on an edge after the origin stops
 projecting on it, the distance is too small.
+
+The temporal distance
+.....................
+
+meos/src/rgeo/trgeo_distance.c splits a static geometry into convex parts,
+synchronizes two temporal values, walks each segment, and makes the
+temporal float.  mobilitydb/src/rgeo/trgeo_distance.c contains the
+PostgreSQL functions.
+
+The constants of a body do not change with the pose: the cleaned ring,
+the radius and angle of each vertex, the length, direction and constants
+of each edge, and the largest radius.  The algorithm computes them once
+for each call, and all the segments use them.  It also computes the parts
+of a static geometry once for each call.  A cache between calls, for
+example in fn_extra with the reference geometry as the key, is not
+implemented.  A cache is most useful for a point, where the walk costs
+little more than the computation of the constants.
+
+The regression test mobilitydb/test/rgeo/queries/
+173_trgeo_distance_walk.test.sql compares the nearest approach distance
+with the minimum of the distance at sampled times, for rotating bodies
+against a point, a polygon and another body.  It also covers overlaps,
+lines, multi geometries, temporal points, step interpolation, and the
+errors for the polygons that are not convex.
 
 Relation to the Paper
 ---------------------

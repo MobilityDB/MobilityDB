@@ -1,0 +1,250 @@
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  geometry 'Point(0 0.5)'), 6);
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ [5@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 10:00:00 2001 PST, 0@Mon Jan 01 14:00:00 2001 PST, 5@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(0 0.5)'), 6);
+                                                                     round                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------
+ [5@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 10:14:26.007328 2001 PST, 0@Mon Jan 01 13:45:33.992672 2001 PST, 5@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(2 -2),0)@2001-01-01, Pose(Point(-2 2),0)@2001-01-02]',
+  geometry 'Point(0 0)'), 6);
+                                                                     round                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------
+ [1.414214@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 06:00:00 2001 PST, 0@Mon Jan 01 18:00:00 2001 PST, 1.414214@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-02]',
+  geometry 'Point(0 0)'), 6);
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 06:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0.2 0.1),0.3)@2001-01-02]',
+  geometry 'Point(0 0)');
+                            tdistance                             
+------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0.5)@2001-01-02]',
+  geometry 'Point(5 3)'), 6);
+                                           round                                            
+--------------------------------------------------------------------------------------------
+ Interp=Step;[4.472136@Mon Jan 01 00:00:00 2001 PST, 4.476715@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(7 3)');
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+SELECT round(tDistance(
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(7 3)'), 6);
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+SELECT nearestApproachInstant(
+  trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));Pose(Point(0 0),0)@2001-01-01',
+  geometry 'Point(7 3)');
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,3 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(4 0)');
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes
+SELECT abs(nearestApproachDistance(
+  trgeometry(ST_Buffer(geometry 'Point(0 0)', 1, 1250),
+    tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.1)@2001-01-02]'),
+  geometry 'Point(1.5 0.2)') - (sqrt(2.29) - 1)) < 1e-12;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),1)@2001-01-02], [Pose(Point(10 5),1)@2001-01-03, Pose(Point(0 5),-1)@2001-01-04]}',
+  geometry 'Point(5 0.5)'), 6);
+                                                                                                                                                                                                                                                                                                                                                 round                                                                                                                                                                                                                                                                                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[3@Mon Jan 01 00:00:00 2001 PST, 1.666171@Mon Jan 01 03:17:00.248034 2001 PST, 0.107593@Mon Jan 01 07:20:42.907081 2001 PST, 0@Mon Jan 01 08:55:19.852086 2001 PST, 0@Mon Jan 01 12:42:06.783144 2001 PST, 0.569487@Mon Jan 01 14:29:15.290325 2001 PST, 4.158724@Tue Jan 02 00:00:00 2001 PST], [6.534372@Wed Jan 03 00:00:00 2001 PST, 6.380119@Wed Jan 03 00:52:59.057184 2001 PST, 6.112677@Wed Jan 03 02:04:16.268084 2001 PST, 4.5@Wed Jan 03 12:00:00 2001 PST, 4.170541@Wed Jan 03 14:33:58.794138 2001 PST, 3.608641@Wed Jan 03 18:29:07.52123 2001 PST, 4.112677@Wed Jan 03 21:55:43.731916 2001 PST, 4.380119@Wed Jan 03 23:07:00.942816 2001 PST, 4.554721@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-8 0),0)@2001-01-01, Pose(Point(8 0),0)@2001-01-02]',
+  geometry 'Polygon((-0.5 -3,0.5 -3,0.5 3,-0.5 3,-0.5 -3))'), 6);
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ [6.5@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 09:45:00 2001 PST, 0@Mon Jan 01 14:15:00 2001 PST, 6.5@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Polygon((-1 3,1 3,0 4,-1 3))')::numeric, 6);
+  round   
+----------
+ 0.938447
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(4000000 5000000),0)@2001-01-01, Pose(Point(4000010 5000000),1.5)@2001-01-02]',
+  geometry 'Polygon((4000004 5000003,4000006 5000003,4000005 5000004,4000004 5000003))')::numeric, 6);
+  round   
+----------
+ 1.267125
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(6 0.5),0)@2001-01-01, Pose(Point(-6 0.5),0)@2001-01-02]'), 6);
+                                                               round                                                                
+------------------------------------------------------------------------------------------------------------------------------------
+ [10@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 10:00:00 2001 PST, 0@Mon Jan 01 14:00:00 2001 PST, 10@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0.3)@2001-01-01, Pose(Point(6 0),1.3)@2001-01-02]',
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0.3)@2001-01-01, Pose(Point(0 4),1.3)@2001-01-02]'), 6);
+                                                                                                                                                        round                                                                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [4.914336@Mon Jan 01 00:00:00 2001 PST, 4.772736@Mon Jan 01 00:21:37.51743 2001 PST, 2.083403@Mon Jan 01 07:40:33.707541 2001 PST, 1.172069@Mon Jan 01 12:05:26.459439 2001 PST, 2.465745@Mon Jan 01 17:38:11.841296 2001 PST, 3.985703@Mon Jan 01 21:45:46.502816 2001 PST, 4.857743@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Linestring(-5 4,0 2.5,5 4)'), 6);
+                                                                                                                                                                                                     round                                                                                                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [2.873479@Mon Jan 01 00:00:00 2001 PST, 2.063336@Mon Jan 01 04:39:47.911362 2001 PST, 1.139935@Mon Jan 01 11:04:58.950398 2001 PST, 1.087049@Mon Jan 01 11:54:07.048273 2001 PST, 1.133625@Mon Jan 01 12:40:11.163494 2001 PST, 1.602881@Mon Jan 01 16:19:00.892148 2001 PST, 1.973776@Mon Jan 01 18:51:47.44464 2001 PST, 2.226081@Mon Jan 01 20:28:09.957061 2001 PST, 2.82917@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'MultiLinestring((-5 4,0 2.5,5 4),(0 -3,0 -8))')::numeric, 6);
+  round   
+----------
+ 1.087049
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  geometry 'MultiPolygon(((-3 3,-2 3,-2 4,-3 4,-3 3)),((2 -0.5,3 -0.5,3 0.5,2 0.5,2 -0.5)))'), 6);
+                                                                                                  round                                                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [2.828427@Mon Jan 01 00:00:00 2001 PST, 2@Mon Jan 01 04:00:00 2001 PST, 2@Mon Jan 01 10:00:00 2001 PST, 0@Mon Jan 01 14:00:00 2001 PST, 0@Mon Jan 01 20:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  geometry 'Polygon((0 3,4 3,4 7,2 4,0 7,0 3))');
+ERROR:  The distance of a temporal rigid geometry to a polygon that is not convex or has holes is not supported
+SELECT tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  geometry 'Polygon((0 3,4 3,4 7,0 7,0 3),(1 4,2 4,2 5,1 5,1 4))');
+ERROR:  The distance of a temporal rigid geometry to a polygon that is not convex or has holes is not supported
+SELECT tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]',
+  geometry 'Polygon((0 3,3 3,2 3,2 5,0 5,0 3))');
+ERROR:  The distance of a temporal rigid geometry to a polygon that is not convex or has holes is not supported
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5)@2001-01-02]',
+  tgeompoint '[Point(-4 3)@2001-01-01, Point(4 3)@2001-01-02]'), 6);
+                                                                                                                                                       round                                                                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [3.605551@Mon Jan 01 00:00:00 2001 PST, 2.552039@Mon Jan 01 05:33:13.873039 2001 PST, 1.946133@Mon Jan 01 09:31:36.066675 2001 PST, 1.586314@Mon Jan 01 12:08:22.977868 2001 PST, 1.9926@Mon Jan 01 14:55:57.827663 2001 PST, 2.650104@Mon Jan 01 18:55:17.960248 2001 PST, 3.590765@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02, Pose(Point(6 6),0)@2001-01-03]',
+  tgeompoint 'Interp=Step;[Point(0 3)@2001-01-01, Point(0 5)@2001-01-02, Point(0 5)@2001-01-03]'), 6);
+                                                                                                                           round                                                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[5.385165@Mon Jan 01 00:00:00 2001 PST, 2@Mon Jan 01 10:00:00 2001 PST, 2@Mon Jan 01 14:00:00 2001 PST, 5.385165@Tue Jan 02 00:00:00 2001 PST), [6.403124@Tue Jan 02 00:00:00 2001 PST, 5@Tue Jan 02 16:00:00 2001 PST, 5@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT round(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1)@2001-01-02, Pose(Point(6 6),1)@2001-01-03]',
+  trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(8 4),0)@2001-01-02, Pose(Point(8 4),0)@2001-01-03]'), 6);
+                                                                                                                                                                                                                round                                                                                                                                                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4.472136@Mon Jan 01 00:00:00 2001 PST, 1.706629@Mon Jan 01 08:51:21.555045 2001 PST, 1.62264@Mon Jan 01 13:21:30.615953 2001 PST, 1.621915@Mon Jan 01 13:28:01.116819 2001 PST, 2.045879@Mon Jan 01 16:15:37.516196 2001 PST, 4.828262@Tue Jan 02 00:00:00 2001 PST), [2.064715@Tue Jan 02 00:00:00 2001 PST, 0@Tue Jan 02 09:48:53.244146 2001 PST, 0@Tue Jan 02 21:10:25.0751 2001 PST, 0.381773@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+WITH body AS MATERIALIZED (
+  SELECT k,
+    ('Polygon((' || string_agg(format('%s %s',
+       round((2 + (k % 3)) * cos(2 * pi() * i / (5 + k % 3) + k)::numeric, 6),
+       round((1 + (k % 2)) * sin(2 * pi() * i / (5 + k % 3) + k)::numeric, 6)),
+       ',' ORDER BY i) || ',' ||
+     format('%s %s',
+       round((2 + (k % 3)) * cos(k)::numeric, 6),
+       round((1 + (k % 2)) * sin(k)::numeric, 6)) || '))')::geometry AS geom
+  FROM generate_series(1, 20) k, LATERAL generate_series(0, 4 + k % 3) i
+  GROUP BY k
+),
+trg AS MATERIALIZED (
+  SELECT k, (ST_AsText(geom) || ';[' ||
+    format('Pose(Point(%s %s),%s)@2001-01-01, ', -10 + k % 5, (k % 7) - 3,
+      round(atan2(sin(k * 0.7), cos(k * 0.7))::numeric, 3)) ||
+    format('Pose(Point(%s %s),%s)@2001-01-02, ', k % 4, 1 - (k % 5),
+      round(atan2(sin(k * 0.7 + 2.9 * sin(k)), cos(k * 0.7 + 2.9 * sin(k)))::numeric, 3)) ||
+    format('Pose(Point(%s %s),%s)@2001-01-03', 9 - k % 6, (k % 3) - 1,
+      round(atan2(sin(k * 0.7 + 2.9 * sin(k) - 2.5 * cos(k)), cos(k * 0.7 + 2.9 * sin(k) - 2.5 * cos(k)))::numeric, 3)) ||
+    ']')::trgeometry AS trg
+  FROM body
+),
+trg2 AS MATERIALIZED (
+  -- A second body for each, on a path that crosses the first one for odd k
+  -- and stays clear of it for even k
+  SELECT k, (ST_AsText(geom) || ';[' ||
+    format('Pose(Point(%s %s),%s)@2001-01-01, ', 8 - k % 4,
+      CASE WHEN k % 2 = 1 THEN 0 ELSE 9 END,
+      round(atan2(sin(k * 1.3), cos(k * 1.3))::numeric, 3)) ||
+    format('Pose(Point(%s %s),%s)@2001-01-03', -8 + k % 3,
+      CASE WHEN k % 2 = 1 THEN 1 ELSE 10 END,
+      round(atan2(sin(k * 1.3 - 2.8), cos(k * 1.3 - 2.8))::numeric, 3)) ||
+    ']')::trgeometry AS trg2
+  FROM body
+),
+pts AS MATERIALIZED (
+  SELECT trg.k, trg, trg2, ST_Point(((trg.k * 37) % 11) - 5, ((trg.k * 23) % 9) - 4) AS pt,
+    -- A polygon on the path of the body for odd k and off it for even k
+    ST_Buffer(ST_Point(((trg.k * 29) % 13) - 6,
+      CASE WHEN trg.k % 2 = 1 THEN ((trg.k * 31) % 7) - 3 ELSE 9 END), 1.5, 2) AS poly
+  FROM trg JOIN trg2 ON trg.k = trg2.k
+),
+r AS (
+  SELECT k,
+    nearestApproachDistance(trg, pt) AS nadpt,
+    (SELECT min(ST_Distance(valueAtTimestamp(trg, t), pt))
+     FROM generate_series(timestamptz '2001-01-01', '2001-01-03', interval '1 minute') t) AS densept,
+    nearestApproachDistance(trg, poly) AS nadpoly,
+    (SELECT min(ST_Distance(valueAtTimestamp(trg, t), poly))
+     FROM generate_series(timestamptz '2001-01-01', '2001-01-03', interval '1 minute') t) AS densepoly,
+    nearestApproachDistance(trg, trg2) AS nadtrg,
+    (SELECT min(ST_Distance(valueAtTimestamp(trg, t), valueAtTimestamp(trg2, t)))
+     FROM generate_series(timestamptz '2001-01-01', '2001-01-03', interval '1 minute') t) AS densetrg
+  FROM pts
+)
+SELECT count(*),
+  bool_and(nadpt <= densept + 1e-9 AND densept - nadpt < 1e-2) AS point_ok,
+  bool_and(nadpoly <= densepoly + 1e-9 AND densepoly - nadpoly < 1e-2) AS polygon_ok,
+  bool_and(nadtrg <= densetrg + 1e-9 AND densetrg - nadtrg < 1e-2) AS trgeometry_ok,
+  count(*) FILTER (WHERE densept = 0) AS point_overlaps,
+  count(*) FILTER (WHERE densepoly = 0) AS polygon_overlaps,
+  count(*) FILTER (WHERE densetrg = 0) AS trgeometry_overlaps
+FROM r;
+ count | point_ok | polygon_ok | trgeometry_ok | point_overlaps | polygon_overlaps | trgeometry_overlaps 
+-------+----------+------------+---------------+----------------+------------------+---------------------
+    20 | t        | t          | t             |             11 |                9 |                  10
+(1 row)
+

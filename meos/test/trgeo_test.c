@@ -314,10 +314,9 @@ int main(void)
   free(trgeo4); free(trgeo5); free(coll); free(point3d); free(point2d);
   free(box3d);
 
-  /* The constructor accepts a polyhedral surface as a reference geometry, and
-   * the closest-feature walk the sequence kernels run reads the body as a
-   * polygon: the cast answered NULL and the walk read it, which ended the
-   * process.  A pair it cannot walk is reported instead */
+  /* The constructor accepts a polyhedral surface as a reference geometry, but
+   * the temporal distance needs a convex polygon without holes.  The distance
+   * of any other reference gives an error, for all subtypes */
   {
     Temporal *psurf = trgeometry_in("PolyhedralSurface(((0 0,0 1,1 1,1 0,"
       "0 0)));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0.5)@2001-01-02]");
@@ -340,20 +339,21 @@ int main(void)
       else
         printf("OK: tdistance_trgeometry_geo(polyhedral surface, point) is "
           "reported, errno %d\n", meos_errno());
-      /* The instant path needs no polygon -- it places the body and measures
-       * it whole -- so it must keep answering */
+      /* An instant needs no walk, but it gives the same error.  Thus the
+       * result does not depend on the subtype of the value */
       meos_errno_reset();
       Temporal *inst = trgeometry_in("PolyhedralSurface(((0 0,0 1,1 1,1 0,"
         "0 0)));Pose(Point(0 0),0)@2001-01-01");
       Temporal *idist = inst ? tdistance_trgeometry_geo(inst, away) : NULL;
-      if (! idist || meos_errno() != 0)
+      if (! inst || idist != NULL || meos_errno() == 0)
       {
-        printf("FAILED: the instant path stopped answering, errno %d\n",
-          meos_errno());
+        printf("FAILED: tdistance_trgeometry_geo(polyhedral surface instant, "
+          "point) answered, errno %d\n", meos_errno());
         result = 1;
       }
       else
-        printf("OK: the instant path still measures a polyhedral body\n");
+        printf("OK: tdistance_trgeometry_geo(polyhedral surface instant, "
+          "point) is reported, errno %d\n", meos_errno());
       free(idist); free(inst);
     }
     free(psurf); free(away);

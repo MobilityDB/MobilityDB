@@ -775,70 +775,102 @@ SELECT getTime(minusElevation(trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0
 	<sect1 xml:id="trgeometry_distance">
 		<title>Distance Operations</title>
 
-		<para>Distance between a trgeometry and a geometry / pose / spatiotemporal box / another trgeometry is computed on the <emphasis>materialised</emphasis> geometry, the reference shape rotated and translated according to the pose. Distance is exact at every shared timestamp; for sequence inputs an adaptive recursive bisection emits intermediate marks where the distance trajectory deviates from a straight line.</para>
+		<para>The distance functions compute the distance between the body of a temporal rigid geometry and a geometry, a temporal point, or the body of another temporal rigid geometry. The body at an instant is the reference geometry moved and turned by the pose at that instant.</para>
+
+		<para>The values of a temporal distance are exact. When a body turns, the distance between two instants does not change linearly, so the temporal distance also has an instant at each minimum and maximum of the distance. Thus the nearest approach distance and the nearest approach instant are exact.</para>
+
+		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
+  Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
+-- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
+-- a convex polygon without holes
+</programlisting>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Return the temporal distance between two temporal rigid geometries</para>
+				<para>Return the temporal distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat
-tDistance({geometry,trgeometry},{geometry,trgeometry}) → tfloat
+{geometry,tgeompoint,trgeometry} &lt;-&gt; {geometry,tgeompoint,trgeometry} → tfloat
+tDistance({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → tfloat
 </programlisting>
+				<para>In the first example, a square moves past a point. Its side stays at distance 2 from the point from 10:00 to 14:00. In the second example, the square turns a quarter turn next to the point. A corner of the square comes nearest to the point at 12:00, and the result has an instant there.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(maxValue(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(0 0), 0.0)@2001-01-01',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
--- 4
-SELECT asText(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
+SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]' &lt;-&gt;
+  geometry 'Point(0 3)';
+-- [5.385164807134504@2001-01-01, 2@2001-01-01 10:00:00, 2@2001-01-01 14:00:00,
+--  5.385164807134504@2001-01-02]
+SELECT round(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]' &lt;-&gt;
+  geometry 'Point(3 0)', 6);
+-- [2@2001-01-01, 1.828427@2001-01-01 05:11:32.371809, 1.585786@2001-01-01 12:00:00,
+--  1.828427@2001-01-01 18:48:27.628191, 2@2001-01-02]
+SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]' &lt;-&gt;
+  tgeompoint '[Point(3 -4)@2001-01-01, Point(3 4)@2001-01-02]';
+-- [3.605551275463989@2001-01-01, 2@2001-01-01 09:00:00, 2@2001-01-01 15:00:00,
+--  3.605551275463989@2001-01-02]
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]' &lt;-&gt;
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
--- [1@2001-01-01 ..., 9@2001-01-02 ...]
+  [Pose(Point(2 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]';
+-- [1@2001-01-01, 9@2001-01-02]
 </programlisting>
-				<para>The dispatcher covers every subtype combination, TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asymmetric, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. The adaptive sub-sampling kernel underlies every continuous combo; instant combos materialise once. Pure-translation segments converge at depth 0 (two endpoint marks); rotation-heavy segments emit up to 32 marks per inter-instant gap. The bound on the LINEAR-interpolated approximation between marks is <varname>1e-3</varname> by construction.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_nad">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-				<para>Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
+				<para>Return the nearest approach distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float
-nearestApproachDistance({geometry,trgeometry,stbox},{geometry,trgeometry,stbox}) → float
+{geometry,stbox,tgeompoint,trgeometry} |=| {geometry,stbox,tgeompoint,trgeometry} → float
+nearestApproachDistance({geometry,stbox,tgeompoint,trgeometry},
+  {geometry,stbox,tgeompoint,trgeometry}) → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]' |=|
-       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01,
-  Pose(Point(50 0), 0.0)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' |=|
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(50 0),0)@2001-01-01, Pose(Point(50 0),0)@2001-01-02]';
 -- 39
+SELECT round(nearestApproachDistance(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)')::numeric, 6);
+-- 1.585786
 </programlisting>
-				<para>The <varname>|=|</varname> operator can be used for nearest-neighbour searches against GiST or SP-GiST indexes (see <xref linkend="trgeometry_indexing"/>).</para>
+				<para>The <varname>|=|</varname> operator can be used for nearest-neighbour searches with GiST or SP-GiST indexes (see <xref linkend="trgeometry_indexing"/>).</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_nai">
 				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
-				<para>Return the instant at which the two arguments are at their smallest mutual distance</para>
+				<para>Return the instant of the first argument at which the two arguments are nearest</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-nearestApproachInstant({geometry,trgeometry},{geometry,trgeometry}) → trgeometry
+nearestApproachInstant({geometry,tgeompoint,trgeometry},
+  {geometry,tgeompoint,trgeometry}) → trgeometry
 </programlisting>
+				<para>If the distance stays at its minimum during an interval, the result is the first instant of the interval. In the second example, the square is at distance 4 from the point from 09:36 to 12:00.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(nearestApproachInstant( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+SELECT asText(nearestApproachInstant(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)'), 6);
+-- POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1));Pose(POINT(0 0),0.785398)@2001-01-01 12:00:00
+SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(5 5)'));
--- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@2001-01-01 09:36:00
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="trgeometry_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
-				<para>Return the line connecting the two arguments at their nearest approach</para>
+				<para>Return the line between the nearest points of the two arguments at their nearest approach instant</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-shortestLine({geometry,trgeometry},{geometry,trgeometry}) → geometry
+shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(shortestLine( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(0 0), 0.0)@2001-01-01', geometry 'Point(10 0)'));
+SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0),0)@2001-01-01', geometry 'Point(10 0)'));
 -- LINESTRING(1 0,10 0)
 </programlisting>
 			</listitem>
