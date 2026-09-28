@@ -86,7 +86,6 @@ mobilitydb/sql/rgeo/164_trgeo_distance.in.sql
 mobilitydb/sql/rgeo/166_trgeo_similarity.in.sql
 mobilitydb/sql/rgeo/170_trgeo_spatialrels.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
-mobilitydb/sql/rgeo/176_trgeo_vclip.in.sql
 mobilitydb/sql/s2cell/602_s2cell_ops.in.sql
 mobilitydb/sql/s2cell/605_ts2cell_spatialfuncs.in.sql
 mobilitydb/sql/temporal/019_geo_constructors.in.sql

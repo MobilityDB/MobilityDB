@@ -34,5 +34,4 @@ add_library(pg_rgeo OBJECT
   trgeo_spatialfuncs.c
   trgeo_tile.c
   trgeo_spatialrels.c
-  trgeo_vclip.c
   )
