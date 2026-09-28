@@ -41,7 +41,6 @@ set(RGEO_SOURCES
   trgeo_tile.c
   trgeo_spatialrels.c
   trgeo_utils.c
-  trgeo_vclip.c
   )
 
 add_library(rgeo OBJECT ${RGEO_SOURCES})

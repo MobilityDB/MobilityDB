@@ -42,7 +42,6 @@ SET(LOCAL_FILES
   172_trgeo_tempspatialrels
   173_trgeo_indexes
   175_trgeo_geom_clip
-  176_trgeo_vclip
   )
 
 foreach (f ${LOCAL_FILES})
