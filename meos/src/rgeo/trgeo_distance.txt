@@ -371,7 +371,9 @@ instants are:
 
   * the start of each feature interval, and the end of each segment;
   * each extremum of the distance in a feature interval;
-  * each entry into and exit from an overlap.
+  * each entry into and exit from an overlap;
+  * for the threshold functions, each crossing of the threshold d, with
+    the value d.
 
 The value at each instant comes from the function of the feature at that
 time.  Thus the result is exact at its instants.  It has all the extrema,
@@ -390,6 +392,18 @@ threshold.  Thus the nearest approach functions and the dwithin functions
 use the internal result.  Only the result of the temporal distance
 functions is normalized, as are the other temporal distances of MEOS.
 
+With the threshold crossings, the distance is on the same side of d on
+each piece of the result.  Thus the comparison of the linear interpolation
+with d is exact:
+
+  * eDwithin is true if the minimum is at most d.
+
+  * aDwithin is true if the maximum is at most d.  If the distance is above
+    d between two crossings, the result has an instant between them: an
+    extremum or a change of feature.  The value there is above d.
+
+  * tDwithin is the comparison of the temporal distance with d.
+
 Static geometries
 .................
 
@@ -400,6 +414,18 @@ distance to a geometry is the minimum of the distances to its parts.
 The minimum of two linear interpolations has instants where they cross,
 and the value there comes from the interpolation.  Thus the algorithm
 computes each value of the minimum again, with PostGIS on the placed body.
+
+A value that is exactly the threshold d stays d.  Such a value comes from a
+threshold crossing of the closest part, thus it is the exact distance.  A
+value from PostGIS has a rounding error, which can put the crossing in the
+same microsecond as the instant.  Then the comparison with d does not see
+the crossing.
+
+The minimum is on the same side of d as the true distance at each time.
+If the interpolation of a part is at most d at a time, the part has no
+crossing of d in that piece, thus its true distance is at most d, and so
+is the minimum.  If all the interpolations are above d, all the true
+distances are above d.
 
 Interpolation
 .............
@@ -582,6 +608,18 @@ with the minimum of the distance at sampled times, for rotating bodies
 against a point, a polygon and another body.  It also covers overlaps,
 lines, multi geometries, temporal points, step interpolation, and the
 errors for the polygons that are not convex.
+
+The dwithin functions
+.....................
+
+eDwithin and aDwithin are in meos/src/rgeo/trgeo_spatialrels.c, and
+tDwithin is in meos/src/rgeo/trgeo_distance.c.  They use the temporal
+distance with the threshold crossings.  The other temporal spatial
+relationships of the rigid geometries cast them to tgeometry.  tDwithin
+does not, because a tgeometry keeps each geometry until the next instant
+and loses the motion between the instants.
+173_trgeo_distance_walk also compares tDwithin with the distance at
+sampled times.
 
 Relation to the Paper
 ---------------------

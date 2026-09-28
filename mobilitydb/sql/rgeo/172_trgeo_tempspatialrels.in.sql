@@ -131,14 +131,13 @@ CREATE FUNCTION tTouches(trgeometry, trgeometry)
 
 CREATE FUNCTION tDwithin(geometry, trgeometry, dist float)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1, $2::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDwithin(trgeometry, geometry, dist float)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeometry, $2, $3) $$;
+  AS 'MODULE_PATHNAME', 'Tdwithin_trgeometry_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDwithin(trgeometry, trgeometry, dist float)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeometry,
-                         $2::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Tdwithin_trgeometry_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

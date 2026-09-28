@@ -602,4 +602,50 @@ Adwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_dwithin */
 
+/*****************************************************************************
+ * Temporal dwithin
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tdwithin_geo_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_geo_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal rigid geometry are within a distance
+ * @sqlfn tDwithin()
+ */
+Datum
+Tdwithin_geo_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_trgeometry);
+}
+
+PGDLLEXPORT Datum Tdwithin_trgeometry_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_trgeometry_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal rigid
+ * geometry and a geometry are within a distance
+ * @sqlfn tDwithin()
+ */
+Datum
+Tdwithin_trgeometry_geo(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_tspatial_geo(fcinfo, &tdwithin_trgeometry_geo);
+}
+
+PGDLLEXPORT Datum Tdwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_trgeometry_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal rigid
+ * geometries are within a distance
+ * @sqlfn tDwithin()
+ */
+Datum
+Tdwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_tspatial_tspatial(fcinfo, &tdwithin_trgeometry_trgeometry);
+}
+
 /*****************************************************************************/
