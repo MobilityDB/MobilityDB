@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffersegm_distance_at_time</title>
+<title>MobilityDB: tcbuffersegm_length_roots</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -116,11 +116,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a942b5205af3e48299e944c0fd08e35c0.html#a942b5205af3e48299e944c0fd08e35c0">tcbufferinst_tfloatinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a73c72aad0d4702ee646297a1d85177dc.html#a73c72aad0d4702ee646297a1d85177dc">tcbufferinst_tgeompointinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a79f4471bbd63fa5c44b898dd4d4870e7.html#a79f4471bbd63fa5c44b898dd4d4870e7">tcbuffersegm_contains_turnpt</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_aac333a6b2756b18c9156b32c2e5abd56.html#aac333a6b2756b18c9156b32c2e5abd56">tcbuffersegm_distance_at_time</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af3597b428cbbaa760c02396241b02652.html#af3597b428cbbaa760c02396241b02652">tcbuffersegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_ab3e58d559198cc6a317cd0187e019eee.html#ab3e58d559198cc6a317cd0187e019eee">tcbuffersegm_dwithin_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_ad43e8fc7429abf2a1a715d8487a06112.html#ad43e8fc7429abf2a1a715d8487a06112">tcbuffersegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a737d1fd050a3e1f157099b161487b5c6.html#a737d1fd050a3e1f157099b161487b5c6">tcbuffersegm_intersection_value</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a1062d87b7ec166fcfc97866fac05732f.html#a1062d87b7ec166fcfc97866fac05732f">tcbuffersegm_length_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a191ab7e616804f5704e89c0fb8cc0d8e.html#a191ab7e616804f5704e89c0fb8cc0d8e">tcbuffersegm_tdwithin_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a804bb9ff2b47531a90a185fc138d799d.html#a804bb9ff2b47531a90a185fc138d799d">tcbufferseq_expand</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__constructor_gaf3ccb7312af18e9bf876f7d9a812f6bd.html#gaf3ccb7312af18e9bf876f7d9a812f6bd">tcbufferseq_from_base_tstzset</a></td></tr>
@@ -146,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aac333a6b2756b18c9156b32c2e5abd56" name="aac333a6b2756b18c9156b32c2e5abd56"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac333a6b2756b18c9156b32c2e5abd56">&#9670;&#160;</a></span>tcbuffersegm_distance_at_time()</h2>
+<a id="a1062d87b7ec166fcfc97866fac05732f" name="a1062d87b7ec166fcfc97866fac05732f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1062d87b7ec166fcfc97866fac05732f">&#9670;&#160;</a></span>tcbuffersegm_length_roots()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,46 +156,46 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double tcbuffersegm_distance_at_time </td>
+          <td class="memname">static int tcbuffersegm_length_roots </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dx0</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>sv1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>ev1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>sv2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>ev2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dy0</em>, </td>
+          <td class="paramname"><em>l0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>vx</em>, </td>
+          <td class="paramname"><em>l1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>vy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>r0</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>vr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>t</em>&#160;</td>
+          <td class="paramtype">long double&#160;</td>
+          <td class="paramname"><em>roots</em>[2]&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -205,23 +205,22 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compute the temporal distance between two circular buffers at time t. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the fractions of a segment at which the distance between the centres of two circular buffer segments equals a length that varies linearly over the segment. </p>
+<p >Over the fraction f in [0, 1] of the segment the centres stand apart by the vector (dx0 + dx f, dy0 + dy f) and the length reads L(f) = (1 - f) l0 + f l1. The fractions solve |c(f)| = L(f), which squares to the quadratic a f^2 + b f + c = 0 below. Squaring also admits the fractions at which |c(f)| = -L(f), which are the roots at which L is negative, so a root is kept by its position in [0, 1] and by the sign of L there. It is never kept by evaluating the distance at it again: at projected coordinates the rounding of that evaluation exceeds any fixed band, and reads a crossing the quadratic states exactly as a miss. The roots are computed as <a class="el" href="tgeo__spatialrels_8h_a36eb05b2f68934ac5934b3c949fd0c77.html#a36eb05b2f68934ac5934b3c949fd0c77" title="Return 1 or 2 if two temporal point segments are within a distance during the period defined by the o...">tpointsegm_tdwithin_turnpt</a> computes them, one by the quadratic formula and the other by Viète's, so that neither loses its digits to a cancellation. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">dx0,dy0</td><td>Initial spatial offset between the buffer centres. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vx,vy</td><td>Relative velocities in the x and y directions. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">r0</td><td>Initial sum of the radii. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vr</td><td>Rate of change of the sum of the radii. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Time offset from the lower bound of the segment. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sv1,ev1</td><td>Circular buffers defining the first segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sv2,ev2</td><td>Circular buffers defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l0,l1</td><td>Length at the start and at the end of the segment </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">roots</td><td>Fractions found, in increasing order </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The temporal distance at time t, i.e., the Euclidean distance between the centres minus the sum of the radii. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of fractions found, from 0 to 2 </dd></dl>
 
 </div>
 </div>
