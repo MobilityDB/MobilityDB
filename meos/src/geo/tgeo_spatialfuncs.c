@@ -1284,6 +1284,27 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
 }
 
 /**
+ * @brief Return a temporal geo scaled by given factors, the scaling
+ * #tgeo_scale and #tgeo_scale_xyz share
+ * @param[in] temp Temporal geo
+ * @param[in] factors Scale factors
+ */
+static Temporal *
+tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
+{
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tgeoinst_scale((TInstant *) temp, factors);
+    case TSEQUENCE:
+      return (Temporal *) tgeoseq_scale((TSequence *) temp, factors);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tgeoseqset_scale((TSequenceSet *) temp, factors);
+  }
+}
+
+/**
  * @ingroup meos_geo_transf
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
@@ -1339,20 +1360,8 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
     temp1 = (Temporal *) temp;
 
   /* Scale the temporal geo, moved to the origin when there is one */
-  Temporal *temp2;
-  assert(temptype_subtype(temp1->subtype));
-  switch (temp1->subtype)
-  {
-    case TINSTANT:
-      temp2 = (Temporal *) tgeoinst_scale((TInstant *) temp1, &factors);
-      break;
-    case TSEQUENCE:
-      temp2 = (Temporal *) tgeoseq_scale((TSequence *) temp1, &factors);
-      break;
-    default: /* TSEQUENCESET */
-      temp2 = (Temporal *) tgeoseqset_scale((TSequenceSet *) temp1, &factors);
-  }
-  
+  Temporal *temp2 = tgeo_scale_factors(temp1, &factors);
+
   /* Return to original origin after scaling */
   Temporal *temp3;
   if (translate)
@@ -1372,6 +1381,155 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
     pfree(temp2);
   }
   return temp3;
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Scale a temporal geo by the given factors along the x, y, and z axes
+ * @param[in] temp Temporal geo
+ * @param[in] xfactor,yfactor,zfactor Scale factors
+ * @csqlfn #Tgeo_scale_xyz()
+ */
+Temporal *
+tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor,
+  double zfactor)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL);
+  /* The factors of a 3D point, as scale(temp, ST_MakePoint(x, y, z)) reads
+   * them */
+  POINT4D factors = { .x = xfactor, .y = yfactor, .z = zfactor, .m = 1.0 };
+  return tgeo_scale_factors(temp, &factors);
+}
+
+/**
+ * @brief Return the affine transformation of a temporal geo given the
+ * coefficients of its matrix
+ * @details The coefficients follow PostGIS ST_Affine, as #tgeo_affine reads
+ * them from an AFFINE
+ */
+static Temporal *
+tgeo_affine_coefs(const Temporal *temp,
+  double a, double b, double c, double d, double e, double f,
+  double g, double h, double i, double xoff, double yoff, double zoff)
+{
+  AFFINE aff;
+  aff.afac = a; aff.bfac = b; aff.cfac = c;
+  aff.dfac = d; aff.efac = e; aff.ffac = f;
+  aff.gfac = g; aff.hfac = h; aff.ifac = i;
+  aff.xoff = xoff; aff.yoff = yoff; aff.zoff = zoff;
+  return tgeo_affine(temp, &aff);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return the 2D affine transformation of a temporal geo
+ * @param[in] temp Temporal geo
+ * @param[in] a,b,d,e Coefficients of the 2x2 matrix
+ * @param[in] xoff,yoff Translation
+ * @csqlfn #Tgeo_affine_2d()
+ */
+Temporal *
+tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e,
+  double xoff, double yoff)
+{
+  VALIDATE_TGEO(temp, NULL);
+  return tgeo_affine_coefs(temp, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff, 0);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo translated by the given offsets
+ * @param[in] temp Temporal geo
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @csqlfn #Tgeo_translate()
+ */
+Temporal *
+tgeo_translate(const Temporal *temp, double deltax, double deltay,
+  double deltaz)
+{
+  VALIDATE_TGEO(temp, NULL);
+  return tgeo_affine_coefs(temp, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+    deltax, deltay, deltaz);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around a point
+ * @param[in] temp Temporal geo
+ * @param[in] angle Rotation angle in radians
+ * @param[in] x0,y0 Center of the rotation
+ * @csqlfn #Tgeo_rotate()
+ */
+Temporal *
+tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
+{
+  VALIDATE_TGEO(temp, NULL);
+  double c = cos(angle), s = sin(angle);
+  return tgeo_affine_coefs(temp, c, -s, 0, s, c, 0, 0, 0, 1,
+    x0 - c * x0 + s * y0, y0 - s * x0 - c * y0, 0);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the x axis
+ * @param[in] temp Temporal geo
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Tgeo_rotate_x()
+ */
+Temporal *
+tgeo_rotate_x(const Temporal *temp, double angle)
+{
+  VALIDATE_TGEO(temp, NULL);
+  double c = cos(angle), s = sin(angle);
+  return tgeo_affine_coefs(temp, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the y axis
+ * @param[in] temp Temporal geo
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Tgeo_rotate_y()
+ */
+Temporal *
+tgeo_rotate_y(const Temporal *temp, double angle)
+{
+  VALIDATE_TGEO(temp, NULL);
+  double c = cos(angle), s = sin(angle);
+  return tgeo_affine_coefs(temp, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the z axis
+ * @param[in] temp Temporal geo
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Tgeo_rotate_z()
+ */
+Temporal *
+tgeo_rotate_z(const Temporal *temp, double angle)
+{
+  VALIDATE_TGEO(temp, NULL);
+  double c = cos(angle), s = sin(angle);
+  return tgeo_affine_coefs(temp, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo translated and then scaled
+ * @param[in] temp Temporal geo
+ * @param[in] deltax,deltay Offsets
+ * @param[in] xfactor,yfactor Scale factors
+ * @csqlfn #Tgeo_transscale()
+ */
+Temporal *
+tgeo_transscale(const Temporal *temp, double deltax, double deltay,
+  double xfactor, double yfactor)
+{
+  VALIDATE_TGEO(temp, NULL);
+  return tgeo_affine_coefs(temp, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
+    deltax * xfactor, deltay * yfactor, 0);
 }
 
 /*****************************************************************************
