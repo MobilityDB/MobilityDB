@@ -323,9 +323,16 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
     {
       fstart = roots[0]; fend = 1.0;
     }
+    else if (win_lower)
+    {
+      /* The gap between the discs, the distance of the centres less an affine
+       * length, is convex over the segment, so a segment within at both ends
+       * is within throughout: the crossing is a tangency at one of its ends */
+      fstart = 0.0; fend = 1.0;
+    }
     else
     {
-      /* Tangent touch: within only at the crossing instant */
+      /* Tangent touch from outside: within only at the crossing instant */
       fstart = fend = roots[0];
     }
   }
@@ -411,6 +418,13 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
     else if (! in_lower && in_upper)
     {
       fstart = roots[0]; fend = 1.0;
+    }
+    else if (in_lower)
+    {
+      /* The clearance is convex over the segment, so a segment in at both
+       * ends is in throughout: the crossing is a tangency at one of its ends,
+       * as #tcbuffersegm_tdwithin_turnpt reads it */
+      fstart = 0.0; fend = 1.0;
     }
     else
     {

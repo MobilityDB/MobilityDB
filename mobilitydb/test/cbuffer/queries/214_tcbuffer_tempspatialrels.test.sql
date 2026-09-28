@@ -93,6 +93,13 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(10 0),
 -- A moving point grazing the boundary of a stationary buffer at one instant
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),0)@2001-01-01, Cbuffer(Point(5 2),0)@2001-01-03]');
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),0)@2001-01-01, Cbuffer(Point(5 2),0)@2001-01-03]');
+-- Two discs overlapping throughout a segment and tangent at its end are within
+-- a distance zero throughout it
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(2 2),3)@2001-01-01, Cbuffer(Point(0 2),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(2 -1),2)@2001-01-01, Cbuffer(Point(-2 2),1)@2001-01-03]', 0);
+-- A disc inside a stationary one throughout a segment and tangent to it from
+-- inside at its end is covered and contained throughout it
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
 -- Crossings inside a segment at projected coordinates: the first centre jumps
 -- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
 -- the answers are those of the centres at the radii read as a distance, which

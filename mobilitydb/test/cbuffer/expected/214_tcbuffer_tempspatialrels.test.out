@@ -189,6 +189,24 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),2)@2001-01-01, Cbuffer(Point(0 0),2
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(2 2),3)@2001-01-01, Cbuffer(Point(0 2),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(2 -1),2)@2001-01-01, Cbuffer(Point(-2 2),1)@2001-01-03]', 0);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
                                                                                         tdwithin                                                                                         
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
