@@ -173,16 +173,19 @@ if(DOC_HTML OR DOC_PDF OR DOC_EPUB OR DOC_ALL)
     endif()
   endif()
 
-  # Function that validates the XML files of the user's documentation
+  # Function that checks that the XML files of the user's documentation parse
+  # with their entities expanded. The manual is DocBook 5, which has no DTD:
+  # its DOCTYPE declares only entities, so the check is well-formedness, as in
+  # .github/workflows/check-doc-reference.yml.
   function(validate_xml_file file lang)
     message(STATUS "Validating the XML files of the ${lang_str} user's documentation")
     execute_process(
-      COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --valid --noent --noout ${file}
+      COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout --noent ${file}
       RESULT_VARIABLE STATUS
       ERROR_QUIET
     )
     if(STATUS AND NOT STATUS EQUAL 0)
-      message(FATAL_ERROR "The XML files are not valid. Please run xmllint to validate them.")
+      message(FATAL_ERROR "The XML files do not parse. Please run xmllint --noout --noent on them.")
     endif()
     return()
   endfunction(validate_xml_file)
