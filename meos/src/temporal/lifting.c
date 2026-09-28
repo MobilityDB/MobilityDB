@@ -954,17 +954,45 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     bool lower_eq;
     TimestampTz tpt1, tpt2;
 
+    /* Determine whether there is a crossing in the middle of the segment
+     * and compute the value at the crossing if there is one */
+    bool constant = datum_eq(startvalue, endvalue, basetype);
+    bool midpoint = false;
+    int cross = 0;
+    if (! constant)
+    {
+      if (datum_eq(startvalue, value, basetype) ||
+          datum_eq(endvalue, value, basetype))
+        midpoint = true;
+      else
+      {
+        /* See the cross_type comment in eafunc_tlinearseq_base: when the
+         * right-hand value is a different type from the temporal's basetype,
+         * datumsegm_locate would reinterpret its bytes and trip a garbage
+         * SRID-equality check.  Skip the intersection search and treat the
+         * segment as having no crossing. */
+        cross = lfinfo->cross_type ? 0 :
+          tsegment_intersection_value(startvalue, endvalue, value,
+            start->temptype, start->t, end->t, &tpt1, &tpt2);
+        /* A crossing near a bound is not reported, see floatsegm_locate().
+         * If the results at the bounds differ, the result changes at a
+         * bound, and the value in the middle tells at which one. */
+        if (! cross && ! datum_eq(startresult, endresult, resbasetype))
+          midpoint = true;
+      }
+    }
+
     /* If the segment is constant continue the current sequence */
-    if (datum_eq(startvalue, endvalue, basetype))
+    if (constant)
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start->t);
       if (i == seq->count - 1)
         instants[ninsts++] = tinstant_make(startresult, restype, end->t);
     }
-    /* If either the start or the end value is equal to the value compute the
-     * function at the middle time between the start and end instants */
-    else if (datum_eq(startvalue, value, basetype) ||
-             datum_eq(endvalue, value, basetype))
+    /* If either the start or the end value is equal to the value, or the
+     * result changes at a bound, compute the function at the middle time
+     * between the start and end instants */
+    else if (midpoint)
     {
       tpt1 = start->t + ((end->t - start->t) / 2);
       tpvalue1 = tsegment_value_at_timestamptz(startvalue, endvalue,
@@ -998,18 +1026,6 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     }
     else
     {
-      /* Determine whether there is a crossing and compute the value at the
-       * crossing if there is one */
-       Datum startvalue = tinstant_value_p(start);
-       Datum endvalue = tinstant_value_p(end);
-      /* See cross_type comment in eafunc_tlinearseq_base — when the
-       * right-hand value is a different type from the temporal's
-       * basetype, datumsegm_locate would reinterpret its bytes and
-       * trip a garbage SRID-equality check. Skip the intersection
-       * search and treat the segment as having no crossing. */
-      int cross = lfinfo->cross_type ? 0 :
-        tsegment_intersection_value(startvalue, endvalue, value,
-        start->temptype, start->t, end->t, &tpt1, &tpt2);
       if (! cross)
       {
         /* Continue the current sequence */
@@ -1682,21 +1698,45 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     TimestampTz tpt1 = 0, tpt2 = 0; /* make compiler quiet */
     bool lower_eq;
 
-    /* If the segments are both constants OR are both equal, compute the 
-     * function at the start and end instants and continue the current
-     * sequence */
-    if ((datum_eq(startvalue1, endvalue1, basetype) &&
+    /* Determine whether there is a crossing in the middle of the segments
+     * and compute the value at the crossing if there is one */
+    bool constant = (datum_eq(startvalue1, endvalue1, basetype) &&
          datum_eq(startvalue2, endvalue2, basetype)) ||
         (datum_eq(startvalue1, startvalue2, basetype) &&
-         datum_eq(endvalue1, endvalue2, basetype)))
+         datum_eq(endvalue1, endvalue2, basetype));
+    bool midpoint = false;
+    int cross = 0;
+    if (! constant)
+    {
+      if (datum_eq(startvalue1, startvalue2, basetype) ||
+          datum_eq(endvalue1, endvalue2, basetype))
+        midpoint = true;
+      else
+      {
+        cross = lfinfo->tpfn_temp ?
+          lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
+            lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
+          tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
+            start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
+        /* A crossing near a bound is not reported, see floatsegm_locate().
+         * If the results at the bounds differ, the result changes at a
+         * bound, and the value in the middle tells at which one. */
+        if (! cross && ! datum_eq(startresult, endresult, resbasetype))
+          midpoint = true;
+      }
+    }
+
+    /* If the segments are both constants OR are both equal, compute the
+     * function at the start and end instants and continue the current
+     * sequence */
+    if (constant)
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
     }
-    /* If either the start values or the end values are equal, compute the
-     * function at the start instant, at an intermediate point, and at the
-     * end instant */
-    else if (datum_eq(startvalue1, startvalue2, basetype) ||
-      datum_eq(endvalue1, endvalue2, basetype))
+    /* If either the start values or the end values are equal, or the result
+     * changes at a bound, compute the function at the start instant, at an
+     * intermediate point, and at the end instant */
+    else if (midpoint)
     {
       /* Compute the function at the middle time between the start and end
        * instants */
@@ -1730,13 +1770,6 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     }
     else
     {
-      /* Determine whether there is a crossing and compute the value at the
-       * crossing if there is one */
-      int cross = lfinfo->tpfn_temp ?
-        lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
-          lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
-        tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
-          start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
       if (! cross)
       {
         instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
