@@ -25,22 +25,12 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-set(RGEO_SOURCES
-  trgeo.c
-  trgeo_boxops.c
-  trgeo_compops.c
-  trgeo_distance.c
-  trgeo_distsolve.c
-  trgeo_geom_clip.c
-  trgeo_inst.c
-  trgeo_parser.c
-  trgeo_seq.c
-  trgeo_seqset.c
-  trgeo_spatialfuncs.c
-  trgeo_tile.c
-  trgeo_spatialrels.c
-  trgeo_utils.c
-  trgeo_vclip.c
-  )
+# Unit tests of internal functions of MEOS
+#
+# Each subdirectory tests the internal functions of one part of meos/src.
+# The programs include internal headers, and CMake builds them.  The other
+# programs of meos/test test the installed public API.
 
-add_library(rgeo OBJECT ${RGEO_SOURCES})
+if(RGEO)
+  add_subdirectory(rgeo)
+endif()

@@ -25,22 +25,26 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-set(RGEO_SOURCES
-  trgeo.c
-  trgeo_boxops.c
-  trgeo_compops.c
-  trgeo_distance.c
-  trgeo_distsolve.c
-  trgeo_geom_clip.c
-  trgeo_inst.c
-  trgeo_parser.c
-  trgeo_seq.c
-  trgeo_seqset.c
-  trgeo_spatialfuncs.c
-  trgeo_tile.c
-  trgeo_spatialrels.c
-  trgeo_utils.c
-  trgeo_vclip.c
-  )
+# Unit tests of the temporal distance of rigid geometries
+#
+# These programs test internal functions of meos/src/rgeo.  The programs in
+# meos/test are different: they test the installed public API, and CI builds
+# each of them alone against the installed library.  These programs need the
+# internal headers, so CMake builds them.  Their names end in _unit.c and not
+# in _test.c, so that CI does not take them for tests of the public API.
+#
+# The files under test are compiled into each program with NDEBUG not
+# defined, also in a release build, so that their assertions run.
+#
+# Run them with
+#   ctest -R trgeo_dist
+# The randomized programs take a number of trials.  The numbers below keep
+# each program to about one second.  Run a program with a larger number for
+# a deeper check.
 
-add_library(rgeo OBJECT ${RGEO_SOURCES})
+# The root isolation builds with libm only, so that this remains possible
+add_executable(trgeo_distsolve_unit trgeo_distsolve_unit.c
+  ${CMAKE_SOURCE_DIR}/meos/src/rgeo/trgeo_distsolve.c)
+target_compile_options(trgeo_distsolve_unit PRIVATE -UNDEBUG)
+target_link_libraries(trgeo_distsolve_unit m)
+add_test(NAME trgeo_distsolve_unit COMMAND trgeo_distsolve_unit 300)
