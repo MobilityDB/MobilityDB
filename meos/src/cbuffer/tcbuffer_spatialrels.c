@@ -638,15 +638,24 @@ ea_spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if two temporal circular buffers ever/always satisfy a
  * spatial relationship, 0 if not, and -1 on error
+ * @details A relationship may hold only inside a segment, as when one disc
+ * enters another between two instants at which it is outside it. The segment
+ * function @p tpfn returns where the relationship changes inside a segment,
+ * so the walk reads it there too, as it does for the within-distance
+ * relationship; when it is NULL the walk reads the synchronized instants and
+ * the crossings of the two values.
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] func Spatial relationship function to be called
+ * @param[in] tpfn Segment function returning where the relationship changes,
+ * or NULL
+ * @param[in] param Parameter of the segment function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] bbox_test True if a bounding text can be used for filtering
  * @csqlfn #Aintersects_tcbuffer_tcbuffer(), #Ecovers_tcbuffer_tcbuffer(), ...
  */
 int
 ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  datum_func2 func, bool ever, bool bbox_test)
+  datum_func2 func, tpfunc_temp tpfn, double param, bool ever, bool bbox_test)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
@@ -669,7 +678,19 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
       return 0;
   }
 
-  return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
+  /* Fill the lifted structure */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
+  lfinfo.ever = ever;
+  lfinfo.param[0] = Float8GetDatum(param);
+  lfinfo.tpfn_temp = tpfn;
+  return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************
@@ -880,7 +901,7 @@ ea_contains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
   return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_contains,
-    ever, true);
+    &tcbuffersegm_contains_turnpt, 1.0, ever, true);
 }
 
 /**
@@ -1130,7 +1151,7 @@ ea_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
   return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_covers,
-    ever, true);
+    &tcbuffersegm_contains_turnpt, 0.0, ever, true);
 }
 
 /**
@@ -1581,7 +1602,7 @@ ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
   return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2,
-    &datum_cbuffer_intersects, ever, true);
+    &datum_cbuffer_intersects, NULL, 0.0, ever, true);
 
 }
 
@@ -1823,7 +1844,7 @@ ea_touches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
   return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_touches,
-    ever, true);
+    NULL, 0.0, ever, true);
 }
 
 /**
