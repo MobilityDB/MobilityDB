@@ -1067,7 +1067,22 @@
 					<para><link linkend="tgeo_rotate"><varname>rotate</varname></link>: Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje x &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje y &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje z &Z_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_scale"><varname>scale</varname></link>: Devuelve un punto temporal escalado por factores dados &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_transscale"><varname>transscale</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados y luego escalada por factores dados &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_translate"><varname>translate</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados &Z_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
