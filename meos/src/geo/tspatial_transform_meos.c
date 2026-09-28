@@ -565,6 +565,10 @@ GetProjStrings(int32_t srid)
     }
     else
     {
+      /* The handler is not guaranteed to abort, so return no PROJ string
+       * rather than the unfilled buffer */
+      pfree(strs.proj4text);
+      strs.proj4text = NULL;
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Invalid reserved SRID (%d)", srid);
       return strs;
