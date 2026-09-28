@@ -65,6 +65,11 @@ SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0
 
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(2 2),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]');
+-- Two moving discs with changing radii: the second is outside the first at
+-- both ends and inside it in the middle of the segment, where the centres are
+-- 0.5 apart with radii 2.5 and 1.5
+SELECT eContains(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
+SELECT aContains(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
 
 -- A multipart geometry is contained only when every one of its parts is. The
 -- disc of radius 1 sweeps the strip between (-5 0) and (5 0), which contains
@@ -91,6 +96,9 @@ SELECT eCovers(tcbuffer '{[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(2 2),
 
 SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
 SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(2 2),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]');
+-- Covered in the middle of the segment only
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
+SELECT aCovers(tcbuffer '[Cbuffer(Point(-1 1),3)@2001-01-01, Cbuffer(Point(1 0),2)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 3),2)@2001-01-01, Cbuffer(Point(1 -2),1)@2001-01-03]');
 
 -- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
 -- centre (0,0) and radius 5. The internally tangent disc is covered but not
@@ -183,7 +191,6 @@ SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', tcbuffer '{[Cb
 SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
 SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
-
 ------------------------
 -- Curved geometry input (native arc-exact)
 ------------------------
