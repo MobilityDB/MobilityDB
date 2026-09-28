@@ -122,6 +122,7 @@ typedef struct
   bool geodetic;          /**< Geodetic? */
   bool has_srid;          /**< SRID? */
   interpType interp;      /**< Interpolation */
+  bool error;             /**< An error was found */
   const uint8_t *pos;     /**< Current parse position */
 } meos_wkb_parse_state;
 
@@ -1701,15 +1702,46 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
  *****************************************************************************/
 
 /**
- * @brief Check that we are not about to read off the end of the WKB array
+ * @brief Return true if the next bytes to read lie inside the WKB array,
+ * raise an error and return false otherwise
+ * @details The request is compared with the bytes left, so a request as large
+ * as the address space is refused instead of wrapping the end pointer
  */
-static inline void
+static inline bool
 wkb_parse_state_check(meos_wkb_parse_state *s, size_t next)
 {
-  if ((s->pos + next) > (s->wkb + s->wkb_size))
+  if (next > (size_t) (s->wkb + s->wkb_size - s->pos))
+  {
+    s->error = true;
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
       "WKB structure does not match expected size!");
-  return;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a length or a count read from the WKB array is not
+ * negative and announces no more bytes than the ones left, raise an error and
+ * return false otherwise
+ * @details The counterpart of #wkb_parse_state_check for a length read from
+ * the array. Every element counted takes at least one byte, so a count is
+ * bounded by the bytes left as a length is.
+ * @param[in] s Parse state
+ * @param[in] len Length or count read from the array
+ * @param[in] minlen Minimum value of the length or count
+ */
+static inline bool
+wkb_length_check(meos_wkb_parse_state *s, int64 len, int64 minlen)
+{
+  if (len < minlen || (uint64) len > (size_t) (s->wkb + s->wkb_size - s->pos))
+  {
+    s->error = true;
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "WKB structure does not match expected size!");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -1720,7 +1752,8 @@ byte_from_wkb_state(meos_wkb_parse_state *s)
 {
   uint8_t byte_value = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE);
+  if (! wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE))
+    return byte_value;
   /* Get the data */
   byte_value = s->pos[0];
   /* Advance position */
@@ -1748,7 +1781,8 @@ static inline void swap_bytes(void *data, size_t size)
 static inline void read_wkb_value(meos_wkb_parse_state *s, void *dest, size_t size)
 {
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, size);
+  if (! wkb_parse_state_check(s, size))
+    return;
   /* Get the data */
   memcpy(dest, s->pos, size);
   /* Swap bytes if needed */
@@ -1833,11 +1867,12 @@ timestamp_from_wkb_state(meos_wkb_parse_state *s)
 text *
 text_from_wkb_state(meos_wkb_parse_state *s)
 {
-  /* Get the size of the text value */
-  size_t size = int64_from_wkb_state(s);
-  assert(size > 0);
+  /* Get the size of the text value, which is zero for an empty text */
+  int64 len = int64_from_wkb_state(s);
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, size);
+  if (! wkb_length_check(s, len, 0))
+    return NULL;
+  size_t size = (size_t) len;
   /* Get the data */
   char *str = palloc(size + 1);
   memcpy(str, s->pos, size);
@@ -1860,8 +1895,9 @@ static void *
 pcvarlena_from_wkb_state(meos_wkb_parse_state *s)
 {
   int32_t body_len = int32_from_wkb_state(s);
-  assert(body_len >= (int32_t) sizeof(uint32_t));  /* must include pcid */
-  wkb_parse_state_check(s, (size_t) body_len);
+  /* The body must include the pcid */
+  if (! wkb_length_check(s, body_len, sizeof(uint32_t)))
+    return NULL;
   /* Allocate a varlena: header + body. */
   size_t total = VARHDRSZ + (size_t) body_len;
   void *vl = palloc(total);
@@ -1924,6 +1960,7 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   LWGEOM *geo = lwgeom_from_wkb_state(&s1);
   if (! geo)
   {
+    s->error = true;
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
       "Unable to parse geometry from WKB");
     return NULL;
@@ -2015,11 +2052,12 @@ Jsonb *
 jsonb_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the size of the JSONB payload (without VARHDRSZ) */
-  size_t size = int64_from_wkb_state(s);
-  assert(size > 0);
+  int64 len = int64_from_wkb_state(s);
 
   /* Check that there is enough data to read */
-  wkb_parse_state_check(s, size);
+  if (! wkb_length_check(s, len, 1))
+    return NULL;
+  size_t size = (size_t) len;
 
   /* Allocate space for a full varlena (VARSIZE = header + payload) */
   Jsonb *jb = (Jsonb *) palloc(size + VARHDRSZ);
@@ -2062,8 +2100,9 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Does the data we want to read exist? 
    * Flags + */
-  wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT8_SIZE + 
-    MEOS_WKB_DOUBLE_SIZE);
+  if (! wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT8_SIZE + 
+      MEOS_WKB_DOUBLE_SIZE))
+    return NULL;
   /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   npoint_flags_from_wkb_state(s, wkb_flags);
@@ -2173,6 +2212,8 @@ posechain_from_wkb_state(meos_wkb_parse_state *s)
       "Pose chains require at least one link");
     return NULL;
   }
+  if (! wkb_length_check(s, count, 1))
+    return NULL;
   Pose **poses = palloc(sizeof(Pose *) * count);
   for (int i = 0; i < count; i++)
   {
@@ -2231,7 +2272,8 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
   }
   size_t npixels = (size_t) width * height * pixsize;
   /* Check that there is enough data to read the pixel payload */
-  wkb_parse_state_check(s, npixels);
+  if (! wkb_parse_state_check(s, npixels))
+    return (Datum) 0;
   Raquet *result = raquet_make(quadbin, width, height, (MeosPixType) pixtype,
     nodata, has_nodata, s->pos, npixels);
   s->pos += npixels;
@@ -2263,68 +2305,91 @@ base_cell_from_wkb_state(meos_wkb_parse_state *s, MeosType temptype)
 static Datum
 base_from_wkb_state(meos_wkb_parse_state *s)
 {
+  Datum result;
   switch (s->basetype)
   {
     case T_BOOL:
-      return BoolGetDatum(byte_from_wkb_state(s));
+      result = BoolGetDatum(byte_from_wkb_state(s));
+      break;
     case T_INT4:
-      return Int32GetDatum(int32_from_wkb_state(s));
+      result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
     case T_INT8:
-      return Int64GetDatum(int64_from_wkb_state(s));
+      result = Int64GetDatum(int64_from_wkb_state(s));
+      break;
     case T_FLOAT8:
-      return Float8GetDatum(double_from_wkb_state(s));
+      result = Float8GetDatum(double_from_wkb_state(s));
+      break;
     case T_DATE:
-      return DateADTGetDatum(date_from_wkb_state(s));
+      result = DateADTGetDatum(date_from_wkb_state(s));
+      break;
     case T_TIMESTAMPTZ:
-      return TimestampTzGetDatum(timestamp_from_wkb_state(s));
+      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+      break;
     case T_TEXT:
-      return PointerGetDatum(text_from_wkb_state(s));
+      result = PointerGetDatum(text_from_wkb_state(s));
+      break;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return PointerGetDatum(geo_from_wkb_state(s));
+      result = PointerGetDatum(geo_from_wkb_state(s));
+      break;
 #if CBUFFER
     case T_CBUFFER:
-      return PointerGetDatum(cbuffer_from_wkb_state(s, true));
+      result = PointerGetDatum(cbuffer_from_wkb_state(s, true));
+      break;
 #endif /* CBUFFER */
 #if H3
     case T_H3INDEX:
       /* h3index is a uint64 cell id, wire-format identical to int8. */
-      return base_cell_from_wkb_state(s, T_TH3INDEX);
+      result = base_cell_from_wkb_state(s, T_TH3INDEX);
+      break;
 #endif /* H3 */
 #if JSON
     case T_JSONB:
-      return PointerGetDatum(jsonb_from_wkb_state(s));
+      result = PointerGetDatum(jsonb_from_wkb_state(s));
+      break;
 #endif /* JSON */
 #if NPOINT
     case T_NPOINT:
-      return PointerGetDatum(npoint_from_wkb_state(s));
+      result = PointerGetDatum(npoint_from_wkb_state(s));
+      break;
 #endif /* NPOINT */
 #if POINTCLOUD
     case T_PCPOINT:
     case T_PCPATCH:
-      return PointerGetDatum(pcvarlena_from_wkb_state(s));
+      result = PointerGetDatum(pcvarlena_from_wkb_state(s));
+      break;
 #endif /* POINTCLOUD */
 #if POSE
     case T_POSE:
-      return PointerGetDatum(pose_from_wkb_state(s));
+      result = PointerGetDatum(pose_from_wkb_state(s));
+      break;
     case T_POSECHAIN:
-      return PointerGetDatum(posechain_from_wkb_state(s));
+      result = PointerGetDatum(posechain_from_wkb_state(s));
+      break;
 #endif /* POSE */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
-      return base_cell_from_wkb_state(s, T_TQUADBIN);
+      result = base_cell_from_wkb_state(s, T_TQUADBIN);
+      break;
 #endif /* QUADBIN */
 #if S2CELL
     case T_S2CELL:
       /* an S2 cell is a uint64 cell id, wire-format identical to int8 */
-      return base_cell_from_wkb_state(s, T_TS2CELL);
+      result = base_cell_from_wkb_state(s, T_TS2CELL);
+      break;
 #endif /* S2CELL */
     default: /* Error! */
+      s->error = true;
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));
-      return 0;
+      return (Datum) 0;
   }
+  /* A reader that fails returns no value of a type passed by reference */
+  if (! result && ! basetype_byvalue(s->basetype))
+    s->error = true;
+  return result;
 }
 
 /**
@@ -2382,11 +2447,17 @@ span_from_wkb_state_iter(meos_wkb_parse_state *s, Span *result)
   size_t size = 2 * span_basevalue_from_wkb_size(s);
   wkb_parse_state_check(s, size);
 
-  /* Read the values and create the span */
+  /* Read the values and create the span, which #span_set fills only when
+   * the bounds make a valid span */
   Datum lower = base_from_wkb_state(s);
   Datum upper = base_from_wkb_state(s);
+  memset(result, 0, sizeof(Span));
+  if (s->error)
+    return;
   span_set(lower, upper, lower_inc, upper_inc, s->basetype, s->spantype,
     result);
+  if (result->spantype != s->spantype)
+    s->error = true;
   return;
 }
 
@@ -2403,6 +2474,7 @@ span_from_wkb_state(meos_wkb_parse_state *s)
    * a valid-hex buffer of another family would otherwise corrupt memory */
   if (! span_type(wkb_spantype))
   {
+    s->error = true;
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
       "Invalid span type code in WKB string: %d", wkb_spantype);
     memset(&result, 0, sizeof(Span));
@@ -2438,11 +2510,20 @@ spanset_from_wkb_state(meos_wkb_parse_state *s)
 
   /* Read the number of spans and allocate space for them */
   int count = int32_from_wkb_state(s);
+  if (! wkb_length_check(s, count, 1))
+    return NULL;
   Span *spans = palloc(sizeof(Span) * count);
 
   /* Read and create the span set */
   for (int i = 0; i < count; i++)
+  {
     span_from_wkb_state_iter(s, &spans[i]);
+    if (s->error)
+    {
+      pfree(spans);
+      return NULL;
+    }
+  }
   return spanset_make_free(spans, count, NORMALIZE, ORDER_NO);
 }
 
@@ -2504,11 +2585,22 @@ set_from_wkb_state(meos_wkb_parse_state *s)
 
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
+  if (! wkb_length_check(s, count, 1))
+    return NULL;
   Datum *values = palloc(sizeof(Datum) * count);
 
   /* Read and create the set */
   for (int i = 0; i < count; i++)
+  {
     values[i] = base_from_wkb_state(s);
+    if (s->error)
+    {
+      for (int j = 0; j < i; j++)
+        DATUM_FREE(values[j], s->basetype);
+      pfree(values);
+      return NULL;
+    }
+  }
   Set *result = set_make_free(values, count, s->basetype, ORDER_NO);
   /* A spatial set whose elements carry no SRID of their own (a cell, a network
    * point, a point cloud value) has the one its type fixes, not the one read
@@ -2688,12 +2780,18 @@ temporal_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
  * after the endian byte, the temporal type (an @p int16), and the temporal
  * flags byte.
  */
-static TInstant *
+static inline TInstant *
 tinstant_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the values from the buffer and create the instant */
   Datum value = base_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
+  if (s->error)
+  {
+    if (value)
+      DATUM_FREE(value, s->basetype);
+    return NULL;
+  }
   return tinstant_make_free(value, s->temptype, t);
 }
 
@@ -2706,10 +2804,12 @@ tinstarr_from_wkb_state(meos_wkb_parse_state *s, int count)
   TInstant **result = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
   {
-    /* Parse the point and the timestamp to create the instant point */
-    Datum value = base_from_wkb_state(s);
-    TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make_free(value, s->temptype, t);
+    result[i] = tinstant_from_wkb_state(s);
+    if (! result[i])
+    {
+      pfree_array((void **) result, i);
+      return NULL;
+    }
   }
   return result;
 }
@@ -2722,13 +2822,16 @@ tsequence_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
-  assert(count > 0);
+  if (! wkb_length_check(s, count, 1))
+    return NULL;
   /* Get the period bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
   bool lower_inc, upper_inc;
   bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
+  if (! instants)
+    return NULL;
   return tsequence_make_free(instants, count, lower_inc, upper_inc, s->interp,
     NORMALIZE);
 }
@@ -2741,28 +2844,37 @@ tsequenceset_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the number of sequences */
   int count = int32_from_wkb_state(s);
-  assert(count > 0);
+  if (! wkb_length_check(s, count, 1))
+    return NULL;
   /* Parse the sequences */
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)
   {
     /* Get the number of instants */
     int ninst = int32_from_wkb_state(s);
+    if (! wkb_length_check(s, ninst, 1))
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
     /* Get the period bounds */
     uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
     bool lower_inc, upper_inc;
     bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
     /* Parse the instants */
-    TInstant **instants = palloc(sizeof(TInstant *) * ninst);
-    for (int j = 0; j < ninst; j++)
+    TInstant **instants = tinstarr_from_wkb_state(s, ninst);
+    if (! instants)
     {
-      /* Parse the value and the timestamp to create the temporal instant */
-      Datum value = base_from_wkb_state(s);
-      TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make_free(value, s->temptype, t);
+      pfree_array((void **) sequences, i);
+      return NULL;
     }
     sequences[i] = tsequence_make_free(instants, ninst, lower_inc, upper_inc,
       s->interp, NORMALIZE);
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2803,6 +2915,8 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
   if (s->temptype == T_TRGEOMETRY)
   {
     gs = geo_from_wkb_state(s);
+    if (! gs)
+      return NULL;
     /* We change the temptype to T_TPose to read a temporal pose and construct
     * the temporal rigid geometry from the geometry and the temporal pose */
     temptype_orig = T_TRGEOMETRY;
@@ -2821,8 +2935,8 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
   {
     int32_t pcid_in = int32_from_wkb_state(s);
     int32_t xml_len = int32_from_wkb_state(s);
-    assert(xml_len >= 0);
-    wkb_parse_state_check(s, (size_t) xml_len);
+    if (! wkb_length_check(s, xml_len, 0))
+      return NULL;
     /* Only parse + register if we don't already have it cached. Asking
      * through the resolution that answers a miss is what makes the blob's own
      * schema reach the parse below: the reader is here precisely because the
@@ -2891,6 +3005,11 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 #if RGEO
   if (s->temptype == T_TPOSE && temptype_orig == T_TRGEOMETRY)
   {
+    if (! res)
+    {
+      pfree(gs);
+      return NULL;
+    }
     Temporal *result = geometry_tpose_to_trgeometry(gs, res);
     pfree(gs); pfree(res);
     return result;
@@ -2951,7 +3070,7 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
     meos_errno_reset();
 #endif /* MEOS */
     *span = span_from_wkb_state(&s);
-    if (meos_errno() != 0)
+    if (s.error || meos_errno() != 0)
     {
       pfree(span);
       return (Datum) 0;
