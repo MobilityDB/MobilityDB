@@ -320,6 +320,14 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01
 -- the minimum, are its breakpoints. One disk passes straight through another,
 -- meeting it at f = 0.2 and f = 0.8 of the segment
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-05]', tcbuffer '[Cbuffer(Point(5 0),2)@2001-01-01, Cbuffer(Point(5 0),2)@2001-01-05]'), 6);
+-- The same meeting at projected coordinates: the first centre jumps 330 km in
+-- 4 seconds and passes 64.9 m from the second, so discs of radius 10 km meet
+-- inside a segment whose ends stand 264 km and 26 km apart. The instants at
+-- which they meet are those at which the centres, read as temporal points,
+-- stand 20 km apart
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]'), 3);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]')::numeric, 6);
+SELECT tDwithin(tgeompoint '[Point(579857.891 6033318.651)@2025-01-01 16:35:22+01, Point(907012.682 6077040.908)@2025-01-01 16:35:26+01]', tgeompoint '[Point(861632.965 6071043.606)@2025-01-01 16:35:21+01, Point(861552.021 6071027.955)@2025-01-01 16:35:32+01]', 20000);
 -- A static circular buffer asks the same question as a segment that does not
 -- move, so the temporal distance against one carries the same turning point and
 -- agrees with the nearest approach distance of the pair

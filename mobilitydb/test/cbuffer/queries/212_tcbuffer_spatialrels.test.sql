@@ -296,6 +296,11 @@ SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-02]', tcbuffer '{Cbuf
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-02, Cbuffer(Point(2 2),0.5)@2001-01-03, Cbuffer(Point(1 1),0.5)@2001-01-05]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-04, Cbuffer(Point(2 2),0.5)@2001-01-06}', 10);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(2 2),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', 2);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 2),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]', 2);
+-- Two buffers apart at both ends of a segment and meeting only inside it, at
+-- projected coordinates: the first centre jumps 330 km in 4 seconds and passes
+-- 64.9 m from the second, so the discs of radius 10 km overlap mid-segment
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]');
 
 -- No shared time (active periods fall in the other's gap) is NULL for every
 -- box-short-circuited predicate, not a spurious value.

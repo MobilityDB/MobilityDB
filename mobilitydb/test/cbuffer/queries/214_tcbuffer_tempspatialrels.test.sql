@@ -83,6 +83,15 @@ SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),5)@2001-01-01, Cbuffer(Point(0 0),5
 -- contain (the boundaries coincide)
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]');
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-03]');
+-- Crossings inside a segment at projected coordinates: the first centre jumps
+-- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
+-- the answers are those of the centres at the radii read as a distance, which
+-- the temporal points beside them give
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
+SELECT tDwithin(tgeompoint '[Point(579857.891 6033318.651)@2025-01-01 16:35:22+01, Point(907012.682 6077040.908)@2025-01-01 16:35:26+01]', tgeompoint '[Point(861632.965 6071043.606)@2025-01-01 16:35:21+01, Point(861552.021 6071027.955)@2025-01-01 16:35:32+01]', 20100);
+SELECT tCovers(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),20000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),20000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),100)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),100)@2025-01-01 16:35:32+01]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),20000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),20000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),100)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),100)@2025-01-01 16:35:32+01]');
+SELECT tDwithin(tgeompoint '[Point(579857.891 6033318.651)@2025-01-01 16:35:22+01, Point(907012.682 6077040.908)@2025-01-01 16:35:26+01]', tgeompoint '[Point(861632.965 6071043.606)@2025-01-01 16:35:21+01, Point(861552.021 6071027.955)@2025-01-01 16:35:32+01]', 19900);
 
 -------------------------------------------------------------------------------
 -- tDisjoint

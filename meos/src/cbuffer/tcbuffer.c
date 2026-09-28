@@ -127,23 +127,91 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Compute the temporal distance between two circular buffers at time t
- * @param[in] dx0,dy0 Initial spatial offset between the buffer centres.
- * @param[in] vx,vy Relative velocities in the x and y directions.
- * @param[in] r0 Initial sum of the radii.
- * @param[in] vr Rate of change of the sum of the radii.
- * @param[in] t Time offset from the lower bound of the segment.
- * @return The temporal distance at time t, i.e., the Euclidean distance between
- * the centres minus the sum of the radii.
+ * @brief Return the fractions of a segment at which the distance between the
+ * centres of two circular buffer segments equals a length that varies linearly
+ * over the segment
+ * @details Over the fraction f in [0, 1] of the segment the centres stand apart
+ * by the vector (dx0 + dx f, dy0 + dy f) and the length reads
+ * L(f) = (1 - f) l0 + f l1. The fractions solve |c(f)| = L(f), which squares to
+ * the quadratic a f^2 + b f + c = 0 below. Squaring also admits the fractions
+ * at which |c(f)| = -L(f), which are the roots at which L is negative, so a
+ * root is kept by its position in [0, 1] and by the sign of L there. It is
+ * never kept by evaluating the distance at it again: at projected coordinates
+ * the rounding of that evaluation exceeds any fixed band, and reads a crossing
+ * the quadratic states exactly as a miss. The roots are computed as
+ * #tpointsegm_tdwithin_turnpt computes them, one by the quadratic formula and
+ * the other by Viète's, so that neither loses its digits to a cancellation.
+ * @param[in] sv1,ev1 Circular buffers defining the first segment
+ * @param[in] sv2,ev2 Circular buffers defining the second segment
+ * @param[in] l0,l1 Length at the start and at the end of the segment
+ * @param[out] roots Fractions found, in increasing order
+ * @return Number of fractions found, from 0 to 2
  */
-static inline double
-tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
-  double r0, double vr, double t)
+static int
+tcbuffersegm_length_roots(const Cbuffer *sv1, const Cbuffer *ev1,
+  const Cbuffer *sv2, const Cbuffer *ev2, double l0, double l1,
+  long double roots[2])
 {
-  double dx = dx0 + vx * t;
-  double dy = dy0 + vy * t;
-  double sum_r = r0 + vr * t;
-  return sqrt(dx * dx + dy * dy) - sum_r;
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  double dx = (ept1->x - spt1->x) - (ept2->x - spt2->x);
+  double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
+  double dl = l1 - l0;
+  /* The products are summed and the roots taken in extended precision, as
+   * #tpointsegm_tdwithin_turnpt takes them */
+  long double a = (long double) (dx * dx) + dy * dy - dl * dl;
+  long double b = (long double) (2 * dx0 * dx) + 2 * dy0 * dy - 2 * l0 * dl;
+  long double c = (long double) (dx0 * dx0) + dy0 * dy0 - l0 * l0;
+
+  long double cand[2];
+  int ncand = 0;
+  if (a == 0.0)
+  {
+    /* A distance changing at the rate of the length leaves a linear equation,
+     * and a gap that does not change at all leaves no isolated root */
+    if (b != 0.0)
+      cand[ncand++] = -c / b;
+  }
+  else
+  {
+    long double delta = b * b - 4 * a * c;
+    if (delta < 0.0)
+      return 0;
+    if (delta == 0.0)
+      cand[ncand++] = -b / (2 * a);
+    else
+    {
+      /* The root the quadratic formula would compute as a difference of close
+       * values is taken from the product of the roots, c / a */
+      long double sq = sqrtl(delta);
+      long double q = (b >= 0.0) ? -0.5 * (b + sq) : -0.5 * (b - sq);
+      cand[ncand++] = q / a;
+      cand[ncand++] = c / q;
+    }
+  }
+
+  int nroots = 0;
+  for (int i = 0; i < ncand; i++)
+  {
+    long double f = cand[i];
+    if (f < 0.0 || f > 1.0 || (1.0 - f) * l0 + f * l1 < 0.0)
+      continue;
+    roots[nroots++] = f;
+  }
+  if (nroots == 2)
+  {
+    if (roots[0] > roots[1])
+    {
+      long double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
+    }
+    if (roots[0] == roots[1])
+      nroots = 1;
+  }
+  return nroots;
 }
 
 /**
@@ -164,112 +232,38 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz *t2)
 {
   assert(t1); assert(t2); assert(lower < upper);
-  /* Extract the circular buffers and the distance */
-  Cbuffer *sv1 = DatumGetCbufferP(start1);
-  Cbuffer *ev1 = DatumGetCbufferP(end1);
-  Cbuffer *sv2 = DatumGetCbufferP(start2);
-  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
 
-  /* Extract the points */
-  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
-  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
-  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
-  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  /* The buffers are at the distance when their centres stand the sum of the
+   * radii and the distance apart */
+  long double roots[2];
+  int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
+    sv1->radius + sv2->radius + d, ev1->radius + ev2->radius + d, roots);
 
-  double duration = (double)(upper - lower);
-
-  /* Tolerance threshold for floating-point comparison */
-  if (duration <= MEOS_GEOM_TOLERANCE)
-  {
-    *t1 = *t2 = 0;
-    return 0;
-  }
-
-  /* Initial relative positions and combined radii */
-  double dx0 = spt1->x - spt2->x;
-  double dy0 = spt1->y - spt2->y;
-  double r0 = sv1->radius + sv2->radius;
-
-  /* Relative velocities */
-  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
-  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
-    duration;
-
-  /* Quadratic derivative coefficients of f(t) = (distance - d)^2 */
-  double a = vx * vx + vy * vy - vr * vr;
-  double b = 2*(dx0 * vx + dy0 * vy - (r0 + d) * vr);
-  double c = dx0 * dx0 + dy0 * dy0 - (r0 + d) * (r0+d);
-  double delta = b * b - 4 * a * c;
-
-  double roots[2];
-  int nroots = 0;
-
-  /* Linear case */
-  double d1;
-  if (delta >= -MEOS_GEOM_TOLERANCE)
-  {
-    double t_cand1, t_cand2;
-    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
-    {
-      t_cand1 = -c / b;
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-    }
-    /* Quadratic case */
-    else
-    {
-      double sqrt_delta = sqrt(fmax(0.0, delta));
-      t_cand1 = (-b - sqrt_delta) / (2*a);
-      t_cand2 = (-b + sqrt_delta) / (2*a);
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
-          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
-      }
-    }
-  }
-  /* Filter to only strictly internal timestamps: t ∈ (lower, upper).
-   * Boundary roots (t == lower or t == upper) are not "crossings" the
-   * caller needs to splice; they are handled by the surrounding sequence
-   * construction logic. Returning them causes duplicate-timestamp errors. */
-  double valid[2];
-  int nvalid = 0;
+  /* Keep the strictly internal instants: those at the bounds are no crossings
+   * the caller splices, being handled by the surrounding sequence construction,
+   * and returning them duplicates a timestamp */
+  double duration = (double) (upper - lower);
+  TimestampTz ts[2];
+  int nts = 0;
   for (int i = 0; i < nroots; i++)
   {
-    TimestampTz t = lower + (TimestampTz) roots[i];
-    if (t > lower && t < upper)
-    {
-      if (nvalid == 0 || fabs(roots[i] - valid[nvalid - 1]) > MEOS_GEOM_TOLERANCE)
-        valid[nvalid++] = roots[i];
-    }
+    TimestampTz t = lower + (TimestampTz) (roots[i] * duration);
+    if (t > lower && t < upper && (nts == 0 || t != ts[nts - 1]))
+      ts[nts++] = t;
   }
-  if (nvalid == 0)
+  if (nts == 0)
   {
     *t1 = *t2 = (TimestampTz) 0;
     return 0;
   }
-  else if (nvalid == 1)
-  {
-    *t1 = *t2 = lower + (TimestampTz) valid[0];
-    return 1;
-  }
-  else
-  {
-    *t1 = lower + (TimestampTz) valid[0];
-    *t2 = lower + (TimestampTz) valid[1];
-    return 2;
-  }
+  *t1 = ts[0];
+  *t2 = ts[nts - 1];
+  return nts;
 }
 
 /**
@@ -281,7 +275,8 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * segments are within @p dist, so the temporal `tDwithin` boolean is true on a
  * continuous interval rather than only at the crossing instant. It is derived
  * from the crossings together with the within status at the two segment
- * endpoints.
+ * endpoints, which is read by the predicate the instants themselves are read
+ * with.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] dist Distance
@@ -295,74 +290,18 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   TimestampTz *t1, TimestampTz *t2)
 {
   assert(t1); assert(t2); assert(lower < upper);
-  Cbuffer *sv1 = DatumGetCbufferP(start1);
-  Cbuffer *ev1 = DatumGetCbufferP(end1);
-  Cbuffer *sv2 = DatumGetCbufferP(start2);
-  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
-  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
-  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
-  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
-  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
-  double duration = (double) (upper - lower);
-  if (duration <= MEOS_GEOM_TOLERANCE)
-  {
-    *t1 = *t2 = 0;
-    return 0;
-  }
-  double dx0 = spt1->x - spt2->x;
-  double dy0 = spt1->y - spt2->y;
-  double r0 = sv1->radius + sv2->radius;
-  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
-  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
-    duration;
-  double a = vx * vx + vy * vy - vr * vr;
-  double b = 2 * (dx0 * vx + dy0 * vy - (r0 + d) * vr);
-  double c = dx0 * dx0 + dy0 * dy0 - (r0 + d) * (r0 + d);
-  double delta = b * b - 4 * a * c;
-  double roots[2];
-  int nroots = 0;
-  if (delta >= -MEOS_GEOM_TOLERANCE)
-  {
-    double t_cand1, d1;
-    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
-    {
-      t_cand1 = -c / b;
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-    }
-    else
-    {
-      double sqrt_delta = sqrt(fmax(0.0, delta));
-      t_cand1 = (-b - sqrt_delta) / (2 * a);
-      double t_cand2 = (-b + sqrt_delta) / (2 * a);
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
-          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
-      }
-    }
-  }
-  if (nroots == 2 && roots[0] > roots[1])
-  {
-    double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
-  }
+  long double roots[2];
+  int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
+    sv1->radius + sv2->radius + d, ev1->radius + ev2->radius + d, roots);
   /* Within status at the two segment endpoints */
-  bool win_lower = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
-    0.0) <= d + MEOS_GEOM_TOLERANCE);
-  bool win_upper = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
-    duration) <= d + MEOS_GEOM_TOLERANCE);
-  double tstart, tend;
+  bool win_lower = cbuffer_dwithin(sv1, sv2, d);
+  bool win_upper = cbuffer_dwithin(ev1, ev2, d);
+  long double fstart, fend;
   if (nroots == 0)
   {
     /* No crossing: within throughout the segment, or never */
@@ -371,39 +310,34 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }
-    tstart = 0.0; tend = duration;
+    fstart = 0.0; fend = 1.0;
   }
   else if (nroots == 1)
   {
     /* One crossing: within on the side whose endpoint is within */
     if (win_lower && ! win_upper)
     {
-      tstart = 0.0; tend = roots[0];
+      fstart = 0.0; fend = roots[0];
     }
     else if (! win_lower && win_upper)
     {
-      tstart = roots[0]; tend = duration;
+      fstart = roots[0]; fend = 1.0;
     }
     else
     {
       /* Tangent touch: within only at the crossing instant */
-      *t1 = *t2 = lower + (TimestampTz) roots[0];
-      return 1;
+      fstart = fend = roots[0];
     }
   }
   else
   {
     /* Two crossings: within between them */
-    tstart = roots[0]; tend = roots[1];
+    fstart = roots[0]; fend = roots[1];
   }
-  if (tend - tstart < MEOS_GEOM_TOLERANCE)
-  {
-    *t1 = *t2 = lower + (TimestampTz) tstart;
-    return 1;
-  }
-  *t1 = lower + (TimestampTz) tstart;
-  *t2 = lower + (TimestampTz) tend;
-  return 2;
+  double duration = (double) (upper - lower);
+  *t1 = lower + (TimestampTz) (fstart * duration);
+  *t2 = lower + (TimestampTz) (fend * duration);
+  return (*t1 == *t2) ? 1 : 2;
 }
 
 /**
@@ -414,12 +348,15 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
  * (P2, R2) when dist(P1, P2) + R2 <= R1, that is when the clearance
  * g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the
  * distance of the centres minus the radius DIFFERENCE, so this mirrors
- * #tcbuffersegm_tdwithin_turnpt with the radius sum replaced by the difference
- * and the distance set to zero. It returns the sub-interval [t1, t2] of
- * [lower, upper] during which the relation holds, so the temporal contains and
- * covers Boolean is true on a continuous interval rather than only at the
- * clearance minimum. With @p strict true an isolated tangency (g = 0 at a
- * single instant) does not count, matching the strict interior of contains.
+ * #tcbuffersegm_tdwithin_turnpt with the difference of the radii in the place
+ * of their sum and a zero distance. The difference may be negative, and the
+ * roots at which it is are those the squaring introduces, which
+ * #tcbuffersegm_length_roots discards by that sign. It returns the
+ * sub-interval [t1, t2] of [lower, upper] during which the relation holds, so
+ * the temporal contains and covers Boolean is true on a continuous interval
+ * rather than only at the clearance minimum. With @p strict true an isolated
+ * tangency (g = 0 at a single instant) does not count, matching the strict
+ * interior of contains.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] strict Passed as a float, non-zero for contains, zero for covers
@@ -438,77 +375,21 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
   const Cbuffer *ev2 = DatumGetCbufferP(end2);
   bool is_strict = (DatumGetFloat8(strict) != 0);
-  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
-  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
-  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
-  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
-  double duration = (double) (upper - lower);
-  if (duration <= MEOS_GEOM_TOLERANCE)
-  {
-    *t1 = *t2 = 0;
-    return 0;
-  }
-  double dx0 = spt1->x - spt2->x;
-  double dy0 = spt1->y - spt2->y;
   /* Radius DIFFERENCE R1 - R2 (contains threshold), not the sum */
-  double r0 = sv1->radius - sv2->radius;
-  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
-  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (ev1->radius - sv1->radius - (ev2->radius - sv2->radius)) /
-    duration;
-  /* Clearance g(t) = dist(centres) - (r0 + vr t); crossings solve g = 0, i.e.
-   * dist^2 = (r0 + vr t)^2, valid only where r0 + vr t >= 0 */
-  double a = vx * vx + vy * vy - vr * vr;
-  double b = 2 * (dx0 * vx + dy0 * vy - r0 * vr);
-  double c = dx0 * dx0 + dy0 * dy0 - r0 * r0;
-  double delta = b * b - 4 * a * c;
-  double roots[2];
-  int nroots = 0;
-  if (delta >= -MEOS_GEOM_TOLERANCE)
-  {
-    double t_cand1, g1;
-    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
-    {
-      t_cand1 = -c / b;
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-    }
-    else
-    {
-      double sqrt_delta = sqrt(fmax(0.0, delta));
-      t_cand1 = (-b - sqrt_delta) / (2 * a);
-      double t_cand2 = (-b + sqrt_delta) / (2 * a);
-      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
-      }
-      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
-          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
-      {
-        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
-      }
-    }
-  }
-  if (nroots == 2 && roots[0] > roots[1])
-  {
-    double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
-  }
-  /* Contains/covers status at the two segment endpoints: covers is g <= 0,
-   * strict contains is g < 0, so identical or internally tangent disks
-   * (g == 0 throughout) covers but never strictly contains */
-  double g_lower = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, 0.0);
-  double g_upper = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
-    duration);
-  bool in_lower = is_strict ? (g_lower < - MEOS_GEOM_TOLERANCE) :
-    (g_lower <= MEOS_GEOM_TOLERANCE);
-  bool in_upper = is_strict ? (g_upper < - MEOS_GEOM_TOLERANCE) :
-    (g_upper <= MEOS_GEOM_TOLERANCE);
-  double tstart, tend;
+  long double roots[2];
+  int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
+    sv1->radius - sv2->radius, ev1->radius - ev2->radius, roots);
+  /* Contains/covers status at the two segment endpoints, read as
+   * #cbuffer_covers reads it: covers is dist + R2 <= R1 and strict contains is
+   * dist + R2 < R1, so identical or internally tangent disks (g == 0
+   * throughout) cover but never strictly contain */
+  double g_lower = hypot(sv2->x - sv1->x, sv2->y - sv1->y) + sv2->radius;
+  double g_upper = hypot(ev2->x - ev1->x, ev2->y - ev1->y) + ev2->radius;
+  bool in_lower = is_strict ? (g_lower < sv1->radius) :
+    (g_lower <= sv1->radius);
+  bool in_upper = is_strict ? (g_upper < ev1->radius) :
+    (g_upper <= ev1->radius);
+  long double fstart, fend;
   if (nroots == 0)
   {
     if (! in_lower)
@@ -516,17 +397,17 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }
-    tstart = 0.0; tend = duration;
+    fstart = 0.0; fend = 1.0;
   }
   else if (nroots == 1)
   {
     if (in_lower && ! in_upper)
     {
-      tstart = 0.0; tend = roots[0];
+      fstart = 0.0; fend = roots[0];
     }
     else if (! in_lower && in_upper)
     {
-      tstart = roots[0]; tend = duration;
+      fstart = roots[0]; fend = 1.0;
     }
     else
     {
@@ -537,22 +418,17 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
         *t1 = *t2 = (TimestampTz) 0;
         return 0;
       }
-      *t1 = *t2 = lower + (TimestampTz) roots[0];
-      return 1;
+      fstart = fend = roots[0];
     }
   }
   else
   {
-    tstart = roots[0]; tend = roots[1];
+    fstart = roots[0]; fend = roots[1];
   }
-  if (tend - tstart < MEOS_GEOM_TOLERANCE)
-  {
-    *t1 = *t2 = lower + (TimestampTz) tstart;
-    return 1;
-  }
-  *t1 = lower + (TimestampTz) tstart;
-  *t2 = lower + (TimestampTz) tend;
-  return 2;
+  double duration = (double) (upper - lower);
+  *t1 = lower + (TimestampTz) (fstart * duration);
+  *t2 = lower + (TimestampTz) (fend * duration);
+  return (*t1 == *t2) ? 1 : 2;
 }
 
 /**
@@ -594,7 +470,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   /* Centres that keep their separation leave an affine gap, whose extrema are
    * the endpoints the caller already reads */
   double s = dx * dx + dy * dy;
-  if (s <= MEOS_GEOM_TOLERANCE)
+  if (s == 0.0)
     return 0;
   double q = dx * dx0 + dy * dy0;
   double e = dx0 * dx0 + dy0 * dy0;
@@ -645,7 +521,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   for (int i = 0; i < ncand; i++)
   {
     double f = cand[i];
-    if (f <= MEOS_EPSILON || f >= 1.0 - MEOS_EPSILON)
+    if (f <= 0.0 || f >= 1.0)
       continue;
     double g = hypot(dx0 + dx * f, dy0 + dy * f) - (r0 + dr * f);
     if (g < best)
