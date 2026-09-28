@@ -37,7 +37,7 @@
  * the AIS antenna offsets (A, B, C, D) and the pose path is the projected
  * antenna position plus the heading.
  *
- * The program then computes the temporal distance `tdistance_trgeo_trgeo`
+ * The program then computes the temporal distance `tdistance_trgeometry_trgeometry`
  * between every pair of temporally-overlapping trips and prints, for each
  * pair, the moment of closest approach (timestamp + distance in metres).
  *
@@ -91,7 +91,7 @@
 #include <meos_geo.h>
 #include <meos_rgeo.h>
 
-#define CSV_PATH "/home/esteban/src/MobilityDB/meos/examples/data/aisdk-2026-02-26.csv"
+#define CSV_PATH "data/aisdk-2026-02-26.csv"
 #define MAX_LINE 1024
 #define MAX_TRIPS_HARD 64
 #define MAX_INSTANTS_HARD 5000
@@ -125,7 +125,7 @@ parse_ais_timestamp(const char *s, TimestampTz *out)
   char iso[40];
   snprintf(iso, sizeof(iso), "%04d-%02d-%02d %02d:%02d:%02d+00",
     yyyy, mm, dd, hh, mi, ss);
-  *out = pg_timestamptz_in(iso, -1);
+  *out = timestamptz_in(iso, -1);
   return 1;
 }
 
@@ -290,7 +290,7 @@ main(int argc, char **argv)
     if (! refgeom) continue;
     Pose *pose = make_pose_from_ais(lon, lat, heading_deg);
     if (! pose) { free(refgeom); continue; }
-    TInstant *inst = trgeoinst_make(refgeom, pose, t);
+    TInstant *inst = trgeometryinst_make(refgeom, pose, t);
     free(refgeom); free(pose);
     if (! inst) continue;
 
@@ -352,7 +352,7 @@ main(int argc, char **argv)
 
     struct timespec t0, t1;
     clock_gettime(CLOCK_MONOTONIC, &t0);
-    Temporal *d = tdistance_trgeo_trgeo(trips[i].trgeo, trips[j].trgeo);
+    Temporal *d = tdistance_trgeometry_trgeometry(trips[i].trgeo, trips[j].trgeo);
     clock_gettime(CLOCK_MONOTONIC, &t1);
     double secs = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1e9;
 
@@ -363,7 +363,7 @@ main(int argc, char **argv)
       Temporal *dat_min = temporal_at_min(d);
       if (dat_min) {
         TimestampTz tmin = temporal_start_timestamptz(dat_min);
-        tmin_str = pg_timestamptz_out(tmin);
+        tmin_str = timestamptz_out(tmin);
         free(dat_min);
       }
     }
