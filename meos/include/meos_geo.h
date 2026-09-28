@@ -699,7 +699,15 @@ extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 /* Transformation functions */
 
 extern Temporal *tgeo_affine(const Temporal *temp, const AFFINE *a);
+extern Temporal *tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e, double xoff, double yoff);
+extern Temporal *tgeo_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *tgeo_rotate_x(const Temporal *temp, double angle);
+extern Temporal *tgeo_rotate_y(const Temporal *temp, double angle);
+extern Temporal *tgeo_rotate_z(const Temporal *temp, double angle);
 extern Temporal *tgeo_scale(const Temporal *temp, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
+extern Temporal *tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor, double zfactor);
+extern Temporal *tgeo_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
+extern Temporal *tgeo_transscale(const Temporal *temp, double deltax, double deltay, double xfactor, double yfactor);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 
 /* SRID functions */

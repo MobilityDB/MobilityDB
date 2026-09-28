@@ -333,6 +333,149 @@ Tgeo_scale(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*
+ * The wrappers below take the coefficients of an affine transformation as
+ * float8 arguments and pass them to the MEOS function of the same name, as
+ * #Tgeo_affine passes its twelve to tgeo_affine
+ */
+
+PGDLLEXPORT Datum Tgeo_scale_xyz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_scale_xyz);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo scaled by the given factors along the x, y,
+ * and z axes
+ * @sqlfn scale()
+ */
+Datum
+Tgeo_scale_xyz(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double xfactor = PG_GETARG_FLOAT8(1);
+  double yfactor = PG_GETARG_FLOAT8(2);
+  double zfactor = PG_GETARG_FLOAT8(3);
+  Temporal *result = tgeo_scale_xyz(temp, xfactor, yfactor, zfactor);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_affine_2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_affine_2d);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return the 2D affine transformation of a temporal geo
+ * @sqlfn affine()
+ */
+Datum
+Tgeo_affine_2d(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_affine_2d(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
+    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_translate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_translate);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo translated by the given offsets
+ * @sqlfn translate()
+ */
+Datum
+Tgeo_translate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_translate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_rotate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_rotate);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around a point
+ * @sqlfn rotate()
+ */
+Datum
+Tgeo_rotate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_rotate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_rotate_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_rotate_x);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the x axis
+ * @sqlfn rotateX()
+ */
+Datum
+Tgeo_rotate_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_rotate_x(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_rotate_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_rotate_y);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the y axis
+ * @sqlfn rotateY()
+ */
+Datum
+Tgeo_rotate_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_rotate_y(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_rotate_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_rotate_z);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around the z axis
+ * @sqlfn rotateZ(), rotate()
+ */
+Datum
+Tgeo_rotate_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_rotate_z(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_transscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_transscale);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo translated and then scaled
+ * @sqlfn transscale()
+ */
+Datum
+Tgeo_transscale(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_transscale(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Mapbox Vector Tile functions for temporal points
  *****************************************************************************/

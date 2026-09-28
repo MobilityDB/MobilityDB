@@ -94,43 +94,43 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION affine(tgeompoint,float8,float8,float8,float8,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1, $2, $3, 0, $4, $5, 0, 0, 0, 1, $6, $7, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_affine_2d'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotate(tgeompoint,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1,  cos($2), -sin($2), 0,  sin($2), cos($2), 0, 0, 0, 1, 0, 0, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate_z'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotate(tgeompoint,float8,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1,  cos($2), -sin($2), 0,  sin($2),  cos($2), 0, 0, 0, 1, $3 - cos($2) * $3 + sin($2) * $4, $4 - sin($2) * $3 - cos($2) * $4, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotate(tgeompoint,float8,geometry)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1,  cos($2), -sin($2), 0, sin($2), cos($2), 0, 0, 0, 1, @extschema@.ST_X($3) - cos($2) * @extschema@.ST_X($3) + sin($2) * @extschema@.ST_Y($3), @extschema@.ST_Y($3) - sin($2) * @extschema@.ST_X($3) - cos($2) * @extschema@.ST_Y($3), 0)'
+AS 'SELECT @extschema@.rotate($1, $2, @extschema@.ST_X($3), @extschema@.ST_Y($3))'
 LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotateZ(tgeompoint,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.rotate($1, $2)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate_z'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotateX(tgeompoint,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1, 1, 0, 0, 0, cos($2), -sin($2), 0, sin($2), cos($2), 0, 0, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate_x'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotateY(tgeompoint,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1,  cos($2), 0, sin($2),  0, 1, 0,  -sin($2), 0, cos($2), 0,  0, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate_y'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION translate(tgeompoint,float8,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1, 1, 0, 0, 0, 1, 0, 0, 0, 1, $2, $3, $4)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_translate'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION translate(tgeompoint,float8,float8)
 RETURNS tgeompoint
@@ -139,8 +139,8 @@ LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION transscale(tgeompoint,float8,float8,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.affine($1, $4, 0, 0, 0, $5, 0, 0, 0, 1, $2 * $4, $3 * $5, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_transscale'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,geometry)
 RETURNS tgeompoint
@@ -154,9 +154,8 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,float8,float8,float8)
 RETURNS tgeompoint
---AS 'SELECT affine($1, $2, 0, 0, 0, $3, 0, 0, 0, $4, 0, 0, 0)'
-AS 'SELECT @extschema@.scale($1, @extschema@.ST_MakePoint($2, $3, $4))'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_scale_xyz'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,float8,float8)
 RETURNS tgeompoint

@@ -3653,6 +3653,42 @@ int main(void)
   assert(strcmp(fwd_txt, "LINESTRING(1 1,2 2,3 5)") == 0);
   free(fwd); free(rev); free(fwd_txt); free(rev_txt);
 
+  /* The affine family answers through its own functions, each the
+   * transformation its SQL function names. A rotation by pi/2 leaves the
+   * residue of cos(pi/2) in the coordinates, so every answer is read rounded
+   * to 6 decimal digits */
+  Temporal *trip = tgeompoint_in(
+    "[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]");
+  assert(trip != NULL);
+  struct { const char *name; Temporal *res; const char *expected; } aff[] = {
+    {"tgeo_translate", tgeo_translate(trip, 10, 20, 0),
+     "[POINT(11 21)@2001-01-01 00:00:00+00, POINT(12 22)@2001-01-02 00:00:00+00]"},
+    {"tgeo_rotate_z", tgeo_rotate_z(trip, M_PI_2),
+     "[POINT(-1 1)@2001-01-01 00:00:00+00, POINT(-2 2)@2001-01-02 00:00:00+00]"},
+    {"tgeo_rotate", tgeo_rotate(trip, M_PI_2, 1, 1),
+     "[POINT(1 1)@2001-01-01 00:00:00+00, POINT(0 2)@2001-01-02 00:00:00+00]"},
+    {"tgeo_rotate_x", tgeo_rotate_x(trip, M_PI_2),
+     "[POINT(1 0)@2001-01-01 00:00:00+00, POINT(2 0)@2001-01-02 00:00:00+00]"},
+    {"tgeo_rotate_y", tgeo_rotate_y(trip, M_PI_2),
+     "[POINT(0 1)@2001-01-01 00:00:00+00, POINT(0 2)@2001-01-02 00:00:00+00]"},
+    {"tgeo_scale_xyz", tgeo_scale_xyz(trip, 2, 3, 1),
+     "[POINT(2 3)@2001-01-01 00:00:00+00, POINT(4 6)@2001-01-02 00:00:00+00]"},
+    {"tgeo_transscale", tgeo_transscale(trip, 1, 1, 2, 3),
+     "[POINT(4 6)@2001-01-01 00:00:00+00, POINT(6 9)@2001-01-02 00:00:00+00]"},
+    {"tgeo_affine_2d", tgeo_affine_2d(trip, 1, 0, 0, 1, 5, 5),
+     "[POINT(6 6)@2001-01-01 00:00:00+00, POINT(7 7)@2001-01-02 00:00:00+00]"},
+  };
+  for (size_t k = 0; k < sizeof(aff) / sizeof(aff[0]); k++)
+  {
+    assert(aff[k].res != NULL);
+    Temporal *rounded = temporal_round(aff[k].res, 6);
+    char *txt = tspatial_as_text(rounded, 6);
+    printf("%s: %s\n", aff[k].name, txt);
+    assert(strcmp(txt, aff[k].expected) == 0);
+    free(txt); free(rounded); free(aff[k].res);
+  }
+  free(trip);
+
   /* Finalize MEOS */
   meos_finalize();
 
