@@ -223,6 +223,13 @@ SELECT tIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, 
 -- Coverage
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2001-01-02');
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(2 1),0.5)@2001-01-01, Cbuffer(Point(1 2),0.5)@2001-01-02]');
+-- Two moving discs with changing radii, apart at both ends of the segment and
+-- meeting in its middle, where their centres coincide
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 1),3)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-03]');
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(-2 1),3)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-03]');
+-- A moving disc touching a stationary one at a single instant
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
 
 /* Errors */
 SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');

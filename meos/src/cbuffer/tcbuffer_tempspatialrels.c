@@ -1558,7 +1558,13 @@ tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 Temporal *
 tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_disjoint);
+  /* Disjoint is the negation of intersects, as #tinterrel_tgeo_geo reads it */
+  Temporal *inter = tintersects_tcbuffer_tcbuffer(temp1, temp2);
+  if (! inter)
+    return NULL;
+  Temporal *result = tnot_tbool(inter);
+  pfree(inter);
+  return result;
 }
 
 /*****************************************************************************
@@ -1631,7 +1637,11 @@ tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 Temporal *
 tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_intersects);
+  /* Two disks intersect when the distance between them is zero, as
+   * #cbuffer_intersects states it, so the temporal intersects is the temporal
+   * within distance zero, whose segment function finds where they meet
+   * inside a segment, as #tinterrel_tgeo_geo reads it */
+  return tdwithin_tcbuffer_tcbuffer(temp1, temp2, 0.0);
 }
 
 /*****************************************************************************
