@@ -177,7 +177,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the time frame a temporal sequence set as a timestamptz span set. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >Consecutive sequences may meet at an instant, as in <code>{[a, b), [b, c]}</code> when the value jumps at <code>b</code>, so their periods are normalized into a single span </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ss</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence set @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_gabf3a73de5091027007131e24872b627a.html#gabf3a73de5091027007131e24872b627a" title="Return the time on which a temporal value is defined as a span set @sqlfn getTime()">Temporal_time()</a> </td></tr>
   </table>
