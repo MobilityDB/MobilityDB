@@ -33,6 +33,7 @@
 
 SELECT bins(intspan '[1, 10]', 2) LIMIT 3;
 SELECT bins(intspan '[1, 10]', 2, 1) LIMIT 3;
+SELECT bins(intspan '[15, 25]', 2);
 
 SELECT bins(bigintspan '[1, 10]', 2) LIMIT 3;
 SELECT bins(bigintspan '[1, 10]', 2, 1) LIMIT 3;

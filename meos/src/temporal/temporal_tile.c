@@ -391,11 +391,12 @@ span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
 {
   assert(s); assert(start_bin); assert(end_bin);
 
-  Datum start_value = s->lower;
-  /* We need to add size to obtain the end value of the last bin */
-  Datum end_value = datum_add(s->upper, size, s->basetype);
-  *start_bin = datum_bin(start_value, size, origin, s->basetype);
-  *end_bin = datum_bin(end_value, size, origin, s->basetype);
+  *start_bin = datum_bin(s->lower, size, origin, s->basetype);
+  /* The last bin is the one holding the greatest value of the span: the bin
+   * starting at an exclusive upper bound holds no value of the span */
+  *end_bin = datum_bin(s->upper, size, origin, s->basetype);
+  if (s->upper_inc || ! datum_eq(*end_bin, s->upper, s->basetype))
+    *end_bin = datum_add(*end_bin, size, s->basetype);
   switch (s->basetype)
   {
     case T_INT4:
