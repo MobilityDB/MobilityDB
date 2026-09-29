@@ -1386,4 +1386,56 @@ posechain_to_stbox(const PoseChain *pc)
   return stbox_copy(&box);
 }
 
+/*****************************************************************************
+ * Rigid motion functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a pose chain moved by the rigid motion a pose states
+ * @details The first link is expressed in the outer frame of the chain, so the
+ * motion carries it as #pose_motion carries a pose, and the later links, each
+ * expressed in the frame of the link before it, keep their values. A frame
+ * that takes a two-dimensional chain out of its plane reads every later link
+ * in three dimensions, as the identity motion reads it
+ * @param[in] pc Pose chain
+ * @param[in] frame Pose stating the motion
+ * @pre The two share their SRID and neither is geodetic
+ */
+PoseChain *
+posechain_motion(const PoseChain *pc, const Pose *frame)
+{
+  assert(pc); assert(frame);
+  int count;
+  Pose **poses = posechain_poses(pc, &count);
+  Pose *moved = pose_motion(poses[0], frame);
+  pfree(poses[0]);
+  poses[0] = moved;
+  if (MEOS_FLAGS_GET_Z(frame->flags) && ! MEOS_FLAGS_GET_Z(pc->flags))
+  {
+    Pose *identity = pose_make_3d(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, false,
+      posechain_srid(pc));
+    for (int i = 1; i < count; i++)
+    {
+      Pose *lifted = pose_motion(poses[i], identity);
+      pfree(poses[i]);
+      poses[i] = lifted;
+    }
+    pfree(identity);
+  }
+  PoseChain *result = posechain_make((const Pose **) poses, count);
+  pfree_array((void **) poses, count);
+  return result;
+}
+
+/**
+ * @brief Datum-typed wrapper of the rigid motion of a pose chain, used by the
+ * temporal lifting infrastructure
+ */
+Datum
+datum_posechain_motion(Datum pc, Datum frame)
+{
+  return PointerGetDatum(posechain_motion(DatumGetPoseChainP(pc),
+    DatumGetPoseP(frame)));
+}
+
 /*****************************************************************************/

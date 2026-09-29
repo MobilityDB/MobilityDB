@@ -102,6 +102,9 @@ extern Datum datum_cbuffer_round(Datum buffer, Datum size);
 
 /* Transformation functions */
 
+extern Cbuffer *cbuffer_motion(const Cbuffer *cb, const double *frame);
+extern Datum datum_cbuffer_motion(Datum cbuffer, Datum frame);
+
 extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj);
 
 /* Spatial reference system functions */

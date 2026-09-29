@@ -57,6 +57,10 @@ extern int tposesegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
 
+/* Rigid motion functions */
+
+extern Temporal *tpose_motion(const Temporal *temp, const Pose *frame);
+
 /*****************************************************************************/
 
 #endif /* __TPOSE_H__ */

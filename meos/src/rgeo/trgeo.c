@@ -50,9 +50,11 @@
 #include "temporal/spanset.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
+#include "pose/tpose.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_parser.h"
 #include "rgeo/trgeo_utils.h"
@@ -1148,6 +1150,131 @@ trgeometry_round(const Temporal *temp, int maxdd)
   Temporal *result = geometry_tpose_to_trgeometry(res_geo, res_tpose);
   pfree(tpose); pfree(res_geo); pfree(res_tpose);
   return result;
+}
+
+/**
+ * @brief Return a temporal rigid geometry moved by the rigid motion a pose
+ * states, which the function frees
+ * @details The value is split into its pose and its reference geometry and
+ * rebuilt from them, as #trgeometry_round splits and rebuilds it. The motion
+ * moves the pose as #tpose_motion moves a temporal pose, and a pose it takes
+ * out of the plane takes the reference geometry with it, read in the plane
+ * z = 0, since a rigid geometry states its geometry and its pose in one
+ * dimension
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] frame Pose stating the motion
+ */
+static Temporal *
+trgeometry_motion_free(const Temporal *temp, Pose *frame)
+{
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res_tpose = tpose_motion(tpose, frame);
+  const GSERIALIZED *gs = trgeo_geom_p(temp);
+  GSERIALIZED *res_geo;
+  if (MEOS_FLAGS_GET_Z(res_tpose->flags) && ! FLAGS_GET_Z(gs->gflags))
+  {
+    LWGEOM *geom = lwgeom_from_gserialized(gs);
+    LWGEOM *geom3d = lwgeom_force_3dz(geom, 0.0);
+    res_geo = geo_serialize(geom3d);
+    lwgeom_free(geom); lwgeom_free(geom3d);
+  }
+  else
+    res_geo = geo_copy(gs);
+  Temporal *result = geometry_tpose_to_trgeometry(res_geo, res_tpose);
+  pfree(tpose); pfree(res_tpose); pfree(res_geo); pfree(frame);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry translated by offsets, as
+ * #tpose_translate translates a temporal pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @csqlfn #Trgeometry_translate()
+ */
+Temporal *
+trgeometry_translate(const Temporal *temp, double deltax, double deltay,
+  double deltaz)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return trgeometry_motion_free(temp, pose_motion_translate(deltax, deltay,
+    deltaz, tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the
+ * vertical through a point, as #tpose_rotate rotates a temporal pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] angle Angle in radians
+ * @param[in] x0,y0 Coordinates of the centre of the rotation
+ * @csqlfn #Trgeometry_rotate()
+ */
+Temporal *
+trgeometry_rotate(const Temporal *temp, double angle, double x0, double y0)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return trgeometry_motion_free(temp, pose_motion_rotate(angle, x0, y0,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the
+ * x axis, as #tpose_rotate_x rotates a temporal pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] angle Angle in radians
+ * @csqlfn #Trgeometry_rotate_x()
+ */
+Temporal *
+trgeometry_rotate_x(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return trgeometry_motion_free(temp, pose_motion_rotate_x(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the
+ * y axis, as #tpose_rotate_y rotates a temporal pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] angle Angle in radians
+ * @csqlfn #Trgeometry_rotate_y()
+ */
+Temporal *
+trgeometry_rotate_y(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return trgeometry_motion_free(temp, pose_motion_rotate_y(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the
+ * z axis, as #tpose_rotate_z rotates a temporal pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] angle Angle in radians
+ * @csqlfn #Trgeometry_rotate_z()
+ */
+Temporal *
+trgeometry_rotate_z(const Temporal *temp, double angle)
+{
+  return trgeometry_rotate(temp, angle, 0.0, 0.0);
 }
 
 /*****************************************************************************/

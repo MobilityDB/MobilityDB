@@ -118,6 +118,15 @@ extern Datum datum_pose_inverse(Datum pose);
 
 /* Transformation functions */
 
+extern Pose *pose_motion(const Pose *pose, const Pose *frame);
+extern Datum datum_pose_motion(Datum pose, Datum frame);
+extern Pose *pose_motion_translate(double deltax, double deltay,
+  double deltaz, int32_t srid);
+extern Pose *pose_motion_rotate(double angle, double x0, double y0,
+  int32_t srid);
+extern Pose *pose_motion_rotate_x(double angle, int32_t srid);
+extern Pose *pose_motion_rotate_y(double angle, int32_t srid);
+
 extern Datum datum_pose_round(Datum pose, Datum size);
 extern void pose_quaternion_mul(double aw, double ax, double ay, double az,
   double bw, double bx, double by, double bz,

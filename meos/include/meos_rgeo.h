@@ -157,7 +157,12 @@ extern Temporal *trgeometry_delete_tstzspanset(const Temporal *temp, const SpanS
 extern Temporal *trgeometry_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *trgeometry_merge_array(Temporal **temparr, int count);
 extern Temporal *trgeometry_round(const Temporal *temp, int maxdd);
+extern Temporal *trgeometry_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *trgeometry_rotate_x(const Temporal *temp, double angle);
+extern Temporal *trgeometry_rotate_y(const Temporal *temp, double angle);
+extern Temporal *trgeometry_rotate_z(const Temporal *temp, double angle);
 extern Temporal *trgeometry_set_interp(const Temporal *temp, interpType interp);
+extern Temporal *trgeometry_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 extern TInstant *trgeometry_as_tinstant(const Temporal *temp);
 extern TSequence *trgeometry_as_tsequence(const Temporal *temp, const char *interp_str);
 extern TSequenceSet *trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str);

@@ -35,11 +35,13 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
+#include "temporal/lifting.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -1434,6 +1436,89 @@ tcbuffer_expand(const Temporal *temp, double dist)
     default: /* TSEQUENCESET */
       return (Temporal *) tcbufferseqset_expand((TSequenceSet *) temp, dist);
   }
+}
+
+/**
+ * @brief Return a temporal circular buffer moved by a planar rigid motion
+ * @details The motion is lifted as #tpose_compose_pose lifts a composition
+ * with a fixed frame. It moves every centre and keeps every radius, so a
+ * linear segment of circular buffers moves to the segment between the moved
+ * ones and the result keeps the interpolation of the input
+ * @param[in] temp Temporal circular buffer
+ * @param[in] frame Offsets and angle of the motion, as #cbuffer_motion reads
+ * them
+ */
+static Temporal *
+tcbuffer_motion(const Temporal *temp, const double *frame)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_motion;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TCBUFFER;
+  lfinfo.argtype[1] = T_TCBUFFER;
+  lfinfo.restype = T_TCBUFFER;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal_base(temp, PointerGetDatum(frame), &lfinfo);
+}
+
+/**
+ * @ingroup meos_cbuffer_transf
+ * @brief Return a temporal circular buffer translated by offsets, as
+ * #tgeo_translate translates a temporal geo
+ * @details A circular buffer is planar, so the translation takes no vertical
+ * offset
+ * @param[in] temp Temporal circular buffer
+ * @param[in] deltax,deltay Offsets
+ * @csqlfn #Tcbuffer_translate()
+ */
+Temporal *
+tcbuffer_translate(const Temporal *temp, double deltax, double deltay)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  const double frame[3] = {deltax, deltay, 0.0};
+  return tcbuffer_motion(temp, frame);
+}
+
+/**
+ * @ingroup meos_cbuffer_transf
+ * @brief Return a temporal circular buffer rotated counter-clockwise about
+ * the vertical through a point, as #tgeo_rotate rotates a temporal geo
+ * @details The rotation carries the point @p (x0, y0) to itself, so its
+ * offsets are that point minus its image by the rotation about the origin
+ * @param[in] temp Temporal circular buffer
+ * @param[in] angle Angle in radians
+ * @param[in] x0,y0 Coordinates of the centre of the rotation
+ * @csqlfn #Tcbuffer_rotate()
+ */
+Temporal *
+tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  double s = sin(angle), c = cos(angle);
+  const double frame[3] = {x0 - (c * x0 - s * y0), y0 - (s * x0 + c * y0),
+    angle};
+  return tcbuffer_motion(temp, frame);
+}
+
+/**
+ * @ingroup meos_cbuffer_transf
+ * @brief Return a temporal circular buffer rotated counter-clockwise about
+ * the z axis, as #tgeo_rotate_z rotates a temporal geo
+ * @param[in] temp Temporal circular buffer
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tcbuffer_rotate_z()
+ */
+Temporal *
+tcbuffer_rotate_z(const Temporal *temp, double angle)
+{
+  return tcbuffer_rotate(temp, angle, 0.0, 0.0);
 }
 
 /*****************************************************************************

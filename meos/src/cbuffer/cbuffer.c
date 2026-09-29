@@ -796,6 +796,36 @@ datum_cbuffer_round(Datum cbuffer, Datum size)
 }
 
 /**
+ * @brief Return a circular buffer moved by a planar rigid motion
+ * @details The motion is the counter-clockwise rotation by @p frame[2] about
+ * the origin followed by the translation by @p frame[0] and @p frame[1], the
+ * values of a two-dimensional pose, as #pose_compose carries a position. The
+ * motion moves the centre and keeps the radius, since a rigid motion keeps
+ * every distance
+ * @param[in] cb Circular buffer
+ * @param[in] frame Offsets and angle of the motion
+ */
+Cbuffer *
+cbuffer_motion(const Cbuffer *cb, const double *frame)
+{
+  assert(cb); assert(frame);
+  double s = sin(frame[2]), c = cos(frame[2]);
+  return cbuffer_make_coords(cb->srid, frame[0] + c * cb->x - s * cb->y,
+    frame[1] + s * cb->x + c * cb->y, cb->radius);
+}
+
+/**
+ * @brief Datum-typed wrapper of the rigid motion of a circular buffer, used
+ * by the temporal lifting infrastructure
+ */
+Datum
+datum_cbuffer_motion(Datum cbuffer, Datum frame)
+{
+  return PointerGetDatum(cbuffer_motion(DatumGetCbufferP(cbuffer),
+    (const double *) DatumGetPointer(frame)));
+}
+
+/**
  * @ingroup meos_cbuffer_base_transf
  * @brief Return an array of circular buffers with the precision of the values
  * set to a number of decimal places
