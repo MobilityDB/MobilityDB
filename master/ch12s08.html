@@ -31,4 +31,25 @@ SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(2 2), 0.5)@2001-01-04]'));
 /* {[Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02],
    [Cbuffer(POINT(2 2),0.5)@2001-01-03, Cbuffer(POINT(2 2),0.5)@2001-01-04]} */
+</pre></li><li class="listitem"><a name="tcbuffer_translate"></a><a class="indexterm" name="id8992"></a><p>Return a temporal value translated by given offsets</p><pre class="programlisting">
+translate(tcbuffer,deltax float,deltay float) → tcbuffer
+</pre><p>The motion moves the centre of every circular buffer and keeps its radius. A circular buffer is planar, so it takes no vertical offset and no rotation about the x or y axis.</p><p>The motion is a planar map, so a geodetic value raises an error.</p><pre class="programlisting">
+SELECT asText(translate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 1, 2), 6);
+-- [Cbuffer(POINT(2 3),0.5)@2001-01-01, Cbuffer(POINT(4 4),1)@2001-01-02]
+</pre></li><li class="listitem"><a name="tcbuffer_rotate"></a><a class="indexterm" name="id9001"></a><p>Return a temporal value rotated counter-clockwise about the origin or about a point</p><pre class="programlisting">
+rotate(tcbuffer,angle float) → tcbuffer
+rotate(tcbuffer,angle float,x0 float,y0 float) → tcbuffer
+</pre><p>The motion moves the centre of every circular buffer and keeps its radius. A circular buffer is planar, so it takes no vertical offset and no rotation about the x or y axis.</p><p>The motion is a planar map, so a geodetic value raises an error.</p><pre class="programlisting">
+SELECT asText(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1), 6);
+/* [Cbuffer(POINT(1 1),0.5)@2001-01-01,
+   Cbuffer(POINT(1.885467 3.053278),1)@2001-01-02] */
+</pre></li><li class="listitem"><a name="tcbuffer_rotateZ"></a><a class="indexterm" name="id9010"></a><p>Return a temporal value rotated counter-clockwise about the z axis</p><pre class="programlisting">
+rotateZ(tcbuffer,angle float) → tcbuffer
+</pre><p>The motion moves the centre of every circular buffer and keeps its radius. A circular buffer is planar, so it takes no vertical offset and no rotation about the x or y axis.</p><p>The motion is a planar map, so a geodetic value raises an error.</p><pre class="programlisting">
+SELECT asText(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 0.7), 6);
+/* [Cbuffer(POINT(0.120625 1.40906),0.5)@2001-01-01,
+   Cbuffer(POINT(1.006091 3.462337),1)@2001-01-02] */
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Accessors </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Modifications</td></tr></table></div></body></html>
