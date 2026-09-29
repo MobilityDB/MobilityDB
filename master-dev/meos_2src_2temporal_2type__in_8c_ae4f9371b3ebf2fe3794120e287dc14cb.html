@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_flags_from_wkb_state</title>
+<title>MobilityDB: wkb_length_check</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -119,7 +119,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_gac6a13d1ba6d54a2ad2940aff6c366263.html#gac6a13d1ba6d54a2ad2940aff6c366263">tbox_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga6dfcfb3078efa8e887acd93153763289.html#ga6dfcfb3078efa8e887acd93153763289">tbox_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a882596e5f5458d32215729c55993ee6f.html#a882596e5f5458d32215729c55993ee6f">tbox_from_wkb_state</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_afe1458faae86b0ae4ed3247fe78c3fb2.html#afe1458faae86b0ae4ed3247fe78c3fb2">temporal_flags_from_wkb_state</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_afe1458faae86b0ae4ed3247fe78c3fb2.html#afe1458faae86b0ae4ed3247fe78c3fb2">temporal_flags_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga368f9f4c63fb9ddcfc49d4130c474eb1.html#ga368f9f4c63fb9ddcfc49d4130c474eb1">temporal_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__inout_ga324355a514014458467cc40870b240d2.html#ga324355a514014458467cc40870b240d2">temporal_from_mfjson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gaa99f168f88d8c614d8e583c7f16217d4.html#gaa99f168f88d8c614d8e583c7f16217d4">temporal_from_wkb</a></td></tr>
@@ -136,20 +136,23 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a8f6a5a68b5dccfd17b539338f92e5848.html#a8f6a5a68b5dccfd17b539338f92e5848">tsequenceset_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a077c4e29277ebbae8c6ff6f3e306ae53.html#a077c4e29277ebbae8c6ff6f3e306ae53">type_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a43a967e8c8e00b954874f188f6a2e9af.html#a43a967e8c8e00b954874f188f6a2e9af">type_from_wkb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ae4f9371b3ebf2fe3794120e287dc14cb.html#ae4f9371b3ebf2fe3794120e287dc14cb">wkb_length_check</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ae4f9371b3ebf2fe3794120e287dc14cb.html#ae4f9371b3ebf2fe3794120e287dc14cb">wkb_length_check</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a">wkb_parse_state_check</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afe1458faae86b0ae4ed3247fe78c3fb2" name="afe1458faae86b0ae4ed3247fe78c3fb2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe1458faae86b0ae4ed3247fe78c3fb2">&#9670;&#160;</a></span>temporal_flags_from_wkb_state()</h2>
+<a id="ae4f9371b3ebf2fe3794120e287dc14cb" name="ae4f9371b3ebf2fe3794120e287dc14cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4f9371b3ebf2fe3794120e287dc14cb">&#9670;&#160;</a></span>wkb_length_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void temporal_flags_from_wkb_state </td>
+          <td class="memname">static bool wkb_length_check </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmeos__wkb__parse__state.html">meos_wkb_parse_state</a> *&#160;</td>
           <td class="paramname"><em>s</em>, </td>
@@ -157,8 +160,14 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>wkb_flags</em>&#160;</td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>minlen</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -166,10 +175,22 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the flags of a WKB parse state from a WKB type number. </p>
-<p >The function takes in an unknown kind of WKB type number and ensures it comes out as an extended WKB type number with the <code>Z/GEODETIC/SRID/LINEAR_INTERP</code> flags masked onto the high bits. </p>
+<p>Return true if a length or a count read from the WKB array is not negative and announces no more bytes than the ones left, raise an error and return false otherwise. </p>
+<p >The counterpart of <a class="el" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a" title="Return true if the next bytes to read lie inside the WKB array, raise an error and return false other...">wkb_parse_state_check</a> for a length read from the array. Every element counted takes at least one byte, so a count is bounded by the bytes left as a length is. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Parse state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Length or count read from the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">minlen</td><td>Minimum value of the length or count </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

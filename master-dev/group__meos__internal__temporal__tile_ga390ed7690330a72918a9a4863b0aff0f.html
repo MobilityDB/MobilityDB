@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spanset_bins</title>
+<title>MobilityDB: tnumber_value_split</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__internal__setspan__bin.html">Bin functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__temporal__tile.html">Tile functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,35 +79,40 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__bin_gab5ac653462d0ebe90708fe7c82a62b0c.html#gab5ac653462d0ebe90708fe7c82a62b0c">span_bins</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__setspan__bin_ga67357b38243677522f8cdbbc71dbfe8c.html#ga67357b38243677522f8cdbbc71dbfe8c">spanset_bins</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__temporal__tile_ga390ed7690330a72918a9a4863b0aff0f.html#ga390ed7690330a72918a9a4863b0aff0f">tnumber_value_split</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga67357b38243677522f8cdbbc71dbfe8c" name="ga67357b38243677522f8cdbbc71dbfe8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga67357b38243677522f8cdbbc71dbfe8c">&#9670;&#160;</a></span>spanset_bins()</h2>
+<a id="ga390ed7690330a72918a9a4863b0aff0f" name="ga390ed7690330a72918a9a4863b0aff0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga390ed7690330a72918a9a4863b0aff0f">&#9670;&#160;</a></span>tnumber_value_split()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSpan.html">Span</a> * spanset_bins </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** tnumber_value_split </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSpanSet.html">SpanSet</a> *&#160;</td>
-          <td class="paramname"><em>ss</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramname"><em>vsize</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>origin</em>, </td>
+          <td class="paramname"><em>vorigin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> **&#160;</td>
+          <td class="paramname"><em>bins</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -123,13 +128,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the bins from a span set. </p>
+<p>Split a temporal number into an array of fragments according to value bins. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ss</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> set to split </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Bin size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">origin</td><td>Origin of the bins </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vsize</td><td>Size of the value bins </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vorigin</td><td>Origin of the value bins </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">bins</td><td>Array of start values of the bins containing the fragments </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of values in the output arrays </td></tr>
   </table>
   </dd>
 </dl>

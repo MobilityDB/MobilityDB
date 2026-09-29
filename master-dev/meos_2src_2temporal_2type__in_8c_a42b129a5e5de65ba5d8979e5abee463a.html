@@ -136,13 +136,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a8f6a5a68b5dccfd17b539338f92e5848.html#a8f6a5a68b5dccfd17b539338f92e5848">tsequenceset_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a077c4e29277ebbae8c6ff6f3e306ae53.html#a077c4e29277ebbae8c6ff6f3e306ae53">type_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a43a967e8c8e00b954874f188f6a2e9af.html#a43a967e8c8e00b954874f188f6a2e9af">type_from_wkb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a4433d01096cff59ab0e8d814179166e2.html#a4433d01096cff59ab0e8d814179166e2">wkb_parse_state_check</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ae4f9371b3ebf2fe3794120e287dc14cb.html#ae4f9371b3ebf2fe3794120e287dc14cb">wkb_length_check</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a">wkb_parse_state_check</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4433d01096cff59ab0e8d814179166e2" name="a4433d01096cff59ab0e8d814179166e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4433d01096cff59ab0e8d814179166e2">&#9670;&#160;</a></span>wkb_parse_state_check()</h2>
+<a id="a42b129a5e5de65ba5d8979e5abee463a" name="a42b129a5e5de65ba5d8979e5abee463a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42b129a5e5de65ba5d8979e5abee463a">&#9670;&#160;</a></span>wkb_parse_state_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -151,7 +152,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void wkb_parse_state_check </td>
+          <td class="memname">static bool wkb_parse_state_check </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmeos__wkb__parse__state.html">meos_wkb_parse_state</a> *&#160;</td>
           <td class="paramname"><em>s</em>, </td>
@@ -175,7 +176,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Check that we are not about to read off the end of the WKB array. </p>
+<p>Return true if the next bytes to read lie inside the WKB array, raise an error and return false otherwise. </p>
+<p >The request is compared with the bytes left, so a request as large as the address space is refused instead of wrapping the end pointer </p>
 
 </div>
 </div>
