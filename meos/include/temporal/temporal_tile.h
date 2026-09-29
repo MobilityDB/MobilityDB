@@ -101,6 +101,9 @@ extern Datum datum_bin(Datum value, Datum size, Datum offset,
 extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
   Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin,
   int *ntiles);
+extern TboxGridState *tbox_value_time_tile_init(const TBox *box, Datum vsize,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  MeosType basetype, int *ntiles);
 extern bool tbox_tile_state_get(TboxGridState *state, TBox *box);
 
 /*****************************************************************************/

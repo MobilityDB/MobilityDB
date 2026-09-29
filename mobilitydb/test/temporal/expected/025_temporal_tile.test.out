@@ -290,6 +290,55 @@ SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, 15.5) LIMI
  (3,"TBOXFLOAT X([18, 20.5))")
 (3 rows)
 
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2) LIMIT 3;
+        valuetiles         
+---------------------------
+ (1,"TBOXINT X([14, 16))")
+ (2,"TBOXINT X([16, 18))")
+ (3,"TBOXINT X([18, 20))")
+(3 rows)
+
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, 15) LIMIT 3;
+        valuetiles         
+---------------------------
+ (1,"TBOXINT X([15, 17))")
+ (2,"TBOXINT X([17, 19))")
+ (3,"TBOXINT X([19, 21))")
+(3 rows)
+
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint) LIMIT 3;
+          valuetiles          
+------------------------------
+ (1,"TBOXBIGINT X([14, 16))")
+ (2,"TBOXBIGINT X([16, 18))")
+ (3,"TBOXBIGINT X([18, 20))")
+(3 rows)
+
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, 15::bigint) LIMIT 3;
+          valuetiles          
+------------------------------
+ (1,"TBOXBIGINT X([15, 17))")
+ (2,"TBOXBIGINT X([17, 19))")
+ (3,"TBOXBIGINT X([19, 21))")
+(3 rows)
+
+SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2) LIMIT 3;
+         valuetiles          
+-----------------------------
+ (1,"TBOXFLOAT X([14, 16))")
+ (2,"TBOXFLOAT X([16, 18))")
+ (3,"TBOXFLOAT X([18, 20))")
+(3 rows)
+
+/* Errors */
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5);
+ERROR:  The value size and origin of the tiles of a box of int4 values cannot be of type float8
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2);
+ERROR:  The value size and origin of the tiles of a box of int8 values cannot be of type int4
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 0);
+ERROR:  The value must be strictly positive: 0
+SELECT valueTiles(tbox 'TBOX T([2001-01-15, 2001-01-25])', 2);
+ERROR:  The tbox must have X dimension
 SELECT getValueTile(15.5, 2.5);
       getvaluetile       
 -------------------------
@@ -352,6 +401,43 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, '1 wee
  (3,"TBOXFLOAT XT([18, 20.5),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
 (3 rows)
 
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week') LIMIT 3;
+                                     valuetimetiles                                      
+-----------------------------------------------------------------------------------------
+ (1,"TBOXINT XT([14, 16),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOXINT XT([16, 18),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (3,"TBOXINT XT([18, 20),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+(3 rows)
+
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week', 15, '2001-01-15') LIMIT 3;
+                                     valuetimetiles                                      
+-----------------------------------------------------------------------------------------
+ (1,"TBOXINT XT([15, 17),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOXINT XT([17, 19),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (3,"TBOXINT XT([19, 21),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+(3 rows)
+
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, '1 week') LIMIT 3;
+                                       valuetimetiles                                       
+--------------------------------------------------------------------------------------------
+ (1,"TBOXBIGINT XT([14, 16),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOXBIGINT XT([16, 18),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (3,"TBOXBIGINT XT([18, 20),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+(3 rows)
+
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, '1 week', 15::bigint, '2001-01-15') LIMIT 3;
+                                       valuetimetiles                                       
+--------------------------------------------------------------------------------------------
+ (1,"TBOXBIGINT XT([15, 17),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOXBIGINT XT([17, 19),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (3,"TBOXBIGINT XT([19, 21),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+(3 rows)
+
+/* Errors */
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '1 week');
+ERROR:  The value size and origin of the tiles of a box of int4 values cannot be of type float8
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week');
+ERROR:  The value size and origin of the tiles of a box of int8 values cannot be of type int4
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week');
                                    getvaluetimetile                                    
 ---------------------------------------------------------------------------------------

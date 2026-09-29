@@ -900,6 +900,73 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 }
 
 /**
+ * @brief Set the state with a temporal box and a value and possibly time
+ * grid for obtaining a set of tiles
+ * @details The value size and origin are read against the base type of the
+ * box, as #tbox_expand_value reads a value: an integer box takes a size and an
+ * origin of its own base type, and a float box also takes integer ones, which
+ * it reads as floats
+ * @param[in] box Temporal box
+ * @param[in] vsize Size of the value dimension, ignored when @p basetype is
+ * `T_UNKNOWN`
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] vorigin Origin for the value dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] basetype Base type of the value size and origin, `T_UNKNOWN`
+ * when the value dimension is not used for tiling
+ * @param[out] ntiles Number of tiles
+ * @note The function can be used for obtaining value tiles, time tiles, and
+ * value and time tiles
+ */
+TboxGridState *
+tbox_value_time_tile_init(const TBox *box, Datum vsize,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  MeosType basetype, int *ntiles)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(ntiles, NULL);
+  *ntiles = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  /* A box tiled by time alone takes a zero value size */
+  Datum size = Float8GetDatum(0.0), origin = Float8GetDatum(0.0);
+  if (basetype != T_UNKNOWN)
+  {
+    if (! ensure_has_X(T_TBOX, box->flags))
+      return NULL;
+    MeosType boxtype = box->span.basetype;
+    if (boxtype == T_FLOAT8 && basetype != T_FLOAT8)
+    {
+      size = Float8GetDatum(datum_double(vsize, basetype));
+      origin = Float8GetDatum(datum_double(vorigin, basetype));
+    }
+    else if (basetype == boxtype)
+    {
+      size = vsize;
+      origin = vorigin;
+    }
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The value size and origin of the tiles of a box of %s values cannot "
+        "be of type %s", meostype_name(boxtype), meostype_name(basetype));
+      return NULL;
+    }
+    if (! ensure_positive_datum(size, boxtype))
+      return NULL;
+  }
+  if (duration && (! ensure_has_T(T_TBOX, box->flags) ||
+      ! ensure_positive_duration(duration)))
+    return NULL;
+
+  /* Create function state */
+  TboxGridState *state = tbox_tile_state_make(NULL, box, size, duration,
+    origin, torigin);
+  *ntiles = state->ntiles;
+  return state;
+}
+
+/**
  * @ingroup meos_internal_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value and possibly a time grid

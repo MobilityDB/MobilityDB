@@ -240,26 +240,22 @@ Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
   if (SRF_IS_FIRSTCALL())
   {
     /* Initialize to 0 missing parameters */
-    double xsize = 0, xorigin = 0;
+    Datum vsize = Float8GetDatum(0.0), vorigin = Float8GetDatum(0.0);
+    MeosType basetype = T_UNKNOWN;
     Interval *duration = NULL;
     TimestampTz torigin = 0;
-    /* Get input parameters and ensure their validity */
+    /* Get input parameters */
     TBox *bounds = PG_GETARG_TBOX_P(0);
     int i = 1;
     if (valuetiles)
     {
-      ensure_has_X(T_TBOX, bounds->flags);
-      xsize = PG_GETARG_FLOAT8(i++);
-      ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+      basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, i));
+      vsize = PG_GETARG_DATUM(i++);
     }
     if (timetiles)
-    {
-      ensure_has_T(T_TBOX, bounds->flags);
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_positive_duration(duration);
-    }
     if (valuetiles)
-      xorigin = PG_GETARG_FLOAT8(i++);
+      vorigin = PG_GETARG_DATUM(i++);
     if (timetiles)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
 
@@ -268,8 +264,9 @@ Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_make(NULL, bounds,
-      Float8GetDatum(xsize), duration, Float8GetDatum(xorigin), torigin);
+    int ntiles;
+    funcctx->user_fctx = tbox_value_time_tile_init(bounds, vsize, duration,
+      vorigin, torigin, basetype, &ntiles);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
