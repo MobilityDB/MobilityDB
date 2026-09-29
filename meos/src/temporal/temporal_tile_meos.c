@@ -96,16 +96,33 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
 }
 
 /**
- * @brief Ensure that at least one dimension is given for tiling a temporal box
+ * @brief Ensure the validity of the arguments for tiling a temporal box
+ * @details At least one dimension is given, a value dimension needs a box
+ * with a value span of the given type, as #tintbox_shift_scale needs, and a
+ * time dimension needs a box with a period and a positive duration
+ * @param[in] box Temporal box
+ * @param[in] vsize Value size of the tiles, 0 when the value dimension is not
+ * used for tiling
+ * @param[in] duration Interval defining the size of the bins, may be `NULL`
+ * @param[in] spantype Span type of the value dimension
  */
 static bool
-ensure_one_tile_dimension(double vsize, const Interval *duration)
+ensure_valid_tbox_tiles(const TBox *box, double vsize,
+  const Interval *duration, MeosType spantype)
 {
-  if (vsize > 0 || duration)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-    "At least one of the arguments vsize or duration must be given");
-  return false;
+  if (vsize <= 0 && ! duration)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "At least one of the arguments vsize or duration must be given");
+    return false;
+  }
+  if (vsize > 0 && (! ensure_has_X(T_TBOX, box->flags) ||
+      ! ensure_span_isof_type(&box->span, spantype)))
+    return false;
+  if (duration && (! ensure_has_T(T_TBOX, box->flags) ||
+      ! ensure_positive_duration(duration)))
+    return false;
+  return true;
 }
 
 /**
@@ -126,7 +143,7 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_negative_datum(Int32GetDatum(vsize), T_INT4) ||
-      ! ensure_one_tile_dimension((double) vsize, duration))
+      ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_INTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
@@ -150,7 +167,7 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_negative_datum(Int64GetDatum(vsize), T_INT8) ||
-      ! ensure_one_tile_dimension((double) vsize, duration))
+      ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_BIGINTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int64GetDatum(vsize), duration,
     Int64GetDatum(vorigin), torigin, count);
@@ -174,7 +191,7 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_negative_datum(Float8GetDatum(vsize), T_FLOAT8) ||
-      ! ensure_one_tile_dimension(vsize, duration))
+      ! ensure_valid_tbox_tiles(box, vsize, duration, T_FLOATSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
     Float8GetDatum(vorigin), torigin, count);
@@ -1388,9 +1405,9 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   Datum **value_bins, TimestampTz **time_bins, int *count)
 {
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
   MeosType basetype = temptype_basetype(temp->temptype);
-  ensure_positive_datum(size, basetype);
-  ensure_positive_duration(duration);
+  assert(positive_datum(size, basetype)); assert(positive_duration(duration));
 
   Datum start_bin, end_bin, start_time_bin, end_time_bin;
   /* Compute the value bounds */
@@ -1460,7 +1477,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
  * bins
  * @param[in] temp Temporal value
  * @param[in] size Size of the value bins
- * @param[in] origin Time origin of the bins
+ * @param[in] origin Value origin of the bins
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
@@ -1531,7 +1548,7 @@ tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
  * bins
  * @param[in] temp Temporal value
  * @param[in] size Size of the value bins
- * @param[in] origin Time origin of the bins
+ * @param[in] origin Value origin of the bins
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
@@ -1593,8 +1610,8 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
     duration, Int32GetDatum(vorigin), torigin, &datum_bins, time_bins,
     count);
 
-  /* Transform the datum bins into float bins and return */
-  int *values = palloc(sizeof(double) * *count);
+  /* Transform the datum bins into integer bins and return */
+  int *values = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     values[i] = DatumGetInt32(datum_bins[i]);
   if (value_bins)
