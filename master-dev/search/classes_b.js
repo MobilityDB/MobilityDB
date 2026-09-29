@@ -7,6 +7,5 @@ var searchData=
   ['meosarray_4',['MeosArray',['../structMeosArray.html',1,'']]],
   ['meosde9im_5',['MeosDE9IM',['../structMeosDE9IM.html',1,'']]],
   ['mfsrscache_6',['MFSrsCache',['../structMFSrsCache.html',1,'']]],
-  ['mobilitydb_5fconstants_7',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]],
-  ['mvtgeom_8',['MvtGeom',['../structMvtGeom.html',1,'']]]
+  ['mobilitydb_5fconstants_7',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]]
 ];
