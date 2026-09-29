@@ -51,7 +51,7 @@ CREATE FUNCTION spaceBoxes(trgeometry, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timeBoxes(trgeometry, interval,
+CREATE FUNCTION timeBoxes(trgeometry, duration interval,
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
@@ -59,20 +59,20 @@ CREATE FUNCTION timeBoxes(trgeometry, interval,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, ysize float,
-    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+    zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Trgeometry_space_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, interval,
+CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
   AS 'SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, ysize float, interval,
+CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, ysize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)

@@ -64,7 +64,7 @@ CREATE FUNCTION spaceBoxes(tpcpoint, xsize float, ysize float,
     SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5, $6)
   $$;
 
-CREATE FUNCTION timeBoxes(tpcpoint, interval,
+CREATE FUNCTION timeBoxes(tpcpoint, duration interval,
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
@@ -74,7 +74,7 @@ CREATE FUNCTION timeBoxes(tpcpoint, interval,
   $$;
 
 CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, ysize float,
-    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+    zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
@@ -82,7 +82,7 @@ CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, ysize float,
     SELECT @extschema@.spaceTimeBoxes(
       $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7, $8, $9)
   $$;
-CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, interval,
+CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -90,7 +90,7 @@ CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, interval,
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6, $7)
   $$;
-CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, ysize float, interval,
+CREATE FUNCTION spaceTimeBoxes(tpcpoint, xsize float, ysize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -117,7 +117,7 @@ CREATE FUNCTION spaceSplit(tpcpoint, xsize float, ysize float, zsize float,
     FROM @extschema@.spaceSplit(
       $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7) AS r
   $$;
-CREATE FUNCTION spaceSplit(tpcpoint, size float,
+CREATE FUNCTION spaceSplit(tpcpoint, xsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpcpoint
@@ -139,7 +139,7 @@ CREATE TYPE point_time_tpcpoint AS (
 );
 
 CREATE FUNCTION spaceTimeSplit(tpcpoint, xsize float, ysize float,
-    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+    zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpcpoint
@@ -148,7 +148,7 @@ CREATE FUNCTION spaceTimeSplit(tpcpoint, xsize float, ysize float,
     FROM @extschema@.spaceTimeSplit(
       $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7, $8, $9) AS r
   $$;
-CREATE FUNCTION spaceTimeSplit(tpcpoint, size float, interval,
+CREATE FUNCTION spaceTimeSplit(tpcpoint, xsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -156,7 +156,7 @@ CREATE FUNCTION spaceTimeSplit(tpcpoint, size float, interval,
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6, $7)
   $$;
-CREATE FUNCTION spaceTimeSplit(tpcpoint, xsize float, ysize float, interval,
+CREATE FUNCTION spaceTimeSplit(tpcpoint, xsize float, ysize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)

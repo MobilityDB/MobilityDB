@@ -280,4 +280,16 @@ SELECT valueTimeSplit(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2
 SELECT valueTimeSplit(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
 SELECT valueTimeSplit(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
 
+-- Grid arguments named by their dimension
+SELECT bins(bigintspan '[5000000000, 5000000010]', vsize := 4, vorigin := 5000000001);
+SELECT getBin(15, vsize := 2, vorigin := 1);
+SELECT getBin(timestamptz '2001-01-05', duration := '1 week', torigin := '2001-01-01');
+SELECT timeBins(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
+SELECT valueSplit(tint '[1@2001-01-01, 5@2001-01-05]', vsize := 2, vorigin := 1);
+SELECT valueTimeSplit(tint '[1@2001-01-01, 5@2001-01-05]', vsize := 2, duration := '2 days',
+  vorigin := 1, torigin := '2001-01-01');
+SELECT timeSplit(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
+SELECT tsample(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
+SELECT tprecision(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
+
 -------------------------------------------------------------------------------

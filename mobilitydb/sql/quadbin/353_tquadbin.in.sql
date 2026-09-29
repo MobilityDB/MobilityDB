@@ -305,12 +305,12 @@ CREATE FUNCTION shiftScaleTime(tquadbin, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tquadbin, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tquadbin, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -604,7 +604,7 @@ CREATE TYPE time_tquadbin AS (
 );
 
 CREATE FUNCTION timeSplit(tquadbin, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

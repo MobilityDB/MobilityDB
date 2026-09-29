@@ -490,12 +490,12 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(trgeometry, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- CREATE FUNCTION tsample(trgeometry, duration interval,
---   origin timestamptz DEFAULT '2000-01-03')
+--   torigin timestamptz DEFAULT '2000-01-03')
 --   RETURNS trgeometry
 --   AS 'MODULE_PATHNAME', 'Temporal_tsample'
 --   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -658,7 +658,7 @@ CREATE TYPE time_trgeometry AS (
 );
 
 CREATE FUNCTION timeSplit(trgeometry, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
