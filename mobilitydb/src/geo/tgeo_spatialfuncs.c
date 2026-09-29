@@ -497,15 +497,18 @@ Tpoint_as_mvtgeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  /* Timestamps are returned in Unix time */
-  MvtGeom mvt = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom);
-  if (! mvt.geom)
+  GSERIALIZED *geom;
+  int64 *times; /* Timestamps are returned in Unix time */
+  int count;
+  bool found = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom,
+    &geom, &times, &count);
+  if (! found)
   {
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
 
-  ArrayType *timesarr = int64arr_to_array(mvt.times, mvt.count);
+  ArrayType *timesarr = int64arr_to_array(times, count);
   /* Build a tuple description for the function output */
   TupleDesc resultTupleDesc;
   get_call_result_type(fcinfo, NULL, &resultTupleDesc);
@@ -514,7 +517,7 @@ Tpoint_as_mvtgeom(PG_FUNCTION_ARGS)
   /* Construct the composite return value */
   Datum values[2];
   /* Store geometry */
-  values[0] = PointerGetDatum(mvt.geom);
+  values[0] = PointerGetDatum(geom);
   /* Store timestamp array */
   values[1] = PointerGetDatum(timesarr);
   /* Form tuple */
