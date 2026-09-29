@@ -1074,6 +1074,13 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   if (interp == LINEAR && ! isconst)
     found = tsegment_intersection_value(start, end, value, inst1->temptype,
       inst1->t, inst2->t, &t1, &t2);
+  /* A float segment has the value at an instant only where it reaches it
+   * exactly there, as #floatsegm_reaches_at decides; a crossing between two
+   * microseconds is held at no instant */
+  if (found && basetype == T_FLOAT8 &&
+      ! floatsegm_reaches_at(DatumGetFloat8(start), DatumGetFloat8(end),
+        DatumGetFloat8(value), inst1->t, inst2->t, t1))
+    found = 0;
   Datum projvalue1 = 0; /* make compiler quiet */
   if (found)
   {

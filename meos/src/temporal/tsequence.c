@@ -61,6 +61,7 @@
 #include "temporal/temporal_restrict.h"
 #include "temporal/type_util.h"
 #include "temporal/type_parser.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #if CBUFFER
@@ -196,12 +197,75 @@ floatsegm_locate(double start, double end, double value)
   if (value <= min || value >= max)
     return -1.0;
 
+  /* The value lies strictly between the bounds, so the crossing is inside the
+   * segment, however close to a bound: the caller dates it and leaves it to
+   * the bound only where its instant falls on it, as
+   * #tnumbersegm_intersection does */
   double span = (max - min);
   double partial = (value - min);
   long double fraction = start < end ? partial / span : 1 - partial / span;
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    return -1.0;
   return fraction;
+}
+
+/**
+ * @brief Return true if the microsecond @p m of a float segment of duration
+ * @p d lies at or before the instant at which the segment reaches a value
+ * @details The segment reaches the value at the fraction
+ * (value - start) / (end - start), so m / d lies at or before it where
+ * (end - start) m - (value - start) d is not positive, or not negative for a
+ * falling segment. That is the cross product of (end - start, value - start)
+ * and (d, m), whose sign #cross_product_sign decides exactly
+ */
+static bool
+floatsegm_at_or_before(double start, double end, double value, double d,
+  double m)
+{
+  int s = cross_product_sign(start, start, end, value, 0.0, 0.0, d, m);
+  return (end > start) ? s <= 0 : s >= 0;
+}
+
+/**
+ * @brief Return the instant at which a float segment reaches a value, the
+ * truncation of the exact crossing
+ * @details The fraction computed in doubles gives a microsecond, which moves
+ * to the last one at or before the exact crossing, as
+ * #floatsegm_at_or_before states it; a crossing is thus dated by the
+ * truncation of its exact fraction, not of the fraction's rounding
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value reached, strictly between them
+ * @param[in] lower,upper Timestamps defining the segment
+ * @param[in] fraction Fraction of the crossing computed in doubles
+ */
+TimestampTz
+floatsegm_value_instant(double start, double end, double value,
+  TimestampTz lower, TimestampTz upper, long double fraction)
+{
+  double d = (double) (upper - lower);
+  double m = (double) (TimestampTz) (d * fraction);
+  while (m + 1.0 <= d &&
+      floatsegm_at_or_before(start, end, value, d, m + 1.0))
+    m += 1.0;
+  while (m > 0.0 && ! floatsegm_at_or_before(start, end, value, d, m))
+    m -= 1.0;
+  return lower + (TimestampTz) m;
+}
+
+/**
+ * @brief Return true if a float segment reaches a value exactly at an
+ * instant of it
+ * @details Decided by the sign of the cross product of #floatsegm_at_or_before
+ * being zero
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value
+ * @param[in] lower,upper Timestamps defining the segment
+ * @param[in] t Instant of the segment
+ */
+bool
+floatsegm_reaches_at(double start, double end, double value,
+  TimestampTz lower, TimestampTz upper, TimestampTz t)
+{
+  return cross_product_sign(start, start, end, value, 0.0, 0.0,
+    (double) (upper - lower), (double) (t - lower)) == 0;
 }
 
 /**
@@ -2601,10 +2665,12 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
     return 0;
   if (t)
   {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to lower or to upper */
-    *t = lower + (TimestampTz) (duration * fraction);
+    /* A crossing whose instant falls on a bound is left to the bound, as
+     * #tnumbersegm_intersection leaves it */
+    *t = floatsegm_value_instant(dstart, dend, dvalue, lower, upper,
+      fraction);
+    if (*t <= lower || *t >= upper)
+      return 0;
   }
   return 1;
 }
@@ -2636,10 +2702,19 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
     return 0;
   if (t1)
   {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t1 = lower + (TimestampTz) (duration * fraction);
+    /* A crossing whose instant falls on a bound is left to the bound, as
+     * #tnumbersegm_intersection leaves it; a float crossing is dated by the
+     * truncation of its exact fraction */
+    if (basetype == T_FLOAT8)
+      *t1 = floatsegm_value_instant(DatumGetFloat8(start),
+        DatumGetFloat8(end), DatumGetFloat8(value), lower, upper, fraction);
+    else
+    {
+      double duration = (double) (upper - lower);
+      *t1 = lower + (TimestampTz) (duration * fraction);
+    }
+    if (*t1 <= lower || *t1 >= upper)
+      return 0;
     if (t2)
       *t2 = *t1;
   }
@@ -2721,10 +2796,6 @@ tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   }
 
   long double fraction = num / denom;
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    /* Intersection occurs out of the period */
-    return 0;
-
   double duration = (double) (upper - lower);
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the

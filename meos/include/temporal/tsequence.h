@@ -54,6 +54,10 @@ extern double floatsegm_interpolate(double value1, double value2,
   long double value);
 extern long double floatsegm_locate(double value1, double value2,
   double value);
+extern TimestampTz floatsegm_value_instant(double start, double end,
+  double value, TimestampTz lower, TimestampTz upper, long double fraction);
+extern bool floatsegm_reaches_at(double start, double end, double value,
+  TimestampTz lower, TimestampTz upper, TimestampTz t);
 
 extern int tnumbersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, MeosType basetype, TimestampTz lower, TimestampTz upper,

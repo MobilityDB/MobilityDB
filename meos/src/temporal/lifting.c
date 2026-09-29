@@ -974,7 +974,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         cross = lfinfo->cross_type ? 0 :
           tsegment_intersection_value(startvalue, endvalue, value,
             start->temptype, start->t, end->t, &tpt1, &tpt2);
-        /* A crossing near a bound is not reported, see floatsegm_locate().
+        /* A crossing whose instant falls on a bound is not reported, see
+         * tnumbersegm_intersection().
          * If the results at the bounds differ, the result changes at a
          * bound, and the value in the middle tells at which one. */
         if (! cross && ! datum_eq(startresult, endresult, resbasetype))
@@ -1718,7 +1719,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
             lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
           tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
             start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
-        /* A crossing near a bound is not reported, see floatsegm_locate().
+        /* A crossing whose instant falls on a bound is not reported, see
+         * tnumbersegm_intersection().
          * If the results at the bounds differ, the result changes at a
          * bound, and the value in the middle tells at which one. */
         if (! cross && ! datum_eq(startresult, endresult, resbasetype))

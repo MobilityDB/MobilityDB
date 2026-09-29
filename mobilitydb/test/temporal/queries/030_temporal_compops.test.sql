@@ -1912,5 +1912,12 @@ SELECT tfloat '[2@2001-01-01, 1@2001-01-01 12:00:00, 2@2001-01-02]' #<=
   tfloat '[1.0000000000000002@2001-01-01, 1.0000000000000002@2001-01-02]';
 SELECT tfloat '[1@2001-01-01, 3@2001-01-11]' #< 1.000001;
 SELECT tfloat '[3@2001-01-01, 1@2001-01-11]' #< 1.000001;
+-- A crossing 8.64 ms before the end of a day is dated where it falls, and the
+-- comparison is true on the instants after it
+SELECT tfloat '[2@2001-01-01, 1@2001-01-02]' #<= 1.0000001;
+SELECT valueAtTimestamp(tfloat '[2@2001-01-01, 1@2001-01-02]' #<= 1.0000001,
+  '2001-01-01 23:59:59.995');
+-- A crossing within the first microsecond changes the result at the start
+SELECT tfloat '[1@2001-01-01, 3@2001-01-11]' #< 1.000000000000001;
 
 -------------------------------------------------------------------------------
