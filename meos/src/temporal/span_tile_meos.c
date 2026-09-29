@@ -62,48 +62,48 @@
  * @ingroup meos_setspan_bin
  * @brief Return the bins of an integer span
  * @param[in] s Input span to split
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-intspan_bins(const Span *s, int size, int origin, int *count)
+intspan_bins(const Span *s, int vsize, int vorigin, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
-  return span_bins(s, Int32GetDatum(size), Int32GetDatum(origin), count);
+  return span_bins(s, Int32GetDatum(vsize), Int32GetDatum(vorigin), count);
 }
 
 /**
  * @ingroup meos_setspan_bin
  * @brief Return the bins of a big integer span
  * @param[in] s Input span to split
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-bigintspan_bins(const Span *s, int64 size, int64 origin, int *count)
+bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, NULL);
-  return span_bins(s, Int64GetDatum(size), Int64GetDatum(origin), count);
+  return span_bins(s, Int64GetDatum(vsize), Int64GetDatum(vorigin), count);
 }
 
 /**
  * @ingroup meos_setspan_bin
  * @brief Return the bins of a float span
  * @param[in] s Input span to split
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-floatspan_bins(const Span *s, double size, double origin, int *count)
+floatspan_bins(const Span *s, double vsize, double vorigin, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
-  return span_bins(s, Float8GetDatum(size), Float8GetDatum(origin), count);
+  return span_bins(s, Float8GetDatum(vsize), Float8GetDatum(vorigin), count);
 }
 
 /**
@@ -111,16 +111,16 @@ floatspan_bins(const Span *s, double size, double origin, int *count)
  * @brief Return the bins of a date span
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] torigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-datespan_bins(const Span *s, const Interval *duration, DateADT origin,
+datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
   int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
-  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(origin),
+  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(torigin),
     count);
 }
 
@@ -129,16 +129,16 @@ datespan_bins(const Span *s, const Interval *duration, DateADT origin,
  * @brief Return the bins of a timestamptz span
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] torigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
+tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
   int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(origin),
+  return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(torigin),
     count);
 }
 
