@@ -158,4 +158,13 @@ SELECT (rec).time FROM (SELECT unnest(tposechain
   '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 0), 0))@2001-01-02,
   PoseChain(Pose(Point(0 0), 0))@2001-01-03}') AS rec) AS t;
 
+-- Rigid motions: a pose chain moves as the pose it composes to
+SELECT asText(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1), 6);
+SELECT asText(tpose(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tpose(rotateX(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 0.7), 6);
+SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 1, 2, 3)), 6) =
+  asText(translate(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 1, 2, 3), 6);
+
 -------------------------------------------------------------------------------

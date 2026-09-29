@@ -216,4 +216,86 @@ Tposechainarr_as_geopose(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result_text);
 }
 
+PGDLLEXPORT Datum Tposechain_translate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_translate);
+/**
+ * @ingroup mobilitydb_posechain_transf
+ * @brief Return a temporal pose chain translated by offsets
+ * @sqlfn translate()
+ */
+Datum
+Tposechain_translate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_translate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_rotate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_rotate);
+/**
+ * @ingroup mobilitydb_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the vertical through a point
+ * @sqlfn rotate()
+ */
+Datum
+Tposechain_rotate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_rotate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_rotate_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_rotate_x);
+/**
+ * @ingroup mobilitydb_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the x axis
+ * @sqlfn rotateX()
+ */
+Datum
+Tposechain_rotate_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_rotate_x(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_rotate_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_rotate_y);
+/**
+ * @ingroup mobilitydb_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the y axis
+ * @sqlfn rotateY()
+ */
+Datum
+Tposechain_rotate_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_rotate_y(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_rotate_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_rotate_z);
+/**
+ * @ingroup mobilitydb_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the z axis
+ * @sqlfn rotateZ(), rotate()
+ */
+Datum
+Tposechain_rotate_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_rotate_z(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/

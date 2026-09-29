@@ -547,6 +547,79 @@ FROM (SELECT unnest(merge(
 </programlisting>
 				<para>The pose is applied to the reference geometry in every row of the result: the value of a row is the reference geometry rotated by the orientation of the pose and then translated to its position, the geometry that <varname>startValue</varname> and <varname>valueAtTimestamp</varname> return at that pose. In the second example the pose rotates the square by 90° and moves it to (3, 2). A reference geometry that a rotation maps onto itself yields rows with equal geometries, one per pose.</para>
 			</listitem>
+			<listitem xml:id="trgeometry_translate">
+				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
+				<para>Return a temporal value translated by given offsets &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+translate(trgeometry,deltax float,deltay float,deltaz float=0) &#8594; trgeometry
+</programlisting>
+				<para>A vertical offset takes a two-dimensional value out of its plane, so the result is three-dimensional.</para>
+				<para>The motion moves the pose of every instant and keeps the reference geometry. A motion that takes a two-dimensional value out of its plane takes the reference geometry with it, in the plane z = 0.</para>
+				<para>The motion is a planar map, so a geodetic value raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));
+  [Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
+/* POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(2 3),0.3)@2001-01-01,
+   Pose(POINT(4 4),1.1)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_rotate">
+				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
+				<para>Return a temporal value rotated counter-clockwise about the origin or about a point &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotate(trgeometry,angle float) &#8594; trgeometry
+rotate(trgeometry,angle float,x0 float,y0 float) &#8594; trgeometry
+</programlisting>
+				<para>The motion moves the pose of every instant and keeps the reference geometry. A motion that takes a two-dimensional value out of its plane takes the reference geometry with it, in the plane z = 0.</para>
+				<para>The motion is a planar map, so a geodetic value raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));
+  [Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
+/* POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(1 1),1)@2001-01-01,
+   Pose(POINT(1.885467 3.053278),1.8)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_rotateX">
+				<indexterm significance="normal"><primary><varname>rotateX</varname></primary></indexterm>
+				<para>Return a temporal value rotated counter-clockwise about the x axis &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateX(trgeometry,angle float) &#8594; trgeometry
+</programlisting>
+				<para>The rotation takes a two-dimensional value out of its plane, so the result is three-dimensional: each position gains the height the rotation gives it, and each orientation is the rotation composed with the angle about the vertical that the value states.</para>
+				<para>The motion moves the pose of every instant and keeps the reference geometry. A motion that takes a two-dimensional value out of its plane takes the reference geometry with it, in the plane z = 0.</para>
+				<para>The motion is a planar map, so a geodetic value raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));
+  [Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+/* POLYGON Z ((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));
+   [Pose(POINT Z (1 0.764842 0.644218),0.928825,0.339047,-0.051242,0.140378)@2001-01-01,
+   Pose(POINT Z (3 1.529684 1.288435),0.800838,0.292329,-0.179228,0.490998)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_rotateY">
+				<indexterm significance="normal"><primary><varname>rotateY</varname></primary></indexterm>
+				<para>Return a temporal value rotated counter-clockwise about the y axis &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateY(trgeometry,angle float) &#8594; trgeometry
+</programlisting>
+				<para>The rotation takes a two-dimensional value out of its plane, so the result is three-dimensional: each position gains the height the rotation gives it, and each orientation is the rotation composed with the angle about the vertical that the value states.</para>
+				<para>The motion moves the pose of every instant and keeps the reference geometry. A motion that takes a two-dimensional value out of its plane takes the reference geometry with it, in the plane z = 0.</para>
+				<para>The motion is a planar map, so a geodetic value raises an error.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_rotateZ">
+				<indexterm significance="normal"><primary><varname>rotateZ</varname></primary></indexterm>
+				<para>Return a temporal value rotated counter-clockwise about the z axis &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateZ(trgeometry,angle float) &#8594; trgeometry
+</programlisting>
+				<para>The motion moves the pose of every instant and keeps the reference geometry. A motion that takes a two-dimensional value out of its plane takes the reference geometry with it, in the plane z = 0.</para>
+				<para>The motion is a planar map, so a geodetic value raises an error.</para>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

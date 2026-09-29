@@ -144,3 +144,41 @@ SELECT ST_GeometryType(convexHull(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
  ST_CurvePolygon
 (1 row)
 
+SELECT asText(translate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 1, 2), 6);
+                                                   astext                                                   
+------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(2 3),0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(4 4),1)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1), 6);
+                                                          astext                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1.885467 3.053278),1)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7), 6);
+                                                                astext                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(0.120625 1.40906),0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1.006091 3.462337),1)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tgeompoint(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeompoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]'), 0.7, 1, 1), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tgeompoint(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeompoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]'), 0.7), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tfloat(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1)) = tfloat(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]');
+ ?column? 
+----------
+ t
+(1 row)
+

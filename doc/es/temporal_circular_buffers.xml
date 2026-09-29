@@ -807,6 +807,54 @@ SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
    [Cbuffer(POINT(2 2),0.5)@2001-01-03, Cbuffer(POINT(2 2),0.5)@2001-01-04]} */
 </programlisting>
 			</listitem>
+			<listitem xml:id="tcbuffer_translate">
+				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
+				<para>Devuelve un valor temporal trasladado por los desplazamientos dados</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+translate(tcbuffer,deltax float,deltay float) &#8594; tcbuffer
+</programlisting>
+				<para>El movimiento desplaza el centro de cada buffer circular y conserva su radio. Un buffer circular es plano, por lo que no admite desplazamiento vertical ni rotación alrededor de los ejes x o y.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(translate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 1, 2), 6);
+-- [Cbuffer(POINT(2 3),0.5)@2001-01-01, Cbuffer(POINT(4 4),1)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_rotate">
+				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotate(tcbuffer,angle float) &#8594; tcbuffer
+rotate(tcbuffer,angle float,x0 float,y0 float) &#8594; tcbuffer
+</programlisting>
+				<para>El movimiento desplaza el centro de cada buffer circular y conserva su radio. Un buffer circular es plano, por lo que no admite desplazamiento vertical ni rotación alrededor de los ejes x o y.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1), 6);
+/* [Cbuffer(POINT(1 1),0.5)@2001-01-01,
+   Cbuffer(POINT(1.885467 3.053278),1)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_rotateZ">
+				<indexterm significance="normal"><primary><varname>rotateZ</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateZ(tcbuffer,angle float) &#8594; tcbuffer
+</programlisting>
+				<para>El movimiento desplaza el centro de cada buffer circular y conserva su radio. Un buffer circular es plano, por lo que no admite desplazamiento vertical ni rotación alrededor de los ejes x o y.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(3 2),1)@2001-01-02]', 0.7), 6);
+/* [Cbuffer(POINT(0.120625 1.40906),0.5)@2001-01-01,
+   Cbuffer(POINT(1.006091 3.462337),1)@2001-01-02] */
+</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

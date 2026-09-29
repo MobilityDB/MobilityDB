@@ -57,6 +57,37 @@ CREATE FUNCTION transformPipeline(tpose, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION translate(tpose, deltax float, deltay float,
+    deltaz float DEFAULT 0.0)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_translate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tpose, angle float)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tpose, angle float, x0 float, y0 float)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_rotate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateX(tpose, angle float)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_rotate_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateY(tpose, angle float)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_rotate_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateZ(tpose, angle float)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/

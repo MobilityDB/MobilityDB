@@ -1551,6 +1551,21 @@
 				<listitem>
 					<para><link linkend="tpose_round"><varname>round</varname></link>: Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tpose_translate"><varname>translate</varname></link>: Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_rotate"><varname>rotate</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_rotateX"><varname>rotateX</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje x &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_rotateY"><varname>rotateY</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje y &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2223,6 +2238,15 @@
 				<listitem>
 					<para><link linkend="tcbuffer_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que el búfer circular temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tcbuffer_translate"><varname>translate</varname></link>: Devuelve un valor temporal trasladado por los desplazamientos dados</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcbuffer_rotate"><varname>rotate</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcbuffer_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2478,6 +2502,21 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_unnest"><varname>unnest</varname></link>: Transforma una trgeometry no lineal en un conjunto de filas, una por pose distinta, cada una es una pareja compuesta de la geometría de referencia con la pose aplicada y el conjunto de períodos durante el cual la trgeometry toma esa pose &SRF;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_translate"><varname>translate</varname></link>: Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_rotate"><varname>rotate</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_rotateX"><varname>rotateX</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje x &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_rotateY"><varname>rotateY</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje y &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

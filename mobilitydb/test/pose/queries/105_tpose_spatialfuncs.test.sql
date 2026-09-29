@@ -202,4 +202,25 @@ SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01,
 
 SELECT COUNT(*) FROM tbl_tpose2d WHERE trajectory(temp) IS NOT NULL;
 
+-- Rigid motions
+SELECT asText(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
+SELECT asText(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3), 6);
+SELECT asText(rotate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
+SELECT asText(rotateZ(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+SELECT asText(rotateX(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+SELECT asText(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+-- The position moves as the temporal point it places
+SELECT asText(tgeompoint(rotate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeompoint(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tgeompoint(rotateZ(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeompoint(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeompoint(rotateX(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 0.7), 6);
+SELECT asText(tgeompoint(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateY(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 0.7), 6);
+SELECT asText(tgeompoint(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3)), 6) =
+  asText(translate(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 1, 2, 3), 6);
+-- A motion is a planar map
+SELECT rotateZ(tpose 'SRID=4326;[GeodPose(Point Z(8 47 100), 1, 0, 0, 0)@2001-01-01, GeodPose(Point Z(9 47 100), 1, 0, 0, 0)@2001-01-02]', 0.7);
+
 -------------------------------------------------------------------------------

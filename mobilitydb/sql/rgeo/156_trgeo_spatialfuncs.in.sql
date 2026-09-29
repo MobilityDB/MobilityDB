@@ -57,6 +57,37 @@ CREATE FUNCTION transformPipeline(trgeometry, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION translate(trgeometry, deltax float, deltay float,
+    deltaz float DEFAULT 0.0)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_translate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(trgeometry, angle float)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(trgeometry, angle float, x0 float, y0 float)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateX(trgeometry, angle float)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotate_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateY(trgeometry, angle float)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotate_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateZ(trgeometry, angle float)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * traversedArea
  *****************************************************************************/
