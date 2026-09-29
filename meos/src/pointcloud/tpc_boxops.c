@@ -479,8 +479,8 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
    * minimum of their synchronized distance, as the sibling spatiotemporal
    * types do. This is finer than the bounding-box distance computed by
    * nad_tpcbox_tpcbox: it can only be equal to or larger. */
-  Temporal *proj1 = tpointcloud_to_tgeompoint(temp1);
-  Temporal *proj2 = tpointcloud_to_tgeompoint(temp2);
+  Temporal *proj1 = tpcpoint_to_tgeompoint(temp1);
+  Temporal *proj2 = tpcpoint_to_tgeompoint(temp2);
   if (! proj1 || ! proj2)
   {
     if (proj1) pfree(proj1);

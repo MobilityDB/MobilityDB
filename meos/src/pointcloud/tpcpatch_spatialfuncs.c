@@ -35,7 +35,7 @@
  * positions its points occupy, read through the schema its pcid names. Lifting
  * that value-level answer over time gives @ref tpcpatch_to_tgeometry, which is
  * what the type's temporal spatial relationships convert to before delegating
- * to the one geometry engine — the same route @ref tpointcloud_to_tgeompoint
+ * to the one geometry engine — the same route @ref tpcpoint_to_tgeompoint
  * opens for a tpcpoint, differing only in that a cluster of points is a
  * @p tgeometry where a single point is a @p tgeompoint.
  */
