@@ -57,6 +57,26 @@ CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION translate(tcbuffer, deltax float, deltay float)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_translate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tcbuffer, angle float)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tcbuffer, angle float, x0 float, y0 float)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_rotate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateZ(tcbuffer, angle float)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Traversed area
  *****************************************************************************/

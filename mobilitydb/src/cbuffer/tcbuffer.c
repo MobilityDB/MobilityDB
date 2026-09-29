@@ -278,6 +278,56 @@ Tcbuffer_expand(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Tcbuffer_translate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_translate);
+/**
+ * @ingroup mobilitydb_cbuffer_transf
+ * @brief Return a temporal circular buffer translated by offsets
+ * @sqlfn translate()
+ */
+Datum
+Tcbuffer_translate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tcbuffer_translate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_rotate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_rotate);
+/**
+ * @ingroup mobilitydb_cbuffer_transf
+ * @brief Return a temporal circular buffer rotated counter-clockwise about the vertical through a point
+ * @sqlfn rotate()
+ */
+Datum
+Tcbuffer_rotate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tcbuffer_rotate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_rotate_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_rotate_z);
+/**
+ * @ingroup mobilitydb_cbuffer_transf
+ * @brief Return a temporal circular buffer rotated counter-clockwise about the z axis
+ * @sqlfn rotateZ(), rotate()
+ */
+Datum
+Tcbuffer_rotate_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tcbuffer_rotate_z(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Traversed area
  *****************************************************************************/

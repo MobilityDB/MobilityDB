@@ -89,4 +89,14 @@ SELECT convexHull(NULL::tcbuffer);
 SELECT ST_GeometryType(convexHull(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'));
 SELECT ST_GeometryType(convexHull(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 3),0.5)@2001-01-03]'));
 
+-- Rigid motions: the centre moves as the temporal point it traces and the radius stays
+SELECT asText(translate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 1, 2), 6);
+SELECT asText(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1), 6);
+SELECT asText(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7), 6);
+SELECT asText(tgeompoint(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeompoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tgeompoint(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeompoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]'), 0.7), 6);
+SELECT tfloat(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1)) = tfloat(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]');
+
 -------------------------------------------------------------------------------

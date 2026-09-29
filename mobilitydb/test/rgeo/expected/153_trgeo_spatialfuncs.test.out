@@ -109,3 +109,56 @@ SELECT atElevation(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   floatspan '[1, 2]');
 ERROR:  The trgeometry must have Z dimension
+SELECT asText(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
+                                                                astext                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(2 3),0.3)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(4 4),1.1)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+                                                                                                                           astext                                                                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON Z ((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(POINT Z (1 0.764842 0.644218),0.928825,0.339047,-0.051242,0.140378)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT Z (3 1.529684 1.288435),0.800838,0.292329,-0.179228,0.490998)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
+                                                                      astext                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(1 1),1)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1.885467 3.053278),1.8)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tgeometry(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
+  asText(translate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tgeometry(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tgeometry(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateY(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+ ?column? 
+----------
+ t
+(1 row)
+

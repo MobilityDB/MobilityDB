@@ -723,6 +723,88 @@ Trgeometry_as_tsequenceset(PG_FUNCTION_ARGS)
   PG_RETURN_TSEQUENCESET_P(result);
 }
 
+PGDLLEXPORT Datum Trgeometry_translate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_translate);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return a temporal rigid geometry translated by offsets
+ * @sqlfn translate()
+ */
+Datum
+Trgeometry_translate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_translate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_rotate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_rotate);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the vertical through a point
+ * @sqlfn rotate()
+ */
+Datum
+Trgeometry_rotate(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_rotate(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_rotate_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_rotate_x);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the x axis
+ * @sqlfn rotateX()
+ */
+Datum
+Trgeometry_rotate_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_rotate_x(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_rotate_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_rotate_y);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the y axis
+ * @sqlfn rotateY()
+ */
+Datum
+Trgeometry_rotate_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_rotate_y(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_rotate_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_rotate_z);
+/**
+ * @ingroup mobilitydb_rgeo_transf
+ * @brief Return a temporal rigid geometry rotated counter-clockwise about the z axis
+ * @sqlfn rotateZ(), rotate()
+ */
+Datum
+Trgeometry_rotate_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_rotate_z(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Modification Functions
  *****************************************************************************/

@@ -57,4 +57,35 @@ CREATE FUNCTION transformPipeline(tposechain, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION translate(tposechain, deltax float, deltay float,
+    deltaz float DEFAULT 0.0)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_translate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tposechain, angle float)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotate(tposechain, angle float, x0 float, y0 float)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_rotate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateX(tposechain, angle float)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_rotate_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateY(tposechain, angle float)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_rotate_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotateZ(tposechain, angle float)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_rotate_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

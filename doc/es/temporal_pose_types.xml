@@ -1141,6 +1141,96 @@ SELECT asEWKT(shiftTime(tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01'
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02
 </programlisting>
 			</listitem>
+			<listitem xml:id="tpose_translate">
+				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
+				<para>Devuelve un valor temporal trasladado por los desplazamientos dados &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+translate({tpose,tposechain},deltax float,deltay float,deltaz float=0) &#8594; {tpose,tposechain}
+</programlisting>
+				<para>Un desplazamiento vertical saca un valor bidimensional de su plano, por lo que el resultado es tridimensional.</para>
+				<para>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
+-- [Pose(POINT(2 3),0.3)@2001-01-01, Pose(POINT(4 4),1.1)@2001-01-02]
+SELECT asText(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3), 6);
+/* [Pose(POINT Z (2 3 3),0.988771,0,0,0.149438)@2001-01-01,
+   Pose(POINT Z (4 4 3),0.852525,0,0,0.522687)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_rotate">
+				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotate({tpose,tposechain},angle float) &#8594; {tpose,tposechain}
+rotate({tpose,tposechain},angle float,x0 float,y0 float) &#8594; {tpose,tposechain}
+</programlisting>
+				<para>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotate(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
+-- [Pose(POINT(1 1),1)@2001-01-01, Pose(POINT(1.885467 3.053278),1.8)@2001-01-02]
+SELECT asText(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01,
+  PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1), 6);
+/* [PoseChain(Pose(POINT(1 1),1),Pose(POINT(2 0),0.5))@2001-01-01,
+   PoseChain(Pose(POINT(1.885467 3.053278),1.8),Pose(POINT(2 0),0.5))@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_rotateX">
+				<indexterm significance="normal"><primary><varname>rotateX</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje x &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateX({tpose,tposechain},angle float) &#8594; {tpose,tposechain}
+</programlisting>
+				<para>La rotación saca un valor bidimensional de su plano, por lo que el resultado es tridimensional: cada posición gana la altura que le da la rotación y cada orientación es la rotación compuesta con el ángulo alrededor de la vertical que indica el valor.</para>
+				<para>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotateX(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+/* [Pose(POINT Z (1 0.764842 0.644218),0.928825,0.339047,-0.051242,0.140378)@2001-01-01,
+   Pose(POINT Z (3 1.529684 1.288435),0.800838,0.292329,-0.179228,0.490998)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_rotateY">
+				<indexterm significance="normal"><primary><varname>rotateY</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje y &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateY({tpose,tposechain},angle float) &#8594; {tpose,tposechain}
+</programlisting>
+				<para>La rotación saca un valor bidimensional de su plano, por lo que el resultado es tridimensional: cada posición gana la altura que le da la rotación y cada orientación es la rotación compuesta con el ángulo alrededor de la vertical que indica el valor.</para>
+				<para>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+/* [Pose(POINT Z (0.764842 1 -0.644218),0.928825,0.051242,0.339047,0.140378)@2001-01-01,
+   Pose(POINT Z (2.294527 2 -1.932653),0.800838,0.179228,0.292329,0.490998)@2001-01-02] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_rotateZ">
+				<indexterm significance="normal"><primary><varname>rotateZ</varname></primary></indexterm>
+				<para>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rotateZ({tpose,tposechain},angle float) &#8594; {tpose,tposechain}
+</programlisting>
+				<para>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</para>
+				<para>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotateZ(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
+/* [Pose(POINT(0.120625 1.40906),1)@2001-01-01,
+   Pose(POINT(1.006091 3.462337),1.8)@2001-01-02] */
+</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 
