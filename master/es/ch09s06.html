@@ -6,8 +6,8 @@
 		</p><p>Muchas de las funciones de esta sección son <span class="emphasis"><em>funciones de retorno de conjuntos</em></span> (también conocidas como <span class="emphasis"><em>funciones de tabla</em></span>) ya que normalmente devuelven más de un valor. En este caso, las funciones están marcadas con el símbolo <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 .</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Operaciones de intervalos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6613"></a><p>Devuelve una matriz de intervalos que cubre el rango de valores o de tiempo con intervalos de la misma amplitud o duración</p><pre class="programlisting">
 bins(numspans,vsize number,vorigin number=0) → span[]
-bins(datespans,tsize interval,torigin date='2000-01-03') → span[]
-bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
+bins(datespans,duration interval,torigin date='2000-01-03') → span[]
+bins(tstzspans,duration interval,torigin timestamptz='2000-01-03') → span[]
 </pre><p>Si el origen no se especifica, su valor se establece por defecto en 0 para rangos de valores y en lunes 3 de enero de 2000 para rangos de tiempo.</p><pre class="programlisting">
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
@@ -27,9 +27,9 @@ FROM unnest(bins(tstzspanset '{[2001-01-15, 2001-01-17],[2001-01-22, 2001-01-25]
 -- 3 | [2001-01-22, 2001-01-24)
 -- 4 | [2001-01-24, 2001-01-25]
 </pre></li><li class="listitem"><a name="setspan_getBin"></a><a class="indexterm" name="id6621"></a><p>Devuelve el rango que contiene un número o una marca de tiempo</p><pre class="programlisting">
-getBin(number,size number,origin number=0) → span
-getBin(date,duration interval,origin date='2000-01-03') → datespan
-getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → tstzspan
+getBin(number,vsize number,vorigin number=0) → span
+getBin(date,duration interval,torigin date='2000-01-03') → datespan
+getBin(timestamptz,duration interval,torigin timestamptz='2000-01-03') → tstzspan
 </pre><p>Si el origen no se especifica, su valor se establece por defecto en 0 para rangos de valores y en lunes 3 de enero de 2000 para rangos de tiempo.</p><pre class="programlisting">
 SELECT getBin(2, 2);
 -- [2, 4)
@@ -143,7 +143,7 @@ getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
 getStboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → stbox
 getSpaceTimeTile(point geometry,time timestamptz,xsize float,
-  [ysize float,zsize float,]duration,interval,sorigin geompoint='Point(0 0 0)',
+  [ysize float,zsize float,]duration interval,sorigin geompoint='Point(0 0 0)',
   torigin timestamptz='2000-01-03') → stbox
 </pre><p>Si el origen de la dimensión espacial y/o de tiempo no se especifica, su valor se establece por defecto en <code class="varname">'Point(0 0 0)'</code> y en el lunes 3 de enero de 2000, respectivamente. En el caso de una malla espacio-temporal, <code class="varname">ysize</code> y <code class="varname">zsize</code> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <code class="varname">xsize</code>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</p><pre class="programlisting">
 SELECT getSpaceTile(geometry 'Point(1 1 1)', 2.0);
@@ -157,7 +157,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Operaciones de cuadro delimitador</h3></div></div></div><p>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <a class="xref" href="ch09s05.html" title="Operaciones de división">“Operaciones de división”</a> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6731"></a><a class="indexterm" name="id6734"></a><p>Devuelve una matriz de rangos de valores o de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</p><pre class="programlisting">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
-timeBins(temp,tsize interval,torigin timestamptz='2000-01-03') → tstzspan[]
+timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si no se especifica el origen de los valores, se establece por defecto en 0 para los rangos de valores y en el lunes 3 de enero de 2000 para los rangos de tiempo.</p><pre class="programlisting">
 SELECT valueBins(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
   1@2001-01-05}', 3);
@@ -175,8 +175,8 @@ SELECT timeBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
 -- {"[2001-01-01, 2001-01-04)","[2001-01-04, 2001-01-07)"}
 </pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6743"></a><a class="indexterm" name="id6746"></a><a class="indexterm" name="id6749"></a><p>Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</p><pre class="programlisting">
 valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
-timeBoxes(tnumber,tsize interval,torigin timestamptz='2000-01-03') → tbox[]
-valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
+timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
+valueTimeBoxes(tnumber,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si el origen de la dimensión de valores y/o de tiempo no se especifica, se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</p><pre class="programlisting">
 SELECT valueBoxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
@@ -235,9 +235,9 @@ SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
    XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Operaciones de división</h3></div></div></div><p>Estas funciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver la <a class="xref" href="ch09s06.html#bin_functions" title="Operaciones de intervalos">“Operaciones de intervalos”</a>) o un mosaico multidimensional (ver la <a class="xref" href="ch09s06.html#tile_functions" title="Operaciones de mosaicos">“Operaciones de mosaicos”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6789"></a><a class="indexterm" name="id6792"></a><a class="indexterm" name="id6795"></a><p>Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
-valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
-timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → {(time,temp)}
-valueTimeSplit(tnumber,size number,duration interval,vorigin number=0,
+valueSplit(tnumber,vsize number,vorigin number=0) → {(number,tnumber)}
+timeSplit(ttype,duration interval,torigin timestamptz='2000-01-03') → {(time,temp)}
+valueTimeSplit(tnumber,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(number,time,tnumber}
 </pre><p>El resultado es un conjunto de pares o un conjunto de triples. Si no se especifica el origen de la dimensión de valores o temporal, se establecen por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</p><pre class="programlisting">
 SELECT (sp).number,
@@ -312,7 +312,7 @@ spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
-timeSplit(tpoint,duration interval,origin timestamptz='2000-01-03') → {(time,tpoint)}
+timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',
