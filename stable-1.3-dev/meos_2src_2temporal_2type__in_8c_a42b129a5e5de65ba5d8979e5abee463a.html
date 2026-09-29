@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: span_basevalue_from_wkb_size</title>
+<title>MobilityDB: wkb_parse_state_check</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,7 +103,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_gafc0e09e4d3142aecf316aca2e221aa72.html#gafc0e09e4d3142aecf316aca2e221aa72">set_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_ga0489f4baec8cb6d43dc027e3372e626a.html#ga0489f4baec8cb6d43dc027e3372e626a">set_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a0bc0e659fe59cdc3361daef6ffc9ea76.html#a0bc0e659fe59cdc3361daef6ffc9ea76">set_from_wkb_state</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a212e24ada669877808fc5bd86dd3bb89.html#a212e24ada669877808fc5bd86dd3bb89">span_basevalue_from_wkb_size</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a212e24ada669877808fc5bd86dd3bb89.html#a212e24ada669877808fc5bd86dd3bb89">span_basevalue_from_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_gaa1d54a26aa7b8854db51f5b3ebf8ae36.html#gaa1d54a26aa7b8854db51f5b3ebf8ae36">span_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_ga181533126b6abb671fb7b2b35ea401c9.html#ga181533126b6abb671fb7b2b35ea401c9">span_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a16aaa22af2f8a11c979c8d6eac0d7630.html#a16aaa22af2f8a11c979c8d6eac0d7630">span_from_wkb_state</a></td></tr>
@@ -136,13 +136,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a24cc970667b41d732fd8432410bfec7a.html#a24cc970667b41d732fd8432410bfec7a">type_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_adee03036a0ad07b059b667c81eeea60c.html#adee03036a0ad07b059b667c81eeea60c">type_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ae4f9371b3ebf2fe3794120e287dc14cb.html#ae4f9371b3ebf2fe3794120e287dc14cb">wkb_length_check</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a">wkb_parse_state_check</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a">wkb_parse_state_check</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a212e24ada669877808fc5bd86dd3bb89" name="a212e24ada669877808fc5bd86dd3bb89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a212e24ada669877808fc5bd86dd3bb89">&#9670;&#160;</a></span>span_basevalue_from_wkb_size()</h2>
+<a id="a42b129a5e5de65ba5d8979e5abee463a" name="a42b129a5e5de65ba5d8979e5abee463a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42b129a5e5de65ba5d8979e5abee463a">&#9670;&#160;</a></span>wkb_parse_state_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -151,21 +151,32 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static size_t span_basevalue_from_wkb_size </td>
+          <td class="memname">static bool wkb_parse_state_check </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmeos__wkb__parse__state.html">meos_wkb_parse_state</a> *&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>next</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the size of a span base value from its WKB representation. </p>
+<p>Return true if the next bytes to read lie inside the WKB array, raise an error and return false otherwise. </p>
+<p >The request is compared with the bytes left, so a request as large as the address space is refused instead of wrapping the end pointer </p>
 
 </div>
 </div>

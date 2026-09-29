@@ -9,7 +9,7 @@ var searchData=
   ['eq_5fopr_6',['eq_opr',['../structTemporalAnalyzeExtraData_ad4f22fa812be7c9667e87cdbed65bc4f.html#ad4f22fa812be7c9667e87cdbed65bc4f',1,'TemporalAnalyzeExtraData']]],
   ['eqbes_7',['eqbes',['../projection__gk_8c_a88b2fdbd247fa7bb19547ac680253e61.html#a88b2fdbd247fa7bb19547ac680253e61',1,'projection_gk.c']]],
   ['eqwgs_8',['eqwgs',['../projection__gk_8c_a90d0feca775a837e1f929d514954029a.html#a90d0feca775a837e1f929d514954029a',1,'projection_gk.c']]],
-  ['error_9',['error',['../structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333',1,'wkb_parse_state']]],
+  ['error_9',['error',['../structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333',1,'wkb_parse_state::error()'],['../structmeos__wkb__parse__state_ab55ad805a5e2428865e9dfdedbe759b6.html#ab55ad805a5e2428865e9dfdedbe759b6',1,'meos_wkb_parse_state::error()']]],
   ['ever_10',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo::ever()'],['../trgeo__spatialrels_8h_acf88d5d9bc5c1e81a2a0598df934457d.html#acf88d5d9bc5c1e81a2a0598df934457d',1,'ever():&#160;trgeo_spatialrels.h']]],
   ['expand_5farg_11',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
   ['extent_12',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],

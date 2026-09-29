@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: wkb_parse_state_check</title>
+<title>MobilityDB: wkb_length_check</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -135,13 +135,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a8f6a5a68b5dccfd17b539338f92e5848.html#a8f6a5a68b5dccfd17b539338f92e5848">tsequenceset_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a24cc970667b41d732fd8432410bfec7a.html#a24cc970667b41d732fd8432410bfec7a">type_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_adee03036a0ad07b059b667c81eeea60c.html#adee03036a0ad07b059b667c81eeea60c">type_from_wkb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a4433d01096cff59ab0e8d814179166e2.html#a4433d01096cff59ab0e8d814179166e2">wkb_parse_state_check</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ae4f9371b3ebf2fe3794120e287dc14cb.html#ae4f9371b3ebf2fe3794120e287dc14cb">wkb_length_check</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a">wkb_parse_state_check</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4433d01096cff59ab0e8d814179166e2" name="a4433d01096cff59ab0e8d814179166e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4433d01096cff59ab0e8d814179166e2">&#9670;&#160;</a></span>wkb_parse_state_check()</h2>
+<a id="ae4f9371b3ebf2fe3794120e287dc14cb" name="ae4f9371b3ebf2fe3794120e287dc14cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4f9371b3ebf2fe3794120e287dc14cb">&#9670;&#160;</a></span>wkb_length_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,7 +151,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void wkb_parse_state_check </td>
+          <td class="memname">static bool wkb_length_check </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmeos__wkb__parse__state.html">meos_wkb_parse_state</a> *&#160;</td>
           <td class="paramname"><em>s</em>, </td>
@@ -158,8 +159,14 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>next</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a>&#160;</td>
+          <td class="paramname"><em>len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a>&#160;</td>
+          <td class="paramname"><em>minlen</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -174,7 +181,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Check that we are not about to read off the end of the WKB array. </p>
+<p>Return true if a length or a count read from the WKB array is not negative and announces no more bytes than the ones left, raise an error and return false otherwise. </p>
+<p >The counterpart of <a class="el" href="meos_2src_2temporal_2type__in_8c_a42b129a5e5de65ba5d8979e5abee463a.html#a42b129a5e5de65ba5d8979e5abee463a" title="Return true if the next bytes to read lie inside the WKB array, raise an error and return false other...">wkb_parse_state_check</a> for a length read from the array. Every element counted takes at least one byte, so a count is bounded by the bytes left as a length is. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Parse state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Length or count read from the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">minlen</td><td>Minimum value of the length or count </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
