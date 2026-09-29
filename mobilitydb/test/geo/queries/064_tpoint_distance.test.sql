@@ -164,6 +164,12 @@ SELECT round(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Poi
 
 SELECT round(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' <-> tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02]', 6);
 
+-- A linear and a step operand: the distance is least where the linear point
+-- passes the step point, as it is against a linear operand
+SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 6);
+SELECT round(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]' <-> tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 6);
+SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 6);
+
 SELECT round(tgeogpoint 'Point(-90 0)@2001-01-01' <-> tgeogpoint 'Point(0 -90)@2001-01-01', 6);
 SELECT round(tgeogpoint '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeogpoint 'Point(0 -90)@2001-01-01', 6);
 SELECT round(tgeogpoint '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeogpoint 'Point(0 -90)@2001-01-01', 6);

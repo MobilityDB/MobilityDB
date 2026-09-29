@@ -333,6 +333,24 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1)
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]' <-> tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]', 6);
+                                                      round                                                       
+------------------------------------------------------------------------------------------------------------------
+ [1.214214@Mon Jan 01 00:00:00 2001 PST, 0.8@Tue Jan 02 00:00:00 2001 PST, 1.214214@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]', 6);
+                                                      round                                                       
+------------------------------------------------------------------------------------------------------------------
+ [1.214214@Mon Jan 01 00:00:00 2001 PST, 0.8@Tue Jan 02 00:00:00 2001 PST, 1.214214@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]', 6);
+                                                      round                                                       
+------------------------------------------------------------------------------------------------------------------
+ [1.214214@Mon Jan 01 00:00:00 2001 PST, 0.8@Tue Jan 02 00:00:00 2001 PST, 1.214214@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
 SELECT round(startValue(tcbuffer 'Cbuffer(Point(2 10), 0.5)@2001-01-01' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))')::numeric, 6);
   round   
 ----------
