@@ -198,6 +198,7 @@ install(
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 install(
   FILES "${CMAKE_SOURCE_DIR}/mobilitydb/sql/mobilitydb--1.2.0--1.2.1.sql"
+    "${CMAKE_SOURCE_DIR}/mobilitydb/sql/mobilitydb--1.2.1--1.2.2.sql"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 
