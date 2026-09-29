@@ -530,7 +530,7 @@ tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   lfinfo.argtype[0] = temp1->temptype;
   lfinfo.argtype[1] = temp2->temptype;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;

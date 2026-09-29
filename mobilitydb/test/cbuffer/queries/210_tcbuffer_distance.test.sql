@@ -102,6 +102,12 @@ SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
 SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 
+-- A linear and a step operand: the distance is least where the linear buffer
+-- passes the step one, as it is against a linear operand
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]' <-> tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]', 6);
+SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0), 0.1)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.1)@2001-01-03]', 6);
+
 -------------------------------------------------------------------------------
 -- Temporal distance to a non-point geometry: the full geometry is decomposed
 -- into its boundary edges, not collapsed to its minimum bounding circle. Every

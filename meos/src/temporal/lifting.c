@@ -1868,10 +1868,13 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   assert(interp1 != interp2);
   bool step1 = (interp1 != LINEAR);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   /* Array that keeps the instants of a sequence of the result, which it
-   * gathers from the instants of both inputs */
+   * gathers from the instants of both inputs and from the turning points
+   * between them, at most two per segment as in
+   * #tfunc_tcontseq_tcontseq_single */
   TInstant **instants = palloc(sizeof(TInstant *) *
-    (seq1->count + seq2->count));
+    (seq1->count + seq2->count) * 3);
   /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
@@ -1930,6 +1933,31 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     Datum endvalue2 = tinstant_value_p(end2);
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
     instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
+    /* Add the turning points of the segment, where the step sequence keeps
+     * its start value up to the end instant, as #tfunc_tcontseq_tcontseq_single
+     * adds them for two linear sequences */
+    if (lfinfo->tpfn_temp)
+    {
+      Datum segend1 = step1 ? startvalue1 : endvalue1;
+      Datum segend2 = step1 ? endvalue2 : startvalue2;
+      TimestampTz tpt[2];
+      int found = lfinfo->tpfn_temp(startvalue1, segend1, startvalue2, segend2,
+        lfinfo->param[0], start1->t, end1->t, &tpt[0], &tpt[1]);
+      for (int k = 0; k < found; k++)
+      {
+        /* A turning point on a bound is the instant added there */
+        if (tpt[k] <= start1->t || tpt[k] >= end1->t ||
+            (k == 1 && tpt[1] == tpt[0]))
+          continue;
+        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, segend1,
+          start1->temptype, start1->t, end1->t, tpt[k]);
+        Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue2, segend2,
+          start2->temptype, start1->t, end1->t, tpt[k]);
+        Datum tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
+        instants[ninsts++] = tinstant_make_free(tpresult, restype, tpt[k]);
+        DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
+      }
+    }
     /* Close the current sequence if the step sequence changed value */
     if (makeseq)
     {
