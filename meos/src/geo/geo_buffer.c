@@ -3938,17 +3938,29 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
   double *x, double *y)
 {
   assert(ring); assert(x); assert(y);
-  MeosArray *arr = geom_extract_edges(lwcompound_as_lwgeom(ring));
+  /* Each candidate is read off a piece of the ring and located against the
+   * area the ring bounds, and that area carries the SAME pieces: a curve
+   * polygon whose one ring is this one. Its edges answer both questions, so
+   * they are read once rather than once as the ring and again as the polygon.
+   * The displacement a candidate stands at is taken along the piece's own
+   * geometry, which an edge carries whichever of the two types the extraction
+   * tags it with, and which is why the walk below reads both */
+  LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(lwcompound_as_lwgeom(ring));
+  LWGEOM *polygon = buffer_make_single_ring_polygon(copy, srid);
+  if (! polygon)
+    return false;
+  MeosArray *arr = geom_extract_edges(polygon);
   if (! arr || arr->count == 0)
   {
     if (arr)
       meos_array_destroy(arr);
+    lwgeom_free(polygon);
     return false;
   }
-  LWGEOM *polygon = NULL;
-  MeosArray *parr = NULL;
-  Edge **pedges = NULL;
-  int npedges = 0;
+  int npedges = (int) arr->count;
+  Edge **pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
+  for (int e = 0; e < npedges; e++)
+    pedges[e] = (Edge *) meos_array_get_intl(arr, e);
   for (uint32_t i = 0; i < arr->count; i++)
   {
     Edge *edge = (Edge *) meos_array_get_intl(arr, i);
@@ -4009,42 +4021,19 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
         double sign = side ? -1.0 : 1.0;
         double cx = mx + sign * nx * offsets[k];
         double cy = my + sign * ny * offsets[k];
-        /* The areal geometry the ring bounds serves only the containment
-         * test, and every point tried is tested against the same one, so it
-         * and its edges are built at the first point tried and kept for the
-         * rest */
-        if (! polygon)
-        {
-          LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(
-              lwcompound_as_lwgeom(ring));
-          polygon = buffer_make_single_ring_polygon(copy, srid);
-          if (! polygon)
-          {
-            meos_array_destroy(arr);
-            return false;
-          }
-          parr = geom_extract_edges(polygon);
-          npedges = (int) parr->count;
-          pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
-          for (int e = 0; e < npedges; e++)
-            pedges[e] = (Edge *) meos_array_get_intl(parr, e);
-        }
         bool inside = buffer_edges_contain_point(pedges, npedges, cx, cy);
         if (inside)
         {
           *x = cx;
           *y = cy;
-          pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
+          pfree(pedges); lwgeom_free(polygon);
           meos_array_destroy(arr);
           return true;
         }
       }
     }
   }
-  if (polygon)
-  {
-    pfree(pedges); meos_array_destroy(parr); lwgeom_free(polygon);
-  }
+  pfree(pedges); lwgeom_free(polygon);
   meos_array_destroy(arr);
   return false;
 }
