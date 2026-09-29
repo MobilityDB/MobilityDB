@@ -108,6 +108,16 @@ SELECT timeBins(tfloat '[15@2001-01-15, 25@2001-01-25]', '2 days', '2001-01-01')
 
 SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5) LIMIT 3;
 SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, 15.5) LIMIT 3;
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2) LIMIT 3;
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, 15) LIMIT 3;
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint) LIMIT 3;
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, 15::bigint) LIMIT 3;
+SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2) LIMIT 3;
+/* Errors */
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5);
+SELECT valueTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2);
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 0);
+SELECT valueTiles(tbox 'TBOX T([2001-01-15, 2001-01-25])', 2);
 
 SELECT getValueTile(15.5, 2.5);
 SELECT getValueTile(15.5, 2.5, 1.5);
@@ -125,6 +135,13 @@ SELECT getTboxTimeTile(timestamptz '2001-01-15', interval '1 week', '2020-06-15'
 SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
 SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, '1 week', 15.5) LIMIT 3;
 SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.5, '1 week', 15.5, '2001-01-15') LIMIT 3;
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week') LIMIT 3;
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week', 15, '2001-01-15') LIMIT 3;
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, '1 week') LIMIT 3;
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2::bigint, '1 week', 15::bigint, '2001-01-15') LIMIT 3;
+/* Errors */
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '1 week');
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week');
 
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week');
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');

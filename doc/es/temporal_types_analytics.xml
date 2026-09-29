@@ -642,12 +642,12 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 					<indexterm significance="normal"><primary><varname>valueTimeTiles</varname></primary></indexterm>
 					<para>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador temporal con mosaicos del mismo tamaño y/o duración &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
+valueTiles(tbox,vsize number,vorigin number=0) → {(index,tile)}
 timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
-valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0.0,
+valueTimeTiles(tbox,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
 </programlisting>
-					<para>Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</para>
+					<para>El resultado es un conjunto de pares <varname>(index,tile)</varname>. Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente. El tamaño y el origen de los valores tienen el tipo base de los valores de la caja, y una caja de flotantes también acepta valores enteros.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
@@ -667,6 +667,11 @@ SELECT (gr).index,
 -- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
 -- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
+-- ...
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, 15);
+-- (1,"TBOXINT X([15, 17))")
+-- (2,"TBOXINT X([17, 19))")
+-- (3,"TBOXINT X([19, 21))")
 -- ...
 SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
 -- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")

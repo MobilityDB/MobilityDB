@@ -162,6 +162,14 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
+CREATE FUNCTION valueTiles(tbox, vsize bigint, vorigin bigint DEFAULT 0)
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueTiles(tbox, vsize integer, vorigin integer DEFAULT 0)
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
@@ -173,6 +181,16 @@ CREATE FUNCTION timeTiles(tbox, duration interval,
   AS 'MODULE_PATHNAME', 'Tbox_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION valueTimeTiles(tbox, vsize bigint, duration interval,
+  vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueTimeTiles(tbox, vsize integer, duration interval,
+  vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeTiles(tbox, vsize float, duration interval,
   vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
