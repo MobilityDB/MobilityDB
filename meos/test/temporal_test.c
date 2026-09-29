@@ -130,11 +130,11 @@ int main(void)
   char *tbox2_out = tbox_out(tbox2, 6);
 
   TBox *tintbox1 = tbox_in("TBOXINT XT([1, 3],[2001-01-01, 2001-01-03])");
-  char *tintbox1_out = tbox_out(tbox1, 6);
+  char *tintbox1_out = tbox_out(tintbox1, 6);
   TBox *tbigintbox1 = tbox_in("TBOXBIGINT XT([1, 3],[2001-01-01, 2001-01-03])");
   char *tbigintbox1_out = tbox_out(tbigintbox1, 6);
   TBox *tintbox2 = tbox_in("TBOXINT XT([2, 4],[2001-01-02, 2001-01-04])");
-  char *tintbox2_out = tbox_out(tbox2, 6);
+  char *tintbox2_out = tbox_out(tintbox2, 6);
 
   char *tbool1_in = "{[t@2001-01-01, t@2001-01-03],[f@2001-01-04, f@2001-01-06]}";
   Temporal *tbool1 = tbool_in(tbool1_in);
