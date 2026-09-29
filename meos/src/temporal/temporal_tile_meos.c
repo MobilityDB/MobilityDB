@@ -144,6 +144,30 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
 
 /**
  * @ingroup meos_temporal_analytics_tile
+ * @brief Return the tiles of a temporal big integer box
+ * @param[in] box Input box to split
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tbox_value_time_tiles()
+ */
+TBox *
+tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
+  const Interval *duration, int64 vorigin, TimestampTz torigin, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_not_negative_datum(Int64GetDatum(vsize), T_INT8) ||
+      ! ensure_one_tile_dimension((double) vsize, duration))
+    return NULL;
+  return tbox_value_time_tiles(box, Int64GetDatum(vsize), duration,
+    Int64GetDatum(vorigin), torigin, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
  * @brief Return the tiles of a temporal float box
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
@@ -183,6 +207,22 @@ tintbox_value_tiles(const TBox *box, int vsize, int vorigin, int *count)
 
 /**
  * @ingroup meos_temporal_analytics_tile
+ * @brief Return the value tiles of a temporal big integer box
+ * @param[in] box Input box to split
+ * @param[in] vsize Value size of the tiles
+ * @param[in] vorigin Value origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tbox_value_tiles()
+ */
+TBox *
+tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
+  int *count)
+{
+  return tbigintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
  * @brief Return the value tiles of a temporal float box
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
@@ -211,6 +251,22 @@ tintbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, int *count)
 {
   return tintbox_value_time_tiles(box, 0, duration, 0, torigin, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the time tiles of a temporal big integer box
+ * @param[in] box Input box to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tbox_time_tiles()
+ */
+TBox *
+tbigintbox_time_tiles(const TBox *box, const Interval *duration,
+  TimestampTz torigin, int *count)
+{
+  return tbigintbox_value_time_tiles(box, 0, duration, 0, torigin, count);
 }
 
 /**
@@ -283,6 +339,70 @@ tint_value_time_boxes(const Temporal *temp, int vsize,
 {
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal big integer split with
+ * respect to a value grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] vorigin Value origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_boxes()
+ */
+TBox *
+tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), NULL,
+    Int64GetDatum(vorigin), 0, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal big integer split with
+ * respect to a time grid
+ * @param[in] temp Temporal value
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_time_boxes()
+ */
+TBox *
+tbigint_time_boxes(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_time_boxes(temp, Int64GetDatum(0), duration,
+    Int64GetDatum(0), torigin, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal big integer split with
+ * respect to a value and possibly a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
+ */
+TBox *
+tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
+  const Interval *duration, int64 vorigin, TimestampTz torigin, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), duration,
+    Int64GetDatum(vorigin), torigin, count);
 }
 
 /*****************************************************************************/
@@ -1382,6 +1502,41 @@ tint_value_split(const Temporal *temp, int size, int origin, int **bins,
 
 /**
  * @ingroup meos_temporal_analytics_tile
+ * @brief Return the fragments of a temporal big integer split according to
+ * value bins
+ * @param[in] temp Temporal value
+ * @param[in] vsize Size of the value bins
+ * @param[in] vorigin Value origin of the bins
+ * @param[out] bins Array of bins
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Tnumber_value_split()
+ */
+Temporal **
+tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
+  int64 **bins, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8))
+    return NULL;
+
+  Datum *datum_bins;
+  Temporal **result = tnumber_value_split(temp, Int64GetDatum(vsize),
+    Int64GetDatum(vorigin), &datum_bins, count);
+  /* Transform the datum bins into big integer bins and return */
+  int64 *values = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    values[i] = DatumGetInt64(datum_bins[i]);
+  *bins = values;
+  pfree(datum_bins);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
  * @brief Return the fragments of a temporal float split according to value
  * bins
  * @param[in] temp Temporal value
@@ -1452,6 +1607,51 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
   int *values = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
     values[i] = DatumGetInt32(datum_bins[i]);
+  if (value_bins)
+    *value_bins = values;
+  else
+    pfree(values);
+  pfree(datum_bins);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the fragments of a temporal big integer split according to
+ * value and time bins
+ * @param[in] temp Temporal value
+ * @param[in] vsize Size of the value bins
+ * @param[in] duration Size of the time bins
+ * @param[in] vorigin Value origin of the bins
+ * @param[in] torigin Time origin of the bins
+ * @param[out] value_bins Array of value bins
+ * @param[out] time_bins Array of time bins
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Tnumber_value_time_split()
+ */
+Temporal **
+tbigint_value_time_split(const Temporal *temp, int64 vsize,
+  const Interval *duration, int64 vorigin, TimestampTz torigin,
+  int64 **value_bins, TimestampTz **time_bins, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+
+  Datum *datum_bins;
+  Temporal **result = tnumber_value_time_split(temp, Int64GetDatum(vsize),
+    duration, Int64GetDatum(vorigin), torigin, &datum_bins, time_bins,
+    count);
+
+  /* Transform the datum bins into big integer bins and return */
+  int64 *values = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    values[i] = DatumGetInt64(datum_bins[i]);
   if (value_bins)
     *value_bins = values;
   else

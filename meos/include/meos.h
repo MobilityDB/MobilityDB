@@ -2092,6 +2092,15 @@ extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
 
 extern Span *temporal_time_bins(const Temporal *temp, const Interval *duration, TimestampTz origin, int *count);
 extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, TimestampTz **bins, int *count);
+extern TBox *tbigint_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
+extern Span *tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin, int *count);
+extern TBox *tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin, int *count);
+extern Temporal **tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin, int64 **bins, int *count);
+extern TBox *tbigint_value_time_boxes(const Temporal *temp, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int *count);
+extern Temporal **tbigint_value_time_split(const Temporal *temp, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int64 **value_bins, TimestampTz **time_bins, int *count);
+extern TBox *tbigintbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, int *count);
+extern TBox *tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin, int *count);
+extern TBox *tbigintbox_value_time_tiles(const TBox *box, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int *count);
 extern TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
 extern Span *tfloat_value_bins(const Temporal *temp, double vsize, double vorigin, int *count);
 extern TBox *tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin, int *count);

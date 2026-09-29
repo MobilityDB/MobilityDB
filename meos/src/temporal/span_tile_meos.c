@@ -256,6 +256,25 @@ tint_value_bins(const Temporal *temp, int vsize, int vorigin, int *count)
 
 /**
  * @ingroup meos_temporal_analytics_tile
+ * @brief Return the bins of a big integer span
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
+ */
+Span *
+tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_bins(temp, Int64GetDatum(vsize),
+    Int64GetDatum(vorigin), count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
  * @brief Return the bins of a float span
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the bins
