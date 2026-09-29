@@ -227,6 +227,9 @@ add_custom_target(mobilitydb_control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+install(
+  FILES "${CMAKE_SOURCE_DIR}/mobilitydb/sql/mobilitydb--1.3.0--1.3.1.sql"
+  DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb_datagen.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE}"
