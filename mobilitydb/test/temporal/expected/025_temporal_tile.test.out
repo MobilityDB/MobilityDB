@@ -365,6 +365,13 @@ SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week', '2020-
  (2,"TBOXFLOAT XT([15, 26),[Sun Jan 21 23:00:00 2001 PST, Sun Jan 28 23:00:00 2001 PST))")
 (2 rows)
 
+SELECT timeTiles(tbox 'TBOX T([2001-01-15, 2001-01-25])', '1 week');
+                                 timetiles                                  
+----------------------------------------------------------------------------
+ (1,"TBOX T([Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOX T([Mon Jan 22 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST))")
+(2 rows)
+
 SELECT getTboxTimeTile(timestamptz '2001-01-15', interval '1 week');
                            gettboxtimetile                            
 ----------------------------------------------------------------------

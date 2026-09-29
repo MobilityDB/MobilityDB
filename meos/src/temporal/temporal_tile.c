@@ -642,7 +642,10 @@ TboxGridState *
 tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin)
 {
-  assert(box); assert(duration || datum_gt(vsize, 0, box->span.basetype));
+  assert(box);
+  /* A box without value span is tiled by time alone */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  assert(duration || (hasx && datum_gt(vsize, 0, box->span.basetype)));
 
   /* Create the state, use palloc0 to initialize missing dimensions */
   TboxGridState *state = palloc0(sizeof(TboxGridState));
@@ -651,7 +654,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   state->ntiles = 1;
   Datum start_bin, end_bin;
   /* Set the value dimension of the state box*/
-  if (datum_gt(vsize, 0, box->span.basetype))
+  if (hasx && datum_gt(vsize, 0, box->span.basetype))
   {
     /* The given vsize is greater than 0 */
     state->vsize = vsize;
@@ -661,7 +664,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
     span_set(start_bin, end_bin, true, false, box->span.basetype,
       box->span.spantype, &state->box.span);
   }
-  else
+  else if (hasx)
   {
     /* If the given vsize is 0, set the vsize to the value size of the box */
     state->vsize = datum_sub(box->span.upper, box->span.lower,
@@ -674,7 +677,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
       box->span.upper_inc, box->span.basetype, box->span.spantype,
       &state->box.span);
   }
-  MEOS_FLAGS_SET_X(state->box.flags, true);
+  MEOS_FLAGS_SET_X(state->box.flags, hasx);
   /* Set the time dimension of the state box */
   if (duration)
   {
@@ -801,8 +804,8 @@ tbox_tile_state_next(TboxGridState *state)
     if (MEOS_FLAGS_GET_T(state->box.flags))
     {
       state->t += state->tunits;
-      state->coords[0]++;
-      if (state->coords[0] > state->max_coords[0])
+      state->coords[1]++;
+      if (state->coords[1] > state->max_coords[1])
       {
         state->done = true;
         return;

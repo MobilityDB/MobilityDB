@@ -126,6 +126,7 @@ SELECT getValueTile(15.5, 2.5, 1.5);
 
 SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week') LIMIT 3;
 SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week', '2020-06-15') LIMIT 3;
+SELECT timeTiles(tbox 'TBOX T([2001-01-15, 2001-01-25])', '1 week');
 
 SELECT getTboxTimeTile(timestamptz '2001-01-15', interval '1 week');
 SELECT getTboxTimeTile(timestamptz '2001-01-15', interval '1 week', '2020-06-15');

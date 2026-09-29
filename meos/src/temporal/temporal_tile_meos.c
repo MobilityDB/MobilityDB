@@ -74,23 +74,13 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   Datum vorigin, TimestampTz torigin, int *count)
 {
   assert(box); assert(count);
-  assert(not_negative_datum(vsize, box->span.basetype));
+  assert(! MEOS_FLAGS_GET_X(box->flags) ||
+    not_negative_datum(vsize, box->span.basetype));
   assert(! duration || positive_duration(duration));
 
   TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,
     vorigin, torigin);
-  int nrows = 1, ncols = 1;
-  Datum start_bin, end_bin;
-  /* Determine the number of value bins */
-  if (datum_gt(vsize, 0, box->span.basetype))
-    nrows = span_num_bins(&box->span, vsize, vorigin, &start_bin, &end_bin);
-  /* Determine the number of time bins */
-  int64 tunits = duration ? interval_units(duration) : 0;
-  if (tunits)
-    ncols = span_num_bins(&box->period, Int64GetDatum(tunits),
-      TimestampTzGetDatum(torigin), &start_bin, &end_bin);
-  /* Total number of tiles */
-  int count1 = nrows * ncols;
+  int count1 = state->ntiles;
 
   /* Compute the tiles */
   TBox *result = palloc0(sizeof(TBox) * count1);
