@@ -1,13 +1,13 @@
 SELECT SUM(array_length(bins(i, 2), 1)) AS bl FROM tbl_intspan;
  bl  
 -----
- 353
+ 307
 (1 row)
 
 SELECT SUM(array_length(bins(i, 2, 1), 1)) AS bl FROM tbl_intspan;
  bl  
 -----
- 358
+ 305
 (1 row)
 
 SELECT SUM(array_length(bins(f, 2.5), 1)) AS bl FROM tbl_floatspan;
@@ -25,13 +25,13 @@ SELECT SUM(array_length(bins(f, 2.5, 1.5), 1)) AS bl FROM tbl_floatspan;
 SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespan;
  bl  
 -----
- 168
+ 154
 (1 row)
 
 SELECT SUM(array_length(bins(d, interval '1 week', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
  bl  
 -----
- 171
+ 155
 (1 row)
 
 SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespanset;
