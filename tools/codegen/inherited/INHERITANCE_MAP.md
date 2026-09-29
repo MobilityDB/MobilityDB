@@ -56,7 +56,7 @@ Temporal<T>              temporal_type      = ALL temporal types
         │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)
         │     ├── TGeometry  ├── TGeography
         │     └── TPoint<T>  tpoint_type    = tgeompoint, tgeogpoint
-        ├── Tcell<T>     tcellindex_type    = th3index, tquadbin, ts2cell (3) (tcellindex.c)
+        ├── TCellIndex<T> tcellindex_type    = th3index, tquadbin, ts2cell (3) (tcellindex.c)
         │     │                               all wired via DggsCellOps     (§5a)
         │     ├── TH3Index  ├── TQuadbin  └── TS2Cell
         ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD)
@@ -122,7 +122,7 @@ Temporal<T>              temporal_type      = ALL temporal types
   ⛔ The family carries no distance, no spatial relationships and no index
   file: a pose chain has no distance function, and the ordering operator waits
   on the kNN question.
-- **`Tcell<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
+- **`TCellIndex<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited aspects (distance, tempspatialrels).
 - **RASTER** (`raquet`, `meos_catalog.h`) is a *base value type* (a raster tile),
@@ -561,23 +561,23 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
-### 5a. `Tcell<T>` (DGGS cell-index) — the descriptor-factored intermediate
+### 5a. `TCellIndex<T>` (DGGS cell-index) — the descriptor-factored intermediate
 
-`Tcell<T>` (prefix `tcellindex_`, `meos/src/temporal/tcellindex.c`) sits between
+`TCellIndex<T>` (prefix `tcellindex_`, `meos/src/temporal/tcellindex.c`) sits between
 `TSpatial<T>` and the discrete cell types. It is a **first-party abstraction**: each
 DGGS supplies **one `DggsCellOps` descriptor** (a table of Datum-convention static-cell
 kernels + catalog identity), and the generic `tcellindex_*` entry points lift that
 kernel via `tfunc_temporal`. Adding a DGGS (e.g. Google S2) = a descriptor + kernel,
 **no new temporal scaffolding, SQL, or binding code** (`tcellindex.h`).
 
-The generic inherited Tcell API (declared in the umbrella header
+The generic inherited TCellIndex API (declared in the umbrella header
 `meos/include/meos_cellindex.h`, implemented in `tcellindex.c`):
 `tcellindex_get_resolution` · `is_valid_cell` · `cell_to_parent` · `cell_to_point` ·
 `cell_to_boundary` · `cell_area`.
 
 | aspect | state |
 |---|---|
-| C implementation | **unified once** via `DggsCellOps` — the `Tcell` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
+| C implementation | **unified once** via `DggsCellOps` — the `TCellIndex` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
 | catalog predicate `tcellindex_type()` | **all three cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `#if S2CELL → T_TS2CELL`, `tcellindex.c`) |
 | descriptor registered | `h3_cellops` (`meos/src/h3/th3index_ops.c`), `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c`) and `s2_cellops` (`meos/src/s2cell/ts2cell_ops.c`), all dispatched from `dggs_cellops()` |
 | SQL wrappers (getResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`, s2cell `605_ts2cell_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
@@ -825,12 +825,12 @@ TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
 | missing from lattice | live type / predicate | belongs under | category |
 |---|---|---|---|
 | **TPoseChain** | `tposechain` (`meos_catalog.c`) | TSpatial, aggregating TPose | **in-scope leaf, omitted (defect)** — the pose family IS in `scope.inScopeTypeFamilies` |
-| **TH3Index** | `th3index` (`meos_catalog.c`, `tspatial_type`) | TSpatial → Tcell | deferred family (not in declared scope) |
-| **TQuadbin** | `tquadbin` (`meos_catalog.c`, `tspatial_type`) | TSpatial → Tcell | deferred family |
-| **TS2Cell** | `ts2cell` (`meos_catalog.c`, `tspatial_type`) | TSpatial → Tcell | deferred family |
+| **TH3Index** | `th3index` (`meos_catalog.c`, `tspatial_type`) | TSpatial → TCellIndex | deferred family (not in declared scope) |
+| **TQuadbin** | `tquadbin` (`meos_catalog.c`, `tspatial_type`) | TSpatial → TCellIndex | deferred family |
+| **TS2Cell** | `ts2cell` (`meos_catalog.c`, `tspatial_type`) | TSpatial → TCellIndex | deferred family |
 | **TPcpoint** | `tpcpoint` (`meos_catalog.c`, `tpointcloud_temptype`) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
 | **TPcpatch** | `tpcpatch` (`meos_catalog.c`, `tpointcloud_temptype`) | TSpatial → TPointcloud | deferred family |
-| **Tcell / TCellIndex** (abstract) | `tcellindex_type()` (`tcellindex.c`, declared `tcellindex.h`) | between TSpatial and cell leaves | missing intermediate |
+| **TCellIndex** (abstract) | `tcellindex_type()` (`tcellindex.c`, declared `tcellindex.h`) | between TSpatial and cell leaves | missing intermediate |
 | **TPointcloud** (abstract) | `tpointcloud_temptype()` (`meos_catalog.c`) | between TSpatial and pointcloud leaves | missing intermediate |
 
 Notes:
