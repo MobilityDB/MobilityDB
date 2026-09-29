@@ -95,7 +95,7 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
-  - gen: {sig: "tprecision({TEMP}, duration interval,\n  origin timestamptz DEFAULT '2000-01-03')", ret: tfloat, sym: Temporal_tprecision, presence: numeric}
+  - gen: {sig: "tprecision({TEMP}, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03')", ret: tfloat, sym: Temporal_tprecision, presence: numeric}
   - ops:
     - tsample
   - lit: /******************************************************************************/
@@ -618,7 +618,7 @@ transformation_families:
     - tprecision
   - lit: '-- CREATE FUNCTION tsample(trgeometry, duration interval,
 
-      --   origin timestamptz DEFAULT ''2000-01-03'')
+      --   torigin timestamptz DEFAULT ''2000-01-03'')
 
       --   RETURNS trgeometry
 

@@ -1010,7 +1010,7 @@ SELECT (un).time FROM (SELECT unnest(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1
 					<para>Fragmenta un tpcpoint en fragmentos, uno por cada intervalo de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 timeSplit(tpcpoint,duration interval,
-  origin timestamptz='2000-01-03') → {(time,tpcpoint)}
+  torigin timestamptz='2000-01-03') → {(time,tpcpoint)}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpointSeq(ARRAY[
@@ -1842,7 +1842,7 @@ SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[
 					<para>Fragmenta un tpcpatch en fragmentos, uno por cada intervalo de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 timeSplit(tpcpatch,duration interval,
-  origin timestamptz='2000-01-03') → {(time,tpcpatch)}
+  torigin timestamptz='2000-01-03') → {(time,tpcpatch)}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[

@@ -598,8 +598,8 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 bins(numspans,vsize number,vorigin number=0) → span[]
-bins(datespans,tsize interval,torigin date='2000-01-03') → span[]
-bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
+bins(datespans,duration interval,torigin date='2000-01-03') → span[]
+bins(tstzspans,duration interval,torigin timestamptz='2000-01-03') → span[]
 </programlisting>
 					<para>If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -627,9 +627,9 @@ FROM unnest(bins(tstzspanset '{[2001-01-15, 2001-01-17],[2001-01-22, 2001-01-25]
 					<indexterm significance="normal"><primary><varname>getBin</varname></primary></indexterm>
 					<para>Return the bin that contains a number or a timestamp</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-getBin(number,size number,origin number=0) → span
-getBin(date,duration interval,origin date='2000-01-03') → datespan
-getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → tstzspan
+getBin(number,vsize number,vorigin number=0) → span
+getBin(date,duration interval,torigin date='2000-01-03') → datespan
+getBin(timestamptz,duration interval,torigin timestamptz='2000-01-03') → tstzspan
 </programlisting>
 					<para>If the origin is not specified, it is set by default to 0 for value bins and to Monday, January 3, 2000 for time bins.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -789,7 +789,7 @@ getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
 getStboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → stbox
 getSpaceTimeTile(point geometry,time timestamptz,xsize float,
-  [ysize float,zsize float,]duration,interval,sorigin geompoint='Point(0 0 0)',
+  [ysize float,zsize float,]duration interval,sorigin geompoint='Point(0 0 0)',
   torigin timestamptz='2000-01-03') → stbox
 </programlisting>
 					<para>If the origin of the space and/or time dimension is not specified, it is set by default to <varname>Point(0 0 0)</varname> and to Monday, January 3, 2000, respectively. In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
@@ -818,7 +818,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 					<para>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
-timeBins(temp,tsize interval,torigin timestamptz='2000-01-03') → tstzspan[]
+timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </programlisting>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -847,8 +847,8 @@ SELECT timeBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
 					<para>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
-timeBoxes(tnumber,tsize interval,torigin timestamptz='2000-01-03') → tbox[]
-valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
+timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
+valueTimeBoxes(tnumber,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </programlisting>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -932,9 +932,9 @@ SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
 					<indexterm significance="normal"><primary><varname>valueTimeSplit</varname></primary></indexterm>
 					<para>Split a temporal number with respect to value and/or time bins &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
-timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → {(time,temp)}
-valueTimeSplit(tnumber,size number,duration interval,vorigin number=0,
+valueSplit(tnumber,vsize number,vorigin number=0) → {(number,tnumber)}
+timeSplit(ttype,duration interval,torigin timestamptz='2000-01-03') → {(time,temp)}
+valueTimeSplit(tnumber,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(number,time,tnumber}
 </programlisting>
 					<para>The result is a set of pairs or a set of triples. If the origin of the value and/or the time dimension is not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -1024,7 +1024,7 @@ spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
-timeSplit(tpoint,duration interval,origin timestamptz='2000-01-03') → {(time,tpoint)}
+timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',

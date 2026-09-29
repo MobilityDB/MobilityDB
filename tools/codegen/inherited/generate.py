@@ -1793,11 +1793,11 @@ def _xform_op_sig(op: str, fam: dict, temp: str) -> str:
         return f"shiftScaleTime({T}, interval, interval)"
     if op == "tsample":
         return (f"tsample({T}, duration interval,\n"
-                f"  origin timestamptz DEFAULT '2000-01-03', "
+                f"  torigin timestamptz DEFAULT '2000-01-03', "
                 f"interp text DEFAULT 'discrete')")
     if op == "tprecision":
         return (f"tprecision({T}, duration interval,\n"
-                f"  origin timestamptz DEFAULT '2000-01-03')")
+                f"  torigin timestamptz DEFAULT '2000-01-03')")
     raise SystemExit(f"unknown transformation op {op!r}")
 
 

@@ -42,7 +42,7 @@ CREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(bigintspan, vsize bigint, vorigin int DEFAULT 0)
+CREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -51,12 +51,12 @@ CREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION bins(datespan, tsize interval,
+CREATE FUNCTION bins(datespan, duration interval,
     torigin date DEFAULT '2000-01-01')
   RETURNS datespan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(tstzspan, tsize interval,
+CREATE FUNCTION bins(tstzspan, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
@@ -68,7 +68,7 @@ CREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin int DEFAULT 0)
+CREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -77,12 +77,12 @@ CREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION bins(datespanset, tsize interval,
+CREATE FUNCTION bins(datespanset, duration interval,
     torigin date DEFAULT '2000-01-01')
   RETURNS datespan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(tstzspanset, tsize interval,
+CREATE FUNCTION bins(tstzspanset, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
@@ -90,51 +90,51 @@ CREATE FUNCTION bins(tstzspanset, tsize interval,
 
 /*****************************************************************************/
 
-CREATE FUNCTION getBin("value" integer, size integer, origin integer DEFAULT 0)
+CREATE FUNCTION getBin("value" integer, vsize integer, vorigin integer DEFAULT 0)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Value_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getBin("value" bigint, size bigint, origin bigint DEFAULT 0)
+CREATE FUNCTION getBin("value" bigint, vsize bigint, vorigin bigint DEFAULT 0)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Value_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getBin("value" float, size float, origin float DEFAULT 0.0)
+CREATE FUNCTION getBin("value" float, vsize float, vorigin float DEFAULT 0.0)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Value_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getBin(date, duration interval, origin date DEFAULT '2000-01-03')
+CREATE FUNCTION getBin(date, duration interval, torigin date DEFAULT '2000-01-03')
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Date_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getBin(timestamptz, duration interval, origin timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION getBin(timestamptz, duration interval, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Timestamptz_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION timeBins(tbool, tsize interval,
+CREATE FUNCTION timeBins(tbool, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBins(tint, tsize interval,
+CREATE FUNCTION timeBins(tint, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBins(tbigint, tsize interval,
+CREATE FUNCTION timeBins(tbigint, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBins(tfloat, tsize interval,
+CREATE FUNCTION timeBins(tfloat, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBins(ttext, tsize interval,
+CREATE FUNCTION timeBins(ttext, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
@@ -234,33 +234,33 @@ CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timeBoxes(tint, tsize interval,
+CREATE FUNCTION timeBoxes(tint, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBoxes(tbigint, tsize interval,
+CREATE FUNCTION timeBoxes(tbigint, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeBoxes(tfloat, tsize interval,
+CREATE FUNCTION timeBoxes(tfloat, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueTimeBoxes(tint, vsize int, tsize interval,
+CREATE FUNCTION valueTimeBoxes(tint, vsize int, duration interval,
     vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTimeBoxes(tbigint, vsize bigint, tsize interval,
+CREATE FUNCTION valueTimeBoxes(tbigint, vsize bigint, duration interval,
     vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTimeBoxes(tfloat, vsize float, tsize interval,
+CREATE FUNCTION valueTimeBoxes(tfloat, vsize float, duration interval,
     vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
@@ -283,15 +283,15 @@ CREATE TYPE number_tfloat AS (
   tnumber tfloat
 );
 
-CREATE FUNCTION valueSplit(tint, size integer, origin integer DEFAULT 0)
+CREATE FUNCTION valueSplit(tint, vsize integer, vorigin integer DEFAULT 0)
   RETURNS SETOF number_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSplit(tbigint, size bigint, origin bigint DEFAULT 0)
+CREATE FUNCTION valueSplit(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
   RETURNS SETOF number_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSplit(tfloat, size float, origin float DEFAULT 0.0)
+CREATE FUNCTION valueSplit(tfloat, vsize float, vorigin float DEFAULT 0.0)
   RETURNS SETOF number_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -320,27 +320,27 @@ CREATE TYPE time_ttext AS (
 );
 
 CREATE FUNCTION timeSplit(tbool, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbool
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tint, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tbigint, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbigint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tfloat, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tfloat
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(ttext, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_ttext
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -363,17 +363,17 @@ CREATE TYPE number_time_tfloat AS (
   tnumber tfloat
 );
 
-CREATE FUNCTION valueTimeSplit(tint, size integer, duration interval,
+CREATE FUNCTION valueTimeSplit(tint, vsize integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF number_time_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTimeSplit(tbigint, size bigint, duration interval,
+CREATE FUNCTION valueTimeSplit(tbigint, vsize bigint, duration interval,
     vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF number_time_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTimeSplit(tfloat, size float, duration interval,
+CREATE FUNCTION valueTimeSplit(tfloat, vsize float, duration interval,
     vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF number_time_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'

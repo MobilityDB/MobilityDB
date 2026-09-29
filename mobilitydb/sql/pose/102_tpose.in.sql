@@ -534,13 +534,13 @@ CREATE FUNCTION round(tpose[], integer DEFAULT 0)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tsample(tpose, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tpose, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -723,7 +723,7 @@ CREATE TYPE time_tpose AS (
 );
 
 CREATE FUNCTION timeSplit(tpose, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tpose
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -389,4 +389,20 @@ SELECT count(*) AS tiles
 FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
   borderInc := false);
 
+-- Grid arguments named by their dimension
+SELECT count(*) AS tiles
+FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
+  duration := '2 days', torigin := '2001-01-01');
+SELECT count(*) AS tiles
+FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', xsize := 5.0,
+  duration := '2 days', torigin := '2001-01-01');
+SELECT count(*) AS fragments
+FROM spaceSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', xsize := 4.0);
+SELECT count(*) AS fragments
+FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', xsize := 4.0,
+  duration := '2 days', torigin := '2001-01-01');
+SELECT count(*) AS boxes
+FROM unnest(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]',
+  duration := '2 days', torigin := '2001-01-01'));
+
 -------------------------------------------------------------------------------

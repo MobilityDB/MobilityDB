@@ -311,12 +311,12 @@ CREATE FUNCTION shiftScaleTime(ts2cell, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(ts2cell, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(ts2cell, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -610,7 +610,7 @@ CREATE TYPE time_ts2cell AS (
 );
 
 CREATE FUNCTION timeSplit(ts2cell, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -478,13 +478,13 @@ CREATE FUNCTION round(tcbuffer[], integer DEFAULT 0)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tsample(tcbuffer, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tcbuffer, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -654,7 +654,7 @@ CREATE TYPE time_tcbuffer AS (
 );
 
 CREATE FUNCTION timeSplit(tcbuffer, duration interval,
-    origin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

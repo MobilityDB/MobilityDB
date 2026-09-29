@@ -1514,43 +1514,43 @@ CREATE FUNCTION shiftScaleTime(ttext, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tbigint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tfloat, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tsample(tbool, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tbigint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tfloat, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(ttext, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
