@@ -12,7 +12,7 @@ bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
 SELECT bins(intspan '[15, 25]', 2);
--- {"[14, 16)","[16, 18)","[18, 20)","[20, 22)","[22, 24)","[24, 26)","[26, 28)"}
+-- {"[14, 16)","[16, 18)","[18, 20)","[20, 22)","[22, 24)","[24, 26)"}
 SELECT index, span FROM unnest(bins(datespan '[2001-01-15, 2001-01-25]', '2 days'))
   WITH ORDINALITY t(span, index);
 -- 1 | [2001-01-15, 2001-01-17)
@@ -41,11 +41,11 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Operaciones de mosaicos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6632"></a><a class="indexterm" name="id6635"></a><a class="indexterm" name="id6638"></a><p>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador temporal con mosaicos del mismo tamaño y/o duración <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
-valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
+valueTiles(tbox,vsize number,vorigin number=0) → {(index,tile)}
 timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
-valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0.0,
+valueTimeTiles(tbox,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
-</pre><p>Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</p><pre class="programlisting">
+</pre><p>El resultado es un conjunto de pares <code class="varname">(index,tile)</code>. Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente. El tamaño y el origen de los valores tienen el tipo base de los valores de la caja, y una caja de flotantes también acepta valores enteros.</p><pre class="programlisting">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
 -- 1 | TBOXFLOAT X([14, 16))
@@ -65,12 +65,17 @@ SELECT (gr).index,
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
 -- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
 -- ...
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, 15);
+-- (1,"TBOXINT X([15, 17))")
+-- (2,"TBOXINT X([17, 19))")
+-- (3,"TBOXINT X([19, 21))")
+-- ...
 SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
 -- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")
 -- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
 -- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
 -- ...
-</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6653"></a><a class="indexterm" name="id6656"></a><a class="indexterm" name="id6659"></a><p>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador espaciotemporal con mosaicos del mismo tamaño y/o duración <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6654"></a><a class="indexterm" name="id6657"></a><a class="indexterm" name="id6660"></a><p>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador espaciotemporal con mosaicos del mismo tamaño y/o duración <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 spaceTiles({stbox,tgeompoint},xsize float,[ysize float,zsize float,]
@@ -116,7 +121,7 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 -- (2,"STBOX ZT(((5,3,3),(7,5,5))),[2001-01-15,2001-01-17)")
 -- (3,"STBOX ZT(((7,3,3),(9,5,5))),[2001-01-15,2001-01-17)")
 -- ...
-</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6686"></a><a class="indexterm" name="id6689"></a><a class="indexterm" name="id6692"></a><p>Devuelve el mosaico temporal que cubre un valor y/o una marca de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6687"></a><a class="indexterm" name="id6690"></a><a class="indexterm" name="id6693"></a><p>Devuelve el mosaico temporal que cubre un valor y/o una marca de tiempo</p><pre class="programlisting">
 getValueTile(v float,vsize float,vorigin float=0.0) → tbox
 getTboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → tbox
@@ -131,7 +136,7 @@ SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days');
 -- TBOXFLOAT XT([14, 16),[2001-01-13 08:00:00, 2001-01-15 08:00:00))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
 -- TBOXFLOAT XT([15, 17),[2001-01-14, 2001-01-16))
-</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6700"></a><a class="indexterm" name="id6703"></a><a class="indexterm" name="id6706"></a><p>Devuelve el mosaico espaciotemporal que cubre un punto y/o una marca de tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6701"></a><a class="indexterm" name="id6704"></a><a class="indexterm" name="id6707"></a><p>Devuelve el mosaico espaciotemporal que cubre un punto y/o una marca de tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
   sorigin geompoint='Point(0 0 0)') → stbox
@@ -150,7 +155,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Operaciones de cuadro delimitador</h3></div></div></div><p>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <a class="xref" href="ch09s05.html" title="Operaciones de división">“Operaciones de división”</a> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6730"></a><a class="indexterm" name="id6733"></a><p>Devuelve una matriz de rangos de valores o de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Operaciones de cuadro delimitador</h3></div></div></div><p>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <a class="xref" href="ch09s05.html" title="Operaciones de división">“Operaciones de división”</a> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6731"></a><a class="indexterm" name="id6734"></a><p>Devuelve una matriz de rangos de valores o de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</p><pre class="programlisting">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
 timeBins(temp,tsize interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si no se especifica el origen de los valores, se establece por defecto en 0 para los rangos de valores y en el lunes 3 de enero de 2000 para los rangos de tiempo.</p><pre class="programlisting">
@@ -168,7 +173,7 @@ SELECT timeBins(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03, CCC@2001
 SELECT timeBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
   1@2001-01-05]', '3 days', '2001-01-01');
 -- {"[2001-01-01, 2001-01-04)","[2001-01-04, 2001-01-07)"}
-</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6742"></a><a class="indexterm" name="id6745"></a><a class="indexterm" name="id6748"></a><p>Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6743"></a><a class="indexterm" name="id6746"></a><a class="indexterm" name="id6749"></a><p>Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</p><pre class="programlisting">
 valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,tsize interval,torigin timestamptz='2000-01-03') → tbox[]
 valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
@@ -190,7 +195,7 @@ SELECT valueTimeBoxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-
   1@2001-01-05]', 3, '3 days', 1, '2001-01-01');
 /* {"TBOXFLOAT XT([1, 4),[2001-01-01, 2001-01-04))","TBOXFLOAT XT([1, 4),(2001-01-04,
    2001-01-05])","TBOXFLOAT XT([4, 4],[2001-01-04, 2001-01-04])"} */
-</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6756"></a><a class="indexterm" name="id6759"></a><a class="indexterm" name="id6762"></a><p>Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y/o temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6757"></a><a class="indexterm" name="id6760"></a><a class="indexterm" name="id6763"></a><p>Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y/o temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 spaceBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
   [ysize float,zsize float,] 
@@ -228,7 +233,7 @@ SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
 /* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))","STBOX
    XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Operaciones de división</h3></div></div></div><p>Estas funciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver la <a class="xref" href="ch09s06.html#bin_functions" title="Operaciones de intervalos">“Operaciones de intervalos”</a>) o un mosaico multidimensional (ver la <a class="xref" href="ch09s06.html#tile_functions" title="Operaciones de mosaicos">“Operaciones de mosaicos”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6788"></a><a class="indexterm" name="id6791"></a><a class="indexterm" name="id6794"></a><p>Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Operaciones de división</h3></div></div></div><p>Estas funciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver la <a class="xref" href="ch09s06.html#bin_functions" title="Operaciones de intervalos">“Operaciones de intervalos”</a>) o un mosaico multidimensional (ver la <a class="xref" href="ch09s06.html#tile_functions" title="Operaciones de mosaicos">“Operaciones de mosaicos”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6789"></a><a class="indexterm" name="id6792"></a><a class="indexterm" name="id6795"></a><p>Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
 timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → {(time,temp)}
@@ -299,7 +304,7 @@ SELECT (sp).number, (sp).time,
   '5 days', 1.0, '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
-</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6813"></a><a class="indexterm" name="id6816"></a><a class="indexterm" name="id6819"></a><p>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6814"></a><a class="indexterm" name="id6817"></a><a class="indexterm" name="id6820"></a><p>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">

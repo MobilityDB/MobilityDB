@@ -15,7 +15,7 @@ bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
 SELECT bins(intspan '[15, 25]', 2);
--- {"[14, 16)","[16, 18)","[18, 20)","[20, 22)","[22, 24)","[24, 26)","[26, 28)"}
+-- {"[14, 16)","[16, 18)","[18, 20)","[20, 22)","[22, 24)","[24, 26)"}
 SELECT index, span FROM unnest(bins(datespan '[2001-01-15, 2001-01-25]', '2 days'))
   WITH ORDINALITY t(span, index);
 -- 1 | [2001-01-15, 2001-01-17)
@@ -45,11 +45,11 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id7183"></a><a class="indexterm" name="id7186"></a><a class="indexterm" name="id7189"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
-valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
+valueTiles(tbox,vsize number,vorigin number=0) → {(index,tile)}
 timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
-valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0.0,
+valueTimeTiles(tbox,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
-</pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
+</pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively. The value size and origin have the base type of the values of the box, and a box of floats also takes integer ones.</p><pre class="programlisting">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
 -- 1 | TBOXFLOAT X([14, 16))
@@ -68,6 +68,11 @@ SELECT (gr).index,
 -- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
 -- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
+-- ...
+SELECT valueTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, 15);
+-- (1,"TBOXINT X([15, 17))")
+-- (2,"TBOXINT X([17, 19))")
+-- (3,"TBOXINT X([19, 21))")
 -- ...
 SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
 -- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")
