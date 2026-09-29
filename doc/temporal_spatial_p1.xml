@@ -602,12 +602,14 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 
 			<listitem xml:id="tgeo_length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
-				<para>Return the length traversed by the temporal point &Z_support; &geography_support;</para>
+				<indexterm significance="normal"><primary><varname>geoLength</varname></primary></indexterm>
+				<para>Return the length of a geometry or a geography, or the length traversed by the temporal point &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tpoint) → float
 length(geo) → float
+geoLength({geo,tpoint}) → float
 </programlisting>
-				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does.</para>
+				<para>Over a temporal point both functions give the same value. The length of a geography and of a temporal geography point is measured in meters on the spheroid, as <varname>ST_Length</varname> measures a geography. Over a geometry or a geography the length is that of its linear parts, as <varname>ST_Length</varname> gives it, so that a polygon has length 0.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
 -- 1.73205080756888
@@ -620,6 +622,16 @@ SELECT length(tgeompoint 'Interp=Step;
 SELECT length(geometry 'Linestring(0 0,3 4)');
 -- 5
 SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
+-- 3521.188745
+SELECT geoLength(geometry 'Linestring(0 0,3 4,3 0)');
+-- 9
+SELECT geoLength(tgeompoint '[Point(0 0)@2001-01-01, Point(3 4)@2001-01-02,
+  Point(3 0)@2001-01-03]');
+-- 9
+SELECT geoLength(geometry 'Polygon((0 0,1 0,1 1,0 0))');
+-- 0
+SELECT round(geoLength(tgeogpoint '[Point(4.35 50.85)@2001-01-01,
+  Point(4.40 50.85)@2001-01-02]'), 6);
 -- 3521.188745
 </programlisting>
 			</listitem>
