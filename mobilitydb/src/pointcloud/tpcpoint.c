@@ -251,7 +251,7 @@ TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
  * Projection to tgeompoint
  *
  * The per-instant schema-aware projection (pcpoint -> POINT gserialized)
- * lives in the MEOS function @c tpointcloud_to_tgeompoint, shared by this
+ * lives in the MEOS function @c tpcpoint_to_tgeompoint, shared by this
  * wrapper, the bbox-based restrictions below, and the spatial
  * relationships / nearest-approach distance.
  *****************************************************************************/
@@ -268,7 +268,7 @@ Datum
 Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpointcloud_to_tgeompoint(temp);
+  Temporal *result = tpcpoint_to_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -302,7 +302,7 @@ tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
     return atfunc ? NULL : temporal_copy(temp);
 
   /* Project tpcpoint -> tgeompoint via the shared MEOS conversion. */
-  Temporal *tpoint = tpointcloud_to_tgeompoint(temp);
+  Temporal *tpoint = tpcpoint_to_tgeompoint(temp);
   if (! tpoint)
     return atfunc ? NULL : temporal_copy(temp);
 

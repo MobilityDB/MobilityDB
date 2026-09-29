@@ -493,7 +493,7 @@ extern TSequenceSet *tpcpatchseqset_in(const char *str);
 
 /* Conversion */
 
-extern Temporal *tpointcloud_to_tgeompoint(const Temporal *temp);
+extern Temporal *tpcpoint_to_tgeompoint(const Temporal *temp);
 extern Temporal *tpcpatch_to_tgeometry(const Temporal *temp);
 
 extern TInstant *tpcpointinst_make(const Pcpoint *pt, TimestampTz t);

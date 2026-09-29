@@ -101,7 +101,7 @@ tpointcloudinst_pcpoint(const Temporal *temp)
  * temporal pointcloud instant
  */
 static TInstant *
-tpointcloudinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
+tpcpointinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
 {
   const Pcpoint *pt =
     (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
@@ -123,13 +123,13 @@ tpointcloudinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
  * temporal pointcloud sequence
  */
 static TSequence *
-tpointcloudseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
+tpcpointseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
 {
   TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
   int n = 0;
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *out = tpointcloudinst_to_tgeompointinst(
+    TInstant *out = tpcpointinst_to_tgeompointinst(
       TSEQUENCE_INST_N(seq, i), schema);
     if (! out) continue;
     insts[n++] = out;
@@ -147,13 +147,13 @@ tpointcloudseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
  * temporal pointcloud sequence set
  */
 static TSequenceSet *
-tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
+tpcpointseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
 {
   TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
   int n = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *out = tpointcloudseq_to_tgeompointseq(
+    TSequence *out = tpcpointseq_to_tgeompointseq(
       TSEQUENCESET_SEQ_N(ss, i), schema);
     if (! out) continue;
     seqs[n++] = out;
@@ -172,7 +172,7 @@ tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
  * @csqlfn #Tpcpoint_to_tgeompoint()
  */
 Temporal *
-tpointcloud_to_tgeompoint(const Temporal *temp)
+tpcpoint_to_tgeompoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL);
@@ -184,13 +184,13 @@ tpointcloud_to_tgeompoint(const Temporal *temp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tpointcloudinst_to_tgeompointinst(
+      return (Temporal *) tpcpointinst_to_tgeompointinst(
         (const TInstant *) temp, schema);
     case TSEQUENCE:
-      return (Temporal *) tpointcloudseq_to_tgeompointseq(
+      return (Temporal *) tpcpointseq_to_tgeompointseq(
         (const TSequence *) temp, schema);
     default: /* TSEQUENCESET */
-      return (Temporal *) tpointcloudseqset_to_tgeompointseqset(
+      return (Temporal *) tpcpointseqset_to_tgeompointseqset(
         (const TSequenceSet *) temp, schema);
   }
 }
