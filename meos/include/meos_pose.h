@@ -143,6 +143,11 @@ extern Temporal *tpose_compose_pose(const Temporal *body, const Pose *frame);
 extern Temporal *pose_compose_tpose(const Pose *body, const Temporal *frame);
 extern Temporal *tpose_compose_tpose(const Temporal *body, const Temporal *frame);
 extern Temporal *tpose_inverse(const Temporal *temp);
+extern Temporal *tpose_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *tpose_rotate_x(const Temporal *temp, double angle);
+extern Temporal *tpose_rotate_y(const Temporal *temp, double angle);
+extern Temporal *tpose_rotate_z(const Temporal *temp, double angle);
+extern Temporal *tpose_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 
 /* Constructor functions */
 
@@ -544,6 +549,14 @@ extern Temporal *tposechain_to_tpose(const Temporal *temp);
 extern int tposechain_num_poses(const Temporal *temp);
 extern PoseChain **tposechain_values(const Temporal *temp, int *count);
 extern SpanSet **tposechain_unnest(const Temporal *temp, PoseChain ***values, int *count);
+
+/* Transformation functions */
+
+extern Temporal *tposechain_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *tposechain_rotate_x(const Temporal *temp, double angle);
+extern Temporal *tposechain_rotate_y(const Temporal *temp, double angle);
+extern Temporal *tposechain_rotate_z(const Temporal *temp, double angle);
+extern Temporal *tposechain_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 
 /* Ever/always and temporal comparison functions */
 

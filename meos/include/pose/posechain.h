@@ -121,6 +121,8 @@ extern bool posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
 
 extern Datum datum_posechain_round(Datum pc, Datum size);
 extern Datum datum_posechain_pose(Datum pc);
+extern PoseChain *posechain_motion(const PoseChain *pc, const Pose *frame);
+extern Datum datum_posechain_motion(Datum pc, Datum frame);
 
 /* Spatial reference system functions */
 

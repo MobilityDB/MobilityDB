@@ -51,6 +51,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
+#include "pose/tpose.h"
 
 /*****************************************************************************
  * Validity functions
@@ -623,6 +624,146 @@ tpose_inverse(const Temporal *temp)
   lfinfo.restype = T_TPOSE;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
+ * Rigid motion functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal pose moved by the rigid motion a pose states
+ * @details The motion is lifted as #tpose_compose_pose lifts a composition
+ * with a fixed frame, and it is exact between the instants as well as at them:
+ * a fixed frame carries the linear interpolation of positions and the
+ * shortest arc of rotations between two poses to those between the moved
+ * poses, so the result keeps the interpolation of the input
+ * @param[in] temp Temporal pose
+ * @param[in] frame Pose stating the motion
+ * @pre The temporal pose is not geodetic and shares the SRID of the frame
+ */
+Temporal *
+tpose_motion(const Temporal *temp, const Pose *frame)
+{
+  assert(temp); assert(frame);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_pose_motion;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TPOSE;
+  lfinfo.argtype[1] = T_TPOSE;
+  lfinfo.restype = T_TPOSE;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal_base(temp, PointerGetDatum(frame), &lfinfo);
+}
+
+/**
+ * @brief Return a temporal pose moved by a frame, which the function frees,
+ * as #tpose_motion moves it
+ */
+static Temporal *
+tpose_motion_free(const Temporal *temp, Pose *frame)
+{
+  Temporal *result = tpose_motion(temp, frame);
+  pfree(frame);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose translated by offsets
+ * @details The offsets are those #tgeo_translate takes. A vertical offset
+ * moves a two-dimensional value out of its plane, so the result is
+ * three-dimensional; without one the value keeps its dimension
+ * @param[in] temp Temporal pose
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @csqlfn #Tpose_translate()
+ */
+Temporal *
+tpose_translate(const Temporal *temp, double deltax, double deltay,
+  double deltaz)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tpose_motion_free(temp, pose_motion_translate(deltax, deltay, deltaz,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose rotated counter-clockwise about the vertical
+ * through a point, as #tgeo_rotate rotates a temporal geo
+ * @param[in] temp Temporal pose
+ * @param[in] angle Angle in radians
+ * @param[in] x0,y0 Coordinates of the centre of the rotation
+ * @csqlfn #Tpose_rotate()
+ */
+Temporal *
+tpose_rotate(const Temporal *temp, double angle, double x0, double y0)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tpose_motion_free(temp, pose_motion_rotate(angle, x0, y0,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose rotated counter-clockwise about the x axis,
+ * as #tgeo_rotate_x rotates a temporal geo
+ * @details The rotation moves a two-dimensional value out of its plane, so
+ * the result is three-dimensional
+ * @param[in] temp Temporal pose
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tpose_rotate_x()
+ */
+Temporal *
+tpose_rotate_x(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tpose_motion_free(temp, pose_motion_rotate_x(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose rotated counter-clockwise about the y axis,
+ * as #tgeo_rotate_y rotates a temporal geo
+ * @details The rotation moves a two-dimensional value out of its plane, so
+ * the result is three-dimensional
+ * @param[in] temp Temporal pose
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tpose_rotate_y()
+ */
+Temporal *
+tpose_rotate_y(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tpose_motion_free(temp, pose_motion_rotate_y(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose rotated counter-clockwise about the z axis,
+ * as #tgeo_rotate_z rotates a temporal geo
+ * @param[in] temp Temporal pose
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tpose_rotate_z()
+ */
+Temporal *
+tpose_rotate_z(const Temporal *temp, double angle)
+{
+  return tpose_rotate(temp, angle, 0.0, 0.0);
 }
 
 /*****************************************************************************

@@ -260,6 +260,9 @@ extern Temporal *tgeometry_to_tcbuffer(const Temporal *temp);
  *****************************************************************************/
 
 extern Temporal *tcbuffer_expand(const Temporal *temp, double dist);
+extern Temporal *tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *tcbuffer_rotate_z(const Temporal *temp, double angle);
+extern Temporal *tcbuffer_translate(const Temporal *temp, double deltax, double deltay);
 
 /*****************************************************************************
  * Restriction functions

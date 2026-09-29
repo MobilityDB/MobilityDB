@@ -1745,6 +1745,154 @@ pose_inverse(const Pose *pose)
   return pose_make_3d(-x, -y, -z, W, X, Y, Z, false, pose_srid(pose));
 }
 
+/*****************************************************************************
+ * Rigid motion functions
+ *****************************************************************************/
+
+/**
+ * @brief Set in @p result the values of a pose read in three dimensions
+ * @details A two-dimensional pose lies in the plane z = 0 and its angle turns
+ * it about the vertical, so its quaternion is the rotation by that angle about
+ * the z axis
+ */
+static void
+pose_values_3d(const double *values, bool hasz, double *result)
+{
+  if (hasz)
+  {
+    memcpy(result, values, sizeof(double) * 7);
+    return;
+  }
+  result[0] = values[0];
+  result[1] = values[1];
+  result[2] = 0.0;
+  result[3] = cos(values[2] / 2.0);
+  result[4] = 0.0;
+  result[5] = 0.0;
+  result[6] = sin(values[2] / 2.0);
+  return;
+}
+
+/**
+ * @brief Return a pose moved by the rigid motion a frame states
+ * @details The motion carries the pose into the frame, as #pose_compose
+ * composes a body with its frame. A two-dimensional pose moved by a
+ * three-dimensional frame leaves the plane, so both are read in three
+ * dimensions, and a three-dimensional pose reads a two-dimensional frame the
+ * same way
+ * @param[in] pose Pose
+ * @param[in] frame Pose stating the motion
+ * @pre The two poses share their SRID and neither is geodetic
+ */
+Pose *
+pose_motion(const Pose *pose, const Pose *frame)
+{
+  assert(pose); assert(frame);
+  bool posez = MEOS_FLAGS_GET_Z(pose->flags);
+  bool framez = MEOS_FLAGS_GET_Z(frame->flags);
+  double result[7];
+  if (posez == framez)
+    pose_compose_values(frame->data, pose->data, posez, false, result);
+  else
+  {
+    double p[7], f[7];
+    pose_values_3d(pose->data, posez, p);
+    pose_values_3d(frame->data, framez, f);
+    pose_compose_values(f, p, true, false, result);
+  }
+  int32_t srid = pose_srid(pose);
+  if (posez || framez)
+    return pose_make_3d(result[0], result[1], result[2], result[3], result[4],
+      result[5], result[6], false, srid);
+  return pose_make_2d(result[0], result[1], result[2], false, srid);
+}
+
+/**
+ * @brief Datum-typed wrapper of the rigid motion of a pose, used by the
+ * temporal lifting infrastructure
+ */
+Datum
+datum_pose_motion(Datum pose, Datum frame)
+{
+  return PointerGetDatum(pose_motion(DatumGetPoseP(pose),
+    DatumGetPoseP(frame)));
+}
+
+/**
+ * @brief Return an angle in the interval ]-pi, pi] a two-dimensional pose
+ * accepts
+ */
+static double
+pose_angle_wrap(double angle)
+{
+  double result = fmod(angle + M_PI, 2.0 * M_PI);
+  if (result <= 0.0)
+    result += 2.0 * M_PI;
+  return result - M_PI;
+}
+
+/**
+ * @brief Return the pose stating a translation
+ * @details A translation with no vertical offset keeps a value in its plane,
+ * so its frame is two-dimensional; one with a vertical offset moves it out of
+ * the plane
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @param[in] srid SRID of the value moved
+ */
+Pose *
+pose_motion_translate(double deltax, double deltay, double deltaz,
+  int32_t srid)
+{
+  if (deltaz == 0.0)
+    return pose_make_2d(deltax, deltay, 0.0, false, srid);
+  return pose_make_3d(deltax, deltay, deltaz, 1.0, 0.0, 0.0, 0.0, false,
+    srid);
+}
+
+/**
+ * @brief Return the pose stating a counter-clockwise rotation about the
+ * vertical through a point
+ * @details The rotation carries the point @p (x0, y0) to itself, so the
+ * position of the frame is that point minus its image by the rotation about
+ * the origin
+ * @param[in] angle Angle in radians
+ * @param[in] x0,y0 Coordinates of the centre of the rotation
+ * @param[in] srid SRID of the value moved
+ */
+Pose *
+pose_motion_rotate(double angle, double x0, double y0, int32_t srid)
+{
+  double s = sin(angle), c = cos(angle);
+  return pose_make_2d(x0 - (c * x0 - s * y0), y0 - (s * x0 + c * y0),
+    pose_angle_wrap(angle), false, srid);
+}
+
+/**
+ * @brief Return the pose stating a counter-clockwise rotation about the x
+ * axis
+ * @param[in] angle Angle in radians
+ * @param[in] srid SRID of the value moved
+ */
+Pose *
+pose_motion_rotate_x(double angle, int32_t srid)
+{
+  return pose_make_3d(0.0, 0.0, 0.0, cos(angle / 2.0), sin(angle / 2.0), 0.0,
+    0.0, false, srid);
+}
+
+/**
+ * @brief Return the pose stating a counter-clockwise rotation about the y
+ * axis
+ * @param[in] angle Angle in radians
+ * @param[in] srid SRID of the value moved
+ */
+Pose *
+pose_motion_rotate_y(double angle, int32_t srid)
+{
+  return pose_make_3d(0.0, 0.0, 0.0, cos(angle / 2.0), 0.0, sin(angle / 2.0),
+    0.0, false, srid);
+}
+
 /**
  * @ingroup meos_pose_base_geopose
  * @brief Return a pose whose orientation quaternion has been renormalized

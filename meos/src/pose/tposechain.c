@@ -460,4 +460,126 @@ tposechain_unnest(const Temporal *temp, PoseChain ***values, int *count)
   return result;
 }
 
+/*****************************************************************************
+ * Rigid motion functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal pose chain moved by the rigid motion a pose
+ * states, as #tpose_motion moves a temporal pose
+ * @details The motion carries the first link of every value and the later
+ * links keep theirs, so a chain interpolated link by link keeps its
+ * interpolation
+ * @param[in] temp Temporal pose chain
+ * @param[in] frame Pose stating the motion, which the function frees
+ */
+static Temporal *
+tposechain_motion_free(const Temporal *temp, Pose *frame)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_posechain_motion;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TPOSECHAIN;
+  lfinfo.argtype[1] = T_TPOSE;
+  lfinfo.restype = T_TPOSECHAIN;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(frame),
+    &lfinfo);
+  pfree(frame);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return a temporal pose chain translated by offsets, as
+ * #tpose_translate translates a temporal pose
+ * @param[in] temp Temporal pose chain
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @csqlfn #Tposechain_translate()
+ */
+Temporal *
+tposechain_translate(const Temporal *temp, double deltax, double deltay,
+  double deltaz)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tposechain_motion_free(temp, pose_motion_translate(deltax, deltay,
+    deltaz, tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the
+ * vertical through a point, as #tpose_rotate rotates a temporal pose
+ * @param[in] temp Temporal pose chain
+ * @param[in] angle Angle in radians
+ * @param[in] x0,y0 Coordinates of the centre of the rotation
+ * @csqlfn #Tposechain_rotate()
+ */
+Temporal *
+tposechain_rotate(const Temporal *temp, double angle, double x0, double y0)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tposechain_motion_free(temp, pose_motion_rotate(angle, x0, y0,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the x
+ * axis, as #tpose_rotate_x rotates a temporal pose
+ * @param[in] temp Temporal pose chain
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tposechain_rotate_x()
+ */
+Temporal *
+tposechain_rotate_x(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tposechain_motion_free(temp, pose_motion_rotate_x(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the y
+ * axis, as #tpose_rotate_y rotates a temporal pose
+ * @param[in] temp Temporal pose chain
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tposechain_rotate_y()
+ */
+Temporal *
+tposechain_rotate_y(const Temporal *temp, double angle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tposechain_motion_free(temp, pose_motion_rotate_y(angle,
+    tspatial_srid(temp)));
+}
+
+/**
+ * @ingroup meos_posechain_transf
+ * @brief Return a temporal pose chain rotated counter-clockwise about the z
+ * axis, as #tpose_rotate_z rotates a temporal pose
+ * @param[in] temp Temporal pose chain
+ * @param[in] angle Angle in radians
+ * @csqlfn #Tposechain_rotate_z()
+ */
+Temporal *
+tposechain_rotate_z(const Temporal *temp, double angle)
+{
+  return tposechain_rotate(temp, angle, 0.0, 0.0);
+}
+
 /*****************************************************************************/
