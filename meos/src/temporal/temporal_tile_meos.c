@@ -1357,13 +1357,13 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
  * @brief Split a temporal number into an array of fragments according to value
  * bins
  * @param[in] temp Temporal value
- * @param[in] size Size of the value bins
+ * @param[in] vsize Size of the value bins
  * @param[in] vorigin Origin of the value bins
  * @param[out] bins Array of start values of the bins containing the fragments
  * @param[out] count Number of values in the output arrays
  */
 Temporal **
-tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
+tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin,
   Datum **bins, int *count)
 {
   assert(temp); assert(bins); assert(count);
@@ -1373,7 +1373,7 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
   Span s;
   tnumber_set_span(temp, &s);
   Datum start_bin, end_bin;
-  int nbins = span_num_bins(&s, size, vorigin, &start_bin, &end_bin);
+  int nbins = span_num_bins(&s, vsize, vorigin, &start_bin, &end_bin);
 
   /* Split the temporal value */
   assert(temptype_subtype(temp->subtype));
@@ -1381,16 +1381,16 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
   {
     case TINSTANT:
       return (Temporal **) tnumberinst_value_split((const TInstant *) temp,
-        start_bin, size, bins, count);
+        start_bin, vsize, bins, count);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
         (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
-          start_bin, size, nbins, bins, count) :
+          start_bin, vsize, nbins, bins, count) :
         (Temporal **) tnumberseq_cont_value_split((const TSequence *) temp,
-          start_bin, size, nbins, bins, count);
+          start_bin, vsize, nbins, bins, count);
     default: /* TSEQUENCESET */
       return (Temporal **) tnumberseqset_value_split(
-        (const TSequenceSet *) temp, start_bin, size, nbins, bins, count);
+        (const TSequenceSet *) temp, start_bin, vsize, nbins, bins, count);
   }
 }
 
@@ -1401,19 +1401,19 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
  * a temporal grid
  */
 Temporal **
-tnumber_value_time_split(const Temporal *temp, Datum size,
+tnumber_value_time_split(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   Datum **value_bins, TimestampTz **time_bins, int *count)
 {
   assert(temp); assert(count); assert(tnumber_type(temp->temptype));
   MeosType basetype = temptype_basetype(temp->temptype);
-  assert(positive_datum(size, basetype)); assert(positive_duration(duration));
+  assert(positive_datum(vsize, basetype)); assert(positive_duration(duration));
 
   Datum start_bin, end_bin, start_time_bin, end_time_bin;
   /* Compute the value bounds */
   Span s;
   tnumber_set_span(temp, &s);
-  int value_count = span_num_bins(&s, size, vorigin, &start_bin,
+  int value_count = span_num_bins(&s, vsize, vorigin, &start_bin,
     &end_bin);
   /* Compute the time bounds */
   temporal_set_tstzspan(temp, &s);
@@ -1437,7 +1437,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   MeosType spantype = basetype_spantype(basetype);
   while (datum_lt(lower_value, end_bin, basetype))
   {
-    Datum upper_value = datum_add(lower_value, size, basetype);
+    Datum upper_value = datum_add(lower_value, vsize, basetype);
     span_set(lower_value, upper_value, true, false, basetype, spantype, &s);
     Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
     if (atspan != NULL)
@@ -1476,14 +1476,14 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
  * @brief Return the fragments of a temporal integer split according to value
  * bins
  * @param[in] temp Temporal value
- * @param[in] size Size of the value bins
- * @param[in] origin Value origin of the bins
+ * @param[in] vsize Size of the value bins
+ * @param[in] vorigin Value origin of the bins
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
-tint_value_split(const Temporal *temp, int size, int origin, int **bins,
+tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
@@ -1491,12 +1491,12 @@ tint_value_split(const Temporal *temp, int size, int origin, int **bins,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
-  if (! ensure_positive(size))
+  if (! ensure_positive(vsize))
     return NULL;
 
   Datum *datum_bins;
-  Temporal **result = tnumber_value_split(temp, Int32GetDatum(size),
-    Int32GetDatum(origin), &datum_bins, count);
+  Temporal **result = tnumber_value_split(temp, Int32GetDatum(vsize),
+    Int32GetDatum(vorigin), &datum_bins, count);
   /* Transform the datum bins into integer bins and return */
   int *values = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
@@ -1547,14 +1547,14 @@ tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
  * @brief Return the fragments of a temporal float split according to value
  * bins
  * @param[in] temp Temporal value
- * @param[in] size Size of the value bins
- * @param[in] origin Value origin of the bins
+ * @param[in] vsize Size of the value bins
+ * @param[in] vorigin Value origin of the bins
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
-tfloat_value_split(const Temporal *temp, double size, double origin,
+tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
   double **bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
@@ -1562,12 +1562,12 @@ tfloat_value_split(const Temporal *temp, double size, double origin,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
-  if (! ensure_positive(size))
+  if (! ensure_positive(vsize))
     return NULL;
 
   Datum *datum_bins;
-  Temporal **result = tnumber_value_split(temp, Float8GetDatum(size),
-    Float8GetDatum(origin), &datum_bins, count);
+  Temporal **result = tnumber_value_split(temp, Float8GetDatum(vsize),
+    Float8GetDatum(vorigin), &datum_bins, count);
   /* Transform the datum bins into float bins and return */
   double *values = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
@@ -1583,7 +1583,7 @@ tfloat_value_split(const Temporal *temp, double size, double origin,
  * @brief Return the fragments of a temporal integer split according to value
  * and time bins
  * @param[in] temp Temporal value
- * @param[in] size Size of the value bins
+ * @param[in] vsize Size of the value bins
  * @param[in] duration Size of the time bins
  * @param[in] vorigin Time origin of the bins
  * @param[in] torigin Time origin of the bins
@@ -1593,7 +1593,7 @@ tfloat_value_split(const Temporal *temp, double size, double origin,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
+tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
   int vorigin, TimestampTz torigin, int **value_bins,
   TimestampTz **time_bins, int *count)
 {
@@ -1602,11 +1602,11 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_positive(size) || ! ensure_positive_duration(duration))
+  if (! ensure_positive(vsize) || ! ensure_positive_duration(duration))
     return NULL;
 
   Datum *datum_bins;
-  Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(size),
+  Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(vsize),
     duration, Int32GetDatum(vorigin), torigin, &datum_bins, time_bins,
     count);
 
@@ -1672,7 +1672,7 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
  * @brief Return the fragments of a temporal integer split according to value
  * and time bins
  * @param[in] temp Temporal value
- * @param[in] size Size of the value bins
+ * @param[in] vsize Size of the value bins
  * @param[in] duration Size of the time bins
  * @param[in] vorigin Time origin of the bins
  * @param[in] torigin Time origin of the bins
@@ -1682,7 +1682,7 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tfloat_value_time_split(const Temporal *temp, double size,
+tfloat_value_time_split(const Temporal *temp, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin,
   double **value_bins, TimestampTz **time_bins, int *count)
 {
@@ -1691,11 +1691,11 @@ tfloat_value_time_split(const Temporal *temp, double size,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_positive(size) || ! ensure_positive_duration(duration))
+  if (! ensure_positive(vsize) || ! ensure_positive_duration(duration))
     return NULL;
 
   Datum *datum_bins;
-  Temporal **result = tnumber_value_time_split(temp, Float8GetDatum(size),
+  Temporal **result = tnumber_value_time_split(temp, Float8GetDatum(vsize),
     duration, Float8GetDatum(vorigin), torigin, &datum_bins, time_bins,
     count);
 

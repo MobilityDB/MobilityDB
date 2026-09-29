@@ -67,18 +67,18 @@
  * @ingroup meos_setspan_bin
  * @brief Return the initial value of the bin that contains an integer
  * @param[in] value Input value
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @errval INT_MAX
  */
 int
-int_get_bin(int value, int size, int origin)
+int_get_bin(int value, int vsize, int vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive(size))
+  if (! ensure_positive(vsize))
     return INT_MAX;
 
-  if (origin != 0)
+  if (vorigin != 0)
   {
     /*
      * We need to ensure that the value is in span AFTER the origin is
@@ -86,16 +86,16 @@ int_get_bin(int value, int size, int origin)
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
      */
-    if ((origin > 0 && value < PG_INT32_MIN + origin) ||
-        (origin < 0 && value > PG_INT32_MAX + origin))
+    if ((vorigin > 0 && value < PG_INT32_MIN + vorigin) ||
+        (vorigin < 0 && value > PG_INT32_MAX + vorigin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
       return INT_MAX;
     }
-    value -= origin;
+    value -= vorigin;
   }
-  int result = (value / size) * size;
-  if (value < 0 && value % size)
+  int result = (value / vsize) * vsize;
+  if (value < 0 && value % vsize)
   {
     /*
      * We need to subtract another size if remainder < 0 this only happens
@@ -103,15 +103,15 @@ int_get_bin(int value, int size, int origin)
      * after division. Need to subtract another size since division
      * truncates toward 0 in C99.
      */
-    if (result < PG_INT32_MIN + size)
+    if (result < PG_INT32_MIN + vsize)
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
       return INT_MAX;
     }
     else
-      result -= size;
+      result -= vsize;
   }
-  result += origin;
+  result += vorigin;
   return result;
 }
 
@@ -119,18 +119,18 @@ int_get_bin(int value, int size, int origin)
  * @ingroup meos_setspan_bin
  * @brief Return the initial value of the bin that contains an integer
  * @param[in] value Input value
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @errval INT64_MAX
  */
 int64
-bigint_get_bin(int64 value, int64 size, int64 origin)
+bigint_get_bin(int64 value, int64 vsize, int64 vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive_datum(size, T_INT8))
+  if (! ensure_positive_datum(vsize, T_INT8))
     return INT64_MAX;
 
-  if (origin != 0)
+  if (vorigin != 0)
   {
     /*
      * We need to ensure that the value is in span _after_ the origin is
@@ -138,16 +138,16 @@ bigint_get_bin(int64 value, int64 size, int64 origin)
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
      */
-    if ((origin > 0 && value < PG_INT64_MIN + origin) ||
-        (origin < 0 && value > PG_INT64_MAX + origin))
+    if ((vorigin > 0 && value < PG_INT64_MIN + vorigin) ||
+        (vorigin < 0 && value > PG_INT64_MAX + vorigin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
       return INT64_MAX;
     }
-    value -= origin;
+    value -= vorigin;
   }
-  int64 result = (value / size) * size;
-  if (value < 0 && value % size)
+  int64 result = (value / vsize) * vsize;
+  if (value < 0 && value % vsize)
   {
     /*
      * We need to subtract another size if remainder < 0 this only happens
@@ -155,15 +155,15 @@ bigint_get_bin(int64 value, int64 size, int64 origin)
      * after division. Need to subtract another size since division
      * truncates toward 0 in C99.
      */
-    if (result < PG_INT64_MIN + size)
+    if (result < PG_INT64_MIN + vsize)
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
       return INT64_MAX;
     }
     else
-      result -= size;
+      result -= vsize;
   }
-  result += origin;
+  result += vorigin;
   return result;
 }
 
@@ -171,18 +171,18 @@ bigint_get_bin(int64 value, int64 size, int64 origin)
  * @ingroup meos_setspan_bin
  * @brief Return the initial value of the bin that contains a float
  * @param[in] value Input value
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
  * @errval DBL_MAX
  */
 double
-float_get_bin(double value, double size, double origin)
+float_get_bin(double value, double vsize, double vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return DBL_MAX;
 
-  if (origin != 0)
+  if (vorigin != 0)
   {
     /*
      * We need to ensure that the value is in span _after_ the origin is
@@ -190,19 +190,19 @@ float_get_bin(double value, double size, double origin)
      * value is at least the minimum double value (-1 * DBL_MAX) and when
      * negative that it is less than the maximum double value (DBL_MAX)
      */
-    if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
-        (origin < 0 && value > DBL_MAX + origin))
+    if ((vorigin > 0 && value < -1 * DBL_MAX + vorigin) ||
+        (vorigin < 0 && value > DBL_MAX + vorigin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
       return DBL_MAX;
     }
-    value -= origin;
+    value -= vorigin;
   }
   /* Notice that by using the floor function above we remove the need to
    * add the additional if needed for the integer case to take into account
    * that integer division truncates toward 0 in C99 */
-  double result = floor(value / size) * size;
-  result += origin;
+  double result = floor(value / vsize) * vsize;
+  result += vorigin;
   return result;
 }
 
@@ -236,11 +236,11 @@ date_bin_start(DateADT d, int32 ndays, DateADT origin)
  * @brief Return the initial date of the bin that contains a date
  * @param[in] d Input date
  * @param[in] duration Interval defining the size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] torigin Origin of the bins
  * @errval DATEVAL_NOEND
  */
 DateADT
-date_get_bin(DateADT d, const Interval *duration, DateADT origin)
+date_get_bin(DateADT d, const Interval *duration, DateADT torigin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, DATEVAL_NOEND);
@@ -251,7 +251,7 @@ date_get_bin(DateADT d, const Interval *duration, DateADT origin)
     return d;
 
   int32 ndays = interval_units(duration) / USECS_PER_DAY;
-  return date_bin_start(d, ndays, origin);
+  return date_bin_start(d, ndays, torigin);
 }
 
 /**
@@ -313,18 +313,18 @@ timestamptz_bin_start(TimestampTz t, int64 size, TimestampTz origin)
  * @brief Return the initial timestamp of the bin that contains a timestamptz
  * @param[in] t Input timestamp
  * @param[in] duration Interval defining the size of the bins
- * @param[in] origin Origin of the bins
+ * @param[in] torigin Origin of the bins
  */
 TimestampTz
 timestamptz_get_bin(TimestampTz t, const Interval *duration,
-  TimestampTz origin)
+  TimestampTz torigin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, DT_NOEND);
   if (! ensure_positive_duration(duration))
     return DT_NOEND;
   int64 size = interval_units(duration);
-  return timestamptz_bin_start(t, size, origin);
+  return timestamptz_bin_start(t, size, torigin);
 }
 
 /*****************************************************************************
@@ -428,21 +428,21 @@ span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
  * @ingroup meos_internal_setspan_bin
  * @brief Return the bins from a span
  * @param[in] s ISpan to split
- * @param[in] size Bin size
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Bin size
+ * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-span_bins(const Span *s, Datum size, Datum origin, int *count)
+span_bins(const Span *s, Datum vsize, Datum vorigin, int *count)
 {
   assert(s); assert(count);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
   assert(numspan_type(s->spantype) || timespan_type(s->spantype));
   if ((numspan_type(s->spantype) && 
-        ! ensure_not_negative_datum(size, s->basetype)) ||
+        ! ensure_not_negative_datum(vsize, s->basetype)) ||
       (timespan_type(s->spantype) && 
-        ! ensure_positive_duration(DatumGetIntervalP(size))))
+        ! ensure_positive_duration(DatumGetIntervalP(vsize))))
     return NULL;
 
   /* Convert an interval into time units */
@@ -450,16 +450,16 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
   if (timespan_type(s->spantype))
   {
     if (s->spantype == T_DATESPAN)
-      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(size)) /
+      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(vsize)) /
         USECS_PER_DAY));
     else
-      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(size)));
+      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(vsize)));
   }
   else
-    size1 = size;
+    size1 = vsize;
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
-  int nbins = span_num_bins(s, size1, origin, &start_bin, &end_bin);
+  int nbins = span_num_bins(s, size1, vorigin, &start_bin, &end_bin);
   Span *bins = palloc0(sizeof(Span) * nbins);
   /* Iterate for each bin */
   Datum lower = start_bin;
@@ -477,21 +477,21 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
  * @ingroup meos_internal_setspan_bin
  * @brief Return the bins from a span set
  * @param[in] ss Span set to split
- * @param[in] size Bin size
- * @param[in] origin Origin of the bins
+ * @param[in] vsize Bin size
+ * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
+spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
 {
   assert(ss); assert(count);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
   assert(numspan_type(ss->spantype) || timespan_type(ss->spantype));
   if ((numspan_type(ss->spantype) && 
-        ! ensure_not_negative_datum(size, ss->basetype)) ||
+        ! ensure_not_negative_datum(vsize, ss->basetype)) ||
       (timespan_type(ss->spantype) && 
-        ! ensure_positive_duration(DatumGetIntervalP(size))))
+        ! ensure_positive_duration(DatumGetIntervalP(vsize))))
     return NULL;
 
   /* Convert an interval into time units */
@@ -499,16 +499,16 @@ spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
   if (timespan_type(ss->spantype))
   {
     if (ss->spantype == T_DATESPAN)
-      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(size)) /
+      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(vsize)) /
         USECS_PER_DAY));
     else
-      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(size)));
+      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(vsize)));
   }
   else
-    size1 = size;
+    size1 = vsize;
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
-  int nbins = span_num_bins(&ss->span, size1, origin, &start_bin, &end_bin);
+  int nbins = span_num_bins(&ss->span, size1, vorigin, &start_bin, &end_bin);
   Span *bins = palloc0(sizeof(Span) * nbins);
   /* Set the span of the state */
   /* Iterate for each bin */

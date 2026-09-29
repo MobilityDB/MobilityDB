@@ -77,8 +77,8 @@ typedef struct TboxGridState
 extern int span_num_bins(const Span *s, Datum size, Datum origin, 
   Datum *start_bin, Datum *end_bin);
 
-extern Span *span_bins(const Span *s, Datum size, Datum origin, int *count);
-extern Span *spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count);
+extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, int *count);
+extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
 
 extern SpanBinState *temporal_time_bin_init(const Temporal *temp,
   const Interval *duration, TimestampTz torigin, int *nbins);
