@@ -2047,28 +2047,33 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @param[in] extent Extent
  * @param[in] buffer Buffer
  * @param[in] clip_geom True when the geometry is clipped
- * @return Structure with the geometry, the parallel array of timestamps,
- * and the number of timestamps
+ * @param[out] gsarr Geometry encoding the temporal point
+ * @param[out] timesarr Array of timestamps in Unix time, one per point of the
+ * geometry
+ * @param[out] count Number of elements in the output array
+ * @return True when the temporal point has a representation in the tile
  * @csqlfn #Tpoint_as_mvtgeom()
  */
-MvtGeom
+bool
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
-  int32_t buffer, bool clip_geom)
+  int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr,
+  int *count)
 {
   /* Ensure the validity of the arguments */
-  MvtGeom result = {NULL, NULL, 0};
-  VALIDATE_TPOINT(temp, result); VALIDATE_NOT_NULL(bounds, result);
+  VALIDATE_TPOINT(temp, false); VALIDATE_NOT_NULL(bounds, false);
+  VALIDATE_NOT_NULL(gsarr, false); VALIDATE_NOT_NULL(timesarr, false);
+  VALIDATE_NOT_NULL(count, false);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Mapbox Vector Tiles: Geometric bounds are too small");
-    return result;
+    return false;
   }
   if (extent <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Mapbox Vector Tiles: Extent must be greater than 0");
-    return result;
+    return false;
   }
 
   /* Contrary to what is done in PostGIS we do not use the following filter
@@ -2092,13 +2097,13 @@ tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 
   Temporal *temp1 = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
   if (! temp1)
-    return result;
+    return false;
 
   /* Decouple the geometry and the timestamps */
-  result.geom = tpoint_decouple(temp1, &result.times, &result.count);
+  *gsarr = tpoint_decouple(temp1, timesarr, count);
 
   pfree(temp1);
-  return result;
+  return true;
 }
 
 /*****************************************************************************

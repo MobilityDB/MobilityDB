@@ -155,10 +155,9 @@ GLOBAL_SKIP = {}
 
 # By-value scalar RETURN types: a fixed, whole-repo set (not a per-config
 # opt-in) of C types that are always passed by value, so a result owns no
-# storage and there is nothing to free -- call and discard. Struct-by-value
-# and opaque-handle returns (Numeric, MvtGeom, SpaceSplit, SpaceTimeSplit,
-# nullHandleType) are deliberately excluded: those come back as pointers or
-# aggregate types under the covers and stay in the unmapped-return skip path.
+# storage and there is nothing to free -- call and discard. Opaque-handle
+# returns (Numeric, nullHandleType) are deliberately excluded: those come back
+# as pointers under the covers and stay in the unmapped-return skip path.
 BY_VALUE_SCALAR_TYPES = {
     "int8_t", "int16_t", "int32_t", "int64_t",
     "uint8_t", "uint16_t", "uint32_t", "uint64_t",
@@ -490,35 +489,6 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
         return (f"  {{ {outp_pre}Numeric r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
                 f"    if (r) free(r);{outp_post} }}\n")
-    # Struct-by-value returns that own allocated members (MvtGeom) or parallel
-    # owned arrays (SpaceSplit / SpaceTimeSplit). The struct itself is
-    # returned by value, but its pointer members are fresh allocations the
-    # caller must free -- element-by-element for the array members, since
-    # each element is itself an owned copy.
-    if ret == "MvtGeom":
-        return (f"  {{ {outp_pre}MvtGeom r = {call};\n"
-                f"    printf(\"{fname}: geom=%s n=%d\\n\", r.geom ? \"OK\" : \"NULL\", r.count);\n"
-                f"    if (r.geom) free(r.geom);\n"
-                f"    if (r.times) free(r.times);{outp_post} }}\n")
-    if ret == "SpaceSplit":
-        return (f"  {{ {outp_pre}SpaceSplit r = {call};\n"
-                f"    printf(\"{fname}: n=%d\\n\", r.count);\n"
-                f"    for (int _i = 0; _i < r.count; _i++) {{\n"
-                f"      if (r.fragments && r.fragments[_i]) free(r.fragments[_i]);\n"
-                f"      if (r.bins && r.bins[_i]) free(r.bins[_i]);\n"
-                f"    }}\n"
-                f"    if (r.fragments) free(r.fragments);\n"
-                f"    if (r.bins) free(r.bins);{outp_post} }}\n")
-    if ret == "SpaceTimeSplit":
-        return (f"  {{ {outp_pre}SpaceTimeSplit r = {call};\n"
-                f"    printf(\"{fname}: n=%d\\n\", r.count);\n"
-                f"    for (int _i = 0; _i < r.count; _i++) {{\n"
-                f"      if (r.fragments && r.fragments[_i]) free(r.fragments[_i]);\n"
-                f"      if (r.space_bins && r.space_bins[_i]) free(r.space_bins[_i]);\n"
-                f"    }}\n"
-                f"    if (r.fragments) free(r.fragments);\n"
-                f"    if (r.space_bins) free(r.space_bins);\n"
-                f"    if (r.time_bins) free(r.time_bins);{outp_post} }}\n")
     # Double-pointer returns (T **) need element-by-element free using
     # the n_out count populated by the function's int* arg. The generator
     # only uses this shape when the call signature contains an `int *`
@@ -1619,11 +1589,11 @@ TGEOMETRY_CONFIG = dict(
         "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
         "tgeo_space_boxes":       {4: "geom_point1"},
         "tgeo_space_time_boxes":  {5: "geom_point1"},
-        "tgeo_space_split":       {4: "geom_point1"},
-        "tgeo_space_time_split":  {5: "geom_point1"},
-        # A zero extent is rejected ("Extent must be greater than 0"); use a
-        # real MVT tile extent/buffer so the split actually allocates.
-        "tpoint_as_mvtgeom":      {2: "4096", 3: "256"},
+        # The splits hand back their bins through out-parameters beside the
+        # fragments they return; a NULL bin array asks the split to free the
+        # bins itself, which the call below exercises.
+        "tgeo_space_split":       {4: "geom_point1", 7: "NULL"},
+        "tgeo_space_time_split":  {5: "geom_point1", 9: "NULL", 10: "NULL"},
         "stbox_get_space_tile":   {0: "geom_point1", 4: "geom_point1"},
         "stbox_space_tiles":      {4: "geom_point1"},
         # ... and their SPACE-TIME twins, which take the same point operands one
@@ -1813,8 +1783,11 @@ TGEOMETRY_CONFIG = dict(
     # SpanSet*, on top of the `int *` flat-array return this family already
     # returns. That combination is not one of emit_call's generic shapes, so
     # these four are exercised by hand in the cleanup block instead, matching
-    # trgeometry_value_n.
-    manual=[r"re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$"],
+    # trgeometry_value_n. tpoint_as_mvtgeom returns a bool and hands back an
+    # owned geometry and an owned timestamp array through out-parameters, so
+    # the cleanup block calls it and frees both the same way.
+    manual=[r"re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$",
+            "tpoint_as_mvtgeom"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -2043,6 +2016,18 @@ TGEOMETRY_CONFIG = dict(
         if (t_periods[_i]) free(t_periods[_i]);
       free(t_periods);
     }
+  }
+  /* A zero extent is rejected ("Extent must be greater than 0"); a real MVT
+   * tile extent and buffer make the conversion allocate its outputs. */
+  {
+    GSERIALIZED *mvt_geom = NULL;
+    int64 *mvt_times = NULL;
+    int mvt_count = 0;
+    bool r = tpoint_as_mvtgeom(tpoint1, stbox1, 4096, 256, true, &mvt_geom,
+      &mvt_times, &mvt_count);
+    printf("tpoint_as_mvtgeom: %d n=%d\\n", (int) r, mvt_count);
+    if (mvt_geom) free(mvt_geom);
+    if (mvt_times) free(mvt_times);
   }
 
   if (tgeo_inst1) free(tgeo_inst1);

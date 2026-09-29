@@ -1488,19 +1488,28 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @return Structure with the fragments, the parallel arrays of space and
- * time bins, and the number of fragments
+ * @param[out] space_bins Array of space bins, parallel to the fragments, may be
+ * `NULL`
+ * @param[out] time_bins Array of time bins, parallel to the fragments, `NULL`
+ * when no duration is given, may be `NULL`
+ * @param[out] count Number of elements in the output arrays
+ * @return Array of fragments
  * @note This function in MEOS corresponds to the MobilityDB function
  * #Tgeo_space_time_split_common. Note that the test for the validity of the
  * arguments is done in #tgeo_space_time_tile_init
  * @csqlfn #Tgeo_space_time_split()
  */
-SpaceTimeSplit
+Temporal **
 tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
-  TimestampTz torigin, bool bitmatrix, bool border_inc)
+  TimestampTz torigin, bool bitmatrix, bool border_inc,
+  GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(sorigin, NULL);
   if (! tgeo_type_all(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
@@ -1511,18 +1520,21 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) &&
         ! ensure_has_not_Z(temp->temptype, temp->flags)))
-    return (SpaceTimeSplit) {NULL, NULL, NULL, 0};
+    return NULL;
 
   /* Initialize state */
   int ntiles;
   STboxGridState *state = tgeo_space_time_tile_init(temp, xsize, ysize,
     zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
   if (! state)
-    return (SpaceTimeSplit) {NULL, NULL, NULL, 0};
+    return NULL;
 
-  GSERIALIZED **spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
+  /* The bins are built only for the arrays the caller asks for */
+  GSERIALIZED **spaces = NULL;
+  if (space_bins)
+    spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
   TimestampTz *times = NULL;
-  if (duration)
+  if (duration && time_bins)
     times = palloc(sizeof(TimestampTz) * ntiles);
   Temporal **result = palloc(sizeof(Temporal *) * ntiles);
   bool hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
@@ -1560,13 +1572,19 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
       continue;
 
     /* Construct value of the result */
-    spaces[i] = geopoint_make(box.xmin, box.ymin, box.zmin, hasz, false,
-      box.srid);
-    if (duration)
+    if (spaces)
+      spaces[i] = geopoint_make(box.xmin, box.ymin, box.zmin, hasz, false,
+        box.srid);
+    if (times)
       times[i] = DatumGetTimestampTz(box.period.lower);
     result[i++] = atstbox;
   }
-  return (SpaceTimeSplit) {result, spaces, times, i};
+  *count = i;
+  if (space_bins)
+    *space_bins = spaces;
+  if (time_bins)
+    *time_bins = times;
+  return result;
 }
 
 /**
@@ -1579,17 +1597,19 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @return Structure with the fragments, the parallel array of space bins,
- * and the number of fragments
+ * @param[out] space_bins Array of space bins, parallel to the fragments, may be
+ * `NULL`
+ * @param[out] count Number of elements in the output arrays
+ * @return Array of fragments
  * @csqlfn #Tgeo_space_split()
  */
-SpaceSplit
+Temporal **
 tgeo_space_split(const Temporal *temp, double xsize, double ysize,
-  double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc)
+  double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
+  GSERIALIZED ***space_bins, int *count)
 {
-  SpaceTimeSplit sts = tgeo_space_time_split(temp, xsize, ysize, zsize, NULL,
-    sorigin, 0, bitmatrix, border_inc);
-  return (SpaceSplit) {sts.fragments, sts.space_bins, sts.count};
+  return tgeo_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
+    bitmatrix, border_inc, space_bins, NULL, count);
 }
 
 /*****************************************************************************/
