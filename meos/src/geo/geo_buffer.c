@@ -1341,19 +1341,23 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
 }
 
 /**
- * @brief Return true if the boundary of a geometry crosses itself
+ * @brief Return true if a boundary read as edges crosses itself
  * @details Two edges of one ring that are not consecutive must not meet: an
  * offset ring that crosses itself does not bound a surface, and resolving it
  * into the surfaces it does bound needs the boundary overlay. Consecutive
  * edges meet at the node they share by construction and are skipped.
+ *
+ * The edges come from the caller because a caller that goes on to resolve the
+ * ring holds them already, and reading them a second time off the same
+ * geometry answers what the first reading answers. This is the pair
+ * #buffer_edges_contain_point and #buffer_areal_contains_point make of the
+ * same question: the worker takes the edges, and the wrapper below reads them
+ * for a caller that holds none.
  */
 static bool
-buffer_boundary_self_intersects(const LWGEOM *geom)
+buffer_edges_self_intersect(const MeosArray *edges)
 {
-  assert(geom);
-  MeosArray *edges = geom_extract_edges(geom);
-  if (! edges)
-    return false;
+  assert(edges);
   bool result = false;
   /* Whether any pair meets does not depend on the order the pairs are met
    * in, so only the pairs whose boxes may meet are read */
@@ -1384,6 +1388,23 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
   }
   if (pairs)
     pfree(pairs);
+  return result;
+}
+
+/**
+ * @brief Return true if the boundary of a geometry crosses itself
+ * @details Reads the geometry as edges and asks #buffer_edges_self_intersect,
+ * for a caller holding no edges of its own, as #buffer_areal_contains_point
+ * reads them for #buffer_edges_contain_point
+ */
+static bool
+buffer_boundary_self_intersects(const LWGEOM *geom)
+{
+  assert(geom);
+  MeosArray *edges = geom_extract_edges(geom);
+  if (! edges)
+    return false;
+  bool result = buffer_edges_self_intersect(edges);
   meos_array_destroy(edges);
   return result;
 }
@@ -5885,20 +5906,23 @@ buffer_point_edges_nearer(double x, double y, const MeosArray *edges,
  * it, which leaves pieces that are wholly on one side of the question, and a
  * piece is kept when the geometry is the buffer distance away from it rather
  * than nearer. The pieces kept chain into the rings of the answer
- * @param[in] raw Ring of offsets, as a geometry bounding a surface
+ *
+ * The ring arrives as edges rather than as a geometry because its caller has
+ * just read it as edges to ask #buffer_edges_self_intersect whether it runs
+ * into itself at all, and reading the same geometry a second time answers
+ * what the first reading answers. Taking the edges is the convention
+ * #buffer_edges_self_intersect and #buffer_edges_contain_point follow
+ * @param[in] arr Edges of the ring of offsets
  * @param[in] edges Edges of the geometry the buffer is taken of
  * @param[in] radius Buffer distance
  * @param[in] srid SRID of the answer
  * @return @p NULL when the pieces kept do not chain into a closed ring
  */
 static LWGEOM *
-buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
+buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
   double radius, int32_t srid)
 {
-  assert(raw); assert(edges); assert(radius > 0.0);
-  MeosArray *arr = geom_extract_edges(raw);
-  if (! arr)
-    return NULL;
+  assert(arr); assert(edges); assert(radius > 0.0);
   uint32_t n = meos_array_count(arr);
 
   /* Where the ring meets itself, every crossing as each pair finds it, then
@@ -5957,7 +5981,6 @@ buffer_ring_rebuild_at_nodes(const LWGEOM *raw, const MeosArray *edges,
   if (pairs)
     pfree(pairs);
   meos_array_destroy(points);
-  meos_array_destroy(arr);
   /* A node found by several pairs is kept once, as the first pair found it */
   buffer_intersections_add_all(crossings, nodes);
   meos_array_destroy(crossings);
@@ -6019,13 +6042,22 @@ buffer_ring_resolve(LWGEOM *raw, const LWGEOM *input, double radius,
   int32_t srid)
 {
   assert(raw); assert(input);
-  if (! buffer_boundary_self_intersects(raw))
+  /* The ring is read as edges ONCE: whether it runs into itself and, where it
+   * does, what it bounds are two questions about the same edges */
+  MeosArray *arr = geom_extract_edges(raw);
+  if (! arr)
     return raw;
+  if (! buffer_edges_self_intersect(arr))
+  {
+    meos_array_destroy(arr);
+    return raw;
+  }
   MeosArray *edges = geom_extract_edges(input);
   LWGEOM *result = edges ?
-    buffer_ring_rebuild_at_nodes(raw, edges, radius, srid) : NULL;
+    buffer_ring_rebuild_at_nodes(arr, edges, radius, srid) : NULL;
   if (edges)
     meos_array_destroy(edges);
+  meos_array_destroy(arr);
   lwgeom_free(raw);
   return result;
 }
