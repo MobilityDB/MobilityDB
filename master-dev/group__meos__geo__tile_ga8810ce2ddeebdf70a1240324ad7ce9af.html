@@ -164,7 +164,7 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bounds</td><td>Bounds </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, may be zero for time tiles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>

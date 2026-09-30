@@ -151,11 +151,11 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, a <code>ysize</code> or <code>zsize</code> of 0 taking <code>xsize</code> as <a class="el" href="tgeo__tile_8h_aa71e654d184e6a730f9b31641b3e07df.html#aa71e654d184e6a730f9b31641b3e07df" title="Set the state with a temporal point and a space and possibly time grid for splitting or obtaining a s...">tgeo_space_time_tile_init</a> reads them </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin of the spatial grid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bitmatrix</td><td>True when using a bitmatrix to speed up the computation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array @csqlfn <a class="el" href="group__mobilitydb__rgeo__tile_ga4c61c20b77e08a0a8801a0b20cd8a0ac.html#ga4c61c20b77e08a0a8801a0b20cd8a0ac" title="Return the spatiotemporal boxes of a temporal rigid geometry split with respect to a spatial grid @sq...">Trgeometry_space_boxes()</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array @csqlfn <a class="el" href="group__mobilitydb__rgeo__tile_ga4c61c20b77e08a0a8801a0b20cd8a0ac.html#ga4c61c20b77e08a0a8801a0b20cd8a0ac" title="Return the spatiotemporal boxes of a temporal rigid geometry split with respect to a spatial grid.">Trgeometry_space_boxes()</a> </td></tr>
   </table>
   </dd>
 </dl>

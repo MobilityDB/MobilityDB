@@ -152,7 +152,7 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bounds</td><td>Bounds </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of values in the output array @csqlfn <a class="el" href="group__mobilitydb__geo__tile_ga8e249fafb9b96a3f131a040edb3402e1.html#ga8e249fafb9b96a3f131a040edb3402e1" title="Return the spatial grid of a spatiotemporal box @sqlfn spaceTiles()">Stbox_space_tiles()</a> </td></tr>
