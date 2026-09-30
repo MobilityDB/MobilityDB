@@ -433,6 +433,112 @@ Nsegment_send(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Input/output in (E)WKB and HexWKB representation for network segments
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Nsegment_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_from_wkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return a network segment from its (Extended) Well-Known Binary
+ * (WKB or EWKB) representation
+ * @sqlfn nsegmentFromBinary(), nsegmentFromEWKB()
+ */
+Datum
+Nsegment_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Nsegment *result = nsegment_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_NSEGMENT_P(result);
+}
+
+PGDLLEXPORT Datum Nsegment_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_from_hexwkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return a network segment from its ASCII hex-encoded (Extended)
+ * Well-Known Binary (HexWKB or HexEWKB) representation
+ * @sqlfn nsegmentFromHexWKB(), nsegmentFromHexEWKB()
+ */
+Datum
+Nsegment_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Nsegment *result = nsegment_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_NSEGMENT_P(result);
+}
+
+PGDLLEXPORT Datum Nsegment_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_wkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a network segment
+ * @sqlfn asBinary()
+ */
+Datum
+Nsegment_as_wkb(PG_FUNCTION_ARGS)
+{
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(ns), T_NSEGMENT,
+    false));
+}
+
+PGDLLEXPORT Datum Nsegment_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_ewkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a network
+ * segment
+ * @note It is the WKB representation carrying the SRID
+ * @sqlfn asEWKB()
+ */
+Datum
+Nsegment_as_ewkb(PG_FUNCTION_ARGS)
+{
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(ns), T_NSEGMENT,
+    true));
+}
+
+PGDLLEXPORT Datum Nsegment_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_hexwkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a network segment
+ * @sqlfn asHexWKB()
+ */
+Datum
+Nsegment_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(ns), T_NSEGMENT,
+    false));
+}
+
+PGDLLEXPORT Datum Nsegment_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_hexewkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a network segment
+ * @note It is the HexWKB representation carrying the SRID
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Nsegment_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(ns), T_NSEGMENT,
+    true));
+}
+
+/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 

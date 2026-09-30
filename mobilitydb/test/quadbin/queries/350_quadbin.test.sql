@@ -57,6 +57,31 @@ SELECT quadbin '12345';   -- not a valid quadbin cell
 SELECT quadbin '0x480fffffffffffff' = quadbin '480fffffffffffff';
 
 -------------------------------------------------------------------------------
+-- (Hex)WKB round trip
+--
+-- The base WKB carries no SRID: the WGS84 (4326) the grid fixes is implied,
+-- as for an h3index. An EWKB stating 4326 is read, one stating another SRID
+-- is refused, and so is an integer that encodes no cell.
+-------------------------------------------------------------------------------
+
+SELECT asBinary(quadbin '48427fffffffffff');
+SELECT asBinary(quadbin '48427fffffffffff', 'XDR');
+SELECT asHexWKB(quadbin '48427fffffffffff');
+SELECT asHexWKB(quadbin '48427fffffffffff', 'XDR');
+SELECT quadbinFromBinary(asBinary(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+SELECT quadbinFromBinary(asBinary(quadbin '480fffffffffffff', 'XDR'))
+       = quadbin '480fffffffffffff';
+SELECT quadbinFromHexWKB(asHexWKB(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
+       = quadbin '480fffffffffffff';
+SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
+/* Errors */
+SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01003930000000000000');
+
+-------------------------------------------------------------------------------
 -- Comparison operators
 -------------------------------------------------------------------------------
 

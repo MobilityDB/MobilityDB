@@ -57,6 +57,65 @@ INSERT INTO tbl_s2cell_assign VALUES (42::bigint);
 ERROR:  The value 42 does not encode a valid s2cell
 DROP TABLE tbl_s2cell_assign;
 DROP TABLE
+SELECT asBinary(s2cell '47c3c444c');
+        asbinary        
+------------------------
+ \x0100000000c044c4c347
+(1 row)
+
+SELECT asBinary(s2cell '47c3c444c', 'XDR');
+        asbinary        
+------------------------
+ \x000047c3c444c0000000
+(1 row)
+
+SELECT asHexWKB(s2cell '47c3c444c');
+       ashexwkb       
+----------------------
+ 0100000000C044C4C347
+(1 row)
+
+SELECT asHexWKB(s2cell '47c3c444c', 'XDR');
+       ashexwkb       
+----------------------
+ 000047C3C444C0000000
+(1 row)
+
+SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellFromBinary(asBinary(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellFromHexWKB(asHexWKB(s2cell '47c3c444c')) = s2cell '47c3c444c';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
+ s2cellfromhexwkb 
+------------------
+ 54b5c9
+(1 row)
+
+/* Errors */
+SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
+ERROR:  Only SRID 4326 (WGS84) is accepted for the type s2cell, received 3857
+SELECT s2cellFromHexWKB('01000000000000000000');
+ERROR:  The value 0 does not encode a valid s2cell
 SELECT s2cell '47c3c444c0000000' < s2cell '47c3c444c0000004';
  ?column? 
 ----------

@@ -36,10 +36,12 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <libpq/pqformat.h>
+#include <utils/builtins.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_quadbin.h>
 #include "quadbin/quadbin.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Input / output
@@ -115,6 +117,83 @@ Quadbin_send(PG_FUNCTION_ARGS)
   pq_begintypsend(&buf);
   pq_sendint64(&buf, (int64) cell);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************
+ * WKB and HexWKB input/output
+ *
+ * A quadbin is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes:
+ * asBinary/asHexWKB are the SRID-less base WKB, as for an h3index. The output
+ * side reuses the generic Datum_as_wkb / Datum_as_hexwkb dispatch; the input
+ * side calls the MEOS functions (which accept an absent SRID as 4326, or a
+ * present 4326).
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Quadbin_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_from_wkb);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return a quadbin from its Well-Known Binary (WKB) representation
+ * @sqlfn quadbinFromBinary()
+ */
+Datum
+Quadbin_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Quadbin result = quadbin_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_QUADBIN(result);
+}
+
+PGDLLEXPORT Datum Quadbin_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_from_hexwkb);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return a quadbin from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn quadbinFromHexWKB()
+ */
+Datum
+Quadbin_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Quadbin result = quadbin_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_QUADBIN(result);
+}
+
+PGDLLEXPORT Datum Quadbin_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_as_wkb);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a quadbin
+ * @sqlfn asBinary()
+ */
+Datum
+Quadbin_as_wkb(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, QuadbinGetDatum(cell), T_QUADBIN,
+    false));
+}
+
+PGDLLEXPORT Datum Quadbin_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_as_hexwkb);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a quadbin
+ * @sqlfn asHexWKB()
+ */
+Datum
+Quadbin_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, QuadbinGetDatum(cell), T_QUADBIN,
+    false));
 }
 
 /*****************************************************************************

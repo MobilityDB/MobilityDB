@@ -46,12 +46,15 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pointcloud.h>
+#include <pgtypes.h>
 #include "temporal/span.h"  /* PG_GETARG_SPAN_P */
+#include "temporal/type_util.h"  /* bstring2bytea */
 #include "pointcloud/tpcbox.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Input / output
@@ -89,15 +92,17 @@ PGDLLEXPORT Datum Tpcbox_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_recv);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
- * @brief Binary recv: read the raw TPCBox struct image
+ * @brief Return a TPCBox from its Well-Known Binary (WKB) representation,
+ * as #Stbox_recv reads an STBox
  * @sqlfn tpcbox_recv()
  */
 Datum
 Tpcbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  TPCBox *result = palloc(sizeof(TPCBox));
-  pq_copymsgbytes(buf, (char *) result, sizeof(TPCBox));
+  TPCBox *result = tpcbox_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
   PG_RETURN_TPCBOX_P(result);
 }
 
@@ -105,17 +110,93 @@ PGDLLEXPORT Datum Tpcbox_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_send);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
- * @brief Binary send: emit the raw TPCBox struct image
+ * @brief Return the Well-Known Binary (WKB) representation of a TPCBox, as
+ * #Stbox_send writes an STBox
  * @sqlfn tpcbox_send()
  */
 Datum
 Tpcbox_send(PG_FUNCTION_ARGS)
 {
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (const char *) box, sizeof(TPCBox));
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  size_t wkb_size;
+  /* A point cloud box always outputs the SRID, as an STBox does */
+  uint8_t *wkb = tpcbox_as_wkb(box, WKB_EXTENDED, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Input/output in WKB and HexWKB representation
+ *
+ * A TPCBox writes its SRID in its plain forms, as an STBox does, so it takes
+ * no EWKB form.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_from_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return a TPCBox from its Well-Known Binary (WKB) representation
+ * @sqlfn tpcboxFromBinary()
+ */
+Datum
+Tpcbox_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  TPCBox *result = tpcbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_from_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return a TPCBox from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn tpcboxFromHexWKB()
+ */
+Datum
+Tpcbox_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  TPCBox *result = tpcbox_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_wkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a TPCBox
+ * @sqlfn asBinary()
+ */
+Datum
+Tpcbox_as_wkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  /* A point cloud box always outputs the SRID, as an STBox does */
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TPCBOX, true));
+}
+
+PGDLLEXPORT Datum Tpcbox_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a TPCBox
+ * @sqlfn asHexWKB()
+ */
+Datum
+Tpcbox_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TPCBOX, true));
 }
 
 /*****************************************************************************

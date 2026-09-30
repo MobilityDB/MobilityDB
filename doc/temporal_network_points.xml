@@ -168,6 +168,52 @@ SELECT asEWKT(npointFromHexEWKB('01412C1600000100000000000000000000000000E03F'))
 -- SRID=5676;NPoint(1,0.5)
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="nsegment_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a network segment</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asBinary(nsegment,endian text='') → bytea
+asEWKB(nsegment,endian text='') → bytea
+asHexWKB(nsegment,endian text='') → text
+asHexEWKB(nsegment,endian text='') → text
+</programlisting>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. A network segment takes its SRID from the underlying route network, as a network point does: <varname>asEWKB</varname> and <varname>asHexEWKB</varname> embed it, while the plain <varname>asBinary</varname> and <varname>asHexWKB</varname> forms omit it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
+-- \x01010100000000000000000000000000e03f666666666666e63f
+SELECT asEWKB(nsegment 'NSegment(1,0.5,0.7)');
+-- \x01412c1600000100000000000000000000000000e03f666666666666e63f
+SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
+-- 01010100000000000000000000000000E03F666666666666E63F
+SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
+-- 00410000162C00000000000000013FE00000000000003FE6666666666666
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="nsegmentFromBinary">
+					<indexterm significance="normal"><primary><varname>nsegmentFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentFromHexEWKB</varname></primary></indexterm>
+					<para>Input of a network segment from the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nsegmentFromBinary(bytea) → nsegment
+nsegmentFromEWKB(bytea) → nsegment
+nsegmentFromHexWKB(text) → nsegment
+nsegmentFromHexEWKB(text) → nsegment
+</programlisting>
+					<para>An SRID stated by an extended input must be the SRID of the route network, and the route must be one of the network.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT nsegmentFromBinary(asBinary(nsegment 'NSegment(1,0.5,0.7)'));
+-- NSegment(1,0.5,0.7)
+SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
+-- NSegment(1,0.5,0.7)
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
