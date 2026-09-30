@@ -467,7 +467,7 @@ extern PoseChain *posechain_round(const PoseChain *pc, int maxdd);
 extern int32_t posechain_srid(const PoseChain *pc);
 extern PoseChain *posechain_set_srid(const PoseChain *pc, int32_t srid);
 extern PoseChain *posechain_transform(const PoseChain *pc, int32_t srid_to);
-extern PoseChain *posechain_transform_pipeline(const PoseChain *pc, const char *pipeline, int32_t srid_to, bool is_forward);
+extern PoseChain *posechain_transform_pipeline(const PoseChain *pc, const char *pipelinestr, int32_t srid, bool is_forward);
 
 /*****************************************************************************
  * Functions for temporal pose chains

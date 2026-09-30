@@ -961,27 +961,27 @@ cbuffer_transform(const Cbuffer *cb, int32_t srid_to)
  * @brief Return a circular buffer transformed to another SRID using a
  * pipeline
  * @param[in] cb Circular buffer
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
  * @csqlfn #Cbuffer_transform_pipeline()
  */
 Cbuffer *
-cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the circular buffer */
-  Cbuffer *result = cbuffer_transf_pj(cb, srid_to, pj);
+  Cbuffer *result = cbuffer_transf_pj(cb, srid, pj);
 
   /* Transform the circular buffer */
   proj_destroy(pj->pj); pfree(pj);

@@ -765,7 +765,43 @@ int main(void)
   assert(temporal_num_instants(merc_val) == 1);
   assert(tfloat_start_value(merc_val) == 10.0);
   free(merc_val_str); free(merc_val);
-  free(traj_merc); free(merc);
+  free(traj_merc);
+
+  /* A coordinate operation GDAL would derive answers as the reprojection to
+   * the same system does: the Web Mercator projection on the WGS84 ellipsoid is
+   * the operation from EPSG:4326 to EPSG:3857, read longitude first and in
+   * degrees as the geometry pipeline reads it, and its inverse carries the
+   * result back to EPSG:4326 */
+  meos_errno_reset();
+  Raster *merc_pipe = raster_transform_pipeline(rast_values,
+    "+proj=webmerc +ellps=WGS84", 3857, true, NULL, 0.0, 0.0, 0.0);
+  assert(merc_pipe != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_transform_pipeline(raster, webmerc, 3857): srid %d, %dx%d, "
+    "scale (%f, %f), upper left (%f, %f)\n", raster_srid(merc_pipe),
+    raster_width(merc_pipe), raster_height(merc_pipe),
+    raster_scale_x(merc_pipe), raster_scale_y(merc_pipe),
+    raster_upper_left_x(merc_pipe), raster_upper_left_y(merc_pipe));
+  assert(raster_srid(merc_pipe) == 3857);
+  assert(raster_width(merc_pipe) == raster_width(merc));
+  assert(raster_height(merc_pipe) == raster_height(merc));
+  assert(raster_scale_x(merc_pipe) == raster_scale_x(merc));
+  assert(raster_scale_y(merc_pipe) == raster_scale_y(merc));
+  assert(raster_upper_left_x(merc_pipe) == raster_upper_left_x(merc));
+  assert(raster_upper_left_y(merc_pipe) == raster_upper_left_y(merc));
+  Raster *back = raster_transform_pipeline(merc_pipe,
+    "+proj=webmerc +ellps=WGS84", 4326, false, NULL, 0.0, 0.0, 0.0);
+  assert(back != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_srid(back) == 4326);
+  free(back); free(merc_pipe);
+  /* A null argument is rejected rather than dereferenced */
+  assert(raster_transform_pipeline(NULL, "+proj=webmerc +ellps=WGS84", 3857,
+    true, NULL, 0.0, 0.0, 0.0) == NULL);
+  assert(raster_transform_pipeline(rast_values, NULL, 3857, true, NULL, 0.0,
+    0.0, 0.0) == NULL);
+  assert(meos_errno() != 0);
+  free(merc);
 
   /* A pixel size stated for the result fixes its grid, and a raster to align
    * to hands over its reference system, its pixel size and its grid origin, so

@@ -4363,18 +4363,18 @@ geo_transform(const GSERIALIZED *gs, int32_t srid_to)
  * @ingroup meos_geo_base_srid
  * @brief Return a geometry/geography transformed to another SRID using a pipeline
  * @param[in] gs Geometry/geography
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  * @note PostGIS function: @p transform_pipeline_geom(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
-  bool is_forward)
+geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
-  if (srid_to == SRID_UNKNOWN)
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  if (srid == SRID_UNKNOWN)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "geo_transform_pipeline: %d is an invalid target SRID", SRID_UNKNOWN);
@@ -4383,7 +4383,7 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
 
   GSERIALIZED *gs1 = geo_copy(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs1);
-  int rv = lwgeom_transform_pipeline(geom, pipeline, is_forward);
+  int rv = lwgeom_transform_pipeline(geom, pipelinestr, is_forward);
   if (rv == LW_FAILURE)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -4392,7 +4392,7 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
   }
 
   /* Re-compute bbox if input had one (COMPUTE_BBOX TAINTING) */
-  geom->srid = srid_to;
+  geom->srid = srid;
   if (geom->bbox)
     lwgeom_refresh_bbox(geom);
 

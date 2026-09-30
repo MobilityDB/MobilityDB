@@ -1838,6 +1838,8 @@ rt_raster rt_raster_from_gdal_dataset(GDALDatasetH ds);
  * @param resample_alg : the resampling algorithm
  * @param max_err : maximum error measured in input pixels permitted
  *   (0.0 for exact calculations)
+ * @param coord_op : the coordinate operation from src_srs to dst_srs, as a
+ *   PROJ string or WKT, or NULL to let GDAL derive it (MEOS)
  *
  * @return the warped raster or NULL
  */
@@ -1849,7 +1851,8 @@ rt_raster rt_raster_gdal_warp(
 	double *ul_xw, double *ul_yw,
 	double *grid_xw, double *grid_yw,
 	double *skew_x, double *skew_y,
-	GDALResampleAlg resample_alg, double max_err);
+	GDALResampleAlg resample_alg, double max_err,
+	const char *coord_op /* MEOS */);
 
 /**
  * Return a raster of the provided geometry
