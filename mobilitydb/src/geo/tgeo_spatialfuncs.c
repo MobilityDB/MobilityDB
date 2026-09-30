@@ -353,7 +353,10 @@ Tgeo_scale_xyz(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double xfactor = PG_GETARG_FLOAT8(1);
   double yfactor = PG_GETARG_FLOAT8(2);
-  double zfactor = PG_GETARG_FLOAT8(3);
+  /* The form stating two factors leaves the z axis unscaled */
+  double zfactor = 1;
+  if (PG_NARGS() > 3)
+    zfactor = PG_GETARG_FLOAT8(3);
   Temporal *result = tgeo_scale_xyz(temp, xfactor, yfactor, zfactor);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -388,8 +391,13 @@ Datum
 Tgeo_translate(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeo_translate(temp, PG_GETARG_FLOAT8(1),
-    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  double deltax = PG_GETARG_FLOAT8(1);
+  double deltay = PG_GETARG_FLOAT8(2);
+  /* The form stating two offsets leaves the z coordinate unmoved */
+  double deltaz = 0;
+  if (PG_NARGS() > 3)
+    deltaz = PG_GETARG_FLOAT8(3);
+  Temporal *result = tgeo_translate(temp, deltax, deltay, deltaz);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -408,6 +416,26 @@ Tgeo_rotate(PG_FUNCTION_ARGS)
   Temporal *result = tgeo_rotate(temp, PG_GETARG_FLOAT8(1),
     PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_rotate_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_rotate_geo);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around a point
+ * geometry
+ * @sqlfn rotate()
+ */
+Datum
+Tgeo_rotate_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double angle = PG_GETARG_FLOAT8(1);
+  GSERIALIZED *origin = PG_GETARG_GSERIALIZED_P(2);
+  Temporal *result = tgeo_rotate_geo(temp, angle, origin);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(origin, 2);
   PG_RETURN_TEMPORAL_P(result);
 }
 

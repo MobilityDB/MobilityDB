@@ -521,6 +521,48 @@ SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST], [POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point(50 160)') =
+  rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'SRID=3812;Point(50 160)') =
+  rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT translate(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10) =
+  translate(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10, 0) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75) =
+  scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 1) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 day') =
+  stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 0.0, interval '1 day') AS same;
+ same 
+------
+ t
+(1 row)
+
+/* Errors */
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Linestring(0 0,1 1)');
+ERROR:  Only point geometries accepted
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point Empty');
+ERROR:  Only non-empty geometries accepted
+SELECT rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'SRID=5676;Point(50 160)');
+ERROR:  Operation on mixed SRID
 DROP TABLE IF EXISTS tbl_transf_arg;
 NOTICE:  table "tbl_transf_arg" does not exist, skipping
 DROP TABLE

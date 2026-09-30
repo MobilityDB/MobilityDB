@@ -109,8 +109,8 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotate(tgeompoint,float8,geometry)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.rotate($1, $2, @extschema@.ST_X($3), @extschema@.ST_Y($3))'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_rotate_geo'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION rotateZ(tgeompoint,float8)
 RETURNS tgeompoint
@@ -134,8 +134,8 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION translate(tgeompoint,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.translate($1, $2, $3, 0)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_translate'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION transscale(tgeompoint,float8,float8,float8,float8)
 RETURNS tgeompoint
@@ -159,8 +159,8 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,float8,float8)
 RETURNS tgeompoint
-AS 'SELECT @extschema@.scale($1, $2, $3, 1)'
-LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+AS 'MODULE_PATHNAME', 'Tgeo_scale_xyz'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

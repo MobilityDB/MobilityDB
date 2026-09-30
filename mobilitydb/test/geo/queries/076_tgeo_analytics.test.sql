@@ -54,6 +54,19 @@ SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02
 SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
 
+-- A rotation about a point geometry is the rotation about its coordinates,
+-- and the forms leaving out a translation or a scale along z are the full
+-- forms with an offset of 0 and a factor of 1
+SELECT rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point(50 160)') =
+  rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+SELECT translate(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10) =
+  translate(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10, 0) AS same;
+SELECT scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75) =
+  scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 1) AS same;
+
+/* Errors */
+SELECT rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point Empty');
+
 -- Empty geometry
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));

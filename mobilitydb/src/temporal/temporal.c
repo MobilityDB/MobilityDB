@@ -1581,8 +1581,13 @@ Datum
 Temporal_stops(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double maxdist = PG_GETARG_FLOAT8(1);
-  Interval *minduration = PG_GETARG_INTERVAL_P(2);
+  /* The form stating a duration alone reads the value's stays at a distance
+   * of 0 */
+  double maxdist = 0.0;
+  int i = 1;
+  if (PG_NARGS() > 2)
+    maxdist = PG_GETARG_FLOAT8(i++);
+  Interval *minduration = PG_GETARG_INTERVAL_P(i);
   /* Store fcinfo into a global variable */
   /* Needed for the distance function for temporal geography points */
   store_fcinfo(fcinfo);

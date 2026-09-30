@@ -1595,6 +1595,7 @@ TGEOMETRY_CONFIG = dict(
         # the default polygon geom1 is rejected ("Only point geometries
         # accepted"). The same holds for every space-tiling origin.
         "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
+        "tgeo_rotate_geo":        {2: "geom_point1"},
         "tgeo_space_boxes":       {4: "geom_point1"},
         "tgeo_space_time_boxes":  {5: "geom_point1"},
         # The splits hand back their bins through out-parameters beside the
