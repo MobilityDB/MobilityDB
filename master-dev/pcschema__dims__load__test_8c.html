@@ -91,6 +91,9 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:acd7e6e947f15b654cc912152ceaf87fc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcschema__dims__load__test_8c_acd7e6e947f15b654cc912152ceaf87fc.html#acd7e6e947f15b654cc912152ceaf87fc">active_xml</a> (char *buf, size_t n, const char *active)</td></tr>
+<tr class="memdesc:acd7e6e947f15b654cc912152ceaf87fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a document of the X, Y and Z doubles every dimension of which states <code>active</code> as its pc:active, or states none when <code>active</code> is NULL.  <a href="pcschema__dims__load__test_8c_acd7e6e947f15b654cc912152ceaf87fc.html#acd7e6e947f15b654cc912152ceaf87fc">More...</a><br /></td></tr>
+<tr class="separator:acd7e6e947f15b654cc912152ceaf87fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53c26df6b2638029798d4b958e0ef487"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcschema__dims__load__test_8c_a53c26df6b2638029798d4b958e0ef487.html#a53c26df6b2638029798d4b958e0ef487">check</a> (bool ok, const char *what)</td></tr>
 <tr class="separator:a53c26df6b2638029798d4b958e0ef487"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796c52ee55397fa181bacd20e115d90b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcschema__dims__load__test_8c_a796c52ee55397fa181bacd20e115d90b.html#a796c52ee55397fa181bacd20e115d90b">compare</a> (const <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *a, const <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *b)</td></tr>
@@ -109,7 +112,7 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Test that a point cloud schema stated as dimensions is the schema that the same document states. </p>
 <p >A schema stated as rows and the same schema parsed from its XML document are two statements of one thing, so every field of the result must agree, including the ones the engine computes: the size of a dimension, the offset of a dimension within a point, and the width of a point.</p>
-<p >The three accessors a binding reads a schema through are exercised on a schema carrying an inactive dimension, which is the state that tells the number of dimensions apart from the width of the layout. </p>
+<p >The three accessors a binding reads a schema through are exercised on a schema carrying an inactive dimension, which is the state that tells the number of dimensions apart from the width of the layout, and the count of active dimensions on a document stating pc:active in each form the PC schema admits, and not at all. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
