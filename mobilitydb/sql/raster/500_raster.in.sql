@@ -659,6 +659,28 @@ CREATE FUNCTION transform(rast raster, srid integer,
 
 /**
  * @ingroup mobilitydb_raster
+ * @brief Return a raster stated in another spatial reference system through a
+ * coordinate operation
+ * @param[in] rast Raster
+ * @param[in] pipeline Coordinate operation, as a PROJ string, a WKT or an
+ * authority code
+ * @param[in] srid Spatial reference system identifier of the result
+ * @param[in] is_forward True to apply the operation, false its inverse
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ * @param[in] scalex,scaley Pixel size of the result in the units of the target
+ * system, 0 to let the warp derive it
+ */
+CREATE FUNCTION transformPipeline(rast raster, pipeline text,
+    srid integer DEFAULT 0, is_forward boolean DEFAULT true,
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125,
+    scalex float8 DEFAULT 0, scaley float8 DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
  * @brief Return a raster stated on the grid of another raster
  * @param[in] rast Raster
  * @param[in] alignto Raster whose grid the result lies on

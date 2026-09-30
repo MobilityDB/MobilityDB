@@ -929,6 +929,42 @@ Raster_transform(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Raster_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_transform_pipeline);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster stated in another spatial reference system through a
+ * coordinate operation
+ * @param[in] rast Raster
+ * @param[in] pipeline Coordinate operation
+ * @param[in] srid Spatial reference system identifier of the result
+ * @param[in] is_forward True to apply the operation, false its inverse
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ * @param[in] scalex,scaley Pixel size of the result, 0 to let the warp derive
+ * it
+ * @sqlfn transformPipeline()
+ */
+Datum
+Raster_transform_pipeline(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  char *pipeline = text_to_cstring(PG_GETARG_TEXT_P(1));
+  int32_t srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *algorithm = text_to_cstring(PG_GETARG_TEXT_P(4));
+  double maxerr = PG_GETARG_FLOAT8(5);
+  double scalex = PG_GETARG_FLOAT8(6);
+  double scaley = PG_GETARG_FLOAT8(7);
+  Raster *result = raster_transform_pipeline(rast, pipeline, srid, is_forward,
+    algorithm, maxerr, scalex, scaley);
+  pfree(pipeline); pfree(algorithm);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Raster_transform_raster(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_transform_raster);
 /**
