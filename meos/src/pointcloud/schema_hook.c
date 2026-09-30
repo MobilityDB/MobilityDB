@@ -68,6 +68,7 @@ typedef struct schema_entry {
   PCSCHEMA *schema;
   int32_t srid;      /* cached so callers need not dereference PCSCHEMA */
   char *xml_text;    /* NULL if registered without XML */
+  bool embedded;     /* carried in by a value, which no catalog states */
 } schema_entry;
 
 /* Small dynamic array; linear scan.  Workloads rarely exceed a handful
@@ -77,6 +78,7 @@ static int cache_count = 0;
 static int cache_cap = 0;
 
 meos_pc_schema_fn_t meos_pc_schema_fn = NULL;
+meos_pc_schema_expired_fn_t meos_pc_schema_expired_fn = NULL;
 meos_pc_parse_xml_fn_t meos_pc_parse_xml_fn = NULL;
 
 /* Registration, answering whether the cache took the schema; the public
@@ -355,8 +357,37 @@ schema_register(uint32_t pcid, PCSCHEMA *schema, const char *xml_text)
   cache_buf[cache_count].schema = schema;
   cache_buf[cache_count].srid = srid;
   cache_buf[cache_count].xml_text = copy_xml_long_lived(xml_text);
+  cache_buf[cache_count].embedded = false;
   cache_count++;
   return true;
+}
+
+/**
+ * @brief Drop and free every schema the host's catalog states once the host
+ * answers that they may no longer be the ones it states
+ * @details A schema a value carried in stays, no catalog stating it to fetch
+ *   it from again. The others are fetched again at their next lookup, so a
+ *   schema whose rows change reaches the values read after the change
+ */
+static void
+cache_expire(void)
+{
+  if (! meos_pc_schema_expired_fn || ! meos_pc_schema_expired_fn())
+    return;
+  int kept = 0;
+  for (int i = 0; i < cache_count; i++)
+  {
+    if (cache_buf[i].embedded)
+    {
+      cache_buf[kept++] = cache_buf[i];
+      continue;
+    }
+    if (cache_buf[i].schema)
+      pc_schema_free(cache_buf[i].schema);
+    if (cache_buf[i].xml_text)
+      pfree(cache_buf[i].xml_text);
+  }
+  cache_count = kept;
 }
 
 /**
@@ -369,6 +400,23 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
   const char *xml_text)
 {
   (void) schema_register(pcid, schema, xml_text);
+}
+
+/**
+ * @brief Variant of @ref meos_pc_schema_register_xml for a schema a value
+ *   carried in with its embedded document, which an expiry of the cache keeps
+ */
+void
+meos_pc_schema_register_embedded(uint32_t pcid, PCSCHEMA *schema,
+  const char *xml_text)
+{
+  if (! schema_register(pcid, schema, xml_text))
+    return;
+  for (int i = 0; i < cache_count; i++)
+  {
+    if (cache_buf[i].pcid == pcid)
+      cache_buf[i].embedded = true;
+  }
 }
 
 /**
@@ -442,6 +490,7 @@ pc_schema_as_xml(const PCSCHEMA *schema)
 const char *
 meos_pc_schema_xml(uint32_t pcid)
 {
+  cache_expire();
   for (int i = 0; i < cache_count; i++)
   {
     if (cache_buf[i].pcid != pcid)
@@ -494,6 +543,7 @@ meos_pc_schema_clear(void)
 int32_t
 meos_pc_schema_srid(uint32_t pcid)
 {
+  cache_expire();
   /* Cache hit */
   for (int i = 0; i < cache_count; i++)
   {
@@ -692,6 +742,7 @@ read_pointcloud_schemas_xml(void)
 PCSCHEMA *
 meos_pc_schema_lookup(uint32_t pcid)
 {
+  cache_expire();
   /* (1) Cache hit */
   for (int i = 0; i < cache_count; i++)
   {

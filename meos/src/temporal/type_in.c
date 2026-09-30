@@ -3251,7 +3251,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
           (uint32_t) pcid_in);
         return NULL;
       }
-      meos_pc_schema_register_xml((uint32_t) pcid_in, parsed, xml);
+      meos_pc_schema_register_embedded((uint32_t) pcid_in, parsed, xml);
       pfree(xml);
     }
     s->pos += xml_len;

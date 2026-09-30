@@ -58,6 +58,7 @@
 #ifndef __MEOS_SCHEMA_HOOK_H__
 #define __MEOS_SCHEMA_HOOK_H__
 
+#include <stdbool.h>
 #include <stdint.h>
 /* Forward decl — full PCSCHEMA layout lives in libpc.a's pc_api.h.
  * Keeping this header pc_api-free lets it be safely included from
@@ -75,6 +76,21 @@ typedef PCSCHEMA *(*meos_pc_schema_fn_t)(uint32_t pcid);
  *    @c pointcloud_formats catalog scan; standalone MEOS programs
  *    can leave it NULL and pre-populate via @ref meos_pc_schema_register. */
 extern meos_pc_schema_fn_t meos_pc_schema_fn;
+
+/** @brief Hook signature: answer whether the schemas the cache holds may no
+ *    longer be the ones the host's catalog states.
+ *    On @p true the cache drops and frees every schema except those a value
+ *    carried in with its embedded document, which no catalog states, so the
+ *    next lookup of each other pcid fetches it again through
+ *    @ref meos_pc_schema_fn. */
+typedef bool (*meos_pc_schema_expired_fn_t)(void);
+
+/** @brief Process-global hook pointer.  Initially NULL, which keeps every
+ *    schema for the life of the process.  The PG extension's
+ *    @c mobilitydb_init installs an impl answering @p true at the first
+ *    lookup of each statement, so a statement reads the schemas its
+ *    catalog states when it starts, as pgPointCloud reads them. */
+extern meos_pc_schema_expired_fn_t meos_pc_schema_expired_fn;
 
 /** @brief Hook signature: parse a pgPointCloud schema XML string into
  *    a long-lived @c PCSCHEMA* and stamp it with the given pcid (the
@@ -136,6 +152,16 @@ extern void meos_pc_schema_register(uint32_t pcid, PCSCHEMA *schema);
  * @ref meos_pc_schema_register.
  */
 extern void meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
+  const char *xml_text);
+
+/**
+ * @brief Register a parsed @c PCSCHEMA together with the document a value
+ * carried it in, as @ref meos_pc_schema_register_xml does.
+ *
+ * No catalog states such a schema, so an expiry answered by
+ * @ref meos_pc_schema_expired_fn leaves it in the cache.
+ */
+extern void meos_pc_schema_register_embedded(uint32_t pcid, PCSCHEMA *schema,
   const char *xml_text);
 
 /**

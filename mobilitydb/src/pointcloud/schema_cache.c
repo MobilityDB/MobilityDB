@@ -55,6 +55,7 @@
 #include <access/genam.h>
 #include <access/htup_details.h>
 #include <access/table.h>
+#include <access/xact.h>
 #include <catalog/pg_extension.h>
 #include <commands/extension.h>
 #include <utils/fmgroids.h>
@@ -333,4 +334,34 @@ mobilitydb_pc_schema(uint32_t pcid)
   meos_pc_schema_register_xml(pcid, schema, xml);
   pfree(xml);
   return schema;
+}
+
+/**
+ * @brief Answer whether a statement has started since the cached schemas
+ *   were read (PG-layer hook impl)
+ * @details Installed at @c mobilitydb_init time as the
+ *   @c meos_pc_schema_expired_fn function pointer. A statement is told apart
+ *   by the start of its transaction, its own start and the command it runs
+ *   as, so the first lookup of each statement, and of each command a
+ *   statement runs after changing data, reads the schemas again. pgPointCloud
+ *   keeps a schema for the call site of one statement, so a change to its
+ *   catalog reaches the next statement; this keeps the schemas for the same
+ *   span, the rows @c pointcloud_schemas and @c pointcloud_dimensions state
+ *   included.
+ */
+bool
+mobilitydb_pc_schema_expired(void)
+{
+  static TimestampTz xact_start = 0;
+  static TimestampTz stmt_start = 0;
+  static CommandId command = InvalidCommandId;
+  TimestampTz xact = GetCurrentTransactionStartTimestamp();
+  TimestampTz stmt = GetCurrentStatementStartTimestamp();
+  CommandId cid = GetCurrentCommandId(false);
+  if (xact == xact_start && stmt == stmt_start && cid == command)
+    return false;
+  xact_start = xact;
+  stmt_start = stmt;
+  command = cid;
+  return true;
 }
