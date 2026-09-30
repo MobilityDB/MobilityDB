@@ -694,6 +694,7 @@ extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 extern Temporal *tgeo_affine(const Temporal *temp, const AFFINE *a);
 extern Temporal *tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e, double xoff, double yoff);
 extern Temporal *tgeo_rotate(const Temporal *temp, double angle, double x0, double y0);
+extern Temporal *tgeo_rotate_geo(const Temporal *temp, double angle, const GSERIALIZED *origin);
 extern Temporal *tgeo_rotate_x(const Temporal *temp, double angle);
 extern Temporal *tgeo_rotate_y(const Temporal *temp, double angle);
 extern Temporal *tgeo_rotate_z(const Temporal *temp, double angle);

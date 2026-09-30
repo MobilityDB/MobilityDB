@@ -1472,6 +1472,33 @@ tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
 
 /**
  * @ingroup meos_geo_transf
+ * @brief Return a temporal geo rotated counter-clockwise around a point
+ * geometry
+ * @details The rotation of #tgeo_rotate about the coordinates of the point,
+ * whose origin #tgeo_scale reads the same way: the point is not empty, and it
+ * states the SRID of the value or none
+ * @param[in] temp Temporal geo
+ * @param[in] angle Rotation angle in radians
+ * @param[in] origin Center of the rotation
+ * @csqlfn #Tgeo_rotate_geo()
+ */
+Temporal *
+tgeo_rotate_geo(const Temporal *temp, double angle, const GSERIALIZED *origin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(origin, NULL);
+  if (! ensure_point_type(origin) || ! ensure_not_empty(origin))
+    return NULL;
+  int32_t srid = gserialized_get_srid(origin);
+  if (srid != SRID_UNKNOWN && ! ensure_same_srid(tspatial_srid(temp), srid))
+    return NULL;
+  POINT4D p;
+  datum_point4d(PointerGetDatum(origin), &p);
+  return tgeo_rotate(temp, angle, p.x, p.y);
+}
+
+/**
+ * @ingroup meos_geo_transf
  * @brief Return a temporal geo rotated counter-clockwise around the x axis
  * @param[in] temp Temporal geo
  * @param[in] angle Rotation angle in radians

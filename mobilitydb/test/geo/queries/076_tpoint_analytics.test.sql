@@ -183,6 +183,25 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
 SELECT asEWKT(scale(tgeompoint 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
 
+-- A rotation about a point geometry is the rotation about its coordinates,
+-- and the forms leaving out a translation or a scale along z are the full
+-- forms with an offset of 0 and a factor of 1
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point(50 160)') =
+  rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+SELECT rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'SRID=3812;Point(50 160)') =
+  rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, 50, 160) AS same;
+SELECT translate(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10) =
+  translate(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 5, 10, 0) AS same;
+SELECT scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75) =
+  scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 1) AS same;
+SELECT stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 day') =
+  stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 0.0, interval '1 day') AS same;
+
+/* Errors */
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Linestring(0 0,1 1)');
+SELECT rotate(tgeompoint '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point Empty');
+SELECT rotate(tgeompoint 'SRID=3812;[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'SRID=5676;Point(50 160)');
+
 -- A stored value keeps its coordinates after being scaled and moved
 DROP TABLE IF EXISTS tbl_transf_arg;
 CREATE TABLE tbl_transf_arg(temp tgeompoint);
