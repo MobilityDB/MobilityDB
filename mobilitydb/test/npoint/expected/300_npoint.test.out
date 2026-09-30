@@ -152,6 +152,12 @@ SELECT npointFromHexEWKB(asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
  NPoint(1,0.5)
 (1 row)
 
+SELECT npointFromHexWKB(asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfromhexwkb 
+------------------
+ NPoint(1,0.5)
+(1 row)
+
 SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
  npointfromhexewkb 
 -------------------

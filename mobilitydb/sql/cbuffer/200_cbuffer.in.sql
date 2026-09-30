@@ -94,6 +94,11 @@ CREATE FUNCTION cbufferFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Cbuffer_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION cbufferFromHexWKB(text)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION cbufferFromHexEWKB(text)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_from_hexwkb'

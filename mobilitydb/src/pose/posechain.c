@@ -232,7 +232,7 @@ PG_FUNCTION_INFO_V1(Posechain_from_hexwkb);
  * @ingroup mobilitydb_posechain_base_inout
  * @brief Return a pose chain from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn posechainFromHexEWKB()
+ * @sqlfn posechainFromHexWKB(), posechainFromHexEWKB()
  */
 Datum
 Posechain_from_hexwkb(PG_FUNCTION_ARGS)

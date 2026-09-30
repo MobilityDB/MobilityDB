@@ -287,6 +287,9 @@ SELECT poseFromBinary(asBinary(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)'
      = pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' AS wkb_canonical;
 SELECT poseFromHexEWKB(asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)'))
      = pose 'SRID=3812;Pose(Point(1 2),1)' AS hexwkb_roundtrip;
+-- The plain form carries no SRID, so the value it reads states none
+SELECT poseFromHexWKB(asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)'))
+     = pose 'Pose(Point(1 2),1)' AS hexwkb_roundtrip;
 SELECT asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)')
      = asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)') AS hexwkb_eq_hexewkb;
 SELECT hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')

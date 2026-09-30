@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Pose_from_hexwkb);
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return a pose from its ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation
- * @sqlfn poseFromHexEWKB()
+ * @sqlfn poseFromHexWKB(), poseFromHexEWKB()
  */
 Datum
 Pose_from_hexwkb(PG_FUNCTION_ARGS)

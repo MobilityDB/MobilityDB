@@ -3426,7 +3426,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
  * @errval NULL
- * @csqlfn #Temporal_recv(), #Temporal_from_wkb()
+ * @csqlfn #Temporal_recv(), #Temporal_from_wkb(), #Trgeometry_recv()
  */
 Temporal *
 temporal_from_wkb(const uint8_t *wkb, size_t size)

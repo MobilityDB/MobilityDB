@@ -220,6 +220,12 @@ SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2
  Cbuffer(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(tcbufferFromHexWKB(asHexWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}')));
                                                                                astext                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------

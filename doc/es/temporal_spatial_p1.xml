@@ -393,11 +393,13 @@ SELECT asEWKT(tgeographyFromMFJSON(text '{"type":"MovingGeometry",
 			<listitem xml:id="tspatialFromBinary">
 				<indexterm significance="normal"><primary><varname>tspatialFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tspatialFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromHexEWKB</varname></primary></indexterm>
-				<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+				<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tspatialFromBinary(bytea) → tspatial
 tspatialFromEWKB(bytea) → tspatial
+tspatialFromHexWKB(text) → tspatial
 tspatialFromHexEWKB(text) → tspatial
 </programlisting>
 				<para>En las funciones anteriores, <varname>tspatial</varname> reemplaza cualquier tipo espacial, como <varname>tgeompoint</varname>, <varname>tgeometry</varname> o <varname>tpose</varname></para>

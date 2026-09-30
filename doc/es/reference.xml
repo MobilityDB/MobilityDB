@@ -989,7 +989,7 @@
 					<para><link linkend="tspatialFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON) &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1360,7 +1360,7 @@
 						<para><link linkend="poseFromText"><varname>poseFromText</varname>, <varname>poseFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="poseFromBinary"><varname>poseFromBinary</varname>, <varname>poseFromEWKB</varname>, <varname>poseFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+						<para><link linkend="poseFromBinary"><varname>poseFromBinary</varname>, <varname>poseFromEWKB</varname>, <varname>poseFromHexWKB</varname>, <varname>poseFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1481,7 +1481,7 @@
 					<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname>, <varname>tposechainFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1818,7 +1818,7 @@
 						<para><link linkend="npointFromText"><varname>npointFromText</varname>, <varname>npointFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npointFromBinary"><varname>npointFromBinary</varname>, <varname>npointFromEWKB</varname>, <varname>npointFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+						<para><link linkend="npointFromBinary"><varname>npointFromBinary</varname>, <varname>npointFromEWKB</varname>, <varname>npointFromHexWKB</varname>, <varname>npointFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="nsegment_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) de un segmento de red</para>
@@ -2088,7 +2088,7 @@
 						<para><link linkend="cbuffer_cbufferFromText"><varname>cbufferFromText</varname>, <varname>cbufferFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_cbufferFromBinary"><varname>cbufferFromBinary</varname>, <varname>cbufferFromEWKB</varname>, <varname>cbufferFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+						<para><link linkend="cbuffer_cbufferFromBinary"><varname>cbufferFromBinary</varname>, <varname>cbufferFromEWKB</varname>, <varname>cbufferFromHexWKB</varname>, <varname>cbufferFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2183,7 +2183,7 @@
 					<para><link linkend="tcbuffer_tcbufferFromMFJSON"><varname>tcbufferFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcbuffer_tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<para><link linkend="tcbuffer_tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2409,7 +2409,7 @@
 					<para><link linkend="trgeometry_asEWKB"><varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromHexWKB</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

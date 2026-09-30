@@ -202,7 +202,19 @@ SELECT DISTINCT tgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeometry;
  t
 (1 row)
 
+SELECT DISTINCT asText(tgeometryFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeometry;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeography;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(tgeographyFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeography;
  ?column? 
 ----------
  t

@@ -239,7 +239,7 @@ PG_FUNCTION_INFO_V1(Npoint_from_hexwkb);
  * @ingroup mobilitydb_npoint_base_inout
  * @brief Return a network point from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn npointFromHexEWKB()
+ * @sqlfn npointFromHexWKB(), npointFromHexEWKB()
  */
 Datum
 Npoint_from_hexwkb(PG_FUNCTION_ARGS)

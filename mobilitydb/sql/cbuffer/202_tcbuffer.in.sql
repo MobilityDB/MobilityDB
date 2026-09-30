@@ -111,6 +111,11 @@ CREATE FUNCTION tcbufferFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tcbufferFromHexWKB(text)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tcbufferFromHexEWKB(text)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

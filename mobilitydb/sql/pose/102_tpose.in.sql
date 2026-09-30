@@ -163,6 +163,11 @@ CREATE FUNCTION tposeFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tposeFromHexWKB(text)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tposeFromHexEWKB(text)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

@@ -486,7 +486,7 @@ separate `io_repr.sql.tmpl`; the generic block renderer covers both shapes.
 |---|---|---|---|
 | text | `asText` | `asEWKT` (`SRID=n;` prefix) / `FromText` / `FromEWKT` | `Temporal_as_text` · array `Temporalarr_as_text` |
 | binary (WKB) | `asBinary` / `FromBinary` | `asEWKB` (embeds SRID) / `FromEWKB` | `Temporal_as_wkb` / `Temporal_from_wkb` |
-| hex | `asHexWKB` / `FromHexWKB` | — | `Temporal_as_hexwkb` / `Temporal_from_hexwkb` |
+| hex | `asHexWKB` / `FromHexWKB` | `asHexEWKB` (embeds SRID) / `FromHexEWKB` | `Temporal_as_hexwkb` / `Temporal_from_hexwkb` |
 | MF-JSON | `asMFJSON` / `FromMFJSON` | — | `Temporal_as_mfjson` / `Temporal_from_mfjson` |
 
 EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID, and every

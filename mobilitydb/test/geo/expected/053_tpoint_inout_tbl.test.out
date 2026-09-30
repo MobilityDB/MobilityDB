@@ -202,7 +202,19 @@ SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoin
  t
 (1 row)
 
+SELECT DISTINCT asText(tgeompointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeompoint;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(tgeogpointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeogpoint;
  ?column? 
 ----------
  t

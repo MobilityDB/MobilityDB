@@ -120,13 +120,15 @@ SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 
 				<indexterm significance="normal"><primary><varname>trgeometryFromMFJSON</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromHexEWKB</varname></primary></indexterm>
-				<para>Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+				<para>Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 trgeometryFromText(text) → trgeometry
 trgeometryFromEWKT(text) → trgeometry
 trgeometryFromMFJSON(text) → trgeometry
 trgeometryFromEWKB(bytea) → trgeometry
+trgeometryFromHexWKB(text) → trgeometry
 trgeometryFromHexEWKB(text) → trgeometry
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">

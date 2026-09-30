@@ -200,14 +200,17 @@ SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
 				<listitem xml:id="poseFromBinary">
 					<indexterm significance="normal"><primary><varname>poseFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>poseFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poseFromHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>poseFromHexEWKB</varname></primary></indexterm>
-					<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 poseFromBinary(bytea) &#8594; pose
 poseFromEWKB(bytea) &#8594; pose
+poseFromHexWKB(text) &#8594; pose
 poseFromHexEWKB(text) &#8594; pose
 posechainFromBinary(bytea) &#8594; posechain
 posechainFromEWKB(bytea) &#8594; posechain
+posechainFromHexWKB(text) &#8594; posechain
 posechainFromHexEWKB(text) &#8594; posechain
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -811,13 +814,16 @@ SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=3812;
 			<listitem xml:id="tposeFromBinary">
 				<indexterm significance="normal"><primary><varname>tposeFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tposeFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tposeFromHexEWKB</varname></primary></indexterm>
-				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tposeFromBinary(bytea) &#8594; tpose
 tposeFromEWKB(bytea) &#8594; tpose
+tposeFromHexWKB(text) &#8594; tpose
 tposeFromHexEWKB(text) &#8594; tpose
 tposechainFromBinary(bytea) &#8594; tposechain
+tposechainFromHexWKB(text) &#8594; tposechain
 tposechainFromHexEWKB(text) &#8594; tposechain
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

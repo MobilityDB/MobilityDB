@@ -154,11 +154,13 @@ SELECT asEWKT(npointFromEWKT(text 'SRID=5676;Npoint(1,0.5)'));
 				<listitem xml:id="npointFromBinary">
 					<indexterm significance="normal"><primary><varname>npointFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>npointFromHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromHexEWKB</varname></primary></indexterm>
-					<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 npointFromBinary(bytea) → npoint
 npointFromEWKB(bytea) → npoint
+npointFromHexWKB(text) → npoint
 npointFromHexEWKB(text) → npoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
