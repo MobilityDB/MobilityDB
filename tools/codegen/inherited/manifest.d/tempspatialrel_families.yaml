@@ -125,10 +125,12 @@ tempspatialrel_families:
 
   # ---- cast: delegate to tgeo's tContains..tDwithin above via a cast
   # expression (cast-only spatial uniformization; no family below has
-  # spatial-relationship logic of its own). Every direction is `geometry`
-  # (raw, the delegation target) x the family's own type (converted, both
-  # ways) plus the own-type x own-type direction. The three cell index
-  # families share their `details` through the anchor on the first. ----
+  # spatial-relationship logic of its own). A planar family's directions are
+  # `geometry` (raw, the delegation target) x the family's own type
+  # (converted, both ways) plus the own-type x own-type direction. The
+  # geodetic cell families (ts2cell, th3index) reach a temporal geography,
+  # which declares tDisjoint and tIntersects between two temporal values
+  # only, so they declare those over their own type. ----
   - family:  tquadbin
     impl:    cast
     file:    mobilitydb/sql/quadbin/364_tquadbin_tempspatialrels.in.sql
@@ -149,25 +151,27 @@ tempspatialrel_families:
     impl:    cast
     file:    mobilitydb/sql/s2cell/614_ts2cell_tempspatialrels.in.sql
     brief:   "temporal S2 cells"
-    details: *cell_tempspatialrels
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    details: &cell_tempspatialrels_geodetic |-
+      Each function returns a tbool whose value at an instant is the
+      static spatial relationship applied to the cell boundaries at that
+      instant. A cell is a region of the sphere bounded by great-circle
+      arcs, so each function converts its operands to the temporal
+      geography of their boundary and delegates to the temporal spatial
+      relationship of two temporal geographies, answered on the sphere.
+    predicates: [tDisjoint, tIntersects]
     directions:
-      - {l: geometry, r: ts2cell}
-      - {l: ts2cell, r: geometry}
       - {l: ts2cell, r: ts2cell}
-    convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
+    convert: "@extschema@.cellToBoundary(@N@)"
 
   - family:  th3index
     impl:    cast
     file:    mobilitydb/sql/h3/264_th3index_tempspatialrels.in.sql
     brief:   "temporal H3 cells"
-    details: *cell_tempspatialrels
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    details: *cell_tempspatialrels_geodetic
+    predicates: [tDisjoint, tIntersects]
     directions:
-      - {l: geometry,  r: th3index}
-      - {l: th3index,  r: geometry}
       - {l: th3index,  r: th3index}
-    convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
+    convert: "@extschema@.cellToBoundary(@N@)"
 
   # tpose/trgeometry are not cell indexes, so `convert` chains a direct cast
   # (or, for tpose, the tgeompoint cast chain) instead of a boundary function.

@@ -1,47 +1,60 @@
-SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)')
-  = eIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry,
-      geometry 'SRID=4326;Point(4.35 50.85)');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geography 'Point(4.35 50.85)')
+  = eIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01]'),
+      geography 'Point(4.35 50.85)');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT aIntersects(geometry 'SRID=4326;Point(4.35 50.85)', ts2cell '[47c3c3@2001-01-01]')
-  = aIntersects(geometry 'SRID=4326;Point(4.35 50.85)',
-      cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry);
+SELECT aIntersects(geography 'Point(4.35 50.85)', ts2cell '[47c3c3@2001-01-01]')
+  = aIntersects(geography 'Point(4.35 50.85)',
+      cellToBoundary(ts2cell '[47c3c3@2001-01-01]'));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geography 'Point(4.35 50.85)');
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geography 'Point(-122.4 37.8)');
  eintersects 
 -------------
  f
 (1 row)
 
-SELECT eDisjoint(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
+SELECT eDisjoint(ts2cell '[47c3c3@2001-01-01]', geography 'Point(-122.4 37.8)');
  edisjoint 
 -----------
  t
 (1 row)
 
-SELECT eContains(geometry 'SRID=4326;Polygon((0 45,0 55,10 55,10 45,0 45))',
-  ts2cell '[47c3c3@2001-01-01]');
- econtains 
------------
- t
-(1 row)
-
-SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1);
+SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', geography 'Point(4.35 50.85)', 1000.0);
  edwithin 
 ----------
  t
+(1 row)
+
+SELECT aDwithin(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]', 1.0);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT geoToS2Cell(geography 'Point(88.8843 79.0319)', 2) = s2cell '45',
+  eIntersects(ts2cell '[45@2001-01-01]', geography 'Point(88.8843 79.0319)');
+ ?column? | eintersects 
+----------+-------------
+ t        | t
+(1 row)
+
+SELECT geoToS2Cell(geography 'Point(-0.3719 71.2156)', 2) = s2cell '45',
+  eIntersects(ts2cell '[45@2001-01-01]', geography 'Point(-0.3719 71.2156)');
+ ?column? | eintersects 
+----------+-------------
+ f        | f
 (1 row)
 

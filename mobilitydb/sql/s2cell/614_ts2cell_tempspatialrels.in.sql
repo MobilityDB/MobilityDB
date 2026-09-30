@@ -34,115 +34,29 @@
  * @file
  * @brief Temporal spatial relationships for temporal S2 cells
  * @details Each function returns a tbool whose value at an instant is the
- * static spatial relationship applied to the cell boundary at that instant: it
- * casts the cell boundary to tgeometry and delegates to the temporal spatial
- * relationship of the temporal geometry.
+ * static spatial relationship applied to the cell boundaries at that instant. A
+ * cell is a region of the sphere bounded by great-circle arcs, so each function
+ * converts its operands to the temporal geography of their boundary and
+ * delegates to the temporal spatial relationship of two temporal geographies,
+ * answered on the sphere.
  */
-
-/*****************************************************************************
- * tContains
- *****************************************************************************/
-
-CREATE FUNCTION tContains(geometry, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION tContains(ts2cell, geometry)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION tContains(ts2cell, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-/*****************************************************************************
- * tCovers
- *****************************************************************************/
-
-CREATE FUNCTION tCovers(geometry, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION tCovers(ts2cell, geometry)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION tCovers(ts2cell, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                        @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * tDisjoint
  *****************************************************************************/
 
-CREATE FUNCTION tDisjoint(geometry, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION tDisjoint(ts2cell, geometry)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
 CREATE FUNCTION tDisjoint(ts2cell, ts2cell)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tDisjoint(@extschema@.cellToBoundary($1),
+                          @extschema@.cellToBoundary($2)) $$;
 
 /*****************************************************************************
  * tIntersects
  *****************************************************************************/
 
-CREATE FUNCTION tIntersects(geometry, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION tIntersects(ts2cell, geometry)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
 CREATE FUNCTION tIntersects(ts2cell, ts2cell)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                            @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-/*****************************************************************************
- * tTouches
- *****************************************************************************/
-
-CREATE FUNCTION tTouches(geometry, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION tTouches(ts2cell, geometry)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION tTouches(ts2cell, ts2cell)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-/*****************************************************************************
- * tDwithin
- *****************************************************************************/
-
-CREATE FUNCTION tDwithin(geometry, ts2cell, dist float)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
-CREATE FUNCTION tDwithin(ts2cell, geometry, dist float)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2, $3) $$;
-CREATE FUNCTION tDwithin(ts2cell, ts2cell, dist float)
-  RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.tIntersects(@extschema@.cellToBoundary($1),
+                            @extschema@.cellToBoundary($2)) $$;

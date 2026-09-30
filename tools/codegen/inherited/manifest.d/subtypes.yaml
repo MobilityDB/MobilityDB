@@ -17,8 +17,9 @@ subtypes:
     # quadbin is planar (Web Mercator), so its stbox bounds the whole cell and the
     # ever intersects/dwithin relationships get spatial index support: they are
     # emitted as C wrappers with SUPPORT tspatial_supportfn (tquadbin_spatialrels.c)
-    # rather than SQL cast-wrappers. (h3 is geodetic and stays SQL — a geodetic bbox
-    # vs a planar query box would error, so it does not set this flag.)
+    # rather than SQL cast-wrappers. A QUADBIN tile is bounded by meridians and
+    # parallels, straight lines in longitude and latitude, so its planar
+    # boundary is the exact cell and its operand is a geometry.
     index_support: true
     # compops/posops/topops are generic. spatialrels delegates to the geo spatial
     # relationships via the cell→boundary tgeometry conversion
@@ -53,8 +54,21 @@ subtypes:
     # tempspatialrels (264) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
     files: [compops, posops, topops, spatialrels, gist, spgist]
+    # An H3 cell is bounded by great-circle arcs, so its exact reading is the
+    # temporal geography of its boundary: the relationships take a geography
+    # and keep the boundary geodetic.
+    geodetic_target: true
+    convert: "@extschema@.{BOUNDARY}(@N@)"
     details:
-      spatialrels: *cell_spatialrels
+      spatialrels: &cell_spatialrels_geodetic |-
+        A `{TEMP}` value holds one cell per instant, and a relationship
+        is that of the cell's boundary rather than of its centre. The cell is a
+        region of the sphere bounded by great-circle arcs, so each function
+        converts its operand through `{BOUNDARY}({TEMP})`, a temporal
+        geography, and delegates to the ever/always spatial relationship of the
+        temporal geography with a geography, answered on the sphere. The
+        functions are those a temporal geography declares; the boundary is in
+        SRID 4326.
 
   # ---- s2: the third cell index, geodetic like h3 ----
   - temp:  ts2cell
@@ -68,20 +82,18 @@ subtypes:
     # (meos/src/s2cell/ts2cell_boxops.c).
     scalar_stbox_cast: true
     stboxes: false
-    # index_support is NOT set: an S2 cell is a region of the sphere, so its
-    # stbox is geodetic and a geodetic bbox against a planar query box errors.
-    # h3 is geodetic for the same reason and likewise stays on the SQL form;
-    # only the Web-Mercator tquadbin sets it.
-    # spatialrels delegates to the geo spatial relationships through the
-    # cell -> boundary conversion, the th3index form: geodetic families take
-    # the SQL cast-wrapper, only the planar tquadbin takes the C wrapper with
-    # SUPPORT tspatial_supportfn. GiST/SP-GiST are split, the canonical
-    # cell-index layout (th3index 272/273), not the combined cbuffer
-    # `indexes` form, whose template declares a KNN ordering operator this
-    # family has no distance function to back.
+    # An S2 cell is a region of the sphere bounded by great-circle arcs, so its
+    # stbox is geodetic and its relationships take a geography, on the temporal
+    # geography of its boundary, as th3index's do. index_support is set by the
+    # planar tquadbin alone. GiST/SP-GiST are split, the canonical cell-index
+    # layout (th3index 272/273), not the combined cbuffer `indexes` form, whose
+    # template declares a KNN ordering operator this family has no distance
+    # function to back.
     files: [compops, posops, topops, spatialrels, gist, spgist]
+    geodetic_target: true
+    convert: "@extschema@.{BOUNDARY}(@N@)"
     details:
-      spatialrels: *cell_spatialrels
+      spatialrels: *cell_spatialrels_geodetic
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer

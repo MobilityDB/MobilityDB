@@ -164,8 +164,14 @@ def generated(text: str, tmpl: str) -> str:
 # points of each instant and short-circuits on the first hit — so that one cell
 # is emitted as a C wrapper over `Eintersects_<temp>_geo` while every other cell
 # converts and delegates.
+# `geodetic_target`: the family's value is a region of the sphere bounded by
+# great-circle arcs (an H3 or S2 cell), so its one exact reading is a
+# `tgeography`, the cast target of its spatial relationships. Its static operand
+# is a `geography` ({GEO}), its boundary is not flattened into a planar
+# `tgeometry`, and it declares the matrix a temporal geography declares, as
+# `point_target` does for a temporal geometry point.
 DEFAULT_FALSE_FLAGS = {"front_back", "index_support", "point_target",
-                       "native_ever_intersects"}
+                       "native_ever_intersects", "geodetic_target"}
 
 
 def apply_conditionals(text: str, sub: dict) -> str:
@@ -282,6 +288,7 @@ def render(behaviour: str, sub: dict) -> str:
                 .replace("{CV1}", cv1)
                 .replace("{CV2}", cv2)
                 .replace("{SEL}", subtype_selectivity(sub))
+                .replace("{GEO}", "geography" if sub.get("geodetic_target") else "geometry")
                 .replace("{BOUNDARY}", boundary))
     return generated(body, f"{behaviour}.sql.tmpl")
 
