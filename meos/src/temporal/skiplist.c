@@ -398,8 +398,9 @@ skiplist_print(const SkipList *list)
       /* A span of timestamps has no decimal digits to write */
       char *val = span_out(&s, 0);
       len +=  snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>%s\"];\n",
-        val);
-      pfree(val);
+        val ? val : "");
+      if (val)
+        pfree(val);
     }
     if (elem->next[0] != -1)
     {

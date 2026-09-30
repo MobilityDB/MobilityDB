@@ -215,8 +215,15 @@ stbox_out(const STBox *box, int maxdd)
     srid[0] = '\0';
   const char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
   if (hast)
+  {
     /* The second argument is not used for periods */
     period = span_out(&box->period, maxdd);
+    if (! period)
+    {
+      pfree(str);
+      return NULL;
+    }
+  }
 
   if (hasx && hast)
   {
