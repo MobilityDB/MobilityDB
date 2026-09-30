@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Pcpatch_pcid</title>
+<title>MobilityDB: Pointcloud_schema_compression</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,27 +79,27 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gaeee80083c7d7c1ea5f4f106769592fa9.html#gaeee80083c7d7c1ea5f4f106769592fa9">Pcpatch_pcid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gaeee80083c7d7c1ea5f4f106769592fa9.html#gaeee80083c7d7c1ea5f4f106769592fa9">Pcpatch_pcid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_ga2558fb1327067a86d79859151aaa2497.html#ga2558fb1327067a86d79859151aaa2497">Pcpoint_get_dim</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_ga8769d1dbffa072de807376d6fa41a92f.html#ga8769d1dbffa072de807376d6fa41a92f">Pcpoint_get_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gad3f539d0269eb5334a527fbaa58b7e37.html#gad3f539d0269eb5334a527fbaa58b7e37">Pcpoint_get_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gab7188d14864d68d3ea36d283aef74852.html#gab7188d14864d68d3ea36d283aef74852">Pcpoint_get_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gafc449c11f34374e496f1fcf1c2fc0623.html#gafc449c11f34374e496f1fcf1c2fc0623">Pcpoint_pcid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gaf3628a87e29352012aac25673ea6cd3d.html#gaf3628a87e29352012aac25673ea6cd3d">Pointcloud_schema_compression</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gaf3628a87e29352012aac25673ea6cd3d.html#gaf3628a87e29352012aac25673ea6cd3d">Pointcloud_schema_compression</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_ga53b7db55da6e8531cf7ba9ca6b2a2cb6.html#ga53b7db55da6e8531cf7ba9ca6b2a2cb6">Pointcloud_schema_ndims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_ga857b2c66ca4b40edf259ff68fb6e73ff.html#ga857b2c66ca4b40edf259ff68fb6e73ff">Pointcloud_schema_srid</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaeee80083c7d7c1ea5f4f106769592fa9" name="gaeee80083c7d7c1ea5f4f106769592fa9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaeee80083c7d7c1ea5f4f106769592fa9">&#9670;&#160;</a></span>Pcpatch_pcid()</h2>
+<a id="gaf3628a87e29352012aac25673ea6cd3d" name="gaf3628a87e29352012aac25673ea6cd3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf3628a87e29352012aac25673ea6cd3d">&#9670;&#160;</a></span>Pointcloud_schema_compression()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Pcpatch_pcid </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Pointcloud_schema_compression </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -108,7 +108,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the schema id (pcid) of a pcpatch @sqlfn pcid() </p>
+<p>Return how a patch of the schema a point cloud identifier names is stored: <code>none</code>, <code>dimensional</code> or <code>laz</code>. </p>
+<p >A pcid no schema names answers NULL @sqlfn pointCloudSchemaCompression() </p>
 
 </div>
 </div>
