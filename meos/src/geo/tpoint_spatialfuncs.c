@@ -3132,6 +3132,11 @@ tspatialseq_points(const TSequence *seq)
     else if (seq->temptype == T_TNPOINT)
     {
       GSERIALIZED *gs = npoint_to_geompoint(DatumGetNpointP(value));
+      if (! gs)
+      {
+        pfree(result);
+        return NULL;
+      }
       result[i] = *GSERIALIZED_POINT2D_P(gs);
       pfree(gs);
     }

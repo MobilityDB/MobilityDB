@@ -107,6 +107,11 @@ tnpointinstarr_linear_set_stbox(TInstant **instants, int count, STBox *box)
   }
 
   const GSERIALIZED *line = route_geom(rid);
+  if (! line)
+  {
+    memset(box, 0, sizeof(STBox));
+    return;
+  }
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
     line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
@@ -159,6 +164,8 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     double posmin = Min(np1->pos, np2->pos);
     double posmax = Min(np1->pos, np2->pos);
     const GSERIALIZED *line = route_geom(rid);
+    if (! line)
+      return;
     GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
       line_substring(line, posmin, posmax);
     geo_set_stbox(gs, &box);
