@@ -131,12 +131,39 @@ size_t pc_interpretation_size(uint32_t interp)
 }
 
 /** Allocate clean memory for a PCDIMENSION struct */
-static PCDIMENSION *pc_dimension_new()
+static PCDIMENSION *pc_dimension_new() /* MEOS */
 {
   PCDIMENSION *pcd = pcalloc(sizeof(PCDIMENSION));
   /* Default scaling value is 1! */
   pcd->scale = 1.0;
+  /* A dimension holds values unless its schema flags it as a placeholder:
+   * the PC schema states pc:active optionally, to skip a dimension that holds
+   * its place in bytes without meaningful values */
+  pcd->active = 1;
   return pcd;
+}
+
+/**
+ * Read the value of a pc:active element, an xs:boolean of the PC schema:
+ * "true" or "1", "false" or "0", surrounded by any XML whitespace
+ * @return 0 when the text is none of these
+ */
+static int pc_boolean_parse(const char *str, uint8_t *out) /* MEOS */
+{
+  const char *ws = " \t\n\r";
+  size_t start = strspn(str, ws);
+  size_t len = strlen(str + start);
+  while (len > 0 && strchr(ws, str[start + len - 1]))
+    len--;
+  if ((len == 4 && strncmp(str + start, "true", 4) == 0) ||
+      (len == 1 && str[start] == '1'))
+    *out = 1;
+  else if ((len == 5 && strncmp(str + start, "false", 5) == 0) ||
+           (len == 1 && str[start] == '0'))
+    *out = 0;
+  else
+    return 0;
+  return 1;
 }
 
 static PCDIMENSION *pc_dimension_clone(const PCDIMENSION *dim)
@@ -435,8 +462,17 @@ PCSCHEMA *pc_schema_from_xml(const char *xml_str)
               d->description = pcstrdup(content);
             else if (strcmp(name, "size") == 0)
               d->size = atoi(content);
-            else if (strcmp(name, "active") == 0)
-              d->active = atoi(content);
+            else if (strcmp(name, "active") == 0) /* MEOS */
+            {
+              if (!pc_boolean_parse(content, &d->active))
+              {
+                pcwarn("schema dimension states active \"%s\", which is "
+                       "neither true nor false",
+                       content);
+                pc_dimension_free(d);
+                goto cleanup;
+              }
+            }
             else if (strcmp(name, "position") == 0)
               d->position = atoi(content) - 1;
             else if (strcmp(name, "interpretation") == 0)
