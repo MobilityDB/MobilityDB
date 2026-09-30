@@ -41,13 +41,10 @@ SELECT spaceTimeTiles(tgeometry '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-
 /* Errors */
 SELECT spaceTiles(tgeometry '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 ERROR:  Operation on mixed 2D/3D dimensions
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT spaceTiles(tgeometry 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT spaceTiles(tgeography '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0);
 ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT getSpaceTile(geometry 'Point(3 3)', 2.0);
      getspacetile     
 ----------------------
@@ -99,10 +96,8 @@ SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-
 /* Errors */
 SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
 ERROR:  The geometry must have Z dimension
-CONTEXT:  SQL function "getspacetimetile" statement 1
 SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "getspacetimetile" statement 1
 SELECT round(spaceBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
                                                                                                                                                                                                                                 round                                                                                                                                                                                                                                 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -118,10 +113,8 @@ SELECT round(spaceBoxes(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10
 /* Errors */
 SELECT spaceBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)');
 ERROR:  The tgeometry cannot have Z dimension
-CONTEXT:  SQL function "spaceboxes" statement 1
 SELECT spaceBoxes(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spaceboxes" statement 1
 SELECT round(timeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
                                                                                                                                                                                                                          round                                                                                                                                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -142,13 +135,10 @@ SELECT round(spaceTimeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001
 /* Errors */
 SELECT round(spaceTimeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2001-01-01'));
 ERROR:  The tgeometry cannot have Z dimension
-CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT spaceTimeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01');
 ERROR:  The tgeometry cannot have Z dimension
-CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT spaceTimeBoxes(tgeometry 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0, interval '2 days', 'SRID=5676;Point(1 1)', '2001-01-01');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT ST_AsText((sp).point) AS point, astext((sp).tgeo) AS tgeo
 FROM (SELECT spaceSplit(tgeometry 'Point(1 1)@2001-01-01', 2.0) AS sp) t;
    point    |                  tgeo                   
@@ -218,7 +208,6 @@ FROM (SELECT spaceSplit(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
 /* Errors */
 SELECT spaceSplit(tgeometry 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, geometry 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  The tgeometry cannot have Z dimension
-CONTEXT:  SQL function "spacesplit" statement 1
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tgeo) AS tgeo
 FROM (SELECT spaceTimeSplit(tgeometry 'Point(1 1)@2001-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
    point    |             time             |                  tgeo                   
@@ -304,10 +293,8 @@ FROM (SELECT spaceTimeSplit(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-
 /* Errors */
 SELECT spaceTimeSplit(tgeometry 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  The tgeometry cannot have Z dimension
-CONTEXT:  SQL function "spacetimesplit" statement 1
 SELECT spaceSplit(tgeompoint 'SRID=25832;[Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-01 01:00]', 0.0);
 ERROR:  At least one of the arguments xsize or duration must be given
-CONTEXT:  SQL function "spacesplit" statement 1
 SELECT spaceTimeSplit(tgeompoint 'SRID=25832;[Point(0 0)@2001-01-01, Point(1000 1000)@2001-01-01 01:00]', 0.0, NULL);
  spacetimesplit 
 ----------------

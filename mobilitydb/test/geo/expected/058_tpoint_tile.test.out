@@ -41,13 +41,10 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001
 /* Errors */
 SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15, Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 ERROR:  Operation on mixed 2D/3D dimensions
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT spaceTiles(tgeogpoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0);
 ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "spacetiles" statement 1
 SELECT getSpaceTile(geometry 'Point(3 3)', 2.0);
      getspacetile     
 ----------------------
@@ -99,10 +96,8 @@ SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-
 /* Errors */
 SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
 ERROR:  The geometry must have Z dimension
-CONTEXT:  SQL function "getspacetimetile" statement 1
 SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "getspacetimetile" statement 1
 SELECT round(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
                                                                                                                                                                                                                                                                        round                                                                                                                                                                                                                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,10 +119,8 @@ SELECT round(spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@20
 /* Errors */
 SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)');
 ERROR:  The geometry must have Z dimension
-CONTEXT:  SQL function "spaceboxes" statement 1
 SELECT spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spaceboxes" statement 1
 SELECT round(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
                                                                                                                                                                                                                          round                                                                                                                                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -158,10 +151,8 @@ SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10
 /* Errors */
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01');
 ERROR:  The geometry must have Z dimension
-CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT spaceTimeBoxes(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0, interval '2 days', 'SRID=5676;Point(1 1)', '2001-01-01');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0) AS sp) t;
    point    |                 tpoint                  
@@ -357,7 +348,6 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-
 /* Errors */
 SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, geometry 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacesplit" statement 1
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2001-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
    point    |             time             |                 tpoint                  
@@ -582,7 +572,6 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, P
 /* Errors */
 SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2001-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "spacetimesplit" statement 1
 WITH t AS (
   SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 10)@2001-01-05]' AS temp
 )
@@ -841,3 +830,88 @@ FROM unnest(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]
      3
 (1 row)
 
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 2.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0);
+ same 
+------
+ t
+(1 row)
+
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0);
+ same 
+------
+ t
+(1 row)
+
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, interval '2 days') =
+  spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, 2.0, interval '2 days') AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT getSpaceTile(geometry 'Point(3 4 5)', 2.0) =
+  getSpaceTile(geometry 'Point(3 4 5)', 2.0, 2.0, 2.0) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, interval '2 days') =
+  getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, 2.0, interval '2 days') AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT array_agg(tpoint ORDER BY ST_AsText(point)) = (SELECT array_agg(tpoint ORDER BY ST_AsText(point))
+  FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 2.0)) AS same
+FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0);
+ same 
+------
+ t
+(1 row)
+
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 0, 0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 5.0) =
+  spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT array_length(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 0.5), 1) AS boxes;
+ boxes 
+-------
+     3
+(1 row)
+
+SELECT getSpaceTile(geometry 'Point EMPTY', 2.0) IS NULL AS no_tile;
+ no_tile 
+---------
+ t
+(1 row)
+
+/* Errors */
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, -1.0, 2.0);
+ERROR:  The argument ysize must be a finite number that is not negative
+SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
+ERROR:  The argument xsize must be a finite number that is not negative
+SELECT count(*) FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 'Infinity'::float);
+ERROR:  The argument zsize must be a finite number that is not negative
