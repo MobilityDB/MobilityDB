@@ -1683,6 +1683,103 @@ SELECT transform(r, ST_MakeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0))
 FROM rast;
 
 -------------------------------------------------------------------------------
+-- transformPipeline
+-------------------------------------------------------------------------------
+
+-- A raster carried through a coordinate operation states the coverage the
+-- operation maps. The UTM zone 31N projection on the WGS84 ellipsoid is the
+-- operation GDAL derives from EPSG:4326 to EPSG:32631, so the pipeline answers
+-- as transform to that system does, on the grid and on the values, and its
+-- inverse answers as transform back. An operation named by its authority code
+-- answers as the PROJ string it stands for: the EPSG conversion 16031 is
+-- '+proj=utm +zone=31', which states no ellipsoid and so reads PROJ's default.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), fwd AS (
+  SELECT transformPipeline(r, '+proj=utm +zone=31 +ellps=WGS84', 32631) AS p,
+    transform(r, 32631) AS t,
+    transformPipeline(r, 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631)
+      AS c,
+    transformPipeline(r, '+proj=utm +zone=31', 32631) AS s
+  FROM rast
+)
+SELECT ST_SRID(p) AS srid,
+  ST_MetaData(p) = ST_MetaData(t) AS grid_as_transform,
+  ST_DumpValues(p, 1) = ST_DumpValues(t, 1) AS values_as_transform,
+  ST_MetaData(c) = ST_MetaData(s) AS code_grid_as_proj_string,
+  ST_DumpValues(c, 1) = ST_DumpValues(s, 1) AS code_values_as_proj_string
+FROM fwd;
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), utm AS (
+  SELECT transform(r, 32631) AS u FROM rast
+), inv AS (
+  SELECT transformPipeline(u, '+proj=utm +zone=31 +ellps=WGS84', 4326, false)
+      AS p,
+    transform(u, 4326) AS t
+  FROM utm
+)
+SELECT ST_SRID(p) AS srid,
+  ST_MetaData(p) = ST_MetaData(t) AS grid_as_transform,
+  ST_DumpValues(p, 1) = ST_DumpValues(t, 1) AS values_as_transform
+FROM inv;
+
+-- A raster wider than it is high tells the axes apart, on the grid and on the
+-- values.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(4, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30,40], ARRAY[50,60,70,80]]::float8[][]
+  ) AS r
+), fwd AS (
+  SELECT transformPipeline(r, '+proj=utm +zone=31 +ellps=WGS84', 32631) AS p,
+    transform(r, 32631) AS t
+  FROM rast
+)
+SELECT ST_Width(p) AS w, ST_Height(p) AS h,
+  ST_MetaData(p) = ST_MetaData(t) AS grid_as_transform,
+  ST_DumpValues(p, 1) = ST_DumpValues(t, 1) AS values_as_transform
+FROM fwd;
+
+-- A coordinate reference system is not an operation, an operation must be one
+-- PROJ reads, and a raster standing in no system cannot be carried by one.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT transformPipeline(r, 'EPSG:32631', 32631) FROM rast;
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT transformPipeline(r, 'no such operation', 32631) FROM rast;
+SELECT transformPipeline(
+  ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 0),
+    '32BF'::text, 0.0::float8, NULL::float8),
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631);
+
+-------------------------------------------------------------------------------
 -- summaryStats
 -------------------------------------------------------------------------------
 
