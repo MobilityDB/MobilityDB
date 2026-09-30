@@ -39,7 +39,9 @@
  *
  * The three accessors a binding reads a schema through are exercised on a
  * schema carrying an inactive dimension, which is the state that tells the
- * number of dimensions apart from the width of the layout.
+ * number of dimensions apart from the width of the layout, and the count of
+ * active dimensions on a document stating pc:active in each form the PC
+ * schema admits, and not at all.
  */
 
 #include <stdio.h>
@@ -99,6 +101,28 @@ compare(const PCSCHEMA *a, const PCSCHEMA *b)
     check(x->offset == y->offset, "dimension offset");
     check(x->active == y->active, "dimension active");
   }
+}
+
+/**
+ * @brief Return a document of the X, Y and Z doubles every dimension of which
+ * states @p active as its pc:active, or states none when @p active is NULL
+ */
+static void
+active_xml(char *buf, size_t n, const char *active)
+{
+  char act[64] = "";
+  if (active)
+    snprintf(act, sizeof(act), "<pc:active>%s</pc:active>", active);
+  snprintf(buf, n,
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    "<pc:PointCloudSchema xmlns:pc=\"http://pointcloud.org/schemas/PC/1.1\">"
+    "<pc:dimension><pc:position>1</pc:position><pc:name>X</pc:name>"
+    "<pc:interpretation>double</pc:interpretation>%s</pc:dimension>"
+    "<pc:dimension><pc:position>2</pc:position><pc:name>Y</pc:name>"
+    "<pc:interpretation>double</pc:interpretation>%s</pc:dimension>"
+    "<pc:dimension><pc:position>3</pc:position><pc:name>Z</pc:name>"
+    "<pc:interpretation>double</pc:interpretation>%s</pc:dimension>"
+    "</pc:PointCloudSchema>", act, act, act);
 }
 
 int
@@ -196,6 +220,35 @@ main(void)
   printf("The reference system naming no schema: %d\n",
     meos_pc_schema_srid(999));
   check(meos_pc_schema_ndims(999) == -1, "no schema states no dimensions");
+
+  /* The PC schema states pc:active as an optional xs:boolean flagging a
+   * dimension that holds its place without meaningful values, so a dimension
+   * is active unless flagged: true, 1 and an unstated flag read active, false
+   * and 0 read inactive, and a value that is no xs:boolean refuses the
+   * document. The form pgPointCloud and PDAL write is true */
+  struct { const char *active; int ndims; } forms[] = {
+    { NULL, 3 }, { "true", 3 }, { "1", 3 }, { " true ", 3 },
+    { "false", 0 }, { "0", 0 }, { "TRUE", -1 }, { "yes", -1 }
+  };
+  for (int f = 0; f < (int) (sizeof(forms) / sizeof(forms[0])); f++)
+  {
+    char xml[1024], what[128];
+    active_xml(xml, sizeof(xml), forms[f].active);
+    PCSCHEMA *parsed = pc_schema_from_xml(xml);
+    uint32_t pcid = 100 + (uint32_t) f;
+    if (parsed)
+    {
+      parsed->pcid = pcid;
+      meos_pc_schema_register_xml(pcid, parsed, xml);
+    }
+    printf("pc:active %s: %d active dimension(s)\n",
+      forms[f].active ? forms[f].active : "unstated",
+      parsed ? meos_pc_schema_ndims(pcid) : -1);
+    snprintf(what, sizeof(what), "pc:active %s reads %d active dimension(s)",
+      forms[f].active ? forms[f].active : "unstated", forms[f].ndims);
+    check(forms[f].ndims < 0 ? parsed == NULL :
+      parsed != NULL && meos_pc_schema_ndims(pcid) == forms[f].ndims, what);
+  }
   check(meos_pc_schema_compression(999) == NULL,
     "no schema states no compression");
 
