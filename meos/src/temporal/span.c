@@ -392,8 +392,20 @@ span_out(const Span *s, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
-  char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
+  /* A bound whose output function raised an error has no text form, and the
+   * error handler may return */
+  char *lower = basetype_out(s->lower, s->basetype, maxdd);
+  char *upper = basetype_out(s->upper, s->basetype, maxdd);
+  if (! lower || ! upper)
+  {
+    if (lower)
+      pfree(lower);
+    if (upper)
+      pfree(upper);
+    return NULL;
+  }
+  lower = unquote(lower);
+  upper = unquote(upper);
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
   size_t size = strlen(lower) + strlen(upper) + 5;

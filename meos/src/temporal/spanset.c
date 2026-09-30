@@ -229,7 +229,14 @@ spanset_out(const SpanSet *ss, int maxdd)
 
   char **strings = palloc(sizeof(char *) * ss->count);
   for (int i = 0; i < ss->count; i++)
+  {
     strings[i] = span_out(SPANSET_SP_N(ss, i), maxdd);
+    if (! strings[i])
+    {
+      pfree_array((void **) strings, i);
+      return NULL;
+    }
+  }
   return stringarr_to_string(strings, ss->count, "", '{', '}',
     QUOTES_NO, SPACES);
 }
@@ -271,11 +278,18 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
       if (cmp > 0 ||
         (cmp == 0 && spans[i].upper_inc && spans[i + 1].lower_inc))
       {
+        /* A span whose bound has no text form is written as empty */
         char *str1 = span_out(&spans[i], OUT_MAX_DIGITS);
         char *str2 = span_out(&spans[i + 1], OUT_MAX_DIGITS);
+        char pair[256];
+        snprintf(pair, sizeof(pair), "%s, %s", str1 ? str1 : "",
+          str2 ? str2 : "");
+        if (str1)
+          pfree(str1);
+        if (str2)
+          pfree(str2);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The spans composing a span set must be increasing: %s, %s", str1, str2);
-        pfree(str1); pfree(str2);
+          "The spans composing a span set must be increasing: %s", pair);
         return NULL;
       }
     }

@@ -355,7 +355,14 @@ tpcbox_out(const TPCBox *box, int maxdd)
     srid[0] = '\0';
   const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
   if (hast)
+  {
     period = span_out(&box->period, maxdd);
+    if (! period)
+    {
+      pfree(str);
+      return NULL;
+    }
+  }
 
   if (hasx && hast)
   {

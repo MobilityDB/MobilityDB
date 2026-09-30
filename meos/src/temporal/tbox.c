@@ -135,6 +135,15 @@ tbox_out(const TBox *box, int maxdd)
   if (hast)
     /* The second argument is not used for periods */
     period = span_out(&box->period, maxdd);
+  if ((hasx && ! span) || (hast && ! period))
+  {
+    if (span)
+      pfree(span);
+    if (period)
+      pfree(period);
+    pfree(result);
+    return NULL;
+  }
 
   /* Print the box */
   if (hasx)
