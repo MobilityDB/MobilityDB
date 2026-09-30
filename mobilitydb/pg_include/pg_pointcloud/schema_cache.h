@@ -43,6 +43,7 @@
 #define __MOBILITYDB_PC_SCHEMA_CACHE_H__
 
 /* C */
+#include <stdbool.h>
 #include <stdint.h>
 /* pgpointcloud */
 #include "pc_api.h"
@@ -61,5 +62,12 @@ extern PCSCHEMA *mobilitydb_pc_schema(uint32_t pcid);
  *   decoder can absorb XML embedded in incoming WKB blobs.
  */
 extern PCSCHEMA *mobilitydb_pc_parse_xml(uint32_t pcid, const char *xml);
+
+/**
+ * @brief Answer whether a statement has started since the cached schemas
+ *   were read. Installed as @c meos_pc_schema_expired_fn so each statement
+ *   reads the schemas its catalogs state when it starts.
+ */
+extern bool mobilitydb_pc_schema_expired(void);
 
 #endif /* __MOBILITYDB_PC_SCHEMA_CACHE_H__ */

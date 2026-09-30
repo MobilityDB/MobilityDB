@@ -128,8 +128,17 @@ UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
   pointCloudSchemaNDims(999) AS unknown_ndims;
 
+-- A value is built from the schema its rows state when the statement starts,
+-- a schema already read by an earlier statement included
+UPDATE pointcloud_schemas SET srid = 3857 WHERE pcid = 90;
+SELECT SRID(pcpoint(90, 1, 2, 3)), pointCloudSchemaSRID(90);
+UPDATE pointcloud_schemas SET srid = 4326 WHERE pcid = 90;
+SELECT SRID(pcpoint(90, 1, 2, 3));
+
 -- The dimensions of a schema go when the schema goes
 DELETE FROM pointcloud_schemas WHERE pcid = 90;
 SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
+-- and a value of the schema is no longer built
+SELECT pcpoint(90, 1, 2, 3);
 
 -------------------------------------------------------------------------------

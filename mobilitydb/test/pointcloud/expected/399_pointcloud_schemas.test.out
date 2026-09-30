@@ -124,6 +124,22 @@ SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
  t            |              
 (1 row)
 
+UPDATE pointcloud_schemas SET srid = 3857 WHERE pcid = 90;
+UPDATE 1
+SELECT SRID(pcpoint(90, 1, 2, 3)), pointCloudSchemaSRID(90);
+ srid | pointcloudschemasrid 
+------+----------------------
+ 3857 |                 3857
+(1 row)
+
+UPDATE pointcloud_schemas SET srid = 4326 WHERE pcid = 90;
+UPDATE 1
+SELECT SRID(pcpoint(90, 1, 2, 3));
+ srid 
+------
+ 4326
+(1 row)
+
 DELETE FROM pointcloud_schemas WHERE pcid = 90;
 DELETE 1
 SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
@@ -132,3 +148,5 @@ SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
      0
 (1 row)
 
+SELECT pcpoint(90, 1, 2, 3);
+ERROR:  No schema registered for pcid 90
