@@ -27,29 +27,32 @@
 --
 -------------------------------------------------------------------------------
 
--- Temporal spatial relationships between a ts2cell and a geometry. Each
--- delegates through the cell boundary, so the answer must equal the same
--- relationship asked of cellToBoundary directly.
+-------------------------------------------------------------------------------
+
+-- Temporal spatial relationships between two ts2cell values. Each converts
+-- both operands to the temporal geography of their boundary and delegates to
+-- the temporal relationship of two temporal geographies, answered on the
+-- sphere, so the answer must equal the same relationship asked of
+-- cellToBoundary directly.
 
 -------------------------------------------------------------------------------
 -- The delegation identity
 -------------------------------------------------------------------------------
 
-SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'))
-  = asText(tIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry,
-      geometry 'SRID=4326;Point(4.35 50.85)'));
-SELECT asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)', ts2cell '[47c3c3@2001-01-01]'))
-  = asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)',
-      cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry));
+SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]',
+    ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]'))
+  = asText(tIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]'),
+      cellToBoundary(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]')));
+SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]',
+    ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]'))
+  = asText(tDisjoint(cellToBoundary(ts2cell '[47c3c3@2001-01-01, 47c3c5@2001-01-02]'),
+      cellToBoundary(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]')));
 
 -------------------------------------------------------------------------------
 -- The answers themselves
 -------------------------------------------------------------------------------
 
-SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'));
-SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)'));
-SELECT asText(tContains(geometry 'SRID=4326;Polygon((0 45,0 55,10 55,10 45,0 45))',
-  ts2cell '[47c3c3@2001-01-01]'));
-SELECT asText(tDwithin(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1));
+SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]'));
+SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]'));
 
 -------------------------------------------------------------------------------

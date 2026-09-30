@@ -6,25 +6,26 @@
 {DETAILS}
  */
 
+-- @IFNOT geodetic_target
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
 
-CREATE FUNCTION eContains(geometry, {TEMP})
+CREATE FUNCTION eContains({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eContains($1, {CV2}) $$;
-CREATE FUNCTION aContains(geometry, {TEMP})
+CREATE FUNCTION aContains({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains($1, {CV2}) $$;
 -- @IFNOT point_target
 
-CREATE FUNCTION eContains({TEMP}, geometry)
+CREATE FUNCTION eContains({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eContains({CV1}, $2) $$;
-CREATE FUNCTION aContains({TEMP}, geometry)
+CREATE FUNCTION aContains({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains({CV1}, $2) $$;
@@ -43,25 +44,27 @@ CREATE FUNCTION aContains({TEMP}, {TEMP})
                           {CV2}) $$;
 -- @ENDIF
 
+-- @ENDIF
+-- @IFNOT geodetic_target
 /*****************************************************************************
  * Ever/always covers
  *****************************************************************************/
 
-CREATE FUNCTION eCovers(geometry, {TEMP})
+CREATE FUNCTION eCovers({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eCovers($1, {CV2}) $$;
-CREATE FUNCTION aCovers(geometry, {TEMP})
+CREATE FUNCTION aCovers({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers($1, {CV2}) $$;
 -- @IFNOT point_target
 
-CREATE FUNCTION eCovers({TEMP}, geometry)
+CREATE FUNCTION eCovers({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eCovers({CV1}, $2) $$;
-CREATE FUNCTION aCovers({TEMP}, geometry)
+CREATE FUNCTION aCovers({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers({CV1}, $2) $$;
@@ -80,24 +83,25 @@ CREATE FUNCTION aCovers({TEMP}, {TEMP})
                         {CV2}) $$;
 -- @ENDIF
 
+-- @ENDIF
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
 
-CREATE FUNCTION eDisjoint(geometry, {TEMP})
+CREATE FUNCTION eDisjoint({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDisjoint($1, {CV2}) $$;
-CREATE FUNCTION aDisjoint(geometry, {TEMP})
+CREATE FUNCTION aDisjoint({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDisjoint($1, {CV2}) $$;
 
-CREATE FUNCTION eDisjoint({TEMP}, geometry)
+CREATE FUNCTION eDisjoint({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDisjoint({CV1}, $2) $$;
-CREATE FUNCTION aDisjoint({TEMP}, geometry)
+CREATE FUNCTION aDisjoint({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDisjoint({CV1}, $2) $$;
@@ -118,45 +122,45 @@ CREATE FUNCTION aDisjoint({TEMP}, {TEMP})
  *****************************************************************************/
 
 -- @IF index_support
-CREATE FUNCTION eIntersects(geometry, {TEMP})
+CREATE FUNCTION eIntersects({GEO}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_geo_{TEMP}'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 -- @IFNOT index_support
-CREATE FUNCTION eIntersects(geometry, {TEMP})
+CREATE FUNCTION eIntersects({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eIntersects($1, {CV2}) $$;
 -- @ENDIF
-CREATE FUNCTION aIntersects(geometry, {TEMP})
+CREATE FUNCTION aIntersects({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects($1, {CV2}) $$;
 
 -- @IF native_ever_intersects
-CREATE FUNCTION eIntersects({TEMP}, geometry)
+CREATE FUNCTION eIntersects({TEMP}, {GEO})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_{TEMP}_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 -- @IFNOT native_ever_intersects
 -- @IF index_support
-CREATE FUNCTION eIntersects({TEMP}, geometry)
+CREATE FUNCTION eIntersects({TEMP}, {GEO})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_{TEMP}_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 -- @IFNOT index_support
-CREATE FUNCTION eIntersects({TEMP}, geometry)
+CREATE FUNCTION eIntersects({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eIntersects({CV1}, $2) $$;
 -- @ENDIF
 -- @ENDIF
-CREATE FUNCTION aIntersects({TEMP}, geometry)
+CREATE FUNCTION aIntersects({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects({CV1}, $2) $$;
@@ -181,24 +185,25 @@ CREATE FUNCTION aIntersects({TEMP}, {TEMP})
   AS $$ SELECT @extschema@.aIntersects({CV1},
                             {CV2}) $$;
 
+-- @IFNOT geodetic_target
 /*****************************************************************************
  * Ever/always touches
  *****************************************************************************/
 
-CREATE FUNCTION eTouches(geometry, {TEMP})
+CREATE FUNCTION eTouches({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eTouches($1, {CV2}) $$;
-CREATE FUNCTION aTouches(geometry, {TEMP})
+CREATE FUNCTION aTouches({GEO}, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches($1, {CV2}) $$;
 
-CREATE FUNCTION eTouches({TEMP}, geometry)
+CREATE FUNCTION eTouches({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eTouches({CV1}, $2) $$;
-CREATE FUNCTION aTouches({TEMP}, geometry)
+CREATE FUNCTION aTouches({TEMP}, {GEO})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches({CV1}, $2) $$;
@@ -216,45 +221,50 @@ CREATE FUNCTION aTouches({TEMP}, {TEMP})
                          {CV2}) $$;
 -- @ENDIF
 
+-- @ENDIF
 /*****************************************************************************
  * Ever/always dwithin
  *****************************************************************************/
 
 -- @IF index_support
-CREATE FUNCTION eDwithin(geometry, {TEMP}, dist float)
+CREATE FUNCTION eDwithin({GEO}, {TEMP}, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_{TEMP}'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 -- @IFNOT index_support
-CREATE FUNCTION eDwithin(geometry, {TEMP}, dist float)
+CREATE FUNCTION eDwithin({GEO}, {TEMP}, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDwithin($1, {CV2}, $3) $$;
 -- @ENDIF
-CREATE FUNCTION aDwithin(geometry, {TEMP}, dist float)
+-- @IFNOT geodetic_target
+CREATE FUNCTION aDwithin({GEO}, {TEMP}, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDwithin($1, {CV2}, $3) $$;
+-- @ENDIF
 
 -- @IF index_support
-CREATE FUNCTION eDwithin({TEMP}, geometry, dist float)
+CREATE FUNCTION eDwithin({TEMP}, {GEO}, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_{TEMP}_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 -- @IFNOT index_support
-CREATE FUNCTION eDwithin({TEMP}, geometry, dist float)
+CREATE FUNCTION eDwithin({TEMP}, {GEO}, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDwithin({CV1}, $2, $3) $$;
 -- @ENDIF
-CREATE FUNCTION aDwithin({TEMP}, geometry, dist float)
+-- @IFNOT geodetic_target
+CREATE FUNCTION aDwithin({TEMP}, {GEO}, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDwithin({CV1}, $2, $3) $$;
+-- @ENDIF
 
 -- @IF index_support
 CREATE FUNCTION eDwithin({TEMP}, {TEMP}, dist float)

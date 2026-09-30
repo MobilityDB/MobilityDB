@@ -34,209 +34,103 @@
  * @file
  * @brief Ever/always spatial relationships for temporal S2 cells
  * @details A `ts2cell` value holds one cell per instant, and a relationship is
- * that of the cell's boundary polygon rather than of its centre. Each function
- * converts its operand through `cellToBoundary(ts2cell)::tgeometry` and
- * delegates to the ever/always spatial relationship of the temporal geometry.
- * The boundary is in SRID 4326 and the cast keeps its coordinates, so an
- * operand in another SRID is transformed beforehand.
+ * that of the cell's boundary rather than of its centre. The cell is a region
+ * of the sphere bounded by great-circle arcs, so each function converts its
+ * operand through `cellToBoundary(ts2cell)`, a temporal geography, and
+ * delegates to the ever/always spatial relationship of the temporal geography
+ * with a geography, answered on the sphere. The functions are those a temporal
+ * geography declares; the boundary is in SRID 4326.
  */
-
-/*****************************************************************************
- * Ever/always contains
- *****************************************************************************/
-
-CREATE FUNCTION eContains(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aContains(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-CREATE FUNCTION eContains(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aContains(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eContains(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aContains(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-/*****************************************************************************
- * Ever/always covers
- *****************************************************************************/
-
-CREATE FUNCTION eCovers(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aCovers(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-CREATE FUNCTION eCovers(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aCovers(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eCovers(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                        @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aCovers(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                        @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
 
-CREATE FUNCTION eDisjoint(geometry, ts2cell)
+CREATE FUNCTION eDisjoint(geography, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aDisjoint(geometry, ts2cell)
+  AS $$ SELECT @extschema@.eDisjoint($1, @extschema@.cellToBoundary($2)) $$;
+CREATE FUNCTION aDisjoint(geography, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.aDisjoint($1, @extschema@.cellToBoundary($2)) $$;
 
-CREATE FUNCTION eDisjoint(ts2cell, geometry)
+CREATE FUNCTION eDisjoint(ts2cell, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aDisjoint(ts2cell, geometry)
+  AS $$ SELECT @extschema@.eDisjoint(@extschema@.cellToBoundary($1), $2) $$;
+CREATE FUNCTION aDisjoint(ts2cell, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.aDisjoint(@extschema@.cellToBoundary($1), $2) $$;
 
 CREATE FUNCTION eDisjoint(ts2cell, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.eDisjoint(@extschema@.cellToBoundary($1),
+                          @extschema@.cellToBoundary($2)) $$;
 CREATE FUNCTION aDisjoint(ts2cell, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.aDisjoint(@extschema@.cellToBoundary($1),
+                          @extschema@.cellToBoundary($2)) $$;
 
 /*****************************************************************************
  * Ever/always intersects
  *****************************************************************************/
 
-CREATE FUNCTION eIntersects(geometry, ts2cell)
+CREATE FUNCTION eIntersects(geography, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aIntersects(geometry, ts2cell)
+  AS $$ SELECT @extschema@.eIntersects($1, @extschema@.cellToBoundary($2)) $$;
+CREATE FUNCTION aIntersects(geography, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.aIntersects($1, @extschema@.cellToBoundary($2)) $$;
 
-CREATE FUNCTION eIntersects(ts2cell, geometry)
+CREATE FUNCTION eIntersects(ts2cell, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aIntersects(ts2cell, geometry)
+  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1), $2) $$;
+CREATE FUNCTION aIntersects(ts2cell, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.aIntersects(@extschema@.cellToBoundary($1), $2) $$;
 
 CREATE FUNCTION eIntersects(ts2cell, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                            @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1),
+                            @extschema@.cellToBoundary($2)) $$;
 CREATE FUNCTION aIntersects(ts2cell, ts2cell)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                            @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-/*****************************************************************************
- * Ever/always touches
- *****************************************************************************/
-
-CREATE FUNCTION eTouches(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aTouches(geometry, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-
-CREATE FUNCTION eTouches(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aTouches(ts2cell, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eTouches(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
-CREATE FUNCTION aTouches(ts2cell, ts2cell)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.aIntersects(@extschema@.cellToBoundary($1),
+                            @extschema@.cellToBoundary($2)) $$;
 
 /*****************************************************************************
  * Ever/always dwithin
  *****************************************************************************/
 
-CREATE FUNCTION eDwithin(geometry, ts2cell, dist float)
+CREATE FUNCTION eDwithin(geography, ts2cell, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
-CREATE FUNCTION aDwithin(geometry, ts2cell, dist float)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin($1, @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.eDwithin($1, @extschema@.cellToBoundary($2), $3) $$;
 
-CREATE FUNCTION eDwithin(ts2cell, geometry, dist float)
+CREATE FUNCTION eDwithin(ts2cell, geography, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2, $3) $$;
-CREATE FUNCTION aDwithin(ts2cell, geometry, dist float)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry, $2, $3) $$;
+  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1), $2, $3) $$;
 
 CREATE FUNCTION eDwithin(ts2cell, ts2cell, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1),
+                         @extschema@.cellToBoundary($2), $3) $$;
 CREATE FUNCTION aDwithin(ts2cell, ts2cell, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin(@extschema@.cellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.cellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.aDwithin(@extschema@.cellToBoundary($1),
+                         @extschema@.cellToBoundary($2), $3) $$;
 
 /*****************************************************************************/

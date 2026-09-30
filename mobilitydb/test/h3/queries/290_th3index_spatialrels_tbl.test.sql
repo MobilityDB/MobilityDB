@@ -28,27 +28,11 @@
 -------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
--- Bulk spatial-relationship tests over temporal H3 cells (th3index/th3index).
--- The geometry-operand overloads are covered by the scalar test
--- 290_th3index_spatialrels. The always-variant aContains/aCovers are
--- omitted here: on a global random cell whose planar boundary wraps the
--- antimeridian GEOS is not robust for those two predicates (tracked for
--- the cast-only spatial-rel rework); they are exercised in the scalar test.
+-- Bulk spatial-relationship tests over temporal H3 cells (th3index/th3index),
+-- answered on the sphere over the temporal geography of the cell boundaries.
+-- The geography-operand overloads are covered by the scalar test
+-- 290_th3index_spatialrels.
 -----------------------------------------------------------------------------
-
------------------------------------------------------------------------------
--- Contains
------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eContains(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tContains(t1.temp, t2.temp) IS NOT NULL;
-
------------------------------------------------------------------------------
--- Covers
------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eCovers(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tCovers(t1.temp, t2.temp) IS NOT NULL;
 
 -----------------------------------------------------------------------------
 -- Disjoint
@@ -67,19 +51,10 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aIntersects(t1.temp,
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tIntersects(t1.temp, t2.temp) IS NOT NULL;
 
 -----------------------------------------------------------------------------
--- Touches
+-- Dwithin, in metres
 -----------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eTouches(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aTouches(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tTouches(t1.temp, t2.temp) IS NOT NULL;
-
------------------------------------------------------------------------------
--- Dwithin
------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDwithin(t1.temp, t2.temp, 0.05);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDwithin(t1.temp, t2.temp, 0.05);
-SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tDwithin(t1.temp, t2.temp, 0.05) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDwithin(t1.temp, t2.temp, 5000.0);
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDwithin(t1.temp, t2.temp, 5000.0);
 
 -----------------------------------------------------------------------------

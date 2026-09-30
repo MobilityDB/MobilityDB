@@ -1593,29 +1593,44 @@ SELECT numValues(uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)),
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<para>Relaciones siempre y alguna vez</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eContains(geometry,tcell) → boolean
-aContains(geometry,tcell) → boolean
-eCovers(geometry,tcell) → boolean
-aCovers(geometry,tcell) → boolean
-eDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-aDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-eDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-aDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-eIntersects({geometry,tcell},{geometry,tcell}) → boolean
-aIntersects({geometry,tcell},{geometry,tcell}) → boolean
-eTouches({geometry,tcell},{geometry,tcell}) → boolean
-aTouches({geometry,tcell},{geometry,tcell}) → boolean
+eContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geography,th3index},{geography,th3index}) → boolean
+eDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+aDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aDisjoint({geography,th3index},{geography,th3index}) → boolean
+aDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+eIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eIntersects({geography,th3index},{geography,th3index}) → boolean
+eIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+aIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aIntersects({geography,th3index},{geography,th3index}) → boolean
+aIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+eDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+eDwithin({geography,th3index},{geography,th3index},float) → boolean
+eDwithin({geography,ts2cell},{geography,ts2cell},float) → boolean
+aDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+aDwithin(th3index,th3index,float) → boolean
+aDwithin(ts2cell,ts2cell,float) → boolean
 </programlisting>
-				<para>Las relaciones evalúan un argumento <varname>tcell</varname> a través de su geometría de frontera de celda por instante, la huella de cada celda tal como la devuelve <link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link>, y aplican después la relación correspondiente de los tipos de geometrías temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con el prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con el prefijo <varname>a</varname> cuando se cumple en todo instante, y la forma <emphasis>temporal</emphasis> con el prefijo <varname>t</varname> de la sección siguiente devuelve un <varname>tbool</varname> del resultado instante a instante. Toda forma acepta los tres órdenes de argumentos <varname>(geometry, tcell)</varname>, <varname>(tcell, geometry)</varname> y <varname>(tcell, tcell)</varname>. <varname>eContains</varname> indica si una huella contiene a la otra, solo interiores, y <varname>eCovers</varname> lo mismo con la frontera incluida; <varname>eIntersects</varname> si las huellas comparten al menos un punto, <varname>eDisjoint</varname> si no comparten ninguno, <varname>eTouches</varname> si comparten un punto de la frontera pero ningún punto interior, y <varname>eDwithin</varname> si se encuentran dentro de la distancia pasada como tercer argumento.</para>
+				<para>Una relación de una celda es la de su frontera, tal como la devuelve <link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link>, y cada malla se relaciona en la única lectura que expresa sus celdas exactamente. Una tesela QUADBIN está delimitada por meridianos y paralelos, que son rectas en longitud y latitud, de modo que un <varname>tquadbin</varname> se relaciona a través de la geometría temporal de su frontera, con un <varname>geometry</varname> u otro <varname>tquadbin</varname>, con el conjunto completo de relaciones de los tipos de geometrías temporales. Una celda H3 o S2 está delimitada por arcos de círculo máximo, de modo que un <varname>th3index</varname> o un <varname>ts2cell</varname> se relaciona a través de la geografía temporal de su frontera, con un <varname>geography</varname> u otra celda de su malla, con la respuesta calculada sobre la esfera y la distancia en metros; tiene las relaciones que tiene una geografía temporal, que no expresan contención ni contacto. Un <varname>geometry</varname> pasado a una relación de H3 o S2 se lee como el <varname>geography</varname> al que PostGIS lo convierte. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con el prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con el prefijo <varname>a</varname> cuando se cumple en todo instante, y la forma <emphasis>temporal</emphasis> con el prefijo <varname>t</varname> de la sección siguiente devuelve un <varname>tbool</varname> del resultado instante a instante. <varname>eContains</varname> indica si una frontera contiene a la otra, solo interiores, y <varname>eCovers</varname> lo mismo con la frontera incluida; <varname>eIntersects</varname> si las fronteras comparten al menos un punto, <varname>eDisjoint</varname> si no comparten ninguno, <varname>eTouches</varname> si comparten un punto de la frontera pero ningún punto interior, y <varname>eDwithin</varname> si se encuentran dentro de la distancia pasada como tercer argumento. El último ejemplo es un punto que H3 asigna a la celda de resolución 0 y que se encuentra a 91 km fuera del polígono que une los vértices de la celda con rectas en longitud y latitud.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
 -- t
 SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+-- t
+SELECT eIntersects(th3index '8009fffffffffff@2001-01-01',
+  geography 'Point(16.6328 71.9281)');
 -- t
 </programlisting>
 			</listitem>
@@ -1634,23 +1649,26 @@ SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 				<para>Relaciones espaciotemporales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tContains(geometry,tcell) → tbool
-tCovers(geometry,tcell) → tbool
-tDisjoint({geometry,tcell},{geometry,tcell}) → tbool
-tDwithin({geometry,tcell},{geometry,tcell},float) → tbool
-tIntersects({geometry,tcell},{geometry,tcell}) → tbool
-tTouches({geometry,tcell},{geometry,tcell}) → tbool
+tContains({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tCovers({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint(th3index,th3index) → tbool
+tDisjoint(ts2cell,ts2cell) → tbool
+tDwithin({geometry,tquadbin},{geometry,tquadbin},float) → tbool
+tIntersects({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tIntersects(th3index,th3index) → tbool
+tIntersects(ts2cell,ts2cell) → tbool
+tTouches({geometry,tquadbin},{geometry,tquadbin}) → tbool
 </programlisting>
-				<para>La forma temporal responde un <varname>tbool</varname> que lleva el resultado en cada instante, mientras que las formas siempre y alguna vez de la sección anterior responden un único <varname>boolean</varname> sobre todo el lapso de tiempo.</para>
+				<para>La forma temporal responde un <varname>tbool</varname> que lleva el resultado en cada instante, mientras que las formas siempre y alguna vez de la sección anterior responden un único <varname>boolean</varname> sobre todo el lapso de tiempo. Una celda H3 o S2 se relaciona como la geografía temporal de su frontera, que tiene las relaciones temporales de disyunción e intersección entre dos valores temporales, de modo que dos celdas de la malla se relacionan sobre la esfera.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
+SELECT tIntersects(th3index '871fa4418ffffff@2001-01-01',
+  th3index '871fa4418ffffff@2001-01-01');
 -- t@2001-01-01
 SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t@2001-01-01
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+SELECT tIntersects(ts2cell '47c3c@2001-01-01', ts2cell '47c3c@2001-01-01');
 -- t@2001-01-01
 </programlisting>
 			</listitem>

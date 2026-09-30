@@ -1594,29 +1594,44 @@ SELECT numValues(uncompactCells(compactCells(cellToChildren(s2cell '47c3c', 8)),
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<para>Ever and always relationships</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eContains(geometry,tcell) → boolean
-aContains(geometry,tcell) → boolean
-eCovers(geometry,tcell) → boolean
-aCovers(geometry,tcell) → boolean
-eDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-aDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-eDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-aDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-eIntersects({geometry,tcell},{geometry,tcell}) → boolean
-aIntersects({geometry,tcell},{geometry,tcell}) → boolean
-eTouches({geometry,tcell},{geometry,tcell}) → boolean
-aTouches({geometry,tcell},{geometry,tcell}) → boolean
+eContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geography,th3index},{geography,th3index}) → boolean
+eDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+aDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aDisjoint({geography,th3index},{geography,th3index}) → boolean
+aDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+eIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eIntersects({geography,th3index},{geography,th3index}) → boolean
+eIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+aIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aIntersects({geography,th3index},{geography,th3index}) → boolean
+aIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+eDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+eDwithin({geography,th3index},{geography,th3index},float) → boolean
+eDwithin({geography,ts2cell},{geography,ts2cell},float) → boolean
+aDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+aDwithin(th3index,th3index,float) → boolean
+aDwithin(ts2cell,ts2cell,float) → boolean
 </programlisting>
-				<para>The relationships evaluate a <varname>tcell</varname> argument through its per-instant cell-boundary geometry, the footprint of each cell as <link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link> returns it, and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form of the next section returns a <varname>tbool</varname> of the instant-by-instant result. Every form accepts the three argument orderings <varname>(geometry, tcell)</varname>, <varname>(tcell, geometry)</varname>, and <varname>(tcell, tcell)</varname>. <varname>eContains</varname> states whether one footprint contains the other, interiors only, and <varname>eCovers</varname> the same with the boundary included; <varname>eIntersects</varname> whether the footprints share at least one point, <varname>eDisjoint</varname> whether they share none, <varname>eTouches</varname> whether they share a boundary point but no interior point, and <varname>eDwithin</varname> whether they lie within the distance passed as the third argument.</para>
+				<para>A relationship of a cell is the one of its boundary, as <link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link> returns it, and each grid is related in the one reading that states its cells exactly. A QUADBIN tile is bounded by meridians and parallels, which are straight lines in longitude and latitude, so a <varname>tquadbin</varname> is related through the temporal geometry of its boundary, to a <varname>geometry</varname> or another <varname>tquadbin</varname>, with the full set of relationships of the temporal geometry types. An H3 or S2 cell is bounded by great-circle arcs, so a <varname>th3index</varname> or <varname>ts2cell</varname> is related through the temporal geography of its boundary, to a <varname>geography</varname> or another cell of its grid, answered on the sphere and with a distance in metres; it has the relationships a temporal geography has, which state no containment and no touching. A <varname>geometry</varname> passed to an H3 or S2 relationship is read as the <varname>geography</varname> PostGIS converts it to. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form of the next section returns a <varname>tbool</varname> of the instant-by-instant result. <varname>eContains</varname> states whether one boundary contains the other, interiors only, and <varname>eCovers</varname> the same with the boundary included; <varname>eIntersects</varname> whether the boundaries share at least one point, <varname>eDisjoint</varname> whether they share none, <varname>eTouches</varname> whether they share a boundary point but no interior point, and <varname>eDwithin</varname> whether they lie within the distance passed as the third argument. The last example is a point H3 assigns to the resolution-0 cell and that lies 91 km outside the polygon joining the cell's vertices with straight lines in longitude and latitude.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
 -- t
 SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+-- t
+SELECT eIntersects(th3index '8009fffffffffff@2001-01-01',
+  geography 'Point(16.6328 71.9281)');
 -- t
 </programlisting>
 			</listitem>
@@ -1635,23 +1650,26 @@ SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 				<para>Spatiotemporal relationships</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tContains(geometry,tcell) → tbool
-tCovers(geometry,tcell) → tbool
-tDisjoint({geometry,tcell},{geometry,tcell}) → tbool
-tDwithin({geometry,tcell},{geometry,tcell},float) → tbool
-tIntersects({geometry,tcell},{geometry,tcell}) → tbool
-tTouches({geometry,tcell},{geometry,tcell}) → tbool
+tContains({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tCovers({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint(th3index,th3index) → tbool
+tDisjoint(ts2cell,ts2cell) → tbool
+tDwithin({geometry,tquadbin},{geometry,tquadbin},float) → tbool
+tIntersects({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tIntersects(th3index,th3index) → tbool
+tIntersects(ts2cell,ts2cell) → tbool
+tTouches({geometry,tquadbin},{geometry,tquadbin}) → tbool
 </programlisting>
-				<para>The temporal form answers a <varname>tbool</varname> that carries the result at each instant, where the ever and always forms of the previous section answer a single <varname>boolean</varname> over the whole time span.</para>
+				<para>The temporal form answers a <varname>tbool</varname> that carries the result at each instant, where the ever and always forms of the previous section answer a single <varname>boolean</varname> over the whole time span. An H3 or S2 cell is related as the temporal geography of its boundary, which has the temporal disjoint and intersects relationships between two temporal values, so two cells of the grid are related on the sphere.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
+SELECT tIntersects(th3index '871fa4418ffffff@2001-01-01',
+  th3index '871fa4418ffffff@2001-01-01');
 -- t@2001-01-01
 SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t@2001-01-01
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+SELECT tIntersects(ts2cell '47c3c@2001-01-01', ts2cell '47c3c@2001-01-01');
 -- t@2001-01-01
 </programlisting>
 			</listitem>

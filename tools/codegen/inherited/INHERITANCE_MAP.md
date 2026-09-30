@@ -124,7 +124,8 @@ Temporal<T>              temporal_type      = ALL temporal types
   on the kNN question.
 - **`TCellIndex<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
-  they drop the continuous inherited aspects (distance, tempspatialrels).
+  they drop the continuous inherited distance aspect, and relate their cells through the
+  temporal boundary a cell converts to (§6).
 - **RASTER** (`raquet`, `meos_catalog.h`) is a *base value type* (a raster tile),
   **not temporal** — no `traster` exists, so it has no `Temporal<T>` class. Out of
   this hierarchy until a temporal raster type is defined.
@@ -237,8 +238,20 @@ the Spatiotemporal predicate surface (`tIntersects`/`tDwithin`/`tContains`/
 `tTouches`/`tCovers`/`tDisjoint`). Each family entry sets `impl: native` (rendered
 by `templates/tempspatialrels_native.sql.tmpl` — the family owns its own C kernel
 per predicate/direction) or `impl: cast` (rendered by `templates/tempspatialrels.sql.tmpl`
-— the family converts its operand to `tgeometry` and delegates to `tgeo`'s functions,
-per the cast-only spatial-uniformization rule). See §5 and §6.
+— the family converts its operand to `tgeometry`, or to `tgeography` for a cell bounded by
+great-circle arcs, and delegates to `tgeo`'s functions, per the cast-only
+spatial-uniformization rule). See §5 and §6.
+
+⛔ **`geodetic_target` makes an H3 or S2 cell a temporal geography.** An H3 or S2 cell is a
+region of the sphere bounded by great-circle arcs, so its one exact reading is the
+`tgeography` its `cellToBoundary` returns; a QUADBIN tile is bounded by meridians and
+parallels, so its exact reading stays the planar `tgeometry`. The flag is additive
+(`DEFAULT_FALSE_FLAGS`): `th3index` and `ts2cell` set it, and `spatialrels.sql.tmpl` then
+states `geography` for the static operand (`{GEO}`) and declares only the ever/always
+predicates a temporal geography declares, dropping contains, covers, touches and the static
+`aDwithin` forms. `tempspatialrel_families` gives the two families `tDisjoint` and
+`tIntersects` between two cells, the spatiotemporal predicates a temporal geography
+declares.
 
 **Box-type axis (`boxtypes:`)** — the C bounding-box dispatchers are per *box type*,
 not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
@@ -559,7 +572,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while a cell-index or area-valued family converts its boundary to tgeometry (tquadbin, th3index, ts2cell, trgeometry, tpcpatch) |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -583,7 +596,7 @@ The generic inherited TCellIndex API (declared in the umbrella header
 | catalog predicate `tcellindex_type()` | **all three cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `#if S2CELL → T_TS2CELL`, `tcellindex.c`) |
 | descriptor registered | `h3_cellops` (`meos/src/h3/th3index_ops.c`), `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c`) and `s2_cellops` (`meos/src/s2cell/ts2cell_ops.c`), all dispatched from `dggs_cellops()` |
 | SQL wrappers (getResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`, s2cell `605_ts2cell_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
-| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `cellToBoundary($n)::tgeometry`, the bare DggsCellOps slot name — this IS generated (§6, h3 262 / quadbin 362 / s2cell 612) |
+| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via the bare DggsCellOps slot name, `cellToBoundary($n)::tgeometry` for quadbin and `cellToBoundary($n)`, a `tgeography`, for h3 and s2cell — this IS generated (§6, h3 262 / quadbin 362 / s2cell 612) |
 
 ⇒ **Remaining opportunity**: all three DGGS families are wired onto `DggsCellOps`
 and `tcellindex_type()`, so the C implementation is unified and the two paths (typed
