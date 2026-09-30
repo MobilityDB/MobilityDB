@@ -634,15 +634,20 @@ SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 				</listitem>
 				<listitem xml:id="tpcpoint_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Return the Moving Features JSON (MF-JSON) representation</para>
+					<indexterm significance="normal"><primary><varname>tpcpointFromMFJSON</varname></primary></indexterm>
+					<para>Return the Moving Features JSON (MF-JSON) representation of a tpcpoint and read it back; the round trip is lossless</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpoint,options int=0,flags int=0,maxdecimaldigits int=15) → text
+tpcpointFromMFJSON(text) → tpcpoint
 </programlisting>
-					<para>A <varname>tpcpoint</varname> is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>, the X, Y and Z of each instant read from its <varname>pcpoint</varname> through the schema cache; a schema stating neither X nor Y leaves the coordinate array of that instant empty.</para>
+					<para>A <varname>tpcpoint</varname> is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "values":[{"pcid":N,"pt":[…]}, …], "datetimes":[…]}</varname>. The coordinates are the X, Y and Z of each instant read from its <varname>pcpoint</varname> through the schema cache, and a schema stating neither X nor Y leaves the coordinate array of that instant empty. The values are pgPointCloud's text form of each point, every dimension of its schema in the order the schema states them and in the shortest decimal form that reads back as the same double, whatever <varname>maxdecimaldigits</varname> states. <varname>tpcpointFromMFJSON</varname> rebuilds each point from its values through the schema of its <varname>pcid</varname>, so a scaled integer dimension reads back as the integer it stores.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
-/* {"type":"MovingPCPoint","coordinates":[[1,1,1]],
+/* {"type":"MovingPCPoint","coordinates":[[1,1,1]],"values":[{"pcid":1,"pt":[1,1,1]}],
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT tpcpointFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) AS t) s;
+-- t
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpoint_asBinary">
@@ -690,7 +695,7 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex-WKB of its serialized form, which has no decimal places to round. MF-JSON is output-only, since it states the X, Y and Z of each point and not the other dimensions of its schema, and carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
+			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex-WKB of its serialized form, which has no decimal places to round. MF-JSON carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_constructors">
@@ -1490,20 +1495,26 @@ SELECT tpcpatchFromEWKT('SRID=4326;' || asText(tpcpatch(pcpatch(pcpoint(1, 1, 1,
 				</listitem>
 				<listitem xml:id="tpcpatch_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Return the Moving Features JSON (MF-JSON) representation</para>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromMFJSON</varname></primary></indexterm>
+					<para>Return the Moving Features JSON (MF-JSON) representation of a tpcpatch and read it back; the round trip is lossless</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpatch,options int=0,flags int=0,maxdecimaldigits int=15) → text
+tpcpatchFromMFJSON(text) → tpcpatch
 </programlisting>
-					<para>A <varname>tpcpatch</varname> is emitted under the type tag <varname>"MovingPCPatch"</varname>, each instant stating the object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>; the compressed point payload stays out of the JSON, so a lossless round trip goes through <varname>asBinary</varname> or <varname>asHexWKB</varname>.</para>
+					<para>A <varname>tpcpatch</varname> is emitted under the type tag <varname>"MovingPCPatch"</varname>, each instant stating the object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax], "pts":[[…], …]}</varname>. The points are pgPointCloud's text form of the patch, every dimension of each point in the order its schema states them and in the shortest decimal form that reads back as the same double, whatever <varname>maxdecimaldigits</varname> states. <varname>tpcpatchFromMFJSON</varname> rebuilds each patch from its points in the compression its schema states, and refuses a point that does not state every dimension of the schema.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
-/* {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],
-   "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+/* {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2],
+   "pts":[[1,1,1],[2,2,2]]}],"datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT tpcpatchFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  '2001-01-01'::timestamptz) AS t) s;
+-- t
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para>As for a <varname>tpcpoint</varname>, <varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument. MF-JSON is output-only, its per-instant summary dropping the per-point payload.</para>
+			<para>As for a <varname>tpcpoint</varname>, <varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpatch_constructors">

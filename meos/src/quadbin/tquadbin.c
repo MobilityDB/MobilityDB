@@ -148,6 +148,22 @@ tquadbin_in(const char *str)
 }
 
 /**
+ * @ingroup meos_quadbin_inout
+ * @brief Return a temporal quadbin from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tquadbin_from_mfjson(const char *mfjson)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(mfjson, NULL);
+  return temporal_from_mfjson(mfjson, T_TQUADBIN);
+}
+
+/**
  * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell instant from its Well-Known Text
  * representation

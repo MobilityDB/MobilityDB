@@ -3531,7 +3531,7 @@
 						<para><link linkend="tpcpoint_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the text representation of a tpcpoint, or of an array of them, with or without its SRID, and cast a tpcpoint to text</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
+						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname>, <varname>tpcpointFromMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation of a tpcpoint and read it back; the round trip is lossless</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the binary or hexadecimal well-known binary representation of a tpcpoint, with or without its SRID</para>
@@ -3713,7 +3713,7 @@
 						<para><link linkend="tpcpatch_fromText"><varname>tpcpatchFromText</varname>, <varname>tpcpatchFromEWKT</varname>, <varname>tpcpatchFromBinary</varname>, <varname>tpcpatchFromEWKB</varname>, <varname>tpcpatchFromHexWKB</varname>, <varname>tpcpatchFromHexEWKB</varname></link>: Return a tpcpatch from its text, binary, or hexadecimal well-known binary representation, with or without its SRID</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
+						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname>, <varname>tpcpatchFromMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation of a tpcpatch and read it back; the round trip is lossless</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

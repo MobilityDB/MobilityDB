@@ -88,3 +88,45 @@ SELECT asMFJSON(:q1);
 SELECT asMFJSON(:q1, 1);
 
 -------------------------------------------------------------------------------
+-- tpcpoint MF-JSON round trip: the values member states every dimension of
+-- the point, so the value reads back equal to the one written.
+-------------------------------------------------------------------------------
+
+-- The values member is pgpointcloud's text form of the point
+SELECT asMFJSON(:p1)::jsonb -> 'values' -> 0 = '{"pcid": 1, "pt": [1, 2, 3]}'::jsonb;
+
+SELECT tpcpointFromMFJSON(asMFJSON(:p1)) = :p1;
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[:p1, :p2]))) =
+  tpcpointSeq(ARRAY[:p1, :p2]);
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeqSet(ARRAY[
+  tpcpointSeq(ARRAY[:p1]), tpcpointSeq(ARRAY[:p2])]))) =
+  tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[:p1]), tpcpointSeq(ARRAY[:p2])]);
+-- The bounding box and the precision of the coordinates leave the values whole
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[:p1, :p2]), 1, 0, 0)) =
+  tpcpointSeq(ARRAY[:p1, :p2]);
+
+-- Scaled and offset integers, a double of 17 digits and the largest unsigned
+-- 16-bit intensity read back exactly
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset) VALUES
+  (92, 1, 'X', 'int32_t', 0.01, 1000), (92, 2, 'Y', 'int32_t', 0.01, -500),
+  (92, 3, 'Z', 'double', 1, 0), (92, 4, 'Intensity', 'uint16_t', 1, 0);
+\set s1 'tpcpoint(pcpoint(92, ARRAY[1000.25, -499.99, 0.1, 17]::float[]), ''2024-01-01''::timestamptz)'
+\set s2 'tpcpoint(pcpoint(92, ARRAY[1003.5, -497.25, 123456.78901234568, 65535]::float[]), ''2024-01-02''::timestamptz)'
+SELECT asMFJSON(:s1)::jsonb -> 'values';
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[:s1, :s2]))) =
+  tpcpointSeq(ARRAY[:s1, :s2]);
+SELECT getDim(getValue(tpcpointFromMFJSON(asMFJSON(:s2))), 'Z') =
+    123456.78901234568::float,
+  getDim(getValue(tpcpointFromMFJSON(asMFJSON(:s2))), 'Intensity');
+DELETE FROM pointcloud_schemas WHERE pcid = 92;
+
+-- A document stating the coordinates and not the values states no point
+SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","coordinates":[[1,2,3]],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+-- The values state as many dimensions as the schema of their pcid
+SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","values":[{"pcid":1,"pt":[1,2]}],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+
+-------------------------------------------------------------------------------

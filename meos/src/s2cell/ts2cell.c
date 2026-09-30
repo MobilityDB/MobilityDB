@@ -145,6 +145,22 @@ ts2cell_in(const char *str)
 }
 
 /**
+ * @ingroup meos_s2cell_inout
+ * @brief Return a temporal S2 cell from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+ts2cell_from_mfjson(const char *mfjson)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(mfjson, NULL);
+  return temporal_from_mfjson(mfjson, T_TS2CELL);
+}
+
+/**
  * @ingroup meos_internal_s2cell_inout
  * @brief Return a temporal S2 cell instant from its Well-Known Text
  * representation

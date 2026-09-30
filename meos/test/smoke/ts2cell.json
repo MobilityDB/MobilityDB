@@ -30,6 +30,7 @@
   },
   "name_arg_map": {
     "^s2cell_from_hexwkb$": {"char *": "s2hexwkb1"},
+    "^ts2cell_from_mfjson$": {"char *": "ts2mfjson1"},
     "^s2cell_token_to_cell$": {"char *": "\"47c3c444c\""},
     "^s2cellset_in$": {"char *": "\"{47c3c444c0000000}\""},
     "^ts2cell_in$": {"char *": "\"[47c3c444c0000000@2001-01-01, 47c3c444c0000000@2001-01-03]\""},
@@ -72,6 +73,7 @@
     "  Set *s2set1 = s2cellset_make(s2arr1, 2);",
     "  TSequence *ts2seq1 = ts2cellseq_make(s2arr_same1, tstzarr1, 2, true, true);",
     "  Temporal *ts2cell1 = (Temporal *) ts2seq1;",
+    "  char *ts2mfjson1 = temporal_as_mfjson(ts2cell1, false, 0, 15, NULL);",
     "  /* 5171192596709507072 is the cell 47c3c444c0000000 as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5171192596709507072@2001-01-01, 5171192596709507072@2001-01-03]\");",
     "  Temporal *tgeogpoint1 = tgeogpoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",
@@ -103,6 +105,7 @@
     "  free(s2set1);",
     "  free(s2wkb1);",
     "  free(s2hexwkb1);",
+    "  free(ts2mfjson1);",
     "  free(ts2cell1);",
     "  free(tbigint1);",
     "  free(tgeogpoint1);",

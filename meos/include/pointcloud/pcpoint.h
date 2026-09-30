@@ -84,6 +84,7 @@ extern bool ensure_valid_pcpointset_pcpoint(const Set *s, const Pcpoint *pt);
 
 extern Pcpoint *pcpoint_parse(const char **str, bool end);
 extern size_t pcpoint_meaningful_size(const Pcpoint *pt);
+extern double *pcpoint_dims(const Pcpoint *pt, int *count);
 
 /*****************************************************************************/
 

@@ -4,7 +4,6 @@ representation_families:
   reference: true
   whole_file: true
   begin: "\n * Input\n"
-  mfjson_named: true
   temps:
   - temp: tbool
   - temp: tint
@@ -182,7 +181,6 @@ representation_families:
 - family: h3
   file: mobilitydb/sql/h3/253_th3index.in.sql
   reference: true
-  mfjson_named: true
   begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
   end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
   temps:
@@ -210,7 +208,6 @@ representation_families:
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true
-  mfjson_named: true
   begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
   end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
   temps:
@@ -238,7 +235,6 @@ representation_families:
 - family: s2cell
   file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
   reference: true
-  mfjson_named: true
   begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
   end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
   temps:
@@ -267,7 +263,6 @@ representation_families:
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
-  mfjson_named: true
   mfjson_oneline: true
   begin: "\n * Input/output from WKT, WKB, HexWKB, and MFJSON representation\n"
   end: "\n * Constructors\n"
@@ -401,15 +396,7 @@ representation_families:
       - asEWKB
       - asHexWKB
       - asHexEWKB
-      - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpoint by
-
-          -- (coordinates, datetimes) without carrying the schema (pcid + dim
-
-          -- layout) needed to reconstruct the value, so a parse-back path is
-
-          -- intentionally not exposed. Use asBinary / tpcpointFromBinary or
-
-          -- asHexWKB / tpcpointFromHexWKB for round-trip.'
+      - FromMFJSON
       - asMFJSON
     - - lit: '-- asText takes no maxdecimaldigits argument: a pcpoint prints as the hex-WKB
 
@@ -447,15 +434,7 @@ representation_families:
       - asEWKB
       - asHexWKB
       - asHexEWKB
-      - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpatch by
-
-          -- (pcid, npoints, bounds) per instant without carrying the per-point
-
-          -- payload, so a parse-back path is intentionally not exposed. Use
-
-          -- asBinary / tpcpatchFromBinary or asHexWKB / tpcpatchFromHexWKB for
-
-          -- round-trip.'
+      - FromMFJSON
       - asMFJSON
     - - lit: '-- asText takes no maxdecimaldigits argument: a pcpatch prints as the hex-WKB
 

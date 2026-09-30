@@ -496,7 +496,9 @@ TSpatial<T> family inherits them, those whose SRID is derived rather than set
 carries a plain form carries its `E` twin, which `generate.py --validate` enforces
 (`repr_missing_e_twins`). Conventions to reproduce verbatim:
 `maxdecimaldigits integer DEFAULT 15` on float/coordinate-bearing types only;
-`endian text DEFAULT ''` on `asBinary`/`asHexWKB`.
+`endian text DEFAULT ''` on `asBinary`/`asHexWKB`; the value argument unnamed on
+every representation function, `asMFJSON(<temp>, options integer DEFAULT 0, …)`
+included.
 
 Governed by `templates/representations.sql.tmpl` + `representation_families`,
 **24 entries** all `reference: true` — the 14 families of `io_families` above

@@ -243,6 +243,7 @@ extern TInstant *ts2cellinst_in(const char *str);
 extern TSequence *ts2cellseq_in(const char *str, interpType interp);
 extern TSequenceSet *ts2cellseqset_in(const char *str);
 extern char *ts2cell_out(const Temporal *temp);
+extern Temporal *ts2cell_from_mfjson(const char *mfjson);
 
 /* Constructors */
 

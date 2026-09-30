@@ -126,7 +126,7 @@ CREATE FUNCTION asHexEWKB(th3index, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(temp th3index, options integer DEFAULT 0,
+CREATE FUNCTION asMFJSON(th3index, options integer DEFAULT 0,
     flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'

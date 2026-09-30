@@ -46,6 +46,9 @@
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <stringbuffer.h>
+#if POINTCLOUD
+  #include <common/shortest_dec.h>
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -421,13 +424,72 @@ tpcpoint_coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
 }
 
 /**
- * @brief Write into the buffer a tpcpatch instant in the MF-JSON representation
- * @details Patches don't decompose to a single coordinate, so we emit a small
- * object with pcid, npoints, and the 2D PCBOUNDS. The compressed point payload
- * is intentionally left out — JSON is not the right wire format for it; use
- * asBinary for round-trip.
+ * @brief Write into the buffer a double in the shortest decimal form that
+ * reads back as the same double, the form PostgreSQL's float8 output writes
+ * @details The dimensions of a point cloud value are written this way whatever
+ * the precision asked for the coordinates, so that reading them back recovers
+ * the value exactly
  */
 static void
+mfjson_double_exact_sb(stringbuffer_t *sb, double d)
+{
+  char buf[DOUBLE_SHORTEST_DECIMAL_LEN];
+  double_to_shortest_decimal_buf(d, buf);
+  stringbuffer_append(sb, buf);
+}
+
+/**
+ * @brief Write into the buffer the dimensions of a pcpoint as a JSON array, in
+ * the order its schema states them
+ * @return @p false when the dimensions cannot be read
+ */
+static bool
+pcpoint_dims_as_mfjson_sb(stringbuffer_t *sb, const Pcpoint *pt)
+{
+  int ndims;
+  double *dims = pcpoint_dims(pt, &ndims);
+  if (! dims)
+    return false;
+  stringbuffer_append_char(sb, '[');
+  for (int i = 0; i < ndims; i++)
+  {
+    if (i)
+      stringbuffer_append_char(sb, ',');
+    mfjson_double_exact_sb(sb, dims[i]);
+  }
+  stringbuffer_append_char(sb, ']');
+  pfree(dims);
+  return true;
+}
+
+/**
+ * @brief Write into the buffer a tpcpoint instant's value in the MF-JSON
+ * representation
+ * @details The object pgpointcloud's text form writes, `{"pcid":1,"pt":[...]}`,
+ * every dimension of the point in the order its schema states them and in the
+ * shortest form that reads back exactly, so that #tpcpoint_from_mfjson
+ * rebuilds the point byte for byte
+ */
+static bool
+tpcpoint_value_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst)
+{
+  const Pcpoint *pt = (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
+  stringbuffer_aprintf(sb, "{\"pcid\":%u,\"pt\":", pt->pcid);
+  if (! pcpoint_dims_as_mfjson_sb(sb, pt))
+    return false;
+  stringbuffer_append_char(sb, '}');
+  return true;
+}
+
+/**
+ * @brief Write into the buffer a tpcpatch instant in the MF-JSON representation
+ * @details An object stating the pcid, the number of points and the 2D PCBOUNDS
+ * of the patch, and its points as pgpointcloud's text form writes them,
+ * `"pts":[[...],...]`, every dimension of each point in the order its schema
+ * states them and in the shortest form that reads back exactly, so that
+ * #tpcpatch_from_mfjson rebuilds the patch
+ */
+static bool
 tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
 {
   const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
@@ -441,7 +503,21 @@ tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
   stringbuffer_append_double(sb, pa->bounds[2], precision);
   stringbuffer_append_char(sb, ',');
   stringbuffer_append_double(sb, pa->bounds[3], precision);
+  stringbuffer_append_len(sb, "],\"pts\":[", 9);
+  int npoints;
+  Pcpoint **points = pcpatch_points(pa, &npoints);
+  if (! points)
+    return false;
+  bool result = true;
+  for (int i = 0; i < npoints && result; i++)
+  {
+    if (i)
+      stringbuffer_append_char(sb, ',');
+    result = pcpoint_dims_as_mfjson_sb(sb, points[i]);
+  }
+  pfree_array((void **) points, npoints);
   stringbuffer_append_len(sb, "]}", 2);
+  return result;
 }
 #endif /* POINTCLOUD */
 
@@ -963,7 +1039,8 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   else if (inst->temptype == T_TPCPATCH)
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
-    tpcpatch_as_mfjson_sb(sb, inst, precision);
+    if (! tpcpatch_as_mfjson_sb(sb, inst, precision))
+      return false;
   }
 #endif /* POINTCLOUD */
 #if POSE
@@ -996,6 +1073,14 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     if (! success)
       return false;
   }
+#if POINTCLOUD
+  if (inst->temptype == T_TPCPOINT)
+  {
+    stringbuffer_append_len(sb, "],\"values\":[", 12);
+    if (! tpcpoint_value_as_mfjson_sb(sb, inst))
+      return false;
+  }
+#endif /* POINTCLOUD */
   stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
   datetimes_as_mfjson_sb(sb, inst->t);
   stringbuffer_append_len(sb, "],\"interpolation\":\"None\"}", 25);
@@ -1073,7 +1158,10 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     else if (inst->temptype == T_TPCPOINT)
       tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
     else if (inst->temptype == T_TPCPATCH)
-      tpcpatch_as_mfjson_sb(sb, inst, precision);
+    {
+      if (! tpcpatch_as_mfjson_sb(sb, inst, precision))
+        return false;
+    }
 #endif /* POINTCLOUD */
 #if POSE
     else if (inst->temptype == T_TPOSE)
@@ -1099,6 +1187,18 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
         return false;
     }
   }
+#if POINTCLOUD
+  if (seq->temptype == T_TPCPOINT)
+  {
+    stringbuffer_append_len(sb, "],\"values\":[", 12);
+    for (int i = 0; i < seq->count; i++)
+    {
+      if (i) stringbuffer_append_char(sb, ',');
+      if (! tpcpoint_value_as_mfjson_sb(sb, TSEQUENCE_INST_N(seq, i)))
+        return false;
+    }
+  }
+#endif /* POINTCLOUD */
   stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1193,7 +1293,10 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
       else if (inst->temptype == T_TPCPOINT)
         tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
       else if (inst->temptype == T_TPCPATCH)
-        tpcpatch_as_mfjson_sb(sb, inst, precision);
+      {
+        if (! tpcpatch_as_mfjson_sb(sb, inst, precision))
+          return false;
+      }
 #endif /* POINTCLOUD */
 #if POSE
       else if (inst->temptype == T_TPOSE)
@@ -1218,6 +1321,18 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
           return false;
       }
     }
+#if POINTCLOUD
+    if (seq->temptype == T_TPCPOINT)
+    {
+      stringbuffer_append_len(sb, "],\"values\":[", 12);
+      for (int j = 0; j < seq->count; j++)
+      {
+        if (j) stringbuffer_append_char(sb, ',');
+        if (! tpcpoint_value_as_mfjson_sb(sb, TSEQUENCE_INST_N(seq, j)))
+          return false;
+      }
+    }
+#endif /* POINTCLOUD */
     stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
     for (int j = 0; j < seq->count; j++)
     {

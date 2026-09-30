@@ -75,6 +75,24 @@ tpcpoint_in(const char *str)
 }
 
 /**
+ * @ingroup meos_pointcloud_inout
+ * @brief Return a temporal pgpointcloud point from its MF-JSON representation
+ * @details The values are read as pgpointcloud's text form writes them,
+ * every dimension of the schema of their pcid, which must be registered
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tpcpoint_from_mfjson(const char *mfjson)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(mfjson, NULL);
+  return temporal_from_mfjson(mfjson, T_TPCPOINT);
+}
+
+/**
  * @ingroup meos_internal_pointcloud_inout
  * @brief Return a temporal pgpointcloud point instant from its Well-Known Text
  * (WKT) representation

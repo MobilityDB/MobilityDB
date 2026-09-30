@@ -93,3 +93,48 @@ SELECT jsonb_array_length(
   asMFJSON(tpcpatchSeq(ARRAY[:inst1, :inst2]))::jsonb -> 'values');
 
 -------------------------------------------------------------------------------
+-- tpcpatch MF-JSON round trip: the pts member states every dimension of every
+-- point of the patch, so the value reads back equal to the one written.
+-------------------------------------------------------------------------------
+
+-- The pts member is pgpointcloud's text form of the points
+SELECT asMFJSON(:inst1)::jsonb -> 'values' -> 0 -> 'pts' =
+  '[[1, 2, 3], [4, 5, 6]]'::jsonb;
+
+SELECT tpcpatchFromMFJSON(asMFJSON(:inst1)) = :inst1;
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeq(ARRAY[:inst1, :inst2]))) =
+  tpcpatchSeq(ARRAY[:inst1, :inst2]);
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeqSet(ARRAY[
+  tpcpatchSeq(ARRAY[:inst1]), tpcpatchSeq(ARRAY[:inst2])]))) =
+  tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[:inst1]), tpcpatchSeq(ARRAY[:inst2])]);
+-- The bounding box and the precision of the bounds leave the points whole
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeq(ARRAY[:inst1, :inst2]), 1, 0, 0)) =
+  tpcpatchSeq(ARRAY[:inst1, :inst2]);
+
+-- Scaled and offset integers, a double of 17 digits and the largest unsigned
+-- 16-bit intensity read back exactly, uncompressed and dimensionally compressed
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (93, 4326, 'none'), (94, 4326, 'dimensional');
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset)
+  SELECT pcid, d.* FROM (VALUES (93), (94)) AS p(pcid), (VALUES
+    (1, 'X', 'int32_t', 0.01, 1000), (2, 'Y', 'int32_t', 0.01, -500),
+    (3, 'Z', 'double', 1, 0), (4, 'Intensity', 'uint16_t', 1, 0)) AS d;
+SELECT pcid, asMFJSON(t)::jsonb -> 'values' -> 0 -> 'pts' -> 0,
+  tpcpatchFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT pcid, tpcpatch(pcpatch(pcid, ARRAY[1000.25, -499.99, 0.1, 17,
+  1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-01'::timestamptz) AS t
+  FROM (VALUES (93), (94)) AS p(pcid)) AS v
+ORDER BY pcid;
+DELETE FROM pointcloud_schemas WHERE pcid IN (93, 94);
+
+-- A document stating the bounds and not the points states no patch
+SELECT tpcpatchFromMFJSON('{"type":"MovingPCPatch","values":[{"pcid":1,'
+  '"npoints":1,"bounds":[1,1,2,2]}],"datetimes":["2024-01-01T00:00:00+00"],'
+  '"interpolation":"None"}');
+-- Every point states as many dimensions as the schema of the pcid
+SELECT tpcpatchFromMFJSON('{"type":"MovingPCPatch","values":[{"pcid":1,'
+  '"npoints":2,"bounds":[1,4,2,5],"pts":[[1,2,3],[4,5]]}],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+
+-------------------------------------------------------------------------------

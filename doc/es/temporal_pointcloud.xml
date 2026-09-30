@@ -634,15 +634,20 @@ SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 				</listitem>
 				<listitem xml:id="tpcpoint_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Devuelve la representación JSON de características móviles (MF-JSON)</para>
+					<indexterm significance="normal"><primary><varname>tpcpointFromMFJSON</varname></primary></indexterm>
+					<para>Devuelve la representación JSON de características móviles (MF-JSON) de un tpcpoint y la lee de vuelta; la ida y vuelta es sin pérdida</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpoint,options int=0,flags int=0,maxdecimaldigits int=15) → text
+tpcpointFromMFJSON(text) → tpcpoint
 </programlisting>
-					<para>Un <varname>tpcpoint</varname> se emite como <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>, y las X, Y y Z de cada instante se leen de su <varname>pcpoint</varname> mediante la caché de esquemas; un esquema que no indica ni X ni Y deja vacío el array de coordenadas de ese instante.</para>
+					<para>Un <varname>tpcpoint</varname> se emite como <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "values":[{"pcid":N,"pt":[…]}, …], "datetimes":[…]}</varname>. Las coordenadas son las X, Y y Z de cada instante leídas de su <varname>pcpoint</varname> mediante la caché de esquemas, y un esquema que no indica ni X ni Y deja vacío el array de coordenadas de ese instante. Los valores son la forma de texto de pgPointCloud de cada punto, cada dimensión de su esquema en el orden en que el esquema las indica y en la forma decimal más corta que se lee de vuelta como el mismo double, sea cual sea el valor de <varname>maxdecimaldigits</varname>. <varname>tpcpointFromMFJSON</varname> reconstruye cada punto a partir de sus valores mediante el esquema de su <varname>pcid</varname>, de modo que una dimensión entera escalada se lee de vuelta como el entero que almacena.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
-/* {"type":"MovingPCPoint","coordinates":[[1,1,1]],
+/* {"type":"MovingPCPoint","coordinates":[[1,1,1]],"values":[{"pcid":1,"pt":[1,1,1]}],
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT tpcpointFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) AS t) s;
+-- t
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpoint_asBinary">
@@ -690,7 +695,7 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para><varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>, ya que un <varname>pcpoint</varname> se imprime como el WKB hexadecimal de su forma serializada, que no tiene decimales que redondear. MF-JSON es solo de salida, ya que indica las X, Y y Z de cada punto y no las demás dimensiones de su esquema, y lleva una clave <varname>"bbox"</varname> cuando <varname>options</varname> es 1, un objeto JSON TPCBox que añade un campo <varname>"pcid"</varname> junto al array <varname>"bbox"</varname> con forma de stbox estándar.</para>
+			<para><varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>, ya que un <varname>pcpoint</varname> se imprime como el WKB hexadecimal de su forma serializada, que no tiene decimales que redondear. MF-JSON lleva una clave <varname>"bbox"</varname> cuando <varname>options</varname> es 1, un objeto JSON TPCBox que añade un campo <varname>"pcid"</varname> junto al array <varname>"bbox"</varname> con forma de stbox estándar.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_constructors">
@@ -1490,20 +1495,26 @@ SELECT tpcpatchFromEWKT('SRID=4326;' || asText(tpcpatch(pcpatch(pcpoint(1, 1, 1,
 				</listitem>
 				<listitem xml:id="tpcpatch_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Devuelve la representación JSON de características móviles (MF-JSON)</para>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromMFJSON</varname></primary></indexterm>
+					<para>Devuelve la representación JSON de características móviles (MF-JSON) de un tpcpatch y la lee de vuelta; la ida y vuelta es sin pérdida</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpatch,options int=0,flags int=0,maxdecimaldigits int=15) → text
+tpcpatchFromMFJSON(text) → tpcpatch
 </programlisting>
-					<para>Un <varname>tpcpatch</varname> se emite bajo la etiqueta de tipo <varname>"MovingPCPatch"</varname>, y cada instante indica el objeto <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>; la carga de puntos comprimida queda fuera del JSON, por lo que un ida y vuelta sin pérdida pasa por <varname>asBinary</varname> o <varname>asHexWKB</varname>.</para>
+					<para>Un <varname>tpcpatch</varname> se emite bajo la etiqueta de tipo <varname>"MovingPCPatch"</varname>, y cada instante indica el objeto <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax], "pts":[[…], …]}</varname>. Los puntos son la forma de texto de pgPointCloud del parche, cada dimensión de cada punto en el orden en que su esquema las indica y en la forma decimal más corta que se lee de vuelta como el mismo double, sea cual sea el valor de <varname>maxdecimaldigits</varname>. <varname>tpcpatchFromMFJSON</varname> reconstruye cada parche a partir de sus puntos en la compresión que indica su esquema, y rechaza un punto que no indique todas las dimensiones del esquema.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
-/* {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],
-   "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+/* {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2],
+   "pts":[[1,1,1],[2,2,2]]}],"datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT tpcpatchFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  '2001-01-01'::timestamptz) AS t) s;
+-- t
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para>Como para un <varname>tpcpoint</varname>, <varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>. MF-JSON es solo de salida, y su resumen por instante descarta la carga por punto.</para>
+			<para>Como para un <varname>tpcpoint</varname>, <varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpatch_constructors">

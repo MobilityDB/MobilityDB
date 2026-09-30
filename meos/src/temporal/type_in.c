@@ -836,6 +836,196 @@ parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
 }
 #endif /* NPOINT */
 
+#if POINTCLOUD
+/**
+ * @brief Return in the last argument the dimensions a JSON array states, as
+ * doubles appended to an array growing by the number read
+ * @return @p false when an element is not a number
+ */
+static bool
+parse_mfjson_pc_dims(json_object *dims_json, double *out, int *count)
+{
+  if (json_object_get_type(dims_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid array of dimensions in MFJSON string");
+    return false;
+  }
+  int ndims = (int) json_object_array_length(dims_json);
+  for (int i = 0; i < ndims; i++)
+  {
+    json_object *d = json_object_array_get_idx(dims_json, i);
+    if (json_object_get_type(d) != json_type_double &&
+        json_object_get_type(d) != json_type_int)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Invalid dimension value in MFJSON string");
+      return false;
+    }
+    out[(*count)++] = json_object_get_double(d);
+  }
+  return true;
+}
+
+/**
+ * @brief Return the pcid a JSON object states in its "pcid" member
+ * @return @p false when the member is absent or not an integer
+ */
+static bool
+parse_mfjson_pcid(json_object *obj, uint32_t *pcid)
+{
+  json_object *pcid_json = findMemberByName(obj, "pcid");
+  if (! pcid_json || json_object_get_type(pcid_json) != json_type_int)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find an integer 'pcid' in MFJSON string");
+    return false;
+  }
+  *pcid = (uint32_t) json_object_get_int64(pcid_json);
+  return true;
+}
+
+/**
+ * @brief Return the array of the values a JSON object states in its "values"
+ * member, checked to hold at least one element
+ */
+static json_object *
+parse_mfjson_values_array(json_object *mfjson, int *count)
+{
+  json_object *values_json = findMemberByName(mfjson, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array ||
+      json_object_array_length(values_json) < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  *count = (int) json_object_array_length(values_json);
+  return values_json;
+}
+
+/**
+ * @brief Return the pcpoints the "values" array of an MF-JSON object states,
+ * each as pgpointcloud's text form writes it, `{"pcid":1,"pt":[...]}`
+ * @details Each point is rebuilt with #pcpoint_make from every dimension its
+ * schema states, which recovers the bytes #temporal_as_mfjson writes; the
+ * schema of the pcid must be registered, as for any value decoded through it
+ */
+static Datum *
+parse_mfjson_pcpoints(json_object *mfjson, int *count)
+{
+  int n;
+  json_object *values_json = parse_mfjson_values_array(mfjson, &n);
+  if (! values_json)
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * n);
+  for (int i = 0; i < n; i++)
+  {
+    json_object *v = json_object_array_get_idx(values_json, i);
+    uint32_t pcid;
+    json_object *pt_json = findMemberByName(v, "pt");
+    if (! parse_mfjson_pcid(v, &pcid) || ! pt_json)
+    {
+      pfree_array((void **) values, i);
+      if (pt_json == NULL)
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+          "Unable to find 'pt' in MFJSON string");
+      return NULL;
+    }
+    int ndims = json_object_get_type(pt_json) == json_type_array ?
+      (int) json_object_array_length(pt_json) : 0;
+    double *dims = palloc(sizeof(double) * (ndims > 0 ? ndims : 1));
+    int k = 0;
+    Pcpoint *pt = parse_mfjson_pc_dims(pt_json, dims, &k) ?
+      pcpoint_make(pcid, dims, k) : NULL;
+    pfree(dims);
+    if (! pt)
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
+    values[i] = PointerGetDatum(pt);
+  }
+  *count = n;
+  return values;
+}
+
+/**
+ * @brief Return the pcpatches the "values" array of an MF-JSON object states,
+ * each carrying its points as pgpointcloud's text form writes them,
+ * `{"pcid":1,...,"pts":[[...],...]}`
+ * @details Each point is rebuilt with #pcpoint_make and the patch with
+ * #pcpatch_make, in the compression its schema states; the schema of the pcid
+ * must be registered, as for any value decoded through it
+ */
+static Datum *
+parse_mfjson_pcpatches(json_object *mfjson, int *count)
+{
+  int n;
+  json_object *values_json = parse_mfjson_values_array(mfjson, &n);
+  if (! values_json)
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * n);
+  for (int i = 0; i < n; i++)
+  {
+    json_object *v = json_object_array_get_idx(values_json, i);
+    uint32_t pcid;
+    json_object *pts_json = findMemberByName(v, "pts");
+    if (! parse_mfjson_pcid(v, &pcid) || ! pts_json ||
+        json_object_get_type(pts_json) != json_type_array)
+    {
+      pfree_array((void **) values, i);
+      if (! pts_json || json_object_get_type(pts_json) != json_type_array)
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+          "Unable to find a 'pts' array in MFJSON string");
+      return NULL;
+    }
+    int npts = (int) json_object_array_length(pts_json);
+    if (npts == 0)
+    {
+      pfree_array((void **) values, i);
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "A patch in MFJSON string states no points");
+      return NULL;
+    }
+    /* Each point is built as a pcpoint of the pcid, which checks that it
+     * states every dimension of the schema, no more and no less */
+    Pcpoint **points = palloc(sizeof(Pcpoint *) * npts);
+    int j = 0;
+    for (; j < npts; j++)
+    {
+      json_object *pt_json = json_object_array_get_idx(pts_json, j);
+      int ndims = json_object_get_type(pt_json) == json_type_array ?
+        (int) json_object_array_length(pt_json) : 0;
+      double *dims = palloc(sizeof(double) * (ndims > 0 ? ndims : 1));
+      int k = 0;
+      points[j] = parse_mfjson_pc_dims(pt_json, dims, &k) ?
+        pcpoint_make(pcid, dims, k) : NULL;
+      pfree(dims);
+      if (! points[j])
+        break;
+    }
+    Pcpatch *pa = j == npts ?
+      pcpatch_make((const Pcpoint **) points, npts) : NULL;
+    pfree_array((void **) points, j);
+    if (! pa)
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
+    values[i] = PointerGetDatum(pa);
+  }
+  *count = n;
+  return values;
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************/
 
 #if POSE
@@ -1200,6 +1390,12 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
+#if POINTCLOUD
+    else if (temptype == T_TPCPOINT)
+      values = parse_mfjson_pcpoints(mfjson, &nvalues);
+    else if (temptype == T_TPCPATCH)
+      values = parse_mfjson_pcpatches(mfjson, &nvalues);
+#endif /* POINTCLOUD */
 #if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
@@ -1276,6 +1472,12 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
+#if POINTCLOUD
+    else if (temptype == T_TPCPOINT)
+      values = parse_mfjson_pcpoints(mfjson, &nvalues);
+    else if (temptype == T_TPCPATCH)
+      values = parse_mfjson_pcpatches(mfjson, &nvalues);
+#endif /* POINTCLOUD */
 #if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
@@ -1585,9 +1787,11 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 #if QUADBIN
   else if (strcmp(typestr, "MovingQuadbin") == 0)
     jtemptype = T_TQUADBIN;
+#endif /* QUADBIN */
+#if S2CELL
   else if (strcmp(typestr, "MovingS2Cell") == 0)
     jtemptype = T_TS2CELL;
-#endif /* QUADBIN */
+#endif /* S2CELL */
 #if RGEO
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;
