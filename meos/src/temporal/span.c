@@ -237,6 +237,46 @@ span_upper_cmp(const Span *s1, const Span *s2)
 }
 
 /**
+ * @brief Ensure that a bound of a discrete span has a next value, which the
+ * canonical form of the span needs
+ * @details The canonical form of an integer or a date span has an inclusive
+ * lower bound and an exclusive upper bound, so an exclusive lower bound or an
+ * inclusive upper bound takes the next value as its bound. The type maximum
+ * has no next value, and the span is refused with the message PostgreSQL
+ * raises for the ranges of these types.
+ */
+static bool
+ensure_span_bound_has_next(Datum value, MeosType basetype)
+{
+  switch (basetype)
+  {
+    case T_INT4:
+      if (DatumGetInt32(value) == PG_INT32_MAX)
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "integer out of range");
+        return false;
+      }
+      return true;
+    case T_INT8:
+      if (DatumGetInt64(value) == PG_INT64_MAX)
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "bigint out of range");
+        return false;
+      }
+      return true;
+    case T_DATE:
+      if (DatumGetDateADT(value) == DATEVAL_NOEND)
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+        return false;
+      }
+      return true;
+    default:
+      return true;
+  }
+}
+
+/**
  * @brief Return the bound increased by 1 for accounting for canonicalized spans
  */
 Datum
@@ -468,11 +508,15 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   {
     if (! lower_inc)
     {
+      if (! ensure_span_bound_has_next(lower, basetype))
+        return;
       lower = span_incr_bound(lower, basetype);
       lower_inc = true;
     }
     if (upper_inc)
     {
+      if (! ensure_span_bound_has_next(upper, basetype))
+        return;
       upper = span_incr_bound(upper, basetype);
       upper_inc = false;
     }

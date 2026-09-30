@@ -159,6 +159,15 @@ SELECT bigintspan '(1, 3]';
 SELECT datespan '[2001-01-01, 2001-01-03]';
 -- [2001-01-01, 2001-01-04)
 </programlisting>
+		<para>
+			La forma normal reemplaza un límite inferior exclusivo o un límite superior inclusivo por el valor siguiente del tipo base, por lo que un rango cuyo límite es el mayor valor del tipo base y requiere ese reemplazo es rechazado, como en los rangos correspondientes de PostgreSQL:
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT span(1, 2147483647, true, false);
+-- [1, 2147483647)
+SELECT span(1, 2147483647, true, true);
+-- ERROR:  integer out of range
+</programlisting>
 
 		<para>
 			Un valor de un tipo de conjunto de rangos representa un conjunto <emphasis>ordenado</emphasis> de valores de rango <emphasis>disjuntos</emphasis>. Un valor de conjunto de rangos debe contener al menos un elemento, en cuyo caso corresponde a un único valor de rango. Ejemplos de valores conjunto de rangos son los siguientes:

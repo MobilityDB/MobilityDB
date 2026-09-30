@@ -474,6 +474,31 @@ SELECT datespan '(2001-01-01,2001-01-02]';
  [01-02-2001, 01-03-2001)
 (1 row)
 
+SELECT span(1, 2147483646, true, true);
+      span       
+-----------------
+ [1, 2147483647)
+(1 row)
+
+SELECT span(1, 2147483647, true, false);
+      span       
+-----------------
+ [1, 2147483647)
+(1 row)
+
+SELECT span(1::bigint, 9223372036854775806, true, true);
+           span           
+--------------------------
+ [1, 9223372036854775807)
+(1 row)
+
+/* Errors */
+SELECT span(1, 2147483647, true, true);
+ERROR:  integer out of range
+SELECT span(2147483647, 2147483647, false, true);
+ERROR:  integer out of range
+SELECT span(1::bigint, 9223372036854775807, true, true);
+ERROR:  bigint out of range
 SELECT expand(intspan '[1,1]', 1);
  expand 
 --------
