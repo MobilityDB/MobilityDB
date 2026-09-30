@@ -390,7 +390,7 @@ extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
 extern GSERIALIZED *geo_set_srid(const GSERIALIZED *gs, int32_t srid);
 extern int32_t geo_srid(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_transform(const GSERIALIZED *geom, int32_t srid_to);
-extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to, bool is_forward);
+extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr, int32_t srid, bool is_forward);
 
 /* Spatial processing functions */
 

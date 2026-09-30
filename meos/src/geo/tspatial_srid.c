@@ -741,30 +741,30 @@ spatialset_transform(const Set *s, int32_t srid_to)
  * @brief Return a spatial set transformed to another SRID using a
  * pipeline
  * @param[in] s Spatial set
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  * @csqlfn #Spatialset_transform_pipeline()
  */
 Set *
-spatialset_transform_pipeline(const Set *s, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   int32_t srid_from = spatialset_srid(s);
   /* Ensure the validity of the arguments */
-  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
-  if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
+  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the geo set */
-  Set *result = spatialset_transf_pj(s, srid_to, pj);
+  Set *result = spatialset_transf_pj(s, srid, pj);
   proj_destroy(pj->pj);
   pfree(pj);
   return result;
@@ -934,32 +934,32 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
  * @brief Return a spatiotemporal value transformed to another SRID using a
  * pipeline
  * @param[in] temp Spatiotemporal value
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  * @csqlfn #Tspatial_transform_pipeline()
  */
 Temporal *
-tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
 #if RGEO
   if (! ensure_not_trgeometry(temp))
     return NULL;
 #endif /* RGEO */
-  /* srid_to may legitimately be SRID_UNKNOWN for pipeline transformations:
+  /* srid may legitimately be SRID_UNKNOWN for pipeline transformations:
    * the pipeline string itself encodes the destination CRS. So unlike the
    * sibling tspatial_transform path, we do NOT call ensure_srid_known here. */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the spatiotemporal type */
-  Temporal *result = tspatial_transf_pj(temp, srid_to, pj);
+  Temporal *result = tspatial_transf_pj(temp, srid, pj);
 
   /* Clean up and return */
   proj_destroy(pj->pj); pfree(pj);

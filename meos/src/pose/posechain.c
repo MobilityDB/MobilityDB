@@ -1052,28 +1052,28 @@ posechain_transform(const PoseChain *pc, int32_t srid_to)
  * @brief Return a pose chain transformed to another SRID using a
  * transformation pipeline
  * @param[in] pc Pose chain
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID
  * @param[in] is_forward True when the transformation is applied in the
  * forward direction
  * @csqlfn #Posechain_transform_pipeline()
  */
 PoseChain *
-posechain_transform_pipeline(const PoseChain *pc, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+posechain_transform_pipeline(const PoseChain *pc, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  VALIDATE_NOT_NULL(pc, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
 
-  if (! ensure_srid_known(srid_to))
+  if (! ensure_srid_known(srid))
     return NULL;
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
-  PoseChain *result = posechain_transf_pj(pc, srid_to, pj);
+  PoseChain *result = posechain_transf_pj(pc, srid, pj);
   proj_destroy(pj->pj); pfree(pj);
   return result;
 }

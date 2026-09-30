@@ -182,7 +182,8 @@ rt_raster rt_raster_gdal_warp(
 	double *ul_xw, double *ul_yw,
 	double *grid_xw, double *grid_yw,
 	double *skew_x, double *skew_y,
-	GDALResampleAlg resample_alg, double max_err
+	GDALResampleAlg resample_alg, double max_err,
+	const char *coord_op /* MEOS */
 ) {
 	CPLErr cplerr;
 	char *dst_options[] = {"SUBCLASS=VRTWarpedDataset", NULL};
@@ -308,8 +309,11 @@ rt_raster rt_raster_gdal_warp(
 	}
 
 	/* set transform options */
-	if (arg->src.srs != NULL || arg->dst.srs != NULL) {
-		arg->transform.option.len = 2;
+	if (arg->src.srs != NULL || arg->dst.srs != NULL ||
+			coord_op != NULL /* MEOS */) {
+		/* MEOS: a coordinate operation states the transformation between the
+		 * two systems, which GDAL then applies instead of the one it derives */
+		arg->transform.option.len = coord_op ? 3 : 2;
 		arg->transform.option.item = rtalloc(sizeof(char *) * (arg->transform.option.len + 1));
 		if (NULL == arg->transform.option.item) {
 			rterror("rt_raster_gdal_warp: Could not allocation memory for transform options");
@@ -318,7 +322,7 @@ rt_raster rt_raster_gdal_warp(
 		}
 		memset(arg->transform.option.item, 0, sizeof(char *) * (arg->transform.option.len + 1));
 
-		for (i = 0; i < arg->transform.option.len; i++) {
+		for (i = 0; i < 2; i++) { /* MEOS */
 			const char *srs = i ? arg->dst.srs : arg->src.srs;
 			const char *lbl = i ? "DST_SRS=" : "SRC_SRS=";
 			size_t sz = sizeof(char) * (strlen(lbl) + 1);
@@ -331,6 +335,17 @@ rt_raster rt_raster_gdal_warp(
 			}
 			sprintf(arg->transform.option.item[i], "%s%s", lbl, srs ? srs : "");
 			RASTER_DEBUGF(4, "arg->transform.option.item[%d] = %s", i, arg->transform.option.item[i]);
+		}
+		/* MEOS */
+		if (coord_op) {
+			const char *lbl = "COORDINATE_OPERATION=";
+			arg->transform.option.item[2] = (char *) rtalloc(strlen(lbl) + strlen(coord_op) + 1);
+			if (NULL == arg->transform.option.item[2]) {
+				rterror("rt_raster_gdal_warp: Could not allocation memory for transform options");
+				_rti_warp_arg_destroy(arg);
+				return NULL;
+			}
+			sprintf(arg->transform.option.item[2], "%s%s", lbl, coord_op);
 		}
 	}
 	else

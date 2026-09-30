@@ -1824,29 +1824,29 @@ stbox_transform(const STBox *box, int32_t srid_to)
  * @brief Return a spatiotemporal box transformed to another SRID using a
  * pipeline
  * @param[in] box Spatiotemporal box
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
  * @csqlfn #Stbox_transform_pipeline()
  */
 STBox *
-stbox_transform_pipeline(const STBox *box, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+stbox_transform_pipeline(const STBox *box, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
   if (! ensure_srid_known(box->srid))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the spatiotemporal box */
-  STBox *result = stbox_transf_pj(box, srid_to, pj);
+  STBox *result = stbox_transf_pj(box, srid, pj);
 
   /* Clean up and return */
   proj_destroy(pj->pj); pfree(pj);

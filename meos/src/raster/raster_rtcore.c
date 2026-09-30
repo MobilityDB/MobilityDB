@@ -61,6 +61,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <meos_raster.h>
 #include "geo/geo_funcs.h"
 #include "raster/raquet.h"
@@ -1109,9 +1110,15 @@ raster_srs_text(int32_t srid)
  * asking only for a system keeps the pixel size the reprojection implies, and
  * a call asking only for a scale regrids the subject where it stands. A target
  * equal to the subject's own system is not a reprojection, and the reference
- * strings are then left unstated, which is what rt_core reads as a regridding
+ * strings are then left unstated, which is what rt_core reads as a regridding.
+ * A coordinate operation states the transformation between the two systems,
+ * which the warp then applies instead of the one GDAL derives from them, so a
+ * warp given one states the system of the subject always and the target
+ * system when it is known
  * @param[in] rast Raster to warp
  * @param[in] srid Target reference system, or the subject's own to keep it
+ * @param[in] coord_op Coordinate operation from the system of the subject to
+ * the target system, as a PROJ string, or NULL to let GDAL derive it
  * @param[in] scale_x,scale_y Pixel size in the units of the target system, or
  * NULL to let the warp choose it
  * @param[in] grid_x,grid_y Point of the target system a grid line of the result
@@ -1122,9 +1129,9 @@ raster_srs_text(int32_t srid)
  * @errval NULL
  */
 static Raster *
-raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
-  double *grid_x, double *grid_y, double *skew_x, double *skew_y,
-  const char *algorithm, double max_err)
+raster_warp(const Raster *rast, int32_t srid, const char *coord_op,
+  double *scale_x, double *scale_y, double *grid_x, double *grid_y,
+  double *skew_x, double *skew_y, const char *algorithm, double max_err)
 {
   GDALResampleAlg alg = GRA_NearestNeighbour;
   if (algorithm && ! raster_resample_alg(algorithm, &alg))
@@ -1142,7 +1149,8 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
 
   int32_t src_srid = raster_srid(rast);
   /* A subject standing in no reference system cannot be carried into one */
-  if (src_srid == SRID_UNKNOWN && srid != src_srid)
+  bool reproject = coord_op || srid != src_srid;
+  if (src_srid == SRID_UNKNOWN && reproject)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The raster states no SRID to reproject from");
@@ -1161,7 +1169,7 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
    * within one system states neither, which is how rt_core is told that the
    * grid alone moves */
   char *src_srs = NULL, *dst_srs = NULL;
-  if (srid != src_srid)
+  if (reproject)
   {
     src_srs = raster_srs_text(src_srid);
     if (! src_srs)
@@ -1169,17 +1177,20 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
       raster_destroy(raster);
       return NULL;
     }
-    dst_srs = raster_srs_text(srid);
-    if (! dst_srs)
+    if (srid != SRID_UNKNOWN)
     {
-      pfree(src_srs); raster_destroy(raster);
-      return NULL;
+      dst_srs = raster_srs_text(srid);
+      if (! dst_srs)
+      {
+        pfree(src_srs); raster_destroy(raster);
+        return NULL;
+      }
     }
   }
 
   rt_raster result = rt_raster_gdal_warp(raster, src_srs, dst_srs, scale_x,
     scale_y, NULL, NULL, NULL, NULL, grid_x, grid_y, skew_x, skew_y, alg,
-    max_err);
+    max_err, coord_op);
   if (src_srs) pfree(src_srs);
   if (dst_srs) pfree(dst_srs);
   raster_destroy(raster);
@@ -1224,9 +1235,218 @@ raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
   }
   /* A pixel size of 0 leaves the axis to the warp, as the PostGIS
    * RASTER_GDALWarp reads it */
-  return raster_warp(rast, srid, scale_x != 0.0 ? &scale_x : NULL,
+  return raster_warp(rast, srid, NULL, scale_x != 0.0 ? &scale_x : NULL,
     scale_y != 0.0 ? &scale_y : NULL, NULL, NULL, NULL, NULL, algorithm,
     max_err);
+}
+
+/**
+ * @brief Return true when the first axis of a spatial reference system is
+ * its latitude or its northing
+ * @details GDAL hands a coordinate operation its coordinates in the order the
+ * axes of the system are stated, which for EPSG:4326 is the latitude first
+ * @param[in] srid Spatial reference system identifier
+ */
+static bool
+raster_srid_north_first(int32_t srid)
+{
+  if (srid == SRID_UNKNOWN)
+    return false;
+  PJ_CONTEXT *ctx = meos_proj_get_context();
+  char code[MAX_SRS_LEN];
+  snprintf(code, MAX_SRS_LEN, "EPSG:%d", srid);
+  PJ *crs = proj_create(ctx, code);
+  if (! crs)
+  {
+    proj_errno_reset(NULL);
+    return false;
+  }
+  bool result = false;
+  PJ *cs = proj_crs_get_coordinate_system(ctx, crs);
+  if (cs)
+  {
+    const char *dir = NULL;
+    if (proj_cs_get_axis_info(ctx, cs, 0, NULL, NULL, &dir, NULL, NULL, NULL,
+        NULL) && dir)
+      result = (strcmp(dir, "north") == 0 || strcmp(dir, "south") == 0);
+    proj_destroy(cs);
+  }
+  proj_destroy(crs);
+  return result;
+}
+
+/**
+ * @brief Return a PROJ operation string wrapped in the conversions between the
+ * coordinates GDAL feeds and reads and the ones the operation reads and writes
+ * @details GDAL feeds the operation the coordinates of the subject in the
+ * order the axes of its system are stated and reads the result the same way,
+ * while the operation reads and writes the longitude first, in radians where
+ * it states so. PROJ does not nest pipelines, so the steps of an operation
+ * that is a pipeline are spliced between the conversions, its global options
+ * kept before the first step, and any other operation becomes the one step
+ * between them
+ * @param[in] str Operation as a PROJ string
+ * @param[in] swap_in,swap_out True when the system of the subject, respectively
+ * of the result, states its latitude or northing first
+ * @param[in] ang_in,ang_out True when the operation reads, respectively writes,
+ * angles in radians
+ * @note The string is the caller's to release with #pfree()
+ */
+static char *
+raster_coord_op_wrap(const char *str, bool swap_in, bool swap_out,
+  bool ang_in, bool ang_out)
+{
+  static const char *PIPELINE = "+proj=pipeline";
+  static const char *SWAP = " +step +proj=axisswap +order=2,1";
+  static const char *TO_RAD = " +step +proj=unitconvert +xy_in=deg +xy_out=rad";
+  static const char *TO_DEG = " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
+  const char *globals = "", *steps = str;
+  size_t nglobals = 0;
+  bool step_prefix = true;
+  if (strncmp(str, PIPELINE, strlen(PIPELINE)) == 0)
+  {
+    globals = str + strlen(PIPELINE);
+    const char *first = strstr(globals, " +step");
+    nglobals = first ? (size_t) (first - globals) : strlen(globals);
+    steps = globals + nglobals;
+    step_prefix = false;
+  }
+  size_t size = strlen(PIPELINE) + nglobals + strlen(SWAP) * 2 +
+    strlen(TO_RAD) + strlen(steps) + strlen(" +step ") + strlen(TO_DEG) + 1;
+  char *result = palloc(size);
+  snprintf(result, size, "%s%.*s%s%s%s%s%s%s", PIPELINE, (int) nglobals,
+    globals, swap_in ? SWAP : "", ang_in ? TO_RAD : "",
+    step_prefix ? " +step " : "", steps, ang_out ? TO_DEG : "",
+    swap_out ? SWAP : "");
+  return result;
+}
+
+/**
+ * @brief Return the coordinate operation a pipeline states, as a PROJ string
+ * GDAL applies in the order of the axes it feeds a warp
+ * @details The operation is read as #lwproj_from_str_pipeline reads it for a
+ * geometry: a coordinate reference system is not an operation, and the axes
+ * are put in the order a geographic information system reads them, longitude
+ * first. An inverse pipeline is the inverse operation, which GDAL then applies
+ * forward. The operation is wrapped by #raster_coord_op_wrap in the
+ * conversions between the coordinates GDAL feeds and reads, in the axis order
+ * of each system, and the ones it reads and writes, longitude first and in
+ * radians where it states so, as `ptarray_transform` converts the coordinates
+ * of a geometry around it, so the raster and the geometry read one pipeline
+ * the same way
+ * @param[in] pipelinestr Coordinate operation, as a PROJ string, a WKT or an
+ * authority code
+ * @param[in] is_forward True to apply the operation, false its inverse
+ * @param[in] src_srid,dst_srid Spatial reference systems of the subject and
+ * of the result
+ * @errval NULL
+ * @note The string is the caller's to release with #pfree()
+ */
+static char *
+raster_coord_op(const char *pipelinestr, bool is_forward, int32_t src_srid,
+  int32_t dst_srid)
+{
+  PJ_CONTEXT *ctx = meos_proj_get_context();
+  PJ *pj = proj_create(ctx, pipelinestr);
+  if (! pj)
+  {
+    proj_errno_reset(NULL);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not parse coordinate operation '%s'", pipelinestr);
+    return NULL;
+  }
+  if (proj_is_crs(pj))
+  {
+    proj_destroy(pj);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "'%s' is a coordinate reference system, not a coordinate operation",
+      pipelinestr);
+    return NULL;
+  }
+  /* Put the axes in the order a geographic information system reads them */
+  PJ *op = proj_normalize_for_visualization(ctx, pj);
+  if (op)
+    proj_destroy(pj);
+  else
+  {
+    proj_errno_reset(pj);
+    op = pj;
+  }
+  if (! is_forward)
+  {
+    PJ *inv = proj_coordoperation_create_inverse(ctx, op);
+    proj_destroy(op);
+    if (! inv)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The coordinate operation '%s' has no inverse", pipelinestr);
+      return NULL;
+    }
+    op = inv;
+  }
+  bool ang_in = proj_angular_input(op, PJ_FWD);
+  bool ang_out = proj_angular_output(op, PJ_FWD);
+  bool swap_in = raster_srid_north_first(src_srid);
+  bool swap_out = raster_srid_north_first(dst_srid);
+  bool wrap = ang_in || ang_out || swap_in || swap_out;
+  const char *str = proj_as_proj_string(ctx, op, PJ_PROJ_5, NULL);
+  char *result = NULL;
+  if (str && wrap)
+    result = raster_coord_op_wrap(str, swap_in, swap_out, ang_in, ang_out);
+  else if (str)
+    result = pstrdup(str);
+  else if (! wrap)
+  {
+    /* An operation PROJ cannot write as a string is stated as a WKT */
+    str = proj_as_wkt(ctx, op, PJ_WKT2_2019, NULL);
+    result = str ? pstrdup(str) : NULL;
+  }
+  proj_destroy(op);
+  if (! result)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The coordinate operation '%s' cannot be stated to GDAL", pipelinestr);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster stated in another spatial reference system through a
+ * coordinate operation
+ * @details Every band is carried through the operation and resampled onto the
+ * grid it implies, as #raster_transform carries it through the operation GDAL
+ * derives from the two systems, so a pipeline the derivation would choose
+ * answers as a reprojection to the same system does
+ * @param[in] rast Raster to reproject
+ * @param[in] pipelinestr Coordinate operation, as a PROJ string, a WKT or an
+ * authority code
+ * @param[in] srid Spatial reference system identifier of the result, 0 when
+ * the operation leaves it unstated
+ * @param[in] is_forward True to apply the operation, false its inverse
+ * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
+ * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
+ * Max and Min, read without regard to case
+ * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
+ * calculation
+ * @param[in] scale_x,scale_y Pixel size of the result in the units of the
+ * target system, 0 to let the warp derive it
+ * @errval NULL
+ * @csqlfn #Raster_transform_pipeline()
+ */
+Raster *
+raster_transform_pipeline(const Raster *rast, const char *pipelinestr,
+  int32_t srid, bool is_forward, const char *algorithm, double max_err,
+  double scale_x, double scale_y)
+{
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  char *coord_op = raster_coord_op(pipelinestr, is_forward, raster_srid(rast),
+    srid);
+  if (! coord_op)
+    return NULL;
+  Raster *result = raster_warp(rast, srid, coord_op,
+    scale_x != 0.0 ? &scale_x : NULL, scale_y != 0.0 ? &scale_y : NULL, NULL,
+    NULL, NULL, NULL, algorithm, max_err);
+  pfree(coord_op);
+  return result;
 }
 
 /**
@@ -1265,7 +1485,7 @@ raster_transform_raster(const Raster *rast, const Raster *alignto,
   double skew_x = raster_skew_x(alignto);
   double skew_y = raster_skew_y(alignto);
   /* A skew of 0 states no skew, as the PostGIS RASTER_GDALWarp reads it */
-  return raster_warp(rast, srid, &scale_x, &scale_y, &grid_x, &grid_y,
+  return raster_warp(rast, srid, NULL, &scale_x, &scale_y, &grid_x, &grid_y,
     skew_x != 0.0 ? &skew_x : NULL, skew_y != 0.0 ? &skew_y : NULL,
     algorithm, max_err);
 }
@@ -1301,8 +1521,8 @@ raster_rescale(const Raster *rast, double scale_x, double scale_y,
       "The pixel size of a rescaled raster cannot be zero");
     return NULL;
   }
-  return raster_warp(rast, raster_srid(rast), &scale_x, &scale_y, NULL, NULL,
-    NULL, NULL, algorithm, max_err);
+  return raster_warp(rast, raster_srid(rast), NULL, &scale_x, &scale_y, NULL,
+    NULL, NULL, NULL, algorithm, max_err);
 }
 
 /**

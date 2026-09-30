@@ -2322,29 +2322,29 @@ pose_transform(const Pose *pose, int32_t srid_to)
  * @brief Return a pose transformed to another SRID using a
  * pipeline
  * @param[in] pose Pose
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] pipelinestr Pipeline string
+ * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  * @csqlfn #Pose_transform_pipeline()
  */
 Pose *
-pose_transform_pipeline(const Pose *pose, const char *pipeline,
-  int32_t srid_to, bool is_forward)
+pose_transform_pipeline(const Pose *pose, const char *pipelinestr,
+  int32_t srid, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
-  if (! ensure_srid_known(srid_to))
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  if (! ensure_srid_known(srid))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the pose */
-  Pose *result = pose_transf_pj(pose, srid_to, pj);
+  Pose *result = pose_transf_pj(pose, srid, pj);
 
   /* Transform the pose */
   proj_destroy(pj->pj); pfree(pj);

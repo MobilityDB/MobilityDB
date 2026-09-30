@@ -178,6 +178,9 @@ extern Raster *raster_clip(const Raster *rast, const int *bands, int nbands,
   bool touched);
 extern Raster *raster_transform(const Raster *rast, int32_t srid,
   const char *algorithm, double max_err, double scale_x, double scale_y);
+extern Raster *raster_transform_pipeline(const Raster *rast,
+  const char *pipelinestr, int32_t srid, bool is_forward,
+  const char *algorithm, double max_err, double scale_x, double scale_y);
 extern Raster *raster_transform_raster(const Raster *rast,
   const Raster *alignto, const char *algorithm, double max_err);
 extern Raster *raster_rescale(const Raster *rast, double scale_x,
