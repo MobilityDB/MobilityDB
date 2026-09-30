@@ -3522,7 +3522,7 @@
 						<para><link linkend="tpcpoint_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación textual de un tpcpoint, o de un arreglo de ellos, con o sin su SRID, y convertir un tpcpoint a texto</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON)</para>
+						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname>, <varname>tpcpointFromMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON) de un tpcpoint y la lee de vuelta; la ida y vuelta es sin pérdida</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria o binaria bien conocida hexadecimal de un tpcpoint, con o sin su SRID</para>
@@ -3704,7 +3704,7 @@
 						<para><link linkend="tpcpatch_fromText"><varname>tpcpatchFromText</varname>, <varname>tpcpatchFromEWKT</varname>, <varname>tpcpatchFromBinary</varname>, <varname>tpcpatchFromEWKB</varname>, <varname>tpcpatchFromHexWKB</varname>, <varname>tpcpatchFromHexEWKB</varname></link>: Devuelve un tpcpatch a partir de su representación textual, binaria o binaria bien conocida hexadecimal, con o sin su SRID</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON)</para>
+						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname>, <varname>tpcpatchFromMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON) de un tpcpatch y la lee de vuelta; la ida y vuelta es sin pérdida</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

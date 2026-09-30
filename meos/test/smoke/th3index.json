@@ -28,6 +28,7 @@
   },
   "name_arg_map": {
     "^h3index_from_hexwkb$": {"char *": "h3hexwkb1"},
+    "^th3index_from_mfjson$": {"char *": "th3mfjson1"},
     "^th3index_in$": {"char *": "\"[8a2a1072b59ffff@2001-01-01, 8a2a1072b59ffff@2001-01-03]\""},
     "^th3indexinst_in$": {"char *": "\"8a2a1072b59ffff@2001-01-01\""},
     "^th3indexseq_in$": {"char *": "\"[8a2a1072b59ffff@2001-01-01, 8a2a1072b59ffff@2001-01-03]\""},
@@ -83,6 +84,7 @@
     "  Set *h3set1 = h3indexset_make(h3arr1, 2);",
     "  TSequence *th3seq1 = th3indexseq_make(h3arr_same1, tstzarr1, 2, true, true);",
     "  Temporal *th3index1 = (Temporal *) th3seq1;",
+    "  char *th3mfjson1 = temporal_as_mfjson(th3index1, false, 0, 15, NULL);",
     "  Temporal *th3index_nbr1 = (Temporal *) th3indexseq_make(h3arr_nbr1, tstzarr1, 2, true, true);",
     "  Temporal *th3index_edge1 = th3index_cells_to_directed_edge(th3index1, th3index_nbr1);",
     "  Temporal *th3index_vertex1 = th3index_cell_to_vertex(th3index1, 0);",
@@ -137,6 +139,7 @@
     "  free(geom1);",
     "  free(h3wkb1);",
     "  free(h3hexwkb1);",
+    "  free(th3mfjson1);",
     "  free(tstzspan1);"
   ]
 }

@@ -151,11 +151,10 @@ CREATE FUNCTION asHexEWKB(tpcpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- asMFJSON is output-only: the JSON form summarises a tpcpoint by
--- (coordinates, datetimes) without carrying the schema (pcid + dim
--- layout) needed to reconstruct the value, so a parse-back path is
--- intentionally not exposed. Use asBinary / tpcpointFromBinary or
--- asHexWKB / tpcpointFromHexWKB for round-trip.
+CREATE FUNCTION tpcpointFromMFJSON(text)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asMFJSON(tpcpoint, options integer DEFAULT 0,
     flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text

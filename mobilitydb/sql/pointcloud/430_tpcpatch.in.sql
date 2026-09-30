@@ -141,11 +141,10 @@ CREATE FUNCTION asHexEWKB(tpcpatch, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- asMFJSON is output-only: the JSON form summarises a tpcpatch by
--- (pcid, npoints, bounds) per instant without carrying the per-point
--- payload, so a parse-back path is intentionally not exposed. Use
--- asBinary / tpcpatchFromBinary or asHexWKB / tpcpatchFromHexWKB for
--- round-trip.
+CREATE FUNCTION tpcpatchFromMFJSON(text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asMFJSON(tpcpatch, options integer DEFAULT 0,
     flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text

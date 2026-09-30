@@ -1,19 +1,19 @@
 SELECT asMFJSON(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz));
-                                                     asmfjson                                                      
--------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPCPoint","coordinates":[[1,2,3]],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
+                                                                       asmfjson                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPCPoint","coordinates":[[1,2,3]],"values":[{"pcid":1,"pt":[1,2,3]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
 SELECT asMFJSON(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)]));
-                                                                                        asmfjson                                                                                         
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPCPoint","coordinates":[[1,2,3],[4,5,6]],"datetimes":["2024-01-01T00:00:00-08:00","2024-01-02T00:00:00-08:00"],"lower_inc":true,"upper_inc":true,"interpolation":"Step"}
+                                                                                                                      asmfjson                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPCPoint","coordinates":[[1,2,3],[4,5,6]],"values":[{"pcid":1,"pt":[1,2,3]},{"pcid":1,"pt":[4,5,6]}],"datetimes":["2024-01-01T00:00:00-08:00","2024-01-02T00:00:00-08:00"],"lower_inc":true,"upper_inc":true,"interpolation":"Step"}
 (1 row)
 
 SELECT asMFJSON(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), 1);
-                                                                                                                                asmfjson                                                                                                                                
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPCPoint","pcid":1,"bbox":[[1,2,3],[1,2,3]],"period":{"begin":"2024-01-01T00:00:00-08:00","end":"2024-01-01T00:00:00-08:00","lower_inc":true,"upper_inc":true},"coordinates":[[1,2,3]],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
+                                                                                                                                                 asmfjson                                                                                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPCPoint","pcid":1,"bbox":[[1,2,3],[1,2,3]],"period":{"begin":"2024-01-01T00:00:00-08:00","end":"2024-01-01T00:00:00-08:00","lower_inc":true,"upper_inc":true},"coordinates":[[1,2,3]],"values":[{"pcid":1,"pt":[1,2,3]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
 SELECT asMFJSON(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz))::jsonb ->> 'type' = 'MovingPCPoint';
@@ -119,14 +119,84 @@ SELECT jsonb_array_length(
 (1 row)
 
 SELECT asMFJSON(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz));
-                                                                    asmfjson                                                                    
-------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
+                                                                                asmfjson                                                                                
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2],"pts":[[1,1,1],[2,2,2]]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
 SELECT asMFJSON(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), 1);
-                                                                                                                                              asmfjson                                                                                                                                               
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPCPatch","pcid":1,"bbox":[[1,1,1],[2,2,2]],"period":{"begin":"2024-01-01T00:00:00-08:00","end":"2024-01-01T00:00:00-08:00","lower_inc":true,"upper_inc":true},"values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
+                                                                                                                                                          asmfjson                                                                                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPCPatch","pcid":1,"bbox":[[1,1,1],[2,2,2]],"period":{"begin":"2024-01-01T00:00:00-08:00","end":"2024-01-01T00:00:00-08:00","lower_inc":true,"upper_inc":true},"values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2],"pts":[[1,1,1],[2,2,2]]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
+SELECT asMFJSON(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 = '{"pcid": 1, "pt": [1, 2, 3]}'::jsonb;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz))) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)]))) =
+  tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeqSet(ARRAY[
+  tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)])]))) =
+  tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)])]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)]), 1, 0, 0)) =
+  tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]::float[]), '2024-01-02'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
+INSERT 0 1
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset) VALUES
+  (92, 1, 'X', 'int32_t', 0.01, 1000), (92, 2, 'Y', 'int32_t', 0.01, -500),
+  (92, 3, 'Z', 'double', 1, 0), (92, 4, 'Intensity', 'uint16_t', 1, 0);
+INSERT 0 4
+SELECT asMFJSON(tpcpoint(pcpoint(92, ARRAY[1000.25, -499.99, 0.1, 17]::float[]), '2024-01-01'::timestamptz))::jsonb -> 'values';
+                     ?column?                      
+---------------------------------------------------
+ [{"pt": [1000.25, -499.99, 0.1, 17], "pcid": 92}]
+(1 row)
+
+SELECT tpcpointFromMFJSON(asMFJSON(tpcpointSeq(ARRAY[tpcpoint(pcpoint(92, ARRAY[1000.25, -499.99, 0.1, 17]::float[]), '2024-01-01'::timestamptz), tpcpoint(pcpoint(92, ARRAY[1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-02'::timestamptz)]))) =
+  tpcpointSeq(ARRAY[tpcpoint(pcpoint(92, ARRAY[1000.25, -499.99, 0.1, 17]::float[]), '2024-01-01'::timestamptz), tpcpoint(pcpoint(92, ARRAY[1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-02'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getDim(getValue(tpcpointFromMFJSON(asMFJSON(tpcpoint(pcpoint(92, ARRAY[1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-02'::timestamptz)))), 'Z') =
+    123456.78901234568::float,
+  getDim(getValue(tpcpointFromMFJSON(asMFJSON(tpcpoint(pcpoint(92, ARRAY[1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-02'::timestamptz)))), 'Intensity');
+ ?column? | getdim 
+----------+--------
+ t        |  65535
+(1 row)
+
+DELETE FROM pointcloud_schemas WHERE pcid = 92;
+DELETE 1
+SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","coordinates":[[1,2,3]],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+ERROR:  Unable to find 'values' in MFJSON string
+SELECT tpcpointFromMFJSON('{"type":"MovingPCPoint","values":[{"pcid":1,"pt":[1,2]}],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+ERROR:  The number of coordinates must be the number of dimensions of the schema 1: 2 vs 3

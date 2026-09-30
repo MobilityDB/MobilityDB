@@ -1398,15 +1398,13 @@ def _repr_skeleton(sig: str, ret: str, sym: str) -> str:
 
 
 def _repr_mfjson_sig(t: dict, fam: dict) -> str:
-    """asMFJSON's signature: the sole per-family/per-type shape variation. `named`
-    prefixes the first arg with `temp ` (base/json/h3 do, spatial forms do not);
+    """asMFJSON's signature: the sole per-family/per-type shape variation.
     `mfjson_maxdd` (defaults to the type's `maxdd`) appends maxdecimaldigits; json is
     the one single-line form."""
-    argname = "temp " if fam.get("mfjson_named") else ""
     maxdd = t.get("mfjson_maxdd", t.get("maxdd", False))
     if fam.get("mfjson_oneline"):
-        return f"asMFJSON({argname}{t['temp']}, options integer DEFAULT 0, flags integer DEFAULT 0)"
-    sig = (f"asMFJSON({argname}{t['temp']}, options integer DEFAULT 0,\n"
+        return f"asMFJSON({t['temp']}, options integer DEFAULT 0, flags integer DEFAULT 0)"
+    sig = (f"asMFJSON({t['temp']}, options integer DEFAULT 0,\n"
            "    flags integer DEFAULT 0")
     return sig + (", maxdecimaldigits integer DEFAULT 15)" if maxdd else ")")
 

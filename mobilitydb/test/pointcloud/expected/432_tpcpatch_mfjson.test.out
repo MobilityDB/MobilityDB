@@ -117,3 +117,69 @@ SELECT jsonb_array_length(
  t
 (1 row)
 
+SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 -> 'pts' =
+  '[[1, 2, 3], [4, 5, 6]]'::jsonb;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))) = tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))) =
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeqSet(ARRAY[
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz)]), tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)])]))) =
+  tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz)]), tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)])]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcpatchFromMFJSON(asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]), 1, 0, 0)) =
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (93, 4326, 'none'), (94, 4326, 'dimensional');
+INSERT 0 2
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset)
+  SELECT pcid, d.* FROM (VALUES (93), (94)) AS p(pcid), (VALUES
+    (1, 'X', 'int32_t', 0.01, 1000), (2, 'Y', 'int32_t', 0.01, -500),
+    (3, 'Z', 'double', 1, 0), (4, 'Intensity', 'uint16_t', 1, 0)) AS d;
+INSERT 0 8
+SELECT pcid, asMFJSON(t)::jsonb -> 'values' -> 0 -> 'pts' -> 0,
+  tpcpatchFromMFJSON(asMFJSON(t)) = t
+FROM (SELECT pcid, tpcpatch(pcpatch(pcid, ARRAY[1000.25, -499.99, 0.1, 17,
+  1003.5, -497.25, 123456.78901234568, 65535]::float[]), '2024-01-01'::timestamptz) AS t
+  FROM (VALUES (93), (94)) AS p(pcid)) AS v
+ORDER BY pcid;
+ pcid |          ?column?           | ?column? 
+------+-----------------------------+----------
+   93 | [1000.25, -499.99, 0.1, 17] | t
+   94 | [1000.25, -499.99, 0.1, 17] | t
+(2 rows)
+
+DELETE FROM pointcloud_schemas WHERE pcid IN (93, 94);
+DELETE 2
+SELECT tpcpatchFromMFJSON('{"type":"MovingPCPatch","values":[{"pcid":1,'
+  '"npoints":1,"bounds":[1,1,2,2]}],"datetimes":["2024-01-01T00:00:00+00"],'
+  '"interpolation":"None"}');
+ERROR:  Unable to find a 'pts' array in MFJSON string
+SELECT tpcpatchFromMFJSON('{"type":"MovingPCPatch","values":[{"pcid":1,'
+  '"npoints":2,"bounds":[1,4,2,5],"pts":[[1,2,3],[4,5]]}],'
+  '"datetimes":["2024-01-01T00:00:00+00"],"interpolation":"None"}');
+ERROR:  The number of coordinates must be the number of dimensions of the schema 1: 2 vs 3

@@ -38,3 +38,17 @@ FROM tbl_tpcpatch_inst;
  t
 (1 row)
 
+SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpointFromMFJSON(asMFJSON(temp)) = temp)
+FROM tbl_tpcpoint;
+ count | count 
+-------+-------
+   100 |   100
+(1 row)
+
+SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpatchFromMFJSON(asMFJSON(temp)) = temp)
+FROM tbl_tpcpatch;
+ count | count 
+-------+-------
+   100 |   100
+(1 row)
+

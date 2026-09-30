@@ -56,3 +56,10 @@ SELECT bool_and(asMFJSON(inst) LIKE '%"pcid":1%' AND
 FROM tbl_tpcpatch_inst;
 
 -------------------------------------------------------------------------------
+-- MF-JSON round trip: every row reads back equal to itself
+SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpointFromMFJSON(asMFJSON(temp)) = temp)
+FROM tbl_tpcpoint;
+SELECT COUNT(*), COUNT(*) FILTER (WHERE tpcpatchFromMFJSON(asMFJSON(temp)) = temp)
+FROM tbl_tpcpatch;
+
+-------------------------------------------------------------------------------

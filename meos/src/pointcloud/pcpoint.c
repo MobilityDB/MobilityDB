@@ -610,6 +610,45 @@ pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
 }
 
 /**
+ * @brief Return every dimension of a pcpoint, in the order its schema states
+ * them, the array #pcpoint_make takes
+ * @details The values are read as #pcpoint_get_dim reads one, through
+ * pgpointcloud's own reader, so each carries its scale and offset, and setting
+ * them back recovers the stored bytes of the point. Every dimension of the
+ * layout of the schema is read, which is what pgpointcloud's text form writes
+ * @param[in] pt Point
+ * @param[out] count Number of dimensions
+ * @errval NULL
+ */
+double *
+pcpoint_dims(const Pcpoint *pt, int *count)
+{
+  assert(pt); assert(count);
+  PCSCHEMA *schema = meos_pc_schema_lookup(pt->pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pt->pcid);
+    return NULL;
+  }
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  double *result = palloc(sizeof(double) * (schema->ndims ? schema->ndims : 1));
+  for (uint32_t i = 0; i < schema->ndims; i++)
+  {
+    if (! pc_point_get_double_by_index(&pcpt, i, &result[i]))
+    {
+      pfree(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not read the dimensions of a point of pcid %u", pt->pcid);
+      return NULL;
+    }
+  }
+  *count = (int) schema->ndims;
+  return result;
+}
+
+/**
  * @ingroup meos_pointcloud_box_constructor
  * @brief Convert a pcpoint to a degenerate single-point TPCBox
  * @return Newly-palloc'd TPCBox, or @p NULL if the schema lacks the

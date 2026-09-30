@@ -484,8 +484,10 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 extern Temporal *tpcpoint_in(const char *str);
 extern char *tpcpoint_out(const Temporal *temp);
+extern Temporal *tpcpoint_from_mfjson(const char *mfjson);
 extern Temporal *tpcpatch_in(const char *str);
 extern char *tpcpatch_out(const Temporal *temp);
+extern Temporal *tpcpatch_from_mfjson(const char *mfjson);
 
 // Internal
 extern TInstant *tpcpointinst_in(const char *str);
