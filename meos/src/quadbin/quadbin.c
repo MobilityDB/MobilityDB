@@ -67,6 +67,7 @@
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
+#include "temporal/type_inout.h"
 
 /*****************************************************************************
  * Input/output
@@ -136,6 +137,82 @@ bigint_to_quadbin(int64 i)
   if (! ensure_valid_cell(Int64GetDatum(i), T_TQUADBIN))
     return (Quadbin) 0;
   return (Quadbin) i;
+}
+
+
+/*****************************************************************************
+ * WKB and HexWKB input/output
+ *
+ * A quadbin is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes,
+ * so its Well-Known Binary (WKB) is the one of an h3index: the endian flag,
+ * the SRID flag, the SRID for the extended (EWKB) variant only, then the cell
+ * id. The functions mirror #h3index_from_wkb, #h3index_from_hexwkb,
+ * #h3index_as_wkb and #h3index_as_hexwkb.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return a quadbin from its Well-Known Binary (WKB) representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Quadbin_from_wkb()
+ */
+Quadbin
+quadbin_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, (Quadbin) 0);
+  return (Quadbin) DatumGetInt64(type_from_wkb(wkb, size, T_QUADBIN));
+}
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return a quadbin from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Quadbin_from_hexwkb()
+ */
+Quadbin
+quadbin_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, (Quadbin) 0);
+  size_t size = strlen(hexwkb);
+  return (Quadbin) DatumGetInt64(type_from_hexwkb(hexwkb, size, T_QUADBIN));
+}
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a quadbin
+ * @param[in] cell Cell
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Quadbin_as_wkb()
+ */
+uint8_t *
+quadbin_as_wkb(Quadbin cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(Int64GetDatum(cell), T_QUADBIN, variant, size_out);
+}
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a quadbin
+ * @param[in] cell Cell
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Quadbin_as_hexwkb()
+ */
+char *
+quadbin_as_hexwkb(Quadbin cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(Int64GetDatum(cell), T_QUADBIN,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************

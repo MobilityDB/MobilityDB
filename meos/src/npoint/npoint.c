@@ -591,6 +591,81 @@ npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
 }
 
 /*****************************************************************************
+ * WKB and HexWKB input/output functions for network segments
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return a network segment from its Well-Known Binary (WKB)
+ * representation
+ * @details Mirrors #npoint_from_wkb
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Nsegment_from_wkb()
+ */
+Nsegment *
+nsegment_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, NULL);
+  return DatumGetNsegmentP(type_from_wkb(wkb, size, T_NSEGMENT));
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return a network segment from its ASCII hex-encoded Well-Known
+ * Binary (HexWKB) representation
+ * @details Mirrors #npoint_from_hexwkb
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Nsegment_from_hexwkb()
+ */
+Nsegment *
+nsegment_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, NULL);
+  size_t size = strlen(hexwkb);
+  return DatumGetNsegmentP(type_from_hexwkb(hexwkb, size, T_NSEGMENT));
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a network
+ * segment
+ * @details Mirrors #npoint_as_wkb
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_wkb(), #Nsegment_as_ewkb()
+ */
+uint8_t *
+nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT, variant, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a network segment
+ * @details Mirrors #npoint_as_hexwkb
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_hexwkb(), #Nsegment_as_hexewkb()
+ */
+char *
+nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
+    variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 

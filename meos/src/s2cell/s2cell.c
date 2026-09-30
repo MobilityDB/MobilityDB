@@ -78,6 +78,7 @@
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
+#include "temporal/type_inout.h"
 
 /*****************************************************************************
  * Hilbert curve orientation tables
@@ -1270,6 +1271,82 @@ char *
 s2cell_out(S2CellId cell)
 {
   return s2cell_cell_to_token(cell);
+}
+
+
+/*****************************************************************************
+ * WKB and HexWKB input/output
+ *
+ * A S2 cell is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes,
+ * so its Well-Known Binary (WKB) is the one of an h3index: the endian flag,
+ * the SRID flag, the SRID for the extended (EWKB) variant only, then the cell
+ * id. The functions mirror #h3index_from_wkb, #h3index_from_hexwkb,
+ * #h3index_as_wkb and #h3index_as_hexwkb.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_base_inout
+ * @brief Return a S2 cell from its Well-Known Binary (WKB) representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #S2cell_from_wkb()
+ */
+S2CellId
+s2cell_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, (S2CellId) 0);
+  return (S2CellId) DatumGetInt64(type_from_wkb(wkb, size, T_S2CELL));
+}
+
+/**
+ * @ingroup meos_s2cell_base_inout
+ * @brief Return a S2 cell from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #S2cell_from_hexwkb()
+ */
+S2CellId
+s2cell_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, (S2CellId) 0);
+  size_t size = strlen(hexwkb);
+  return (S2CellId) DatumGetInt64(type_from_hexwkb(hexwkb, size, T_S2CELL));
+}
+
+/**
+ * @ingroup meos_s2cell_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a S2 cell
+ * @param[in] cell Cell
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #S2cell_as_wkb()
+ */
+uint8_t *
+s2cell_as_wkb(S2CellId cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(Int64GetDatum(cell), T_S2CELL, variant, size_out);
+}
+
+/**
+ * @ingroup meos_s2cell_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a S2 cell
+ * @param[in] cell Cell
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #S2cell_as_hexwkb()
+ */
+char *
+s2cell_as_hexwkb(S2CellId cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(Int64GetDatum(cell), T_S2CELL,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************

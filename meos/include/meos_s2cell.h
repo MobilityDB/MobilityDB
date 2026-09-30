@@ -125,6 +125,10 @@ typedef uint64 S2CellId;
 
 /* Input and output functions */
 
+extern char *s2cell_as_hexwkb(S2CellId cell, uint8_t variant, size_t *size_out);
+extern uint8_t *s2cell_as_wkb(S2CellId cell, uint8_t variant, size_t *size_out);
+extern S2CellId s2cell_from_hexwkb(const char *hexwkb);
+extern S2CellId s2cell_from_wkb(const uint8_t *wkb, size_t size);
 extern S2CellId s2cell_in(const char *str);
 extern S2CellId bigint_to_s2cell(int64 i);
 extern char *s2cell_out(S2CellId cell);

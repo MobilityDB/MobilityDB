@@ -52,6 +52,11 @@
 
 /*****************************************************************************/
 
+/* Input functions */
+
+extern bool tpcbox_resolve_srid(int32_t srid, uint32_t pcid, int errcode,
+  int32_t *result);
+
 /* Validity functions */
 
 extern bool ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);

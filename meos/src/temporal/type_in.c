@@ -71,6 +71,7 @@
   #include "pointcloud/meos_schema_hook.h"
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/pcpatch.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 #if POSE
   #include <meos_pose.h>
@@ -2012,38 +2013,6 @@ cbuffer_from_wkb_state(meos_wkb_parse_state *s, bool component)
 }
 #endif /* CBUFFER */
 
-#if H3
-/**
- * @brief Read an h3index and advance the parse state forward
- * @details The endian flag was consumed by #type_from_wkb. Consume the SRID
- * flag and the optional SRID — which, if present, must be WGS84 (EPSG:4326),
- * an h3 cell being inherently geographic — then read the cell id (int8).
- */
-static Datum
-h3index_from_wkb_state(meos_wkb_parse_state *s)
-{
-  /* Read the flags; consume the SRID only when it is present */
-  uint8_t wkb_flags = byte_from_wkb_state(s);
-  if (wkb_flags & MEOS_WKB_SRIDFLAG)
-  {
-    int32_t srid = int32_from_wkb_state(s);
-    if (srid != SRID_DEFAULT)
-    {
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Only SRID %d (WGS84) is accepted for an h3index, received %d",
-        SRID_DEFAULT, srid);
-      return (Datum) 0;
-    }
-  }
-  /* Read the cell id, wire-format identical to int8, which not every integer
-   * is */
-  Datum cell = Int64GetDatum(int64_from_wkb_state(s));
-  if (! ensure_valid_cell(cell, T_TH3INDEX))
-    return (Datum) 0;
-  return cell;
-}
-#endif /* H3 */
-
 #if JSON
 /**
  * @brief Read a JSONB value and advance the parse state forward
@@ -2118,6 +2087,47 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
   if (srid != SRID_UNKNOWN)
   {
     int32_t ways_srid = npoint_srid(result);
+    if (ways_srid != SRID_UNKNOWN && ways_srid != srid)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
+        srid, ways_srid);
+      pfree(result);
+      return NULL;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Read a network segment and advance the parse state forward
+ * @details Mirrors #npoint_from_wkb_state: the flags of a network point, the
+ * optional SRID, then the route identifier and the two positions, validated
+ * by #nsegment_make as #nsegment_parse validates them
+ */
+static Nsegment *
+nsegment_from_wkb_state(meos_wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? Flags + rid + the two positions */
+  if (! wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT8_SIZE +
+      MEOS_WKB_DOUBLE_SIZE * 2))
+    return NULL;
+  /* Read the flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  npoint_flags_from_wkb_state(s, wkb_flags);
+  /* Read the SRID, if necessary */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  int64 rid = int64_from_wkb_state(s);
+  double pos1 = double_from_wkb_state(s);
+  double pos2 = double_from_wkb_state(s);
+  Nsegment *result = nsegment_make(rid, pos1, pos2);
+  if (! result)
+    return NULL;
+  /* A network segment holds no SRID: it has the one of the routes of the ways
+   * table, against which a stated SRID is checked as for a network point */
+  if (srid != SRID_UNKNOWN)
+  {
+    int32_t ways_srid = nsegment_srid(result);
     if (ways_srid != SRID_UNKNOWN && ways_srid != srid)
     {
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
@@ -2296,6 +2306,34 @@ base_cell_from_wkb_state(meos_wkb_parse_state *s, MeosType temptype)
   if (! ensure_valid_cell(cell, temptype))
     return (Datum) 0;
   return cell;
+}
+
+/**
+ * @brief Read a cell (an h3index, a quadbin or an S2 cell) and advance the
+ * parse state forward
+ * @details The endian flag was consumed by #type_from_wkb. Consume the SRID
+ * flag and the optional SRID — which, if present, must be WGS84 (EPSG:4326),
+ * the one the grid of the cell fixes — then read the cell id (int8) with
+ * #base_cell_from_wkb_state, as a temporal cell reads its values, returning
+ * its error value on an error
+ */
+static Datum
+cell_from_wkb_state(meos_wkb_parse_state *s, MeosType temptype)
+{
+  /* Read the flags; consume the SRID only when it is present */
+  uint8_t wkb_flags = byte_from_wkb_state(s);
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+  {
+    int32_t srid = int32_from_wkb_state(s);
+    if (srid != SRID_DEFAULT)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "Only SRID %d (WGS84) is accepted for the type %s, received %d",
+        SRID_DEFAULT, meostype_name(temptype_basetype(temptype)), srid);
+      return (Datum) 0;
+    }
+  }
+  return base_cell_from_wkb_state(s, temptype);
 }
 #endif /* H3 || QUADBIN || S2CELL */
 
@@ -2724,6 +2762,37 @@ stbox_from_wkb_state(meos_wkb_parse_state *s)
     xmin, xmax, ymin, ymax, zmin, zmax, s->hast ? &period : NULL);
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return a point cloud box from its WKB representation
+ * @details A TPCBox begins with a whole STBox, so its WKB is the one of that
+ * STBox, read by #stbox_from_wkb_state, followed by the pcid; the SRID the
+ * value states is reconciled with the schema of the pcid by
+ * #tpcbox_resolve_srid, as #tpcbox_parse reconciles it
+ */
+static TPCBox *
+tpcbox_from_wkb_state(meos_wkb_parse_state *s)
+{
+  STBox *box = stbox_from_wkb_state(s);
+  if (! box)
+    return NULL;
+  uint32_t pcid = (uint32_t) int32_from_wkb_state(s);
+  int32_t srid;
+  if (! tpcbox_resolve_srid(box->srid, pcid, MEOS_ERR_WKB_INPUT, &srid))
+  {
+    pfree(box);
+    return NULL;
+  }
+  TPCBox *result = tpcbox_make(MEOS_FLAGS_GET_X(box->flags),
+    MEOS_FLAGS_GET_Z(box->flags), MEOS_FLAGS_GET_T(box->flags),
+    MEOS_FLAGS_GET_GEODETIC(box->flags), srid, pcid, box->xmin, box->xmax,
+    box->ymin, box->ymax, box->zmin, box->zmax,
+    MEOS_FLAGS_GET_T(box->flags) ? &box->period : NULL);
+  pfree(box);
+  return result;
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************/
 
 /**
@@ -3083,13 +3152,17 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
     return PointerGetDatum(tbox_from_wkb_state(&s));
   if (type == T_STBOX)
     return PointerGetDatum(stbox_from_wkb_state(&s));
+#if POINTCLOUD
+  if (type == T_TPCBOX)
+    return PointerGetDatum(tpcbox_from_wkb_state(&s));
+#endif /* POINTCLOUD */
 #if CBUFFER
   if (type == T_CBUFFER)
     return PointerGetDatum(cbuffer_from_wkb_state(&s, false));
 #endif /* CBUFFER */
 #if H3
   if (type == T_H3INDEX)
-    return h3index_from_wkb_state(&s);
+    return cell_from_wkb_state(&s, T_TH3INDEX);
 #endif /* H3 */
 #if JSON
   if (type == T_JSONB)
@@ -3098,6 +3171,8 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
 #if NPOINT
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
+  if (type == T_NSEGMENT)
+    return PointerGetDatum(nsegment_from_wkb_state(&s));
 #endif /* NPOINT */
 #if POSE
   if (type == T_POSE)
@@ -3105,10 +3180,18 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_POSECHAIN)
     return PointerGetDatum(posechain_from_wkb_state(&s));
 #endif /* POSE */
+#if QUADBIN
+  if (type == T_QUADBIN)
+    return cell_from_wkb_state(&s, T_TQUADBIN);
+#endif /* QUADBIN */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_from_wkb_state(&s);
 #endif /* RASTER */
+#if S2CELL
+  if (type == T_S2CELL)
+    return cell_from_wkb_state(&s, T_TS2CELL);
+#endif /* S2CELL */
   if (temporal_type(type))
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
