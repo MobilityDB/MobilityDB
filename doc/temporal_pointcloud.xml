@@ -251,6 +251,43 @@ SELECT numValues(set(ARRAY[pcpoint(1, 10.0, 20.0, 30.0),
 
 		<para>Carrying the <varname>pcid</varname> through bounding-box arithmetic guarantees that bounding-box pruning never drops a row whose schema differs from the query's schema, and never returns a hit across mismatched schemas.</para>
 
+		<sect2 xml:id="tpcbox_inout">
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a point cloud box</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asBinary(tpcbox,endian text='') → bytea
+asHexWKB(tpcbox,endian text='') → text
+</programlisting>
+					<para>The result is the representation of the <varname>stbox</varname> the box spans followed by its <varname>pcid</varname>, encoded using either the little-endian (NDR) or the big-endian (XDR) encoding, the encoding of the machine when none is specified. As for an <varname>stbox</varname>, the SRID is always written.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 1));
+-- 0101000000000000000000000000000024400000000000000000000000000000244001000000
+SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
+-- 0041000010E6000000000000000040240000000000000000000000000000402400000000000000000005
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromBinary">
+					<indexterm significance="normal"><primary><varname>tpcboxFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcboxFromHexWKB</varname></primary></indexterm>
+					<para>Input of a point cloud box from the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromBinary(bytea) → tpcbox
+tpcboxFromHexWKB(text) → tpcbox
+</programlisting>
+					<para>The SRID the input states must be the one the schema of its <varname>pcid</varname> states, when that schema states one.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
+-- ERROR:  Could not parse tpcbox value: The value states SRID 3857 and the schema of pcid 5 states SRID 4326
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcbox_constructors">
 			<title>Constructors</title>
 			<itemizedlist>

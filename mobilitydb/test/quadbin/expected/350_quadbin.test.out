@@ -41,6 +41,69 @@ SELECT quadbin '0x480fffffffffffff' = quadbin '480fffffffffffff';
  t
 (1 row)
 
+SELECT asBinary(quadbin '48427fffffffffff');
+        asbinary        
+------------------------
+ \x0100ffffffffff7f4248
+(1 row)
+
+SELECT asBinary(quadbin '48427fffffffffff', 'XDR');
+        asbinary        
+------------------------
+ \x000048427fffffffffff
+(1 row)
+
+SELECT asHexWKB(quadbin '48427fffffffffff');
+       ashexwkb       
+----------------------
+ 0100FFFFFFFFFF7F4248
+(1 row)
+
+SELECT asHexWKB(quadbin '48427fffffffffff', 'XDR');
+       ashexwkb       
+----------------------
+ 000048427FFFFFFFFFFF
+(1 row)
+
+SELECT quadbinFromBinary(asBinary(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinFromBinary(asBinary(quadbin '480fffffffffffff', 'XDR'))
+       = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinFromHexWKB(asHexWKB(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
+       = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
+ quadbinfromhexwkb 
+-------------------
+ 48427fffffffffff
+(1 row)
+
+/* Errors */
+SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
+ERROR:  Only SRID 4326 (WGS84) is accepted for the type quadbin, received 3857
+SELECT quadbinFromHexWKB('01003930000000000000');
+ERROR:  The value 12345 does not encode a valid quadbin index
 SELECT quadbin '480fffffffffffff' = quadbin '480fffffffffffff';
  ?column? 
 ----------

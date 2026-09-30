@@ -92,6 +92,38 @@ CREATE TYPE quadbin (
   storage = plain
 );
 
+-- GENERATED-REPRESENTATIONS-BEGIN quadbin_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
+/******************************************************************************
+ * Well-Known Binary representations
+ *
+ * A quadbin is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes,
+ * so these round-trip a cell through a portable byte string with no spatial
+ * extension involved, as the sibling h3index cell does.
+ ******************************************************************************/
+
+CREATE FUNCTION quadbinFromBinary(bytea)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Quadbin_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION quadbinFromHexWKB(text)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Quadbin_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(quadbin, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Quadbin_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(quadbin, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Quadbin_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END quadbin_base
+
 /******************************************************************************
  * Casts to / from bigint
  *

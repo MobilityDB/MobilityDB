@@ -63,7 +63,6 @@ mobilitydb/sql/npoint/310_tnpoint_routeops.in.sql
 mobilitydb/sql/npoint/311_tnpoint_gin.in.sql
 mobilitydb/sql/npoint/312_tnpoint_distance.in.sql
 mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql
-mobilitydb/sql/pointcloud/410_tpcbox.in.sql
 mobilitydb/sql/pointcloud/436_tpc_topops.in.sql
 mobilitydb/sql/pointcloud/437_tpc_posops.in.sql
 mobilitydb/sql/pointcloud/438_tpc_distance.in.sql
@@ -79,7 +78,6 @@ mobilitydb/sql/pose/112_tpose_spatialrels.in.sql
 mobilitydb/sql/pose/117_tpose_analytics.in.sql
 mobilitydb/sql/pose/120_geopose_frames.in.sql
 mobilitydb/sql/posechain/555_tposechain_spatialfuncs.in.sql
-mobilitydb/sql/quadbin/350_quadbin.in.sql
 mobilitydb/sql/quadbin/352_quadbin_ops.in.sql
 mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/156_trgeo_spatialfuncs.in.sql
@@ -89,7 +87,6 @@ mobilitydb/sql/rgeo/166_trgeo_similarity.in.sql
 mobilitydb/sql/rgeo/170_trgeo_spatialrels.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
 mobilitydb/sql/rgeo/176_trgeo_vclip.in.sql
-mobilitydb/sql/s2cell/600_s2cell.in.sql
 mobilitydb/sql/s2cell/602_s2cell_ops.in.sql
 mobilitydb/sql/s2cell/605_ts2cell_spatialfuncs.in.sql
 mobilitydb/sql/temporal/019_geo_constructors.in.sql

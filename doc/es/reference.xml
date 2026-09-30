@@ -1820,6 +1820,12 @@
 					<listitem>
 						<para><link linkend="npointFromBinary"><varname>npointFromBinary</varname>, <varname>npointFromEWKB</varname>, <varname>npointFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="nsegment_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) de un segmento de red</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="nsegmentFromBinary"><varname>nsegmentFromBinary</varname>, <varname>nsegmentFromEWKB</varname>, <varname>nsegmentFromHexWKB</varname>, <varname>nsegmentFromHexEWKB</varname></link>: Entrada de un segmento de red desde la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -2885,6 +2891,12 @@
 					<para><link linkend="tcell_frombinary"><varname>tcellFromText</varname>, <varname>tcellFromEWKT</varname>, <varname>tcellFromBinary</varname>, <varname>tcellFromEWKB</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromHexEWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruir una celda temporal a partir de su representación textual, binaria, hexadecimal o MF-JSON</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="cell_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB) de una celda</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="cellFromBinary"><varname>h3indexFromBinary</varname>, <varname>h3indexFromHexWKB</varname>, <varname>quadbinFromBinary</varname>, <varname>quadbinFromHexWKB</varname>, <varname>s2cellFromBinary</varname>, <varname>s2cellFromHexWKB</varname></link>: Entrada de una celda desde la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
@@ -3410,6 +3422,17 @@
 		</sect2>
 		<sect2>
 			<title>Cajas delimitadoras de nubes de puntos</title>
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB) de una caja de nube de puntos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromBinary"><varname>tpcboxFromBinary</varname>, <varname>tpcboxFromHexWKB</varname></link>: Entrada de una caja de nube de puntos desde la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 			<sect3>
 				<title>Constructores</title>
 				<itemizedlist>

@@ -160,6 +160,64 @@ SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 
 SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
+SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
+                        asbinary                        
+--------------------------------------------------------
+ \x01010100000000000000000000000000e03f666666666666e63f
+(1 row)
+
+SELECT asEWKB(nsegment 'NSegment(1,0.5,0.7)');
+                             asewkb                             
+----------------------------------------------------------------
+ \x01412c1600000100000000000000000000000000e03f666666666666e63f
+(1 row)
+
+SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
+                       ashexwkb                       
+------------------------------------------------------
+ 01010100000000000000000000000000E03F666666666666E63F
+(1 row)
+
+SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)');
+                          ashexewkb                           
+--------------------------------------------------------------
+ 01412C1600000100000000000000000000000000E03F666666666666E63F
+(1 row)
+
+SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
+                          ashexewkb                           
+--------------------------------------------------------------
+ 00410000162C00000000000000013FE00000000000003FE6666666666666
+(1 row)
+
+SELECT nsegmentFromBinary(asBinary(nsegment 'NSegment(1,0.5,0.7)'));
+ nsegmentfrombinary  
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegmentFromEWKB(asEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'));
+  nsegmentfromewkb   
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegmentFromHexWKB(asHexWKB(nsegment 'NSegment(1,0.5,0.7)'));
+ nsegmentfromhexwkb  
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
+ nsegmentfromhexewkb 
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
+SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
+ERROR:  There is no route with gid value 1000 in table ways
 SELECT npoint(1, 0.5);
     npoint     
 ---------------

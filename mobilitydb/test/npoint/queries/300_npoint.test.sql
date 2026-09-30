@@ -75,6 +75,21 @@ SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 -- An SRID other than the one of the network is refused
 SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
 
+SELECT asBinary(nsegment 'NSegment(1,0.5,0.7)');
+SELECT asEWKB(nsegment 'NSegment(1,0.5,0.7)');
+SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
+SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)');
+SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
+
+SELECT nsegmentFromBinary(asBinary(nsegment 'NSegment(1,0.5,0.7)'));
+SELECT nsegmentFromEWKB(asEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'));
+SELECT nsegmentFromHexWKB(asHexWKB(nsegment 'NSegment(1,0.5,0.7)'));
+SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
+-- An SRID other than the one of the network is refused, and so is a route the
+-- network lacks
+SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
+SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------

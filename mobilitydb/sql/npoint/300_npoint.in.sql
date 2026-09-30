@@ -170,6 +170,59 @@ CREATE FUNCTION asHexEWKB(npoint, endian text DEFAULT '')
 
 -- GENERATED-REPRESENTATIONS-END npoint_base
 
+-- GENERATED-REPRESENTATIONS-BEGIN nsegment_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
+/******************************************************************************
+ * Input/output of network segments in (E)WKB and HexWKB representation
+ *
+ * A network segment carries the SRID of the ways table, as a network point
+ * does, which the E forms write.
+ ******************************************************************************/
+
+CREATE FUNCTION nsegmentFromBinary(bytea)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION nsegmentFromEWKB(bytea)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION nsegmentFromHexWKB(text)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION nsegmentFromHexEWKB(text)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION asBinary(nsegment, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Nsegment_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKB(nsegment, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Nsegment_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(nsegment, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Nsegment_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(nsegment, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Nsegment_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END nsegment_base
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

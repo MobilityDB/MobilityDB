@@ -73,6 +73,27 @@ INSERT INTO tbl_s2cell_assign VALUES (42::bigint);
 DROP TABLE tbl_s2cell_assign;
 
 -------------------------------------------------------------------------------
+-- (Hex)WKB round trip
+--
+-- The base WKB carries no SRID: the WGS84 (4326) the grid fixes is implied,
+-- as for an h3index. An EWKB stating 4326 is read, one stating another SRID
+-- is refused, and so is an integer that encodes no cell.
+-------------------------------------------------------------------------------
+
+SELECT asBinary(s2cell '47c3c444c');
+SELECT asBinary(s2cell '47c3c444c', 'XDR');
+SELECT asHexWKB(s2cell '47c3c444c');
+SELECT asHexWKB(s2cell '47c3c444c', 'XDR');
+SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
+SELECT s2cellFromBinary(asBinary(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
+SELECT s2cellFromHexWKB(asHexWKB(s2cell '47c3c444c')) = s2cell '47c3c444c';
+SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
+SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
+/* Errors */
+SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
+SELECT s2cellFromHexWKB('01000000000000000000');
+
+-------------------------------------------------------------------------------
 -- Comparison operators
 --
 -- The order is the order of the identifier, which follows the Hilbert curve.
