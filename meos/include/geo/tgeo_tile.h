@@ -120,6 +120,15 @@ extern STBox *stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool hasx, bool hast);
 
+extern STboxGridState *stbox_space_time_tile_init(const STBox *bounds,
+  double xsize, double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin, bool border_inc,
+  int *ntiles);
+extern STboxGridState *tgeo_space_time_split_init(const Temporal *temp,
+  double xsize, double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix,
+  bool border_inc, int *ntiles);
+
 /*****************************************************************************/
 
 #endif

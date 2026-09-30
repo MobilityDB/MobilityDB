@@ -431,7 +431,9 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 {
   assert(box); assert(xsize > 0 || duration);
   assert(xsize <= 0 || (MEOS_FLAGS_GET_X(box->flags) && ysize > 0));
-  /* When zsize is greater than 0, the box must have Z dimension */
+  /* A spatial grid over a box with Z divides its Z, and #grid_sizes_resolve
+   * gives a zsize to a box with Z alone */
+  assert(xsize <= 0 || ! MEOS_FLAGS_GET_Z(box->flags) || zsize > 0);
   assert(zsize <= 0 || MEOS_FLAGS_GET_Z(box->flags));
   /* When the interval is not NULL, the box must have T dimension */
   assert(! duration || MEOS_FLAGS_GET_T(box->flags));
@@ -468,20 +470,15 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     /* If there is Z dimension */
     if (MEOS_FLAGS_GET_Z(box->flags))
     {
-      if (zsize > 0)
-      {
-        state->hasz = true;
-        state->zsize = zsize;
-        state->box.zmin = float_get_bin(box->zmin, zsize, sorigin.z);
-        state->box.zmax = float_get_bin(box->zmax, zsize, sorigin.z);
-        state->max_coords[dim] = tile_dim_count(box->zmin, box->zmax,
-          state->box.zmin, state->box.zmax, zsize, border_inc);
-        state->ntiles *= state->max_coords[dim];
-        state->z = state->box.zmin;
-        dim++;
-      }
-      else
-        MEOS_FLAGS_SET_Z(state->box.flags, false);
+      state->hasz = true;
+      state->zsize = zsize;
+      state->box.zmin = float_get_bin(box->zmin, zsize, sorigin.z);
+      state->box.zmax = float_get_bin(box->zmax, zsize, sorigin.z);
+      state->max_coords[dim] = tile_dim_count(box->zmin, box->zmax,
+        state->box.zmin, state->box.zmax, zsize, border_inc);
+      state->ntiles *= state->max_coords[dim];
+      state->z = state->box.zmin;
+      dim++;
     }
     /* Set X dimension */
     MEOS_FLAGS_SET_X(state->box.flags, true);
@@ -699,25 +696,277 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 }
 
 /**
- * @brief Ensure that at least one dimension is given for tiling a
- * spatiotemporal box
+ * @brief Ensure that a grid size is a finite number that is not negative
+ * @details The size check #ensure_positive_duration states for the time
+ * dimension, stated for a spatial one, whose 0 is a size left out
+ * @param[in] size Size
+ * @param[in] name Name of the argument, for the message
  */
 static bool
-ensure_one_tile_dimension(double xsize, const Interval *duration)
+ensure_valid_grid_size(double size, const char *name)
 {
-  if (xsize > 0 || duration)
+  if (isfinite(size) && size >= 0)
     return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-    "At least one of the arguments xsize or duration must be given");
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The argument %s must be a finite number that is not negative", name);
   return false;
+}
+
+/**
+ * @brief Ensure the validity of the sizes of a spatiotemporal grid
+ * @details An `xsize` of 0 lays no spatial grid, and a grid needs at least one
+ * dimension, so a `duration` must then be given. A `ysize` or `zsize` of 0 is
+ * a size the caller leaves out, which #grid_sizes_resolve reads as `xsize`
+ * @param[in] xsize,ysize,zsize Size of the spatial dimensions
+ * @param[in] duration Size of the time dimension, may be `NULL`
+ */
+static bool
+ensure_valid_grid_sizes(double xsize, double ysize, double zsize,
+  const Interval *duration)
+{
+  if (! ensure_valid_grid_size(xsize, "xsize") ||
+      ! ensure_valid_grid_size(ysize, "ysize") ||
+      ! ensure_valid_grid_size(zsize, "zsize"))
+    return false;
+  if (xsize == 0 && ! duration)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "At least one of the arguments xsize or duration must be given");
+    return false;
+  }
+  if (duration && ! ensure_positive_duration(duration))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure that the origin of a spatial grid is a point that is not
+ * empty
+ * @param[in] sorigin Origin
+ */
+static bool
+ensure_valid_grid_origin_point(const GSERIALIZED *sorigin)
+{
+  VALIDATE_NOT_NULL(sorigin, false);
+  return ensure_not_empty(sorigin) && ensure_point_type(sorigin);
+}
+
+/**
+ * @brief Ensure that the origin of a spatial grid fits the value the grid is
+ * laid over
+ * @details The checks #ensure_valid_stbox_geo states for a geometry laid
+ * against a box, stated for the point placing a grid: the origin states the
+ * SRID of the value or none, and a value with Z needs an origin with Z to
+ * place the grid along it; the Z of an origin laid over a value without Z is
+ * not read
+ * @param[in] sorigin Origin, a point that is not empty
+ * @param[in] srid SRID of the value
+ * @param[in] hasz True when the value has Z
+ */
+static bool
+ensure_valid_grid_origin(const GSERIALIZED *sorigin, int32_t srid, bool hasz)
+{
+  int32_t gs_srid = gserialized_get_srid(sorigin);
+  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+    return false;
+  if (hasz && ! ensure_has_Z_geo(sorigin))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a spatiotemporal value and the grid laid over
+ * it
+ * @details The pair validator of a value and its grid, as
+ * #ensure_valid_tspatial_geo is that of a value and a geometry
+ * @param[in] temp Temporal value
+ * @param[in] xsize,ysize,zsize Size of the spatial dimensions
+ * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] sorigin Origin of the spatial dimensions, read when `xsize` is
+ * not 0
+ */
+static bool
+ensure_valid_tspatial_grid(const Temporal *temp, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin)
+{
+  VALIDATE_TSPATIAL(temp, false);
+  if (! ensure_valid_grid_sizes(xsize, ysize, zsize, duration) ||
+      (xsize > 0 &&
+        (! ensure_valid_grid_origin_point(sorigin) ||
+         /* The temporal value states its geodetic flag in the MEOS flags and
+          * the origin states it in the PostGIS ones, which keep it in another
+          * bit, so the two are read by the function that takes a value of
+          * each kind */
+         ! ensure_same_geodetic_tspatial_geo(temp, sorigin))) ||
+      /* Generic 3D geometries cannot be tiled */
+      (tgeo_type(temp->temptype) &&
+        ! ensure_has_not_Z(temp->temptype, temp->flags)) ||
+      (xsize > 0 && ! ensure_valid_grid_origin(sorigin, tspatial_srid(temp),
+        MEOS_FLAGS_GET_Z(temp->flags))))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a spatiotemporal box and the grid laid over it
+ * @details The pair validator of a box and its grid, as
+ * #ensure_valid_stbox_geo is that of a box and a geometry
+ * @param[in] box Spatiotemporal box
+ * @param[in] xsize,ysize,zsize Size of the spatial dimensions
+ * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] sorigin Origin of the spatial dimensions, may be `NULL` for the
+ * point at the origin of the coordinates
+ */
+static bool
+ensure_valid_stbox_grid(const STBox *box, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin)
+{
+  VALIDATE_NOT_NULL(box, false);
+  if (! ensure_valid_grid_sizes(xsize, ysize, zsize, duration) ||
+      (xsize > 0 &&
+        (! ensure_has_X(T_STBOX, box->flags) ||
+         ! ensure_not_geodetic(box->flags) ||
+         (sorigin &&
+           (! ensure_valid_grid_origin_point(sorigin) ||
+            (MEOS_FLAGS_GET_Z(box->flags) &&
+              ! ensure_same_spatial_dimensionality_stbox_geo(box, sorigin)) ||
+            ! ensure_valid_grid_origin(sorigin, box->srid, false))))) ||
+      (duration && ! ensure_has_T(T_STBOX, box->flags)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a point and the grid whose tile holding it is
+ * asked for
+ * @details The pair validator of a point and its grid, as
+ * #ensure_valid_stbox_geo is that of a box and a geometry
+ * @param[in] point Point, read when `xsize` is not 0
+ * @param[in] xsize,ysize,zsize Size of the spatial dimensions
+ * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] sorigin Origin of the spatial dimensions, read when `xsize` is
+ * not 0
+ */
+static bool
+ensure_valid_geo_grid(const GSERIALIZED *point, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin)
+{
+  if (xsize > 0)
+  {
+    VALIDATE_NOT_NULL(point, false);
+    if (! ensure_point_type(point))
+      return false;
+  }
+  if (! ensure_valid_grid_sizes(xsize, ysize, zsize, duration) ||
+      (xsize > 0 &&
+        (! ensure_valid_grid_origin_point(sorigin) ||
+         ! ensure_valid_grid_origin(sorigin, gserialized_get_srid(point),
+           (bool) FLAGS_GET_Z(point->gflags)))))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Resolve the sizes of a spatial grid a caller leaves out
+ * @details A `ysize` or `zsize` of 0 takes `xsize`. A grid divides the
+ * dimensions of the value it is laid over, so `zsize` is read only for a
+ * value with Z and is 0 otherwise, the reading #stbox_tile_state_make gives a
+ * box without Z. The sizes are those #ensure_valid_grid_sizes accepts
+ * @param[in] xsize Size of the X dimension, 0 for no spatial grid
+ * @param[in,out] ysize,zsize Size of the Y and Z dimensions
+ * @param[in] hasz True when the value has Z
+ */
+static void
+grid_sizes_resolve(double xsize, double *ysize, double *zsize, bool hasz)
+{
+  assert(ysize); assert(zsize);
+  assert(xsize >= 0 && *ysize >= 0 && *zsize >= 0);
+  if (xsize == 0)
+  {
+    *ysize = *zsize = 0;
+    return;
+  }
+  if (*ysize == 0)
+    *ysize = xsize;
+  *zsize = ! hasz ? 0 : (*zsize == 0 ? xsize : *zsize);
+  return;
+}
+
+/**
+ * @brief Read the origin of a spatial grid as the point the grid state
+ * places its tiles from
+ * @details An origin without Z places the Z of the grid at 0, and a missing
+ * origin is the point at the origin of the coordinates. The grid reads the Z
+ * of the origin only over a value with Z, as #stbox_tile_state_make reads it
+ * @param[in] sorigin Origin validated by #ensure_valid_grid_origin, may be
+ * `NULL`
+ * @param[out] pt Point
+ */
+static void
+grid_origin_point(const GSERIALIZED *sorigin, POINT3DZ *pt)
+{
+  assert(pt);
+  memset(pt, 0, sizeof(POINT3DZ));
+  if (! sorigin)
+    return;
+  if (FLAGS_GET_Z(sorigin->gflags))
+  {
+    const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+    pt->x = p3d->x;
+    pt->y = p3d->y;
+    pt->z = p3d->z;
+  }
+  else
+  {
+    const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
+    pt->x = p2d->x;
+    pt->y = p2d->y;
+  }
+  return;
+}
+
+/**
+ * @brief Set the state with a spatiotemporal box and a space and possibly
+ * time grid for obtaining its tiles
+ * @details The arguments are validated and the sizes left out resolved here,
+ * once for every function laying a grid over a box, as
+ * #tbox_value_time_tile_init does for a temporal box
+ * @param[in] bounds Bounds
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a box with Z
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[out] ntiles Number of tiles
+ */
+STboxGridState *
+stbox_space_time_tile_init(const STBox *bounds, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin,
+  TimestampTz torigin, bool border_inc, int *ntiles)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(ntiles, NULL);
+  *ntiles = 0;
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_grid(bounds, xsize, ysize, zsize, duration,
+        sorigin))
+    return NULL;
+  grid_sizes_resolve(xsize, &ysize, &zsize, MEOS_FLAGS_GET_Z(bounds->flags));
+  POINT3DZ pt;
+  grid_origin_point(sorigin, &pt);
+  STboxGridState *result = stbox_tile_state_make(NULL, bounds, xsize, ysize,
+    zsize, duration, pt, torigin, border_inc);
+  *ntiles = result->ntiles;
+  return result;
 }
 
 /**
  * @ingroup meos_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @param[in] bounds Bounds
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension, may be
- * zero for time tiles
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
@@ -731,60 +980,15 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  /* Ensure the validity of the arguments
-   * Since we pass by default Point(0 0 0) as origin independently of the input
-   * STBox, we test the same spatial dimensionality only for STBox Z */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(bounds, NULL);
-  if (! ensure_one_tile_dimension(xsize, duration) ||
-      ! ensure_has_X(T_STBOX, bounds->flags) ||
-      ! ensure_not_geodetic(bounds->flags) ||
-      ! ensure_not_negative_datum(Float8GetDatum(xsize), T_FLOAT8) ||
-      ! ensure_not_negative_datum(Float8GetDatum(ysize), T_FLOAT8) ||
-      (sorigin && 
-        (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
-      (MEOS_FLAGS_GET_Z(bounds->flags) &&
-        (! ensure_not_negative_datum(Float8GetDatum(zsize), T_FLOAT8) ||
-         (sorigin &&
-           ! ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin)))) ||
-      (duration &&
-        (! ensure_has_T(T_STBOX, bounds->flags) ||
-         ! ensure_positive_duration(duration))))
-      return NULL;
-  if (sorigin)
-  {    
-    int32_t srid = bounds->srid;
-    int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
-      return NULL;
-  }
-
-  POINT3DZ pt;
-  memset(&pt, 0, sizeof(POINT3DZ));
-  if (sorigin)
-  {
-    if (FLAGS_GET_Z(sorigin->gflags))
-    {
-      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-      pt.x = p3d->x;
-      pt.y = p3d->y;
-      pt.z = p3d->z;
-    }
-    else
-    {
-      /* Initialize to 0 the Z dimension if it is missing */
-      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-      /* Since when zsize is not given we pass by default xsize, if the box does
-       * not have Z dimension we set zsize to 0 */
-      zsize = 0;
-    }
-  }
-
-  STboxGridState *state = stbox_tile_state_make(NULL, bounds, xsize, ysize,
-    zsize, duration, pt, torigin, border_inc);
+  int ntiles;
+  STboxGridState *state = stbox_space_time_tile_init(bounds, xsize, ysize,
+    zsize, duration, sorigin, torigin, border_inc, &ntiles);
+  if (! state)
+    return NULL;
   bool hasx = MEOS_FLAGS_GET_X(state->box.flags);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
@@ -812,7 +1016,8 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
  * @ingroup meos_geo_tile
  * @brief Return the spatial grid of a spatiotemporal box
  * @param[in] bounds Bounds
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] sorigin Origin for the space dimension
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
@@ -862,31 +1067,18 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool hasx, bool hast)
 {
-  /* Ensure the validity of the arguments */
-  if (hasx)
-  {
-    VALIDATE_NOT_NULL(point, NULL); VALIDATE_NOT_NULL(sorigin, NULL);
-  }
-  if (hast)
-    VALIDATE_NOT_NULL(duration, NULL);
-  if (hasx && (
-        ! ensure_point_type(point) ||
-        ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
-        ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
-        ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
-        ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin)))
-    return NULL;
-  if (hast && ! ensure_positive_duration(duration))
-    return NULL;
+  /* The external functions validated the arguments and resolved the sizes
+   * (#ensure_valid_geo_grid, #grid_sizes_resolve) */
+  assert(! hasx || (point && sorigin && xsize > 0 && ysize > 0));
+  assert(! hasx || ! FLAGS_GET_Z(point->gflags) ||
+    (zsize > 0 && FLAGS_GET_Z(sorigin->gflags)));
+  assert(! hast || duration);
 
   /* Initialize to 0 missing dimensions */
   double xmin = 0, ymin = 0, zmin = 0;
   bool hasz = false;
   int64 tunits = hast ? interval_units(duration) : 0;
   int32_t srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
-  int32 gs_srid = hasx ? gserialized_get_srid(sorigin) : SRID_UNKNOWN;
-  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
-    return NULL;
   POINT3DZ pt, ptorig;
   if (hasx)
   {
@@ -895,8 +1087,6 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
     hasz = (bool) FLAGS_GET_Z(point->gflags);
     if (hasz)
     {
-      if (! ensure_has_Z_geo(sorigin))
-        return NULL;
       const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
       pt.x = p1->x;
       pt.y = p1->y;
@@ -917,7 +1107,8 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
     }
     xmin = float_get_bin(pt.x, xsize, ptorig.x);
     ymin = float_get_bin(pt.y, ysize, ptorig.y);
-    zmin = float_get_bin(pt.z, zsize, ptorig.z);
+    if (hasz)
+      zmin = float_get_bin(pt.z, zsize, ptorig.z);
   }
   TimestampTz tmin = hast ? timestamptz_bin_start(t, tunits, torigin) : 0;
   STBox *result = palloc0(sizeof(STBox));
@@ -932,6 +1123,8 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
 /**
  * @ingroup meos_geo_tile
  * @brief Return a tile in the spatiotemporal grid of a spatiotemporal box
+ * @details A `ysize` or `zsize` of 0 takes `xsize`, and `zsize` is read only
+ * for a point with Z, as #stbox_space_time_tiles reads them
  * @param[in] point Point
  * @param[in] t Timestamp
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
@@ -945,6 +1138,15 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_valid_geo_grid(point, xsize, ysize, zsize, duration, sorigin))
+    return NULL;
+  /* An empty point lies in no tile, as #geo_to_stbox gives it no box */
+  if (gserialized_is_empty(point))
+    return NULL;
+  grid_sizes_resolve(xsize, &ysize, &zsize, (bool) FLAGS_GET_Z(point->gflags));
   return stbox_space_time_tile(point, t, xsize, ysize, zsize, duration,
     sorigin, torigin, true, true);
 }
@@ -952,6 +1154,8 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
 /**
  * @ingroup meos_geo_tile
  * @brief Return a tile in the spatial grid of a spatiotemporal box
+ * @details A `ysize` or `zsize` of 0 takes `xsize`, and `zsize` is read only
+ * for a point with Z, as #stbox_get_space_time_tile reads them
  * @param[in] point Point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] sorigin Origin for the space dimension
@@ -961,6 +1165,14 @@ STBox *
 stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_valid_geo_grid(point, xsize, ysize, zsize, NULL, sorigin))
+    return NULL;
+  /* An empty point lies in no tile, as #geo_to_stbox gives it no box */
+  if (gserialized_is_empty(point))
+    return NULL;
+  grid_sizes_resolve(xsize, &ysize, &zsize, (bool) FLAGS_GET_Z(point->gflags));
   return stbox_space_time_tile(point, 0, xsize, ysize, zsize, NULL, sorigin,
     0, true, false);
 }
@@ -968,6 +1180,8 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
 /**
  * @ingroup meos_geo_tile
  * @brief Return a tile in the temporal grid of a spatiotemporal box
+ * @details The duration is validated as #stbox_get_space_time_tile validates
+ * it
  * @param[in] t Timestamp
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] torigin Origin for the time dimension
@@ -977,6 +1191,10 @@ STBox *
 stbox_get_time_tile(TimestampTz t, const Interval *duration,
   TimestampTz torigin)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_valid_geo_grid(NULL, 0, 0, 0, duration, NULL))
+    return NULL;
   return stbox_space_time_tile(NULL, t, 0, 0, 0, duration, NULL, torigin,
     false, true);
 }
@@ -1066,7 +1284,8 @@ tspatial_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * @brief Return the spatiotemporal boxes of a temporal point split with
  * respect to a space and possibly a time grid
  * @param[in] temp Temporal point
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension, may be `NULL`
  * @param[in] torigin Origin for the time dimension
@@ -1081,21 +1300,11 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TGEO(temp, NULL);
-  if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) ||
-      (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
-      (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
-      (xsize > 0 && MEOS_FLAGS_GET_Z(temp->flags) &&
-        ! ensure_positive_datum(zsize, T_FLOAT8)) ||
-      (duration && ! ensure_positive_duration(duration)) ||
-      /* Generic 3D geometries cannot be tiled */
-      (tgeo_type(temp->temptype) &&
-      ! ensure_has_not_Z(temp->temptype, temp->flags)))
-    return NULL;
-
+  VALIDATE_TGEO(temp, NULL);
   return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
     sorigin, torigin, bitmatrix, border_inc, &tgeo_restrict_stbox, count);
 }
@@ -1105,7 +1314,8 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * @brief Return the spatiotemporal boxes of a temporal geo split with
  * respect to a space grid
  * @param[in] temp Temporal geo
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] sorigin Origin for the space dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -1329,8 +1539,12 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
 /**
  * @brief Set the state with a temporal point and a space and possibly time
  * grid for splitting or obtaining a set of spatiotemporal boxes
+ * @details The arguments are validated and the sizes left out resolved here,
+ * once for every function laying a grid over a temporal value, as
+ * #tbox_value_time_tile_init does for a temporal box
  * @param[in] temp Temporal point
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
@@ -1345,40 +1559,19 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(ntiles, NULL);
   *ntiles = 0;
-  /* Ensure parameter validity */
   /* Every value with a spatial bounding box can be laid on a spatial grid;
    * what differs between the families is which restriction reads the value,
    * which is the caller's to supply */
-  VALIDATE_NOT_NULL(ntiles, NULL); VALIDATE_TSPATIAL(temp, NULL);
-  /* A grid needs at least one dimension to be laid on, which is what the state
-   * constructor asserts. The per-size checks below are guarded by `xsize &&`, so
-   * a zero size skips its own positivity check rather than failing it; without
-   * this the value reaches the binning arithmetic and divides by that zero */
-  if (! ensure_one_tile_dimension(xsize, duration) ||
-      (xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
-      (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
-      (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
-      (xsize && (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
-      /* The temporal value states its geodetic flag in the MEOS flags and the
-       * origin states it in the PostGIS ones, which keep it in another bit, so
-       * the two are read by the function that takes a value of each kind */
-      (xsize && ! ensure_same_geodetic_tspatial_geo(temp, sorigin)) ||
-      /* Generic 3D geometries cannot be tiled */
-      (tgeo_type(temp->temptype) &&
-        ! ensure_has_not_Z(temp->temptype, temp->flags)))
+  if (! ensure_valid_tspatial_grid(temp, xsize, ysize, zsize, duration,
+        sorigin))
     return NULL;
+  grid_sizes_resolve(xsize, &ysize, &zsize, MEOS_FLAGS_GET_Z(temp->flags));
 
   /* Set bounding box */
   STBox bounds;
   tspatial_set_stbox(temp, &bounds);
-  if (xsize)
-  {
-    int32_t srid = bounds.srid;
-    int32_t gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
-      return NULL;
-  }
 
   /* A geodetic trip is laid on the tiles of each period as the part of it in
    * that period, which the restriction to a tile cuts at the bounds of the
@@ -1424,38 +1617,13 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
       MEOS_FLAGS_GET_GEODETIC(temp->flags))
       bitmatrix = false;
 
-  /* Zero-init at declaration: when xsize == 0 the if-block below is
-   * skipped, but pt is still passed to stbox_tile_state_make() further
-   * down — would otherwise be read uninitialised. */
-  POINT3DZ pt = { 0.0, 0.0, 0.0 };
-  bool hasz = false;
-  if (xsize)
-  {
-    hasz = MEOS_FLAGS_GET_Z(temp->flags);
-    if (hasz)
-    {
-      if (! ensure_has_Z_geo(sorigin))
-        return NULL;
-      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-      pt.x = p3d->x;
-      pt.y = p3d->y;
-      pt.z = p3d->z;
-    }
-    else
-    {
-      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-      /* Since when zsize is not given we pass by default xsize, if temp does
-       * not have Z dimension we set zsize to 0 */
-      zsize = 0;
-    }
-  }
+  /* A time only grid reads no origin, and the point stays at 0 */
+  POINT3DZ pt;
+  grid_origin_point(xsize ? sorigin : NULL, &pt);
+  bool hasz = xsize && MEOS_FLAGS_GET_Z(temp->flags);
 
-  if (duration)
-    ensure_positive_duration(duration);
-  else
-    /* Disallow T dimension for generating a spatial only grid */
+  /* Disallow T dimension for generating a spatial only grid */
+  if (! duration)
     MEOS_FLAGS_SET_T(bounds.flags, false);
 
   /* Create function state */
@@ -1477,11 +1645,43 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
 }
 
 /**
+ * @brief Set the state with a temporal point and a space and possibly time
+ * grid for splitting it
+ * @details A split states the space bin of each fragment, so it lays a
+ * spatial grid, which the state of #tgeo_space_time_tile_init lays for any
+ * positive `xsize`
+ * @param[in] temp Temporal point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[out] ntiles Number of tiles
+ */
+STboxGridState *
+tgeo_space_time_split_init(const Temporal *temp, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin,
+  TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ntiles, NULL);
+  *ntiles = 0;
+  /* Without a duration, #tgeo_space_time_tile_init requires the spatial
+   * grid the split lays */
+  if (duration && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
+  return tgeo_space_time_tile_init(temp, xsize, ysize, zsize, duration,
+    sorigin, torigin, bitmatrix, border_inc, ntiles);
+}
+
+/**
  * @ingroup meos_geo_tile
  * @brief Return the fragments a temporal geo split according to a space and
  * possibly a time grid
  * @param[in] temp Temporal geo
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
@@ -1505,26 +1705,15 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(sorigin, NULL);
-  if (! tgeo_type_all(temp->temptype) ||
-      ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
-      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
-      (MEOS_FLAGS_GET_Z(temp->flags) &&
-        ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
-      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
-      ! ensure_same_geodetic_tspatial_geo(temp, sorigin) ||
-      /* Generic 3D geometries cannot be tiled */
-      (tgeo_type(temp->temptype) &&
-        ! ensure_has_not_Z(temp->temptype, temp->flags)))
-    return NULL;
+  VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
+  VALIDATE_TGEO(temp, NULL);
 
   /* Initialize state */
   int ntiles;
-  STboxGridState *state = tgeo_space_time_tile_init(temp, xsize, ysize,
+  STboxGridState *state = tgeo_space_time_split_init(temp, xsize, ysize,
     zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
   if (! state)
     return NULL;
@@ -1592,7 +1781,8 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * @brief Return the fragments a temporal geo split according to a space and
  * possibly a time grid
  * @param[in] temp Temporal geo
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
+ * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
  * @param[in] sorigin Origin for the space dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise

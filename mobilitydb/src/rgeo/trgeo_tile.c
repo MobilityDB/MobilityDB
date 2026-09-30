@@ -49,38 +49,13 @@
  *****************************************************************************/
 
 /**
- * @brief Compute the spatiotemporal boxes of a temporal rigid geometry split
- * with respect to a spatial or spatiotemporal grid
+ * @brief Return the boxes a grid function answered as an array
  */
 static Datum
-Trgeo_space_time_boxes_common(FunctionCallInfo fcinfo, bool spacetiles,
-  bool timetiles)
+Trgeo_boxes_array(STBox *boxes, int count)
 {
-  /* Get input parameters */
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int i = 1;
-  double xsize = 0, ysize = 0, zsize = 0;
-  if (spacetiles)
-  {
-    xsize = PG_GETARG_FLOAT8(i++);
-    ysize = PG_GETARG_FLOAT8(i++);
-    zsize = PG_GETARG_FLOAT8(i++);
-  }
-  Interval *duration = timetiles ? PG_GETARG_INTERVAL_P(i++) : NULL;
-  GSERIALIZED *sorigin = spacetiles ? PG_GETARG_GSERIALIZED_P(i++) : NULL;
-  TimestampTz torigin = timetiles ? PG_GETARG_TIMESTAMPTZ(i++) : 0;
-  bool bitmatrix = PG_GETARG_BOOL(i++);
-  bool border_inc = PG_GETARG_BOOL(i++);
-
-  /* Get the boxes */
-  if (temporal_num_instants(temp) == 1)
-    bitmatrix = false;
-  int count;
-  STBox *boxes = trgeometry_space_time_boxes(temp, xsize, ysize, zsize, duration,
-    sorigin, torigin, bitmatrix, border_inc, &count);
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
-  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -90,12 +65,30 @@ PG_FUNCTION_INFO_V1(Trgeometry_space_boxes);
  * @ingroup mobilitydb_rgeo_tile
  * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
  * with respect to a spatial grid
+ * @details The forms stating one or two spatial sizes leave out the ones that
+ * follow, which MEOS reads as `xsize`, as #Tgeo_space_boxes reads them
  * @sqlfn spaceBoxes()
  */
-inline Datum
+Datum
 Trgeometry_space_boxes(PG_FUNCTION_ARGS)
 {
-  return Trgeo_space_time_boxes_common(fcinfo, true, false);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double xsize = PG_GETARG_FLOAT8(1);
+  double ysize = 0;
+  double zsize = 0;
+  int i = 2;
+  if (PG_NARGS() > 5)
+    ysize = PG_GETARG_FLOAT8(i++);
+  if (PG_NARGS() > 6)
+    zsize = PG_GETARG_FLOAT8(i++);
+  GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
+  bool bitmatrix = PG_GETARG_BOOL(i++);
+  bool border_inc = PG_GETARG_BOOL(i++);
+  int count;
+  STBox *boxes = trgeometry_space_boxes(temp, xsize, ysize, zsize, sorigin,
+    bitmatrix, border_inc, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  return Trgeo_boxes_array(boxes, count);
 }
 
 PGDLLEXPORT Datum Trgeo_time_boxes(PG_FUNCTION_ARGS);
@@ -106,10 +99,19 @@ PG_FUNCTION_INFO_V1(Trgeo_time_boxes);
  * with respect to time bins
  * @sqlfn timeBoxes()
  */
-inline Datum
+Datum
 Trgeo_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Trgeo_space_time_boxes_common(fcinfo, false, true);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  bool bitmatrix = PG_GETARG_BOOL(3);
+  bool border_inc = PG_GETARG_BOOL(4);
+  int count;
+  STBox *boxes = trgeometry_space_time_boxes(temp, 0.0, 0.0, 0.0, duration,
+    NULL, torigin, bitmatrix, border_inc, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  return Trgeo_boxes_array(boxes, count);
 }
 
 PGDLLEXPORT Datum Trgeometry_space_time_boxes(PG_FUNCTION_ARGS);
@@ -118,12 +120,32 @@ PG_FUNCTION_INFO_V1(Trgeometry_space_time_boxes);
  * @ingroup mobilitydb_rgeo_tile
  * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
  * with respect to a spatiotemporal grid
+ * @details The forms stating one or two spatial sizes leave out the ones that
+ * follow, which MEOS reads as `xsize`, as #Tgeo_space_time_boxes reads them
  * @sqlfn spaceTimeBoxes()
  */
-inline Datum
+Datum
 Trgeometry_space_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Trgeo_space_time_boxes_common(fcinfo, true, true);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double xsize = PG_GETARG_FLOAT8(1);
+  double ysize = 0;
+  double zsize = 0;
+  int i = 2;
+  if (PG_NARGS() > 7)
+    ysize = PG_GETARG_FLOAT8(i++);
+  if (PG_NARGS() > 8)
+    zsize = PG_GETARG_FLOAT8(i++);
+  Interval *duration = PG_GETARG_INTERVAL_P(i++);
+  GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(i++);
+  bool bitmatrix = PG_GETARG_BOOL(i++);
+  bool border_inc = PG_GETARG_BOOL(i++);
+  int count;
+  STBox *boxes = trgeometry_space_time_boxes(temp, xsize, ysize, zsize,
+    duration, sorigin, torigin, bitmatrix, border_inc, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  return Trgeo_boxes_array(boxes, count);
 }
 
 /*****************************************************************************/

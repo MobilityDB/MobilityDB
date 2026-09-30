@@ -406,3 +406,43 @@ FROM unnest(timeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]
   duration := '2 days', torigin := '2001-01-01'));
 
 -------------------------------------------------------------------------------
+-- A size left out takes xsize
+-------------------------------------------------------------------------------
+
+-- The one- and two-size forms answer what the form repeating xsize answers
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 2.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0);
+SELECT array_agg(tile ORDER BY index) = (SELECT array_agg(tile ORDER BY index)
+  FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0, 2.0)) AS same
+FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 2.0, 3.0);
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, interval '2 days') =
+  spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 3.0, 2.0, interval '2 days') AS same;
+SELECT getSpaceTile(geometry 'Point(3 4 5)', 2.0) =
+  getSpaceTile(geometry 'Point(3 4 5)', 2.0, 2.0, 2.0) AS same;
+SELECT getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, interval '2 days') =
+  getSpaceTimeTile(geometry 'Point(3 4)', timestamptz '2001-01-15', 2.0, 3.0, 2.0, interval '2 days') AS same;
+SELECT array_agg(tpoint ORDER BY ST_AsText(point)) = (SELECT array_agg(tpoint ORDER BY ST_AsText(point))
+  FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 2.0)) AS same
+FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0);
+
+-- A size of 0 is a size left out, and a zsize is read only for a value with Z
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 0, 0) =
+  spaceBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 5.0) =
+  spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, 2.0, 2.0) AS same;
+
+-- A size under one
+SELECT array_length(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 0.5), 1) AS boxes;
+
+-- An empty point lies in no tile
+SELECT getSpaceTile(geometry 'Point EMPTY', 2.0) IS NULL AS no_tile;
+
+/* Errors */
+SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, -1.0, 2.0);
+SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
+SELECT count(*) FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 'Infinity'::float);
+
+-------------------------------------------------------------------------------

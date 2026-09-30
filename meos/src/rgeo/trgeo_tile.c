@@ -62,7 +62,8 @@
  * @brief Return the spatial boxes of a temporal rigid geometry split with
  * respect to a spatial grid
  * @param[in] temp Temporal rigid geometry
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension, a
+ * `ysize` or `zsize` of 0 taking `xsize` as #tgeo_space_time_tile_init reads them
  * @param[in] sorigin Origin of the spatial grid
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border
@@ -89,7 +90,8 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
  * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
  * with respect to a spatiotemporal grid
  * @param[in] temp Temporal rigid geometry
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension, a
+ * `ysize` or `zsize` of 0 taking `xsize` as #tgeo_space_time_tile_init reads them
  * @param[in] duration Size of the temporal dimension as an interval
  * @param[in] sorigin Origin of the spatial grid
  * @param[in] torigin Origin of the temporal grid
