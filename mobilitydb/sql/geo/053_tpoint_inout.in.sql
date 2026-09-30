@@ -84,6 +84,15 @@ CREATE FUNCTION tgeogpointFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeompointFromHexWKB(text)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromHexWKB(text)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tgeompointFromHexEWKB(text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

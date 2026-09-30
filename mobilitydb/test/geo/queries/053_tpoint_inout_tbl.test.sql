@@ -68,7 +68,9 @@ SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeompoint;
 SELECT DISTINCT tgeogpointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeogpoint;
 
 SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoint;
+SELECT DISTINCT asText(tgeompointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
+SELECT DISTINCT asText(tgeogpointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeogpoint;
 
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal point values coming from real AIS data

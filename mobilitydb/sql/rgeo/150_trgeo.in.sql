@@ -116,6 +116,11 @@ CREATE FUNCTION trgeometryFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION trgeometryFromHexWKB(text)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION trgeometryFromHexEWKB(text)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

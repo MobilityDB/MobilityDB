@@ -84,6 +84,15 @@ CREATE FUNCTION tgeographyFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeometryFromHexWKB(text)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeographyFromHexWKB(text)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tgeometryFromHexEWKB(text)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

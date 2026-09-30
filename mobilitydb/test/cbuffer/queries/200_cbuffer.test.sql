@@ -57,6 +57,7 @@ SELECT asEWKT(cbufferFromEWKT(asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)'
 SELECT asEWKT(cbufferFromBinary(asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
 SELECT asEWKT(cbufferFromEWKB(asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
 SELECT asEWKT(cbufferFromHexEWKB(asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromHexWKB(asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
 SELECT asEWKT(cbufferFromHexEWKB(asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
 
 SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')

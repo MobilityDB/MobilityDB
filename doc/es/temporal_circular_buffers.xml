@@ -115,11 +115,13 @@ SELECT asEWKT(cbufferFromEWKT(text 'SRID=5676;Cbuffer(Point(1 1),0.5)'));
 				<listitem xml:id="cbuffer_cbufferFromBinary">
 					<indexterm significance="normal"><primary><varname>cbufferFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>cbufferFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>cbufferFromHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>cbufferFromHexEWKB</varname></primary></indexterm>
-					<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cbufferFromBinary(bytea) → cbuffer
 cbufferFromEWKB(bytea) → cbuffer
+cbufferFromHexWKB(text) → cbuffer
 cbufferFromHexEWKB(text) → cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -542,11 +544,13 @@ SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer 'SRID=5676;
 			<listitem xml:id="tcbuffer_tcbufferFromBinary">
 				<indexterm significance="normal"><primary><varname>tcbufferFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcbufferFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromHexEWKB</varname></primary></indexterm>
-				<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+				<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferFromBinary(bytea) → tcbuffer
 tcbufferFromEWKB(bytea) → tcbuffer
+tcbufferFromHexWKB(text) → tcbuffer
 tcbufferFromHexEWKB(text) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

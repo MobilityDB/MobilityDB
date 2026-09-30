@@ -120,6 +120,7 @@ SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 
 				<indexterm significance="normal"><primary><varname>trgeometryFromMFJSON</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromHexEWKB</varname></primary></indexterm>
 				<para>Input from the Well-Known Text (WKT), the Extended Well-Known Text (EWKT), the Moving Features JSON (MF-JSON), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -127,6 +128,7 @@ trgeometryFromText(text) → trgeometry
 trgeometryFromEWKT(text) → trgeometry
 trgeometryFromMFJSON(text) → trgeometry
 trgeometryFromEWKB(bytea) → trgeometry
+trgeometryFromHexWKB(text) → trgeometry
 trgeometryFromHexEWKB(text) → trgeometry
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">

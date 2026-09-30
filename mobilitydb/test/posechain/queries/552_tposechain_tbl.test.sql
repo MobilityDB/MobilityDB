@@ -46,6 +46,7 @@ DROP TABLE tbl_tposechain_tmp;
 
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
 SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
+SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain;
 
 -------------------------------------------------------------------------------
 -- Accessors

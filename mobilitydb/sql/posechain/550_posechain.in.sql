@@ -94,6 +94,11 @@ CREATE FUNCTION posechainFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Posechain_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION posechainFromHexWKB(text)
+  RETURNS posechain
+  AS 'MODULE_PATHNAME', 'Posechain_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION posechainFromHexEWKB(text)
   RETURNS posechain
   AS 'MODULE_PATHNAME', 'Posechain_from_hexwkb'

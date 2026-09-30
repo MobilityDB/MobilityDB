@@ -27,6 +27,13 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp))
      0
 (1 row)
 
+SELECT DISTINCT asText(tposechainFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tposechain;
+ ?column? 
+----------
+ 
+ t
+(2 rows)
+
 SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain;
  min | max 
 -----+-----

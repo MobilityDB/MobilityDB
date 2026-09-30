@@ -110,6 +110,7 @@ SELECT asText(trgeometryFromBinary(asBinary(trgeometry 'Interp=Step;Polygon((1 1
 -------------------------------------------------------------------------------
 
 SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01')));
 SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}')));
 SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]')));
 SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}')));

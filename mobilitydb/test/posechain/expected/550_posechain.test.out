@@ -48,6 +48,13 @@ SELECT posechainFromHexEWKB(asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(
  t
 (1 row)
 
+SELECT posechainFromHexWKB(asHexWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))')) =
+  posechain 'PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT posechainFromBinary(asBinary(c)) = c AS wkb_roundtrip_identity
 FROM (SELECT posechain(ARRAY[
     pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n),

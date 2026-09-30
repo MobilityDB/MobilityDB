@@ -68,7 +68,9 @@ SELECT DISTINCT tgeometryFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeometry;
 SELECT DISTINCT tgeographyFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeography;
 
 SELECT DISTINCT tgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeometry;
+SELECT DISTINCT asText(tgeometryFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeometry;
 SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeography;
+SELECT DISTINCT asText(tgeographyFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeography;
 
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal geometry values coming from real AIS data

@@ -137,6 +137,11 @@ CREATE FUNCTION tposechainFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tposechainFromHexWKB(text)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tposechainFromHexEWKB(text)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'

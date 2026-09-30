@@ -51,6 +51,9 @@ SELECT posechainFromBinary(asBinary(posechain 'PoseChain(Pose(Point(1 2), 0.5), 
   posechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))';
 SELECT posechainFromHexEWKB(asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))')) =
   posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))';
+-- The plain form carries no SRID, so the value it reads states none
+SELECT posechainFromHexWKB(asHexWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))')) =
+  posechain 'PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))';
 -- The reader rebuilds every link, so a chain whose links carry quaternions
 -- that move when scaled a second time is what shows the binary form lossless
 SELECT posechainFromBinary(asBinary(c)) = c AS wkb_roundtrip_identity
