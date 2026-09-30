@@ -211,7 +211,10 @@ SELECT c.cell, c.res,
      AND NOT ST_Intersects(cellToBoundary(v.x), cellToBoundary(c.cell))
      AND NOT EXISTS (SELECT 1 FROM reached k
        WHERE (k.cell, k.res, k.x) = (v.cell, v.res, v.x))) AS overclaim
-FROM c ORDER BY c.cell, c.res;
+-- The rows are ordered by resolution, which is distinct for each: h3-pg's
+-- comparator orders h3index values descending up to v4.2.3 and ascending
+-- after it, so an order by cell would depend on the h3 build.
+FROM c ORDER BY c.res;
 
 -------------------------------------------------------------------------------
 -- MULTIPOINT → union of per-point cells
