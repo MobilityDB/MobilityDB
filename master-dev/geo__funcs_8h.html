@@ -100,6 +100,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structArcTurn.html">ArcTurn</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if an arc edge reaches the direction of an axis from its centre, that direction given as one of the four cardinal vectors.  <a href="structArcTurn.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structEdge.html">Edge</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure keeping a geometry edge.  <a href="structEdge.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -173,6 +176,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a19b0fda644bce9afa2ea8f42050cc16e"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a19b0fda644bce9afa2ea8f42050cc16e.html#a19b0fda644bce9afa2ea8f42050cc16e">arc_span_sweep</a> (double theta0, double theta1, bool ccw)</td></tr>
 <tr class="memdesc:a19b0fda644bce9afa2ea8f42050cc16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return how far an angular span turns, in the sense it is traversed.  <a href="geo__funcs_8h_a19b0fda644bce9afa2ea8f42050cc16e.html#a19b0fda644bce9afa2ea8f42050cc16e">More...</a><br /></td></tr>
 <tr class="separator:a19b0fda644bce9afa2ea8f42050cc16e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad87d7fcae090278d24e2278725cdd8e"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_aad87d7fcae090278d24e2278725cdd8e.html#aad87d7fcae090278d24e2278725cdd8e">arc_turn_reaches</a> (const <a class="el" href="structArcTurn.html">ArcTurn</a> *t, int wx, int wy)</td></tr>
+<tr class="memdesc:aad87d7fcae090278d24e2278725cdd8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if an arc making a turn reaches a cardinal direction.  <a href="geo__funcs_8h_aad87d7fcae090278d24e2278725cdd8e.html#aad87d7fcae090278d24e2278725cdd8e">More...</a><br /></td></tr>
+<tr class="separator:aad87d7fcae090278d24e2278725cdd8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d62631219b54c3b57c67e9e613521ff"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a8d62631219b54c3b57c67e9e613521ff.html#a8d62631219b54c3b57c67e9e613521ff">arc_turn_read</a> (const <a class="el" href="structEdge.html">Edge</a> *e, <a class="el" href="structArcTurn.html">ArcTurn</a> *t)</td></tr>
+<tr class="memdesc:a8d62631219b54c3b57c67e9e613521ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the turn of an arc edge around its centre, in the sense the arc is traversed.  <a href="geo__funcs_8h_a8d62631219b54c3b57c67e9e613521ff.html#a8d62631219b54c3b57c67e9e613521ff">More...</a><br /></td></tr>
+<tr class="separator:a8d62631219b54c3b57c67e9e613521ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cdde88e95139192a3444f438065a213"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a5cdde88e95139192a3444f438065a213.html#a5cdde88e95139192a3444f438065a213">arcarc_cross</a> (const <a class="el" href="structEdge.html">Edge</a> *a, const <a class="el" href="structEdge.html">Edge</a> *b)</td></tr>
 <tr class="memdesc:a5cdde88e95139192a3444f438065a213"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two circular arcs properly cross.  <a href="geo__funcs_8h_a5cdde88e95139192a3444f438065a213.html#a5cdde88e95139192a3444f438065a213">More...</a><br /></td></tr>
 <tr class="separator:a5cdde88e95139192a3444f438065a213"><td class="memSeparator" colspan="2">&#160;</td></tr>
