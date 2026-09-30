@@ -124,6 +124,12 @@ UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND dim_no = 3;
 SELECT pointCloudSchemaNDims(90);
 UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
 
+-- A schema pgPointCloud's own catalog states is answered as one the rows
+-- state, since values of it are read through it: pcid 1 of the fixture, three
+-- dimensions under no reference system
+SELECT pointCloudSchemaSRID(1), pointCloudSchemaCompression(1),
+  pointCloudSchemaNDims(1);
+
 -- An unregistered pcid answers NULL rather than erroring
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
   pointCloudSchemaNDims(999) AS unknown_ndims;
