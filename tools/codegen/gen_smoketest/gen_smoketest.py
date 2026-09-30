@@ -1398,6 +1398,8 @@ TNPOINT_CONFIG = dict(
         # npoint_as_wkb() against a canned network point (variant 0 is plain
         # WKB, no hex encoding) rather than guessed.
         "npoint_from_wkb":              {0: "npoint_wkb1", 1: "npoint_wkb1_size"},
+        "nsegment_from_wkb":            {0: "nsegment_wkb1", 1: "nsegment_wkb1_size"},
+        "nsegment_from_hexwkb":         {0: "nsegment_hexwkb1"},
         # char * string constructors: each needs a literal in the exact
         # format the parser expects. The WKT ones are hand-written; the
         # hexWKB / MFJSON ones are pasted verbatim from the output of
@@ -1447,6 +1449,10 @@ TNPOINT_CONFIG = dict(
    * against a canned network point rather than guessed. */
   size_t npoint_wkb1_size = 0;
   uint8_t *npoint_wkb1 = npoint_as_wkb(npoint1, 0, &npoint_wkb1_size);
+  /* The WKB and HexWKB of a canned network segment, for its readers */
+  size_t nsegment_wkb1_size = 0;
+  uint8_t *nsegment_wkb1 = nsegment_as_wkb(nsegment1, 0, &nsegment_wkb1_size);
+  char *nsegment_hexwkb1 = nsegment_as_hexwkb(nsegment1, 0, &size_out);
   /* char * literals for the npoint/nsegment/tnpoint string constructors, one
    * per parsed format. The hexWKB / MFJSON ones are pasted verbatim from the
    * output of npoint_as_hexwkb() / temporal_as_mfjson() on a canned value
@@ -1488,6 +1494,8 @@ TNPOINT_CONFIG = dict(
   if (tpoint1) free(tpoint1);
   if (tpoint_ways1) free(tpoint_ways1);
   free(npoint_wkb1);
+  free(nsegment_wkb1);
+  free(nsegment_hexwkb1);
   free(geom_ways1);
   free(stbox1);
   free(stbox_ways1);

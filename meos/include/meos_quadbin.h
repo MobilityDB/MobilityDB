@@ -114,6 +114,10 @@ typedef uint64 Quadbin;
 
 /* Input and output functions */
 
+extern char *quadbin_as_hexwkb(Quadbin cell, uint8_t variant, size_t *size_out);
+extern uint8_t *quadbin_as_wkb(Quadbin cell, uint8_t variant, size_t *size_out);
+extern Quadbin quadbin_from_hexwkb(const char *hexwkb);
+extern Quadbin quadbin_from_wkb(const uint8_t *wkb, size_t size);
 extern Quadbin quadbin_in(const char *str);
 extern Quadbin bigint_to_quadbin(int64 i);
 

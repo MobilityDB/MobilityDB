@@ -122,6 +122,10 @@ extern Npoint *npoint_from_hexwkb(const char *hexwkb);
 extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);
 extern Npoint *npoint_in(const char *str);
 extern char *npoint_out(const Npoint *np, int maxdd);
+extern char *nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
+extern uint8_t *nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
+extern Nsegment *nsegment_from_hexwkb(const char *hexwkb);
+extern Nsegment *nsegment_from_wkb(const uint8_t *wkb, size_t size);
 extern Nsegment *nsegment_in(const char *str);
 extern char *nsegment_out(const Nsegment *ns, int maxdd);
 

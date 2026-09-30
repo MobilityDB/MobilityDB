@@ -64,6 +64,7 @@
 #include <meos_pointcloud.h>
 #include <pgtypes.h>
 #include "temporal/span.h"
+#include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
@@ -150,9 +151,49 @@ ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * Input / output
  *
  * Textual format — minimal and deterministic. Structured to roundtrip
- * through lexical scan; the PG recv/send path uses the same byte layout
- * as the in-memory struct (fixed size = @c sizeof(TPCBox)).
+ * through lexical scan; the binary format is the Well-Known Binary (WKB) of
+ * the STBox a TPCBox begins with, followed by the pcid.
  *****************************************************************************/
+
+/**
+ * @brief Return in the last argument the SRID of a TPCBox from the SRID its
+ * value states and the one the schema of its pcid states
+ * @details A TPCBox states its reference system at two levels: the SRID the
+ * value carries and the schema its pcid names, read with
+ * #meos_pc_schema_srid as #tpcbox_set_srid reads it. A level reading
+ * `SRID_UNKNOWN` states nothing, so either level alone carries the answer
+ * and the schema is preferred where it speaks; two levels stating different
+ * systems is a value contradicting itself, which is an error rather than a
+ * choice between them. Where no schema resolves — a pcid of 0, or a MEOS
+ * program with no catalog behind it — the value is the only level there is,
+ * so reading a value never requires a catalog to be reachable. The text
+ * reader #tpcbox_parse and the WKB reader both call it
+ * @param[in] srid SRID the value states
+ * @param[in] pcid pgpointcloud schema id
+ * @param[in] errcode Error code raised on a contradiction
+ * @param[out] result SRID of the box
+ */
+bool
+tpcbox_resolve_srid(int32_t srid, uint32_t pcid, int errcode,
+  int32_t *result)
+{
+  *result = srid;
+  if (pcid == 0)
+    return true;
+  int32_t schema_srid = meos_pc_schema_srid(pcid);
+  if (schema_srid == SRID_INVALID || schema_srid == SRID_UNKNOWN)
+    return true;
+  if (srid != SRID_UNKNOWN && srid != schema_srid)
+  {
+    meos_error(ERROR, errcode,
+      "Could not parse %s value: The value states SRID %d and the schema "
+      "of pcid %u states SRID %d", meostype_name(T_TPCBOX), srid, pcid,
+      schema_srid);
+    return false;
+  }
+  *result = schema_srid;
+  return true;
+}
 
 /**
  * @brief Parse a TPCBox from its Well-Known Text (WKT) representation
@@ -246,32 +287,12 @@ tpcbox_parse(const char **str)
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
 
-  /* Reconcile the two levels a TPCBox states its reference system at: the
-   * `SRID=` prefix the value carries and the schema its pcid names. This is
-   * the one site where both are genuinely written, so it is the one site that
-   * owes the reconciliation. A level reading `SRID_UNKNOWN` states nothing, so
-   * either level alone carries the answer and the schema is preferred where it
-   * speaks; two levels stating different systems is a value contradicting
-   * itself, which is an error rather than a choice between them. Where no
-   * schema resolves — a pcid of 0, or a MEOS program with no catalog behind
-   * it — the prefix is the only level there is, so reading a value never
-   * requires a catalog to be reachable */
-  srid = box->srid;
-  if (pcid != 0)
+  /* Reconcile the `SRID=` prefix the value carries with the schema its pcid
+   * names */
+  if (! tpcbox_resolve_srid(box->srid, pcid, MEOS_ERR_TEXT_INPUT, &srid))
   {
-    int32_t schema_srid = meos_pc_schema_srid(pcid);
-    if (schema_srid != SRID_INVALID && schema_srid != SRID_UNKNOWN)
-    {
-      if (srid != SRID_UNKNOWN && srid != schema_srid)
-      {
-        pfree(box);
-        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-          "Could not parse %s value: The value states SRID %d and the schema "
-          "of pcid %u states SRID %d", type_str, srid, pcid, schema_srid);
-        return NULL;
-      }
-      srid = schema_srid;
-    }
+    pfree(box);
+    return NULL;
   }
 
   TPCBox *result = tpcbox_make(hasx, hasz, hast, geodetic, srid, pcid,
@@ -286,7 +307,7 @@ tpcbox_parse(const char **str)
  * @brief Return a TPCBox from its Well-Known Text (WKT) representation
  * @details Round-trips with #tpcbox_out, matching the `(GEOD)STBOX` text form
  * of the sibling STBox plus a trailing `PCID`. Binary interchange goes through
- * @c recv / @c send.
+ * #tpcbox_from_wkb and #tpcbox_as_wkb.
  * @csqlfn #Tpcbox_in()
  */
 TPCBox *
@@ -386,6 +407,76 @@ tpcbox_out(const TPCBox *box, int maxdd)
   if (hast)
     pfree(period);
   return str;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return a TPCBox from its Well-Known Binary (WKB) representation
+ * @details Mirrors #npoint_from_wkb
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Tpcbox_recv(), #Tpcbox_from_wkb()
+ */
+TPCBox *
+tpcbox_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, NULL);
+  return DatumGetTpcboxP(type_from_wkb(wkb, size, T_TPCBOX));
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return a TPCBox from its ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation
+ * @details Mirrors #npoint_from_hexwkb
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Tpcbox_from_hexwkb()
+ */
+TPCBox *
+tpcbox_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, NULL);
+  size_t size = strlen(hexwkb);
+  return DatumGetTpcboxP(type_from_hexwkb(hexwkb, size, T_TPCBOX));
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a TPCBox
+ * @details The WKB of the STBox a TPCBox begins with, followed by the pcid;
+ * mirrors #npoint_as_wkb
+ * @param[in] box Box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tpcbox_send(), #Tpcbox_as_wkb()
+ */
+uint8_t *
+tpcbox_as_wkb(const TPCBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(box), T_TPCBOX, variant, size_out);
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a TPCBox
+ * @details Mirrors #npoint_as_hexwkb
+ * @param[in] box Box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tpcbox_as_hexwkb()
+ */
+char *
+tpcbox_as_hexwkb(const TPCBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(box), T_TPCBOX,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************

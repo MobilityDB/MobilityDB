@@ -1434,6 +1434,21 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
     size += MEOS_WKB_INT4_SIZE;
   return size;
 }
+
+/**
+ * @brief Return the size in bytes of a network segment in the Well-Known
+ * Binary (WKB) representation
+ */
+static size_t
+nsegment_to_wkb_size(const Nsegment *ns, uint8_t variant)
+{
+  /* Endian flag + flags + rid + the two positions */
+  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT8_SIZE +
+    MEOS_WKB_DOUBLE_SIZE * 2;
+  if (spatial_wkb_needs_srid(nsegment_srid(ns), variant))
+    size += MEOS_WKB_INT4_SIZE;
+  return size;
+}
 #endif /* NPOINT */
 
 #if POINTCLOUD
@@ -1517,16 +1532,16 @@ posechain_to_wkb_size(const PoseChain *pc, uint8_t variant, bool component)
 }
 #endif /* POSE */
 
-#if H3
+#if H3 || QUADBIN || S2CELL
 /**
- * @brief Return the size in bytes of an h3index in the Well-Known Binary
- * (WKB) representation
- * @details An h3index is a uint64 cell id whose only spatial metadata is the
- * SRID — the constant WGS84 (EPSG:4326), emitted solely for the extended
- * (EWKB) variant, exactly like the other spatial base types.
+ * @brief Return the size in bytes of a cell (an h3index, a quadbin or an S2
+ * cell) in the Well-Known Binary (WKB) representation
+ * @details A cell is a uint64 cell id whose only spatial metadata is the
+ * SRID — the constant WGS84 (EPSG:4326) its grid fixes, emitted solely for
+ * the extended (EWKB) variant, exactly like the other spatial base types.
  */
 static size_t
-h3index_to_wkb_size(uint8_t variant)
+cell_to_wkb_size(uint8_t variant)
 {
   /* Endian flag + SRID flag */
   size_t size = MEOS_WKB_BYTE_SIZE * 2;
@@ -1537,7 +1552,7 @@ h3index_to_wkb_size(uint8_t variant)
   size += MEOS_WKB_INT8_SIZE;
   return size;
 }
-#endif /* H3 */
+#endif /* H3 || QUADBIN || S2CELL */
 
 /**
  * @brief Return the size of the WKB representation of a base value
@@ -1717,6 +1732,20 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
   return size;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return the size in bytes of a point cloud box in the Well-Known
+ * Binary (WKB) representation
+ * @details A TPCBox begins with a whole STBox, so its WKB is the one of that
+ * STBox followed by the pcid
+ */
+static size_t
+tpcbox_to_wkb_size(const TPCBox *box, uint8_t variant)
+{
+  return stbox_to_wkb_size((const STBox *) box, variant) + MEOS_WKB_INT4_SIZE;
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************/
 
 /**
@@ -1859,13 +1888,17 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
     return tbox_to_wkb_size((TBox *) DatumGetPointer(value));
   if (type == T_STBOX)
     return stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
+#if POINTCLOUD
+  if (type == T_TPCBOX)
+    return tpcbox_to_wkb_size((TPCBox *) DatumGetPointer(value), variant);
+#endif /* POINTCLOUD */
 #if CBUFFER
   if (type == T_CBUFFER)
     return cbuffer_to_wkb_size(DatumGetCbufferP(value), variant, false);
 #endif /* CBUFFER */
 #if H3
   if (type == T_H3INDEX)
-    return h3index_to_wkb_size(variant);
+    return cell_to_wkb_size(variant);
 #endif /* H3 */
 #if JSON
   if (type == T_JSONB)
@@ -1874,6 +1907,8 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
 #if NPOINT
   if (type == T_NPOINT)
     return npoint_to_wkb_size(DatumGetNpointP(value), variant, false);
+  if (type == T_NSEGMENT)
+    return nsegment_to_wkb_size(DatumGetNsegmentP(value), variant);
 #endif /* NPOINT */
 #if POSE
   if (type == T_POSE)
@@ -1881,10 +1916,18 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_POSECHAIN)
     return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, false);
 #endif /* POSE */
+#if QUADBIN
+  if (type == T_QUADBIN)
+    return cell_to_wkb_size(variant);
+#endif /* QUADBIN */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_to_wkb_size(DatumGetRaquetP(value), false);
 #endif /* RASTER */
+#if S2CELL
+  if (type == T_S2CELL)
+    return cell_to_wkb_size(variant);
+#endif /* S2CELL */
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
@@ -2179,16 +2222,16 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
 }
 #endif /* CBUFFER */
 
-#if H3
+#if H3 || QUADBIN || S2CELL
 /**
- * @brief Write into the buffer an h3index in the Well-Known Binary (WKB)
- * representation
+ * @brief Write into the buffer a cell (an h3index, a quadbin or an S2 cell)
+ * in the Well-Known Binary (WKB) representation
  * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
  * only), then the cell id (int8). The SRID flag bit is set only when the SRID
  * is actually written — matching the npoint/pose/cbuffer readers.
  */
 static uint8_t *
-h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
+cell_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
@@ -2204,7 +2247,7 @@ h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
   buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
   return buf;
 }
-#endif /* H3 */
+#endif /* H3 || QUADBIN || S2CELL */
 
 #if JSON
 /**
@@ -2269,6 +2312,34 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
   /* Write the network point */
   buf = int64_to_wkb_buf(np->rid, buf, variant);
   buf = double_to_wkb_buf(np->pos, buf, variant);
+  return buf;
+}
+
+/**
+ * @brief Write into the buffer a network segment in the Well-Known Binary
+ * (WKB) representation
+ * @details endian flag, the flags of a network point (X, and S when the SRID
+ * follows), the optional SRID, then the route identifier (int8) and the two
+ * positions (double)
+ */
+static uint8_t *
+nsegment_to_wkb_buf(const Nsegment *ns, uint8_t *buf, uint8_t variant)
+{
+  /* Write the endian flag (byte) */
+  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the flags (byte) */
+  int32_t srid = nsegment_srid(ns);
+  uint8_t wkb_flags = MEOS_WKB_XFLAG;
+  if (spatial_wkb_needs_srid(srid, variant))
+    wkb_flags |= MEOS_WKB_SRIDFLAG;
+  buf = uint8_to_wkb_buf(wkb_flags, buf, variant);
+  /* Write the SRID */
+  if (spatial_wkb_needs_srid(srid, variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  /* Write the network segment */
+  buf = int64_to_wkb_buf(ns->rid, buf, variant);
+  buf = double_to_wkb_buf(ns->pos1, buf, variant);
+  buf = double_to_wkb_buf(ns->pos2, buf, variant);
   return buf;
 }
 #endif /* NPOINT */
@@ -2895,6 +2966,21 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
   return buf;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Write into the buffer a point cloud box in the Well-Known Binary
+ * (WKB) representation
+ * @details A TPCBox begins with a whole STBox, so its WKB is the one of that
+ * STBox followed by the pcid (@p int32)
+ */
+static uint8_t *
+tpcbox_to_wkb_buf(const TPCBox *box, uint8_t *buf, uint8_t variant)
+{
+  buf = stbox_to_wkb_buf((const STBox *) box, buf, variant);
+  return int32_to_wkb_buf((int32) box->pcid, buf, variant);
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************/
 
 /**
@@ -3189,13 +3275,17 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
     buf = tbox_to_wkb_buf(DatumGetTboxP(value), buf, variant);
   else if (type == T_STBOX)
     buf = stbox_to_wkb_buf(DatumGetSTboxP(value), buf, variant);
+#if POINTCLOUD
+  else if (type == T_TPCBOX)
+    buf = tpcbox_to_wkb_buf((TPCBox *) DatumGetPointer(value), buf, variant);
+#endif /* POINTCLOUD */
 #if CBUFFER
   else if (type == T_CBUFFER)
     buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, false);
 #endif /* CBUFFER */
 #if H3
   else if (type == T_H3INDEX)
-    buf = h3index_to_wkb_buf(value, buf, variant);
+    buf = cell_to_wkb_buf(value, buf, variant);
 #endif /* H3 */
 #if JSON
   else if (type == T_JSONB)
@@ -3205,6 +3295,8 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_NPOINT)
     buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant,
       false);
+  else if (type == T_NSEGMENT)
+    buf = nsegment_to_wkb_buf(DatumGetNsegmentP(value), buf, variant);
 #endif /* NPOINT */
 #if POSE
   else if (type == T_POSE)
@@ -3212,10 +3304,18 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_POSECHAIN)
     buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant, false);
 #endif /* POSE */
+#if QUADBIN
+  else if (type == T_QUADBIN)
+    buf = cell_to_wkb_buf(value, buf, variant);
+#endif /* QUADBIN */
 #if RASTER
   else if (type == T_RAQUET)
     buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);
 #endif /* RASTER */
+#if S2CELL
+  else if (type == T_S2CELL)
+    buf = cell_to_wkb_buf(value, buf, variant);
+#endif /* S2CELL */
   else if (temporal_type(type))
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
