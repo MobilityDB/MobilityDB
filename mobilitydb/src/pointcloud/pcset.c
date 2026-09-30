@@ -708,4 +708,69 @@ Pcpatch_hash_extended(PG_FUNCTION_ARGS)
   PG_RETURN_UINT64(result);
 }
 
+
+/*****************************************************************************
+ * What a point cloud identifier names
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pointcloud_schema_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pointcloud_schema_srid);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the spatial reference system every value of the schema a
+ *   point cloud identifier names is expressed in
+ * @details The schema is resolved as a value of it is, through the rows
+ *   @c pointcloud_schemas and @c pointcloud_dimensions state and else through
+ *   pgPointCloud's @c pointcloud_formats, so a pcid no schema names answers
+ *   NULL, and a schema stating no reference system answers 0
+ * @sqlfn pointCloudSchemaSRID()
+ */
+Datum
+Pointcloud_schema_srid(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  if (meos_pc_schema_ndims(pcid) < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(meos_pc_schema_srid(pcid));
+}
+
+PGDLLEXPORT Datum Pointcloud_schema_compression(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pointcloud_schema_compression);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return how a patch of the schema a point cloud identifier names is
+ *   stored: @p none, @p dimensional or @p laz
+ * @details A pcid no schema names answers NULL
+ * @sqlfn pointCloudSchemaCompression()
+ */
+Datum
+Pointcloud_schema_compression(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  const char *result = meos_pc_schema_compression(pcid);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEXT_P(cstring_to_text(result));
+}
+
+PGDLLEXPORT Datum Pointcloud_schema_ndims(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pointcloud_schema_ndims);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the number of active dimensions of the schema a point cloud
+ *   identifier names
+ * @details A pcid no schema names answers NULL, and a schema every dimension
+ *   of which is inactive answers 0
+ * @sqlfn pointCloudSchemaNDims()
+ */
+Datum
+Pointcloud_schema_ndims(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  int32_t result = meos_pc_schema_ndims(pcid);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
+}
+
 /*****************************************************************************/

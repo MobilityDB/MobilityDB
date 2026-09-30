@@ -117,6 +117,13 @@ SELECT pointCloudSchemaNDims(90);
 
 UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
 UPDATE 1
+SELECT pointCloudSchemaSRID(1), pointCloudSchemaCompression(1),
+  pointCloudSchemaNDims(1);
+ pointcloudschemasrid | pointcloudschemacompression | pointcloudschemandims 
+----------------------+-----------------------------+-----------------------
+                    0 | none                        |                     3
+(1 row)
+
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
   pointCloudSchemaNDims(999) AS unknown_ndims;
  unknown_srid | unknown_ndims 

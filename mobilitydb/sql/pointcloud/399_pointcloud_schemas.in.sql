@@ -118,28 +118,24 @@ COMMENT ON COLUMN pointcloud_dimensions.active IS
 COMMENT ON COLUMN pointcloud_dimensions.description IS
   'Free-form description for human readers.';
 
-/* Helper SQL functions that answer what a pcid names without a value of that
- * schema in hand and without exposing the table layout, as the geopose_frames
- * registry answers for a frame. */
+/* Answer what a pcid names without a value of that schema in hand and without
+ * exposing the table layout. The schema is resolved as a value of it is, from
+ * these rows and else from pgPointCloud's pointcloud_formats, and a statement
+ * reads it as its catalogs state it when it starts, so the functions are
+ * STABLE. A pcid no schema names answers NULL. */
 
 CREATE FUNCTION pointCloudSchemaSRID(pcid integer) RETURNS integer
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT srid FROM pointcloud_schemas WHERE pointcloud_schemas.pcid = $1 $$;
+  AS 'MODULE_PATHNAME', 'Pointcloud_schema_srid'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pointCloudSchemaCompression(pcid integer) RETURNS text
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT compression FROM pointcloud_schemas
-        WHERE pointcloud_schemas.pcid = $1 $$;
+  AS 'MODULE_PATHNAME', 'Pointcloud_schema_compression'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
-/* A pcid no schema names answers NULL, as the other two do; a schema every
- * dimension of which is inactive answers 0. A bare count over the dimensions
- * cannot tell those apart, so the count hangs off the schema row. */
+/* A schema every dimension of which is inactive answers 0 */
 CREATE FUNCTION pointCloudSchemaNDims(pcid integer) RETURNS integer
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT count(d.pcid)::integer FROM pointcloud_schemas s
-        LEFT JOIN pointcloud_dimensions d
-          ON d.pcid = s.pcid AND d.active
-        WHERE s.pcid = $1 GROUP BY s.pcid $$;
+  AS 'MODULE_PATHNAME', 'Pointcloud_schema_ndims'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
 /* Mark both catalogs as configuration tables so that pg_dump preserves the
  * schemas a user registers, as the geopose_frames registry does. */
