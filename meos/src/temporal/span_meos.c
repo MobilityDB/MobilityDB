@@ -225,10 +225,16 @@ tstzspan_out(const Span *s)
 Span *
 intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 {
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   span_set(Int32GetDatum(lower), Int32GetDatum(upper), lower_inc, upper_inc,
     T_INT4, T_INTSPAN, s);
+  if (s->spantype != T_INTSPAN)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 
@@ -242,10 +248,16 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 Span *
 bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 {
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   span_set(Int64GetDatum(lower), Int64GetDatum(upper), lower_inc, upper_inc,
     T_INT8, T_BIGINTSPAN, s);
+  if (s->spantype != T_BIGINTSPAN)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 
@@ -262,10 +274,16 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
   /* Ensure the validity of the arguments */
   if (! ensure_not_nan(lower) || ! ensure_not_nan(upper))
     return NULL;
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   span_set(Float8GetDatum(lower), Float8GetDatum(upper), lower_inc, upper_inc,
     T_FLOAT8, T_FLOATSPAN, s);
+  if (s->spantype != T_FLOATSPAN)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 
@@ -279,10 +297,16 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 Span *
 datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
 {
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   span_set(DateADTGetDatum(lower), DateADTGetDatum(upper), lower_inc,
     upper_inc, T_DATE, T_DATESPAN, s);
+  if (s->spantype != T_DATESPAN)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 /**
@@ -296,10 +320,16 @@ Span *
 tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper), lower_inc,
     upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, s);
+  if (s->spantype != T_TSTZSPAN)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 
