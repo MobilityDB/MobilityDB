@@ -34,6 +34,8 @@
 
 SELECT intset '{1,2,3}';
 SELECT bigintset '{1,2,3}';
+SELECT intset '{1, 2147483647}';
+SELECT bigintset '{1, 9223372036854775807}';
 SELECT floatset '{1.5,2.5,3.5}';
 SELECT dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';

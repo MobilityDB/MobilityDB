@@ -486,6 +486,18 @@ SELECT span(1, 2147483647, true, false);
  [1, 2147483647)
 (1 row)
 
+SELECT intspan '[1, 2147483647)';
+     intspan     
+-----------------
+ [1, 2147483647)
+(1 row)
+
+SELECT bigintspan '[1, 9223372036854775807)';
+        bigintspan        
+--------------------------
+ [1, 9223372036854775807)
+(1 row)
+
 SELECT span(1::bigint, 9223372036854775806, true, true);
            span           
 --------------------------
@@ -499,6 +511,14 @@ SELECT span(2147483647, 2147483647, false, true);
 ERROR:  integer out of range
 SELECT span(1::bigint, 9223372036854775807, true, true);
 ERROR:  bigint out of range
+SELECT intspan '[1, 2147483647]';
+ERROR:  integer out of range
+LINE 1: SELECT intspan '[1, 2147483647]';
+                       ^
+SELECT intspan '[1, 2147483648)';
+ERROR:  value "2147483648" is out of range for type integer
+LINE 1: SELECT intspan '[1, 2147483648)';
+                       ^
 SELECT expand(intspan '[1,1]', 1);
  expand 
 --------

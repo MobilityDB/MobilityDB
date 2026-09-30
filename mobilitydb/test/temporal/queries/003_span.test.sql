@@ -163,11 +163,15 @@ SELECT datespan '[2001-01-01,2001-01-02]';
 SELECT datespan '(2001-01-01,2001-01-02]';
 SELECT span(1, 2147483646, true, true);
 SELECT span(1, 2147483647, true, false);
+SELECT intspan '[1, 2147483647)';
+SELECT bigintspan '[1, 9223372036854775807)';
 SELECT span(1::bigint, 9223372036854775806, true, true);
 /* Errors */
 SELECT span(1, 2147483647, true, true);
 SELECT span(2147483647, 2147483647, false, true);
 SELECT span(1::bigint, 9223372036854775807, true, true);
+SELECT intspan '[1, 2147483647]';
+SELECT intspan '[1, 2147483648)';
 
 -------------------------------------------------------------------------------
 -- Transformation functions

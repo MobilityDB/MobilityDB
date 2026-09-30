@@ -178,17 +178,31 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     }
     case T_INT4:
     {
+      /* The type maximum is a value of the domain, so a failed parse is
+       * told by the error number, which #meos_errno_reset clears first */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       int i = int32_in(str);
-      if (i == PG_INT32_MAX)
+      if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = Int32GetDatum(i);
       return true;
     }
     case T_INT8:
     {
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       int64 i = int64_in(str);
-      if (i == PG_INT64_MAX)
+      if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = Int64GetDatum(i);
       return true;
     }
