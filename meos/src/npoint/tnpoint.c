@@ -428,8 +428,13 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
-  /* We are sure line is not empty */
+  /* A route that is found is not empty */
   const GSERIALIZED *line = route_geom(np->rid);
+  if (! line)
+  {
+    pfree(instants);
+    return NULL;
+  }
   int32_t srid = gserialized_get_srid(line);
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
   for (int i = 0; i < seq->count; i++)
@@ -458,7 +463,14 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
   assert(ss); assert(ss->temptype == T_TNPOINT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
+  {
     sequences[i] = tnpointseq_tgeompointseq_cont(TSEQUENCESET_SEQ_N(ss, i));
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
+  }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 

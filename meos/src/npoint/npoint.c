@@ -825,6 +825,8 @@ bool
 nsegment_set_stbox(const Nsegment *ns, STBox *box)
 {
   GSERIALIZED *geom = nsegment_to_geom(ns);
+  if (! geom)
+    return false;
   bool result = geo_set_stbox(geom, box);
   pfree(geom);
   return result;
@@ -932,6 +934,8 @@ npoint_to_geompoint(const Npoint *np)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(np, NULL);
   const GSERIALIZED *line = route_geom(np->rid);
+  if (! line)
+    return NULL;
   GSERIALIZED *result = line_interpolate_point(line, np->pos, 0);
   return result;
 }
@@ -948,6 +952,8 @@ nsegment_to_geom(const Nsegment *ns)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ns, NULL);
   const GSERIALIZED *line = route_geom(ns->rid);
+  if (! line)
+    return NULL;
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
     return line_interpolate_point(line, ns->pos1, 0);
   else
@@ -1042,6 +1048,13 @@ npointarr_geom(Npoint **points, int count)
   for (int i = 0; i < count; i++)
   {
     const GSERIALIZED *gsline = route_geom(points[i]->rid);
+    if (! gsline)
+    {
+      for (int j = 0; j < i; j++)
+        lwgeom_free(geoms[j]);
+      pfree(geoms);
+      return NULL;
+    }
     assert(gserialized_get_srid(gsline) == srid);
     LWGEOM *line = lwgeom_from_gserialized(gsline);
     geoms[i] = lwgeom_line_interpolate_point(line, points[i]->pos, srid, 0);
@@ -1073,6 +1086,11 @@ nsegmentarr_geom(Nsegment **segments, int count)
   for (int i = 0; i < count; i++)
   {
     const GSERIALIZED *line = route_geom(segments[i]->rid);
+    if (! line)
+    {
+      pfree_array((void **) geoms, i);
+      return NULL;
+    }
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = geo_copy(line);
     else if (segments[i]->pos1 == segments[i]->pos2)

@@ -315,7 +315,7 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
   /* Get or initialize the cache for this round */
   WaysCache* ways_cache = GetWaysCache();
   if (! ways_cache)
-    return true;
+    return false;
 
   /* Add the route to the cache if it is not already there */
   WaysCacheEntry *ways_entry = GetRouteFromWaysCache(ways_cache, gid, any_gid);
@@ -362,7 +362,11 @@ route_geom(int64 rid)
 {
   ways_record rec;
   if (route_lookup(rid, false, &rec) == LW_FAILURE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the geometry for route %lld", (long long) rid);
     return NULL;
+  }
   return rec.the_geom;
 }
 
