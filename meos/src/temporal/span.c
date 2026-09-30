@@ -434,9 +434,16 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   if (basetype == T_FLOAT8 && (! ensure_not_nan(DatumGetFloat8(lower)) ||
       ! ensure_not_nan(DatumGetFloat8(upper))))
     return NULL;
-  Span *s = palloc(sizeof(Span));
+  /* The span is zero-filled so that a span #span_set refuses to fill keeps
+   * no span type */
+  Span *s = palloc0(sizeof(Span));
   MeosType spantype = basetype_spantype(basetype);
   span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, s);
+  if (s->spantype != spantype)
+  {
+    pfree(s);
+    return NULL;
+  }
   return s;
 }
 
