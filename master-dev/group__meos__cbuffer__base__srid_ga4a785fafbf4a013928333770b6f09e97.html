@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: stbox_transform_pipeline</title>
+<title>MobilityDB: cbuffer_transform_pipeline</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__geo__box__srid.html">Spatial reference system functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__cbuffer__base__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,37 +79,37 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__srid_ga9c78457511755c016bf5504cb2e7be53.html#ga9c78457511755c016bf5504cb2e7be53">stbox_set_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__srid_gaab82774edf9ac6ec2f10d76476262eb6.html#gaab82774edf9ac6ec2f10d76476262eb6">stbox_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__srid_gadf587bf82851ccab9f617bf3a504340d.html#gadf587bf82851ccab9f617bf3a504340d">stbox_transform</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__srid_gac8d9fee6b39ca48c4162f436de3061b6.html#gac8d9fee6b39ca48c4162f436de3061b6">stbox_transform_pipeline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__srid_ga04d24312858a32d4f91ca37b22e4500f.html#ga04d24312858a32d4f91ca37b22e4500f">cbuffer_set_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__srid_gaf75d3bd0884262412c5708561e216682.html#gaf75d3bd0884262412c5708561e216682">cbuffer_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__srid_ga8ea26f31ed37e1b3938ec5b724d5b232.html#ga8ea26f31ed37e1b3938ec5b724d5b232">cbuffer_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__cbuffer__base__srid_ga4a785fafbf4a013928333770b6f09e97.html#ga4a785fafbf4a013928333770b6f09e97">cbuffer_transform_pipeline</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gac8d9fee6b39ca48c4162f436de3061b6" name="gac8d9fee6b39ca48c4162f436de3061b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac8d9fee6b39ca48c4162f436de3061b6">&#9670;&#160;</a></span>stbox_transform_pipeline()</h2>
+<a id="ga4a785fafbf4a013928333770b6f09e97" name="ga4a785fafbf4a013928333770b6f09e97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4a785fafbf4a013928333770b6f09e97">&#9670;&#160;</a></span>cbuffer_transform_pipeline()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSTBox.html">STBox</a> * stbox_transform_pipeline </td>
+          <td class="memname"><a class="el" href="structCbuffer.html">Cbuffer</a> * cbuffer_transform_pipeline </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>pipeline</em>, </td>
+          <td class="paramname"><em>pipelinestr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid_to</em>, </td>
+          <td class="paramname"><em>srid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -125,13 +125,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a spatiotemporal box transformed to another SRID using a pipeline. </p>
+<p>Return a circular buffer transformed to another SRID using a pipeline. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pipeline</td><td>Pipeline string </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid_to</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward @csqlfn <a class="el" href="group__mobilitydb__geo__box__srid_gab375603f064c0c89178cdace23a75cbd.html#gab375603f064c0c89178cdace23a75cbd" title="Return a spatiotemporal box transformed to an SRID using a pipeline @sqlfn transformPipeline()">Stbox_transform_pipeline()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pipelinestr</td><td>Pipeline string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward @csqlfn <a class="el" href="group__mobilitydb__cbuffer__base__srid_gaa72601ecced61005b7ce38224dee8c47.html#gaa72601ecced61005b7ce38224dee8c47" title="Return a circular buffer transformed to an SRID using a pipeline @sqlfn transformPipeline()">Cbuffer_transform_pipeline()</a> </td></tr>
   </table>
   </dd>
 </dl>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spatialset_transform_pipeline</title>
+<title>MobilityDB: tspatial_transform_pipeline</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__geo__set__srid.html">Spatial reference system functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__geo__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,37 +79,37 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_gadea5b00c87bc06eb7b7ec48413090838.html#gadea5b00c87bc06eb7b7ec48413090838">spatialset_set_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_ga22c4cd695d1996f1a3a6c6045232d003.html#ga22c4cd695d1996f1a3a6c6045232d003">spatialset_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_ga2547167783972fd6a5c2ab701b5ac451.html#ga2547167783972fd6a5c2ab701b5ac451">spatialset_transform</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__set__srid_ga7b1c32591f453b95ce8e150f23f85729.html#ga7b1c32591f453b95ce8e150f23f85729">spatialset_transform_pipeline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__srid_ga0c5a941d9da42e52baf60bba9107beae.html#ga0c5a941d9da42e52baf60bba9107beae">tspatial_set_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__srid_ga0e00e5b3e17ffec455bfd0e485b24d6e.html#ga0e00e5b3e17ffec455bfd0e485b24d6e">tspatial_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__srid_ga895a264ec147447fc5e92b044052d2e8.html#ga895a264ec147447fc5e92b044052d2e8">tspatial_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__srid_ga5abc26ef851467aa750416380280dc78.html#ga5abc26ef851467aa750416380280dc78">tspatial_transform_pipeline</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga7b1c32591f453b95ce8e150f23f85729" name="ga7b1c32591f453b95ce8e150f23f85729"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7b1c32591f453b95ce8e150f23f85729">&#9670;&#160;</a></span>spatialset_transform_pipeline()</h2>
+<a id="ga5abc26ef851467aa750416380280dc78" name="ga5abc26ef851467aa750416380280dc78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5abc26ef851467aa750416380280dc78">&#9670;&#160;</a></span>tspatial_transform_pipeline()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSet.html">Set</a> * spatialset_transform_pipeline </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tspatial_transform_pipeline </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>pipeline</em>, </td>
+          <td class="paramname"><em>pipelinestr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid_to</em>, </td>
+          <td class="paramname"><em>srid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -125,13 +125,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a spatial set transformed to another SRID using a pipeline. </p>
+<p>Return a spatiotemporal value transformed to another SRID using a pipeline. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Spatial set </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pipeline</td><td>Pipeline string </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid_to</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward @csqlfn <a class="el" href="group__mobilitydb__geo__set__srid_ga1268b33778b48a0ca713b68d4dd93c4d.html#ga1268b33778b48a0ca713b68d4dd93c4d" title="Return a spatial set transformed to an SRID using a transformation pipeline @sqlfn transformPipeline(...">Spatialset_transform_pipeline()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td>Spatiotemporal value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pipelinestr</td><td>Pipeline string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward @csqlfn <a class="el" href="group__mobilitydb__geo__srid_ga7183bef233ce6c8551a38118e6e43cc1.html#ga7183bef233ce6c8551a38118e6e43cc1" title="Return a spatiotemporal value transformed to an SRID using a pipeline @sqlfn transformPipeline()">Tspatial_transform_pipeline()</a> </td></tr>
   </table>
   </dd>
 </dl>

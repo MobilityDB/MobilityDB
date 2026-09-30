@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: posechain_transform_pipeline</title>
+<title>MobilityDB: spatialset_transform_pipeline</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__posechain__base__srid.html">Spatial reference system functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__geo__set__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,37 +79,37 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga026c9cb80bdd7e7e22aec2b515b9bb01.html#ga026c9cb80bdd7e7e22aec2b515b9bb01">posechain_set_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga1256b5d015bf2c0976f4126bcd40c321.html#ga1256b5d015bf2c0976f4126bcd40c321">posechain_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga894046d94374370400c8af5de394e941.html#ga894046d94374370400c8af5de394e941">posechain_transform</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__posechain__base__srid_gaa92d8f99f287da73b5aa3c68e5617b4f.html#gaa92d8f99f287da73b5aa3c68e5617b4f">posechain_transform_pipeline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_gadea5b00c87bc06eb7b7ec48413090838.html#gadea5b00c87bc06eb7b7ec48413090838">spatialset_set_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_ga22c4cd695d1996f1a3a6c6045232d003.html#ga22c4cd695d1996f1a3a6c6045232d003">spatialset_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__srid_ga2547167783972fd6a5c2ab701b5ac451.html#ga2547167783972fd6a5c2ab701b5ac451">spatialset_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__set__srid_ga4dff2bdb4c9b1fac0f19dfb7d13959fa.html#ga4dff2bdb4c9b1fac0f19dfb7d13959fa">spatialset_transform_pipeline</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa92d8f99f287da73b5aa3c68e5617b4f" name="gaa92d8f99f287da73b5aa3c68e5617b4f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa92d8f99f287da73b5aa3c68e5617b4f">&#9670;&#160;</a></span>posechain_transform_pipeline()</h2>
+<a id="ga4dff2bdb4c9b1fac0f19dfb7d13959fa" name="ga4dff2bdb4c9b1fac0f19dfb7d13959fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4dff2bdb4c9b1fac0f19dfb7d13959fa">&#9670;&#160;</a></span>spatialset_transform_pipeline()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structPoseChain.html">PoseChain</a> * posechain_transform_pipeline </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * spatialset_transform_pipeline </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPoseChain.html">PoseChain</a> *&#160;</td>
-          <td class="paramname"><em>pc</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>pipeline</em>, </td>
+          <td class="paramname"><em>pipelinestr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid_to</em>, </td>
+          <td class="paramname"><em>srid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -125,13 +125,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a pose chain transformed to another SRID using a transformation pipeline. </p>
+<p>Return a spatial set transformed to another SRID using a pipeline. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pc</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> chain </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pipeline</td><td>Pipeline string </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid_to</td><td>Target SRID </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is applied in the forward direction @csqlfn <a class="el" href="group__mobilitydb__posechain__base__srid_gadba84275c4dd6b4793d52065592a8140.html#gadba84275c4dd6b4793d52065592a8140" title="Return a pose chain transformed to another SRID using a transformation pipeline @sqlfn transformPipel...">Posechain_transform_pipeline()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Spatial set </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pipelinestr</td><td>Pipeline string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward @csqlfn <a class="el" href="group__mobilitydb__geo__set__srid_ga1268b33778b48a0ca713b68d4dd93c4d.html#ga1268b33778b48a0ca713b68d4dd93c4d" title="Return a spatial set transformed to an SRID using a transformation pipeline @sqlfn transformPipeline(...">Spatialset_transform_pipeline()</a> </td></tr>
   </table>
   </dd>
 </dl>

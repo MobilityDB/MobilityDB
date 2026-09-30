@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_transform_pipeline</title>
+<title>MobilityDB: posechain_transform_pipeline</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__geo__base__srid.html">Spatial reference system functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__posechain__base__srid.html">Spatial reference system functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,37 +79,37 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__srid_ga664cf0a7d6e12eccdfe64df6524a5a38.html#ga664cf0a7d6e12eccdfe64df6524a5a38">geo_set_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__srid_ga7c5b28489b023c3c303051c66581a6f8.html#ga7c5b28489b023c3c303051c66581a6f8">geo_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__srid_ga79345a6611dc257f1d62bca7b9a77f3b.html#ga79345a6611dc257f1d62bca7b9a77f3b">geo_transform</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__srid_ga25903ac0a112aeac0321d9dd270ecb28.html#ga25903ac0a112aeac0321d9dd270ecb28">geo_transform_pipeline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga026c9cb80bdd7e7e22aec2b515b9bb01.html#ga026c9cb80bdd7e7e22aec2b515b9bb01">posechain_set_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga1256b5d015bf2c0976f4126bcd40c321.html#ga1256b5d015bf2c0976f4126bcd40c321">posechain_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__srid_ga894046d94374370400c8af5de394e941.html#ga894046d94374370400c8af5de394e941">posechain_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__posechain__base__srid_ga8cf7397176771c0ffc1bc2dea0d3d128.html#ga8cf7397176771c0ffc1bc2dea0d3d128">posechain_transform_pipeline</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga25903ac0a112aeac0321d9dd270ecb28" name="ga25903ac0a112aeac0321d9dd270ecb28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga25903ac0a112aeac0321d9dd270ecb28">&#9670;&#160;</a></span>geo_transform_pipeline()</h2>
+<a id="ga8cf7397176771c0ffc1bc2dea0d3d128" name="ga8cf7397176771c0ffc1bc2dea0d3d128"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8cf7397176771c0ffc1bc2dea0d3d128">&#9670;&#160;</a></span>posechain_transform_pipeline()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geo_transform_pipeline </td>
+          <td class="memname"><a class="el" href="structPoseChain.html">PoseChain</a> * posechain_transform_pipeline </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPoseChain.html">PoseChain</a> *&#160;</td>
+          <td class="paramname"><em>pc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>pipeline</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>pipelinestr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid_to</em>, </td>
+          <td class="paramname"><em>srid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -125,17 +125,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a geometry/geography transformed to another SRID using a pipeline. </p>
+<p>Return a pose chain transformed to another SRID using a transformation pipeline. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry/geography </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pipeline</td><td>Pipeline string </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid_to</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is forward </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pc</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> chain </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pipelinestr</td><td>Pipeline string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target SRID </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True when the transformation is applied in the forward direction @csqlfn <a class="el" href="group__mobilitydb__posechain__base__srid_gadba84275c4dd6b4793d52065592a8140.html#gadba84275c4dd6b4793d52065592a8140" title="Return a pose chain transformed to another SRID using a transformation pipeline @sqlfn transformPipel...">Posechain_transform_pipeline()</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>transform_pipeline_geom(PG_FUNCTION_ARGS)</code> </dd></dl>
 
 </div>
 </div>
