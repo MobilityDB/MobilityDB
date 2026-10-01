@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ekf_build_Q</title>
+<title>MobilityDB: temporal_simplify_restore</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,7 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9">DP_STACK_SIZE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae4a7d85d9b66caa7152a62c83de74ca7.html#ae4a7d85d9b66caa7152a62c83de74ca7">ekf_build_F</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a26d3102c7cbbdcb86e8ec2a08be22bdd.html#a26d3102c7cbbdcb86e8ec2a08be22bdd">ekf_build_H_hx</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a4aabf63dbddf1d8cba0db3505b690e35.html#a4aabf63dbddf1d8cba0db3505b690e35">ekf_build_Q</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a4aabf63dbddf1d8cba0db3505b690e35.html#a4aabf63dbddf1d8cba0db3505b690e35">ekf_build_Q</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_af26dfe7e822c08a3950c34cf5fa63a4c.html#af26dfe7e822c08a3950c34cf5fa63a4c">ekf_build_R</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_afdccae2f6ac5625fa693b2646b02a529.html#afdccae2f6ac5625fa693b2646b02a529">EKF_M</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aa77a36f2da098625f2ef7618b8de7627.html#aa77a36f2da098625f2ef7618b8de7627">EKF_N</a></td></tr>
@@ -111,7 +111,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__simplify_gaf07b06fa3c38c82fe6084ab905616c51.html#gaf07b06fa3c38c82fe6084ab905616c51">temporal_simplify_min_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__simplify_gab2961508b5ef9acb1c10fabad0153274.html#gab2961508b5ef9acb1c10fabad0153274">temporal_simplify_min_tdelta</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a5f7713a51c214b88f986c5af5699c0bb.html#a5f7713a51c214b88f986c5af5699c0bb">temporal_simplify_projection</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_adf901402bbd0a810eb7bacd0c6d5285a.html#adf901402bbd0a810eb7bacd0c6d5285a">temporal_simplify_restore</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_adf901402bbd0a810eb7bacd0c6d5285a.html#adf901402bbd0a810eb7bacd0c6d5285a">temporal_simplify_restore</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__reduction_ga86d6ce21cd01e8a94216211efc12392d.html#ga86d6ce21cd01e8a94216211efc12392d">temporal_tprecision</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__reduction_ga504b6a394c946772c9a88d6747d1b30b.html#ga504b6a394c946772c9a88d6747d1b30b">temporal_tsample</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a9da29e90d11acb7062743306ad46d773.html#a9da29e90d11acb7062743306ad46d773">tfloatseq_findsplit</a></td></tr>
@@ -152,8 +152,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4aabf63dbddf1d8cba0db3505b690e35" name="a4aabf63dbddf1d8cba0db3505b690e35"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4aabf63dbddf1d8cba0db3505b690e35">&#9670;&#160;</a></span>ekf_build_Q()</h2>
+<a id="adf901402bbd0a810eb7bacd0c6d5285a" name="adf901402bbd0a810eb7bacd0c6d5285a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf901402bbd0a810eb7bacd0c6d5285a">&#9670;&#160;</a></span>temporal_simplify_restore()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,28 +162,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void ekf_build_Q </td>
+          <td class="memname">static <a class="el" href="structTemporal.html">Temporal</a> * temporal_simplify_restore </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="tinyekf__meos_8h_ac1e57113e79bc388637bb49dc896f02b.html#ac1e57113e79bc388637bb49dc896f02b">_float_t</a>&#160;</td>
-          <td class="paramname"><em>Q</em>[EKF_N *EKF_N], </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>dims</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>simp</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -193,12 +181,19 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Build process noise Q for each used axis, process noise matrix. </p>
+<p>Return a temporal value keeping the instants at the timestamps of its simplified point projection. </p>
+<p >The simplification of the projection keeps a subset of its instants, so the value deletes its instants at the other timestamps, connecting the instants on either side of each of them </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">simp</td><td>Simplified point projection of the temporal value </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

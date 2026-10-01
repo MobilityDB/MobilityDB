@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_tnumber_tgeo_type</title>
+<title>MobilityDB: temporal_simplify_projection</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,7 +92,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_afdccae2f6ac5625fa693b2646b02a529.html#afdccae2f6ac5625fa693b2646b02a529">EKF_M</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aa77a36f2da098625f2ef7618b8de7627.html#aa77a36f2da098625f2ef7618b8de7627">EKF_N</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a79655936c4fe00b133051de5da35903e.html#a79655936c4fe00b133051de5da35903e">ensure_has_twavg_temptype</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a6608721ca7ecce3f096cb770d85defa7.html#a6608721ca7ecce3f096cb770d85defa7">ensure_tnumber_tgeo_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aecba42248d9957aa68c2c09f05a882f4.html#aecba42248d9957aa68c2c09f05a882f4">ensure_tsimplify_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a09f4f8da75551a41bcf740e3786313e6.html#a09f4f8da75551a41bcf740e3786313e6">innovation_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae461ee07e546737f7c0a3a7ed1337c6c.html#ae461ee07e546737f7c0a3a7ed1337c6c">int_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a403ea583e444a2165ced0f358b927931.html#a403ea583e444a2165ced0f358b927931">MAX_MATRIX_LEN</a></td></tr>
@@ -110,6 +110,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__simplify_ga2db347c3c15dbba6b8a7c7d321b3d641.html#ga2db347c3c15dbba6b8a7c7d321b3d641">temporal_simplify_max_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__simplify_gaf07b06fa3c38c82fe6084ab905616c51.html#gaf07b06fa3c38c82fe6084ab905616c51">temporal_simplify_min_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__simplify_gab2961508b5ef9acb1c10fabad0153274.html#gab2961508b5ef9acb1c10fabad0153274">temporal_simplify_min_tdelta</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a5f7713a51c214b88f986c5af5699c0bb.html#a5f7713a51c214b88f986c5af5699c0bb">temporal_simplify_projection</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_adf901402bbd0a810eb7bacd0c6d5285a.html#adf901402bbd0a810eb7bacd0c6d5285a">temporal_simplify_restore</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__reduction_ga86d6ce21cd01e8a94216211efc12392d.html#ga86d6ce21cd01e8a94216211efc12392d">temporal_tprecision</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__reduction_ga504b6a394c946772c9a88d6747d1b30b.html#ga504b6a394c946772c9a88d6747d1b30b">temporal_tsample</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a9da29e90d11acb7062743306ad46d773.html#a9da29e90d11acb7062743306ad46d773">tfloatseq_findsplit</a></td></tr>
@@ -150,8 +152,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6608721ca7ecce3f096cb770d85defa7" name="a6608721ca7ecce3f096cb770d85defa7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6608721ca7ecce3f096cb770d85defa7">&#9670;&#160;</a></span>ensure_tnumber_tgeo_type()</h2>
+<a id="a5f7713a51c214b88f986c5af5699c0bb" name="a5f7713a51c214b88f986c5af5699c0bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f7713a51c214b88f986c5af5699c0bb">&#9670;&#160;</a></span>temporal_simplify_projection()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -160,10 +162,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool ensure_tnumber_tgeo_type </td>
+          <td class="memname">static <a class="el" href="structTemporal.html">Temporal</a> * temporal_simplify_projection </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -174,7 +176,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Ensure that a type is a temporal number or a temporal geo type, the types the simplification functions accept. </p>
+<p>Return the temporal point a temporal circular buffer or pose moves along. </p>
+<p >The simplification of these types is the one of their point projection: a circular buffer moves along its center and a pose along its position. A geodetic pose raises an error, since the projection is simplified in the plane. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
 
 </div>
 </div>
