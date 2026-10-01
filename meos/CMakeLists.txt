@@ -425,9 +425,6 @@ if(MEOS)
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_json.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pgtypes.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
