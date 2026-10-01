@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: nsegmentarr_normalize</title>
+<title>MobilityDB: srid_matches_ways</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -149,40 +149,36 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga5d8ce7ae728688c3fd034642e9508ea6.html#ga5d8ce7ae728688c3fd034642e9508ea6">nsegment_to_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga9d02e72943c2342e18b3827d5c2a1b5e.html#ga9d02e72943c2342e18b3827d5c2a1b5e">nsegment_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__conversion_gaacc3255d09dae3f59586bd860897b30c.html#gaacc3255d09dae3f59586bd860897b30c">nsegmentarr_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a8efea76e1ca25a2fa9cdf00b0631a318.html#a8efea76e1ca25a2fa9cdf00b0631a318">nsegmentarr_normalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a8efea76e1ca25a2fa9cdf00b0631a318.html#a8efea76e1ca25a2fa9cdf00b0631a318">nsegmentarr_normalize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a79b2f2f0ce64a36aac7f05f83c987041.html#a79b2f2f0ce64a36aac7f05f83c987041">nsegmentarr_sort</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8efea76e1ca25a2fa9cdf00b0631a318" name="a8efea76e1ca25a2fa9cdf00b0631a318"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8efea76e1ca25a2fa9cdf00b0631a318">&#9670;&#160;</a></span>nsegmentarr_normalize()</h2>
+<a id="a2ecf86b4af23fbd67f6bf95fce4b0222" name="a2ecf86b4af23fbd67f6bf95fce4b0222"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ecf86b4af23fbd67f6bf95fce4b0222">&#9670;&#160;</a></span>srid_matches_ways()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structNsegment.html">Nsegment</a> ** nsegmentarr_normalize </td>
+          <td class="memname">bool srid_matches_ways </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structNsegment.html">Nsegment</a> **&#160;</td>
-          <td class="paramname"><em>segments</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Normalize an array of temporal segments. </p>
+<p>Return true if an SRID stated for a network point or segment is the one of the network. </p>
+<p >A network value holds no SRID: it has the one of the routes of the ways table. A stated SRID is checked against it when the network states one, and accepted when no network is loaded, since the value then has no SRID it could contradict. The text, binary and spatiotemporal readers of the network values all decide on it </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID the input states </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

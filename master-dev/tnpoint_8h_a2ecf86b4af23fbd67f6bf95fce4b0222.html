@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnpointsegm_intersection</title>
+<title>MobilityDB: srid_matches_ways</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -105,7 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a500eea0bb13292c48067cc1065afc64e.html#a500eea0bb13292c48067cc1065afc64e">PG_GETARG_NSEGMENT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ac3b096d6102985eb5de0a897db8c4f0a.html#ac3b096d6102985eb5de0a897db8c4f0a">PG_RETURN_NPOINT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a294bdc370095b6f9fadfd13011954c56.html#a294bdc370095b6f9fadfd13011954c56">PG_RETURN_NSEGMENT_P</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ac51ca2af32726e8fa49561a4cd9b6f93.html#ac51ca2af32726e8fa49561a4cd9b6f93">tgeompointseq_tnpointseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a53e94d9a21debe114875eb43596254e6.html#a53e94d9a21debe114875eb43596254e6">tgeompointseqset_tnpointseqset</a></td></tr>
@@ -116,7 +116,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a87e3784e850f200523f3009fc3c8140f.html#a87e3784e850f200523f3009fc3c8140f">tnpointinst_route</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a9e58cbec6dc1b14dd509c21d1041bd97.html#a9e58cbec6dc1b14dd509c21d1041bd97">tnpointinst_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_abda8d6a60233ff78a9f73757aa59f1ba.html#abda8d6a60233ff78a9f73757aa59f1ba">tnpointinst_tgeompointinst</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a02155b2d8217227077f8c6d48159b543.html#a02155b2d8217227077f8c6d48159b543">tnpointsegm_intersection</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a02155b2d8217227077f8c6d48159b543.html#a02155b2d8217227077f8c6d48159b543">tnpointsegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a24d8b39bc53a23ca83e60d30cedb5a97.html#a24d8b39bc53a23ca83e60d30cedb5a97">tnpointseq_cont_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_aca9dbcdf6871726fddf384c0bb0b7082.html#aca9dbcdf6871726fddf384c0bb0b7082">tnpointseq_disc_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_af2de9053b174bcc2e59274074948552a.html#af2de9053b174bcc2e59274074948552a">tnpointseq_linear_positions</a></td></tr>
@@ -130,75 +130,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a02155b2d8217227077f8c6d48159b543" name="a02155b2d8217227077f8c6d48159b543"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02155b2d8217227077f8c6d48159b543">&#9670;&#160;</a></span>tnpointsegm_intersection()</h2>
+<a id="a2ecf86b4af23fbd67f6bf95fce4b0222" name="a2ecf86b4af23fbd67f6bf95fce4b0222"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ecf86b4af23fbd67f6bf95fce4b0222">&#9670;&#160;</a></span>srid_matches_ways()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int tnpointsegm_intersection </td>
+          <td class="memname">bool srid_matches_ways </td>
           <td>(</td>
-          <td class="paramtype">Datum&#160;</td>
-          <td class="paramname"><em>start1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">Datum&#160;</td>
-          <td class="paramname"><em>end1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Datum&#160;</td>
-          <td class="paramname"><em>start2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Datum&#160;</td>
-          <td class="paramname"><em>end2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz&#160;</td>
-          <td class="paramname"><em>lower</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz&#160;</td>
-          <td class="paramname"><em>upper</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz *&#160;</td>
-          <td class="paramname"><em>t1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz *&#160;</td>
-          <td class="paramname"><em>t2</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 or 2 if two temporal network point segments intersect during the period defined by the output timestamps, return 0 otherwise. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if an SRID stated for a network point or segment is the one of the network. </p>
+<p >A network value holds no SRID: it has the one of the routes of the ways table. A stated SRID is checked against it when the network states one, and accepted when no network is loaded, since the value then has no SRID it could contradict. The text, binary and spatiotemporal readers of the network values all decide on it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the second segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID the input states </td></tr>
   </table>
   </dd>
 </dl>
