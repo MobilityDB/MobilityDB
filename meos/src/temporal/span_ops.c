@@ -436,7 +436,7 @@ span_left(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to the left of the second one
  * @param[in] s1,s2 Spans
- * @csqlfn #Left_span_span()
+ * @csqlfn #Left_span_span(), #Before_span_span()
  */
 bool
 left_span_span(const Span *s1, const Span *s2)
@@ -508,7 +508,7 @@ span_right(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to right the of the second one
  * @param[in] s1,s2 Spans
- * @csqlfn #Right_span_span()
+ * @csqlfn #Right_span_span(), #After_span_span()
  */
 bool
 right_span_span(const Span *s1, const Span *s2)
@@ -575,7 +575,7 @@ span_overleft(const Span *s1, const Span *s2)
  * @brief Return true if the first span does not extend to the right of the
  * second one
  * @param[in] s1,s2 Spans
- * @csqlfn #Overleft_span_span()
+ * @csqlfn #Overleft_span_span(), #Overbefore_span_span()
  */
 bool
 overleft_span_span(const Span *s1, const Span *s2)
@@ -638,7 +638,7 @@ span_overright(const Span *s1, const Span *s2)
  * @brief Return true if the first span does not extend to the left of the
  * second one
  * @param[in] s1,s2 Spans
- * @csqlfn #Overright_span_span()
+ * @csqlfn #Overright_span_span(), #Overafter_span_span()
  */
 bool
 overright_span_span(const Span *s1, const Span *s2)

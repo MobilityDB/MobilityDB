@@ -325,7 +325,7 @@ left_set_value(const Set *s, Datum value)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first set is to the left of the second one
  * @param[in] s1,s2 Sets
- * @csqlfn #Left_set_set()
+ * @csqlfn #Left_set_set(), #Before_set_set()
  */
 bool
 left_set_set(const Set *s1, const Set *s2)
@@ -369,7 +369,7 @@ right_set_value(const Set *s, Datum value)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first set is to the right of the second one
  * @param[in] s1,s2 Sets
- * @csqlfn #Right_set_set()
+ * @csqlfn #Right_set_set(), #After_set_set()
  */
 bool
 right_set_set(const Set *s1, const Set *s2)
@@ -412,7 +412,7 @@ overleft_set_value(const Set *s, Datum value)
  * @brief Return true if the first set does not extend to the right of
  * the second one
  * @param[in] s1,s2 Sets
- * @csqlfn #Overleft_set_set()
+ * @csqlfn #Overleft_set_set(), #Overbefore_set_set()
  */
 bool
 overleft_set_set(const Set *s1, const Set *s2)
@@ -459,7 +459,7 @@ overright_set_value(const Set *s, Datum value)
  * @brief Return true if the first set does not extend to the left of the
  * second one
  * @param[in] s1,s2 Sets
- * @csqlfn #Overright_set_set()
+ * @csqlfn #Overright_set_set(), #Overafter_set_set()
  */
 bool
 overright_set_set(const Set *s1, const Set *s2)

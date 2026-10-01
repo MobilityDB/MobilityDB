@@ -431,7 +431,7 @@ left_value_spanset(Datum value, const SpanSet *ss)
  * @brief Return true if a span is before a span set
  * @param[in] s Span
  * @param[in] ss Span set
- * @csqlfn #Left_span_spanset()
+ * @csqlfn #Left_span_spanset(), #Before_span_spanset()
  */
 bool
 left_span_spanset(const Span *s, const SpanSet *ss)
@@ -459,7 +459,7 @@ left_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return true if a span set is to the left a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @csqlfn #Left_spanset_span()
+ * @csqlfn #Left_spanset_span(), #Before_spanset_span()
  */
 bool
 left_spanset_span(const SpanSet *ss, const Span *s)
@@ -474,7 +474,7 @@ left_spanset_span(const SpanSet *ss, const Span *s)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span set is to the left of the second one
  * @param[in] ss1,ss2 Span sets
- * @csqlfn #Left_spanset_spanset()
+ * @csqlfn #Left_spanset_spanset(), #Before_spanset_spanset()
  */
 bool
 left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -507,7 +507,7 @@ right_value_spanset(Datum value, const SpanSet *ss)
  * @brief Return true if a span is to the right of a span set
  * @param[in] s Span
  * @param[in] ss Span set
- * @csqlfn #Right_span_spanset()
+ * @csqlfn #Right_span_spanset(), #After_span_spanset()
  */
 bool
 right_span_spanset(const Span *s, const SpanSet *ss)
@@ -532,7 +532,7 @@ right_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return true if a span set is to the right of a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @csqlfn #Right_spanset_span()
+ * @csqlfn #Right_spanset_span(), #After_spanset_span()
  */
 bool
 right_spanset_span(const SpanSet *ss, const Span *s)
@@ -544,7 +544,7 @@ right_spanset_span(const SpanSet *ss, const Span *s)
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span set is to the right of the second one
  * @param[in] ss1,ss2 Span sets
- * @csqlfn #Right_spanset_spanset()
+ * @csqlfn #Right_spanset_spanset(), #After_spanset_spanset()
  */
 bool
 right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -587,7 +587,7 @@ overleft_value_spanset(Datum value, const SpanSet *ss)
  * @brief Return true if a span does not extend to the right of a span set
  * @param[in] s Span
  * @param[in] ss Span set
- * @csqlfn #Overleft_span_spanset()
+ * @csqlfn #Overleft_span_spanset(), #Overbefore_span_spanset()
  */
 bool
 overleft_span_spanset(const Span *s, const SpanSet *ss)
@@ -603,7 +603,7 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
  * @brief Return true if a span set does not extend to the right of a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @csqlfn #Overleft_spanset_span()
+ * @csqlfn #Overleft_spanset_span(), #Overbefore_spanset_span()
  */
 bool
 overleft_spanset_span(const SpanSet *ss, const Span *s)
@@ -619,7 +619,7 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
  * @brief Return true if the first span set does not extend to the right of the
  * second one
  * @param[in] ss1,ss2 Span sets
- * @csqlfn #Overleft_spanset_spanset()
+ * @csqlfn #Overleft_spanset_spanset(), #Overbefore_spanset_spanset()
  */
 bool
 overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -653,7 +653,7 @@ overright_value_spanset(Datum value, const SpanSet *ss)
  * @brief Return true if a span does not extend to the left of a span set
  * @param[in] s Span
  * @param[in] ss Span set
- * @csqlfn #Overright_span_spanset()
+ * @csqlfn #Overright_span_spanset(), #Overafter_span_spanset()
  */
 bool
 overright_span_spanset(const Span *s, const SpanSet *ss)
@@ -682,7 +682,7 @@ overright_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return true if a span set does not extend to the left of a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @csqlfn #Overright_spanset_span()
+ * @csqlfn #Overright_spanset_span(), #Overafter_spanset_span()
  */
 bool
 overright_spanset_span(const SpanSet *ss, const Span *s)
@@ -698,7 +698,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
  * @brief Return true if the first span set does not extend to the left of the
  * second one
  * @param[in] ss1,ss2 Span sets
- * @csqlfn #Overright_spanset_spanset()
+ * @csqlfn #Overright_spanset_spanset(), #Overafter_spanset_spanset()
  */
 bool
 overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
