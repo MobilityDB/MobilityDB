@@ -29,12 +29,13 @@
 
 /**
  * @file
- * @brief Test how temporal restrictions, time overlaps and the timestamp of
- * an instant report an invalid argument
+ * @brief Test how temporal restrictions, time overlaps, the timestamp of an
+ * instant and the boxes of a temporal number report an invalid argument
  * @details A program that tests how the temporal restrictions to the instants
  * before or after a timestamptz, the test of whether the time of two temporal
- * values overlaps, and the timestamp of a temporal instant report an invalid
- * argument under the noexit error handler.
+ * values overlaps, the timestamp of a temporal instant, and the value and time
+ * boxes of a temporal integer or float report an invalid argument under the
+ * noexit error handler.
  *
  * A public MEOS function tests the conditions its internal form asserts, so a
  * binding calling it with a null pointer receives an error it can raise in its
@@ -49,7 +50,9 @@
  * value of every temporal type, so a null pointer is the argument they can
  * receive wrongly. The program also verifies that #tinstant_timestamptz
  * reports a null value and a temporal sequence, the subtype it does not read,
- * and answers the timestamp of an instant.
+ * and answers the timestamp of an instant, and that #tint_value_boxes and
+ * #tfloat_time_boxes report a null value, a null count and a value of the
+ * other temporal number type, and answer the boxes of a value of their own.
  *
  * The program can be build as follows
  * @code
@@ -63,6 +66,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+#include <pg_interval.h>
 
 /* Main program */
 int main(void)
@@ -152,6 +156,50 @@ int main(void)
   assert(ts == temporal_start_timestamptz(inst));
   assert(meos_errno() == 0);
   free(inst);
+
+  /* The value and time boxes of a temporal integer or float are computed from
+   * a value of that type alone: a null value, a null count and a value of the
+   * other type are reported, and a value of the type answers its boxes */
+  int count;
+  TBox *boxes = tint_value_boxes(NULL, 1, 0, &count);
+  printf("tint_value_boxes(NULL): %s, errno %d\n",
+    boxes ? "boxes" : "NULL", meos_errno());
+  assert(boxes == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxes = tint_value_boxes(temp, 1, 0, NULL);
+  printf("tint_value_boxes(count NULL): %s, errno %d\n",
+    boxes ? "boxes" : "NULL", meos_errno());
+  assert(boxes == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  Temporal *tfloat = tfloat_in("[1.5@2001-01-01, 2.5@2001-01-03]");
+  assert(tfloat);
+  boxes = tint_value_boxes(tfloat, 1, 0, &count);
+  printf("tint_value_boxes(tfloat): %s, errno %d\n",
+    boxes ? "boxes" : "NULL", meos_errno());
+  assert(boxes == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  Interval *day = interval_in("1 day", -1);
+  boxes = tfloat_time_boxes(temp, day, t, &count);
+  printf("tfloat_time_boxes(tint): %s, errno %d\n",
+    boxes ? "boxes" : "NULL", meos_errno());
+  assert(boxes == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  boxes = tint_value_boxes(temp, 1, 0, &count);
+  printf("tint_value_boxes([1@2001-01-01, 2@2001-01-03], 1): %d boxes, "
+    "errno %d\n", boxes ? count : 0, meos_errno());
+  assert(boxes != NULL && count == 2);
+  assert(meos_errno() == 0);
+  free(boxes);
+  boxes = tfloat_time_boxes(tfloat, day, t, &count);
+  printf("tfloat_time_boxes([1.5@2001-01-01, 2.5@2001-01-03], 1 day): "
+    "%d boxes, errno %d\n", boxes ? count : 0, meos_errno());
+  assert(boxes != NULL && count == 3);
+  assert(meos_errno() == 0);
+  free(boxes); free(day); free(tfloat);
 
   free(temp);
 
