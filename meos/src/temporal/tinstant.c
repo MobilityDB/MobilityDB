@@ -92,6 +92,23 @@ tinstant_value(const TInstant *inst)
 }
 
 /**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the timestamptz of a temporal instant
+ * @param[in] inst Temporal instant
+ * @errval DT_NOEND
+ * @csqlfn #Tinstant_timestamptz()
+ */
+TimestampTz
+tinstant_timestamptz(const TInstant *inst)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(inst, DT_NOEND);
+  if (! ensure_temporal_isof_subtype((const Temporal *) inst, TINSTANT))
+    return DT_NOEND;
+  return inst->t;
+}
+
+/**
  * @brief Return the first argument initialized with the value and the
  * timestamptz
  * @param[in,out] inst Temporal instant to be modified
