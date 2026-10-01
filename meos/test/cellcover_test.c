@@ -128,8 +128,8 @@ h3_missing(const char *seg_wkt, const char *dense_wkt, int32 resolution)
   Temporal *seg = tgeompoint_in(seg_wkt);
   if (dense == NULL || seg == NULL)
     return -1;
-  Temporal *tcover = tgeompoint_to_th3index(seg, resolution);
-  Temporal *ttruth = tgeompoint_to_th3index(dense, resolution);
+  Temporal *tcover = tgeompoint_to_th3index(seg, resolution, true);
+  Temporal *ttruth = tgeompoint_to_th3index(dense, resolution, true);
   long missing = (tcover != NULL && ttruth != NULL) ? 0 : -1;
   if (tcover != NULL && ttruth != NULL)
   {
@@ -247,8 +247,8 @@ h3_geodetic_missing(const char *seg_wkt, const char *dense_wkt,
   Temporal *seg = tgeogpoint_in(seg_wkt);
   if (dense == NULL || seg == NULL)
     return -1;
-  Temporal *tcover = tgeogpoint_to_th3index(seg, resolution);
-  Temporal *ttruth = tgeogpoint_to_th3index(dense, resolution);
+  Temporal *tcover = tgeogpoint_to_th3index(seg, resolution, true);
+  Temporal *ttruth = tgeogpoint_to_th3index(dense, resolution, true);
   long missing = (tcover != NULL && ttruth != NULL) ? 0 : -1;
   if (tcover != NULL && ttruth != NULL)
   {
@@ -369,7 +369,8 @@ ts2cell_check(double lon0, double lat0, double lon1, double lat1,
   snprintf(wkt, sizeof(wkt), "[Point(%.9f %.9f)@2020-01-01 00:00:00, "
     "Point(%.9f %.9f)@2020-01-01 01:00:00]", lon0, lat0, lon1, lat1);
   Temporal *seg = tgeogpoint_in(wkt);
-  Temporal *cover = (seg != NULL) ? tgeogpoint_to_ts2cell(seg, level) : NULL;
+  Temporal *cover = (seg != NULL) ? tgeogpoint_to_ts2cell(seg, level,
+    true) : NULL;
   if (cover == NULL)
   {
     (*none)++;
@@ -498,7 +499,7 @@ int main(void)
       "Point(11.315000000 55.500000000)@2020-01-01 00:00:00.000005]";
     Temporal *seg = tgeompoint_in(fast);
     Temporal *cover = (seg != NULL) ?
-      tgeompoint_to_th3index(seg, resolution) : NULL;
+      tgeompoint_to_th3index(seg, resolution, true) : NULL;
     int ncells = 0;
     H3Index *cells = (cover != NULL) ? th3index_values(cover, &ncells) : NULL;
     printf("%-20s cells %d\n", "crossings in one us", ncells);

@@ -366,9 +366,11 @@ tpointseqset_to_ts2cell(const TSequenceSet *ss, int32 level)
 /**
  * @brief Return the temporal S2 cell of a temporal point at a level, holding
  * every cell the trajectory crosses
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  */
 static Temporal *
-tpoint_to_ts2cell(const Temporal *temp, int32 level)
+tpoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc)
 {
   if (! ensure_valid_cell_resolution(T_TS2CELL, level))
     return NULL;
@@ -384,11 +386,11 @@ tpoint_to_ts2cell(const Temporal *temp, int32 level)
         (Temporal *) tinstant_make(S2CellGetDatum(cell), T_TS2CELL, inst->t);
     }
     case TSEQUENCE:
-      return (Temporal *) tpointseq_to_ts2cell((const TSequence *) temp,
-        level);
+      return tcellindex_cover_border((Temporal *) tpointseq_to_ts2cell(
+        (const TSequence *) temp, level), border_inc);
     default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_to_ts2cell(
-        (const TSequenceSet *) temp, level);
+      return tcellindex_cover_border((Temporal *) tpointseqset_to_ts2cell(
+        (const TSequenceSet *) temp, level), border_inc);
   }
 }
 
@@ -398,14 +400,16 @@ tpoint_to_ts2cell(const Temporal *temp, int32 level)
  * holding every cell the trajectory crosses
  * @param[in] temp Temporal point
  * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @csqlfn #Tgeogpoint_to_ts2cell()
  */
 Temporal *
-tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
+tgeogpoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL);
-  return tpoint_to_ts2cell(temp, level);
+  return tpoint_to_ts2cell(temp, level, border_inc);
 }
 
 /**
@@ -416,14 +420,16 @@ tgeogpoint_to_ts2cell(const Temporal *temp, int32 level)
  * straight lines in longitude and latitude.
  * @param[in] temp Temporal point
  * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @csqlfn #Tgeompoint_to_ts2cell()
  */
 Temporal *
-tgeompoint_to_ts2cell(const Temporal *temp, int32 level)
+tgeompoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
-  return tpoint_to_ts2cell(temp, level);
+  return tpoint_to_ts2cell(temp, level, border_inc);
 }
 
 /*****************************************************************************
@@ -436,14 +442,16 @@ tgeompoint_to_ts2cell(const Temporal *temp, int32 level)
  * @details The cover states which cell the trajectory holds and when, and the
  * fragment of a cell is the trajectory over the periods the cover states for
  * it, so a fragment and the cover answer the same periods for a cell
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  */
 static Temporal **
-tpoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
-  int *count)
+tpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
+  Datum **cells, int *count)
 {
   assert(temp); assert(cells); assert(count);
   *count = 0;
-  Temporal *cover = tpoint_to_ts2cell(temp, level);
+  Temporal *cover = tpoint_to_ts2cell(temp, level, border_inc);
   if (! cover)
     return NULL;
   int ncells;
@@ -483,18 +491,21 @@ tpoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
  * cells it crosses at a level, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeompoint_s2cell_split()
  */
 Temporal **
-tgeompoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
+tgeompoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
+  Datum **cells,
   int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_s2cell_split(temp, level, cells, count);
+  return tpoint_s2cell_split(temp, level, border_inc, cells, count);
 }
 
 /**
@@ -503,18 +514,21 @@ tgeompoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
  * cells it crosses at a level, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeogpoint_s2cell_split()
  */
 Temporal **
-tgeogpoint_s2cell_split(const Temporal *temp, int32 level, Datum **cells,
+tgeogpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
+  Datum **cells,
   int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_s2cell_split(temp, level, cells, count);
+  return tpoint_s2cell_split(temp, level, border_inc, cells, count);
 }
 
 /*****************************************************************************/

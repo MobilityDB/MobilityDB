@@ -2626,8 +2626,8 @@ int main(void)
   Temporal *tp = tgeompoint_in("SRID=4326;[POINT(2.30 48.85)@2001-01-01, "
     "POINT(2.40 48.90)@2001-01-02]");
   assert(tp != NULL);
-  Temporal *coarse = tgeompoint_to_th3index(tp, 3);
-  Temporal *fine = tgeompoint_to_th3index(tp, 6);
+  Temporal *coarse = tgeompoint_to_th3index(tp, 3, true);
+  Temporal *fine = tgeompoint_to_th3index(tp, 6, true);
   assert(coarse != NULL); assert(fine != NULL);
   assert(meos_errno() == 0);
   int ncoarse, nfine;

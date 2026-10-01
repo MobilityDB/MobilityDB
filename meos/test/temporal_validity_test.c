@@ -161,41 +161,41 @@ int main(void)
    * a value of that type alone: a null value, a null count and a value of the
    * other type are reported, and a value of the type answers its boxes */
   int count;
-  TBox *boxes = tint_value_boxes(NULL, 1, 0, &count);
-  printf("tint_value_boxes(NULL): %s, errno %d\n",
+  TBox *boxes = tint_value_boxes(NULL, 1, 0, true, &count);
+  printf("tint_value_boxes(NULL, true): %s, errno %d\n",
     boxes ? "boxes" : "NULL", meos_errno());
   assert(boxes == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
-  boxes = tint_value_boxes(temp, 1, 0, NULL);
-  printf("tint_value_boxes(count NULL): %s, errno %d\n",
+  boxes = tint_value_boxes(temp, 1, 0, true, NULL);
+  printf("tint_value_boxes(count NULL, true): %s, errno %d\n",
     boxes ? "boxes" : "NULL", meos_errno());
   assert(boxes == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
   Temporal *tfloat = tfloat_in("[1.5@2001-01-01, 2.5@2001-01-03]");
   assert(tfloat);
-  boxes = tint_value_boxes(tfloat, 1, 0, &count);
-  printf("tint_value_boxes(tfloat): %s, errno %d\n",
+  boxes = tint_value_boxes(tfloat, 1, 0, true, &count);
+  printf("tint_value_boxes(tfloat, true): %s, errno %d\n",
     boxes ? "boxes" : "NULL", meos_errno());
   assert(boxes == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
   meos_errno_reset();
   Interval *day = interval_in("1 day", -1);
-  boxes = tfloat_time_boxes(temp, day, t, &count);
-  printf("tfloat_time_boxes(tint): %s, errno %d\n",
+  boxes = tfloat_time_boxes(temp, day, t, true, &count);
+  printf("tfloat_time_boxes(tint, true): %s, errno %d\n",
     boxes ? "boxes" : "NULL", meos_errno());
   assert(boxes == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
   meos_errno_reset();
-  boxes = tint_value_boxes(temp, 1, 0, &count);
-  printf("tint_value_boxes([1@2001-01-01, 2@2001-01-03], 1): %d boxes, "
+  boxes = tint_value_boxes(temp, 1, 0, true, &count);
+  printf("tint_value_boxes([1@2001-01-01, 2@2001-01-03], 1, true): %d boxes, "
     "errno %d\n", boxes ? count : 0, meos_errno());
   assert(boxes != NULL && count == 2);
   assert(meos_errno() == 0);
   free(boxes);
-  boxes = tfloat_time_boxes(tfloat, day, t, &count);
-  printf("tfloat_time_boxes([1.5@2001-01-01, 2.5@2001-01-03], 1 day): "
+  boxes = tfloat_time_boxes(tfloat, day, t, true, &count);
+  printf("tfloat_time_boxes([1.5@2001-01-01, 2.5@2001-01-03], 1 day, true): "
     "%d boxes, errno %d\n", boxes ? count : 0, meos_errno());
   assert(boxes != NULL && count == 3);
   assert(meos_errno() == 0);

@@ -74,18 +74,18 @@ typedef struct TboxGridState
 
 /*****************************************************************************/
 
-extern int span_num_bins(const Span *s, Datum size, Datum origin, 
-  Datum *start_bin, Datum *end_bin);
+extern int span_num_bins(const Span *s, Datum size, Datum origin,
+  bool border_inc, Datum *start_bin, Datum *end_bin);
 
-extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, int *count);
-extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
+extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc, int *count);
+extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc, int *count);
 
 extern SpanBinState *temporal_time_bin_init(const Temporal *temp,
-  const Interval *duration, TimestampTz torigin, int *nbins);
+  const Interval *duration, TimestampTz torigin, bool border_inc, int *nbins);
 
 extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   const TBox *box, Datum vsize, const Interval *duration, Datum xorigin,
-  TimestampTz torigin);
+  TimestampTz torigin, bool border_inc);
 extern void tbox_tile_state_next(TboxGridState *state);
 extern void tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
   int64 tunits, MeosType basetype, MeosType spantype, TBox *box);
@@ -100,10 +100,10 @@ extern Datum datum_bin(Datum value, Datum size, Datum offset,
 
 extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
   Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin,
-  int *ntiles);
+  bool border_inc, int *ntiles);
 extern TboxGridState *tbox_value_time_tile_init(const TBox *box, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
-  MeosType basetype, int *ntiles);
+  MeosType basetype, bool border_inc, int *ntiles);
 extern bool tbox_tile_state_get(TboxGridState *state, TBox *box);
 
 /*****************************************************************************/

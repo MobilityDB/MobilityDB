@@ -160,6 +160,12 @@ extern bool ensure_valid_cell(Datum value, MeosType temptype);
  */
 extern bool ensure_valid_tcell(const Temporal *temp, MeosType temptype);
 
+/**
+ * @brief Return the cover of a trajectory without the cell it enters at its
+ * last instant when the grid does not contain the upper border of its extent
+ */
+extern Temporal *tcellindex_cover_border(Temporal *cover, bool border_inc);
+
 /*****************************************************************************
  * Generic temporal entry points — shared by every DGGS.
  *

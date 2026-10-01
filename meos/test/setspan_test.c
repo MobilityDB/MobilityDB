@@ -3594,16 +3594,21 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   int64_result = bigint_get_bin(int64_in1, int64_in2, int64_in2);
   printf("bigint_get_bin(%ld, %ld, %ld): %d\n", int64_in1, int64_in2, int64_in2, int32_result);
 
-  /* Span *bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, int *count); */
-  bspan_result = bigintspan_bins(bspan1, int64_in1, int64_in2, &count);
+  /* Span *bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, true,
+    int *count); */
+  bspan_result = bigintspan_bins(bspan1, int64_in1, int64_in2, true, &count);
   char_result = bigintspan_out(bspan_result);
-  printf("bigintspan_bins(%s, %ld, %ld): %s\n", bspan1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspan_bins(%s, %ld, %ld, true): %s\n", bspan1_out, int64_in1,
+    int64_in2, char_result);
   free(bspan_result); free(char_result);
 
-  /* Span *bigintspanset_bins(spanset1, int64 vsize, int64 vorigin, int *count); */
-  bspan_result = bigintspanset_bins(bspanset1, int64_in1, int64_in2, &count);
+  /* Span *bigintspanset_bins(spanset1, int64 vsize, int64 vorigin, true,
+    int *count); */
+  bspan_result = bigintspanset_bins(bspanset1, int64_in1, int64_in2, true,
+    &count);
   char_result = bigintspan_out(bspan_result);
-  printf("bigintspanset_bins(%s, %ld, %ld): %s\n", bspanset1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspanset_bins(%s, %ld, %ld, true): %s\n", bspanset1_out,
+    int64_in1, int64_in2, char_result);
   free(bspan_result); free(char_result);
 
   /* DateADT date_get_bin(DateADT d, const Interval *duration, DateADT torigin); */
@@ -3612,9 +3617,11 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("date_get_bin(%s, %s, %s): %s\n", date1_out, interv1_out, date2_out, char_result);
   free(char_result);
 
-  /* Span *datespan_bins(const Span *s, const Interval *duration, DateADT torigin, int *count); */
-  dspanarray_result = datespan_bins(dspan1, interv1, date1, &count);
-  printf("datespan_bins(%s, %s, %s, %d): {", dspan1_out, interv1_out, date1_out, count);
+  /* Span *datespan_bins(const Span *s, const Interval *duration,
+    DateADT torigin, true, int *count); */
+  dspanarray_result = datespan_bins(dspan1, interv1, date1, true, &count);
+  printf("datespan_bins(%s, %s, %s, true, %d): {", dspan1_out, interv1_out,
+    date1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = datespan_out(&(dspanarray_result)[i]);
@@ -3627,9 +3634,11 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   }
   free(dspanarray_result);
 
-  /* Span *datespanset_bins(spanset1, const Interval *duration, DateADT torigin, int *count); */
-  dspanarray_result = datespanset_bins(dspanset1, interv1, date1, &count);
-  printf("datespanset_bins(%s, %s, %s, %d): {", dspanset1_out, interv1_out, date1_out, count);
+  /* Span *datespanset_bins(spanset1, const Interval *duration,
+    DateADT torigin, true, int *count); */
+  dspanarray_result = datespanset_bins(dspanset1, interv1, date1, true, &count);
+  printf("datespanset_bins(%s, %s, %s, true, %d): {", dspanset1_out,
+    interv1_out, date1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = datespan_out(&(dspanarray_result)[i]);
@@ -3646,32 +3655,41 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   float8_result = float_get_bin(float8_in1, float8_in1, float8_in2);
   printf("float_get_bin(%lf, %lf, %lf): %lf\n", float8_in1, float8_in1, float8_in2, float8_result);
 
-  /* Span *floatspan_bins(const Span *s, double vsize, double vorigin, int *count); */
-  fspan_result = floatspan_bins(fspan1, float8_in1, float8_in2, &count);
+  /* Span *floatspan_bins(const Span *s, double vsize, double vorigin, true,
+    int *count); */
+  fspan_result = floatspan_bins(fspan1, float8_in1, float8_in2, true, &count);
   char_result = floatspan_out(fspan_result, 6);
-  printf("floatspan_bins(%s, %lf, %lf): %s\n", fspan1_out, float8_in1, float8_in2, char_result);
+  printf("floatspan_bins(%s, %lf, %lf, true): %s\n", fspan1_out, float8_in1,
+    float8_in2, char_result);
   free(fspan_result); free(char_result);
 
-  /* Span *floatspanset_bins(spanset1, double vsize, double vorigin, int *count); */
-  fspan_result = floatspanset_bins(fspanset1, float8_in1, float8_in2, &count);
+  /* Span *floatspanset_bins(spanset1, double vsize, double vorigin, true,
+    int *count); */
+  fspan_result = floatspanset_bins(fspanset1, float8_in1, float8_in2, true,
+    &count);
   char_result = floatspan_out(fspan_result, 6);
-  printf("floatspanset_bins(%s, %lf, %lf): %s\n", fspanset1_out, float8_in1, float8_in2, char_result);
+  printf("floatspanset_bins(%s, %lf, %lf, true): %s\n", fspanset1_out,
+    float8_in1, float8_in2, char_result);
   free(fspan_result); free(char_result);
 
   /* int int_get_bin(int value, int vsize, int vorigin); */
   int32_result = int_get_bin(int32_in1, int32_in2, int32_in2);
   printf("int_get_bin(%d, %d, %d): %d\n", int32_in1, int32_in2, int32_in2, int32_result);
 
-  /* Span *intspan_bins(const Span *s, int vsize, int vorigin, int *count); */
-  ispan_result = intspan_bins(ispan1, int32_in1, int32_in2, &count);
+  /* Span *intspan_bins(const Span *s, int vsize, int vorigin, true,
+    int *count); */
+  ispan_result = intspan_bins(ispan1, int32_in1, int32_in2, true, &count);
   char_result = intspan_out(ispan_result);
-  printf("intspan_bins(%s, %d, %d): %s\n", ispan1_out, int32_in1, int32_in2, char_result);
+  printf("intspan_bins(%s, %d, %d, true): %s\n", ispan1_out, int32_in1,
+    int32_in2, char_result);
   free(ispan_result); free(char_result);
 
-  /* Span *intspanset_bins(spanset1, int vsize, int vorigin, int *count); */
-  ispan_result = intspanset_bins(ispanset1, int32_in1, int32_in2, &count);
+  /* Span *intspanset_bins(spanset1, int vsize, int vorigin, true,
+    int *count); */
+  ispan_result = intspanset_bins(ispanset1, int32_in1, int32_in2, true, &count);
   char_result = intspan_out(ispan_result);
-  printf("intspanset_bins(%s, %d, %d): %s\n", ispanset1_out, int32_in1, int32_in2, char_result);
+  printf("intspanset_bins(%s, %d, %d, true): %s\n", ispanset1_out, int32_in1,
+    int32_in2, char_result);
   free(ispan_result); free(char_result);
 
   /* TimestampTz timestamptz_get_bin(TimestampTz t, const Interval *duration, TimestampTz torigin); */
@@ -3680,16 +3698,21 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("timestamptz_get_bin(%s, %s, %s): %s\n", tstz1_out, interv1_out, tstz2_out, char_result);
   free(char_result);
 
-  /* Span *tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin, int *count); */
-  tstzspan_result = tstzspan_bins(tstzspan1, interv1, tstz2, &count);
+  /* Span *tstzspan_bins(const Span *s, const Interval *duration,
+    TimestampTz origin, true, int *count); */
+  tstzspan_result = tstzspan_bins(tstzspan1, interv1, tstz2, true, &count);
   char_result = tstzspan_out(tstzspan_result);
-  printf("tstzspan_bins(%s, %s, %s): %s\n", tstzspan1_out, interv1_out, tstz2_out, char_result);
+  printf("tstzspan_bins(%s, %s, %s, true): %s\n", tstzspan1_out, interv1_out,
+    tstz2_out, char_result);
   free(tstzspan_result); free(char_result);
 
-  /* Span *tstzspanset_bins(spanset1, const Interval *duration, TimestampTz torigin, int *count); */
-  tstzspan_result = tstzspanset_bins(tstzspanset1, interv1, tstz2, &count);
+  /* Span *tstzspanset_bins(spanset1, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tstzspan_result = tstzspanset_bins(tstzspanset1, interv1, tstz2, true,
+    &count);
   char_result = tstzspan_out(tstzspan_result);
-  printf("tstzspanset_bins(%s, %s, %s): %s\n", tstzspanset1_out, interv1_out, tstz2_out, char_result);
+  printf("tstzspanset_bins(%s, %s, %s, true): %s\n", tstzspanset1_out,
+    interv1_out, tstz2_out, char_result);
   free(tstzspan_result); free(char_result);
 
   printf("****************************************************************\n");

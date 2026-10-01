@@ -52,12 +52,14 @@
  * th3index (tgeompoint / tgeogpoint overloads)
  ******************************************************************************/
 
-CREATE FUNCTION th3index(tgeompoint, integer)
+CREATE FUNCTION th3index(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION th3index(tgeogpoint, integer)
+CREATE FUNCTION th3index(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Tgeogpoint_to_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -81,12 +83,14 @@ CREATE TYPE h3index_tgeogpoint AS (
   tpoint tgeogpoint
 );
 
-CREATE FUNCTION h3Split(tgeompoint, integer)
+CREATE FUNCTION h3Split(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF h3index_tpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_h3index_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3Split(tgeogpoint, integer)
+CREATE FUNCTION h3Split(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF h3index_tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeogpoint_h3index_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

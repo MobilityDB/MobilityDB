@@ -728,7 +728,8 @@ CREATE TYPE time_tpose AS (
 );
 
 CREATE FUNCTION timeSplit(tpose, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS setof time_tpose
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

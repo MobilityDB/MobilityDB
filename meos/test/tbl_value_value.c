@@ -222,7 +222,7 @@ int main(void)
         /******************* Tile functions *******************/
 
         int count;
-        Span *result = tstzspanset_bins(ss, i, origin, &count);
+        Span *result = tstzspanset_bins(ss, i, origin, true, &count);
         
         if (count)
         {

@@ -482,14 +482,17 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
  * the given resolution
  * @details Segments between consecutive instants are densified so every cell
  * the trajectory traverses appears in the result.
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @csqlfn #Tgeompoint_to_th3index()
  */
 Temporal *
-tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
+tgeompoint_to_th3index(const Temporal *temp, int32 resolution, bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
-  return tpoint_to_th3index_dense(temp, resolution);
+  return tcellindex_cover_border(tpoint_to_th3index_dense(temp, resolution),
+    border_inc);
 }
 
 /*****************************************************************************
@@ -502,14 +505,17 @@ tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
  * resolution
  * @details Segments between consecutive instants are densified so every cell
  * the trajectory traverses appears in the result.
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @csqlfn #Tgeogpoint_to_th3index()
  */
 Temporal *
-tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
+tgeogpoint_to_th3index(const Temporal *temp, int32 resolution, bool border_inc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL);
-  return tpoint_to_th3index_dense(temp, resolution);
+  return tcellindex_cover_border(tpoint_to_th3index_dense(temp, resolution),
+    border_inc);
 }
 
 /*****************************************************************************
@@ -522,14 +528,17 @@ tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
  * @details The cover states which cell the trajectory holds and when, and the
  * fragment of a cell is the trajectory over the periods the cover states for
  * it, so a fragment and the cover answer the same periods for a cell
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  */
 static Temporal **
-tpoint_h3index_split(const Temporal *temp, int32 resolution, Datum **cells,
-  int *count)
+tpoint_h3index_split(const Temporal *temp, int32 resolution, bool border_inc,
+  Datum **cells, int *count)
 {
   assert(temp); assert(cells); assert(count);
   *count = 0;
-  Temporal *cover = tpoint_to_th3index_dense(temp, resolution);
+  Temporal *cover = tcellindex_cover_border(
+    tpoint_to_th3index_dense(temp, resolution), border_inc);
   if (! cover)
     return NULL;
   int ncells;
@@ -569,18 +578,20 @@ tpoint_h3index_split(const Temporal *temp, int32 resolution, Datum **cells,
  * cells it crosses at a resolution, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] resolution H3 resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeompoint_h3index_split()
  */
 Temporal **
 tgeompoint_h3index_split(const Temporal *temp, int32 resolution,
-  Datum **cells, int *count)
+  bool border_inc, Datum **cells, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_h3index_split(temp, resolution, cells, count);
+  return tpoint_h3index_split(temp, resolution, border_inc, cells, count);
 }
 
 /**
@@ -589,18 +600,20 @@ tgeompoint_h3index_split(const Temporal *temp, int32 resolution,
  * cells it crosses at a resolution, and the cell of each
  * @param[in] temp Temporal point
  * @param[in] resolution H3 resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] cells Cell of each fragment
  * @param[out] count Number of fragments
  * @csqlfn #Tgeogpoint_h3index_split()
  */
 Temporal **
 tgeogpoint_h3index_split(const Temporal *temp, int32 resolution,
-  Datum **cells, int *count)
+  bool border_inc, Datum **cells, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_h3index_split(temp, resolution, cells, count);
+  return tpoint_h3index_split(temp, resolution, border_inc, cells, count);
 }
 
 /*****************************************************************************

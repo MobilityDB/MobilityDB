@@ -67,9 +67,9 @@ int main(void)
   int count;
   if (valuesplit)
     result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      vorigin, torigin, &value_bins, &time_bins, &count);
+      vorigin, torigin, true, &value_bins, &time_bins, &count);
   else
-    result = temporal_time_split(tfloat, interv, torigin, &time_bins,
+    result = temporal_time_split(tfloat, interv, torigin, true, &time_bins,
       &count);
 
   /* Print the input value to split */

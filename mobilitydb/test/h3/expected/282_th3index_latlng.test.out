@@ -436,3 +436,22 @@ WHERE valueAtTimestamp(p, t) IS NOT NULL;
       166 |          0
 (1 row)
 
+WITH v AS (
+  SELECT (dp).path[2] AS k, (dp).geom AS vtx, cell, ctr
+  FROM (SELECT h3index '8a2a1072b59ffff' AS cell,
+    cellToPoint(h3index '8a2a1072b59ffff') AS ctr,
+    ST_DumpPoints(cellToBoundary(h3index '8a2a1072b59ffff')) AS dp) d),
+t AS (
+  SELECT k, tgeompointSeq(ARRAY[
+    tgeompoint(ST_SetSRID(ctr, 4326), timestamptz '2001-01-01'),
+    tgeompoint(ST_SetSRID(vtx, 4326), timestamptz '2001-01-02')], 'linear') AS trip
+  FROM v WHERE k = 3)
+SELECT b, asText(th3index(trip, 10, b)),
+  (SELECT COUNT(*) FROM h3Split(trip, 10, b)) AS fragments
+FROM t, (VALUES (true), (false)) bb(b);
+ b |                                            astext                                            | fragments 
+---+----------------------------------------------------------------------------------------------+-----------
+ t | [8a2a1072b59ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a1072b4b7fff@Tue Jan 02 00:00:00 2001 PST] |         2
+ f | [8a2a1072b59ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a1072b59ffff@Tue Jan 02 00:00:00 2001 PST) |         1
+(2 rows)
+

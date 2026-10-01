@@ -1053,8 +1053,9 @@ SELECT (un).time FROM (SELECT unnest(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1
 					<para>Split a tpcpoint into fragments, one per time bin</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 timeSplit(tpcpoint,duration interval,
-  torigin timestamptz='2000-01-03') → {(time,tpcpoint)}
+  torigin timestamptz='2000-01-03',borderInc boolean=true) → {(time,tpcpoint)}
 </programlisting>
+					<para>The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, the fragment starting at that border and holding only it is generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
@@ -1920,8 +1921,9 @@ SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[
 					<para>Split a tpcpatch into fragments, one per time bin</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 timeSplit(tpcpatch,duration interval,
-  torigin timestamptz='2000-01-03') → {(time,tpcpatch)}
+  torigin timestamptz='2000-01-03',borderInc boolean=true) → {(time,tpcpatch)}
 </programlisting>
+					<para>The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, the fragment starting at that border and holding only it is generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),

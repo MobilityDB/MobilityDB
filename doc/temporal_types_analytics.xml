@@ -588,6 +588,8 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF;
  symbol.</para>
 
+		<para>Every bin, tile and box contains its lower bound and excludes its upper one, so a position on the boundary of two of them belongs to the one starting there. The extent of a value or of a box contains its upper bound, so when that bound lies on a boundary of the grid, the bin or tile starting there holds nothing of the extent but its upper border. The optional argument <varname>borderInc</varname>, true by default, states whether that bin or tile is part of the grid. When it is true, the border has its own bin, tile, box or fragment, so the fragments of a split cover the whole value; when it is false, the border is left out, as for an extent read without its upper bound. A value whose extent excludes its upper bound has no border to leave out and answers alike. The grids of H3 and S2 cells, which have no axis to align with the extent, assign a position on a cell boundary to one of the cells meeting there, and the cell a trajectory enters at its last instant is the one cell holding only the upper border of its extent: <varname>borderInc</varname> states whether that cell is part of the result.</para>
+
 		<sect2 xml:id="bin_functions">
 			<title>Bin Operations</title>
 
@@ -597,11 +599,13 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 					<para>Return an array of bins that cover a value or time span with bins of the same size or duration
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-bins(numspans,vsize number,vorigin number=0) → span[]
-bins(datespans,duration interval,torigin date='2000-01-03') → span[]
-bins(tstzspans,duration interval,torigin timestamptz='2000-01-03') → span[]
+bins(numspans,vsize number,vorigin number=0,borderInc boolean=true) → span[]
+bins(datespans,duration interval,torigin date='2000-01-01',
+  borderInc boolean=true) → span[]
+bins(tstzspans,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → span[]
 </programlisting>
-					<para>If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans.</para>
+					<para>If the origin is not specified, it is set by default to 0 for value spans, to Saturday, January 1, 2000 for date spans and to Monday, January 3, 2000 for timestamp spans. The optional argument <varname>borderInc</varname> states whether the upper border of the span is included and thus, the bin starting at that border and holding only it is generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
@@ -657,12 +661,13 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 					<para>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration &SRF;
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueTiles(tbox,vsize number,vorigin number=0) → {(index,tile)}
-timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
+valueTiles(tbox,vsize number,vorigin number=0,borderInc boolean=true) → {(index,tile)}
+timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → {(index,tile)}
 valueTimeTiles(tbox,vsize number,duration interval,vorigin number=0,
-  torigin timestamptz='2000-01-03') → {(index,tile)}
+  torigin timestamptz='2000-01-03',borderInc boolean=true) → {(index,tile)}
 </programlisting>
-					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively. The value size and origin have the base type of the values of the box, and a box of floats also takes integer ones.</para>
+					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively. The value size and origin have the base type of the values of the box, and a box of floats also takes integer ones. The optional argument <varname>borderInc</varname> states whether the upper border of the box is included and thus, extra tiles containing the border are generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
@@ -817,10 +822,11 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 					<indexterm significance="normal"><primary><varname>timeBins</varname></primary></indexterm>
 					<para>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
-timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
+valueBins(tnumber,vsize number,vorigin number=0,borderInc boolean=true) → numspan[]
+timeBins(temp,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → tstzspan[]
 </programlisting>
-					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</para>
+					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, the span starting at that border and holding only it is generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueBins(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
   1@2001-01-05}', 3);
@@ -846,12 +852,13 @@ SELECT timeBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
 					<indexterm significance="normal"><primary><varname>valueTimeBoxes</varname></primary></indexterm>
 					<para>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
-timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
+valueBoxes(tnumber,vsize number,vorigin number=0,borderInc boolean=true) → tbox[]
+timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → tbox[]
 valueTimeBoxes(tnumber,vsize number,duration interval,vorigin number=0,
-  torigin timestamptz='2000-01-03') → tbox[]
+  torigin timestamptz='2000-01-03',borderInc boolean=true) → tbox[]
 </programlisting>
-					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
+					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, the boxes starting at that border and holding only it are generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueBoxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
   1@2001-01-05}', 3);
@@ -932,12 +939,14 @@ SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
 					<indexterm significance="normal"><primary><varname>valueTimeSplit</varname></primary></indexterm>
 					<para>Split a temporal number with respect to value and/or time bins &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueSplit(tnumber,vsize number,vorigin number=0) → {(number,tnumber)}
-timeSplit(ttype,duration interval,torigin timestamptz='2000-01-03') → {(time,temp)}
+valueSplit(tnumber,vsize number,vorigin number=0,
+  borderInc boolean=true) → {(number,tnumber)}
+timeSplit(ttype,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → {(time,temp)}
 valueTimeSplit(tnumber,vsize number,duration interval,vorigin number=0,
-  torigin timestamptz='2000-01-03') → {(number,time,tnumber}
+  torigin timestamptz='2000-01-03',borderInc boolean=true) → {(number,time,tnumber)}
 </programlisting>
-					<para>The result is a set of pairs or a set of triples. If the origin of the value and/or the time dimension is not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
+					<para>The result is a set of pairs or a set of triples. If the origin of the value and/or the time dimension is not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, the fragments starting at that border and holding only it are generated.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (sp).number,
   (sp).tnumber FROM (SELECT valueSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05,
@@ -1024,7 +1033,8 @@ spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
-timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}
+timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03',
+  borderInc boolean=true) → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',

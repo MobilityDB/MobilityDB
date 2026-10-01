@@ -375,10 +375,17 @@ datum_bin(Datum value, Datum size, Datum origin, MeosType type)
 }
 
 /**
- * @brief Get the time bins of a temporal value
+ * @brief Get the bins of a span
+ * @details The bins are half-open and the last one holds the greatest value
+ * of the span. A grid that does not contain the upper border of the span
+ * leaves out the bin starting at its greatest value when the span extends
+ * below it, since that bin holds nothing of the span but its border, as
+ * #tile_dim_count states for a box
  * @param[in] s Span to tile
  * @param[in] size Size of the bins
  * @param[in] origin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * span
  * @param[out] start_bin,end_bin Values of the start and end bins
  * @return Number of bins
  * @pre When called for dates, this function assumes that the duration interval
@@ -386,8 +393,8 @@ datum_bin(Datum value, Datum size, Datum origin, MeosType type)
  * have a month component
  */
 int
-span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
-  Datum *end_bin)
+span_num_bins(const Span *s, Datum size, Datum origin, bool border_inc,
+  Datum *start_bin, Datum *end_bin)
 {
   assert(s); assert(start_bin); assert(end_bin);
 
@@ -397,6 +404,26 @@ span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
   *end_bin = datum_bin(s->upper, size, origin, s->basetype);
   if (s->upper_inc || ! datum_eq(*end_bin, s->upper, s->basetype))
     *end_bin = datum_add(*end_bin, size, s->basetype);
+  if (! border_inc)
+  {
+    /* The greatest value of the span: the upper bound of a discrete span in
+     * canonical form is exclusive, so its greatest value is the one before */
+    Datum greatest = s->upper;
+    bool attained = s->upper_inc;
+    if (span_canon_basetype(s->basetype))
+    {
+      greatest = datum_sub(s->upper, (s->basetype == T_INT8) ?
+        Int64GetDatum(1) : Int32GetDatum(1), s->basetype);
+      attained = true;
+    }
+    if (attained && datum_gt(greatest, s->lower, s->basetype) &&
+        datum_eq(datum_bin(greatest, size, origin, s->basetype), greatest,
+          s->basetype))
+      *end_bin = (s->basetype == T_TIMESTAMPTZ) ?
+        TimestampTzGetDatum(DatumGetTimestampTz(*end_bin) -
+          DatumGetInt64(size)) :
+        datum_sub(*end_bin, size, s->basetype);
+  }
   switch (s->basetype)
   {
     case T_INT4:
@@ -430,10 +457,13 @@ span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
  * @param[in] s ISpan to split
  * @param[in] vsize Bin size
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-span_bins(const Span *s, Datum vsize, Datum vorigin, int *count)
+span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc,
+  int *count)
 {
   assert(s); assert(count);
   /* The out parameter is defined even when a later check fails */
@@ -459,7 +489,8 @@ span_bins(const Span *s, Datum vsize, Datum vorigin, int *count)
     size1 = vsize;
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
-  int nbins = span_num_bins(s, size1, vorigin, &start_bin, &end_bin);
+  int nbins = span_num_bins(s, size1, vorigin, border_inc, &start_bin,
+    &end_bin);
   Span *bins = palloc0(sizeof(Span) * nbins);
   /* Iterate for each bin */
   Datum lower = start_bin;
@@ -479,10 +510,13 @@ span_bins(const Span *s, Datum vsize, Datum vorigin, int *count)
  * @param[in] ss Span set to split
  * @param[in] vsize Bin size
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
+spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc,
+  int *count)
 {
   assert(ss); assert(count);
   /* The out parameter is defined even when a later check fails */
@@ -508,7 +542,8 @@ spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
     size1 = vsize;
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
-  int nbins = span_num_bins(&ss->span, size1, vorigin, &start_bin, &end_bin);
+  int nbins = span_num_bins(&ss->span, size1, vorigin, border_inc, &start_bin,
+    &end_bin);
   Span *bins = palloc0(sizeof(Span) * nbins);
   /* Set the span of the state */
   /* Iterate for each bin */
@@ -542,12 +577,14 @@ spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
  * @param[in] temp Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Temporal_time_bins()
  */
 Span *
 temporal_time_bins(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -563,7 +600,7 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
   /* Compute the spans and create the resulting array */
   int nbins;
   Span *bins = span_bins(&bounds, PointerGetDatum(duration), 
-    TimestampTzGetDatum(torigin), &nbins);
+    TimestampTzGetDatum(torigin), border_inc, &nbins);
   Span *result = palloc(sizeof(Span) * nbins);
   int count1 = 0;
   for (int i = 0; i < nbins; i++)
@@ -588,11 +625,13 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
  * @param[in] temp Input span to split
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -605,7 +644,7 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
   tnumber_set_span(temp, &bounds);
   /* Compute the spans and create the resulting array */
   int nbins;
-  Span *bins = span_bins(&bounds, vsize, vorigin, &nbins);
+  Span *bins = span_bins(&bounds, vsize, vorigin, border_inc, &nbins);
   Span *result = palloc(sizeof(Span) * nbins);
   int count1 = 0;
   for (int i = 0; i < nbins; i++)
@@ -637,10 +676,12 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
  * @p NULL for value tiles
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
- */
+  * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+*/
 TboxGridState *
 tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
-  const Interval *duration, Datum vorigin, TimestampTz torigin)
+  const Interval *duration, Datum vorigin, TimestampTz torigin, bool border_inc)
 {
   assert(box);
   /* A box without value span is tiled by time alone */
@@ -659,7 +700,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
     /* The given vsize is greater than 0 */
     state->vsize = vsize;
     state->max_coords[0] = span_num_bins(&box->span, vsize, vorigin,
-      &start_bin, &end_bin) - 1;
+      border_inc, &start_bin, &end_bin) - 1;
     state->ntiles *= (state->max_coords[0] + 1);
     span_set(start_bin, end_bin, true, false, box->span.basetype,
       box->span.spantype, &state->box.span);
@@ -684,7 +725,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
     state->tunits = interval_units(duration);
     state->max_coords[1] = span_num_bins(&box->period,
       Int64GetDatum(state->tunits), TimestampTzGetDatum(torigin),
-      &start_bin, &end_bin) - 1;
+      border_inc, &start_bin, &end_bin) - 1;
     state->ntiles *= (state->max_coords[1] + 1);
     span_set(start_bin, end_bin, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
       &state->box.period);
@@ -875,13 +916,16 @@ tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize,
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] ntiles Number of tiles
  * @note The function can be used for obtaining value boxes, time boxes, and
  * value and time boxes
  */
 TboxGridState *
 tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
-  const Interval *duration, Datum vorigin, TimestampTz torigin, int *ntiles)
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  bool border_inc, int *ntiles)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(ntiles, NULL);
@@ -897,7 +941,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   tnumber_set_tbox(temp, &bounds);
   /* Create function state */
   TboxGridState *state = tbox_tile_state_make(temp, &bounds, vsize, duration,
-    vorigin, torigin);
+    vorigin, torigin, border_inc);
   *ntiles = state->ntiles;
   return state;
 }
@@ -917,6 +961,8 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
  * @param[in] torigin Origin for the time dimension
  * @param[in] basetype Base type of the value size and origin, `T_UNKNOWN`
  * when the value dimension is not used for tiling
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] ntiles Number of tiles
  * @note The function can be used for obtaining value tiles, time tiles, and
  * value and time tiles
@@ -924,7 +970,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 TboxGridState *
 tbox_value_time_tile_init(const TBox *box, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
-  MeosType basetype, int *ntiles)
+  MeosType basetype, bool border_inc, int *ntiles)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(ntiles, NULL);
@@ -964,7 +1010,7 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
 
   /* Create function state */
   TboxGridState *state = tbox_tile_state_make(NULL, box, size, duration,
-    origin, torigin);
+    origin, torigin, border_inc);
   *ntiles = state->ntiles;
   return state;
 }
@@ -978,6 +1024,8 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
  * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @note The check for parameter validity is done in function
  * #tnumber_value_time_tile_init to be shared for both MEOS and MobilityDB
@@ -985,7 +1033,8 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
  */
 TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
-  const Interval *duration, Datum vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
 {
   assert(temp); assert(count);
   /* The out parameter is defined even when a later check fails */
@@ -994,7 +1043,7 @@ tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   /* Initialize state */
   int ntiles;
   TboxGridState *state = tnumber_value_time_tile_init(temp, vsize, duration,
-    vorigin, torigin, &ntiles);
+    vorigin, torigin, border_inc, &ntiles);
   if (! state)
     return NULL;
 

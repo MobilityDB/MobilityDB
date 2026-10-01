@@ -61,7 +61,8 @@ Tgeompoint_to_th3index(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 resolution = PG_GETARG_INT32(1);
-  Temporal *result = tgeompoint_to_th3index(temp, resolution);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tgeompoint_to_th3index(temp, resolution, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -79,7 +80,8 @@ Tgeogpoint_to_th3index(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 resolution = PG_GETARG_INT32(1);
-  Temporal *result = tgeogpoint_to_th3index(temp, resolution);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tgeogpoint_to_th3index(temp, resolution, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -107,7 +109,7 @@ typedef struct
  */
 static Datum
 Tpoint_h3index_split_ext(FunctionCallInfo fcinfo,
-  Temporal **(*split)(const Temporal *, int32, Datum **, int *))
+  Temporal **(*split)(const Temporal *, int32, bool, Datum **, int *))
 {
   FuncCallContext *funcctx;
 
@@ -122,9 +124,11 @@ Tpoint_h3index_split_ext(FunctionCallInfo fcinfo,
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     int32 resolution = PG_GETARG_INT32(1);
+    bool border_inc = PG_GETARG_BOOL(2);
     /* Create function state */
     H3indexSplitState *state = palloc0(sizeof(H3indexSplitState));
-    state->frags = split(temp, resolution, &state->cells, &state->count);
+    state->frags = split(temp, resolution, border_inc, &state->cells,
+      &state->count);
     state->done = (state->count == 0);
     funcctx->user_fctx = state;
     /* Build a tuple description for the function output */

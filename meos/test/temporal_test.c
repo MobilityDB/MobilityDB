@@ -3717,9 +3717,12 @@ int main(void)
   /* Tile functions for temporal types */
   printf("****************************************************************\n");
 
-  /* Span *temporal_time_bins(const Temporal *temp, const Interval *duration, TimestampTz origin, int *count); */
-  tstzspanarray_result = temporal_time_bins(tfloat1, interv3, tstz1, &count);
-  printf("temporal_time_bins(%s, %s, %s, %d): {", tfloat1_out, interv3_out, tstz1_out, count);
+  /* Span *temporal_time_bins(const Temporal *temp, const Interval *duration,
+    TimestampTz origin, true, int *count); */
+  tstzspanarray_result = temporal_time_bins(tfloat1, interv3, tstz1, true,
+    &count);
+  printf("temporal_time_bins(%s, %s, %s, true, %d): {", tfloat1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tstzspan_out(&tstzspanarray_result[i]);
@@ -3732,9 +3735,13 @@ int main(void)
   }
   free(tstzspanarray_result);
 
-  /* Temporal **temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, TimestampTz **time_bins, int *count); */
-  tfloatarray_result = temporal_time_split(tfloat1, interv3, tstz1, &tstzarray_result, &count);
-  printf("temporal_time_split(%s, %s, %s, &tstzarray_result, %d): {", tfloat1_out, interv3_out, tstz1_out, count);
+  /* Temporal **temporal_time_split(const Temporal *temp,
+    const Interval *duration, TimestampTz torigin, true,
+    TimestampTz **time_bins, int *count); */
+  tfloatarray_result = temporal_time_split(tfloat1, interv3, tstz1, true,
+    &tstzarray_result, &count);
+  printf("temporal_time_split(%s, %s, %s, true, &tstzarray_result, %d): {",
+    tfloat1_out, interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
@@ -3751,9 +3758,11 @@ int main(void)
   free(tfloatarray_result);
   free(tstzarray_result);
 
-  /* TBox *tbigint_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tbigint_time_boxes(tbigint1, interv3, tstz1, &count);
-  printf("tbigint_time_boxes(%s, %s, %s, %d): {", tbigint1_out, interv3_out, tstz1_out, count);
+  /* TBox *tbigint_time_boxes(const Temporal *temp, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tbigint_time_boxes(tbigint1, interv3, tstz1, true, &count);
+  printf("tbigint_time_boxes(%s, %s, %s, true, %d): {", tbigint1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3766,9 +3775,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Span *tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin, int *count); */
-  ispanarray_result = tbigint_value_bins(tbigint1, int64_in1, int64_in2, &count);
-  printf("tbigint_value_bins(%s, %lld, %lld, %d): {", tbigint1_out, (long long) int64_in1, (long long) int64_in2, count);
+  /* Span *tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
+    true, int *count); */
+  ispanarray_result = tbigint_value_bins(tbigint1, int64_in1, int64_in2, true,
+    &count);
+  printf("tbigint_value_bins(%s, %lld, %lld, true, %d): {", tbigint1_out,
+    (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = bigintspan_out(&ispanarray_result[i]);
@@ -3781,9 +3793,12 @@ int main(void)
   }
   free(ispanarray_result);
 
-  /* TBox *tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin, int *count); */
-  tboxarray_result = tbigint_value_boxes(tbigint1, int64_in1, int64_in2, &count);
-  printf("tbigint_value_boxes(%s, %lld, %lld, %d): {", tbigint1_out, (long long) int64_in1, (long long) int64_in2, count);
+  /* TBox *tbigint_value_boxes(const Temporal *temp, int64 vsize,
+    int64 vorigin, true, int *count); */
+  tboxarray_result = tbigint_value_boxes(tbigint1, int64_in1, int64_in2, true,
+    &count);
+  printf("tbigint_value_boxes(%s, %lld, %lld, true, %d): {", tbigint1_out,
+    (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3796,9 +3811,11 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin, int64 **bins, int *count); */
-  tbigintarray_result = tbigint_value_split(tbigint1, int64_in1, int64_in2, &int64array_result, &count);
-  printf("tbigint_value_split(%s, %lld, %lld, &int64array_result, %d): {", tbigint1_out, (long long) int64_in1, (long long) int64_in2, count);
+  /* Temporal **tbigint_value_split(const Temporal *temp, int64 vsize,
+    int64 vorigin, true, int64 **bins, int *count); */
+  tbigintarray_result = tbigint_value_split(tbigint1, int64_in1, int64_in2,
+    true, &int64array_result, &count);
+  printf("tbigint_value_split(%s, %lld, %lld, true, &int64array_result, %d): {", tbigint1_out, (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbigint_out(tbigintarray_result[i]);
@@ -3813,9 +3830,14 @@ int main(void)
   free(int64array_result);
   free(tbigintarray_result);
 
-  /* TBox *tbigint_value_time_boxes(const Temporal *temp, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tbigint_value_time_boxes(tbigint1, int64_in1, interv3, int64_in2, tstz1, &count);
-  printf("tbigint_value_time_boxes(%s, %lld, %s, %lld, %s, %d): {", tbigint1_out, (long long) int64_in1, interv3_out, (long long) int64_in2, tstz1_out, count);
+  /* TBox *tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
+    const Interval *duration, int64 vorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tbigint_value_time_boxes(tbigint1, int64_in1, interv3,
+    int64_in2, tstz1, true, &count);
+  printf("tbigint_value_time_boxes(%s, %lld, %s, %lld, %s, true, %d): {",
+    tbigint1_out, (long long) int64_in1, interv3_out, (long long) int64_in2,
+    tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3828,9 +3850,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tbigint_value_time_split(const Temporal *temp, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int64 **value_bins, TimestampTz **time_bins, int *count); */
-  tbigintarray_result = tbigint_value_time_split(tbigint1, int64_in1, interv3, int64_in2, tstz1, &int64array_result, &tstzarray_result, &count);
-  printf("tbigint_value_time_split(%s, %lld, %s, %lld, %s, &int64array_result, &tstzarray_result, %d): {", tbigint1_out, (long long) int64_in1, interv3_out, (long long) int64_in2, tstz1_out, count);
+  /* Temporal **tbigint_value_time_split(const Temporal *temp, int64 vsize,
+    const Interval *duration, int64 vorigin, TimestampTz torigin, true,
+    int64 **value_bins, TimestampTz **time_bins, int *count); */
+  tbigintarray_result = tbigint_value_time_split(tbigint1, int64_in1, interv3,
+    int64_in2, tstz1, true, &int64array_result, &tstzarray_result, &count);
+  printf("tbigint_value_time_split(%s, %lld, %s, %lld, %s, true, &int64array_result, &tstzarray_result, %d): {", tbigint1_out, (long long) int64_in1, interv3_out, (long long) int64_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbigint_out(tbigintarray_result[i]);
@@ -3848,9 +3873,12 @@ int main(void)
   free(tstzarray_result);
   free(tbigintarray_result);
 
-  /* TBox *tbigintbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tbigintbox_time_tiles(tbigintbox1, interv3, tstz1, &count);
-  printf("tbigintbox_time_tiles(%s, %s, %s, %d): {", tbigintbox1_out, interv3_out, tstz1_out, count);
+  /* TBox *tbigintbox_time_tiles(const TBox *box, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tbigintbox_time_tiles(tbigintbox1, interv3, tstz1, true,
+    &count);
+  printf("tbigintbox_time_tiles(%s, %s, %s, true, %d): {", tbigintbox1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3863,9 +3891,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin, int *count); */
-  tboxarray_result = tbigintbox_value_tiles(tbigintbox1, int64_in1, int64_in2, &count);
-  printf("tbigintbox_value_tiles(%s, %lld, %lld, %d): {", tbigintbox1_out, (long long) int64_in1, (long long) int64_in2, count);
+  /* TBox *tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
+    true, int *count); */
+  tboxarray_result = tbigintbox_value_tiles(tbigintbox1, int64_in1, int64_in2,
+    true, &count);
+  printf("tbigintbox_value_tiles(%s, %lld, %lld, true, %d): {",
+    tbigintbox1_out, (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3878,9 +3909,14 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tbigintbox_value_time_tiles(const TBox *box, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tbigintbox_value_time_tiles(tbigintbox1, int64_in1, interv3, int64_in2, tstz1, &count);
-  printf("tbigintbox_value_time_tiles(%s, %lld, %s, %lld, %s, %d): {", tbigintbox1_out, (long long) int64_in1, interv3_out, (long long) int64_in2, tstz1_out, count);
+  /* TBox *tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
+    const Interval *duration, int64 vorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tbigintbox_value_time_tiles(tbigintbox1, int64_in1,
+    interv3, int64_in2, tstz1, true, &count);
+  printf("tbigintbox_value_time_tiles(%s, %lld, %s, %lld, %s, true, %d): {",
+    tbigintbox1_out, (long long) int64_in1, interv3_out, (long long) int64_in2,
+    tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3893,9 +3929,11 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tfloat_time_boxes(tfloat1, interv3, tstz1, &count);
-  printf("tfloat_time_boxes(%s, %s, %s, %d): {", tfloat1_out, interv3_out, tstz1_out, count);
+  /* TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tfloat_time_boxes(tfloat1, interv3, tstz1, true, &count);
+  printf("tfloat_time_boxes(%s, %s, %s, true, %d): {", tfloat1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3908,9 +3946,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Span *tfloat_value_bins(const Temporal *temp, double vsize, double vorigin, int *count); */
-  fspanarray_result = tfloat_value_bins(tfloat1, float8_in1, float8_in2, &count);
-  printf("tfloat_value_bins(%s, %lf, %lf, %s %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
+  /* Span *tfloat_value_bins(const Temporal *temp, double vsize,
+    double vorigin, true, int *count); */
+  fspanarray_result = tfloat_value_bins(tfloat1, float8_in1, float8_in2, true,
+    &count);
+  printf("tfloat_value_bins(%s, %lf, %lf, true, %s %d): {", tfloat1_out,
+    float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = floatspan_out(&fspanarray_result[i], 6);
@@ -3923,8 +3964,10 @@ int main(void)
   }
   free(fspanarray_result);
 
-  /* TBox *tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin, int *count); */
-  tboxarray_result = tfloat_value_boxes(tfloat1, float8_in1, float8_in2, &count);
+  /* TBox *tfloat_value_boxes(const Temporal *temp, double vsize,
+    double vorigin, true, int *count); */
+  tboxarray_result = tfloat_value_boxes(tfloat1, float8_in1, float8_in2, true,
+    &count);
   printf("tfloat_value_boxes(%s, %lf, %lf, %s, %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
@@ -3938,8 +3981,10 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tfloat_value_split(const Temporal *temp, double size, double origin, double **bins, int *count); */
-  tfloatarray_result = tfloat_value_split(tfloat1, float8_in1, float8_in2, &float8array_result, &count);
+  /* Temporal **tfloat_value_split(const Temporal *temp, double size,
+    double origin, true, double **bins, int *count); */
+  tfloatarray_result = tfloat_value_split(tfloat1, float8_in1, float8_in2,
+    true, &float8array_result, &count);
   printf("tfloat_value_split(%s, %lf, %lf, %s, &float8array_result, %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
@@ -3957,9 +4002,13 @@ int main(void)
   free(tfloatarray_result);
   free(float8array_result);
 
-  /* TBox *tfloat_value_time_boxes(const Temporal *temp, double vsize, const Interval *duration, double vorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tfloat_value_time_boxes(tfloat1, float8_in1, interv3, float8_in2, tstz1, &count);
-  printf("tfloat_value_time_boxes(%s, %lf, %s, %lf, %s, %d): {", tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
+  /* TBox *tfloat_value_time_boxes(const Temporal *temp, double vsize,
+    const Interval *duration, double vorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tfloat_value_time_boxes(tfloat1, float8_in1, interv3,
+    float8_in2, tstz1, true, &count);
+  printf("tfloat_value_time_boxes(%s, %lf, %s, %lf, %s, true, %d): {",
+    tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -3972,9 +4021,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tfloat_value_time_split(const Temporal *temp, double vsize, const Interval *duration, double vorigin, TimestampTz torigin, double **value_bins, TimestampTz **time_bins, int *count); */
-  tfloatarray_result = tfloat_value_time_split(tfloat1, float8_in1, interv3, float8_in2, tstz1, &float8array_result, &tstzarray_result, &count);
-  printf("tfloat_value_time_split(%s, %lf, %s, %lf, %s, &float8array_result, %d): {", tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
+  /* Temporal **tfloat_value_time_split(const Temporal *temp, double vsize,
+    const Interval *duration, double vorigin, TimestampTz torigin, true,
+    double **value_bins, TimestampTz **time_bins, int *count); */
+  tfloatarray_result = tfloat_value_time_split(tfloat1, float8_in1, interv3,
+    float8_in2, tstz1, true, &float8array_result, &tstzarray_result, &count);
+  printf("tfloat_value_time_split(%s, %lf, %s, %lf, %s, true, &float8array_result, %d): {", tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
@@ -3994,9 +4046,11 @@ int main(void)
   free(float8array_result);
   free(tstzarray_result);
 
-  /* TBox *tfloatbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tfloatbox_time_tiles(tbox1, interv3, tstz1, &count);
-  printf("tfloatbox_time_tiles(%s, %s, %s, %d): {", tbox1_out, interv3_out, tstz1_out, count);
+  /* TBox *tfloatbox_time_tiles(const TBox *box, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tfloatbox_time_tiles(tbox1, interv3, tstz1, true, &count);
+  printf("tfloatbox_time_tiles(%s, %s, %s, true, %d): {", tbox1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4009,9 +4063,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin, int *count); */
-  tboxarray_result = tfloatbox_value_tiles(tbox1, float8_in1, float8_in2, &count);
-  printf("tfloatbox_value_tiles(%s, %lf, %lf, %d): {", tbox1_out, float8_in1, float8_in2, count);
+  /* TBox *tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
+    true, int *count); */
+  tboxarray_result = tfloatbox_value_tiles(tbox1, float8_in1, float8_in2, true,
+    &count);
+  printf("tfloatbox_value_tiles(%s, %lf, %lf, true, %d): {", tbox1_out,
+    float8_in1, float8_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4024,9 +4081,13 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tfloatbox_value_time_tiles(const TBox *box, double vsize, const Interval *duration, double vorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tfloatbox_value_time_tiles(tbox1, float8_in1, interv3, float8_in2, tstz1, &count);
-  printf("tfloatbox_value_time_tiles(%s, %lf, %s, %lf, %s, %d): {", tbox1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
+  /* TBox *tfloatbox_value_time_tiles(const TBox *box, double vsize,
+    const Interval *duration, double vorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tfloatbox_value_time_tiles(tbox1, float8_in1, interv3,
+    float8_in2, tstz1, true, &count);
+  printf("tfloatbox_value_time_tiles(%s, %lf, %s, %lf, %s, true, %d): {",
+    tbox1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4039,9 +4100,11 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tint_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tint_time_boxes(tint1, interv3, tstz1, &count);
-  printf("tint_time_boxes(%s, %s, %s, %d): {", tint1_out, interv3_out, tstz1_out, count);
+  /* TBox *tint_time_boxes(const Temporal *temp, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tint_time_boxes(tint1, interv3, tstz1, true, &count);
+  printf("tint_time_boxes(%s, %s, %s, true, %d): {", tint1_out, interv3_out,
+    tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4054,9 +4117,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Span *tint_value_bins(const Temporal *temp, int vsize, int vorigin, int *count); */
-  ispanarray_result = tint_value_bins(tint1, int32_in1, int32_in2, &count);
-  printf("tint_value_bins(%s, %s, %s, %d): {", tint1_out, interv3_out, tstz1_out, count);
+  /* Span *tint_value_bins(const Temporal *temp, int vsize, int vorigin, true,
+    int *count); */
+  ispanarray_result = tint_value_bins(tint1, int32_in1, int32_in2, true,
+    &count);
+  printf("tint_value_bins(%s, %s, %s, true, %d): {", tint1_out, interv3_out,
+    tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = intspan_out(&ispanarray_result[i]);
@@ -4070,9 +4136,12 @@ int main(void)
   free(ispanarray_result);
 
 
-  /* TBox *tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count); */
-  tboxarray_result = tint_value_boxes(tint1, int32_in1, int32_in2, &count);
-  printf("tint_value_boxes(%s, %d, %d, %d): {", tint1_out, int32_in2, int32_in2, count);
+  /* TBox *tint_value_boxes(const Temporal *temp, int vsize, int vorigin, true,
+    int *count); */
+  tboxarray_result = tint_value_boxes(tint1, int32_in1, int32_in2, true,
+    &count);
+  printf("tint_value_boxes(%s, %d, %d, true, %d): {", tint1_out, int32_in2,
+    int32_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4085,9 +4154,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins, int *count); */
-  tintarray_result = tint_value_split(tint1, int32_in1, int32_in2, &int32array_result, &count);
-  printf("tint_value_split(%s, %d, %d, &ispanarray_result, %d): {", tfloat1_out, int32_in1, int32_in2, count);
+  /* Temporal **tint_value_split(const Temporal *temp, int vsize, int vorigin,
+    true, int **bins, int *count); */
+  tintarray_result = tint_value_split(tint1, int32_in1, int32_in2, true,
+    &int32array_result, &count);
+  printf("tint_value_split(%s, %d, %d, true, &ispanarray_result, %d): {",
+    tfloat1_out, int32_in1, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tint_out(tintarray_result[i]);
@@ -4102,9 +4174,13 @@ int main(void)
   free(int32array_result);
   free(tintarray_result);
 
-  /* TBox *tint_value_time_boxes(const Temporal *temp, int vsize, const Interval *duration, int vorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tint_value_time_boxes(tint1, int32_in1, interv3, int32_in2, tstz1, &count);
-  printf("tint_value_time_boxes(%s, %d, %s, %d, %s, %d): {", tfloat1_out, int32_in1, interv3_out, int32_in2, tstz1_out, count);
+  /* TBox *tint_value_time_boxes(const Temporal *temp, int vsize,
+    const Interval *duration, int vorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tint_value_time_boxes(tint1, int32_in1, interv3,
+    int32_in2, tstz1, true, &count);
+  printf("tint_value_time_boxes(%s, %d, %s, %d, %s, true, %d): {", tfloat1_out,
+    int32_in1, interv3_out, int32_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4117,9 +4193,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* Temporal **tint_value_time_split(const Temporal *temp, int size, const Interval *duration, int vorigin, TimestampTz torigin, int **value_bins, TimestampTz **time_bins, int *count); */
-  tintarray_result = tint_value_time_split(tint1, int32_in1, interv3, int32_in2, tstz1, &int32array_result, &tstzarray_result, &count);
-  printf("tint_value_time_split(%s, %d, %s, %d, &ispanarray_result, &tstzspanarray_result, %d): {", tint1_out, int32_in1, interv3_out, int32_in2, count);
+  /* Temporal **tint_value_time_split(const Temporal *temp, int size,
+    const Interval *duration, int vorigin, TimestampTz torigin, true,
+    int **value_bins, TimestampTz **time_bins, int *count); */
+  tintarray_result = tint_value_time_split(tint1, int32_in1, interv3,
+    int32_in2, tstz1, true, &int32array_result, &tstzarray_result, &count);
+  printf("tint_value_time_split(%s, %d, %s, %d, &ispanarray_result, true, &tstzspanarray_result, %d): {", tint1_out, int32_in1, interv3_out, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tint_out(tintarray_result[i]);
@@ -4137,9 +4216,11 @@ int main(void)
   free(tstzarray_result);
   free(tintarray_result);
 
-  /* TBox *tintbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, int *count); */
-  tboxarray_result = tintbox_time_tiles(tintbox1, interv3, tstz1, &count);
-  printf("tintbox_time_tiles(%s, %s, %s, %d): {", tintbox1_out, interv3_out, tstz1_out, count);
+  /* TBox *tintbox_time_tiles(const TBox *box, const Interval *duration,
+    TimestampTz torigin, true, int *count); */
+  tboxarray_result = tintbox_time_tiles(tintbox1, interv3, tstz1, true, &count);
+  printf("tintbox_time_tiles(%s, %s, %s, true, %d): {", tintbox1_out,
+    interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4152,9 +4233,12 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tintbox_value_tiles(const TBox *box, int xsize, int xorigin, int *count); */
-  tboxarray_result = tintbox_value_tiles(tintbox1, int32_in1, int32_in2, &count);
-  printf("tintbox_value_tiles(%s, %d, %d, %d): {", tintbox1_out, int32_in1, int32_in2, count);
+  /* TBox *tintbox_value_tiles(const TBox *box, int xsize, int xorigin, true,
+    int *count); */
+  tboxarray_result = tintbox_value_tiles(tintbox1, int32_in1, int32_in2, true,
+    &count);
+  printf("tintbox_value_tiles(%s, %d, %d, true, %d): {", tintbox1_out,
+    int32_in1, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);
@@ -4167,9 +4251,13 @@ int main(void)
   }
   free(tboxarray_result);
 
-  /* TBox *tintbox_value_time_tiles(const TBox *box, int xsize, const Interval *duration, int xorigin, TimestampTz torigin, int *count); */
-  tboxarray_result = tintbox_value_time_tiles(tintbox1, int32_in1, interv3, int32_in2, tstz1, &count);
-  printf("tintbox_value_time_tiles(%s, %d, %s, %d, %s, %d): {", tintbox1_out, int32_in1, interv3_out, int32_in2, tstz1_out, count);
+  /* TBox *tintbox_value_time_tiles(const TBox *box, int xsize,
+    const Interval *duration, int xorigin, TimestampTz torigin, true,
+    int *count); */
+  tboxarray_result = tintbox_value_time_tiles(tintbox1, int32_in1, interv3,
+    int32_in2, tstz1, true, &count);
+  printf("tintbox_value_time_tiles(%s, %d, %s, %d, %s, true, %d): {",
+    tintbox1_out, int32_in1, interv3_out, int32_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
     char_result = tbox_out(&tboxarray_result[i], 6);

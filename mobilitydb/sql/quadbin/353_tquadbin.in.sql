@@ -604,7 +604,8 @@ CREATE TYPE time_tquadbin AS (
 );
 
 CREATE FUNCTION timeSplit(tquadbin, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS setof time_tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

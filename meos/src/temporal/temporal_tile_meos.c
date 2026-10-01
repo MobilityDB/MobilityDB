@@ -67,11 +67,13 @@
  * dimension, may be `NULL`
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 TBox *
 tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
-  Datum vorigin, TimestampTz torigin, int *count)
+  Datum vorigin, TimestampTz torigin, bool border_inc, int *count)
 {
   assert(box); assert(count);
   assert(! MEOS_FLAGS_GET_X(box->flags) ||
@@ -79,7 +81,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   assert(! duration || positive_duration(duration));
 
   TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,
-    vorigin, torigin);
+    vorigin, torigin, border_inc);
   int count1 = state->ntiles;
 
   /* Compute the tiles */
@@ -133,12 +135,14 @@ ensure_valid_tbox_tiles(const TBox *box, double vsize,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_time_tiles()
  */
 TBox *
 tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
-  int vorigin, TimestampTz torigin, int *count)
+  int vorigin, TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
@@ -146,7 +150,7 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_INTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
-    Int32GetDatum(vorigin), torigin, count);
+    Int32GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /**
@@ -157,12 +161,15 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_time_tiles()
  */
 TBox *
 tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
-  const Interval *duration, int64 vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, int64 vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
@@ -170,7 +177,7 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_BIGINTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int64GetDatum(vsize), duration,
-    Int64GetDatum(vorigin), torigin, count);
+    Int64GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /**
@@ -181,12 +188,15 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_time_tiles()
  */
 TBox *
 tfloatbox_value_time_tiles(const TBox *box, double vsize,
-  const Interval *duration, double vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, double vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
@@ -194,7 +204,7 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
       ! ensure_valid_tbox_tiles(box, vsize, duration, T_FLOATSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
-    Float8GetDatum(vorigin), torigin, count);
+    Float8GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /**
@@ -203,13 +213,17 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_tiles()
  */
 TBox *
-tintbox_value_tiles(const TBox *box, int vsize, int vorigin, int *count)
+tintbox_value_tiles(const TBox *box, int vsize, int vorigin, bool border_inc,
+  int *count)
 {
-  return tintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, count);
+  return tintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
+    count);
 }
 
 /**
@@ -218,14 +232,17 @@ tintbox_value_tiles(const TBox *box, int vsize, int vorigin, int *count)
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_tiles()
  */
 TBox *
 tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
-  return tbigintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, count);
+  return tbigintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
+    count);
 }
 
 /**
@@ -234,14 +251,17 @@ tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_value_tiles()
  */
 TBox *
 tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
-  return tfloatbox_value_time_tiles(box, vsize, NULL, vorigin, 0, count);
+  return tfloatbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
+    count);
 }
 
 /**
@@ -250,14 +270,17 @@ tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
  * @param[in] box Input box to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_time_tiles()
  */
 TBox *
 tintbox_time_tiles(const TBox *box, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
-  return tintbox_value_time_tiles(box, 0, duration, 0, torigin, count);
+  return tintbox_value_time_tiles(box, 0, duration, 0, torigin, border_inc,
+    count);
 }
 
 /**
@@ -266,14 +289,17 @@ tintbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] box Input box to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_time_tiles()
  */
 TBox *
 tbigintbox_time_tiles(const TBox *box, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
-  return tbigintbox_value_time_tiles(box, 0, duration, 0, torigin, count);
+  return tbigintbox_value_time_tiles(box, 0, duration, 0, torigin, border_inc,
+    count);
 }
 
 /**
@@ -282,14 +308,17 @@ tbigintbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] box Input box to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_time_tiles()
  */
 TBox *
 tfloatbox_time_tiles(const TBox *box, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
-  return tfloatbox_value_time_tiles(box, 0.0, duration, 0.0, torigin, count);
+  return tfloatbox_value_time_tiles(box, 0.0, duration, 0.0, torigin,
+    border_inc, count);
 }
 
 /*****************************************************************************
@@ -303,16 +332,19 @@ tfloatbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] temp Temporal value
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_boxes()
  */
 TBox *
-tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
+tint_value_boxes(const Temporal *temp, int vsize, int vorigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), NULL,
-    Int32GetDatum(vorigin), 0, count);
+    Int32GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -322,17 +354,19 @@ tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
  * @param[in] temp Temporal value
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
 tint_time_boxes(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(0), duration,
-    Int32GetDatum(0), torigin, count);
+    Int32GetDatum(0), torigin, border_inc, count);
 }
 
 /**
@@ -344,17 +378,20 @@ tint_time_boxes(const Temporal *temp, const Interval *duration,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tint_value_time_boxes(const Temporal *temp, int vsize,
-  const Interval *duration, int vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, int vorigin, TimestampTz torigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
-    Int32GetDatum(vorigin), torigin, count);
+    Int32GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /*****************************************************************************/
@@ -366,17 +403,19 @@ tint_value_time_boxes(const Temporal *temp, int vsize,
  * @param[in] temp Temporal value
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_boxes()
  */
 TBox *
 tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), NULL,
-    Int64GetDatum(vorigin), 0, count);
+    Int64GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -386,17 +425,19 @@ tbigint_value_boxes(const Temporal *temp, int64 vsize, int64 vorigin,
  * @param[in] temp Temporal value
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
 tbigint_time_boxes(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(0), duration,
-    Int64GetDatum(0), torigin, count);
+    Int64GetDatum(0), torigin, border_inc, count);
 }
 
 /**
@@ -408,17 +449,20 @@ tbigint_time_boxes(const Temporal *temp, const Interval *duration,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
-  const Interval *duration, int64 vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, int64 vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), duration,
-    Int64GetDatum(vorigin), torigin, count);
+    Int64GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /*****************************************************************************/
@@ -430,17 +474,19 @@ tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
  * @param[in] temp Temporal value
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_boxes()
  */
 TBox *
 tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), NULL,
-    Float8GetDatum(vorigin), 0, count);
+    Float8GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -450,17 +496,19 @@ tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
  * @param[in] temp Temporal value
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
 tfloat_time_boxes(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(0.0), duration,
-    Float8GetDatum(0.0), torigin, count);
+    Float8GetDatum(0.0), torigin, border_inc, count);
 }
 
 /**
@@ -472,17 +520,20 @@ tfloat_time_boxes(const Temporal *temp, const Interval *duration,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tfloat_value_time_boxes(const Temporal *temp, double vsize,
-  const Interval *duration, double vorigin, TimestampTz torigin, int *count)
+  const Interval *duration, double vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
-    Float8GetDatum(vorigin), torigin, count);
+    Float8GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /*****************************************************************************
@@ -538,7 +589,9 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start, int64 tunits,
       nfrags = 0;  /* counter for resulting fragments */
   TimestampTz lower = start;
   TimestampTz upper = start + tunits;
-  while (i < seq->count)
+  /* The instants past the last of the bins are in none of them */
+  TimestampTz end = start + tunits * count;
+  while (i < seq->count && lower < end)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (lower <= inst->t && inst->t < upper)
@@ -618,9 +671,11 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
   while (i < seq->count)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    /* If the instant is in the bin */
+    /* If the instant is in the bin, or is the end value of the bin on a
+     * linear segment continuing past it: the bins are half-open, so the last
+     * instant on the upper bound of a bin starts the next one */
     if ((lower <= inst->t && inst->t < upper) ||
-      (inst->t == upper && (interp == LINEAR || i == seq->count - 1)))
+      (inst->t == upper && interp == LINEAR && i < seq->count - 1))
     {
       instants[ninsts++] = (TInstant *) inst;
       i++;
@@ -843,13 +898,15 @@ temporal_time_split_intl(const Temporal *temp, TimestampTz start,
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_time_split()
  */
 Temporal **
 temporal_time_split(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, TimestampTz **bins, int *count)
+  TimestampTz torigin, bool border_inc, TimestampTz **bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -864,7 +921,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   Datum start_bin, end_bin;
   int64 tunits = interval_units(duration);
   int nbins = span_num_bins(&s, Int64GetDatum(tunits),
-    TimestampTzGetDatum(torigin), &start_bin, &end_bin);
+    TimestampTzGetDatum(torigin), border_inc, &start_bin, &end_bin);
   return temporal_time_split_intl(temp, DatumGetTimestampTz(start_bin),
     DatumGetTimestampTz(end_bin), tunits, torigin, nbins, bins, count);
 }
@@ -1377,12 +1434,14 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] vorigin Origin of the value bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] bins Array of start values of the bins containing the fragments
  * @param[out] count Number of values in the output arrays
  */
 Temporal **
 tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin,
-  Datum **bins, int *count)
+  bool border_inc, Datum **bins, int *count)
 {
   assert(temp); assert(bins); assert(count);
   assert(tnumber_type(temp->temptype));
@@ -1390,26 +1449,42 @@ tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin,
   /* Compute the value bounds */
   Span s;
   tnumber_set_span(temp, &s);
-  Datum start_bin, end_bin;
-  int nbins = span_num_bins(&s, vsize, vorigin, &start_bin, &end_bin);
+  Datum start_bin, end_bin, end_bin_border;
+  int nbins = span_num_bins(&s, vsize, vorigin, true, &start_bin, &end_bin);
 
-  /* Split the temporal value */
+  /* Split the temporal value over every bin, since the kernels place each
+   * piece by the position of its bin */
+  Temporal **result;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal **) tnumberinst_value_split((const TInstant *) temp,
+      result = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
         start_bin, vsize, bins, count);
+      break;
     case TSEQUENCE:
-      return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
         (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
           start_bin, vsize, nbins, bins, count) :
         (Temporal **) tnumberseq_cont_value_split((const TSequence *) temp,
           start_bin, vsize, nbins, bins, count);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal **) tnumberseqset_value_split(
+      result = (Temporal **) tnumberseqset_value_split(
         (const TSequenceSet *) temp, start_bin, vsize, nbins, bins, count);
   }
+
+  /* A grid not containing the upper border of the values leaves out the bin
+   * starting at it, the last one, which holds nothing but that border */
+  if (! border_inc && span_num_bins(&s, vsize, vorigin, false, &start_bin,
+        &end_bin_border) < nbins && *count > 0 &&
+      datum_eq((*bins)[*count - 1], end_bin_border,
+        temptype_basetype(temp->temptype)))
+  {
+    pfree(result[*count - 1]);
+    (*count)--;
+  }
+  return result;
 }
 
 /*****************************************************************************/
@@ -1417,11 +1492,13 @@ tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin,
 /**
  * @brief Return a temporal value split according to a base value and possibly
  * a temporal grid
- */
+  * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+*/
 Temporal **
 tnumber_value_time_split(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
-  Datum **value_bins, TimestampTz **time_bins, int *count)
+  bool border_inc, Datum **value_bins, TimestampTz **time_bins, int *count)
 {
   assert(temp); assert(count); assert(tnumber_type(temp->temptype));
   MeosType basetype = temptype_basetype(temp->temptype);
@@ -1431,13 +1508,13 @@ tnumber_value_time_split(const Temporal *temp, Datum vsize,
   /* Compute the value bounds */
   Span s;
   tnumber_set_span(temp, &s);
-  int value_count = span_num_bins(&s, vsize, vorigin, &start_bin,
+  int value_count = span_num_bins(&s, vsize, vorigin, border_inc, &start_bin,
     &end_bin);
   /* Compute the time bounds */
   temporal_set_tstzspan(temp, &s);
   int64 tunits = interval_units(duration);
   int time_count = span_num_bins(&s, Int64GetDatum(tunits),
-    TimestampTzGetDatum(torigin), &start_time_bin, &end_time_bin);
+    TimestampTzGetDatum(torigin), border_inc, &start_time_bin, &end_time_bin);
   TimestampTz start_time = DatumGetTimestampTz(start_time_bin);
   TimestampTz end_time = DatumGetTimestampTz(end_time_bin);
   /* Total number of tiles */
@@ -1496,12 +1573,15 @@ tnumber_value_time_split(const Temporal *temp, Datum vsize,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] vorigin Value origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
-tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins,
+tint_value_split(const Temporal *temp, int vsize, int vorigin, bool border_inc,
+  int **bins,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
@@ -1514,7 +1594,7 @@ tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Int32GetDatum(vsize),
-    Int32GetDatum(vorigin), &datum_bins, count);
+    Int32GetDatum(vorigin), border_inc, &datum_bins, count);
   /* Transform the datum bins into integer bins and return */
   int *values = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
@@ -1532,13 +1612,15 @@ tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] vorigin Value origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
 tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
-  int64 **bins, int *count)
+  bool border_inc, int64 **bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1550,7 +1632,7 @@ tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Int64GetDatum(vsize),
-    Int64GetDatum(vorigin), &datum_bins, count);
+    Int64GetDatum(vorigin), border_inc, &datum_bins, count);
   /* Transform the datum bins into big integer bins and return */
   int64 *values = palloc(sizeof(int64) * *count);
   for (int i = 0; i < *count; i++)
@@ -1567,13 +1649,15 @@ tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] vorigin Value origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] bins Array of bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
 tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
-  double **bins, int *count)
+  bool border_inc, double **bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1585,7 +1669,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Float8GetDatum(vsize),
-    Float8GetDatum(vorigin), &datum_bins, count);
+    Float8GetDatum(vorigin), border_inc, &datum_bins, count);
   /* Transform the datum bins into float bins and return */
   double *values = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
@@ -1605,6 +1689,8 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
  * @param[in] duration Size of the time bins
  * @param[in] vorigin Time origin of the bins
  * @param[in] torigin Time origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] value_bins Array of value bins
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
@@ -1612,7 +1698,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
  */
 Temporal **
 tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
-  int vorigin, TimestampTz torigin, int **value_bins,
+  int vorigin, TimestampTz torigin, bool border_inc, int **value_bins,
   TimestampTz **time_bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
@@ -1625,7 +1711,8 @@ tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(vsize),
-    duration, Int32GetDatum(vorigin), torigin, &datum_bins, time_bins,
+    duration, Int32GetDatum(vorigin), torigin, border_inc, &datum_bins,
+    time_bins,
     count);
 
   /* Transform the datum bins into integer bins and return */
@@ -1649,6 +1736,8 @@ tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
  * @param[in] duration Size of the time bins
  * @param[in] vorigin Value origin of the bins
  * @param[in] torigin Time origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] value_bins Array of value bins
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
@@ -1657,7 +1746,7 @@ tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
 Temporal **
 tbigint_value_time_split(const Temporal *temp, int64 vsize,
   const Interval *duration, int64 vorigin, TimestampTz torigin,
-  int64 **value_bins, TimestampTz **time_bins, int *count)
+  bool border_inc, int64 **value_bins, TimestampTz **time_bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1670,7 +1759,8 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Int64GetDatum(vsize),
-    duration, Int64GetDatum(vorigin), torigin, &datum_bins, time_bins,
+    duration, Int64GetDatum(vorigin), torigin, border_inc, &datum_bins,
+    time_bins,
     count);
 
   /* Transform the datum bins into big integer bins and return */
@@ -1694,6 +1784,8 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
  * @param[in] duration Size of the time bins
  * @param[in] vorigin Time origin of the bins
  * @param[in] torigin Time origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] value_bins Array of value bins
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
@@ -1702,7 +1794,7 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
 Temporal **
 tfloat_value_time_split(const Temporal *temp, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin,
-  double **value_bins, TimestampTz **time_bins, int *count)
+  bool border_inc, double **value_bins, TimestampTz **time_bins, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1714,7 +1806,8 @@ tfloat_value_time_split(const Temporal *temp, double vsize,
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Float8GetDatum(vsize),
-    duration, Float8GetDatum(vorigin), torigin, &datum_bins, time_bins,
+    duration, Float8GetDatum(vorigin), torigin, border_inc, &datum_bins,
+    time_bins,
     count);
 
   /* Transform the datum bins into float bins and return */

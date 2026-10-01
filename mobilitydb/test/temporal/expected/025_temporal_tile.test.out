@@ -1126,3 +1126,176 @@ SELECT tprecision(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', tor
  Interp=Step;[1@Mon Jan 01 00:00:00 2001 PST, 5@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+SELECT b, bins(floatspan '[1, 5]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+ b |             bins             
+---+------------------------------
+ t | {"[1, 3)","[3, 5)","[5, 7)"}
+ f | {"[1, 3)","[3, 5)"}
+(2 rows)
+
+SELECT b, bins(intspan '[1, 5]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+ b |             bins             
+---+------------------------------
+ t | {"[1, 3)","[3, 5)","[5, 7)"}
+ f | {"[1, 3)","[3, 5)"}
+(2 rows)
+
+SELECT b, bins(tstzspan '[2001-09-01, 2001-09-03]', '1 day', '2001-09-01', b)
+  FROM (VALUES (true), (false)) t(b);
+ b |                                                                                              bins                                                                                              
+---+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {"[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT)","[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT)","[Mon Sep 03 00:00:00 2001 PDT, Tue Sep 04 00:00:00 2001 PDT)"}
+ f | {"[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT)","[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT)"}
+(2 rows)
+
+SELECT b, bins(datespan '[2001-09-01, 2001-09-03]', '1 day', '2001-09-01', b)
+  FROM (VALUES (true), (false)) t(b);
+ b |                                        bins                                        
+---+------------------------------------------------------------------------------------
+ t | {"[09-01-2001, 09-02-2001)","[09-02-2001, 09-03-2001)","[09-03-2001, 09-04-2001)"}
+ f | {"[09-01-2001, 09-02-2001)","[09-02-2001, 09-03-2001)"}
+(2 rows)
+
+SELECT b, bins(floatspanset '{[1, 2], [4, 5]}', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+ b |             bins             
+---+------------------------------
+ t | {"[1, 2]","[4, 5)","[5, 5]"}
+ f | {"[1, 2]","[4, 5)"}
+(2 rows)
+
+SELECT b, timeBins(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b) FROM (VALUES (true), (false)) t(b);
+ b |                                                                                            timebins                                                                                            
+---+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {"[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT)","[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT)","[Mon Sep 03 00:00:00 2001 PDT, Tue Sep 04 00:00:00 2001 PDT)"}
+ f | {"[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT)","[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT)"}
+(2 rows)
+
+SELECT b, valueBins(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+ b |          valuebins           
+---+------------------------------
+ t | {"[1, 3)","[3, 5)","[5, 7)"}
+ f | {"[1, 3)","[3, 5)"}
+(2 rows)
+
+SELECT b, valueBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+ b |                                                                                                                          valueboxes                                                                                                                           
+---+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))","TBOXFLOAT XT([5, 5],[Mon Sep 03 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT])"}
+ f | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))"}
+(2 rows)
+
+SELECT b, timeBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b) FROM (VALUES (true), (false)) t(b);
+ b |                                                                                                                           timeboxes                                                                                                                           
+---+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))","TBOXFLOAT XT([5, 5],[Mon Sep 03 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT])"}
+ f | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))"}
+(2 rows)
+
+SELECT b, valueTimeBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, '1 day', 1, '2001-09-01', b) FROM (VALUES (true), (false)) t(b);
+ b |                                                                                                                        valuetimeboxes                                                                                                                         
+---+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ t | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))","TBOXFLOAT XT([5, 5],[Mon Sep 03 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT])"}
+ f | {"TBOXFLOAT XT([1, 3),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))","TBOXFLOAT XT([3, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))"}
+(2 rows)
+
+SELECT b, (valueTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, 1.0, b)).*
+  FROM (VALUES (true), (false)) t(b);
+ b | index |        tile         
+---+-------+---------------------
+ t |     1 | TBOXFLOAT X([1, 3))
+ t |     2 | TBOXFLOAT X([3, 5))
+ t |     3 | TBOXFLOAT X([5, 7))
+ f |     1 | TBOXFLOAT X([1, 3))
+ f |     2 | TBOXFLOAT X([3, 5))
+(5 rows)
+
+SELECT b, (timeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', duration := '1 day', torigin := '2001-09-01', borderInc := b)).*
+  FROM (VALUES (true), (false)) t(b);
+ b | index |                                       tile                                        
+---+-------+-----------------------------------------------------------------------------------
+ t |     1 | TBOXFLOAT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+ t |     2 | TBOXFLOAT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+ t |     3 | TBOXFLOAT XT([1, 6),[Mon Sep 03 00:00:00 2001 PDT, Tue Sep 04 00:00:00 2001 PDT))
+ f |     1 | TBOXFLOAT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+ f |     2 | TBOXFLOAT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+(5 rows)
+
+SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b),
+  valueTimeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, '1 day', 1.0,
+    '2001-09-01', b) GROUP BY b ORDER BY b DESC;
+ b | count 
+---+-------
+ t |     9
+ f |     4
+(2 rows)
+
+SELECT b, (valueSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b)).* FROM (VALUES (true), (false)) t(b);
+ b | number |                              tnumber                               
+---+--------+--------------------------------------------------------------------
+ t |      1 | {[1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)}
+ t |      3 | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
+ t |      5 | {[5@Mon Sep 03 00:00:00 2001 PDT]}
+ f |      1 | {[1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)}
+ f |      3 | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
+(5 rows)
+
+SELECT b, (valueSplit(tint '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b)).* FROM (VALUES (true), (false)) t(b);
+ b | number |                              tnumber                               
+---+--------+--------------------------------------------------------------------
+ t |      1 | {[1@Sat Sep 01 00:00:00 2001 PDT, 1@Sun Sep 02 00:00:00 2001 PDT)}
+ t |      3 | {[3@Sun Sep 02 00:00:00 2001 PDT, 3@Mon Sep 03 00:00:00 2001 PDT)}
+ t |      5 | {[5@Mon Sep 03 00:00:00 2001 PDT]}
+ f |      1 | {[1@Sat Sep 01 00:00:00 2001 PDT, 1@Sun Sep 02 00:00:00 2001 PDT)}
+ f |      3 | {[3@Sun Sep 02 00:00:00 2001 PDT, 3@Mon Sep 03 00:00:00 2001 PDT)}
+(5 rows)
+
+SELECT b, (timeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+ b |             time             |                               temp                               
+---+------------------------------+------------------------------------------------------------------
+ t | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)
+ t | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)
+ t | Mon Sep 03 00:00:00 2001 PDT | [5@Mon Sep 03 00:00:00 2001 PDT]
+ f | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)
+ f | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)
+(5 rows)
+
+SELECT b, (timeSplit(tint '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+ b |             time             |                               temp                               
+---+------------------------------+------------------------------------------------------------------
+ t | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 1@Sun Sep 02 00:00:00 2001 PDT)
+ t | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 3@Mon Sep 03 00:00:00 2001 PDT)
+ t | Mon Sep 03 00:00:00 2001 PDT | [5@Mon Sep 03 00:00:00 2001 PDT]
+ f | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 1@Sun Sep 02 00:00:00 2001 PDT)
+ f | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 3@Mon Sep 03 00:00:00 2001 PDT)
+(5 rows)
+
+SELECT b, (timeSplit(tint '{1@2001-09-01, 3@2001-09-02, 5@2001-09-03}', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+ b |             time             |               temp               
+---+------------------------------+----------------------------------
+ t | Sat Sep 01 00:00:00 2001 PDT | {1@Sat Sep 01 00:00:00 2001 PDT}
+ t | Sun Sep 02 00:00:00 2001 PDT | {3@Sun Sep 02 00:00:00 2001 PDT}
+ t | Mon Sep 03 00:00:00 2001 PDT | {5@Mon Sep 03 00:00:00 2001 PDT}
+ f | Sat Sep 01 00:00:00 2001 PDT | {1@Sat Sep 01 00:00:00 2001 PDT}
+ f | Sun Sep 02 00:00:00 2001 PDT | {3@Sun Sep 02 00:00:00 2001 PDT}
+(5 rows)
+
+SELECT b, (timeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03)', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+ b |             time             |                               temp                               
+---+------------------------------+------------------------------------------------------------------
+ t | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)
+ t | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)
+ f | Sat Sep 01 00:00:00 2001 PDT | [1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)
+ f | Sun Sep 02 00:00:00 2001 PDT | [3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)
+(4 rows)
+
+SELECT b, (valueTimeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, '1 day', 1, '2001-09-01', b)).*
+  FROM (VALUES (true), (false)) t(b);
+ b | number |             time             |                              tnumber                               
+---+--------+------------------------------+--------------------------------------------------------------------
+ t |      1 | Sat Sep 01 00:00:00 2001 PDT | {[1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)}
+ t |      3 | Sun Sep 02 00:00:00 2001 PDT | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
+ t |      5 | Mon Sep 03 00:00:00 2001 PDT | {[5@Mon Sep 03 00:00:00 2001 PDT]}
+ f |      1 | Sat Sep 01 00:00:00 2001 PDT | {[1@Sat Sep 01 00:00:00 2001 PDT, 3@Sun Sep 02 00:00:00 2001 PDT)}
+ f |      3 | Sun Sep 02 00:00:00 2001 PDT | {[3@Sun Sep 02 00:00:00 2001 PDT, 5@Mon Sep 03 00:00:00 2001 PDT)}
+(5 rows)
+
