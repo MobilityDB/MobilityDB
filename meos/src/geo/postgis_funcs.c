@@ -4864,6 +4864,7 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
 
   /* Calculate the length */
   length = lwgeom_length_spheroid(lwgeom, &s);
+  lwgeom_free(lwgeom);
 
   /* Something went wrong... */
   if ( length < 0.0 )
@@ -4872,9 +4873,6 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
       "lwgeom_perimeter_spheroid returned length < 0.0");
     return DBL_MAX;
   }
-
-  /* Clean up, but not all the way to the point arrays */
-  lwgeom_free(lwgeom);
 
   return length;
 }
@@ -4914,6 +4912,7 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
 
   /* Calculate the length */
   double length = lwgeom_length_spheroid(geom, &s);
+  lwgeom_free(geom);
 
   /* Something went wrong... */
   if ( length < 0.0 )
@@ -4922,9 +4921,6 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
       "lwgeom_length_spheroid returned length < 0.0");
     return DBL_MAX;
   }
-
-  /* Clean up */
-  lwgeom_free(geom);
 
   return length;
 }
