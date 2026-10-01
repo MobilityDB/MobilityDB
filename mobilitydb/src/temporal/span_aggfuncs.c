@@ -213,7 +213,7 @@ PG_FUNCTION_INFO_V1(Span_union_finalfn);
  * @ingroup mobilitydb_setspan_agg
  * @brief Final function for union aggregation of spans
  * @note Shared for both spans and span sets
- * @sqlfn union()
+ * @sqlfn intspan_union_finalfn(), floatspan_union_finalfn(), ...
  * @sqlaggfn spanUnion(), spansetUnion()
  */
 Datum

@@ -64,7 +64,7 @@ PG_FUNCTION_INFO_V1(Spanset_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Return a span set from its Well-Known Text (WKT) representation
- * @sqlfn spanset_in()
+ * @sqlfn intspanset_in(), floatspanset_in(), ...
  */
 Datum
 Spanset_in(PG_FUNCTION_ARGS)
@@ -80,7 +80,7 @@ PG_FUNCTION_INFO_V1(Spanset_out);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
- * @sqlfn spanset_out()
+ * @sqlfn intspanset_out(), floatspanset_out(), ...
  */
 Datum
 Spanset_out(PG_FUNCTION_ARGS)
@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Spanset_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Return a span set from its Well-Known Binary (WKB) representation
- * @sqlfn spanset_recv()
+ * @sqlfn intspanset_recv(), floatspanset_recv(), ...
  */
 Datum
 Spanset_recv(PG_FUNCTION_ARGS)
@@ -113,7 +113,7 @@ PG_FUNCTION_INFO_V1(Spanset_send);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Return the Well-Known Binary (WKB) representation of a span set
- * @sqlfn spanset_send()
+ * @sqlfn intspanset_send(), floatspanset_send(), ...
  */
 Datum
 Spanset_send(PG_FUNCTION_ARGS)
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Spanset_from_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Return a span set from its Well-Known Binary (WKB) representation
- * @sqlfn instspansetFromBinary(), floatspansetFromBinary(), ...
+ * @sqlfn intspansetFromBinary(), floatspansetFromBinary(), ...
  */
 Datum
 Spanset_from_wkb(PG_FUNCTION_ARGS)

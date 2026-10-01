@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Set_union_finalfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Final function for union aggregation of sets
- * @sqlfn union()
+ * @sqlfn intset_union_finalfn(), floatset_union_finalfn(), ...
  * @sqlaggfn setUnion()
  */
 Datum
