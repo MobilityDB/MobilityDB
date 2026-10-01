@@ -372,27 +372,27 @@ extern void meos_array_destroy_free(MeosArray *array);
  */
 typedef enum
 {
-  INDEX_OVERLAPS,      /**< Find stored boxes that overlap the query */
-  INDEX_CONTAINS,      /**< Find stored boxes that contain the query */
-  INDEX_CONTAINED_BY,  /**< Find stored boxes contained by the query */
-  INDEX_LEFT,          /**< Find stored boxes strictly left of the query */
-  INDEX_OVERLEFT,      /**< Find stored boxes that do not extend to the right of the query */
-  INDEX_RIGHT,         /**< Find stored boxes strictly right of the query */
-  INDEX_OVERRIGHT,     /**< Find stored boxes that do not extend to the left of the query */
-  INDEX_BELOW,         /**< Find stored boxes strictly below the query */
-  INDEX_OVERBELOW,     /**< Find stored boxes that do not extend above the query */
-  INDEX_ABOVE,         /**< Find stored boxes strictly above the query */
-  INDEX_OVERABOVE,     /**< Find stored boxes that do not extend below the query */
-  INDEX_FRONT,         /**< Find stored boxes strictly in front of the query */
-  INDEX_OVERFRONT,     /**< Find stored boxes that do not extend behind the query */
-  INDEX_BACK,          /**< Find stored boxes strictly behind the query */
-  INDEX_OVERBACK,      /**< Find stored boxes that do not extend in front of the query */
-  INDEX_BEFORE,        /**< Find stored boxes strictly before the query */
-  INDEX_OVERBEFORE,    /**< Find stored boxes that do not extend after the query */
-  INDEX_AFTER,         /**< Find stored boxes strictly after the query */
-  INDEX_OVERAFTER,     /**< Find stored boxes that do not extend before the query */
-  INDEX_SAME,          /**< Find stored boxes whose extent equals the query */
-  INDEX_ADJACENT       /**< Find stored boxes that share a boundary with the query */
+  INDEX_OVERLAPS,      /**< Find stored boxes that overlap the query, `&&` operator */
+  INDEX_CONTAINS,      /**< Find stored boxes that contain the query, `@>` operator */
+  INDEX_CONTAINED_BY,  /**< Find stored boxes contained by the query, `<@` operator */
+  INDEX_LEFT,          /**< Find stored boxes strictly left of the query, `<<` operator */
+  INDEX_OVERLEFT,      /**< Find stored boxes that do not extend to the right of the query, `&<` operator */
+  INDEX_RIGHT,         /**< Find stored boxes strictly right of the query, `>>` operator */
+  INDEX_OVERRIGHT,     /**< Find stored boxes that do not extend to the left of the query, `&>` operator */
+  INDEX_BELOW,         /**< Find stored boxes strictly below the query, `<<|` operator */
+  INDEX_OVERBELOW,     /**< Find stored boxes that do not extend above the query, `&<|` operator */
+  INDEX_ABOVE,         /**< Find stored boxes strictly above the query, `|>>` operator */
+  INDEX_OVERABOVE,     /**< Find stored boxes that do not extend below the query, `|&>` operator */
+  INDEX_FRONT,         /**< Find stored boxes strictly in front of the query, `<</` operator */
+  INDEX_OVERFRONT,     /**< Find stored boxes that do not extend behind the query, `&</` operator */
+  INDEX_BACK,          /**< Find stored boxes strictly behind the query, `/>>` operator */
+  INDEX_OVERBACK,      /**< Find stored boxes that do not extend in front of the query, `/&>` operator */
+  INDEX_BEFORE,        /**< Find stored boxes strictly before the query, `<<#` operator */
+  INDEX_OVERBEFORE,    /**< Find stored boxes that do not extend after the query, `&<#` operator */
+  INDEX_AFTER,         /**< Find stored boxes strictly after the query, `#>>` operator */
+  INDEX_OVERAFTER,     /**< Find stored boxes that do not extend before the query, `#&>` operator */
+  INDEX_SAME,          /**< Find stored boxes whose extent equals the query, `~=` operator */
+  INDEX_ADJACENT       /**< Find stored boxes that share a boundary with the query, `-|-` operator */
 } IndexSearchOp;
 
 /* Functions for the ids an in-memory index answers */
