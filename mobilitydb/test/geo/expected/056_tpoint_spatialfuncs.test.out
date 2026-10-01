@@ -4068,3 +4068,80 @@ SELECT asText(minusElevation(tgeogpoint 'SRID=4326;Point(1 1 1)@2001-01-01', flo
 /* Errors */
 SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', floatspan '[0,2]'));
 ERROR:  The tgeogpoint must have Z dimension
+SELECT geoLength(geometry 'Linestring(0 0,3 4)');
+ geolength 
+-----------
+         5
+(1 row)
+
+SELECT geoLength(geometry 'Linestring(0 0,3 4,3 0)') = ST_Length(geometry 'Linestring(0 0,3 4,3 0)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoLength(geometry 'Polygon((0 0,1 0,1 1,0 0))') = ST_Length(geometry 'Polygon((0 0,1 0,1 1,0 0))');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoLength(geometry 'Point(1 1)');
+ geolength 
+-----------
+         0
+(1 row)
+
+SELECT round(geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
+    round    
+-------------
+ 3521.188745
+(1 row)
+
+SELECT geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)') = ST_Length(geography 'Linestring(4.35 50.85,4.40 50.85)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoLength(geography 'Polygon((4.35 50.85,4.40 50.85,4.40 50.90,4.35 50.85))');
+ geolength 
+-----------
+         0
+(1 row)
+
+WITH test(geom, pipeline) AS (
+  SELECT geometry 'SRID=4326;Point(2.123456 49.123456)',
+   text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT ST_AsText(geoTransformPipeline(geoTransformPipeline(geom, pipeline, 4326), pipeline, 4326, false), 3) = ST_AsText(geom, 3)
+FROM test;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsText(geoTransformPipeline(geometry 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 6) =
+  ST_AsText(startValue(transformPipeline(tgeompoint 'SRID=4326;POINT(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031')), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_SRID(geoTransformPipeline(geometry 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+ st_srid 
+---------
+       0
+(1 row)
+
+SELECT ST_AsText(geoTransformPipeline(geography 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true)::geometry, 6) =
+  ST_AsText(startValue(transformPipeline(tgeogpoint 'SRID=4326;POINT(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true))::geometry, 6);
+ ?column? 
+----------
+ t
+(1 row)
+

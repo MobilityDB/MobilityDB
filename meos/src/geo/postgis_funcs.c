@@ -4367,6 +4367,7 @@ geo_transform(const GSERIALIZED *gs, int32_t srid_to)
  * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  * @note PostGIS function: @p transform_pipeline_geom(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_transform_pipeline()
  */
 GSERIALIZED *
 geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr,
@@ -4374,18 +4375,16 @@ geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
-  if (srid == SRID_UNKNOWN)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "geo_transform_pipeline: %d is an invalid target SRID", SRID_UNKNOWN);
-    return NULL;
-  }
+  /* The SRID may be SRID_UNKNOWN: the pipeline string itself states the
+   * destination coordinate reference system, as for
+   * #tspatial_transform_pipeline */
 
   GSERIALIZED *gs1 = geo_copy(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs1);
   int rv = lwgeom_transform_pipeline(geom, pipelinestr, is_forward);
   if (rv == LW_FAILURE)
   {
+    lwgeom_free(geom); pfree(gs1);
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Coordinate transformation failed");
     return NULL;
@@ -4934,6 +4933,7 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
  * PostGIS function @p ST_Length over a geography
  * @param[in] gs Geometry or geography
  * @errval DBL_MAX
+ * @csqlfn #Geo_length()
  */
 double
 geo_length(const GSERIALIZED *gs)

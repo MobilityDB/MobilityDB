@@ -852,6 +852,25 @@ Tpoint_length(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Geo_length(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_length);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the length of a geometry or a geography, the one of a
+ * geography in meters on the spheroid
+ * @sqlfn geoLength()
+ */
+Datum
+Geo_length(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double result = geo_length(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
 PGDLLEXPORT Datum Tpoint_speed(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_speed);
 /**

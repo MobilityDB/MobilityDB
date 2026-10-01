@@ -81,4 +81,19 @@ CREATE FUNCTION initcap(ttext)
   AS 'MODULE_PATHNAME', 'Ttext_initcap'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION textUpper(text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Text_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION textLower(text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Text_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION textInitcap(text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Text_initcap'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/

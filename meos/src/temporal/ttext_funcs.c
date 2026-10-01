@@ -169,6 +169,7 @@ datum_textcat(Datum l, Datum r)
  * are left unchanged. So `text_lower("ZÜRICH")` returns `"zÜRICH"`
  * (the ASCII letters are folded but `Ü` is preserved verbatim). This
  * is the documented UTF-8 contract — see meos.h.
+ * @csqlfn #Text_lower()
  */
 text *
 text_lower(const text *txt)
@@ -206,6 +207,7 @@ datum_lower(Datum value)
  * become 0x41..0x5A; bytes >= 0x80 (UTF-8 continuation/lead bytes)
  * are left unchanged. So `text_upper("Zürich")` returns `"ZüRICH"`,
  * not `"ZÜRICH"`. This is the documented UTF-8 contract — see meos.h.
+ * @csqlfn #Text_upper()
  */
 text *
 text_upper(const text *txt)
@@ -241,6 +243,7 @@ datum_upper(Datum value)
  *
  * In standalone MEOS this is an ASCII-only fold; bytes >= 0x80 are
  * passed through unchanged. See meos.h for the UTF-8 contract.
+ * @csqlfn #Text_initcap()
  */
 text *
 text_initcap(const text *txt)
