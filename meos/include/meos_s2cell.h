@@ -232,6 +232,17 @@ extern Set *s2cellset_make(const S2CellId *values, int count);
 
 extern S2CellId *s2cellset_values(const Set *s, int *count);
 
+/* Set operations of `s2cellset` */
+
+extern bool contained_s2cell_set(S2CellId cell, const Set *s);
+extern bool contains_set_s2cell(const Set *s, S2CellId cell);
+extern Set *intersection_s2cell_set(S2CellId cell, const Set *s);
+extern Set *intersection_set_s2cell(const Set *s, S2CellId cell);
+extern Set *minus_s2cell_set(S2CellId cell, const Set *s);
+extern Set *minus_set_s2cell(const Set *s, S2CellId cell);
+extern Set *union_s2cell_set(S2CellId cell, const Set *s);
+extern Set *union_set_s2cell(const Set *s, S2CellId cell);
+
 /*****************************************************************************
  * Temporal `ts2cell` inheritance
  *****************************************************************************/

@@ -224,6 +224,17 @@ extern Set *quadbinset_make(const Quadbin *values, int count);
 
 extern Quadbin *quadbinset_values(const Set *s, int *count);
 
+/* Set operations of `quadbinset` */
+
+extern bool contained_quadbin_set(Quadbin cell, const Set *s);
+extern bool contains_set_quadbin(const Set *s, Quadbin cell);
+extern Set *intersection_quadbin_set(Quadbin cell, const Set *s);
+extern Set *intersection_set_quadbin(const Set *s, Quadbin cell);
+extern Set *minus_quadbin_set(Quadbin cell, const Set *s);
+extern Set *minus_set_quadbin(const Set *s, Quadbin cell);
+extern Set *union_quadbin_set(Quadbin cell, const Set *s);
+extern Set *union_set_quadbin(const Set *s, Quadbin cell);
+
 /*****************************************************************************
  * Temporal `tquadbin` inheritance — PENDING IMPLEMENTATION.
  *

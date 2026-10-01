@@ -113,6 +113,10 @@
  * @defgroup meos_quadbin_set_accessor Accessor functions
  * @ingroup meos_quadbin_set
  * @brief Accessor functions for QUADBIN cell index sets
+ *
+ * @defgroup meos_quadbin_set_setops Set operations
+ * @ingroup meos_quadbin_set
+ * @brief Set operations for QUADBIN cell index sets
  */
 
 /*****************************************************************************/
