@@ -166,7 +166,7 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * Interp=Step;{ [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
  *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
- * @sqlfn tpoint_in()
+ * @sqlfn tgeompoint_in(), tgeogpoint_in()
  */
 Datum
 Tpoint_in(PG_FUNCTION_ARGS)
@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Tgeo_in);
 /**
  * @ingroup mobilitydb_geo_inout
  * @brief Return a temporal geo from its Well-Known Text (WKT) representation
- * @sqlfn tgeo_in()
+ * @sqlfn tgeometry_in(), tgeography_in()
  */
 Datum
 Tgeo_in(PG_FUNCTION_ARGS)
