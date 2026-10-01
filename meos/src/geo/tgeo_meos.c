@@ -446,6 +446,7 @@ tgeographyseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType inter
  * @brief Return a temporal geometry point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -459,6 +460,7 @@ tgeompoint_from_mfjson(const char *mfjson)
  * @brief Return a temporal geography point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -471,6 +473,7 @@ tgeogpoint_from_mfjson(const char *mfjson)
  * @brief Return a temporal geometry from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -484,6 +487,7 @@ tgeometry_from_mfjson(const char *mfjson)
  * @brief Return a temporal geography from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *

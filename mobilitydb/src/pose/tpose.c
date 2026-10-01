@@ -76,6 +76,7 @@ PG_FUNCTION_INFO_V1(Tpose_in);
  * { [ Pose(0, 0, 0) @ 2012-01-01 08:00:00 , Pose(1, 1, 0) @ 2012-01-01 08:10:00 ) ,
  *   [ Pose(1, 1, 0) @ 2012-01-01 08:20:00 , Pose(0, 0, 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
+ * @sqlfn tpose_in()
  */
 Datum
 Tpose_in(PG_FUNCTION_ARGS)

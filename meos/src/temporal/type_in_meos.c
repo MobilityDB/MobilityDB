@@ -247,6 +247,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
  * @brief Return a temporal boolean from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -260,6 +261,7 @@ tbool_from_mfjson(const char *mfjson)
  * @brief Return a temporal integer from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -273,6 +275,7 @@ tint_from_mfjson(const char *mfjson)
  * @brief Return a temporal big integer from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -286,6 +289,7 @@ tbigint_from_mfjson(const char *mfjson)
  * @brief Return a temporal float from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -299,6 +303,7 @@ tfloat_from_mfjson(const char *mfjson)
  * @brief Return a temporal text from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *

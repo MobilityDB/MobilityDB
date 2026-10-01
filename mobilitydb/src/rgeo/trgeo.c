@@ -92,6 +92,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_in);
  * Pose(1, 1, 0) @ 2012-01-01 08:10:00 ) , [ Pose(1, 1, 0) @ 2012-01-01 08:20:00 ,
  * Pose(0, 0, 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
+ * @sqlfn trgeometry_in()
  */
 Datum
 Trgeometry_in(PG_FUNCTION_ARGS)
