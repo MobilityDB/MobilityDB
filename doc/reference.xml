@@ -273,6 +273,9 @@
 					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_unnest"><varname>unnest</varname></link>: Transform a set into a set of rows, one per value of the set, in the order of the set &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_numSpans"><varname>numSpans</varname>, <varname>spans</varname></link>: Return the (number of) spans</para>
 				</listitem>
 				<listitem>

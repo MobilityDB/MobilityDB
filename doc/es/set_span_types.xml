@@ -705,6 +705,26 @@ SELECT valueN(floatset '{1,3,5,7}',2);
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="setspan_unnest">
+				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
+				<para>Transforma un conjunto en un conjunto de filas, una por cada valor del conjunto, en el orden del conjunto &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+unnest(set) → {base}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT unnest(intset '{1,3,5}');
+-- 1
+-- 3
+-- 5
+SELECT unnest(textset '{"highway", "car"}');
+-- car
+-- highway
+SELECT ST_AsText(unnest(geomset '{"Point(1 1)", "Point(2 2)"}'));
+-- POINT(1 1)
+-- POINT(2 2)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_numSpans">
 				<indexterm significance="normal"><primary><varname>numSpans</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
