@@ -635,6 +635,15 @@ CREATE FUNCTION appendSequence(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION merge(tpcpoint, tpcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_merge'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(tpcpoint[])
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_merge_array'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Unnest

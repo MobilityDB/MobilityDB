@@ -500,6 +500,35 @@ SELECT appendSequence(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0,
  t
 (1 row)
 
+SELECT merge(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])) =
+  tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT merge(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), NULL::tpcpoint) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(merge(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])), interp(merge(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]));
+ numinstants |  interp  
+-------------+----------
+           2 | Discrete
+(1 row)
+
+SELECT merge(ARRAY[tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])]) =
+  tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT merge(tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02'::timestamptz));
+ERROR:  The temporal values have different value at their overlapping instant Tue Jan 02 00:00:00 2024 PST
 SELECT SRID(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
  srid 
 ------
