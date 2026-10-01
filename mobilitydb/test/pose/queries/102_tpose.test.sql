@@ -713,3 +713,7 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
 SELECT spans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]');
 SELECT splitNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
 SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 2);
+
+-- A NULL operand of merge returns the other one
+SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
+SELECT merge(NULL::tpose, tpose 'Pose(Point(1 1), 0.5)@2001-01-01') = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';

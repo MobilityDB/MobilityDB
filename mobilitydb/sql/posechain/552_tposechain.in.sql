@@ -640,7 +640,7 @@ CREATE FUNCTION appendSequence(tposechain, tposechain)
 CREATE FUNCTION merge(tposechain, tposechain)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_merge'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION merge(tposechain[])
   RETURNS tposechain

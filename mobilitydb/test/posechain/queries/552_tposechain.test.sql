@@ -168,3 +168,7 @@ SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(P
   asText(translate(tpose(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0),0.5))@2001-01-01, PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]'), 1, 2, 3), 6);
 
 -------------------------------------------------------------------------------
+
+-- A NULL operand of merge returns the other one
+SELECT merge(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', NULL::tposechain) = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+SELECT merge(NULL::tposechain, tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01') = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';

@@ -2152,3 +2152,15 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  t
 (1 row)
 
+SELECT merge(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', NULL::tjsonb) = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT merge(NULL::tjsonb, tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01') = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+

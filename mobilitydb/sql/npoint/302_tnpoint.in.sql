@@ -274,10 +274,11 @@ CREATE FUNCTION appendSequence(tnpoint, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
 CREATE FUNCTION merge(tnpoint, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_merge'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION merge(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_merge_array'

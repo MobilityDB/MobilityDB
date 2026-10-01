@@ -567,7 +567,7 @@ CREATE FUNCTION appendSequence(tjsonb, tjsonb)
 CREATE FUNCTION merge(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_merge'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION merge(tjsonb[])
   RETURNS tjsonb
