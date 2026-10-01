@@ -1909,16 +1909,103 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 }
 
 /**
- * @brief Ensure that a type is a temporal number or a temporal geo type, the
- * types the simplification functions accept
+ * @brief Return the temporal point a temporal circular buffer or pose moves
+ * along
+ * @details The simplification of these types is the one of their point
+ * projection: a circular buffer moves along its center and a pose along its
+ * position. A geodetic pose raises an error, since the projection is
+ * simplified in the plane.
+ * @param[in] temp Temporal value
+ * @errval NULL
+ */
+static Temporal *
+temporal_simplify_projection(const Temporal *temp)
+{
+  switch (temp->temptype)
+  {
+#if CBUFFER
+    case T_TCBUFFER:
+      return tcbuffer_to_tgeompoint(temp);
+#endif /* CBUFFER */
+#if POSE
+    case T_TPOSE:
+      /* The trajectory of a pose is simplified in the plane */
+      if (! ensure_not_geodetic(temp->flags))
+        return NULL;
+      return tpose_to_tpoint(temp);
+#endif /* POSE */
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown temporal type for simplification: %s",
+        meostype_name(temp->temptype));
+      return NULL;
+  }
+}
+
+/**
+ * @brief Return a temporal value keeping the instants at the timestamps of
+ * its simplified point projection
+ * @details The simplification of the projection keeps a subset of its
+ * instants, so the value deletes its instants at the other timestamps,
+ * connecting the instants on either side of each of them
+ * @param[in] temp Temporal value
+ * @param[in] simp Simplified point projection of the temporal value
+ */
+static Temporal *
+temporal_simplify_restore(const Temporal *temp, const Temporal *simp)
+{
+  int count1, count2;
+  TimestampTz *times1 = temporal_timestamps(temp, &count1);
+  TimestampTz *times2 = temporal_timestamps(simp, &count2);
+  Datum *deleted = palloc(sizeof(Datum) * count1);
+  int ndeleted = 0, j = 0;
+  for (int i = 0; i < count1; i++)
+  {
+    while (j < count2 && times2[j] < times1[i])
+      j++;
+    if (j < count2 && times2[j] == times1[i])
+      j++;
+    else
+      deleted[ndeleted++] = TimestampTzGetDatum(times1[i]);
+  }
+  pfree(times1); pfree(times2);
+  if (ndeleted == 0)
+  {
+    pfree(deleted);
+    return temporal_copy(temp);
+  }
+  Set *s = set_make_free(deleted, ndeleted, T_TIMESTAMPTZ, ORDER_NO);
+  Temporal *result = temporal_delete_tstzset(temp, s, true);
+  pfree(s);
+  return result ? result : temporal_copy(temp);
+}
+
+/**
+ * @brief Ensure that a type is one the simplification functions accept: a
+ * temporal number, a temporal geo, a temporal circular buffer or pose,
+ * simplified through its point projection, or a temporal point cloud point,
+ * whose step or discrete interpolation is returned as a copy
  */
 static bool
-ensure_tnumber_tgeo_type(MeosType type)
+ensure_tsimplify_type(MeosType type)
 {
   if (tnumber_type(type) || tgeo_type_all(type))
     return true;
+#if CBUFFER
+  if (type == T_TCBUFFER)
+    return true;
+#endif /* CBUFFER */
+#if POSE
+  if (type == T_TPOSE)
+    return true;
+#endif /* POSE */
+#if POINTCLOUD
+  if (type == T_TPCPOINT)
+    return true;
+#endif /* POINTCLOUD */
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "The temporal value must be a temporal number or a temporal geo");
+    "The temporal value must be a temporal number, a temporal geo, or a "
+    "temporal circular buffer, pose or point cloud point");
   return false;
 }
 
@@ -1934,7 +2021,8 @@ ensure_tnumber_tgeo_type(MeosType type)
  * the units of the coordinate system for temporal points.
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
- * value.
+ * value. A temporal circular buffer or pose keeps its instants at the
+ * timestamps its simplified point projection keeps.
  * @csqlfn #Temporal_simplify_min_dist()
  */
 Temporal *
@@ -1942,7 +2030,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
+  if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1950,6 +2038,17 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
+  /* A circular buffer or a pose simplifies through its point projection */
+  if (! tnumber_type(temp->temptype) && ! tgeo_type_all(temp->temptype))
+  {
+    Temporal *point = temporal_simplify_projection(temp);
+    if (! point)
+      return NULL;
+    Temporal *simp = temporal_simplify_min_dist(point, dist);
+    Temporal *result = temporal_simplify_restore(temp, simp);
+    pfree(point); pfree(simp);
+    return result;
+  }
   if (temp->subtype == TSEQUENCE)
     return (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
   return (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
@@ -2027,7 +2126,8 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
  * @param[in] mint Minimum time interval
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
- * value.
+ * value. A temporal circular buffer or pose keeps its instants at the
+ * timestamps its simplified point projection keeps.
  * @csqlfn #Temporal_simplify_min_tdelta()
  */
 Temporal *
@@ -2035,7 +2135,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(mint, NULL);
-  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
+  if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_duration(mint))
     return NULL;
 
@@ -2043,6 +2143,17 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
+  /* A circular buffer or a pose simplifies through its point projection */
+  if (! tnumber_type(temp->temptype) && ! tgeo_type_all(temp->temptype))
+  {
+    Temporal *point = temporal_simplify_projection(temp);
+    if (! point)
+      return NULL;
+    Temporal *simp = temporal_simplify_min_tdelta(point, mint);
+    Temporal *result = temporal_simplify_restore(temp, simp);
+    pfree(point); pfree(simp);
+    return result;
+  }
   if (temp->subtype == TSEQUENCE)
     return (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp, mint);
   return (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
@@ -2365,7 +2476,8 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
  * the spatial-only distance is used. Only used for temporal points.
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
- * value.
+ * value. A temporal circular buffer or pose keeps its instants at the
+ * timestamps its simplified point projection keeps.
  * @csqlfn #Temporal_simplify_max_dist()
  */
 Temporal *
@@ -2373,7 +2485,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
+  if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -2381,6 +2493,17 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
+  /* A circular buffer or a pose simplifies through its point projection */
+  if (! tnumber_type(temp->temptype) && ! tgeo_type_all(temp->temptype))
+  {
+    Temporal *point = temporal_simplify_projection(temp);
+    if (! point)
+      return NULL;
+    Temporal *simp = temporal_simplify_max_dist(point, dist, syncdist);
+    Temporal *result = temporal_simplify_restore(temp, simp);
+    pfree(point); pfree(simp);
+    return result;
+  }
   if (temp->subtype == TSEQUENCE)
     return (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
       syncdist, 2);
@@ -2513,7 +2636,8 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
  * the spatial-only distance is used. Only used for temporal points.
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
- * value.
+ * value. A temporal circular buffer or pose keeps its instants at the
+ * timestamps its simplified point projection keeps.
  * @csqlfn #Temporal_simplify_dp()
  */
 Temporal *
@@ -2521,7 +2645,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
+  if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -2529,6 +2653,17 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
+  /* A circular buffer or a pose simplifies through its point projection */
+  if (! tnumber_type(temp->temptype) && ! tgeo_type_all(temp->temptype))
+  {
+    Temporal *point = temporal_simplify_projection(temp);
+    if (! point)
+      return NULL;
+    Temporal *simp = temporal_simplify_dp(point, dist, syncdist);
+    Temporal *result = temporal_simplify_restore(temp, simp);
+    pfree(point); pfree(simp);
+    return result;
+  }
   if (temp->subtype == TSEQUENCE)
     return (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
       syncdist, 2);

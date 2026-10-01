@@ -3697,6 +3697,14 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+			<sect3>
+				<title>Simplification</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname>, <varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a tpcpoint simplified ensuring that consecutive points are at least a certain distance or time interval apart, or simplified using the Douglas-Peucker algorithm</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Temporal Point Cloud Patches</title>

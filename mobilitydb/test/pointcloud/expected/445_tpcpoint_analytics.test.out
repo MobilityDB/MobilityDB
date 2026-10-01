@@ -1,0 +1,80 @@
+SELECT minDistSimplify(NULL::tpcpoint, 1.0);
+ mindistsimplify 
+-----------------
+ 
+(1 row)
+
+SELECT minTimeDeltaSimplify(NULL::tpcpoint, interval '1 day');
+ mintimedeltasimplify 
+----------------------
+ 
+(1 row)
+
+SELECT interp(minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 2.0));
+ interp 
+--------
+ Step
+(1 row)
+
+SELECT minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 2.0) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT minTimeDeltaSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), interval '2 days') = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT maxDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 1.0) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT maxDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 1.0, false) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT douglasPeuckerSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 1.0) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT douglasPeuckerSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), 1.0, false) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT interp(minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz)], 'discrete'), 2.0));
+  interp  
+----------
+ Discrete
+(1 row)
+
+SELECT minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz)], 'discrete'), 2.0) = tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz)], 'discrete');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numSequences(minDistSimplify(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 0.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 0.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[9.0, 0.0, 0.0]::float[]), '2001-01-05'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[20.0, 0.0, 0.0]::float[]), '2001-01-06'::timestamptz)])]), 2.0));
+ numsequences 
+--------------
+            2
+(1 row)
+
+SELECT minDistSimplify(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 0.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 0.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[9.0, 0.0, 0.0]::float[]), '2001-01-05'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[20.0, 0.0, 0.0]::float[]), '2001-01-06'::timestamptz)])]), 2.0) = tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 0.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 0.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[9.0, 0.0, 0.0]::float[]), '2001-01-05'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[20.0, 0.0, 0.0]::float[]), '2001-01-06'::timestamptz)])]);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 0.0]::float[]), '2001-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 1.0, 0.0]::float[]), '2001-01-03'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[4.0, 4.0, 0.0]::float[]), '2001-01-04'::timestamptz)]), -1.0);
+ERROR:  The value must be strictly positive: -1.000000
