@@ -10,6 +10,12 @@ SELECT npoint ' npoint   (   1   ,	0.5   )   ';
  NPoint(1,0.5)
 (1 row)
 
+SELECT asEWKT(npoint 'SRID=5676;npoint(1,0.5)');
+         asewkt          
+-------------------------
+ SRID=5676;NPoint(1,0.5)
+(1 row)
+
 /* Errors */
 SELECT npoint 'point(1,0.5)';
 ERROR:  Could not parse npoint value: Missing prefix 'NPoint'
@@ -39,6 +45,12 @@ SELECT npoint 'npoint(1,0.5)xxx';
 ERROR:  Could not parse npoint value: Extraneous characters at the end
 LINE 1: SELECT npoint 'npoint(1,0.5)xxx';
                       ^
+SELECT npoint 'SRID=4326;npoint(1,0.5)';
+ERROR:  The SRID of the npoint (4326) does not match the SRID of the network (5676)
+LINE 1: SELECT npoint 'SRID=4326;npoint(1,0.5)';
+                      ^
+SELECT npointFromEWKT('SRID=4326;Npoint(1,0.5)');
+ERROR:  The SRID of the npoint (4326) does not match the SRID of the network (5676)
 SELECT nsegment 'nsegment(1,0.5,0.7)';
       nsegment       
 ---------------------
@@ -46,6 +58,12 @@ SELECT nsegment 'nsegment(1,0.5,0.7)';
 (1 row)
 
 SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
+      nsegment       
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegment 'SRID=5676;nsegment(1,0.5,0.7)';
       nsegment       
 ---------------------
  NSegment(1,0.5,0.7)
@@ -85,6 +103,10 @@ LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
 SELECT nsegment 'NSegment(1, 1, 1.5)';
 ERROR:  The relative position must be a real number between 0 and 1
 LINE 1: SELECT nsegment 'NSegment(1, 1, 1.5)';
+                        ^
+SELECT nsegment 'SRID=4326;nsegment(1,0.5,0.7)';
+ERROR:  The SRID of the nsegment (4326) does not match the SRID of the network (5676)
+LINE 1: SELECT nsegment 'SRID=4326;nsegment(1,0.5,0.7)';
                         ^
 SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
     astext     

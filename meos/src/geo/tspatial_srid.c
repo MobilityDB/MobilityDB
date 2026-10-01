@@ -206,13 +206,10 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
 #endif
 #if NPOINT
     case T_NPOINT:
-    {
-      /* A network point holds no SRID: it has the one of the routes of the
-       * ways table. A stated SRID is checked against it when the network
-       * states one, and accepted when no network is loaded */
-      int32_t ways_srid = npoint_srid(DatumGetNpointP(d));
-      return (ways_srid == SRID_UNKNOWN || ways_srid == srid);
-    }
+      /* A network point holds no SRID: a stated one must be the one of the
+       * network (#srid_matches_ways) */
+      (void) d;
+      return srid_matches_ways(srid);
 #endif
 #if H3
     case T_H3INDEX:

@@ -254,9 +254,16 @@ npoint_parse(const char **str, bool end)
 {
   const char *type_str = meostype_name(T_NPOINT);
 
-  /* Determine whether there is an SRID */
+  /* Determine whether there is an SRID, which must be the one of the
+   * network */
   int32_t srid;
-  srid_parse(str, &srid);
+  if (srid_parse(str, &srid) && ! srid_matches_ways(srid))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The SRID of the %s (%d) does not match the SRID of the network (%d)",
+      type_str, srid, get_srid_ways());
+    return NULL;
+  }
 
   /* Parse prefix */
   p_whitespace(str);
@@ -349,6 +356,18 @@ Nsegment *
 nsegment_parse(const char **str)
 {
   const char *type_str = meostype_name(T_NSEGMENT);
+
+  /* Determine whether there is an SRID, which must be the one of the
+   * network */
+  int32_t srid;
+  if (srid_parse(str, &srid) && ! srid_matches_ways(srid))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The SRID of the %s (%d) does not match the SRID of the network (%d)",
+      type_str, srid, get_srid_ways());
+    return NULL;
+  }
+
   p_whitespace(str);
 
   if (pg_strncasecmp(*str, "NSEGMENT", 8) != 0)
@@ -1266,6 +1285,23 @@ int32_t
 nsegment_srid(const Nsegment *ns UNUSED)
 {
   return get_srid_ways();
+}
+
+/**
+ * @brief Return true if an SRID stated for a network point or segment is the
+ * one of the network
+ * @details A network value holds no SRID: it has the one of the routes of the
+ * ways table. A stated SRID is checked against it when the network states
+ * one, and accepted when no network is loaded, since the value then has no
+ * SRID it could contradict. The text, binary and spatiotemporal readers of
+ * the network values all decide on it
+ * @param[in] srid SRID the input states
+ */
+bool
+srid_matches_ways(int32_t srid)
+{
+  int32_t ways_srid = get_srid_ways();
+  return (ways_srid == SRID_UNKNOWN || ways_srid == srid);
 }
 
 /*****************************************************************************

@@ -143,11 +143,14 @@ SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 npointFromText(text) → npoint
 npointFromEWKT(text) → npoint
 </programlisting>
+					<para>An SRID stated by the extended input must be the SRID of the route network. When no route network is loaded, a network point has no SRID and the stated one is not kept.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(npointFromText(text 'Npoint(1,0.5)'));
 -- SRID=5676;NPoint(1,0.5)
 SELECT asEWKT(npointFromEWKT(text 'SRID=5676;Npoint(1,0.5)'));
 -- SRID=5676;NPoint(1,0.5)
+SELECT npointFromEWKT(text 'SRID=4326;Npoint(1,0.5)');
+-- ERROR:  The SRID of the npoint (4326) does not match the SRID of the network (5676)
 </programlisting>
 				</listitem>
 
