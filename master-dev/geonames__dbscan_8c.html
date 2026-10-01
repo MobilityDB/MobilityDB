@@ -132,14 +132,13 @@ Functions</h2></td></tr>
 <div class="fragment"><div class="line">DROP TABLE IF EXISTS geonames_meos;</div>
 <div class="line">CREATE TABLE geonames_meos (</div>
 <div class="line">geonameid <span class="keywordtype">int</span>,</div>
-<div class="line">name <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
-<div class="line">admin1 <a class="code hl_struct" href="structvarlena.html">text</a>,</div>
+<div class="line">name text,</div>
+<div class="line">admin1 text,</div>
 <div class="line">geom geometry(Point, 5070),</div>
 <div class="line">cluster integer);</div>
 <div class="line">COPY geonames_meos</div>
 <div class="line">FROM <span class="stringliteral">&#39;/home/esteban/src/MobilityDB/meos/examples/data/geonames_new.csv&#39;</span></div>
 <div class="line">DELIMITER <span class="charliteral">&#39;,&#39;</span> CSV HEADER;</div>
-<div class="ttc" id="astructvarlena_html"><div class="ttname"><a href="structvarlena.html">varlena</a></div><div class="ttdef"><b>Definition:</b> postgres_ext_defs.in.h:48</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
