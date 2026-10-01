@@ -1,36 +1,62 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Distance Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s10.html" title="Restrictions"><link rel="next" href="ch14s12.html" title="Similarity"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Distance Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s10.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_distance"></a>Distance Operations</h2></div></div></div><p>Distance between a trgeometry and a geometry / pose / spatiotemporal box / another trgeometry is computed on the <span class="emphasis"><em>materialised</em></span> geometry, the reference shape rotated and translated according to the pose. Distance is exact at every shared timestamp; for sequence inputs an adaptive recursive bisection emits intermediate marks where the distance trajectory deviates from a straight line.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11626"></a><p>Return the temporal distance between two temporal rigid geometries</p><pre class="programlisting">
-{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat
-tDistance({geometry,trgeometry},{geometry,trgeometry}) → tfloat
-</pre><pre class="programlisting">
-SELECT round(maxValue(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(0 0), 0.0)@2001-01-01',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
--- 4
-SELECT asText(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Distance Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s10.html" title="Restrictions"><link rel="next" href="ch14s12.html" title="Similarity"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Distance Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s10.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_distance"></a>Distance Operations</h2></div></div></div><p>The distance functions compute the distance between the body of a temporal rigid geometry and a geometry, a temporal point, or the body of another temporal rigid geometry. The body at an instant is the reference geometry moved and turned by the pose at that instant.</p><p>The values of a temporal distance are exact. When a body turns, the distance between two instants does not change linearly, so the temporal distance also has an instant at each minimum and maximum of the distance. Thus the nearest approach distance and the nearest approach instant are exact.</p><p>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error.</p><pre class="programlisting">
+SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
+  Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
+-- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
+-- a convex polygon without holes
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11628"></a><p>Return the temporal distance</p><pre class="programlisting">
+{geometry,tgeompoint,trgeometry} &lt;-&gt; {geometry,tgeompoint,trgeometry} → tfloat
+tDistance({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → tfloat
+</pre><p>In the first example, a square moves past a point. Its side stays at distance 2 from the point from 10:00 to 14:00. In the second example, the square turns a quarter turn next to the point. A corner of the square comes nearest to the point at 12:00, and the result has an instant there.</p><pre class="programlisting">
+SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),0)@2001-01-02]' &lt;-&gt;
+  geometry 'Point(0 3)';
+-- [5.385164807134504@2001-01-01, 2@2001-01-01 10:00:00, 2@2001-01-01 14:00:00,
+--  5.385164807134504@2001-01-02]
+SELECT round(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]' &lt;-&gt;
+  geometry 'Point(3 0)', 6);
+-- [2@2001-01-01, 1.828427@2001-01-01 05:11:32.371809, 1.585786@2001-01-01 12:00:00,
+--  1.828427@2001-01-01 18:48:27.628191, 2@2001-01-02]
+SELECT trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]' &lt;-&gt;
+  tgeompoint '[Point(3 -4)@2001-01-01, Point(3 4)@2001-01-02]';
+-- [3.605551275463989@2001-01-01, 2@2001-01-01 09:00:00, 2@2001-01-01 15:00:00,
+--  3.605551275463989@2001-01-02]
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]' &lt;-&gt;
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
--- [1@2001-01-01 ..., 9@2001-01-02 ...]
-</pre><p>The dispatcher covers every subtype combination, TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asymmetric, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. The adaptive sub-sampling kernel underlies every continuous combo; instant combos materialise once. Pure-translation segments converge at depth 0 (two endpoint marks); rotation-heavy segments emit up to 32 marks per inter-instant gap. The bound on the LINEAR-interpolated approximation between marks is <code class="varname">1e-3</code> by construction.</p></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11635"></a><p>Return the smallest distance between two temporal rigid geometries over their shared time domain</p><pre class="programlisting">
-{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float
-nearestApproachDistance({geometry,trgeometry,stbox},{geometry,trgeometry,stbox}) → float
+  [Pose(Point(2 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]';
+-- [1@2001-01-01, 9@2001-01-02]
+</pre></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11636"></a><p>Return the nearest approach distance</p><pre class="programlisting">
+{geometry,stbox,tgeompoint,trgeometry} |=| {geometry,stbox,tgeompoint,trgeometry} → float
+nearestApproachDistance({geometry,stbox,tgeompoint,trgeometry},
+  {geometry,stbox,tgeompoint,trgeometry}) → float
 </pre><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]' |=|
-       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01,
-  Pose(Point(50 0), 0.0)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' |=|
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(50 0),0)@2001-01-01, Pose(Point(50 0),0)@2001-01-02]';
 -- 39
-</pre><p>The <code class="varname">|=|</code> operator can be used for nearest-neighbour searches against GiST or SP-GiST indexes (see <a class="xref" href="ch14s20.html" title="Indexing">the section called “Indexing”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11645"></a><p>Return the instant at which the two arguments are at their smallest mutual distance</p><pre class="programlisting">
-nearestApproachInstant({geometry,trgeometry},{geometry,trgeometry}) → trgeometry
-</pre><pre class="programlisting">
-SELECT asText(nearestApproachInstant( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+SELECT round(nearestApproachDistance(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)')::numeric, 6);
+-- 1.585786
+</pre><p>The <code class="varname">|=|</code> operator can be used for nearest-neighbour searches with GiST or SP-GiST indexes (see <a class="xref" href="ch14s20.html" title="Indexing">the section called “Indexing”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11646"></a><p>Return the instant of the first argument at which the two arguments are nearest</p><pre class="programlisting">
+nearestApproachInstant({geometry,tgeompoint,trgeometry},
+  {geometry,tgeompoint,trgeometry}) → trgeometry
+</pre><p>If the distance stays at its minimum during an interval, the result is the first instant of the interval. In the second example, the square is at distance 4 from the point from 09:36 to 12:00.</p><pre class="programlisting">
+SELECT asText(nearestApproachInstant(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
+  geometry 'Point(3 0)'), 6);
+-- POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1));Pose(POINT(0 0),0.785398)@2001-01-01 12:00:00
+SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(5 5)'));
--- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00
-</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11652"></a><p>Return the line connecting the two arguments at their nearest approach</p><pre class="programlisting">
-shortestLine({geometry,trgeometry},{geometry,trgeometry}) → geometry
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@2001-01-01 09:36:00
+</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11654"></a><p>Return the line between the nearest points of the two arguments at their nearest approach instant</p><pre class="programlisting">
+shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → geometry
 </pre><pre class="programlisting">
-SELECT ST_AsText(shortestLine( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(0 0), 0.0)@2001-01-01', geometry 'Point(10 0)'));
+SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0),0)@2001-01-01', geometry 'Point(10 0)'));
 -- LINESTRING(1 0,10 0)
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s12.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Restrictions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Similarity</td></tr></table></div></body></html>
