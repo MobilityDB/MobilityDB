@@ -172,3 +172,15 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_h3 Functions for temporal H3 cell indices
+ * @ingroup meos_internal
+ * @brief Functions for temporal H3 cell indices
+ *
+ *   @defgroup meos_internal_h3_inout Input and output functions
+ *   @ingroup meos_internal_h3
+ *   @brief Input and output functions for temporal H3 cell indices
+ */
+
+/*****************************************************************************/
