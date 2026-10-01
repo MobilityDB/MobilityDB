@@ -1596,6 +1596,8 @@ TGEOMETRY_CONFIG = dict(
         # accepted"). The same holds for every space-tiling origin.
         "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
         "tgeo_rotate_geo":        {2: "geom_point1"},
+        "geo_scale":              {1: "geom_point1", 2: "geom_point1"},
+        "geo_rotate_geo":         {2: "geom_point1"},
         "tgeo_space_boxes":       {4: "geom_point1"},
         "tgeo_space_time_boxes":  {5: "geom_point1"},
         # The splits hand back their bins through out-parameters beside the

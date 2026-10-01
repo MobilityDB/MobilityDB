@@ -1113,26 +1113,80 @@ tgeogpoint_to_tgeography(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Set the coefficients of an affine transformation
+ * @details The coefficients follow PostGIS ST_Affine
+ */
+static void
+affine_set(AFFINE *aff, double a, double b, double c, double d, double e,
+  double f, double g, double h, double i, double xoff, double yoff,
+  double zoff)
+{
+  aff->afac = a; aff->bfac = b; aff->cfac = c;
+  aff->dfac = d; aff->efac = e; aff->ffac = f;
+  aff->gfac = g; aff->hfac = h; aff->ifac = i;
+  aff->xoff = xoff; aff->yoff = yoff; aff->zoff = zoff;
+  return;
+}
+
+/**
+ * @brief Return true if an affine transformation moves a point of the plane
+ * z = 0 out of it
+ * @details The height of the image of a point (x, y, 0) is g x + h y + zoff,
+ * so the transformation keeps the plane when the three are zero
+ */
+static bool
+affine_leaves_plane(const AFFINE *a)
+{
+  return a->gfac != 0.0 || a->hfac != 0.0 || a->zoff != 0.0;
+}
+
+/**
+ * @brief Return a geometry moved by an affine transformation, read in three
+ * dimensions when the transformation is
+ * @details A two-dimensional geometry moved by a transformation leaving the
+ * plane is placed at z = 0 and moved in three dimensions, as a pose moved by
+ * a three-dimensional frame is (#pose_motion), so the height the
+ * transformation gives it is kept rather than dropped. The geometry read
+ * from a serialization shares its coordinates, which lwgeom_affine rewrites
+ * in place, so it is read from a copy, as in #geo_transform
+ * @param[in] gs Geometry
+ * @param[in] a Affine transformation
+ * @param[in] lift True when the transformation is three-dimensional
+ */
+static GSERIALIZED *
+geo_affine_lift(const GSERIALIZED *gs, const AFFINE *a, bool lift)
+{
+  GSERIALIZED *copy = geo_copy(gs);
+  LWGEOM *geo = lwgeom_from_gserialized(copy);
+  if (lift && ! FLAGS_GET_Z(gs->gflags))
+  {
+    LWGEOM *geo3d = lwgeom_force_3dz(geo, 0.0);
+    lwgeom_free(geo);
+    geo = geo3d;
+  }
+  lwgeom_affine(geo, a);
+  GSERIALIZED *result = geo_serialize(geo);
+  lwgeom_free(geo);
+  pfree(copy);
+  return result;
+}
+
+/**
  * @brief Return the affine transformation of a temporal geo instant
  * (iterator function)
  * @param[in] inst Temporal geo
  * @param[in] a Affine transformation
+ * @param[in] lift True when the transformation is three-dimensional
  * @param[out] result Result
  */
 static void
-tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
+tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, bool lift,
+  TInstant **result)
 {
   assert(inst); assert(a); assert(tgeo_type_all(inst->temptype));
-  /* The geometry read from a serialization shares its coordinates, which
-   * lwgeom_affine rewrites in place, so it is read from a copy, as in
-   * #geo_transform */
-  GSERIALIZED *gs = geo_copy(DatumGetGserializedP(tinstant_value_p(inst)));
-  LWGEOM *geo = lwgeom_from_gserialized(gs);
-  lwgeom_affine(geo, a);
-  GSERIALIZED *gs1 = geo_serialize(geo);
-  *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
-  lwgeom_free(geo);
-  pfree(gs);
+  GSERIALIZED *gs = geo_affine_lift(
+    DatumGetGserializedP(tinstant_value_p(inst)), a, lift);
+  *result = tinstant_make_free(PointerGetDatum(gs), inst->temptype, inst->t);
   return;
 }
 
@@ -1143,11 +1197,11 @@ tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
  * @param[in] a Affine transformation
  */
 static TInstant *
-tgeoinst_affine(TInstant *inst, const AFFINE *a)
+tgeoinst_affine(TInstant *inst, const AFFINE *a, bool lift)
 {
   assert(inst); assert(a); assert(tgeo_type_all(inst->temptype));
   TInstant *result;
-  tgeoinst_affine_iter(inst, a, &result);
+  tgeoinst_affine_iter(inst, a, lift, &result);
   return result;
 }
 
@@ -1158,12 +1212,12 @@ tgeoinst_affine(TInstant *inst, const AFFINE *a)
  * @param[in] a Affine transformation
  */
 static TSequence *
-tgeoseq_affine(const TSequence *seq, const AFFINE *a)
+tgeoseq_affine(const TSequence *seq, const AFFINE *a, bool lift)
 {
   assert(seq); assert(a); assert(tgeo_type_all(seq->temptype));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    tgeoinst_affine_iter(TSEQUENCE_INST_N(seq, i), a, &instants[i]);
+    tgeoinst_affine_iter(TSEQUENCE_INST_N(seq, i), a, lift, &instants[i]);
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
@@ -1176,19 +1230,45 @@ tgeoseq_affine(const TSequence *seq, const AFFINE *a)
  * @param[in] a Affine transformation
  */
 static TSequenceSet *
-tgeoseqset_affine(const TSequenceSet *ss, const AFFINE *a)
+tgeoseqset_affine(const TSequenceSet *ss, const AFFINE *a, bool lift)
 {
   assert(ss); assert(a); assert(tgeo_type_all(ss->temptype));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tgeoseq_affine(TSEQUENCESET_SEQ_N(ss, i), a);
+    sequences[i] = tgeoseq_affine(TSEQUENCESET_SEQ_N(ss, i), a, lift);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @brief Return the affine transformation of a temporal geo, read in three
+ * dimensions when the transformation is
+ * @param[in] temp Temporal geo
+ * @param[in] a Affine transformation
+ * @param[in] lift True when the transformation is three-dimensional
+ */
+static Temporal *
+tgeo_affine_lift(const Temporal *temp, const AFFINE *a, bool lift)
+{
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tgeoinst_affine((TInstant *) temp, a, lift);
+    case TSEQUENCE:
+      return (Temporal *) tgeoseq_affine((TSequence *) temp, a, lift);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tgeoseqset_affine((TSequenceSet *) temp, a, lift);
+  }
 }
 
 /**
  * @ingroup meos_geo_transf
  * @brief Return the 3D affine transform of a temporal geo to do things like
  * translate, rotate, scale in one step
+ * @details A two-dimensional value moved by a transformation leaving the
+ * plane becomes three-dimensional (#geo_affine_lift). An affine map of
+ * longitude and latitude is no transformation of the sphere, so a geodetic
+ * value is refused
  * @param[in] temp Temporal geo
  * @param[in] a Matrix specifying the transformation
  * @csqlfn #Tgeo_affine()
@@ -1198,20 +1278,32 @@ tgeo_affine(const Temporal *temp, const AFFINE *a)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(a, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tgeoinst_affine((TInstant *) temp, a);
-    case TSEQUENCE:
-      return (Temporal *) tgeoseq_affine((TSequence *) temp, a);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tgeoseqset_affine((TSequenceSet *) temp, a);
-  }
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  return tgeo_affine_lift(temp, a, affine_leaves_plane(a));
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Return a geometry scaled by given factors
+ * @details The geometry read from a serialization shares its coordinates,
+ * which lwgeom_scale rewrites in place, so it is read from a copy, as in
+ * #geo_transform
+ * @param[in] gs Geometry
+ * @param[in] factors Scale factors
+ */
+static GSERIALIZED *
+geo_scale_factors(const GSERIALIZED *gs, const POINT4D *factors)
+{
+  GSERIALIZED *copy = geo_copy(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(copy);
+  lwgeom_scale(geom, factors);
+  GSERIALIZED *result = geo_serialize(geom);
+  lwgeom_free(geom);
+  pfree(copy);
+  return result;
+}
 
 /**
  * @brief Return the scale transformation of a temporal geo instant
@@ -1224,16 +1316,9 @@ static void
 tgeoinst_scale_iter(const TInstant *inst, const POINT4D *factors,
   TInstant **result)
 {
-  /* The geometry read from a serialization shares its coordinates, which
-   * lwgeom_scale rewrites in place, so it is read from a copy, as in
-   * #geo_transform */
-  GSERIALIZED *gs = geo_copy(DatumGetGserializedP(tinstant_value_p(inst)));
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  lwgeom_scale(geom, factors);
-  GSERIALIZED *gs1 = geo_serialize(geom);
-  lwgeom_free(geom);
-  pfree(gs);
-  *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
+  GSERIALIZED *gs = geo_scale_factors(
+    DatumGetGserializedP(tinstant_value_p(inst)), factors);
+  *result = tinstant_make_free(PointerGetDatum(gs), inst->temptype, inst->t);
   return;
 }
 
@@ -1318,7 +1403,8 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(scale, NULL);
-  if (! ensure_point_type(scale) || gserialized_is_empty(scale) ||
+  if (! ensure_not_geodetic(temp->flags) ||
+      ! ensure_point_type(scale) || gserialized_is_empty(scale) ||
       (sorigin && 
         (gserialized_is_empty(sorigin) || ! ensure_point_type(sorigin))))
     return NULL;
@@ -1342,6 +1428,11 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
     translate = true;
   }
 
+  /* A two-dimensional value scaled about an origin off its plane leaves
+   * the plane when the vertical factor moves it, so it is read in three
+   * dimensions, as #geo_affine_lift reads it */
+  bool lift = translate && FLAGS_GET_Z(sorigin->gflags) && factors.z != 1.0;
+
   /* If we have false origin, translate to it before scaling */
   Temporal *temp1;
   if (translate)
@@ -1354,7 +1445,7 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
     aff.xoff = -1 * origin.x;
     aff.yoff = -1 * origin.y;
     aff.zoff = -1 * origin.z;
-    temp1 = tgeo_affine(temp, &aff);
+    temp1 = tgeo_affine_lift(temp, &aff, lift);
   }
   else
     temp1 = (Temporal *) temp;
@@ -1369,7 +1460,7 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
     aff.xoff *= -1;
     aff.yoff *= -1;
     aff.zoff *= -1;
-    temp3 = tgeo_affine(temp2, &aff);
+    temp3 = tgeo_affine_lift(temp2, &aff, lift);
   }
   else
     temp3 = temp2;
@@ -1396,6 +1487,8 @@ tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
   /* The factors of a 3D point, as scale(temp, ST_MakePoint(x, y, z)) reads
    * them */
   POINT4D factors = { .x = xfactor, .y = yfactor, .z = zfactor, .m = 1.0 };
@@ -1406,19 +1499,20 @@ tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor,
  * @brief Return the affine transformation of a temporal geo given the
  * coefficients of its matrix
  * @details The coefficients follow PostGIS ST_Affine, as #tgeo_affine reads
- * them from an AFFINE
+ * them from an AFFINE. A geodetic value is refused, as #tgeo_affine refuses it
+ * @param[in] temp Temporal geo
+ * @param[in] lift True when the transformation is three-dimensional
  */
 static Temporal *
-tgeo_affine_coefs(const Temporal *temp,
+tgeo_affine_coefs(const Temporal *temp, bool lift,
   double a, double b, double c, double d, double e, double f,
   double g, double h, double i, double xoff, double yoff, double zoff)
 {
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
   AFFINE aff;
-  aff.afac = a; aff.bfac = b; aff.cfac = c;
-  aff.dfac = d; aff.efac = e; aff.ffac = f;
-  aff.gfac = g; aff.hfac = h; aff.ifac = i;
-  aff.xoff = xoff; aff.yoff = yoff; aff.zoff = zoff;
-  return tgeo_affine(temp, &aff);
+  affine_set(&aff, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff);
+  return tgeo_affine_lift(temp, &aff, lift);
 }
 
 /**
@@ -1434,7 +1528,8 @@ tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e,
   double xoff, double yoff)
 {
   VALIDATE_TGEO(temp, NULL);
-  return tgeo_affine_coefs(temp, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff, 0);
+  return tgeo_affine_coefs(temp, false, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff,
+    0);
 }
 
 /**
@@ -1449,7 +1544,7 @@ tgeo_translate(const Temporal *temp, double deltax, double deltay,
   double deltaz)
 {
   VALIDATE_TGEO(temp, NULL);
-  return tgeo_affine_coefs(temp, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+  return tgeo_affine_coefs(temp, deltaz != 0.0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
     deltax, deltay, deltaz);
 }
 
@@ -1466,7 +1561,7 @@ tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   VALIDATE_TGEO(temp, NULL);
   double c = cos(angle), s = sin(angle);
-  return tgeo_affine_coefs(temp, c, -s, 0, s, c, 0, 0, 0, 1,
+  return tgeo_affine_coefs(temp, false, c, -s, 0, s, c, 0, 0, 0, 1,
     x0 - c * x0 + s * y0, y0 - s * x0 - c * y0, 0);
 }
 
@@ -1509,7 +1604,7 @@ tgeo_rotate_x(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
   double c = cos(angle), s = sin(angle);
-  return tgeo_affine_coefs(temp, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
+  return tgeo_affine_coefs(temp, true, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
 }
 
 /**
@@ -1524,7 +1619,7 @@ tgeo_rotate_y(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
   double c = cos(angle), s = sin(angle);
-  return tgeo_affine_coefs(temp, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
+  return tgeo_affine_coefs(temp, true, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
 }
 
 /**
@@ -1539,7 +1634,7 @@ tgeo_rotate_z(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
   double c = cos(angle), s = sin(angle);
-  return tgeo_affine_coefs(temp, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
+  return tgeo_affine_coefs(temp, false, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
 }
 
 /**
@@ -1555,7 +1650,253 @@ tgeo_transscale(const Temporal *temp, double deltax, double deltay,
   double xfactor, double yfactor)
 {
   VALIDATE_TGEO(temp, NULL);
-  return tgeo_affine_coefs(temp, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
+  return tgeo_affine_coefs(temp, false, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
+    deltax * xfactor, deltay * yfactor, 0);
+}
+
+/*****************************************************************************
+ * Affine functions over a geometry
+ *
+ * The family of PostGIS ST_Affine over a geometry, computed by the kernels of
+ * the temporal one: a two-dimensional geometry moved by a transformation
+ * leaving the plane becomes three-dimensional (#geo_affine_lift), and a
+ * geography is refused, an affine map of longitude and latitude being no
+ * transformation of the sphere.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return the 3D affine transformation of a geometry
+ * @param[in] gs Geometry
+ * @param[in] a Matrix specifying the transformation
+ * @csqlfn #Geo_affine()
+ */
+GSERIALIZED *
+geo_affine(const GSERIALIZED *gs, const AFFINE *a)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(a, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+  return geo_affine_lift(gs, a, affine_leaves_plane(a));
+}
+
+/**
+ * @brief Return the affine transformation of a geometry given the
+ * coefficients of its matrix
+ * @details The coefficients follow PostGIS ST_Affine, as #geo_affine reads
+ * them from an AFFINE
+ * @param[in] gs Geometry
+ * @param[in] lift True when the transformation is three-dimensional
+ */
+static GSERIALIZED *
+geo_affine_coefs(const GSERIALIZED *gs, bool lift,
+  double a, double b, double c, double d, double e, double f,
+  double g, double h, double i, double xoff, double yoff, double zoff)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+  AFFINE aff;
+  affine_set(&aff, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff);
+  return geo_affine_lift(gs, &aff, lift);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return the 2D affine transformation of a geometry
+ * @param[in] gs Geometry
+ * @param[in] a,b,d,e Coefficients of the 2x2 matrix
+ * @param[in] xoff,yoff Translation
+ * @csqlfn #Geo_affine_2d()
+ */
+GSERIALIZED *
+geo_affine_2d(const GSERIALIZED *gs, double a, double b, double d, double e,
+  double xoff, double yoff)
+{
+  return geo_affine_coefs(gs, false, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff,
+    0);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry translated by the given offsets
+ * @param[in] gs Geometry
+ * @param[in] deltax,deltay,deltaz Offsets
+ * @csqlfn #Geo_translate()
+ */
+GSERIALIZED *
+geo_translate(const GSERIALIZED *gs, double deltax, double deltay,
+  double deltaz)
+{
+  return geo_affine_coefs(gs, deltaz != 0.0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+    deltax, deltay, deltaz);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around a point
+ * @param[in] gs Geometry
+ * @param[in] angle Rotation angle in radians
+ * @param[in] x0,y0 Center of the rotation
+ * @csqlfn #Geo_rotate()
+ */
+GSERIALIZED *
+geo_rotate(const GSERIALIZED *gs, double angle, double x0, double y0)
+{
+  double c = cos(angle), s = sin(angle);
+  return geo_affine_coefs(gs, false, c, -s, 0, s, c, 0, 0, 0, 1,
+    x0 - c * x0 + s * y0, y0 - s * x0 - c * y0, 0);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around a point geometry
+ * @details The rotation of #geo_rotate about the coordinates of the point,
+ * read as #tgeo_rotate_geo reads it: the point is not empty, and it states
+ * the SRID of the geometry or none
+ * @param[in] gs Geometry
+ * @param[in] angle Rotation angle in radians
+ * @param[in] origin Center of the rotation
+ * @csqlfn #Geo_rotate_geo()
+ */
+GSERIALIZED *
+geo_rotate_geo(const GSERIALIZED *gs, double angle, const GSERIALIZED *origin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(origin, NULL);
+  if (! ensure_point_type(origin) || ! ensure_not_empty(origin))
+    return NULL;
+  int32_t srid = gserialized_get_srid(origin);
+  if (srid != SRID_UNKNOWN &&
+      ! ensure_same_srid(gserialized_get_srid(gs), srid))
+    return NULL;
+  POINT4D p;
+  datum_point4d(PointerGetDatum(origin), &p);
+  return geo_rotate(gs, angle, p.x, p.y);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the x axis
+ * @param[in] gs Geometry
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Geo_rotate_x()
+ */
+GSERIALIZED *
+geo_rotate_x(const GSERIALIZED *gs, double angle)
+{
+  double c = cos(angle), s = sin(angle);
+  return geo_affine_coefs(gs, true, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the y axis
+ * @param[in] gs Geometry
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Geo_rotate_y()
+ */
+GSERIALIZED *
+geo_rotate_y(const GSERIALIZED *gs, double angle)
+{
+  double c = cos(angle), s = sin(angle);
+  return geo_affine_coefs(gs, true, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the z axis
+ * @param[in] gs Geometry
+ * @param[in] angle Rotation angle in radians
+ * @csqlfn #Geo_rotate_z()
+ */
+GSERIALIZED *
+geo_rotate_z(const GSERIALIZED *gs, double angle)
+{
+  double c = cos(angle), s = sin(angle);
+  return geo_affine_coefs(gs, false, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Scale a geometry by the factors a point states, about an origin
+ * @details The scaling of #tgeo_scale: the factors and the origin are
+ * non-empty points, the factor of a point without Z is 1 along z, and a
+ * two-dimensional geometry scaled about an origin off its plane leaves the
+ * plane when the vertical factor moves it
+ * @param[in] gs Geometry
+ * @param[in] scale Point geometry stating the scale factors
+ * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @csqlfn #Geo_scale()
+ */
+GSERIALIZED *
+geo_scale(const GSERIALIZED *gs, const GSERIALIZED *scale,
+  const GSERIALIZED *sorigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(scale, NULL);
+  if (! ensure_not_geodetic_geo(gs) ||
+      ! ensure_point_type(scale) || gserialized_is_empty(scale) ||
+      (sorigin &&
+        (gserialized_is_empty(sorigin) || ! ensure_point_type(sorigin))))
+    return NULL;
+
+  POINT4D factors;
+  datum_point4d(PointerGetDatum(scale), &factors);
+  if (! FLAGS_GET_Z(scale->gflags))
+    factors.z = 1.0;
+  factors.m = 1.0;
+  if (! sorigin)
+    return geo_scale_factors(gs, &factors);
+
+  POINT4D origin;
+  datum_point4d(PointerGetDatum(sorigin), &origin);
+  bool lift = FLAGS_GET_Z(sorigin->gflags) && factors.z != 1.0;
+  AFFINE aff;
+  affine_set(&aff, 1, 0, 0, 0, 1, 0, 0, 0, 1, -origin.x, -origin.y,
+    -origin.z);
+  GSERIALIZED *gs1 = geo_affine_lift(gs, &aff, lift);
+  GSERIALIZED *gs2 = geo_scale_factors(gs1, &factors);
+  affine_set(&aff, 1, 0, 0, 0, 1, 0, 0, 0, 1, origin.x, origin.y, origin.z);
+  GSERIALIZED *result = geo_affine_lift(gs2, &aff, lift);
+  pfree(gs1); pfree(gs2);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Scale a geometry by the given factors along the x, y, and z axes
+ * @param[in] gs Geometry
+ * @param[in] xfactor,yfactor,zfactor Scale factors
+ * @csqlfn #Geo_scale_xyz()
+ */
+GSERIALIZED *
+geo_scale_xyz(const GSERIALIZED *gs, double xfactor, double yfactor,
+  double zfactor)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+  POINT4D factors = { .x = xfactor, .y = yfactor, .z = zfactor, .m = 1.0 };
+  return geo_scale_factors(gs, &factors);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry translated and then scaled
+ * @param[in] gs Geometry
+ * @param[in] deltax,deltay Offsets
+ * @param[in] xfactor,yfactor Scale factors
+ * @csqlfn #Geo_transscale()
+ */
+GSERIALIZED *
+geo_transscale(const GSERIALIZED *gs, double deltax, double deltay,
+  double xfactor, double yfactor)
+{
+  return geo_affine_coefs(gs, false, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
     deltax * xfactor, deltay * yfactor, 0);
 }
 

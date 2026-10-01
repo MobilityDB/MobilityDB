@@ -1061,28 +1061,28 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
+					<para><link linkend="tgeo_affine"><varname>affine</varname>, <varname>geoAffine</varname></link>: Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotate"><varname>rotate</varname></link>: Return the temporal point rotated counter-clockwise about the origin point</para>
+					<para><link linkend="tgeo_rotate"><varname>rotate</varname>, <varname>geoRotate</varname></link>: Return the temporal point rotated counter-clockwise about the origin point</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname></link>: Return a temporal geometry rotated counter-clockwise about the x axis &Z_support;</para>
+					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname>, <varname>geoRotateX</varname></link>: Return a temporal geometry rotated counter-clockwise about the x axis &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname></link>: Return a temporal geometry rotated counter-clockwise about the y axis &Z_support;</para>
+					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname>, <varname>geoRotateY</varname></link>: Return a temporal geometry rotated counter-clockwise about the y axis &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname></link>: Return a temporal geometry rotated counter-clockwise about the z axis &Z_support;</para>
+					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname>, <varname>geoRotateZ</varname></link>: Return a temporal geometry rotated counter-clockwise about the z axis &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_scale"><varname>scale</varname></link>: Return a temporal point scaled by given factors &Z_support;</para>
+					<para><link linkend="tgeo_scale"><varname>scale</varname>, <varname>geoScale</varname></link>: Return a temporal point scaled by given factors &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transscale"><varname>transscale</varname></link>: Return a temporal geometry translated by given offsets and then scaled by given factors &Z_support;</para>
+					<para><link linkend="tgeo_transscale"><varname>transscale</varname>, <varname>geoTransscale</varname></link>: Return a temporal geometry translated by given offsets and then scaled by given factors &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_translate"><varname>translate</varname></link>: Return a temporal geometry translated by given offsets &Z_support;</para>
+					<para><link linkend="tgeo_translate"><varname>translate</varname>, <varname>geoTranslate</varname></link>: Return a temporal geometry translated by given offsets &Z_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile &Z_support;</para>

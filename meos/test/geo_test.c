@@ -3668,9 +3668,9 @@ int main(void)
     {"tgeo_rotate", tgeo_rotate(trip, M_PI_2, 1, 1),
      "[POINT(1 1)@2001-01-01 00:00:00+00, POINT(0 2)@2001-01-02 00:00:00+00]"},
     {"tgeo_rotate_x", tgeo_rotate_x(trip, M_PI_2),
-     "[POINT(1 0)@2001-01-01 00:00:00+00, POINT(2 0)@2001-01-02 00:00:00+00]"},
+     "[POINT Z (1 0 1)@2001-01-01 00:00:00+00, POINT Z (2 0 2)@2001-01-02 00:00:00+00]"},
     {"tgeo_rotate_y", tgeo_rotate_y(trip, M_PI_2),
-     "[POINT(0 1)@2001-01-01 00:00:00+00, POINT(0 2)@2001-01-02 00:00:00+00]"},
+     "[POINT Z (0 1 -1)@2001-01-01 00:00:00+00, POINT Z (0 2 -2)@2001-01-02 00:00:00+00]"},
     {"tgeo_scale_xyz", tgeo_scale_xyz(trip, 2, 3, 1),
      "[POINT(2 3)@2001-01-01 00:00:00+00, POINT(4 6)@2001-01-02 00:00:00+00]"},
     {"tgeo_transscale", tgeo_transscale(trip, 1, 1, 2, 3),
@@ -3688,6 +3688,24 @@ int main(void)
     free(txt); free(rounded); free(aff[k].res);
   }
   free(trip);
+
+  /* The affine family refuses a geodetic value: an affine map of longitude
+   * and latitude is no transformation of the sphere */
+  Temporal *gtrip = tgeogpoint_in(
+    "[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]");
+  assert(gtrip != NULL);
+  meos_errno_reset();
+  Temporal *gres = tgeo_translate(gtrip, 10, 20, 0);
+  assert(gres == NULL && meos_errno() != 0);
+  printf("tgeo_translate(tgeogpoint) is refused\n");
+  meos_errno_reset();
+  GSERIALIZED *ggeo = geog_in("Point(1 1)", -1);
+  assert(ggeo != NULL);
+  GSERIALIZED *gmoved = geo_translate(ggeo, 10, 20, 0);
+  assert(gmoved == NULL && meos_errno() != 0);
+  printf("geo_translate(geography) is refused\n");
+  free(ggeo); free(gtrip);
+  meos_errno_reset();
 
   /* Finalize MEOS */
   meos_finalize();

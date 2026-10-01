@@ -382,8 +382,19 @@ extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 
 /* Transformation functions */
 
+extern GSERIALIZED *geo_affine(const GSERIALIZED *gs, const AFFINE *a);
+extern GSERIALIZED *geo_affine_2d(const GSERIALIZED *gs, double a, double b, double d, double e, double xoff, double yoff);
 extern GSERIALIZED *geo_reverse(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_rotate(const GSERIALIZED *gs, double angle, double x0, double y0);
+extern GSERIALIZED *geo_rotate_geo(const GSERIALIZED *gs, double angle, const GSERIALIZED *origin);
+extern GSERIALIZED *geo_rotate_x(const GSERIALIZED *gs, double angle);
+extern GSERIALIZED *geo_rotate_y(const GSERIALIZED *gs, double angle);
+extern GSERIALIZED *geo_rotate_z(const GSERIALIZED *gs, double angle);
 extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
+extern GSERIALIZED *geo_scale(const GSERIALIZED *gs, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
+extern GSERIALIZED *geo_scale_xyz(const GSERIALIZED *gs, double xfactor, double yfactor, double zfactor);
+extern GSERIALIZED *geo_translate(const GSERIALIZED *gs, double deltax, double deltay, double deltaz);
+extern GSERIALIZED *geo_transscale(const GSERIALIZED *gs, double deltax, double deltay, double xfactor, double yfactor);
 
 /* Spatial reference system functions */
 

@@ -1061,28 +1061,28 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
+					<para><link linkend="tgeo_affine"><varname>affine</varname>, <varname>geoAffine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotate"><varname>rotate</varname></link>: Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
+					<para><link linkend="tgeo_rotate"><varname>rotate</varname>, <varname>geoRotate</varname></link>: Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje x &Z_support;</para>
+					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname>, <varname>geoRotateX</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje x &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje y &Z_support;</para>
+					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname>, <varname>geoRotateY</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje y &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje z &Z_support;</para>
+					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname>, <varname>geoRotateZ</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje z &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_scale"><varname>scale</varname></link>: Devuelve un punto temporal escalado por factores dados &Z_support;</para>
+					<para><link linkend="tgeo_scale"><varname>scale</varname>, <varname>geoScale</varname></link>: Devuelve un punto temporal escalado por factores dados &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transscale"><varname>transscale</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados y luego escalada por factores dados &Z_support;</para>
+					<para><link linkend="tgeo_transscale"><varname>transscale</varname>, <varname>geoTransscale</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados y luego escalada por factores dados &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_translate"><varname>translate</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados &Z_support;</para>
+					<para><link linkend="tgeo_translate"><varname>translate</varname>, <varname>geoTranslate</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados &Z_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
