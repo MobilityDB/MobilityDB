@@ -254,6 +254,7 @@ tposechainseqset_in(const char *str)
  * @brief Return a temporal pose chain from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
  * @see #temporal_from_mfjson()
  */
 Temporal *

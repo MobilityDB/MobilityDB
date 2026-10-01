@@ -80,6 +80,7 @@ PG_FUNCTION_INFO_V1(Tposechain_in);
  *   [ PoseChain(Pose(Point(1 1), 0)) @ 2012-01-01 08:20:00 ,
  *     PoseChain(Pose(Point(0 0), 0)) @ 2012-01-01 08:30:00 ] }
  * @endcode
+ * @sqlfn tposechain_in()
  */
 Datum
 Tposechain_in(PG_FUNCTION_ARGS)
