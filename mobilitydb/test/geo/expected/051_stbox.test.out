@@ -208,6 +208,18 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
      0
 (1 row)
 
+SELECT stboxFromText('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
+                                             stboxfromtext                                              
+--------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbox;
+ count 
+-------
+     0
+(1 row)
+
 SELECT stboxT(timestamptz '2001-01-03');
                                 stboxt                                 
 -----------------------------------------------------------------------

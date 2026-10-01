@@ -92,6 +92,13 @@ SELECT COUNT(*) FROM tbl_textset WHERE textsetFromHexWKB(asHexWKB(t)) <> t;
 SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromHexWKB(asHexWKB(d)) <> d;
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
 
+SELECT COUNT(*) FROM tbl_intset WHERE intsetFromText(asText(i)) <> asText(i)::intset;
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromText(asText(b)) <> asText(b)::bigintset;
+SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromText(asText(f)) <> asText(f)::floatset;
+SELECT COUNT(*) FROM tbl_textset WHERE textsetFromText(asText(t)) <> t;
+SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromText(asText(d)) <> asText(d)::dateset;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromText(asText(t)) <> asText(t)::tstzset;
+
 -------------------------------------------------------------------------------
 -- Constructor
 

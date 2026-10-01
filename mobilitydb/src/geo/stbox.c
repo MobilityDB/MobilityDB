@@ -78,6 +78,24 @@ Stbox_in(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(stbox_in(str));
 }
 
+PGDLLEXPORT Datum Stbox_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_from_text);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return a spatiotemporal box from its Well-Known Text (WKT) representation
+ * @sqlfn stboxFromText()
+ */
+Datum
+Stbox_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  STBox *result = stbox_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_STBOX_P(result);
+}
+
 PGDLLEXPORT Datum Stbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_out);
 /**

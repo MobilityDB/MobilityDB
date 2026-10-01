@@ -274,6 +274,36 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexW
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromText(asText(temp)) <> asText(temp)::tbool;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromText(asText(temp)) <> asText(temp)::tint;
+ count 
+-------
+     0
+(1 row)
+
+SELECT tbigintFromText(asText(tbigint '[1@2001-01-01, 2@2001-01-02]')) = tbigint '[1@2001-01-01, 2@2001-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromText(asText(temp)) <> asText(temp)::tfloat;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromText(asText(temp)) <> asText(temp)::ttext;
+ count 
+-------
+     0
+(1 row)
+
 SELECT ttextFromHexWKB(asHexWKB(ttext '""@2001-01-01', 'NDR')) = ttext '""@2001-01-01';
  ?column? 
 ----------
@@ -289,3 +319,5 @@ SELECT ttextFromHexWKB(left(asHexWKB(ttext 'AAA@2001-01-01', 'NDR'), 28));
 ERROR:  WKB structure does not match expected size!
 SELECT ttextFromHexWKB(overlay(asHexWKB(ttext '{AAA@2001-01-01}', 'NDR') placing 'FFFFFFFF' from 9 for 8));
 ERROR:  WKB structure does not match expected size!
+SELECT tintFromText('[1.5@2001-01-01]');
+ERROR:  invalid input syntax for type integer: "1.5"

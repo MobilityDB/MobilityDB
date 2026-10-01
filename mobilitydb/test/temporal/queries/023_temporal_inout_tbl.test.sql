@@ -100,6 +100,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromText(asText(temp)) <> asText(temp)::tbool;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromText(asText(temp)) <> asText(temp)::tint;
+SELECT tbigintFromText(asText(tbigint '[1@2001-01-01, 2@2001-01-02]')) = tbigint '[1@2001-01-01, 2@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromText(asText(temp)) <> asText(temp)::tfloat;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromText(asText(temp)) <> asText(temp)::ttext;
+
 -- A text length that is negative, beyond the buffer, or a buffer cut short
 SELECT ttextFromHexWKB(asHexWKB(ttext '""@2001-01-01', 'NDR')) = ttext '""@2001-01-01';
 /* Errors */
@@ -107,5 +114,6 @@ SELECT ttextFromHexWKB(overlay(asHexWKB(ttext 'AAA@2001-01-01', 'NDR') placing '
 SELECT ttextFromHexWKB(overlay(asHexWKB(ttext 'AAA@2001-01-01', 'NDR') placing 'FFFFFFFFFFFFFF7F' from 9 for 16));
 SELECT ttextFromHexWKB(left(asHexWKB(ttext 'AAA@2001-01-01', 'NDR'), 28));
 SELECT ttextFromHexWKB(overlay(asHexWKB(ttext '{AAA@2001-01-01}', 'NDR') placing 'FFFFFFFF' from 9 for 8));
+SELECT tintFromText('[1.5@2001-01-01]');
 
 ------------------------------------------------------------------------------

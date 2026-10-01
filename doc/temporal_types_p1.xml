@@ -612,6 +612,27 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttypeFromText">
+				<indexterm significance="normal"><primary><varname>ttypeFromText</varname></primary></indexterm>
+				<para>Input from the Well-Known Text (WKT) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+ttypeFromText(text) → ttype
+</programlisting>
+				<para>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> or <varname>ttext</varname> in the examples below. The function is the inverse of <varname>asText</varname>: it reads the text a literal of the type is written in, from a constant or from a <varname>text</varname> column alike, so that <literal>tintFromText(col)</literal> and <literal>col::tint</literal> give the same value. The function of a spatiotemporal type is given in <link linkend="tspatialFromText"><varname>tspatialFromText</varname></link> and that of <varname>tjsonb</varname> in <link linkend="tjsonbFromText"><varname>tjsonbFromText</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tboolFromText('[true@2001-01-01, false@2001-01-03]');
+-- [t@2001-01-01, f@2001-01-03]
+SELECT tintFromText('[1@2001-01-01, 2@2001-01-02]');
+-- [1@2001-01-01, 2@2001-01-02]
+SELECT tfloatFromText('Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02]');
+-- Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02]
+SELECT ttextFromText('{"walk"@2001-01-01, "bus"@2001-01-02}');
+-- {"walk"@2001-01-01, "bus"@2001-01-02}
+SELECT tintFromText(t) FROM (VALUES (text '[1@2001-01-01, 2@2001-01-02]')) v(t);
+-- [1@2001-01-01, 2@2001-01-02]
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttypeFromMFJSON">
 				<indexterm significance="normal"><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
 				<para>Input from the Moving Features JSON (MF-JSON) representation</para>

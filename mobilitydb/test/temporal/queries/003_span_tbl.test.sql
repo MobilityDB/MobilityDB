@@ -82,6 +82,12 @@ SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromHexWKB(asHexWKB(b)) <> b
 SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(t)) <> t;
 
+SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromText(asText(i)) <> asText(i)::intspan;
+SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromText(asText(b)) <> asText(b)::bigintspan;
+SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromText(asText(f)) <> asText(f)::floatspan;
+SELECT COUNT(*) FROM tbl_datespan WHERE datespanFromText(asText(d)) <> asText(d)::datespan;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromText(asText(t)) <> asText(t)::tstzspan;
+
 -------------------------------------------------------------------------------
 -- Conversions
 -------------------------------------------------------------------------------

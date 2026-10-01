@@ -39,6 +39,27 @@
  * Input
  *****************************************************************************/
 
+CREATE FUNCTION tboolFromText(text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tintFromText(text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbigintFromText(text)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tfloatFromText(text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ttextFromText(text)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tboolFromMFJSON(text)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'

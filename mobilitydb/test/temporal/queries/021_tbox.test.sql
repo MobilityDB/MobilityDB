@@ -83,6 +83,10 @@ SELECT COUNT(*) FROM tbl_tboxint WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_tboxfloat WHERE tboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_tboxfloat WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 
+SELECT tboxFromText('TBOXINT XT([1,2],[2001-01-01,2001-01-02])');
+SELECT COUNT(*) FROM tbl_tboxint WHERE tboxFromText(asText(b)) <> asText(b)::tbox;
+SELECT COUNT(*) FROM tbl_tboxfloat WHERE tboxFromText(asText(b)) <> asText(b)::tbox;
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------

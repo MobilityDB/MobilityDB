@@ -623,6 +623,27 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttypeFromText">
+				<indexterm significance="normal"><primary><varname>ttypeFromText</varname></primary></indexterm>
+				<para>Entrada desde la representación de texto conocido (WKT)</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+ttypeFromText(text) → ttype
+</programlisting>
+				<para>Hay una función por tipo temporal, el nombre de la función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname> en los ejemplos a continuación. La función es la inversa de <varname>asText</varname>: lee el texto en el que se escribe un literal del tipo, tanto de una constante como de una columna <varname>text</varname>, de modo que <literal>tintFromText(col)</literal> y <literal>col::tint</literal> dan el mismo valor. La función de un tipo espaciotemporal se da en <link linkend="tspatialFromText"><varname>tspatialFromText</varname></link> y la de <varname>tjsonb</varname> en <link linkend="tjsonbFromText"><varname>tjsonbFromText</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tboolFromText('[true@2001-01-01, false@2001-01-03]');
+-- [t@2001-01-01, f@2001-01-03]
+SELECT tintFromText('[1@2001-01-01, 2@2001-01-02]');
+-- [1@2001-01-01, 2@2001-01-02]
+SELECT tfloatFromText('Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02]');
+-- Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02]
+SELECT ttextFromText('{"walk"@2001-01-01, "bus"@2001-01-02}');
+-- {"walk"@2001-01-01, "bus"@2001-01-02}
+SELECT tintFromText(t) FROM (VALUES (text '[1@2001-01-01, 2@2001-01-02]')) v(t);
+-- [1@2001-01-01, 2@2001-01-02]
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttypeFromMFJSON">
 				<indexterm significance="normal"><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
 				<para>Entrada desde la representación JSON de características móviles (MF-JSON)</para>

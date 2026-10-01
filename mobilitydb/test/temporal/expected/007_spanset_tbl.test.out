@@ -143,6 +143,36 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <>
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromText(asText(i)) <> asText(i)::intspanset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromText(asText(b)) <> asText(b)::bigintspanset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromText(asText(f)) <> asText(f)::floatspanset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromText(asText(d)) <> asText(d)::datespanset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromText(asText(t)) <> asText(t)::tstzspanset;
+ count 
+-------
+     0
+(1 row)
+
 SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
  max 
 -----

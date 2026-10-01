@@ -92,6 +92,9 @@ SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
 
+SELECT stboxFromText('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbox;
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------

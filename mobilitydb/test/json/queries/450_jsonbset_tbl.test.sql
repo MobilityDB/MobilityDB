@@ -45,6 +45,8 @@ DROP TABLE tbl_jsonbset_tmp;
 
 SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
 
+SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromText(asText(s)) <> asText(s)::jsonbset;
+
 -------------------------------------------------------------------------------
 -- Constructor
 

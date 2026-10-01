@@ -108,6 +108,21 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="boxFromText">
+					<indexterm significance="normal"><primary><varname>boxFromText</varname></primary></indexterm>
+					<para>Input from the Well-Known Text (WKT) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+boxFromText(text) → box
+</programlisting>
+					<para>In the signature above, <varname>box</varname> replaces any box type, that is, <varname>tbox</varname> or <varname>stbox</varname>. The function is the inverse of <varname>asText</varname>: it reads the text a literal of the type is written in, from a constant or from a <varname>text</varname> column alike, including the SRID of a spatiotemporal box.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tboxFromText('TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
+-- TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])
+SELECT stboxFromText('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+-- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="boxFromBinary">
 					<indexterm significance="normal"><primary><varname>boxFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>boxFromHexWKB</varname></primary></indexterm>

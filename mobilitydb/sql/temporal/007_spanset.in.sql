@@ -181,6 +181,27 @@ CREATE TYPE tstzspanset (
 
 -- Input/output in WKB and HexWKB representation
 
+CREATE FUNCTION intspansetFromText(text)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspansetFromText(text)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspansetFromText(text)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespansetFromText(text)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspansetFromText(text)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intspansetFromBinary(bytea)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_wkb'

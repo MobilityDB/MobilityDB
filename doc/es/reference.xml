@@ -198,6 +198,9 @@
 					<para><link linkend="setspan_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación extendida binaria conocida (EWKB) o la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_FromText"><varname>settypeFromText</varname>, <varname>spantypeFromText</varname>, <varname>spansettypeFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Entrada desde la representación binaria conocida (WKB)</para>
 				</listitem>
 				<listitem>
@@ -444,6 +447,9 @@
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
@@ -623,6 +629,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttypeFromText"><varname>ttypeFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttypeFromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON)</para>

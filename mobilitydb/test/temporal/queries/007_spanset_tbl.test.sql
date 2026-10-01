@@ -82,6 +82,12 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(f)) 
 SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromHexWKB(asHexWKB(d)) <> d;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <> t;
 
+SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromText(asText(i)) <> asText(i)::intspanset;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromText(asText(b)) <> asText(b)::bigintspanset;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromText(asText(f)) <> asText(f)::floatspanset;
+SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromText(asText(d)) <> asText(d)::datespanset;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromText(asText(t)) <> asText(t)::tstzspanset;
+
 -------------------------------------------------------------------------------
 -- Conversions
 -------------------------------------------------------------------------------
