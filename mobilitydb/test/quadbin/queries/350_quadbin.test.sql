@@ -82,6 +82,17 @@ SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
 SELECT quadbinFromHexWKB('01003930000000000000');
 
 -------------------------------------------------------------------------------
+-- Text round trip
+-------------------------------------------------------------------------------
+
+SELECT asText(quadbin '48427fffffffffff');
+SELECT quadbinFromText(asText(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+SELECT quadbinFromText('0x480fffffffffffff') = quadbin '480fffffffffffff';
+/* Errors */
+SELECT quadbinFromText('48427xyz');
+
+-------------------------------------------------------------------------------
 -- Comparison operators
 -------------------------------------------------------------------------------
 

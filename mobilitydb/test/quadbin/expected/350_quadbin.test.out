@@ -104,6 +104,28 @@ SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
 ERROR:  Only SRID 4326 (WGS84) is accepted for the type quadbin, received 3857
 SELECT quadbinFromHexWKB('01003930000000000000');
 ERROR:  The value 12345 does not encode a valid quadbin index
+SELECT asText(quadbin '48427fffffffffff');
+      astext      
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT quadbinFromText(asText(quadbin '48427fffffffffff'))
+       = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinFromText('0x480fffffffffffff') = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT quadbinFromText('48427xyz');
+ERROR:  quadbin value "48427xyz" does not encode a valid quadbin index
 SELECT quadbin '480fffffffffffff' = quadbin '480fffffffffffff';
  ?column? 
 ----------

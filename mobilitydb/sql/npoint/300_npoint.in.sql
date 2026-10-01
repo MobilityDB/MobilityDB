@@ -178,11 +178,21 @@ CREATE FUNCTION asHexEWKB(npoint, endian text DEFAULT '')
 -- GENERATED-REPRESENTATIONS-BEGIN nsegment_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /******************************************************************************
- * Input/output of network segments in (E)WKB and HexWKB representation
+ * Input/output of network segments in (E)WKT, (E)WKB and HexWKB representation
  *
  * A network segment carries the SRID of the ways table, as a network point
  * does, which the E forms write.
  ******************************************************************************/
+
+CREATE FUNCTION nsegmentFromText(text)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION nsegmentFromEWKT(text)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Nsegment_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION nsegmentFromBinary(bytea)
   RETURNS nsegment
@@ -205,6 +215,16 @@ CREATE FUNCTION nsegmentFromHexEWKB(text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+CREATE FUNCTION asText(nsegment, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Nsegment_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(nsegment, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Nsegment_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(nsegment, endian text DEFAULT '')
   RETURNS bytea

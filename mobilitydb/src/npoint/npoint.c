@@ -402,6 +402,71 @@ Nsegment_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(nsegment_out(ns, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
+PGDLLEXPORT Datum Nsegment_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_from_ewkt);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return a network segment from its Extended Well-Known Text (EWKT)
+ * representation
+ * @sqlfn nsegmentFromText(), nsegmentFromEWKT()
+ */
+Datum
+Nsegment_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = text_to_cstring(wkt_text);
+  Nsegment *result = nsegment_in(wkt);
+  pfree(wkt);
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_NSEGMENT_P(result);
+}
+
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of a network segment
+ */
+static Datum
+Nsegment_as_text_common(FunctionCallInfo fcinfo, bool extended)
+{
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = extended ? nsegment_as_ewkt(ns, dbl_dig_for_wkt) :
+    nsegment_as_text(ns, dbl_dig_for_wkt);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Nsegment_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_text);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of a network segment
+ * @sqlfn asText()
+ */
+Datum
+Nsegment_as_text(PG_FUNCTION_ARGS)
+{
+  return Nsegment_as_text_common(fcinfo, false);
+}
+
+PGDLLEXPORT Datum Nsegment_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_as_ewkt);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * network segment
+ * @note It is the WKT representation prefixed with the SRID
+ * @sqlfn asEWKT()
+ */
+Datum
+Nsegment_as_ewkt(PG_FUNCTION_ARGS)
+{
+  return Nsegment_as_text_common(fcinfo, true);
+}
+
 PGDLLEXPORT Datum Nsegment_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_recv);
 /**

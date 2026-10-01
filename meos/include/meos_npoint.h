@@ -128,6 +128,8 @@ extern Nsegment *nsegment_from_hexwkb(const char *hexwkb);
 extern Nsegment *nsegment_from_wkb(const uint8_t *wkb, size_t size);
 extern Nsegment *nsegment_in(const char *str);
 extern char *nsegment_out(const Nsegment *ns, int maxdd);
+extern char *nsegment_as_ewkt(const Nsegment *ns, int maxdd);
+extern char *nsegment_as_text(const Nsegment *ns, int maxdd);
 
 /* Constructor functions */
 

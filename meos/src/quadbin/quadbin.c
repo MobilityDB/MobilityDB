@@ -113,7 +113,7 @@ quadbin_parse(const char *str)
  * @ingroup meos_quadbin_base_inout
  * @brief Return a quadbin from its string representation
  * @param[in] str String
- * @csqlfn #Quadbin_in()
+ * @csqlfn #Quadbin_in(), #Quadbin_from_text()
  */
 Quadbin
 quadbin_in(const char *str)
@@ -121,6 +121,19 @@ quadbin_in(const char *str)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, (Quadbin) 0);
   return quadbin_parse(str);
+}
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return the string representation of a quadbin
+ * @param[in] cell Quadbin
+ * @return A palloc'd, null-terminated string (caller frees)
+ * @csqlfn #Quadbin_out(), #Quadbin_as_text()
+ */
+char *
+quadbin_out(Quadbin cell)
+{
+  return quadbin_index_to_string(cell);
 }
 
 /**
@@ -1242,7 +1255,6 @@ quadbin_is_valid_cell(Quadbin cell)
  * @ingroup meos_quadbin
  * @brief Return the lowercase hexadecimal string of a quadbin index
  * @return A palloc'd, null-terminated string (caller frees)
- * @csqlfn #Quadbin_out()
  */
 char *
 quadbin_index_to_string(Quadbin index)

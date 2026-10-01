@@ -428,9 +428,9 @@ nsegment_parse(const char **str)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return a network point from its string representation
+ * @brief Return a network segment from its string representation
  * @param[in] str String
- * @csqlfn #Nsegment_in()
+ * @csqlfn #Nsegment_in(), #Nsegment_from_ewkt()
  */
 Nsegment *
 nsegment_in(const char *str)
@@ -529,6 +529,50 @@ npoint_as_ewkt(const Npoint *np, int maxdd)
   else
     str1[0] = '\0';
   char *str2 = npoint_wkt_out(PointerGetDatum(np), maxdd);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of a network segment
+ * @param[in] ns Network segment
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Nsegment_as_text()
+ */
+char *
+nsegment_as_text(const Nsegment *ns, int maxdd)
+{
+  return nsegment_out(ns, maxdd);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * network segment
+ * @param[in] ns Network segment
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Nsegment_as_ewkt()
+ */
+char *
+nsegment_as_ewkt(const Nsegment *ns, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
+  int32_t srid = nsegment_srid(ns);
+  char str1[18];
+  if (srid > 0)
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(str1, sizeof(str1), "SRID=%d;", srid);
+  else
+    str1[0] = '\0';
+  char *str2 = nsegment_out(ns, maxdd);
   char *result = palloc(strlen(str1) + strlen(str2) + 1);
   strcpy(result, str1);
   strcat(result, str2);

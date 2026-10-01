@@ -63,6 +63,31 @@ SELECT tpcbox_send(tpcboxX(0, 0, 10, 10, 5)) = asBinary(tpcboxX(0, 0, 10, 10, 5)
 -- An SRID the schema of the pcid does not state
 SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
 ERROR:  Could not parse tpcbox value: The value states SRID 3857 and the schema of pcid 5 states SRID 4326
+SELECT asText(tpcboxXT(0.12, 1.23, 2.35, 3.46,
+  tstzspan '[2024-01-01, 2024-01-02]', 1));
+                                                astext                                                 
+-------------------------------------------------------------------------------------------------------
+ TPCBOX(XT(((0.12,1.23),(2.35,3.46)),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)
+(1 row)
+
+SELECT asText(tpcboxXT(0.12, 1.23, 2.35, 3.46,
+  tstzspan '[2024-01-01, 2024-01-02]', 1), 1);
+                                              astext                                               
+---------------------------------------------------------------------------------------------------
+ TPCBOX(XT(((0.1,1.2),(2.4,3.5)),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)
+(1 row)
+
+SELECT tpcboxFromText(asText(tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1)))
+  = tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT tpcboxFromText('TPCBOX(X((0,0),(10,10)))');
+ERROR:  Could not parse tpcbox value: Missing comma before PCID
 SELECT tpcboxX(0, 0, 10, 10, 1);
            tpcboxx           
 -----------------------------

@@ -246,6 +246,41 @@ SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XD
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
 ERROR:  There is no route with gid value 1000 in table ways
+SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
+       astext        
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT asText(nsegment 'NSegment(1,0.123456,0.7)', 2);
+        astext        
+----------------------
+ NSegment(1,0.12,0.7)
+(1 row)
+
+SELECT asEWKT(nsegment 'NSegment(1,0.5,0.7)');
+            asewkt             
+-------------------------------
+ SRID=5676;NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegmentFromText(asText(nsegment 'NSegment(1,0.5,0.7)'))
+       = nsegment 'NSegment(1,0.5,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegmentFromEWKT(asEWKT(nsegment 'NSegment(1,0.5,0.7)'))
+       = nsegment 'NSegment(1,0.5,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT nsegmentFromEWKT('SRID=4326;NSegment(1,0.5,0.7)');
+ERROR:  The SRID of the nsegment (4326) does not match the SRID of the network (5676)
 SELECT npoint(1, 0.5);
     npoint     
 ---------------

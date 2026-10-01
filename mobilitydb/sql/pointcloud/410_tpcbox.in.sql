@@ -75,11 +75,16 @@ CREATE TYPE tpcbox (
 -- GENERATED-REPRESENTATIONS-BEGIN tpcbox_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /******************************************************************************
- * Well-Known Binary representations
+ * Text and Well-Known Binary representations
  *
  * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes
- * no EWKB form.
+ * no EWKT or EWKB form.
  ******************************************************************************/
+
+CREATE FUNCTION tpcboxFromText(text)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tpcboxFromBinary(bytea)
   RETURNS tpcbox
@@ -89,6 +94,11 @@ CREATE FUNCTION tpcboxFromBinary(bytea)
 CREATE FUNCTION tpcboxFromHexWKB(text)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(tpcbox, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpcbox_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tpcbox, endian text DEFAULT '')
