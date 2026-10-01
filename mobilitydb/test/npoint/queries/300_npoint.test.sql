@@ -33,6 +33,8 @@
 
 SELECT npoint 'npoint(1,0.5)';
 SELECT npoint ' npoint   (   1   ,	0.5   )   ';
+-- An SRID is read when it is the one of the network
+SELECT asEWKT(npoint 'SRID=5676;npoint(1,0.5)');
 /* Errors */
 SELECT npoint 'point(1,0.5)';
 SELECT npoint 'npoint 1,0.5)';
@@ -41,9 +43,14 @@ SELECT npoint 'npoint(1 0.5)';
 SELECT npoint 'npoint(1000,0.5)';
 SELECT npoint 'npoint(1,1.5)';
 SELECT npoint 'npoint(1,0.5)xxx';
+-- An SRID other than the one of the network is refused
+SELECT npoint 'SRID=4326;npoint(1,0.5)';
+SELECT npointFromEWKT('SRID=4326;Npoint(1,0.5)');
 
 SELECT nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
+-- An SRID is read when it is the one of the network
+SELECT nsegment 'SRID=5676;nsegment(1,0.5,0.7)';
 /* Errors */
 SELECT nsegment 'Nsegment 1, 1.1)';
 SELECT nsegment(1, 1.1);
@@ -54,6 +61,8 @@ SELECT nsegment 'nsegment(1000,0.5,0.7)';
 SELECT nsegment 'nsegment(1,1.5,0.7)';
 SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
 SELECT nsegment 'NSegment(1, 1, 1.5)';
+-- An SRID other than the one of the network is refused
+SELECT nsegment 'SRID=4326;nsegment(1,0.5,0.7)';
 
 -------------------------------------------------------------------------------
 -- Input/output in (E)WKT, (E)WKB, and HexWKB representation

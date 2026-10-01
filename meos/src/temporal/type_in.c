@@ -2299,20 +2299,14 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
   double pos = double_from_wkb_state(s);
   Npoint *result = palloc(sizeof(Npoint));
   npoint_set(rid, pos, result);
-  /* A network point holds no SRID: it has the one of the routes of the ways
-   * table. A stated SRID is checked against it when the network states one,
-   * and accepted when no network is loaded */
-  if (srid != SRID_UNKNOWN)
+  /* A stated SRID must be the one of the network (#srid_matches_ways) */
+  if (srid != SRID_UNKNOWN && ! srid_matches_ways(srid))
   {
-    int32_t ways_srid = npoint_srid(result);
-    if (ways_srid != SRID_UNKNOWN && ways_srid != srid)
-    {
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
-        srid, ways_srid);
-      pfree(result);
-      return NULL;
-    }
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
+      srid, npoint_srid(result));
+    pfree(result);
+    return NULL;
   }
   return result;
 }
@@ -2341,19 +2335,14 @@ nsegment_from_wkb_state(meos_wkb_parse_state *s)
   Nsegment *result = nsegment_make(rid, pos1, pos2);
   if (! result)
     return NULL;
-  /* A network segment holds no SRID: it has the one of the routes of the ways
-   * table, against which a stated SRID is checked as for a network point */
-  if (srid != SRID_UNKNOWN)
+  /* A stated SRID must be the one of the network (#srid_matches_ways) */
+  if (srid != SRID_UNKNOWN && ! srid_matches_ways(srid))
   {
-    int32_t ways_srid = nsegment_srid(result);
-    if (ways_srid != SRID_UNKNOWN && ways_srid != srid)
-    {
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
-        srid, ways_srid);
-      pfree(result);
-      return NULL;
-    }
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
+      srid, nsegment_srid(result));
+    pfree(result);
+    return NULL;
   }
   return result;
 }
