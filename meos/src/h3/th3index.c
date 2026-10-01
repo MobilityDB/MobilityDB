@@ -161,7 +161,7 @@ th3index_from_mfjson(const char *mfjson)
 }
 
 /**
- * @ingroup meos_h3_inout
+ * @ingroup meos_internal_h3_inout
  * @brief Parse a temporal H3 cell instant from its Well-Known Text
  * representation
  */
@@ -178,7 +178,7 @@ th3indexinst_in(const char *str)
 }
 
 /**
- * @ingroup meos_h3_inout
+ * @ingroup meos_internal_h3_inout
  * @brief Parse a temporal H3 cell sequence from its Well-Known Text
  * representation
  * @details th3index sequences always carry step interpolation (h3 cells are
@@ -200,7 +200,7 @@ th3indexseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup meos_h3_inout
+ * @ingroup meos_internal_h3_inout
  * @brief Parse a temporal H3 cell sequence set from its Well-Known Text
  * representation
  */
