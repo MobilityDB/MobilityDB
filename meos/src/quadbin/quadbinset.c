@@ -339,3 +339,123 @@ quadbin_to_set(Quadbin cell)
   Datum v = QuadbinGetDatum(cell);
   return set_make_exp(&v, 1, 1, T_QUADBIN, ORDER_NO);
 }
+
+/*****************************************************************************
+ * Set operations
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return true if a quadbin cell set contains a quadbin cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Contains_set_value()
+ */
+bool
+contains_set_quadbin(const Set *s, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, false);
+  return contains_set_value(s, QuadbinGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return true if a quadbin cell is contained in a quadbin cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Contained_value_set()
+ */
+bool
+contained_quadbin_set(Quadbin cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, false);
+  return contained_value_set(QuadbinGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the union of a quadbin cell set and a quadbin cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_set_quadbin(const Set *s, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  return union_set_value(s, QuadbinGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the union of a quadbin cell and a quadbin cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
+ */
+Set *
+union_quadbin_set(Quadbin cell, const Set *s)
+{
+  return union_set_quadbin(s, cell);
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the intersection of a quadbin cell set and a quadbin cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Intersection_set_value()
+ */
+Set *
+intersection_set_quadbin(const Set *s, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  return intersection_set_value(s, QuadbinGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the intersection of a quadbin cell and a quadbin cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
+ */
+Set *
+intersection_quadbin_set(Quadbin cell, const Set *s)
+{
+  return intersection_set_quadbin(s, cell);
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the difference of a quadbin cell and a quadbin cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Minus_value_set()
+ */
+Set *
+minus_quadbin_set(Quadbin cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  return minus_value_set(QuadbinGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Return the difference of a quadbin cell set and a quadbin cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Minus_set_value()
+ */
+Set *
+minus_set_quadbin(const Set *s, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  return minus_set_value(s, QuadbinGetDatum(cell));
+}

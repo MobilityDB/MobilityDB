@@ -113,6 +113,10 @@
  * @defgroup meos_s2cell_set_accessor Accessor functions
  * @ingroup meos_s2cell_set
  * @brief Accessor functions for S2 cell index sets
+ *
+ * @defgroup meos_s2cell_set_setops Set operations
+ * @ingroup meos_s2cell_set
+ * @brief Set operations for S2 cell index sets
  */
 
 /*****************************************************************************/

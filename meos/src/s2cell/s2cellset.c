@@ -305,3 +305,123 @@ s2cell_to_set(S2CellId cell)
   Datum v = S2CellGetDatum(cell);
   return set_make_exp(&v, 1, 1, T_S2CELL, ORDER_NO);
 }
+
+/*****************************************************************************
+ * Set operations
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return true if an S2 cell set contains an S2 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Contains_set_value()
+ */
+bool
+contains_set_s2cell(const Set *s, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, false);
+  return contains_set_value(s, S2CellGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return true if an S2 cell is contained in an S2 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Contained_value_set()
+ */
+bool
+contained_s2cell_set(S2CellId cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, false);
+  return contained_value_set(S2CellGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the union of an S2 cell set and an S2 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_set_s2cell(const Set *s, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  return union_set_value(s, S2CellGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the union of an S2 cell and an S2 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
+ */
+Set *
+union_s2cell_set(S2CellId cell, const Set *s)
+{
+  return union_set_s2cell(s, cell);
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the intersection of an S2 cell set and an S2 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Intersection_set_value()
+ */
+Set *
+intersection_set_s2cell(const Set *s, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  return intersection_set_value(s, S2CellGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the intersection of an S2 cell and an S2 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
+ */
+Set *
+intersection_s2cell_set(S2CellId cell, const Set *s)
+{
+  return intersection_set_s2cell(s, cell);
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the difference of an S2 cell and an S2 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Minus_value_set()
+ */
+Set *
+minus_s2cell_set(S2CellId cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  return minus_value_set(S2CellGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Return the difference of an S2 cell set and an S2 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Minus_set_value()
+ */
+Set *
+minus_set_s2cell(const Set *s, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  return minus_set_value(s, S2CellGetDatum(cell));
+}

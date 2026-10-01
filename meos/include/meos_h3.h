@@ -283,6 +283,17 @@ extern Set    *h3indexset_make(const H3Index *values, int count);
 
 extern H3Index *h3indexset_values(const Set *s, int *count);
 
+/* Set operations of `h3indexset` */
+
+extern bool    contained_h3index_set(H3Index cell, const Set *s);
+extern bool    contains_set_h3index(const Set *s, H3Index cell);
+extern Set    *intersection_h3index_set(H3Index cell, const Set *s);
+extern Set    *intersection_set_h3index(const Set *s, H3Index cell);
+extern Set    *minus_h3index_set(H3Index cell, const Set *s);
+extern Set    *minus_set_h3index(const Set *s, H3Index cell);
+extern Set    *union_h3index_set(H3Index cell, const Set *s);
+extern Set    *union_set_h3index(const Set *s, H3Index cell);
+
 /* Grid traversal functions of `h3indexset` */
 
 extern Set    *h3indexset_grid_disk(const Set *cells, int k);

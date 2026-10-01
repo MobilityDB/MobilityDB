@@ -658,3 +658,123 @@ h3index_to_set(H3Index cell)
   Datum v = H3IndexGetDatum(cell);
   return set_make_exp(&v, 1, 1, T_H3INDEX, ORDER_NO);
 }
+
+/*****************************************************************************
+ * Set operations
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return true if an H3 cell set contains an H3 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Contains_set_value()
+ */
+bool
+contains_set_h3index(const Set *s, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, false);
+  return contains_set_value(s, H3IndexGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return true if an H3 cell is contained in an H3 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Contained_value_set()
+ */
+bool
+contained_h3index_set(H3Index cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, false);
+  return contained_value_set(H3IndexGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the union of an H3 cell set and an H3 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_set_h3index(const Set *s, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  return union_set_value(s, H3IndexGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the union of an H3 cell and an H3 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
+ */
+Set *
+union_h3index_set(H3Index cell, const Set *s)
+{
+  return union_set_h3index(s, cell);
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the intersection of an H3 cell set and an H3 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Intersection_set_value()
+ */
+Set *
+intersection_set_h3index(const Set *s, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  return intersection_set_value(s, H3IndexGetDatum(cell));
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the intersection of an H3 cell and an H3 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
+ */
+Set *
+intersection_h3index_set(H3Index cell, const Set *s)
+{
+  return intersection_set_h3index(s, cell);
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the difference of an H3 cell and an H3 cell set
+ * @param[in] cell Value
+ * @param[in] s Set
+ * @csqlfn #Minus_value_set()
+ */
+Set *
+minus_h3index_set(H3Index cell, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  return minus_value_set(H3IndexGetDatum(cell), s);
+}
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Return the difference of an H3 cell set and an H3 cell
+ * @param[in] s Set
+ * @param[in] cell Value
+ * @csqlfn #Minus_set_value()
+ */
+Set *
+minus_set_h3index(const Set *s, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  return minus_set_value(s, H3IndexGetDatum(cell));
+}
