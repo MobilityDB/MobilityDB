@@ -217,9 +217,10 @@ $(function() {
 <p>Write into the buffer the flag containing the temporal type and other characteristics in the Well-Known Binary (WKB) representation. </p>
 <p >The output is a byte as follows </p><div class="fragment"><div class="line">xSGZIITT</div>
 <div class="line">S = SRID, G = Geodetic, Z = has Z, x = unused bit</div>
-<div class="line">II = Interpolation with values 0 to 2</div>
-<div class="line">TT = <a class="code hl_struct" href="structTemporal.html">Temporal</a> subtype with values 1 to 3</div>
+<div class="line">II = Interpolation with values 0 <a class="code hl_variable" href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a> 2</div>
+<div class="line">TT = <a class="code hl_struct" href="structTemporal.html">Temporal</a> subtype with values 1 <a class="code hl_variable" href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a> 3</div>
 <div class="ttc" id="astructTemporal_html"><div class="ttname"><a href="structTemporal.html">Temporal</a></div><div class="ttdoc">Structure to represent the common structure of temporal values of any temporal subtype.</div><div class="ttdef"><b>Definition:</b> meos.h:261</div></div>
+<div class="ttc" id="atrgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a_html_a935fe4a8913cc7c10dae744f8f0f357a"><div class="ttname"><a href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a></div><div class="ttdeci">meos src rgeo trgeo_distance txt Temporal Distance for Rigid a temporal point or another temporal rigid geometry The algorithm follows the paper of Sakr and Zimanyi[1] It follows the pair of closest and it gets the distance from this pair This file adds three things to the the extrema of the distance and the times of contact *The solver finds all the roots of a with a proof for each part of the interval The paper uses a numerical method and assumes that the method finds all the roots *The two bodies can overlap Then the distance is zero The paper does not handle this case The walk over the closest features and the complexity results of the paper do not change Motion A rigid geometry is a reference polygon and a temporal pose In a segment of the temporal the time t goes from to</div><div class="ttdef"><b>Definition:</b> trgeo_distance.txt:33</div></div>
 </div><!-- fragment --> 
 </div>
 </div>

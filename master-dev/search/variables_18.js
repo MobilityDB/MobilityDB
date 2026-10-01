@@ -1,10 +1,17 @@
 var searchData=
 [
-  ['ways_5fcsv_0',['WAYS_CSV',['../ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d',1,'ways_meos.c']]],
-  ['weight_1',['weight',['../structCentroidAcc_ab479545e6add4d9ffd85eb87bfb7a3a4.html#ab479545e6add4d9ffd85eb87bfb7a3a4',1,'CentroidAcc']]],
-  ['width_2',['width',['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()'],['../structRasterGridOps_a8bc4144d5b96653fbd8f2aec2cb8b4a1.html#a8bc4144d5b96653fbd8f2aec2cb8b4a1',1,'RasterGridOps::width()'],['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()'],['../structGrid_a811c4e2e31bacb9b811aaaf105aeca00.html#a811c4e2e31bacb9b811aaaf105aeca00',1,'Grid::width()']]],
-  ['wkb_3',['wkb',['../structmeos__wkb__parse__state_a87e2fad69aa16faa831c5aeda7170c16.html#a87e2fad69aa16faa831c5aeda7170c16',1,'meos_wkb_parse_state::wkb()'],['../structwkb__parse__state_a539a905e8bca447511caa714e0dd23ea.html#a539a905e8bca447511caa714e0dd23ea',1,'wkb_parse_state::wkb()']]],
-  ['wkb_5fsize_4',['wkb_size',['../structmeos__wkb__parse__state_a465ca1f270143f18eef2be13c04bc216.html#a465ca1f270143f18eef2be13c04bc216',1,'meos_wkb_parse_state::wkb_size()'],['../structwkb__parse__state_a9110e9495ca5121be4ce3b62da3bddb4.html#a9110e9495ca5121be4ce3b62da3bddb4',1,'wkb_parse_state::wkb_size()']]],
-  ['wx_5',['wx',['../structDistArc_a5b2980db06e6a2b8c275b1961343231a.html#a5b2980db06e6a2b8c275b1961343231a',1,'DistArc']]],
-  ['wy_6',['wy',['../structDistArc_a2c71a4167d911e5e43e5414a70c3454a.html#a2c71a4167d911e5e43e5414a70c3454a',1,'DistArc']]]
+  ['w_0',['w',['../structDistMotion_ab8421e4ed47d8c6758905e2d1a9055b8.html#ab8421e4ed47d8c6758905e2d1a9055b8',1,'DistMotion::w()'],['../structRecipe_a7f476099e32718a640a37c41163f5f06.html#a7f476099e32718a640a37c41163f5f06',1,'Recipe::w()'],['../structDistFunTerm_ac80e040fefa1ea139a806522ce799321.html#ac80e040fefa1ea139a806522ce799321',1,'DistFunTerm::w()']]],
+  ['want_1',['want',['../trgeo__distwalk__degen__unit_8c_a912df5138dbf86103bea0bfbf8a5daba.html#a912df5138dbf86103bea0bfbf8a5daba',1,'trgeo_distwalk_degen_unit.c']]],
+  ['way_2',['way',['../trgeo__distance_8txt_a1e76ab176308b477e844fc7b241048e2.html#a1e76ab176308b477e844fc7b241048e2',1,'trgeo_distance.txt']]],
+  ['ways_5fcsv_3',['WAYS_CSV',['../ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d',1,'ways_meos.c']]],
+  ['weight_4',['weight',['../structCentroidAcc_ab479545e6add4d9ffd85eb87bfb7a3a4.html#ab479545e6add4d9ffd85eb87bfb7a3a4',1,'CentroidAcc']]],
+  ['width_5',['width',['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()'],['../structGrid_a811c4e2e31bacb9b811aaaf105aeca00.html#a811c4e2e31bacb9b811aaaf105aeca00',1,'Grid::width()'],['../structRasterGridOps_a8bc4144d5b96653fbd8f2aec2cb8b4a1.html#a8bc4144d5b96653fbd8f2aec2cb8b4a1',1,'RasterGridOps::width()'],['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()']]],
+  ['wkb_6',['wkb',['../structmeos__wkb__parse__state_a87e2fad69aa16faa831c5aeda7170c16.html#a87e2fad69aa16faa831c5aeda7170c16',1,'meos_wkb_parse_state::wkb()'],['../structwkb__parse__state_a539a905e8bca447511caa714e0dd23ea.html#a539a905e8bca447511caa714e0dd23ea',1,'wkb_parse_state::wkb()']]],
+  ['wkb_5fsize_7',['wkb_size',['../structmeos__wkb__parse__state_a465ca1f270143f18eef2be13c04bc216.html#a465ca1f270143f18eef2be13c04bc216',1,'meos_wkb_parse_state::wkb_size()'],['../structwkb__parse__state_a9110e9495ca5121be4ce3b62da3bddb4.html#a9110e9495ca5121be4ce3b62da3bddb4',1,'wkb_parse_state::wkb_size()']]],
+  ['wx_8',['wx',['../structDistArc_a5b2980db06e6a2b8c275b1961343231a.html#a5b2980db06e6a2b8c275b1961343231a',1,'DistArc']]],
+  ['wx0_9',['wx0',['../structDistSegm_aef94df6c4c8eca6e01c23258a5023f7a.html#aef94df6c4c8eca6e01c23258a5023f7a',1,'DistSegm']]],
+  ['wx1_10',['wx1',['../structDistSegm_a4f1c09b08dcac6103c35ccedcd0dc74e.html#a4f1c09b08dcac6103c35ccedcd0dc74e',1,'DistSegm']]],
+  ['wy_11',['wy',['../structDistArc_a2c71a4167d911e5e43e5414a70c3454a.html#a2c71a4167d911e5e43e5414a70c3454a',1,'DistArc']]],
+  ['wy0_12',['wy0',['../structDistSegm_a8a9af81314dfac8f5a433c8edf1fce8c.html#a8a9af81314dfac8f5a433c8edf1fce8c',1,'DistSegm']]],
+  ['wy1_13',['wy1',['../structDistSegm_a2bb88c5e9989c5b5b836d9e1204b08e0.html#a2bb88c5e9989c5b5b836d9e1204b08e0',1,'DistSegm']]]
 ];

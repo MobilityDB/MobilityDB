@@ -75,58 +75,31 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">trgeo_distance.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Distance functions for temporal rigid geometries.  
+<p>Internal distance functions for temporal rigid geometries.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
-<code>#include &lt;liblwgeom.h&gt;</code><br />
-<code>#include &quot;temporal/temporal.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="pose_8h_source.html">pose/pose.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;temporal/temporal.h&quot;</code><br />
 </div>
 <p><a href="trgeo__distance_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcfp__array.html">cfp_array</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcfp__elem.html">cfp_elem</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtdist__array.html">tdist_array</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtdist__elem.html">tdist_elem</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a9095ddf83f4ccecf188ec5b49cf9db32"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a9095ddf83f4ccecf188ec5b49cf9db32.html#a9095ddf83f4ccecf188ec5b49cf9db32">MEOS_ANY</a>&#160;&#160;&#160;0</td></tr>
-<tr class="memdesc:a9095ddf83f4ccecf188ec5b49cf9db32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symbolic constants for temporal distance.  <a href="trgeo__distance_8h_a9095ddf83f4ccecf188ec5b49cf9db32.html#a9095ddf83f4ccecf188ec5b49cf9db32">More...</a><br /></td></tr>
-<tr class="separator:a9095ddf83f4ccecf188ec5b49cf9db32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94ec6887adccd9be54c1723cf9ff3cd4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a94ec6887adccd9be54c1723cf9ff3cd4.html#a94ec6887adccd9be54c1723cf9ff3cd4">MEOS_CFP_FREE</a>&#160;&#160;&#160;true</td></tr>
-<tr class="separator:a94ec6887adccd9be54c1723cf9ff3cd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa17dffb5e3a6d417dd31453c9385f5a9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_aa17dffb5e3a6d417dd31453c9385f5a9.html#aa17dffb5e3a6d417dd31453c9385f5a9">MEOS_CFP_FREE_NO</a>&#160;&#160;&#160;false</td></tr>
-<tr class="separator:aa17dffb5e3a6d417dd31453c9385f5a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71f89ba05a17b2f70890668b2d99b5e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a71f89ba05a17b2f70890668b2d99b5e5.html#a71f89ba05a17b2f70890668b2d99b5e5">MEOS_CFP_STORE</a>&#160;&#160;&#160;true</td></tr>
-<tr class="memdesc:a71f89ba05a17b2f70890668b2d99b5e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symbolic constants for <a class="el" href="structcfp__elem.html">cfp_elem</a>.  <a href="trgeo__distance_8h_a71f89ba05a17b2f70890668b2d99b5e5.html#a71f89ba05a17b2f70890668b2d99b5e5">More...</a><br /></td></tr>
-<tr class="separator:a71f89ba05a17b2f70890668b2d99b5e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebb9df3b017f0ddba08500ad3e8dc834"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_aebb9df3b017f0ddba08500ad3e8dc834.html#aebb9df3b017f0ddba08500ad3e8dc834">MEOS_CFP_STORE_NO</a>&#160;&#160;&#160;false</td></tr>
-<tr class="separator:aebb9df3b017f0ddba08500ad3e8dc834"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2784f917c6a3de66c7260de68ac6c489"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a2784f917c6a3de66c7260de68ac6c489.html#a2784f917c6a3de66c7260de68ac6c489">MEOS_LEFT</a>&#160;&#160;&#160;2</td></tr>
-<tr class="separator:a2784f917c6a3de66c7260de68ac6c489"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc665050b53a7a15e1d3a8ce9bf8359b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_adc665050b53a7a15e1d3a8ce9bf8359b.html#adc665050b53a7a15e1d3a8ce9bf8359b">MEOS_RIGHT</a>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:adc665050b53a7a15e1d3a8ce9bf8359b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae56fee75886786cb96fe3f030bbb63cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_ae56fee75886786cb96fe3f030bbb63cc.html#ae56fee75886786cb96fe3f030bbb63cc">MEOS_SOLVE_0</a>&#160;&#160;&#160;true</td></tr>
-<tr class="memdesc:ae56fee75886786cb96fe3f030bbb63cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symbolic constants for equation solving.  <a href="trgeo__distance_8h_ae56fee75886786cb96fe3f030bbb63cc.html#ae56fee75886786cb96fe3f030bbb63cc">More...</a><br /></td></tr>
-<tr class="separator:ae56fee75886786cb96fe3f030bbb63cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a339c3ce24fe82100538e964d347ce65a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a339c3ce24fe82100538e964d347ce65a.html#a339c3ce24fe82100538e964d347ce65a">MEOS_SOLVE_1</a>&#160;&#160;&#160;false</td></tr>
-<tr class="separator:a339c3ce24fe82100538e964d347ce65a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a5ef9f3cf419f7b10c8d2a2e79b649ea8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a5ef9f3cf419f7b10c8d2a2e79b649ea8.html#a5ef9f3cf419f7b10c8d2a2e79b649ea8">trgeo_tdistance_geo</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, double <a class="el" href="trgeo__distance_8txt_abe2b0d5a2f0f3490f95fe1533ecc512b.html#abe2b0d5a2f0f3490f95fe1533ecc512b">level</a>)</td></tr>
+<tr class="memdesc:a5ef9f3cf419f7b10c8d2a2e79b649ea8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal distance between a temporal rigid geometry and a geometry.  <a href="trgeo__distance_8h_a5ef9f3cf419f7b10c8d2a2e79b649ea8.html#a5ef9f3cf419f7b10c8d2a2e79b649ea8">More...</a><br /></td></tr>
+<tr class="separator:a5ef9f3cf419f7b10c8d2a2e79b649ea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6abcfed6010e8f526bb886c975aa5916"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a6abcfed6010e8f526bb886c975aa5916.html#a6abcfed6010e8f526bb886c975aa5916">trgeo_tdistance_tpoint</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, double <a class="el" href="trgeo__distance_8txt_abe2b0d5a2f0f3490f95fe1533ecc512b.html#abe2b0d5a2f0f3490f95fe1533ecc512b">level</a>)</td></tr>
+<tr class="memdesc:a6abcfed6010e8f526bb886c975aa5916"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal distance between a temporal rigid geometry and a temporal point, with the crossings of <code>level</code> as instants, see <a class="el" href="meos_2src_2rgeo_2trgeo__distance_8c_a5ef9f3cf419f7b10c8d2a2e79b649ea8.html#a5ef9f3cf419f7b10c8d2a2e79b649ea8" title="Return the temporal distance between a temporal rigid geometry and a geometry.">trgeo_tdistance_geo()</a>  <a href="trgeo__distance_8h_a6abcfed6010e8f526bb886c975aa5916.html#a6abcfed6010e8f526bb886c975aa5916">More...</a><br /></td></tr>
+<tr class="separator:a6abcfed6010e8f526bb886c975aa5916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ad2dd441b81e4e9b9de07d328bbce73"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trgeo__distance_8h_a9ad2dd441b81e4e9b9de07d328bbce73.html#a9ad2dd441b81e4e9b9de07d328bbce73">trgeo_tdistance_trgeo</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, double <a class="el" href="trgeo__distance_8txt_abe2b0d5a2f0f3490f95fe1533ecc512b.html#abe2b0d5a2f0f3490f95fe1533ecc512b">level</a>)</td></tr>
+<tr class="memdesc:a9ad2dd441b81e4e9b9de07d328bbce73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal distance between two temporal rigid geometries, with the crossings of <code>level</code> as instants, see <a class="el" href="meos_2src_2rgeo_2trgeo__distance_8c_a5ef9f3cf419f7b10c8d2a2e79b649ea8.html#a5ef9f3cf419f7b10c8d2a2e79b649ea8" title="Return the temporal distance between a temporal rigid geometry and a geometry.">trgeo_tdistance_geo()</a>  <a href="trgeo__distance_8h_a9ad2dd441b81e4e9b9de07d328bbce73.html#a9ad2dd441b81e4e9b9de07d328bbce73">More...</a><br /></td></tr>
+<tr class="separator:a9ad2dd441b81e4e9b9de07d328bbce73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Distance functions for temporal rigid geometries. </p>
+<div class="textblock"><p >Internal distance functions for temporal rigid geometries. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
