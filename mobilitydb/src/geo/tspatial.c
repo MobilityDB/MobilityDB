@@ -309,4 +309,28 @@ Tspatial_transform_pipeline(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Geo_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_transform_pipeline);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry or a geography transformed to an SRID using a
+ * pipeline
+ * @sqlfn geoTransformPipeline()
+ */
+Datum
+Geo_transform_pipeline(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  text *pipelinetxt = PG_GETARG_TEXT_P(1);
+  int32_t srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *pipelinestr = text_to_cstring(pipelinetxt);
+  GSERIALIZED *result = geo_transform_pipeline(gs, pipelinestr, srid,
+    is_forward);
+  pfree(pipelinestr);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(pipelinetxt, 1);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 /*****************************************************************************/

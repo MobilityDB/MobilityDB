@@ -1197,3 +1197,29 @@ SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(2 
 
 --------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- Length and pipeline transformation of a geometry or a geography
+
+SELECT geoLength(geometry 'Linestring(0 0,3 4)');
+SELECT geoLength(geometry 'Linestring(0 0,3 4,3 0)') = ST_Length(geometry 'Linestring(0 0,3 4,3 0)');
+SELECT geoLength(geometry 'Polygon((0 0,1 0,1 1,0 0))') = ST_Length(geometry 'Polygon((0 0,1 0,1 1,0 0))');
+SELECT geoLength(geometry 'Point(1 1)');
+SELECT round(geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
+SELECT geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)') = ST_Length(geography 'Linestring(4.35 50.85,4.40 50.85)');
+SELECT geoLength(geography 'Polygon((4.35 50.85,4.40 50.85,4.40 50.90,4.35 50.85))');
+
+WITH test(geom, pipeline) AS (
+  SELECT geometry 'SRID=4326;Point(2.123456 49.123456)',
+   text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT ST_AsText(geoTransformPipeline(geoTransformPipeline(geom, pipeline, 4326), pipeline, 4326, false), 3) = ST_AsText(geom, 3)
+FROM test;
+SELECT ST_AsText(geoTransformPipeline(geometry 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 6) =
+  ST_AsText(startValue(transformPipeline(tgeompoint 'SRID=4326;POINT(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031')), 6);
+SELECT ST_SRID(geoTransformPipeline(geometry 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+SELECT ST_AsText(geoTransformPipeline(geography 'SRID=4326;POINT(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true)::geometry, 6) =
+  ST_AsText(startValue(transformPipeline(tgeogpoint 'SRID=4326;POINT(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true))::geometry, 6);

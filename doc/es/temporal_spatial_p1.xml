@@ -602,10 +602,13 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 
 			<listitem xml:id="tgeo_length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoLength</varname></primary></indexterm>
 				<para>Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tpoint) → float
+geoLength(geo) → float
 </programlisting>
+				<para>La función <varname>geoLength</varname> devuelve la longitud de una geometría o de una geografía, la de una geografía en metros sobre el esferoide, como la función <varname>ST_Length</varname> de PostGIS.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
 -- 1.73205080756888
@@ -615,6 +618,10 @@ SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT length(tgeompoint 'Interp=Step;
   [Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- 0
+SELECT geoLength(geometry 'Linestring(0 0,3 4)');
+-- 5
+SELECT round(geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
+-- 3521.188745
 </programlisting>
 			</listitem>
 

@@ -214,3 +214,18 @@ SELECT initcap(ttext '{[AA@2001-01-01, BB@2001-01-02, AA@2001-01-03],[CC@2001-01
  {["Aa"@Mon Jan 01 00:00:00 2001 PST, "Bb"@Tue Jan 02 00:00:00 2001 PST, "Aa"@Wed Jan 03 00:00:00 2001 PST], ["Cc"@Thu Jan 04 00:00:00 2001 PST, "Cc"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT textLower('AbC'), textUpper('AbC'), textInitcap('hello WORLD');
+ textlower | textupper | textinitcap 
+-----------+-----------+-------------
+ abc       | ABC       | Hello World
+(1 row)
+
+SELECT textLower(t) = lower(t), textUpper(t) = upper(t), textInitcap(t) = initcap(t)
+FROM (VALUES (text 'MobilityDB'), (text 'hello world'), (text '')) AS v(t);
+ ?column? | ?column? | ?column? 
+----------+----------+----------
+ t        | t        | t
+ t        | t        | t
+ t        | t        | t
+(3 rows)
+

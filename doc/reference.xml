@@ -942,7 +942,7 @@
 					<para><link linkend="ttext_concat"><varname>||</varname></link>: Text concatenation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transform in lowercase, uppercase, or initcap</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname>, <varname>textLower</varname>, <varname>textUpper</varname>, <varname>textInitcap</varname></link>: Transform in lowercase, uppercase, or initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1035,7 +1035,7 @@
 					<para><link linkend="tgeo_isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_length"><varname>length</varname></link>: Return the length traversed by the temporal point &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_length"><varname>length</varname>, <varname>geoLength</varname></link>: Return the length traversed by the temporal point &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_cumulativeLength"><varname>cumulativeLength</varname></link>: Return the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
@@ -1125,7 +1125,7 @@
 					<para><link linkend="tgeo_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname>, <varname>geoTransformPipeline</varname></link>: Transform to a spatial reference identifier &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

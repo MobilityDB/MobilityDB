@@ -37,6 +37,7 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
+#include <pgtypes.h>
 #include "temporal/ttext_funcs.h"
 
 /*****************************************************************************
@@ -148,6 +149,54 @@ Ttext_initcap(PG_FUNCTION_ARGS)
   Temporal *result = textfunc_ttext(temp, &datum_initcap);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Text_lower(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Text_lower);
+/**
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return a text value transformed to lowercase
+ * @sqlfn textLower()
+ */
+Datum
+Text_lower(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  text *result = text_lower(txt);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Text_upper(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Text_upper);
+/**
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return a text value transformed to uppercase
+ * @sqlfn textUpper()
+ */
+Datum
+Text_upper(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  text *result = text_upper(txt);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Text_initcap(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Text_initcap);
+/**
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return a text value with the first letter of each word in uppercase and the rest in lowercase
+ * @sqlfn textInitcap()
+ */
+Datum
+Text_initcap(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  text *result = text_initcap(txt);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************/

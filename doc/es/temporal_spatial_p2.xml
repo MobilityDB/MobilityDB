@@ -162,12 +162,16 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 			<listitem xml:id="tgeo_transform">
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoTransformPipeline</varname></primary></indexterm>
 				<para>Transforma a una referencia espacial diferente &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(tspatial,integer) → tspatial
 transformPipeline(tspatial,pipeline text,srid integer,
   is_forward boolean=true) → tspatial
+geoTransformPipeline(geo,pipeline text,srid integer,
+  is_forward boolean=true) → geo
 </programlisting>
+				<para>La función <varname>geoTransformPipeline</varname> transforma de la misma manera una geometría o una geografía con una canalización.</para>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el punto temporal tiene un SRID desconocido (representado por 0).</para>
 				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
@@ -175,6 +179,9 @@ transformPipeline(tspatial,pipeline text,srid integer,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
 -- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
+SELECT ST_AsText(geoTransformPipeline(geometry 'SRID=4326;Point(2 49)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+-- POINT(426857.988 5427937.523)
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH test(tgeo, pipeline) AS (

@@ -942,7 +942,7 @@
 					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transforma en minúsculas, mayúsculas o initcap</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname>, <varname>textLower</varname>, <varname>textUpper</varname>, <varname>textInitcap</varname></link>: Transforma en minúsculas, mayúsculas o initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1035,7 +1035,7 @@
 					<para><link linkend="tgeo_isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_length"><varname>length</varname></link>: Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_length"><varname>length</varname>, <varname>geoLength</varname></link>: Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_cumulativeLength"><varname>cumulativeLength</varname></link>: Devuelve la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
@@ -1125,7 +1125,7 @@
 					<para><link linkend="tgeo_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a una referencia espacial diferente &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname>, <varname>geoTransformPipeline</varname></link>: Transforma a una referencia espacial diferente &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
