@@ -1492,6 +1492,7 @@ extern bool tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, boo
 extern bool tfloat_value_n(const Temporal *temp, int n, double *result);
 extern double *tfloat_values(const Temporal *temp, int *count);
 extern SpanSet **tfloat_unnest(const Temporal *temp, double **values, int *count);
+extern TimestampTz tinstant_timestamptz(const TInstant *inst);
 extern int tint_end_value(const Temporal *temp);
 extern int64 tbigint_end_value(const Temporal *temp);
 extern int tint_max_value(const Temporal *temp);

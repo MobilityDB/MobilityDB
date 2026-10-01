@@ -29,12 +29,12 @@
 
 /**
  * @file
- * @brief Test how temporal restrictions and time overlaps report a null
- * argument
+ * @brief Test how temporal restrictions, time overlaps and the timestamp of
+ * an instant report an invalid argument
  * @details A program that tests how the temporal restrictions to the instants
- * before or after a timestamptz, and the test of whether the time of two
- * temporal values overlaps, report a null argument under the noexit error
- * handler.
+ * before or after a timestamptz, the test of whether the time of two temporal
+ * values overlaps, and the timestamp of a temporal instant report an invalid
+ * argument under the noexit error handler.
  *
  * A public MEOS function tests the conditions its internal form asserts, so a
  * binding calling it with a null pointer receives an error it can raise in its
@@ -47,7 +47,9 @@
  * temporal value by returning their error value and setting #meos_errno, and
  * that a valid call still answers with no error left behind. Each accepts a
  * value of every temporal type, so a null pointer is the argument they can
- * receive wrongly.
+ * receive wrongly. The program also verifies that #tinstant_timestamptz
+ * reports a null value and a temporal sequence, the subtype it does not read,
+ * and answers the timestamp of an instant.
  *
  * The program can be build as follows
  * @code
@@ -57,6 +59,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
@@ -127,6 +130,28 @@ int main(void)
     overlaps ? "true" : "false", meos_errno());
   assert(overlaps);
   assert(meos_errno() == 0);
+
+  /* The timestamp of an instant is read from an instant alone: a null value
+   * and a sequence are reported with the error value DT_NOEND, the largest
+   * 64-bit integer, and an instant answers its timestamp */
+  TimestampTz ts = tinstant_timestamptz(NULL);
+  printf("tinstant_timestamptz(NULL): errno %d\n", meos_errno());
+  assert(ts == INT64_MAX);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  ts = tinstant_timestamptz((const TInstant *) temp);
+  printf("tinstant_timestamptz([1@2001-01-01, 2@2001-01-03]): errno %d\n",
+    meos_errno());
+  assert(ts == INT64_MAX);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  Temporal *inst = tint_in("1@2001-01-02");
+  assert(inst);
+  ts = tinstant_timestamptz((const TInstant *) inst);
+  printf("tinstant_timestamptz(1@2001-01-02): errno %d\n", meos_errno());
+  assert(ts == temporal_start_timestamptz(inst));
+  assert(meos_errno() == 0);
+  free(inst);
 
   free(temp);
 
