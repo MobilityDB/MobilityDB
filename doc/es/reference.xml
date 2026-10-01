@@ -273,6 +273,9 @@
 					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Devuelve el valor inicial, final o enésimo</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_unnest"><varname>unnest</varname></link>: Transforma un conjunto en un conjunto de filas, una por cada valor del conjunto, en el orden del conjunto &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_numSpans"><varname>numSpans</varname>, <varname>spans</varname></link>: Devuelve el número de rangos o los rangos</para>
 				</listitem>
 				<listitem>
