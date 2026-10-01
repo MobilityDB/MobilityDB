@@ -38,14 +38,6 @@
 
 #include "pg_basetypes.h"
 
-typedef int32 DateADT;
-typedef int64 TimeADT;
-typedef int64 Timestamp;
-typedef int64 TimestampTz;
-
-struct NumericData;
-typedef struct NumericData *Numeric;
-
 /*****************************************************************************/
 
 /* Functions for timestamps */

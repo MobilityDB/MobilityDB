@@ -38,9 +38,6 @@
 
 #include "pg_basetypes.h"
 
-struct NumericData;
-typedef struct NumericData *Numeric;
-
 /*****************************************************************************/
 
 /* Functions for intervals */

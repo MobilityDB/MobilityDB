@@ -70,20 +70,18 @@
 
 set -euo pipefail
 
-# pgtypes/pg_basetypes.h is the ONE place that DEFINES the PG aliases from the C99
-# types, and it must spell int64 as `typedef int64_t int64`: int64_t is the only
-# spelling that resolves to the same 64-bit type on EVERY platform (long int on Linux
-# LP64, long long on Windows LLP64 and macOS), whereas a hardcoded `long int` is 32-bit
-# on Windows. It sits under pgtypes/, which this check does not scan, so it needs no
-# exclusion of its own — and neither does meos/include/postgres_ext_defs.in.h, which
-# now includes it rather than restating the types. The exclusion below stays only so
-# that a template reintroducing a definition is not rejected for the right spelling.
-# The ban still covers all API signatures, which use the int64 / uint64 aliases.
+# The PG aliases are defined from the C99 types in the vendored pgtypes/c.h and in
+# pgtypes/pg_basetypes.h, with the same declarations, and nowhere else, which
+# tools/scripts/check_typedef_sites.py verifies. Both spell int64 as
+# `typedef int64_t int64`: int64_t is the only spelling that resolves to the same
+# 64-bit type on EVERY platform (long int on Linux LP64, long long on Windows LLP64
+# and macOS), whereas a hardcoded `long int` is 32-bit on Windows. Both sit under
+# pgtypes/, which this check does not scan. The ban covers all API signatures, which
+# use the int64 / uint64 aliases.
 violations=$(grep -rEn '\bu?int64_t\b' \
   meos/include \
   mobilitydb/pg_include \
-  2>/dev/null \
-  | grep -vE 'meos/include/postgres_ext_defs[^:]*\.h:' || true)
+  2>/dev/null || true)
 
 if [ -n "$violations" ]; then
   cat >&2 <<'EOF'

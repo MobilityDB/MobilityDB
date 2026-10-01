@@ -49,8 +49,7 @@
 #define NUMERIC_MIN_SIG_DIGITS    16
 
 /* The actual contents of Numeric are private to numeric.c */
-struct NumericData;
-typedef struct NumericData *Numeric;
+/* MEOS: Numeric is stated once, in pg_basetypes.h */
 
 /* MEOS functions for numeric */
 

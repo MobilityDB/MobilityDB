@@ -37,10 +37,6 @@
 
 /* C */
 #include <stdbool.h>
-/* PostgreSQL */
-#ifndef int16
-typedef signed short int16;
-#endif
 /* MEOS */
 #include <meos.h>
 
