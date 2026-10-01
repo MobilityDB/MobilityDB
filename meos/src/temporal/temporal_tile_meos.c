@@ -304,6 +304,7 @@ tfloatbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_boxes()
  */
 TBox *
 tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
@@ -320,6 +321,7 @@ tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
 tint_time_boxes(const Temporal *temp, const Interval *duration,
@@ -339,6 +341,7 @@ tint_time_boxes(const Temporal *temp, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tint_value_time_boxes(const Temporal *temp, int vsize,
@@ -422,6 +425,7 @@ tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
  * @param[in] vsize Value size of the tiles
  * @param[in] vorigin Value origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_boxes()
  */
 TBox *
 tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
@@ -439,6 +443,7 @@ tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
 tfloat_time_boxes(const Temporal *temp, const Interval *duration, 
@@ -458,6 +463,7 @@ tfloat_time_boxes(const Temporal *temp, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tfloat_value_time_boxes(const Temporal *temp, double vsize,
