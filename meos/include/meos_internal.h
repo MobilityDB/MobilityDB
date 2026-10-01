@@ -1119,6 +1119,7 @@ extern char *tinstant_out(const TInstant *inst, int maxdd);
 extern TInstant *tbigintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tbigintinst_in(const char *str);
 extern TSequence *tbigintseq_from_mfjson(json_object *mfjson);
+extern TSequence *tbigintseq_in(const char *str, interpType interp);
 extern TSequenceSet *tbigintseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tbigintseqset_in(const char *str);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
