@@ -155,6 +155,10 @@
  * @ingroup mobilitydb_geo_base
  * @brief Accessor functions for static geometries
  *
+ * @defgroup mobilitydb_geo_base_transf Transformation functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Transformation functions for static geometries
+ *
  * @defgroup mobilitydb_geo_base_spatial Spatial processing functions
  * @ingroup mobilitydb_geo_base
  * @brief Spatial processing functions for static geometries

@@ -313,8 +313,8 @@ PGDLLEXPORT Datum Tgeo_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_scale);
 /**
  * @ingroup mobilitydb_geo_transf
- * @brief Return the temporal geo rotated counter-clockwise around the origin
- * point
+ * @brief Return a temporal geo scaled by the factors a point states, about an
+ * optional origin
  * @sqlfn scale()
  */
 Datum
@@ -502,6 +502,227 @@ Tgeo_transscale(PG_FUNCTION_ARGS)
     PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Affine functions over a geometry
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geo_affine(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_affine);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return the 3D affine transformation of a geometry
+ * @sqlfn geoAffine()
+ */
+Datum
+Geo_affine(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  AFFINE affine;
+  affine.afac = PG_GETARG_FLOAT8(1);
+  affine.bfac = PG_GETARG_FLOAT8(2);
+  affine.cfac = PG_GETARG_FLOAT8(3);
+  affine.dfac = PG_GETARG_FLOAT8(4);
+  affine.efac = PG_GETARG_FLOAT8(5);
+  affine.ffac = PG_GETARG_FLOAT8(6);
+  affine.gfac = PG_GETARG_FLOAT8(7);
+  affine.hfac = PG_GETARG_FLOAT8(8);
+  affine.ifac = PG_GETARG_FLOAT8(9);
+  affine.xoff = PG_GETARG_FLOAT8(10);
+  affine.yoff = PG_GETARG_FLOAT8(11);
+  affine.zoff = PG_GETARG_FLOAT8(12);
+  GSERIALIZED *result = geo_affine(gs, &affine);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_affine_2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_affine_2d);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return the 2D affine transformation of a geometry
+ * @sqlfn geoAffine()
+ */
+Datum
+Geo_affine_2d(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_affine_2d(gs, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
+    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_translate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_translate);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry translated by the given offsets
+ * @sqlfn geoTranslate()
+ */
+Datum
+Geo_translate(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double deltax = PG_GETARG_FLOAT8(1);
+  double deltay = PG_GETARG_FLOAT8(2);
+  /* The form stating two offsets leaves the z coordinate unmoved */
+  double deltaz = 0;
+  if (PG_NARGS() > 3)
+    deltaz = PG_GETARG_FLOAT8(3);
+  GSERIALIZED *result = geo_translate(gs, deltax, deltay, deltaz);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_rotate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_rotate);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around a point
+ * @sqlfn geoRotate()
+ */
+Datum
+Geo_rotate(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_rotate(gs, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_rotate_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_rotate_geo);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around a point geometry
+ * @sqlfn geoRotate()
+ */
+Datum
+Geo_rotate_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double angle = PG_GETARG_FLOAT8(1);
+  GSERIALIZED *origin = PG_GETARG_GSERIALIZED_P(2);
+  GSERIALIZED *result = geo_rotate_geo(gs, angle, origin);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(origin, 2);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_rotate_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_rotate_x);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the x axis
+ * @sqlfn geoRotateX()
+ */
+Datum
+Geo_rotate_x(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_rotate_x(gs, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_rotate_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_rotate_y);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the y axis
+ * @sqlfn geoRotateY()
+ */
+Datum
+Geo_rotate_y(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_rotate_y(gs, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_rotate_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_rotate_z);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry rotated counter-clockwise around the z axis
+ * @sqlfn geoRotateZ(), geoRotate()
+ */
+Datum
+Geo_rotate_z(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_rotate_z(gs, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_scale);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry scaled by the factors a point states, about an
+ * optional origin
+ * @sqlfn geoScale()
+ */
+Datum
+Geo_scale(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *sorigin = NULL;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    sorigin = PG_GETARG_GSERIALIZED_P(2);
+  GSERIALIZED *result = geo_scale(gs, scale, sorigin);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(scale, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_scale_xyz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_scale_xyz);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry scaled by the given factors along the x, y, and z
+ * axes
+ * @sqlfn geoScale()
+ */
+Datum
+Geo_scale_xyz(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double xfactor = PG_GETARG_FLOAT8(1);
+  double yfactor = PG_GETARG_FLOAT8(2);
+  /* The form stating two factors leaves the z axis unscaled */
+  double zfactor = 1;
+  if (PG_NARGS() > 3)
+    zfactor = PG_GETARG_FLOAT8(3);
+  GSERIALIZED *result = geo_scale_xyz(gs, xfactor, yfactor, zfactor);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_transscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_transscale);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry translated and then scaled
+ * @sqlfn geoTransscale()
+ */
+Datum
+Geo_transscale(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_transscale(gs, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4));
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
