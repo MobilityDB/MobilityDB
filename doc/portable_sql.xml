@@ -17,134 +17,335 @@
 
 	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a named function as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal values), and for the position operators the prefix of the class compared: <varname>set</varname>, <varname>span</varname> or <varname>spanset</varname> for sets, spans and span sets, and for a box or a temporal value the type of its bounding box, <varname>tbox</varname>, <varname>stbox</varname> or <varname>tpcbox</varname>, a temporal Boolean, text or JSONB value taking <varname>span</varname>, the time span that bounds it.</para>
 
-	<informaltable frame="all" colsep="1" rowsep="1">
-		<?dblatex table-width="autowidth.column: 1 2 3"?>
-		<tgroup cols="3" align="left" colsep="1" rowsep="1">
-			<thead>
-				<row>
-					<entry>Category</entry>
-					<entry>Operator</entry>
-					<entry>Portable function</entry>
-				</row>
-			</thead>
-			<tbody>
-				<row><entry>Topology</entry><entry>&amp;&amp;</entry><entry><indexterm significance="normal"><primary><varname>overlaps</varname></primary></indexterm>overlaps(a, b)</entry></row>
-				<row><entry></entry><entry>@&gt;</entry><entry><indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>contains(a, b)</entry></row>
-				<row><entry></entry><entry>&lt;@</entry><entry><indexterm significance="normal"><primary><varname>contained</varname></primary></indexterm>contained(a, b)</entry></row>
-				<row><entry></entry><entry>#@&gt;</entry><entry>contains(a, b)</entry></row>
-				<row><entry></entry><entry>&lt;@#</entry><entry>contained(a, b)</entry></row>
-				<row><entry></entry><entry>-|-</entry><entry><indexterm significance="normal"><primary><varname>adjacent</varname></primary></indexterm>adjacent(a, b)</entry></row>
-				<row><entry>Time position</entry><entry>&lt;&lt;#</entry><entry><indexterm significance="normal"><primary><varname>setBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBefore</varname></primary></indexterm>setBefore / spanBefore / spansetBefore / tboxBefore / stboxBefore / tpcboxBefore (a, b)</entry></row>
-				<row><entry></entry><entry>#&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAfter</varname></primary></indexterm>setAfter / spanAfter / spansetAfter / tboxAfter / stboxAfter / tpcboxAfter (a, b)</entry></row>
-				<row><entry></entry><entry>&amp;&lt;#</entry><entry><indexterm significance="normal"><primary><varname>setOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverbefore</varname></primary></indexterm>setOverbefore / spanOverbefore / spansetOverbefore / tboxOverbefore / stboxOverbefore / tpcboxOverbefore (a, b)</entry></row>
-				<row><entry></entry><entry>#&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverafter</varname></primary></indexterm>setOverafter / spanOverafter / spansetOverafter / tboxOverafter / stboxOverafter / tpcboxOverafter (a, b)</entry></row>
-				<row><entry>Space, X axis</entry><entry>&lt;&lt;</entry><entry><indexterm significance="normal"><primary><varname>setLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxLeft</varname></primary></indexterm>setLeft / spanLeft / spansetLeft / tboxLeft / stboxLeft / tpcboxLeft (a, b)</entry></row>
-				<row><entry></entry><entry>&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxRight</varname></primary></indexterm>setRight / spanRight / spansetRight / tboxRight / stboxRight / tpcboxRight (a, b)</entry></row>
-				<row><entry></entry><entry>&amp;&lt;</entry><entry><indexterm significance="normal"><primary><varname>setOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverleft</varname></primary></indexterm>setOverleft / spanOverleft / spansetOverleft / tboxOverleft / stboxOverleft / tpcboxOverleft (a, b)</entry></row>
-				<row><entry></entry><entry>&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverright</varname></primary></indexterm>setOverright / spanOverright / spansetOverright / tboxOverright / stboxOverright / tpcboxOverright (a, b)</entry></row>
-				<row><entry>Space, Y axis</entry><entry>&lt;&lt;|</entry><entry><indexterm significance="normal"><primary><varname>stboxBelow</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBelow</varname></primary></indexterm>stboxBelow / tpcboxBelow (a, b)</entry></row>
-				<row><entry></entry><entry>|&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxAbove</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAbove</varname></primary></indexterm>stboxAbove / tpcboxAbove (a, b)</entry></row>
-				<row><entry></entry><entry>&amp;&lt;|</entry><entry><indexterm significance="normal"><primary><varname>stboxOverbelow</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverbelow</varname></primary></indexterm>stboxOverbelow / tpcboxOverbelow (a, b)</entry></row>
-				<row><entry></entry><entry>|&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxOverabove</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverabove</varname></primary></indexterm>stboxOverabove / tpcboxOverabove (a, b)</entry></row>
-				<row><entry>Space, Z axis</entry><entry>&lt;&lt;/</entry><entry><indexterm significance="normal"><primary><varname>stboxFront</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxFront</varname></primary></indexterm>stboxFront / tpcboxFront (a, b)</entry></row>
-				<row><entry></entry><entry>/&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxBack</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBack</varname></primary></indexterm>stboxBack / tpcboxBack (a, b)</entry></row>
-				<row><entry></entry><entry>&amp;&lt;/</entry><entry><indexterm significance="normal"><primary><varname>stboxOverfront</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverfront</varname></primary></indexterm>stboxOverfront / tpcboxOverfront (a, b)</entry></row>
-				<row><entry></entry><entry>/&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxOverback</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverback</varname></primary></indexterm>stboxOverback / tpcboxOverback (a, b)</entry></row>
-				<row><entry>Temporal comparison</entry><entry>#=</entry><entry><indexterm significance="normal"><primary><varname>tEqual</varname></primary></indexterm>tEqual(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>tNotEqual</varname></primary></indexterm>tNotEqual(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;</entry><entry><indexterm significance="normal"><primary><varname>tLessThan</varname></primary></indexterm>tLessThan(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;=</entry><entry><indexterm significance="normal"><primary><varname>tLessEqual</varname></primary></indexterm>tLessEqual(a, b)</entry></row>
-				<row><entry></entry><entry>#&gt;</entry><entry><indexterm significance="normal"><primary><varname>tGreaterThan</varname></primary></indexterm>tGreaterThan(a, b)</entry></row>
-				<row><entry></entry><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGreaterEqual</varname></primary></indexterm>tGreaterEqual(a, b)</entry></row>
-				<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
-				<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
-				<row><entry>Distance (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
-				<row><entry>Grid distance (cell index)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
-				<row><entry>Same</entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same(a, b)</entry></row>
-				<row><entry>Traditional comparison</entry><entry>=</entry><entry><indexterm significance="normal"><primary><varname>eq</varname></primary></indexterm>eq(a, b)</entry></row>
-				<row><entry></entry><entry>&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>ne</varname></primary></indexterm>ne(a, b)</entry></row>
-				<row><entry></entry><entry>&lt;</entry><entry><indexterm significance="normal"><primary><varname>lt</varname></primary></indexterm>lt(a, b)</entry></row>
-				<row><entry></entry><entry>&lt;=</entry><entry><indexterm significance="normal"><primary><varname>le</varname></primary></indexterm>le(a, b)</entry></row>
-				<row><entry></entry><entry>&gt;</entry><entry><indexterm significance="normal"><primary><varname>gt</varname></primary></indexterm>gt(a, b)</entry></row>
-				<row><entry></entry><entry>&gt;=</entry><entry><indexterm significance="normal"><primary><varname>ge</varname></primary></indexterm>ge(a, b)</entry></row>
-				<row><entry>Ever comparison</entry><entry>?=</entry><entry><indexterm significance="normal"><primary><varname>eEqual</varname></primary></indexterm>eEqual(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>eNotEqual</varname></primary></indexterm>eNotEqual(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;</entry><entry><indexterm significance="normal"><primary><varname>eLessThan</varname></primary></indexterm>eLessThan(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;=</entry><entry><indexterm significance="normal"><primary><varname>eLessEqual</varname></primary></indexterm>eLessEqual(a, b)</entry></row>
-				<row><entry></entry><entry>?&gt;</entry><entry><indexterm significance="normal"><primary><varname>eGreaterThan</varname></primary></indexterm>eGreaterThan(a, b)</entry></row>
-				<row><entry></entry><entry>?&gt;=</entry><entry><indexterm significance="normal"><primary><varname>eGreaterEqual</varname></primary></indexterm>eGreaterEqual(a, b)</entry></row>
-				<row><entry>Always comparison</entry><entry>%=</entry><entry><indexterm significance="normal"><primary><varname>aEqual</varname></primary></indexterm>aEqual(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>aNotEqual</varname></primary></indexterm>aNotEqual(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;</entry><entry><indexterm significance="normal"><primary><varname>aLessThan</varname></primary></indexterm>aLessThan(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;=</entry><entry><indexterm significance="normal"><primary><varname>aLessEqual</varname></primary></indexterm>aLessEqual(a, b)</entry></row>
-				<row><entry></entry><entry>%&gt;</entry><entry><indexterm significance="normal"><primary><varname>aGreaterThan</varname></primary></indexterm>aGreaterThan(a, b)</entry></row>
-				<row><entry></entry><entry>%&gt;=</entry><entry><indexterm significance="normal"><primary><varname>aGreaterEqual</varname></primary></indexterm>aGreaterEqual(a, b)</entry></row>
-				<row><entry>Boolean (temporal bolean)</entry><entry>&amp;</entry><entry><indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>tAnd(a, b)</entry></row>
-				<row><entry></entry><entry>|</entry><entry><indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>tOr(a, b)</entry></row>
-				<row><entry></entry><entry>~</entry><entry>tNot(a)</entry></row>
-				<row><entry>Arithmetic (temporal numbers)</entry><entry>+</entry><entry><indexterm significance="normal"><primary><varname>tAdd</varname></primary></indexterm>tAdd(a, b)</entry></row>
-				<row><entry></entry><entry>-</entry><entry><indexterm significance="normal"><primary><varname>tSub</varname></primary></indexterm>tSub(a, b)</entry></row>
-				<row><entry></entry><entry>*</entry><entry><indexterm significance="normal"><primary><varname>tMul</varname></primary></indexterm>tMul(a, b)</entry></row>
-				<row><entry></entry><entry>/</entry><entry><indexterm significance="normal"><primary><varname>tDiv</varname></primary></indexterm>tDiv(a, b)</entry></row>
-				<row><entry>Union (set / span / span set)</entry><entry>+</entry><entry>setUnion / spanUnion / spansetUnion (a, b)</entry></row>
-				<row><entry>Intersection (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
-				<row><entry>Difference (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
-				<row><entry>Concatenation (set / temporal)</entry><entry>||</entry><entry>setConcat / tConcat (a, b)</entry></row>
-				<row><entry>JSON field / element access</entry><entry>-&gt;</entry><entry>jsonbsetObjectField / tjsonbObjectField / jsonbsetArrayElement / tjsonbArrayElement (a, b)</entry></row>
-				<row><entry></entry><entry>-&gt;&gt;</entry><entry>jsonbsetObjectFieldText / tjsonbObjectFieldText / jsonbsetArrayElementText / tjsonbArrayElementText (a, b)</entry></row>
-				<row><entry>JSON key existence</entry><entry>?</entry><entry>jsonbsetExists / tjsonbExists (a, b)</entry></row>
-				<row><entry></entry><entry>?&amp;</entry><entry>jsonbsetExistsAll / tjsonbExistsAll (a, b)</entry></row>
-				<row><entry></entry><entry>?|</entry><entry>jsonbsetExistsAny / tjsonbExistsAny (a, b)</entry></row>
-				<row><entry>JSON path</entry><entry>@?</entry><entry>jsonbsetPathExists / tjsonbPathExists (a, b)</entry></row>
-				<row><entry></entry><entry>@@</entry><entry>jsonbsetPathMatch / tjsonbPathMatch (a, b)</entry></row>
-				<row><entry></entry><entry>#-</entry><entry>jsonbsetDeletePath / tjsonbDeletePath (a, b)</entry></row>
-				<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>same_rid(a, b)</entry></row>
-				<row><entry></entry><entry>@?</entry><entry><indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>contains_rid(a, b)</entry></row>
-				<row><entry></entry><entry>?@</entry><entry><indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>contained_rid(a, b)</entry></row>
-				<row><entry></entry><entry>@@</entry><entry><indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>overlaps_rid(a, b)</entry></row>
-			</tbody>
-		</tgroup>
-	</informaltable>
+	<para>The sections below give the named function of every operator, grouped as the chapters of each type group them.</para>
 
 	<para>For example, the bounding-box overlap <literal>t1.trip &amp;&amp; t2.trip</literal> is written portably as <literal>overlaps(t1.trip, t2.trip)</literal>, and the temporal-before test <literal>p1.period &lt;&lt;# p2.period</literal> as <literal>spanBefore(p1.period, p2.period)</literal>.</para>
 
-	<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define.</para>
+	<sect1 xml:id="portable_sql_set_operations">
+		<title>Set Operations</title>
 
-	<informaltable frame="all" colsep="1" rowsep="1">
-		<?dblatex table-width="autowidth.column: 1 2 3 4"?>
-		<tgroup cols="4" align="left" colsep="1" rowsep="1">
-			<thead>
-				<row>
-					<entry>Category</entry>
-					<entry>Transition</entry>
-					<entry>Combine</entry>
-					<entry>Final</entry>
-				</row>
-			</thead>
-			<tbody>
-					<row><entry>Count</entry><entry><varname>tCountTransition</varname></entry><entry><varname>tCountCombine</varname></entry><entry><varname>tCountFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>wCountTransition</varname></entry><entry><varname>wCountCombine</varname></entry><entry><varname>wCountFinal</varname></entry></row>
-					<row><entry>Sum</entry><entry><varname>tSumTransition</varname></entry><entry><varname>tSumCombine</varname></entry><entry><varname>tSumFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>wSumTransition</varname></entry><entry><varname>wSumCombine</varname></entry><entry><varname>wSumFinal</varname></entry></row>
-					<row><entry>Average</entry><entry><varname>tAvgTransition</varname></entry><entry><varname>tAvgCombine</varname></entry><entry><varname>tAvgFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>wAvgTransition</varname></entry><entry><varname>wAvgCombine</varname></entry><entry><varname>wAvgFinal</varname></entry></row>
-					<row><entry>Minimum / maximum</entry><entry><varname>tMinTransition</varname></entry><entry><varname>tMinCombine</varname></entry><entry><varname>tMinFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>tMaxTransition</varname></entry><entry><varname>tMaxCombine</varname></entry><entry><varname>tMaxFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>wMinTransition</varname></entry><entry><varname>wMinCombine</varname></entry><entry><varname>wMinFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>wMaxTransition</varname></entry><entry><varname>wMaxCombine</varname></entry><entry><varname>wMaxFinal</varname></entry></row>
-					<row><entry>Boolean</entry><entry><varname>tAndTransition</varname></entry><entry><varname>tAndCombine</varname></entry><entry><varname>tAndFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>tOrTransition</varname></entry><entry><varname>tOrCombine</varname></entry><entry><varname>tOrFinal</varname></entry></row>
-					<row><entry>Centroid</entry><entry><varname>tCentroidTransition</varname></entry><entry><varname>tCentroidCombine</varname></entry><entry><varname>tCentroidFinal</varname></entry></row>
-					<row><entry>Point cloud</entry><entry><varname>tnpointsTransition</varname></entry><entry><varname>tnpointsCombine</varname></entry><entry><varname>tnpointsFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>tdensityTransition</varname></entry><entry><varname>tdensityCombine</varname></entry><entry><varname>tdensityFinal</varname></entry></row>
-					<row><entry>Bounding box</entry><entry><varname>extentTransition</varname></entry><entry><varname>extentCombine</varname></entry><entry>—</entry></row>
-					<row><entry>Union</entry><entry><varname>setUnionTransition</varname></entry><entry><varname>setUnionCombine</varname></entry><entry><varname>setUnionFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>spanUnionTransition</varname></entry><entry><varname>spanUnionCombine</varname></entry><entry><varname>spanUnionFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>spansetUnionTransition</varname></entry><entry><varname>spansetUnionCombine</varname></entry><entry><varname>spansetUnionFinal</varname></entry></row>
-					<row><entry>Merge</entry><entry><varname>mergeTransition</varname></entry><entry><varname>mergeCombine</varname></entry><entry><varname>mergeFinal</varname></entry></row>
-					<row><entry>Append</entry><entry><varname>appendInstantTransition</varname></entry><entry>—</entry><entry><varname>appendInstantFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>appendSequenceTransition</varname></entry><entry>—</entry><entry><varname>appendSequenceFinal</varname></entry></row>
-			</tbody>
-		</tgroup>
-	</informaltable>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Union (set / span / span set)</entry><entry>+</entry><entry>setUnion / spanUnion / spansetUnion (a, b)</entry></row>
+					<row><entry>Intersection (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
+					<row><entry>Difference (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
+					<row><entry>Concatenation (set / temporal)</entry><entry>||</entry><entry>setConcat / tConcat (a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_bbox_operations">
+		<title>Bounding Box Operations</title>
+
+	<sect2 xml:id="portable_sql_bbox_operations_topological">
+		<title>Topological Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Bounding box</entry><entry>&amp;&amp;</entry><entry><indexterm significance="normal"><primary><varname>overlaps</varname></primary></indexterm>overlaps(a, b)</entry></row>
+					<row><entry></entry><entry>@&gt;</entry><entry><indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>contains(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;@</entry><entry><indexterm significance="normal"><primary><varname>contained</varname></primary></indexterm>contained(a, b)</entry></row>
+					<row><entry></entry><entry>-|-</entry><entry><indexterm significance="normal"><primary><varname>adjacent</varname></primary></indexterm>adjacent(a, b)</entry></row>
+					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same(a, b)</entry></row>
+					<row><entry>Time span of a temporal JSONB value</entry><entry>#@&gt;</entry><entry>contains(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;@#</entry><entry>contained(a, b)</entry></row>
+					<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>same_rid(a, b)</entry></row>
+					<row><entry></entry><entry>@?</entry><entry><indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>contains_rid(a, b)</entry></row>
+					<row><entry></entry><entry>?@</entry><entry><indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>contained_rid(a, b)</entry></row>
+					<row><entry></entry><entry>@@</entry><entry><indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>overlaps_rid(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+
+	<sect2 xml:id="portable_sql_bbox_operations_position">
+		<title>Position Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Time position</entry><entry>&lt;&lt;#</entry><entry><indexterm significance="normal"><primary><varname>setBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxBefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBefore</varname></primary></indexterm>setBefore / spanBefore / spansetBefore / tboxBefore / stboxBefore / tpcboxBefore (a, b)</entry></row>
+					<row><entry></entry><entry>#&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxAfter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAfter</varname></primary></indexterm>setAfter / spanAfter / spansetAfter / tboxAfter / stboxAfter / tpcboxAfter (a, b)</entry></row>
+					<row><entry></entry><entry>&amp;&lt;#</entry><entry><indexterm significance="normal"><primary><varname>setOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverbefore</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverbefore</varname></primary></indexterm>setOverbefore / spanOverbefore / spansetOverbefore / tboxOverbefore / stboxOverbefore / tpcboxOverbefore (a, b)</entry></row>
+					<row><entry></entry><entry>#&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverafter</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverafter</varname></primary></indexterm>setOverafter / spanOverafter / spansetOverafter / tboxOverafter / stboxOverafter / tpcboxOverafter (a, b)</entry></row>
+					<row><entry>Space, X axis</entry><entry>&lt;&lt;</entry><entry><indexterm significance="normal"><primary><varname>setLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxLeft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxLeft</varname></primary></indexterm>setLeft / spanLeft / spansetLeft / tboxLeft / stboxLeft / tpcboxLeft (a, b)</entry></row>
+					<row><entry></entry><entry>&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxRight</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxRight</varname></primary></indexterm>setRight / spanRight / spansetRight / tboxRight / stboxRight / tpcboxRight (a, b)</entry></row>
+					<row><entry></entry><entry>&amp;&lt;</entry><entry><indexterm significance="normal"><primary><varname>setOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverleft</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverleft</varname></primary></indexterm>setOverleft / spanOverleft / spansetOverleft / tboxOverleft / stboxOverleft / tpcboxOverleft (a, b)</entry></row>
+					<row><entry></entry><entry>&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>setOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxOverright</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverright</varname></primary></indexterm>setOverright / spanOverright / spansetOverright / tboxOverright / stboxOverright / tpcboxOverright (a, b)</entry></row>
+					<row><entry>Space, Y axis</entry><entry>&lt;&lt;|</entry><entry><indexterm significance="normal"><primary><varname>stboxBelow</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBelow</varname></primary></indexterm>stboxBelow / tpcboxBelow (a, b)</entry></row>
+					<row><entry></entry><entry>|&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxAbove</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAbove</varname></primary></indexterm>stboxAbove / tpcboxAbove (a, b)</entry></row>
+					<row><entry></entry><entry>&amp;&lt;|</entry><entry><indexterm significance="normal"><primary><varname>stboxOverbelow</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverbelow</varname></primary></indexterm>stboxOverbelow / tpcboxOverbelow (a, b)</entry></row>
+					<row><entry></entry><entry>|&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxOverabove</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverabove</varname></primary></indexterm>stboxOverabove / tpcboxOverabove (a, b)</entry></row>
+					<row><entry>Space, Z axis</entry><entry>&lt;&lt;/</entry><entry><indexterm significance="normal"><primary><varname>stboxFront</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxFront</varname></primary></indexterm>stboxFront / tpcboxFront (a, b)</entry></row>
+					<row><entry></entry><entry>/&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxBack</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxBack</varname></primary></indexterm>stboxBack / tpcboxBack (a, b)</entry></row>
+					<row><entry></entry><entry>&amp;&lt;/</entry><entry><indexterm significance="normal"><primary><varname>stboxOverfront</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverfront</varname></primary></indexterm>stboxOverfront / tpcboxOverfront (a, b)</entry></row>
+					<row><entry></entry><entry>/&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>stboxOverback</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxOverback</varname></primary></indexterm>stboxOverback / tpcboxOverback (a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_distance">
+		<title>Distance Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
+					<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
+					<row><entry>Distance (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
+					<row><entry>Grid distance (cell index)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_comparisons">
+		<title>Comparisons</title>
+
+	<sect2 xml:id="portable_sql_comparisons_traditional">
+		<title>Traditional Comparisons</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="1*"/>
+				<colspec colnum="2" colname="col2" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>=</entry><entry><indexterm significance="normal"><primary><varname>eq</varname></primary></indexterm>eq(a, b)</entry></row>
+					<row><entry>&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>ne</varname></primary></indexterm>ne(a, b)</entry></row>
+					<row><entry>&lt;</entry><entry><indexterm significance="normal"><primary><varname>lt</varname></primary></indexterm>lt(a, b)</entry></row>
+					<row><entry>&lt;=</entry><entry><indexterm significance="normal"><primary><varname>le</varname></primary></indexterm>le(a, b)</entry></row>
+					<row><entry>&gt;</entry><entry><indexterm significance="normal"><primary><varname>gt</varname></primary></indexterm>gt(a, b)</entry></row>
+					<row><entry>&gt;=</entry><entry><indexterm significance="normal"><primary><varname>ge</varname></primary></indexterm>ge(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+
+	<sect2 xml:id="portable_sql_comparisons_ever_always">
+		<title>Ever and Always Comparisons</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Ever comparison</entry><entry>?=</entry><entry><indexterm significance="normal"><primary><varname>eEqual</varname></primary></indexterm>eEqual(a, b)</entry></row>
+					<row><entry></entry><entry>?&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>eNotEqual</varname></primary></indexterm>eNotEqual(a, b)</entry></row>
+					<row><entry></entry><entry>?&lt;</entry><entry><indexterm significance="normal"><primary><varname>eLessThan</varname></primary></indexterm>eLessThan(a, b)</entry></row>
+					<row><entry></entry><entry>?&lt;=</entry><entry><indexterm significance="normal"><primary><varname>eLessEqual</varname></primary></indexterm>eLessEqual(a, b)</entry></row>
+					<row><entry></entry><entry>?&gt;</entry><entry><indexterm significance="normal"><primary><varname>eGreaterThan</varname></primary></indexterm>eGreaterThan(a, b)</entry></row>
+					<row><entry></entry><entry>?&gt;=</entry><entry><indexterm significance="normal"><primary><varname>eGreaterEqual</varname></primary></indexterm>eGreaterEqual(a, b)</entry></row>
+					<row><entry>Always comparison</entry><entry>%=</entry><entry><indexterm significance="normal"><primary><varname>aEqual</varname></primary></indexterm>aEqual(a, b)</entry></row>
+					<row><entry></entry><entry>%&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>aNotEqual</varname></primary></indexterm>aNotEqual(a, b)</entry></row>
+					<row><entry></entry><entry>%&lt;</entry><entry><indexterm significance="normal"><primary><varname>aLessThan</varname></primary></indexterm>aLessThan(a, b)</entry></row>
+					<row><entry></entry><entry>%&lt;=</entry><entry><indexterm significance="normal"><primary><varname>aLessEqual</varname></primary></indexterm>aLessEqual(a, b)</entry></row>
+					<row><entry></entry><entry>%&gt;</entry><entry><indexterm significance="normal"><primary><varname>aGreaterThan</varname></primary></indexterm>aGreaterThan(a, b)</entry></row>
+					<row><entry></entry><entry>%&gt;=</entry><entry><indexterm significance="normal"><primary><varname>aGreaterEqual</varname></primary></indexterm>aGreaterEqual(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+
+	<sect2 xml:id="portable_sql_comparisons_temporal">
+		<title>Temporal Comparisons</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="1*"/>
+				<colspec colnum="2" colname="col2" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>#=</entry><entry><indexterm significance="normal"><primary><varname>tEqual</varname></primary></indexterm>tEqual(a, b)</entry></row>
+					<row><entry>#&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>tNotEqual</varname></primary></indexterm>tNotEqual(a, b)</entry></row>
+					<row><entry>#&lt;</entry><entry><indexterm significance="normal"><primary><varname>tLessThan</varname></primary></indexterm>tLessThan(a, b)</entry></row>
+					<row><entry>#&lt;=</entry><entry><indexterm significance="normal"><primary><varname>tLessEqual</varname></primary></indexterm>tLessEqual(a, b)</entry></row>
+					<row><entry>#&gt;</entry><entry><indexterm significance="normal"><primary><varname>tGreaterThan</varname></primary></indexterm>tGreaterThan(a, b)</entry></row>
+					<row><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGreaterEqual</varname></primary></indexterm>tGreaterEqual(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_boolean">
+		<title>Boolean Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="1*"/>
+				<colspec colnum="2" colname="col2" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>&amp;</entry><entry><indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>tAnd(a, b)</entry></row>
+					<row><entry>|</entry><entry><indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>tOr(a, b)</entry></row>
+					<row><entry>~</entry><entry>tNot(a)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_mathematical">
+		<title>Mathematical Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="1*"/>
+				<colspec colnum="2" colname="col2" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>+</entry><entry><indexterm significance="normal"><primary><varname>tAdd</varname></primary></indexterm>tAdd(a, b)</entry></row>
+					<row><entry>-</entry><entry><indexterm significance="normal"><primary><varname>tSub</varname></primary></indexterm>tSub(a, b)</entry></row>
+					<row><entry>*</entry><entry><indexterm significance="normal"><primary><varname>tMul</varname></primary></indexterm>tMul(a, b)</entry></row>
+					<row><entry>/</entry><entry><indexterm significance="normal"><primary><varname>tDiv</varname></primary></indexterm>tDiv(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_json">
+		<title>Temporal JSON Operations</title>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="1*"/>
+				<colspec colnum="3" colname="col3" colwidth="6*"/>
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Operator</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>JSON field / element access</entry><entry>-&gt;</entry><entry>jsonbsetObjectField / tjsonbObjectField / jsonbsetArrayElement / tjsonbArrayElement (a, b)</entry></row>
+					<row><entry></entry><entry>-&gt;&gt;</entry><entry>jsonbsetObjectFieldText / tjsonbObjectFieldText / jsonbsetArrayElementText / tjsonbArrayElementText (a, b)</entry></row>
+					<row><entry>JSON key existence</entry><entry>?</entry><entry>jsonbsetExists / tjsonbExists (a, b)</entry></row>
+					<row><entry></entry><entry>?&amp;</entry><entry>jsonbsetExistsAll / tjsonbExistsAll (a, b)</entry></row>
+					<row><entry></entry><entry>?|</entry><entry>jsonbsetExistsAny / tjsonbExistsAny (a, b)</entry></row>
+					<row><entry>JSON path</entry><entry>@?</entry><entry>jsonbsetPathExists / tjsonbPathExists (a, b)</entry></row>
+					<row><entry></entry><entry>@@</entry><entry>jsonbsetPathMatch / tjsonbPathMatch (a, b)</entry></row>
+					<row><entry></entry><entry>#-</entry><entry>jsonbsetDeletePath / tjsonbDeletePath (a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
+	<sect1 xml:id="portable_sql_aggregates">
+		<title>Aggregations</title>
+
+		<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2 3 4"?>
+			<tgroup cols="4" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Category</entry>
+						<entry>Transition</entry>
+						<entry>Combine</entry>
+						<entry>Final</entry>
+					</row>
+				</thead>
+				<tbody>
+						<row><entry>Count</entry><entry>tCountTransition</entry><entry>tCountCombine</entry><entry>tCountFinal</entry></row>
+						<row><entry></entry><entry>wCountTransition</entry><entry>wCountCombine</entry><entry>wCountFinal</entry></row>
+						<row><entry>Sum</entry><entry>tSumTransition</entry><entry>tSumCombine</entry><entry>tSumFinal</entry></row>
+						<row><entry></entry><entry>wSumTransition</entry><entry>wSumCombine</entry><entry>wSumFinal</entry></row>
+						<row><entry>Average</entry><entry>tAvgTransition</entry><entry>tAvgCombine</entry><entry>tAvgFinal</entry></row>
+						<row><entry></entry><entry>wAvgTransition</entry><entry>wAvgCombine</entry><entry>wAvgFinal</entry></row>
+						<row><entry>Minimum / maximum</entry><entry>tMinTransition</entry><entry>tMinCombine</entry><entry>tMinFinal</entry></row>
+						<row><entry></entry><entry>tMaxTransition</entry><entry>tMaxCombine</entry><entry>tMaxFinal</entry></row>
+						<row><entry></entry><entry>wMinTransition</entry><entry>wMinCombine</entry><entry>wMinFinal</entry></row>
+						<row><entry></entry><entry>wMaxTransition</entry><entry>wMaxCombine</entry><entry>wMaxFinal</entry></row>
+						<row><entry>Boolean</entry><entry>tAndTransition</entry><entry>tAndCombine</entry><entry>tAndFinal</entry></row>
+						<row><entry></entry><entry>tOrTransition</entry><entry>tOrCombine</entry><entry>tOrFinal</entry></row>
+						<row><entry>Centroid</entry><entry>tCentroidTransition</entry><entry>tCentroidCombine</entry><entry>tCentroidFinal</entry></row>
+						<row><entry>Point cloud</entry><entry>tnpointsTransition</entry><entry>tnpointsCombine</entry><entry>tnpointsFinal</entry></row>
+						<row><entry></entry><entry>tdensityTransition</entry><entry>tdensityCombine</entry><entry>tdensityFinal</entry></row>
+						<row><entry>Bounding box</entry><entry>extentTransition</entry><entry>extentCombine</entry><entry>—</entry></row>
+						<row><entry>Union</entry><entry>setUnionTransition</entry><entry>setUnionCombine</entry><entry>setUnionFinal</entry></row>
+						<row><entry></entry><entry>spanUnionTransition</entry><entry>spanUnionCombine</entry><entry>spanUnionFinal</entry></row>
+						<row><entry></entry><entry>spansetUnionTransition</entry><entry>spansetUnionCombine</entry><entry>spansetUnionFinal</entry></row>
+						<row><entry>Merge</entry><entry>mergeTransition</entry><entry>mergeCombine</entry><entry>mergeFinal</entry></row>
+						<row><entry>Append</entry><entry>appendInstantTransition</entry><entry>—</entry><entry>appendInstantFinal</entry></row>
+						<row><entry></entry><entry>appendSequenceTransition</entry><entry>—</entry><entry>appendSequenceFinal</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
 </chapter>
