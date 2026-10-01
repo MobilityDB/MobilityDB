@@ -1775,6 +1775,26 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   bool_result = adjacent_spanset_timestamptz(tstzspanset1, tstz1);
   printf("adjacent_spanset_timestamptz(%s, %s): %c\n", tstzspanset1_out, tstz1_out, bool_result ? 't' : 'n');
 
+  /* bool adjacent_bigint_spanset(int64 i, const SpanSet *ss); */
+  bool_result = adjacent_bigint_spanset(int64_in1, bspanset1);
+  printf("adjacent_bigint_spanset(%ld, %s): %c\n", int64_in1, bspanset1_out, bool_result ? 't' : 'n');
+
+  /* bool adjacent_date_spanset(DateADT d, const SpanSet *ss); */
+  bool_result = adjacent_date_spanset(date1, dspanset1);
+  printf("adjacent_date_spanset(%s, %s): %c\n", date1_out, dspanset1_out, bool_result ? 't' : 'n');
+
+  /* bool adjacent_float_spanset(double d, const SpanSet *ss); */
+  bool_result = adjacent_float_spanset(float8_in1, fspanset1);
+  printf("adjacent_float_spanset(%lf, %s): %c\n", float8_in1, fspanset1_out, bool_result ? 't' : 'n');
+
+  /* bool adjacent_int_spanset(int i, const SpanSet *ss); */
+  bool_result = adjacent_int_spanset(int32_in1, ispanset1);
+  printf("adjacent_int_spanset(%d, %s): %c\n", int32_in1, ispanset1_out, bool_result ? 't' : 'n');
+
+  /* bool adjacent_timestamptz_spanset(TimestampTz t, const SpanSet *ss); */
+  bool_result = adjacent_timestamptz_spanset(tstz1, tstzspanset1);
+  printf("adjacent_timestamptz_spanset(%s, %s): %c\n", tstz1_out, tstzspanset1_out, bool_result ? 't' : 'n');
+
   /* bool adjacent_spanset_span(spanset1, const Span *s); */
   bool_result = adjacent_spanset_span(ispanset1, ispan1);
   printf("adjacent_spanset_span(%s, %s): %c\n", ispanset1_out, ispan1_out, bool_result ? 't' : 'n');

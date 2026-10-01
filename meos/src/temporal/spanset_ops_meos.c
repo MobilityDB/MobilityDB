@@ -269,6 +269,81 @@ adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
   return adjacent_spanset_value(ss, TimestampTzGetDatum(t));
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer and a span set are adjacent
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Adjacent_value_spanset()
+ */
+bool
+adjacent_int_spanset(int i, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPANSET(ss, false);
+  return adjacent_value_spanset(Int32GetDatum(i), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer and a span set are adjacent
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Adjacent_value_spanset()
+ */
+bool
+adjacent_bigint_spanset(int64 i, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPANSET(ss, false);
+  return adjacent_value_spanset(Int64GetDatum(i), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float and a span set are adjacent
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Adjacent_value_spanset()
+ */
+bool
+adjacent_float_spanset(double d, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPANSET(ss, false);
+  return adjacent_value_spanset(Float8GetDatum(d), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date and a span set are adjacent
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Adjacent_value_spanset()
+ */
+bool
+adjacent_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, false);
+  return adjacent_value_spanset(DateADTGetDatum(d), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamptz and a span set are adjacent
+ * @param[in] t Value
+ * @param[in] ss Span set
+ * @csqlfn #Adjacent_value_spanset()
+ */
+bool
+adjacent_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, false);
+  return adjacent_value_spanset(TimestampTzGetDatum(t), ss);
+}
+
 /*****************************************************************************
  * Strictly left
  *****************************************************************************/
