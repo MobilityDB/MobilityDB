@@ -87,6 +87,19 @@ tintseq_in(const char *str, interpType interp)
 
 /**
  * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence from its Well-Known Text
+ * (WKT) representation
+ * @param[in] str String
+ * @param[in] interp Interpolation
+ */
+inline TSequence *
+tbigintseq_in(const char *str, interpType interp)
+{
+  return tsequence_in(str, T_TBIGINT, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal float sequence from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
