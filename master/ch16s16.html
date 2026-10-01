@@ -1,24 +1,39 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s15.html" title="Set-Returning Functions"><link rel="next" href="ch16s17.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s15.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s17.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_espatialrels"></a><a class="indexterm" name="id13719"></a><a class="indexterm" name="id13722"></a><a class="indexterm" name="id13725"></a><a class="indexterm" name="id13728"></a><a class="indexterm" name="id13731"></a><a class="indexterm" name="id13734"></a><a class="indexterm" name="id13737"></a><a class="indexterm" name="id13740"></a><a class="indexterm" name="id13743"></a><a class="indexterm" name="id13746"></a><a class="indexterm" name="id13749"></a><a class="indexterm" name="id13752"></a><p>Ever and always relationships</p><pre class="programlisting">
-eContains(geometry,tcell) → boolean
-aContains(geometry,tcell) → boolean
-eCovers(geometry,tcell) → boolean
-aCovers(geometry,tcell) → boolean
-eDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-aDisjoint({geometry,tcell},{geometry,tcell}) → boolean
-eDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-aDwithin({geometry,tcell},{geometry,tcell},float) → boolean
-eIntersects({geometry,tcell},{geometry,tcell}) → boolean
-aIntersects({geometry,tcell},{geometry,tcell}) → boolean
-eTouches({geometry,tcell},{geometry,tcell}) → boolean
-aTouches({geometry,tcell},{geometry,tcell}) → boolean
-</pre><p>The relationships evaluate a <code class="varname">tcell</code> argument through its per-instant cell-boundary geometry, the footprint of each cell as <a class="link" href="ch16s12.html#tcell_cell_to_boundary"><code class="varname">cellToBoundary</code></a> returns it, and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <code class="varname">e</code>-prefixed <span class="emphasis"><em>ever</em></span> form returns <code class="varname">true</code> when the relationship holds at some instant, the <code class="varname">a</code>-prefixed <span class="emphasis"><em>always</em></span> form when it holds at every instant, and the <code class="varname">t</code>-prefixed <span class="emphasis"><em>temporal</em></span> form of the next section returns a <code class="varname">tbool</code> of the instant-by-instant result. Every form accepts the three argument orderings <code class="varname">(geometry, tcell)</code>, <code class="varname">(tcell, geometry)</code>, and <code class="varname">(tcell, tcell)</code>. <code class="varname">eContains</code> states whether one footprint contains the other, interiors only, and <code class="varname">eCovers</code> the same with the boundary included; <code class="varname">eIntersects</code> whether the footprints share at least one point, <code class="varname">eDisjoint</code> whether they share none, <code class="varname">eTouches</code> whether they share a boundary point but no interior point, and <code class="varname">eDwithin</code> whether they lie within the distance passed as the third argument.</p><pre class="programlisting">
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+eContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aContains({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aCovers({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aTouches({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eDisjoint({geography,th3index},{geography,th3index}) → boolean
+eDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+aDisjoint({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aDisjoint({geography,th3index},{geography,th3index}) → boolean
+aDisjoint({geography,ts2cell},{geography,ts2cell}) → boolean
+eIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+eIntersects({geography,th3index},{geography,th3index}) → boolean
+eIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+aIntersects({geometry,tquadbin},{geometry,tquadbin}) → boolean
+aIntersects({geography,th3index},{geography,th3index}) → boolean
+aIntersects({geography,ts2cell},{geography,ts2cell}) → boolean
+eDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+eDwithin({geography,th3index},{geography,th3index},float) → boolean
+eDwithin({geography,ts2cell},{geography,ts2cell},float) → boolean
+aDwithin({geometry,tquadbin},{geometry,tquadbin},float) → boolean
+aDwithin(th3index,th3index,float) → boolean
+aDwithin(ts2cell,ts2cell,float) → boolean
+</pre><p>A relationship of a cell is the one of its boundary, as <a class="link" href="ch16s12.html#tcell_cell_to_boundary"><code class="varname">cellToBoundary</code></a> returns it, and each grid is related in the one reading that states its cells exactly. A QUADBIN tile is bounded by meridians and parallels, which are straight lines in longitude and latitude, so a <code class="varname">tquadbin</code> is related through the temporal geometry of its boundary, to a <code class="varname">geometry</code> or another <code class="varname">tquadbin</code>, with the full set of relationships of the temporal geometry types. An H3 or S2 cell is bounded by great-circle arcs, so a <code class="varname">th3index</code> or <code class="varname">ts2cell</code> is related through the temporal geography of its boundary, to a <code class="varname">geography</code> or another cell of its grid, answered on the sphere and with a distance in metres; it has the relationships a temporal geography has, which state no containment and no touching. A <code class="varname">geometry</code> passed to an H3 or S2 relationship is read as the <code class="varname">geography</code> PostGIS converts it to. Each relationship has three quantified forms: the <code class="varname">e</code>-prefixed <span class="emphasis"><em>ever</em></span> form returns <code class="varname">true</code> when the relationship holds at some instant, the <code class="varname">a</code>-prefixed <span class="emphasis"><em>always</em></span> form when it holds at every instant, and the <code class="varname">t</code>-prefixed <span class="emphasis"><em>temporal</em></span> form of the next section returns a <code class="varname">tbool</code> of the instant-by-instant result. <code class="varname">eContains</code> states whether one boundary contains the other, interiors only, and <code class="varname">eCovers</code> the same with the boundary included; <code class="varname">eIntersects</code> whether the boundaries share at least one point, <code class="varname">eDisjoint</code> whether they share none, <code class="varname">eTouches</code> whether they share a boundary point but no interior point, and <code class="varname">eDwithin</code> whether they lie within the distance passed as the third argument. The last example is a point H3 assigns to the resolution-0 cell and that lies 91 km outside the polygon joining the cell's vertices with straight lines in longitude and latitude.</p><pre class="programlisting">
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
 -- t
 SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t
-SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+SELECT eIntersects(geography 'Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+-- t
+SELECT eIntersects(th3index '8009fffffffffff@2001-01-01',
+  geography 'Point(16.6328 71.9281)');
 -- t
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s15.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s17.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Set-Returning Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatiotemporal Relationships</td></tr></table></div></body></html>

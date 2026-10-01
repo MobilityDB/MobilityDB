@@ -1,18 +1,21 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatiotemporal Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s16.html" title="Ever and Always Relationships"><link rel="next" href="ch16s18.html" title="Comparisons"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatiotemporal Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s16.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s18.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_spatiotemp_rels"></a>Spatiotemporal Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_tspatialrels"></a><a class="indexterm" name="id13783"></a><a class="indexterm" name="id13786"></a><a class="indexterm" name="id13789"></a><a class="indexterm" name="id13792"></a><a class="indexterm" name="id13795"></a><a class="indexterm" name="id13798"></a><p>Spatiotemporal relationships</p><pre class="programlisting">
-tContains(geometry,tcell) → tbool
-tCovers(geometry,tcell) → tbool
-tDisjoint({geometry,tcell},{geometry,tcell}) → tbool
-tDwithin({geometry,tcell},{geometry,tcell},float) → tbool
-tIntersects({geometry,tcell},{geometry,tcell}) → tbool
-tTouches({geometry,tcell},{geometry,tcell}) → tbool
-</pre><p>The temporal form answers a <code class="varname">tbool</code> that carries the result at each instant, where the ever and always forms of the previous section answer a single <code class="varname">boolean</code> over the whole time span.</p><pre class="programlisting">
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatiotemporal Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s16.html" title="Ever and Always Relationships"><link rel="next" href="ch16s18.html" title="Comparisons"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatiotemporal Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s16.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s18.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_spatiotemp_rels"></a>Spatiotemporal Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_tspatialrels"></a><a class="indexterm" name="id13787"></a><a class="indexterm" name="id13790"></a><a class="indexterm" name="id13793"></a><a class="indexterm" name="id13796"></a><a class="indexterm" name="id13799"></a><a class="indexterm" name="id13802"></a><p>Spatiotemporal relationships</p><pre class="programlisting">
+tContains({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tCovers({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tDisjoint(th3index,th3index) → tbool
+tDisjoint(ts2cell,ts2cell) → tbool
+tDwithin({geometry,tquadbin},{geometry,tquadbin},float) → tbool
+tIntersects({geometry,tquadbin},{geometry,tquadbin}) → tbool
+tIntersects(th3index,th3index) → tbool
+tIntersects(ts2cell,ts2cell) → tbool
+tTouches({geometry,tquadbin},{geometry,tquadbin}) → tbool
+</pre><p>The temporal form answers a <code class="varname">tbool</code> that carries the result at each instant, where the ever and always forms of the previous section answer a single <code class="varname">boolean</code> over the whole time span. An H3 or S2 cell is related as the temporal geography of its boundary, which has the temporal disjoint and intersects relationships between two temporal values, so two cells of the grid are related on the sphere.</p><pre class="programlisting">
+SELECT tIntersects(th3index '871fa4418ffffff@2001-01-01',
+  th3index '871fa4418ffffff@2001-01-01');
 -- t@2001-01-01
 SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t@2001-01-01
-SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+SELECT tIntersects(ts2cell '47c3c@2001-01-01', ts2cell '47c3c@2001-01-01');
 -- t@2001-01-01
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Ever and Always Relationships </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Comparisons</td></tr></table></div></body></html>
