@@ -150,10 +150,10 @@ typedef enum
 {
   UNKNOWN_OP      = 0,
   EQ_OP           = 1,  /**< Equality `=` operator */
-  NE_OP           = 2,  /**< Distinct `!=` operator */
+  NE_OP           = 2,  /**< Distinct `<>` operator */
   LT_OP           = 3,  /**< Less than `<` operator */
   LE_OP           = 4,  /**< Less than or equal to `<=` operator */
-  GT_OP           = 5,  /**< Greater than `<` operator */
+  GT_OP           = 5,  /**< Greater than `>` operator */
   GE_OP           = 6,  /**< Greater than or equal to `>=` operator */
   ADJACENT_OP     = 7,  /**< Adjacent `-|-` operator */
   UNION_OP        = 8,  /**< Union `+` operator */
@@ -170,7 +170,7 @@ typedef enum
   BELOW_OP        = 19, /**< Below `<<|` operator */
   OVERBELOW_OP    = 20, /**< Overbelow `&<|` operator */
   ABOVE_OP        = 21, /**< Above `|>>` operator */
-  OVERABOVE_OP    = 22, /**< Overbove `|&>` operator */
+  OVERABOVE_OP    = 22, /**< Overabove `|&>` operator */
   FRONT_OP        = 23, /**< Front `<</` operator */
   OVERFRONT_OP    = 24, /**< Overfront `&</` operator */
   BACK_OP         = 25, /**< Back `/>>` operator */
