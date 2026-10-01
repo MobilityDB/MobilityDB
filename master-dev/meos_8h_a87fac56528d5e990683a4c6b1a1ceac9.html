@@ -1528,47 +1528,47 @@ $(function() {
 <p>Enumeration that defines the search operations of an in-memory index. </p>
 <p >The <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> and the space-partitioning index answer the same operations, so the operations carry the name of neither. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a55fa47987facc606e4a10c282253612f" name="a87fac56528d5e990683a4c6b1a1ceac9a55fa47987facc606e4a10c282253612f"></a>INDEX_OVERLAPS&#160;</td><td class="fielddoc"><p >Find stored boxes that overlap the query. </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a55fa47987facc606e4a10c282253612f" name="a87fac56528d5e990683a4c6b1a1ceac9a55fa47987facc606e4a10c282253612f"></a>INDEX_OVERLAPS&#160;</td><td class="fielddoc"><p >Find stored boxes that overlap the query, <code>&amp;&amp;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a61197c7ccfd6e92586a835018048740a" name="a87fac56528d5e990683a4c6b1a1ceac9a61197c7ccfd6e92586a835018048740a"></a>INDEX_CONTAINS&#160;</td><td class="fielddoc"><p >Find stored boxes that contain the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a61197c7ccfd6e92586a835018048740a" name="a87fac56528d5e990683a4c6b1a1ceac9a61197c7ccfd6e92586a835018048740a"></a>INDEX_CONTAINS&#160;</td><td class="fielddoc"><p >Find stored boxes that contain the query, <code>@&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a522720b83f1d958fb27d6a8e1a0c5ca7" name="a87fac56528d5e990683a4c6b1a1ceac9a522720b83f1d958fb27d6a8e1a0c5ca7"></a>INDEX_CONTAINED_BY&#160;</td><td class="fielddoc"><p >Find stored boxes contained by the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a522720b83f1d958fb27d6a8e1a0c5ca7" name="a87fac56528d5e990683a4c6b1a1ceac9a522720b83f1d958fb27d6a8e1a0c5ca7"></a>INDEX_CONTAINED_BY&#160;</td><td class="fielddoc"><p >Find stored boxes contained by the query, <code>&lt;@</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a0de0d5d4f008973a7109a368113d80fd" name="a87fac56528d5e990683a4c6b1a1ceac9a0de0d5d4f008973a7109a368113d80fd"></a>INDEX_LEFT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly left of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a0de0d5d4f008973a7109a368113d80fd" name="a87fac56528d5e990683a4c6b1a1ceac9a0de0d5d4f008973a7109a368113d80fd"></a>INDEX_LEFT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly left of the query, <code>&lt;&lt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a8c43af67e4f4c607d2bb27165cbd88a7" name="a87fac56528d5e990683a4c6b1a1ceac9a8c43af67e4f4c607d2bb27165cbd88a7"></a>INDEX_OVERLEFT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend to the right of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a8c43af67e4f4c607d2bb27165cbd88a7" name="a87fac56528d5e990683a4c6b1a1ceac9a8c43af67e4f4c607d2bb27165cbd88a7"></a>INDEX_OVERLEFT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend to the right of the query, <code>&amp;&lt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a6d07d7da29cc0ee9203ffb7720a6a7d4" name="a87fac56528d5e990683a4c6b1a1ceac9a6d07d7da29cc0ee9203ffb7720a6a7d4"></a>INDEX_RIGHT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly right of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a6d07d7da29cc0ee9203ffb7720a6a7d4" name="a87fac56528d5e990683a4c6b1a1ceac9a6d07d7da29cc0ee9203ffb7720a6a7d4"></a>INDEX_RIGHT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly right of the query, <code>&gt;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ab6b94aa569efd86cd8b69321362e9e51" name="a87fac56528d5e990683a4c6b1a1ceac9ab6b94aa569efd86cd8b69321362e9e51"></a>INDEX_OVERRIGHT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend to the left of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ab6b94aa569efd86cd8b69321362e9e51" name="a87fac56528d5e990683a4c6b1a1ceac9ab6b94aa569efd86cd8b69321362e9e51"></a>INDEX_OVERRIGHT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend to the left of the query, <code>&amp;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a83704f0363854c698a1c3b42a5dacd0b" name="a87fac56528d5e990683a4c6b1a1ceac9a83704f0363854c698a1c3b42a5dacd0b"></a>INDEX_BELOW&#160;</td><td class="fielddoc"><p >Find stored boxes strictly below the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a83704f0363854c698a1c3b42a5dacd0b" name="a87fac56528d5e990683a4c6b1a1ceac9a83704f0363854c698a1c3b42a5dacd0b"></a>INDEX_BELOW&#160;</td><td class="fielddoc"><p >Find stored boxes strictly below the query, <code>&lt;&lt;|</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a50a246f6301306389082ba16f506a1c7" name="a87fac56528d5e990683a4c6b1a1ceac9a50a246f6301306389082ba16f506a1c7"></a>INDEX_OVERBELOW&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend above the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a50a246f6301306389082ba16f506a1c7" name="a87fac56528d5e990683a4c6b1a1ceac9a50a246f6301306389082ba16f506a1c7"></a>INDEX_OVERBELOW&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend above the query, <code>&amp;&lt;|</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9adea376c70d66dbdb49c054988434e01a" name="a87fac56528d5e990683a4c6b1a1ceac9adea376c70d66dbdb49c054988434e01a"></a>INDEX_ABOVE&#160;</td><td class="fielddoc"><p >Find stored boxes strictly above the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9adea376c70d66dbdb49c054988434e01a" name="a87fac56528d5e990683a4c6b1a1ceac9adea376c70d66dbdb49c054988434e01a"></a>INDEX_ABOVE&#160;</td><td class="fielddoc"><p >Find stored boxes strictly above the query, <code>|&gt;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a070d8785544ef8b670a8e1e9803def60" name="a87fac56528d5e990683a4c6b1a1ceac9a070d8785544ef8b670a8e1e9803def60"></a>INDEX_OVERABOVE&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend below the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a070d8785544ef8b670a8e1e9803def60" name="a87fac56528d5e990683a4c6b1a1ceac9a070d8785544ef8b670a8e1e9803def60"></a>INDEX_OVERABOVE&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend below the query, <code>|&amp;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ac241fa2a21ef9977a2afc41a35649b49" name="a87fac56528d5e990683a4c6b1a1ceac9ac241fa2a21ef9977a2afc41a35649b49"></a>INDEX_FRONT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly in front of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ac241fa2a21ef9977a2afc41a35649b49" name="a87fac56528d5e990683a4c6b1a1ceac9ac241fa2a21ef9977a2afc41a35649b49"></a>INDEX_FRONT&#160;</td><td class="fielddoc"><p >Find stored boxes strictly in front of the query, <code>&lt;&lt;/</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a71bd32f497ab3225210cbc8a820b5cde" name="a87fac56528d5e990683a4c6b1a1ceac9a71bd32f497ab3225210cbc8a820b5cde"></a>INDEX_OVERFRONT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend behind the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a71bd32f497ab3225210cbc8a820b5cde" name="a87fac56528d5e990683a4c6b1a1ceac9a71bd32f497ab3225210cbc8a820b5cde"></a>INDEX_OVERFRONT&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend behind the query, <code>&amp;&lt;/</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9afa37019b3300c29282d0e804456d8dbc" name="a87fac56528d5e990683a4c6b1a1ceac9afa37019b3300c29282d0e804456d8dbc"></a>INDEX_BACK&#160;</td><td class="fielddoc"><p >Find stored boxes strictly behind the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9afa37019b3300c29282d0e804456d8dbc" name="a87fac56528d5e990683a4c6b1a1ceac9afa37019b3300c29282d0e804456d8dbc"></a>INDEX_BACK&#160;</td><td class="fielddoc"><p >Find stored boxes strictly behind the query, <code>/&gt;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ad9422e927b460f5c1680509ab8649230" name="a87fac56528d5e990683a4c6b1a1ceac9ad9422e927b460f5c1680509ab8649230"></a>INDEX_OVERBACK&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend in front of the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ad9422e927b460f5c1680509ab8649230" name="a87fac56528d5e990683a4c6b1a1ceac9ad9422e927b460f5c1680509ab8649230"></a>INDEX_OVERBACK&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend in front of the query, <code>/&amp;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a1039317cf81dfa89204e66114491307e" name="a87fac56528d5e990683a4c6b1a1ceac9a1039317cf81dfa89204e66114491307e"></a>INDEX_BEFORE&#160;</td><td class="fielddoc"><p >Find stored boxes strictly before the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a1039317cf81dfa89204e66114491307e" name="a87fac56528d5e990683a4c6b1a1ceac9a1039317cf81dfa89204e66114491307e"></a>INDEX_BEFORE&#160;</td><td class="fielddoc"><p >Find stored boxes strictly before the query, <code>&lt;&lt;#</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a18222948445399fc8c5789610e64ac1d" name="a87fac56528d5e990683a4c6b1a1ceac9a18222948445399fc8c5789610e64ac1d"></a>INDEX_OVERBEFORE&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend after the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a18222948445399fc8c5789610e64ac1d" name="a87fac56528d5e990683a4c6b1a1ceac9a18222948445399fc8c5789610e64ac1d"></a>INDEX_OVERBEFORE&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend after the query, <code>&amp;&lt;#</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ab83694a74f0575441d97dc3be8258373" name="a87fac56528d5e990683a4c6b1a1ceac9ab83694a74f0575441d97dc3be8258373"></a>INDEX_AFTER&#160;</td><td class="fielddoc"><p >Find stored boxes strictly after the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9ab83694a74f0575441d97dc3be8258373" name="a87fac56528d5e990683a4c6b1a1ceac9ab83694a74f0575441d97dc3be8258373"></a>INDEX_AFTER&#160;</td><td class="fielddoc"><p >Find stored boxes strictly after the query, <code>#&gt;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9aeee60a1bafd5db8d2fc16fde1d503002" name="a87fac56528d5e990683a4c6b1a1ceac9aeee60a1bafd5db8d2fc16fde1d503002"></a>INDEX_OVERAFTER&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend before the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9aeee60a1bafd5db8d2fc16fde1d503002" name="a87fac56528d5e990683a4c6b1a1ceac9aeee60a1bafd5db8d2fc16fde1d503002"></a>INDEX_OVERAFTER&#160;</td><td class="fielddoc"><p >Find stored boxes that do not extend before the query, <code>#&amp;&gt;</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a0b15623d3de74993ee9eedd07157a6a8" name="a87fac56528d5e990683a4c6b1a1ceac9a0b15623d3de74993ee9eedd07157a6a8"></a>INDEX_SAME&#160;</td><td class="fielddoc"><p >Find stored boxes whose extent equals the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9a0b15623d3de74993ee9eedd07157a6a8" name="a87fac56528d5e990683a4c6b1a1ceac9a0b15623d3de74993ee9eedd07157a6a8"></a>INDEX_SAME&#160;</td><td class="fielddoc"><p >Find stored boxes whose extent equals the query, <code>~=</code> operator. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9aab8cbb2f0afd740a2de61a8412bff0d5" name="a87fac56528d5e990683a4c6b1a1ceac9aab8cbb2f0afd740a2de61a8412bff0d5"></a>INDEX_ADJACENT&#160;</td><td class="fielddoc"><p >Find stored boxes that share a boundary with the query. </p>
+<tr><td class="fieldname"><a id="a87fac56528d5e990683a4c6b1a1ceac9aab8cbb2f0afd740a2de61a8412bff0d5" name="a87fac56528d5e990683a4c6b1a1ceac9aab8cbb2f0afd740a2de61a8412bff0d5"></a>INDEX_ADJACENT&#160;</td><td class="fielddoc"><p >Find stored boxes that share a boundary with the query, <code>-|-</code> operator. </p>
 </td></tr>
 </table>
 
