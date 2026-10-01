@@ -97,12 +97,14 @@ CREATE FUNCTION ts2CellToToken(ts2cell)
  * every cell the trajectory crosses.
  ******************************************************************************/
 
-CREATE FUNCTION ts2cell(tgeogpoint, integer)
+CREATE FUNCTION ts2cell(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Tgeogpoint_to_ts2cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION ts2cell(tgeompoint, integer)
+CREATE FUNCTION ts2cell(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_ts2cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -126,12 +128,14 @@ CREATE TYPE s2cell_tgeogpoint AS (
   tpoint tgeogpoint
 );
 
-CREATE FUNCTION s2Split(tgeompoint, integer)
+CREATE FUNCTION s2Split(tgeompoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF s2cell_tpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_s2cell_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION s2Split(tgeogpoint, integer)
+CREATE FUNCTION s2Split(tgeogpoint, integer,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF s2cell_tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeogpoint_s2cell_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

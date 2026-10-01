@@ -8,8 +8,8 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tgeom AS (\n  time timestamptz,\n  tgeom tgeometry\n);\nCREATE TYPE time_tgeog AS (\n  time timestamptz,\n  tgeog tgeography\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeom", sym: "Temporal_time_split"}
-    - {sig: "timeSplit(tgeography, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeog", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tgeom", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeography, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tgeog", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: tpoint
   file: mobilitydb/sql/geo/052_tpoint.in.sql
@@ -19,8 +19,8 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tgeompoint AS (\n  time timestamptz,\n  temp tgeompoint\n);\nCREATE TYPE time_tgeogpoint AS (\n  time timestamptz,\n  temp tgeogpoint\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tgeompoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeompoint", sym: "Temporal_time_split"}
-    - {sig: "timeSplit(tgeogpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeogpoint", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeompoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tgeompoint", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeogpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tgeogpoint", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: cbuffer
   file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
@@ -30,7 +30,7 @@ tiling_families:
   blocks:
   - lit: "/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE time_tcbuffer AS (\n  time timestamptz,\n  temp tcbuffer\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tcbuffer, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tcbuffer", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tcbuffer, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tcbuffer", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
@@ -40,7 +40,7 @@ tiling_families:
   blocks:
   - lit: "/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE time_tjsonb AS (\n  time timestamptz,\n  temp tjsonb\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tjsonb, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tjsonb", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tjsonb, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tjsonb", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: json_boxops
   file: mobilitydb/sql/json/459_tjsonb_boxops.in.sql
@@ -57,7 +57,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tnpoint AS (\n  time timestamptz,\n  temp tnpoint\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tnpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tnpoint", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tnpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tnpoint", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: tpcpoint
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
@@ -67,7 +67,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Unnest\n ******************************************************************************/\n\nCREATE TYPE pcpoint_tstzspanset AS (\n  value pcpoint,\n  time tstzspanset\n);\n\nCREATE FUNCTION unnest(tpcpoint)\n  RETURNS SETOF pcpoint_tstzspanset\n  AS 'MODULE_PATHNAME', 'Temporal_unnest'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpcpoint AS (\n  time timestamptz,\n  temp tpcpoint\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tpcpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpcpoint", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tpcpoint, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tpcpoint", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: tpcpatch
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
@@ -77,7 +77,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Unnest\n ******************************************************************************/\n\nCREATE TYPE pcpatch_tstzspanset AS (\n  value pcpatch,\n  time tstzspanset\n);\n\nCREATE FUNCTION unnest(tpcpatch)\n  RETURNS SETOF pcpatch_tstzspanset\n  AS 'MODULE_PATHNAME', 'Temporal_unnest'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpcpatch AS (\n  time timestamptz,\n  temp tpcpatch\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tpcpatch, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpcpatch", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tpcpatch, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tpcpatch", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: tpc_boxops
   file: mobilitydb/sql/pointcloud/435_tpc_boxops.in.sql
@@ -94,7 +94,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpose AS (\n  time timestamptz,\n  temp tpose\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tpose, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpose", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tpose, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tpose", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: posechain
   file: mobilitydb/sql/posechain/552_tposechain.in.sql
@@ -104,7 +104,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tposechain AS (\n  time timestamptz,\n  temp tposechain\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tposechain, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tposechain", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tposechain, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tposechain", sym: "Temporal_time_split"}
   - lit: "\n"
 
 - family: rgeo
@@ -115,7 +115,7 @@ tiling_families:
   blocks:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_trgeometry AS (\n  time timestamptz,\n  temp trgeometry\n);\n\n"
   - fns:
-    - {sig: "timeSplit(trgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_trgeometry", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(trgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_trgeometry", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: tgeo_tile
   file: mobilitydb/sql/geo/058_tgeo_tile.in.sql
@@ -319,22 +319,22 @@ tiling_families:
   - {temp: tfloat, base: float, basefull: float, span: floatspan, vdef: "0.0"}
   - {temp: ttext}
   blocks:
-  - lit: "/**\n * @file\n * @brief Bin and tile functions for temporal types\n * @note The time bin function are inspired from TimescaleDB\n * https://docs.timescale.com/api/latest/hyperfunctions/time_bucket/\n */\n\n/*****************************************************************************\n * Bins\n *****************************************************************************/\n\nCREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS floatspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION bins(datespan, duration interval,\n    torigin date DEFAULT '2000-01-01')\n  RETURNS datespan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(tstzspan, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS floatspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION bins(datespanset, duration interval,\n    torigin date DEFAULT '2000-01-01')\n  RETURNS datespan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(tstzspanset, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION getBin(\"value\" integer, vsize integer, vorigin integer DEFAULT 0)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(\"value\" bigint, vsize bigint, vorigin bigint DEFAULT 0)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(\"value\" float, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getBin(date, duration interval, torigin date DEFAULT '2000-01-03')\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Date_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(timestamptz, duration interval, torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Timestamptz_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\n"
-  - gen: {sig: "timeBins({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "tstzspan[]", sym: Temporal_time_bins}
+  - lit: "/**\n * @file\n * @brief Bin and tile functions for temporal types\n * @note The time bin function are inspired from TimescaleDB\n * https://docs.timescale.com/api/latest/hyperfunctions/time_bucket/\n */\n\n/*****************************************************************************\n * Bins\n *****************************************************************************/\n\nCREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS floatspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION bins(datespan, duration interval,\n    torigin date DEFAULT '2000-01-01',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS datespan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(tstzspan, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Span_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS intspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS floatspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION bins(datespanset, duration interval,\n    torigin date DEFAULT '2000-01-01',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS datespan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bins(tstzspanset, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Spanset_bins'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION getBin(\"value\" integer, vsize integer, vorigin integer DEFAULT 0)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(\"value\" bigint, vsize bigint, vorigin bigint DEFAULT 0)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(\"value\" float, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Value_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getBin(date, duration interval, torigin date DEFAULT '2000-01-03')\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Date_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION getBin(timestamptz, duration interval, torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Timestamptz_bin'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\n"
+  - gen: {sig: "timeBins({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "tstzspan[]", sym: Temporal_time_bins}
   - lit: "\n"
-  - gen: {sig: "valueBins({TEMP}, vsize {BASE}, vorigin {BASE} DEFAULT {VDEF})", ret: "{SPAN}[]", sym: Tnumber_value_bins, presence: numeric}
-  - lit: "\n/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE index_tbox AS (\n  index integer,\n  tile tbox\n);\n\nCREATE FUNCTION valueTiles(tbox, vsize bigint, vorigin bigint DEFAULT 0)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTiles(tbox, vsize integer, vorigin integer DEFAULT 0)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION timeTiles(tbox, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION valueTimeTiles(tbox, vsize bigint, duration interval,\n  vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTimeTiles(tbox, vsize integer, duration interval,\n  vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTimeTiles(tbox, vsize float, duration interval,\n  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION getValueTile(v float, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_value_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getTBoxTimeTile(t timestamptz, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_time_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,\n  duration interval, vorigin float DEFAULT 0.0,\n  torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_value_time_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************\n * Boxes\n *****************************************************************************/\n\n"
-  - gen: {sig: "valueBoxes({TEMP}, vsize {BASE}, vorigin {BASE} DEFAULT {VDEF})", ret: "tbox[]", sym: Tnumber_value_boxes, presence: numeric}
+  - gen: {sig: "valueBins({TEMP}, vsize {BASE}, vorigin {BASE} DEFAULT {VDEF},\n    borderInc boolean DEFAULT TRUE)", ret: "{SPAN}[]", sym: Tnumber_value_bins, presence: numeric}
+  - lit: "\n/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE index_tbox AS (\n  index integer,\n  tile tbox\n);\n\nCREATE FUNCTION valueTiles(tbox, vsize bigint, vorigin bigint DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTiles(tbox, vsize integer, vorigin integer DEFAULT 0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0,\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION timeTiles(tbox, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION valueTimeTiles(tbox, vsize bigint, duration interval,\n  vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTimeTiles(tbox, vsize integer, duration interval,\n  vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION valueTimeTiles(tbox, vsize float, duration interval,\n  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)\n  RETURNS SETOF index_tbox\n  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n\nCREATE FUNCTION getValueTile(v float, vsize float, vorigin float DEFAULT 0.0)\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_value_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getTBoxTimeTile(t timestamptz, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_time_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,\n  duration interval, vorigin float DEFAULT 0.0,\n  torigin timestamptz DEFAULT '2000-01-03')\n  RETURNS tbox\n  AS 'MODULE_PATHNAME', 'Tbox_get_value_time_tile'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************\n * Boxes\n *****************************************************************************/\n\n"
+  - gen: {sig: "valueBoxes({TEMP}, vsize {BASE}, vorigin {BASE} DEFAULT {VDEF},\n    borderInc boolean DEFAULT TRUE)", ret: "tbox[]", sym: Tnumber_value_boxes, presence: numeric}
   - lit: "\n"
-  - gen: {sig: "timeBoxes({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "tbox[]", sym: Tnumber_time_boxes, presence: numeric}
+  - gen: {sig: "timeBoxes({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "tbox[]", sym: Tnumber_time_boxes, presence: numeric}
   - lit: "\n"
-  - gen: {sig: "valueTimeBoxes({TEMP}, vsize {BASE}, duration interval,\n    vorigin {BASE} DEFAULT {VDEF}, torigin timestamptz DEFAULT '2000-01-03')", ret: "tbox[]", sym: Tnumber_value_time_boxes, presence: numeric}
+  - gen: {sig: "valueTimeBoxes({TEMP}, vsize {BASE}, duration interval,\n    vorigin {BASE} DEFAULT {VDEF}, torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "tbox[]", sym: Tnumber_value_time_boxes, presence: numeric}
   - lit: "\n/*****************************************************************************\n * Splitting\n *****************************************************************************/\n\nCREATE TYPE number_tint AS (\n  number integer,\n  tnumber tint\n);\nCREATE TYPE number_tbigint AS (\n  number bigint,\n  tnumber tbigint\n);\nCREATE TYPE number_tfloat AS (\n  number float,\n  tnumber tfloat\n);\n\n"
-  - gen: {sig: "valueSplit({TEMP}, vsize {BASEFULL}, vorigin {BASEFULL} DEFAULT {VDEF})", ret: "SETOF number_{TEMP}", sym: Tnumber_value_split, presence: numeric}
+  - gen: {sig: "valueSplit({TEMP}, vsize {BASEFULL}, vorigin {BASEFULL} DEFAULT {VDEF},\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF number_{TEMP}", sym: Tnumber_value_split, presence: numeric}
   - lit: "\n/*****************************************************************************/\n\nCREATE TYPE time_tbool AS (\n  time timestamptz,\n  temp tbool\n);\nCREATE TYPE time_tint AS (\n  time timestamptz,\n  temp tint\n);\nCREATE TYPE time_tbigint AS (\n  time timestamptz,\n  temp tbigint\n);\nCREATE TYPE time_tfloat AS (\n  time timestamptz,\n  temp tfloat\n);\nCREATE TYPE time_ttext AS (\n  time timestamptz,\n  temp ttext\n);\n\n"
-  - gen: {sig: "timeSplit({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "SETOF time_{TEMP}", sym: Temporal_time_split}
+  - gen: {sig: "timeSplit({TEMP}, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF time_{TEMP}", sym: Temporal_time_split}
   - lit: "\n/*****************************************************************************/\n\nCREATE TYPE number_time_tint AS (\n  number integer,\n  time timestamptz,\n  tnumber tint\n);\nCREATE TYPE number_time_tbigint AS (\n  number bigint,\n  time timestamptz,\n  tnumber tbigint\n);\nCREATE TYPE number_time_tfloat AS (\n  number float,\n  time timestamptz,\n  tnumber tfloat\n);\n\n"
-  - gen: {sig: "valueTimeSplit({TEMP}, vsize {BASEFULL}, duration interval,\n    vorigin {BASEFULL} DEFAULT {VDEF}, torigin timestamptz DEFAULT '2000-01-03')", ret: "SETOF number_time_{TEMP}", sym: Tnumber_value_time_split, presence: numeric}
+  - gen: {sig: "valueTimeSplit({TEMP}, vsize {BASEFULL}, duration interval,\n    vorigin {BASEFULL} DEFAULT {VDEF}, torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF number_time_{TEMP}", sym: Tnumber_value_time_split, presence: numeric}
   - lit: "\n/*****************************************************************************/\n\n\n"
 - family: th3index
   file: mobilitydb/sql/h3/253_th3index.in.sql
@@ -345,7 +345,7 @@ tiling_families:
   blocks:
   - lit: "CREATE TYPE time_th3index AS (\n  time timestamptz,\n  temp th3index\n);\n\n"
   - fns:
-    - {sig: "timeSplit(th3index, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_th3index", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(th3index, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_th3index", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: th3index_boxops
   file: mobilitydb/sql/h3/257_th3index_boxops.in.sql
@@ -364,7 +364,7 @@ tiling_families:
   blocks:
   - lit: "CREATE TYPE time_tquadbin AS (\n  time timestamptz,\n  temp tquadbin\n);\n\n"
   - fns:
-    - {sig: "timeSplit(tquadbin, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tquadbin", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tquadbin, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03',\n    borderInc boolean DEFAULT TRUE)", ret: "setof time_tquadbin", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: quadbin_boxops
   file: mobilitydb/sql/quadbin/357_tquadbin_boxops.in.sql

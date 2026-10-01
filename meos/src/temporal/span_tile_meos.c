@@ -64,14 +64,17 @@
  * @param[in] s Input span to split
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-intspan_bins(const Span *s, int vsize, int vorigin, int *count)
+intspan_bins(const Span *s, int vsize, int vorigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
-  return span_bins(s, Int32GetDatum(vsize), Int32GetDatum(vorigin), count);
+  return span_bins(s, Int32GetDatum(vsize), Int32GetDatum(vorigin), border_inc,
+    count);
 }
 
 /**
@@ -80,14 +83,18 @@ intspan_bins(const Span *s, int vsize, int vorigin, int *count)
  * @param[in] s Input span to split
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, int *count)
+bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, NULL);
-  return span_bins(s, Int64GetDatum(vsize), Int64GetDatum(vorigin), count);
+  return span_bins(s, Int64GetDatum(vsize), Int64GetDatum(vorigin), border_inc,
+    count);
 }
 
 /**
@@ -96,14 +103,18 @@ bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, int *count)
  * @param[in] s Input span to split
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-floatspan_bins(const Span *s, double vsize, double vorigin, int *count)
+floatspan_bins(const Span *s, double vsize, double vorigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
-  return span_bins(s, Float8GetDatum(vsize), Float8GetDatum(vorigin), count);
+  return span_bins(s, Float8GetDatum(vsize), Float8GetDatum(vorigin),
+    border_inc, count);
 }
 
 /**
@@ -112,16 +123,18 @@ floatspan_bins(const Span *s, double vsize, double vorigin, int *count)
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
   return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(torigin),
-    count);
+    border_inc, count);
 }
 
 /**
@@ -130,16 +143,18 @@ datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(torigin),
-    count);
+    border_inc, count);
 }
 
 /*****************************************************************************/
@@ -150,15 +165,18 @@ tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
  * @param[in] ss SpanSet number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-intspanset_bins(const SpanSet *ss, int vsize, int vorigin, int *count)
+intspanset_bins(const SpanSet *ss, int vsize, int vorigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPANSET(ss, NULL);
   return spanset_bins(ss, Int32GetDatum(vsize), Int32GetDatum(vorigin),
-    count);
+    border_inc, count);
 }
 
 /**
@@ -167,16 +185,18 @@ intspanset_bins(const SpanSet *ss, int vsize, int vorigin, int *count)
  * @param[in] ss SpanSet number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPANSET(ss, NULL);
   return spanset_bins(ss, Int64GetDatum(vsize), Int64GetDatum(vorigin),
-    count);
+    border_inc, count);
 }
 
 /**
@@ -185,16 +205,18 @@ bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin,
  * @param[in] ss SpanSet number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
   return spanset_bins(ss, Float8GetDatum(vsize), Float8GetDatum(vorigin),
-    count);
+    border_inc, count);
 }
 
 /**
@@ -203,16 +225,18 @@ floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
  * @param[in] ss Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 datespanset_bins(const SpanSet *ss, const Interval *duration,
-  DateADT torigin, int *count)
+  DateADT torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
   return spanset_bins(ss, PointerGetDatum(duration), DateADTGetDatum(torigin),
-    count);
+    border_inc, count);
 }
 
 /**
@@ -221,16 +245,18 @@ datespanset_bins(const SpanSet *ss, const Interval *duration,
  * @param[in] ss Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 tstzspanset_bins(const SpanSet *ss, const Interval *duration,
-  TimestampTz torigin, int *count)
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
   return spanset_bins(ss, PointerGetDatum(duration),
-    TimestampTzGetDatum(torigin), count);
+    TimestampTzGetDatum(torigin), border_inc, count);
 }
 
 /*****************************************************************************
@@ -243,15 +269,18 @@ tstzspanset_bins(const SpanSet *ss, const Interval *duration,
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
-tint_value_bins(const Temporal *temp, int vsize, int vorigin, int *count)
+tint_value_bins(const Temporal *temp, int vsize, int vorigin, bool border_inc,
+  int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_bins(temp, Int32GetDatum(vsize),
-    Int32GetDatum(vorigin), count);
+    Int32GetDatum(vorigin), border_inc, count);
 }
 
 /**
@@ -260,17 +289,19 @@ tint_value_bins(const Temporal *temp, int vsize, int vorigin, int *count)
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tnumber_value_bins()
  */
 Span *
 tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_bins(temp, Int64GetDatum(vsize),
-    Int64GetDatum(vorigin), count);
+    Int64GetDatum(vorigin), border_inc, count);
 }
 
 /**
@@ -279,16 +310,18 @@ tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] count Number of elements in the output array
  */
 Span *
 tfloat_value_bins(const Temporal *temp, double vsize, double vorigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_bins(temp, Float8GetDatum(vsize),
-    Float8GetDatum(vorigin), count);
+    Float8GetDatum(vorigin), border_inc, count);
 }
 
 /*****************************************************************************/

@@ -38,52 +38,62 @@
  * Bins
  *****************************************************************************/
 
-CREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0)
+CREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS floatspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bins(datespan, duration interval,
-    torigin date DEFAULT '2000-01-01')
+    torigin date DEFAULT '2000-01-01',
+    borderInc boolean DEFAULT TRUE)
   RETURNS datespan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(tstzspan, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0)
+CREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS floatspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bins(datespanset, duration interval,
-    torigin date DEFAULT '2000-01-01')
+    torigin date DEFAULT '2000-01-01',
+    borderInc boolean DEFAULT TRUE)
   RETURNS datespan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(tstzspanset, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -115,40 +125,48 @@ CREATE FUNCTION getBin(timestamptz, duration interval, torigin timestamptz DEFAU
 /*****************************************************************************/
 
 CREATE FUNCTION timeBins(tbool, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBins(tint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBins(tbigint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBins(tfloat, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBins(ttext, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueBins(tint, vsize int, vorigin int DEFAULT 0)
+CREATE FUNCTION valueBins(tint, vsize int, vorigin int DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueBins(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION valueBins(tbigint, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS bigintspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueBins(tfloat, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION valueBins(tfloat, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS floatspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -162,37 +180,44 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
-CREATE FUNCTION valueTiles(tbox, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION valueTiles(tbox, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTiles(tbox, vsize integer, vorigin integer DEFAULT 0)
+CREATE FUNCTION valueTiles(tbox, vsize integer, vorigin integer DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timeTiles(tbox, duration interval,
-  torigin timestamptz DEFAULT '2000-01-03')
+  torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueTimeTiles(tbox, vsize bigint, duration interval,
-  vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeTiles(tbox, vsize integer, duration interval,
-  vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeTiles(tbox, vsize float, duration interval,
-  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
+  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -221,47 +246,56 @@ CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
  * Boxes
  *****************************************************************************/
 
-CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0)
+CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueBoxes(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION valueBoxes(tbigint, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timeBoxes(tint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBoxes(tbigint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeBoxes(tfloat, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueTimeBoxes(tint, vsize int, duration interval,
-    vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeBoxes(tbigint, vsize bigint, duration interval,
-    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeBoxes(tfloat, vsize float, duration interval,
-    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -283,15 +317,18 @@ CREATE TYPE number_tfloat AS (
   tnumber tfloat
 );
 
-CREATE FUNCTION valueSplit(tint, vsize integer, vorigin integer DEFAULT 0)
+CREATE FUNCTION valueSplit(tint, vsize integer, vorigin integer DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSplit(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
+CREATE FUNCTION valueSplit(tbigint, vsize bigint, vorigin bigint DEFAULT 0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSplit(tfloat, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION valueSplit(tfloat, vsize float, vorigin float DEFAULT 0.0,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -320,27 +357,32 @@ CREATE TYPE time_ttext AS (
 );
 
 CREATE FUNCTION timeSplit(tbool, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF time_tbool
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF time_tint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tbigint, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF time_tbigint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tfloat, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF time_tfloat
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(ttext, duration interval,
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF time_ttext
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -364,17 +406,20 @@ CREATE TYPE number_time_tfloat AS (
 );
 
 CREATE FUNCTION valueTimeSplit(tint, vsize integer, duration interval,
-    vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_time_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeSplit(tbigint, vsize bigint, duration interval,
-    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_time_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueTimeSplit(tfloat, vsize float, duration interval,
-    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
+    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03',
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF number_time_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

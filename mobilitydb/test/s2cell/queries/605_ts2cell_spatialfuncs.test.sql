@@ -357,3 +357,20 @@ FROM s2Split(tgeompoint
   'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
 
 -------------------------------------------------------------------------------
+
+-- A trip ending on the corner of four level-3 cells, the face-4 centre
+-- (-90 0), enters at its last instant the cell the grid assigns that corner
+-- to. Under borderInc the cover states that cell for the instant; without, the
+-- cover ends on the cell held before it, with an exclusive bound, and so does
+-- the split. A trip ending inside a cell answers alike
+SELECT b, asText(ts2cell(tgeogpoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-90 0)@2001-01-02]', 3, b))
+FROM (VALUES (true), (false)) t(b);
+SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b), s2Split(tgeogpoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-90 0)@2001-01-02]', 3, b)
+GROUP BY b ORDER BY b DESC;
+SELECT b, asText(ts2cell(tgeogpoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-91 -0.5)@2001-01-02]', 3, b))
+FROM (VALUES (true), (false)) t(b);
+
+-------------------------------------------------------------------------------

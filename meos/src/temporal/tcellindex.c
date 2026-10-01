@@ -56,6 +56,7 @@
 #include "geo/geo_funcs.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "temporal/lifting.h"
 #if H3
   #include "h3/h3index.h"
@@ -394,6 +395,69 @@ tcellindex_cell_area(const Temporal *temp)
   if (! ops)
     return NULL;
   return tcellindex_lift_unary(temp, ops->cell_area, "cellArea", T_TFLOAT);
+}
+
+/*****************************************************************************
+ * Upper border of the extent of a trajectory
+ *****************************************************************************/
+
+/**
+ * @brief Return the cover of a trajectory without the cell it enters at its
+ * last instant when the grid does not contain the upper border of its extent
+ * @details A trajectory crossing a grid enters a cell at the instant its
+ * position reaches it, so a last instant holding another cell than the one
+ * before it is a position on the boundary of that cell, the one cell the
+ * trajectory holds only at the upper border of its extent. A grid not
+ * containing that border leaves the cell out, as #tile_dim_count leaves out
+ * the tile starting at the upper bound of a box, and the cover ends with an
+ * exclusive bound on the cell held before it. A last instant alone in its
+ * sequence holds its cell without entering it, and stays.
+ * @param[in] cover Cover of a trajectory, freed when the result differs
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ */
+Temporal *
+tcellindex_cover_border(Temporal *cover, bool border_inc)
+{
+  if (border_inc || ! cover || cover->subtype == TINSTANT ||
+      MEOS_FLAGS_GET_INTERP(cover->flags) == DISCRETE)
+    return cover;
+  const TSequenceSet *ss = (cover->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) cover : NULL;
+  const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, ss->count - 1) :
+    (const TSequence *) cover;
+  if (seq->count < 2 || ! seq->period.upper_inc)
+    return cover;
+  const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
+  const TInstant *prev = TSEQUENCE_INST_N(seq, seq->count - 2);
+  Datum held = tinstant_value_p(prev);
+  if (datum_eq(tinstant_value_p(last), held, temptype_basetype(seq->temptype)))
+    return cover;
+
+  /* Close the cell held before the last instant at that instant */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count - 1; i++)
+    instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i);
+  TInstant *end = tinstant_make(held, seq->temptype, last->t);
+  instants[seq->count - 1] = end;
+  TSequence *closed = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, false, MEOS_FLAGS_GET_INTERP(seq->flags),
+    NORMALIZE);
+  pfree(end); pfree(instants);
+  Temporal *result;
+  if (ss)
+  {
+    TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+    for (int i = 0; i < ss->count - 1; i++)
+      sequences[i] = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
+    sequences[ss->count - 1] = closed;
+    result = (Temporal *) tsequenceset_make(sequences, ss->count, NORMALIZE);
+    pfree(sequences); pfree(closed);
+  }
+  else
+    result = (Temporal *) closed;
+  pfree(cover);
+  return result;
 }
 
 /*****************************************************************************

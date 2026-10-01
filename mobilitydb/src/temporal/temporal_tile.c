@@ -74,9 +74,10 @@ Span_bins(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum vsize = PG_GETARG_DATUM(1);
   Datum vorigin = PG_GETARG_DATUM(2);
+  bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = span_bins(s, vsize, vorigin, &count);
+  Span *spans = span_bins(s, vsize, vorigin, border_inc, &count);
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
@@ -98,9 +99,10 @@ Spanset_bins(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum vsize = PG_GETARG_DATUM(1);
   Datum vorigin = PG_GETARG_DATUM(2);
+  bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = spanset_bins(ss, vsize, vorigin, &count);
+  Span *spans = spanset_bins(ss, vsize, vorigin, border_inc, &count);
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
@@ -188,9 +190,11 @@ Temporal_time_bins(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = temporal_time_bins(temp, duration, torigin, &count);
+  Span *spans = temporal_time_bins(temp, duration, torigin, border_inc,
+    &count);
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
@@ -212,9 +216,10 @@ Tnumber_value_bins(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum vsize = PG_GETARG_DATUM(1);
   Datum vorigin = PG_GETARG_DATUM(2);
+  bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = tnumber_value_bins(temp, vsize, vorigin, &count);
+  Span *spans = tnumber_value_bins(temp, vsize, vorigin, border_inc, &count);
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
@@ -258,6 +263,7 @@ Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
       vorigin = PG_GETARG_DATUM(i++);
     if (timetiles)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
+    bool border_inc = PG_GETARG_BOOL(i++);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -266,7 +272,7 @@ Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
     /* Create function state */
     int ntiles;
     funcctx->user_fctx = tbox_value_time_tile_init(bounds, vsize, duration,
-      vorigin, torigin, basetype, &ntiles);
+      vorigin, torigin, basetype, border_inc, &ntiles);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -449,10 +455,11 @@ Tnumber_value_time_boxes_common(FunctionCallInfo fcinfo, bool valueboxes,
     vorigin = PG_GETARG_DATUM(i++);
   if (timeboxes)
     torigin = PG_GETARG_TIMESTAMPTZ(i++);
+  bool border_inc = PG_GETARG_BOOL(i++);
   /* Get the tiles */
   int count;
   TBox *boxes = tnumber_value_time_boxes(temp, vsize, duration, vorigin,
-    torigin, &count);
+    torigin, border_inc, &count);
   ArrayType *result = tboxarr_to_array(boxes, count);
   /* Clean up and return */
   pfree(boxes);
@@ -513,13 +520,15 @@ Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
  * @param[in] s Bounds for generating the bins
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @note The first argument is NULL when generating the bins, otherwise
  * it is a spanset or a temporal value to be split and in this case is the
  * bounding span of the value to split
  */
 SpanBinState *
 span_bin_state_make(const void *to_split, const Span *s, Datum size,
-  Datum origin)
+  Datum origin, bool border_inc)
 {
   assert(s); assert(positive_datum(size, s->basetype));
 
@@ -533,7 +542,8 @@ span_bin_state_make(const void *to_split, const Span *s, Datum size,
   state->origin = origin;
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
-  state->nbins = span_num_bins(s, size, origin, &start_bin, &end_bin);
+  state->nbins = span_num_bins(s, size, origin, border_inc, &start_bin,
+    &end_bin);
   /* Set the span of the state */
   span_set(start_bin, end_bin, true, false, s->basetype, s->spantype,
     &state->span);
@@ -602,11 +612,13 @@ span_bin_state_next(SpanBinState *state)
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
  * @param[out] nbins Number of bins
  */
 SpanBinState *
 temporal_time_bin_init(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *nbins)
+  TimestampTz torigin, bool border_inc, int *nbins)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
@@ -620,7 +632,7 @@ temporal_time_bin_init(const Temporal *temp, const Interval *duration,
   /* Create function state */
   int64 tunits = interval_units(duration);
   SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
-    tunits, torigin);
+    tunits, torigin, border_inc);
   *nbins = state->nbins;
   return state;
 }
@@ -653,11 +665,12 @@ Temporal_time_split(PG_FUNCTION_ARGS)
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+    bool border_inc = PG_GETARG_BOOL(3);
 
     /* Initialize state and verify parameter validity */
     int nbins;
     SpanBinState *state = temporal_time_bin_init(temp, duration, torigin,
-      &nbins);
+      border_inc, &nbins);
 
     /* Create function state */
     funcctx->user_fctx = state;
@@ -754,11 +767,12 @@ Tnumber_value_time_split_common(FunctionCallInfo fcinfo, bool valuesplit,
       vorigin = PG_GETARG_DATUM(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
+    bool border_inc = PG_GETARG_BOOL(i++);
 
     /* Initialize state and verify parameter validity */
     int ntiles;
     TboxGridState *state = tnumber_value_time_tile_init(temp, vsize, duration,
-      vorigin, torigin, &ntiles);
+      vorigin, torigin, border_inc, &ntiles);
 
     /* Create function state */
     funcctx->user_fctx = state;

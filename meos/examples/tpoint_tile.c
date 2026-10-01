@@ -75,7 +75,7 @@ int main(void)
       timesplit ? interv : NULL, sorigin, torigin, bitmatrix, border_inc,
       &space_bins, &time_bins, &count);
   else
-    result = temporal_time_split(tpoint, interv, torigin, &time_bins,
+    result = temporal_time_split(tpoint, interv, torigin, true, &time_bins,
       &count);
   free(sorigin); free(interv);
 

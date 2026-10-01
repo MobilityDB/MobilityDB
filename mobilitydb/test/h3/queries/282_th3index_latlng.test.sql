@@ -384,3 +384,23 @@ FROM (SELECT p, th3index(p, 5) AS c FROM (
 WHERE valueAtTimestamp(p, t) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+
+-- A trip ending on a vertex of its cell that the grid assigns to a neighbour
+-- enters that neighbour at its last instant. Under borderInc the cover states
+-- the neighbour for that instant; without, the cover ends on the cell held
+-- before it, with an exclusive bound, and so does the split
+WITH v AS (
+  SELECT (dp).path[2] AS k, (dp).geom AS vtx, cell, ctr
+  FROM (SELECT h3index '8a2a1072b59ffff' AS cell,
+    cellToPoint(h3index '8a2a1072b59ffff') AS ctr,
+    ST_DumpPoints(cellToBoundary(h3index '8a2a1072b59ffff')) AS dp) d),
+t AS (
+  SELECT k, tgeompointSeq(ARRAY[
+    tgeompoint(ST_SetSRID(ctr, 4326), timestamptz '2001-01-01'),
+    tgeompoint(ST_SetSRID(vtx, 4326), timestamptz '2001-01-02')], 'linear') AS trip
+  FROM v WHERE k = 3)
+SELECT b, asText(th3index(trip, 10, b)),
+  (SELECT COUNT(*) FROM h3Split(trip, 10, b)) AS fragments
+FROM t, (VALUES (true), (false)) bb(b);
+
+-------------------------------------------------------------------------------

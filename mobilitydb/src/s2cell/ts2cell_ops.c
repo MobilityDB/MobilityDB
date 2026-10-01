@@ -192,7 +192,8 @@ Tgeogpoint_to_ts2cell(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 level = PG_GETARG_INT32(1);
-  Temporal *result = tgeogpoint_to_ts2cell(temp, level);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tgeogpoint_to_ts2cell(temp, level, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -210,7 +211,8 @@ Tgeompoint_to_ts2cell(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 level = PG_GETARG_INT32(1);
-  Temporal *result = tgeompoint_to_ts2cell(temp, level);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tgeompoint_to_ts2cell(temp, level, border_inc);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -238,7 +240,7 @@ typedef struct
  */
 static Datum
 Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo,
-  Temporal **(*split)(const Temporal *, int32, Datum **, int *))
+  Temporal **(*split)(const Temporal *, int32, bool, Datum **, int *))
 {
   FuncCallContext *funcctx;
 
@@ -253,9 +255,11 @@ Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo,
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     int32 level = PG_GETARG_INT32(1);
+    bool border_inc = PG_GETARG_BOOL(2);
     /* Create function state */
     S2cellSplitState *state = palloc0(sizeof(S2cellSplitState));
-    state->frags = split(temp, level, &state->cells, &state->count);
+    state->frags = split(temp, level, border_inc, &state->cells,
+      &state->count);
     state->done = (state->count == 0);
     funcctx->user_fctx = state;
     /* Build a tuple description for the function output */

@@ -292,4 +292,37 @@ SELECT timeSplit(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', tori
 SELECT tsample(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
 SELECT tprecision(tint '[1@2001-01-01, 5@2001-01-05]', duration := '2 days', torigin := '2001-01-01');
 
+-- A value reaching the upper border of a grid: the values 1 to 5 end on the
+-- border 5 of the value bins of size 2 from 1, and the times on the border
+-- 2001-09-03 of the day bins. Under borderInc the bin starting at the border
+-- holds it; without, that bin is left out. A value with an exclusive end
+-- reaches no border and answers alike
+SELECT b, bins(floatspan '[1, 5]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+SELECT b, bins(intspan '[1, 5]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+SELECT b, bins(tstzspan '[2001-09-01, 2001-09-03]', '1 day', '2001-09-01', b)
+  FROM (VALUES (true), (false)) t(b);
+SELECT b, bins(datespan '[2001-09-01, 2001-09-03]', '1 day', '2001-09-01', b)
+  FROM (VALUES (true), (false)) t(b);
+SELECT b, bins(floatspanset '{[1, 2], [4, 5]}', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+SELECT b, timeBins(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b) FROM (VALUES (true), (false)) t(b);
+SELECT b, valueBins(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+SELECT b, valueBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b) FROM (VALUES (true), (false)) t(b);
+SELECT b, timeBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b) FROM (VALUES (true), (false)) t(b);
+SELECT b, valueTimeBoxes(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, '1 day', 1, '2001-09-01', b) FROM (VALUES (true), (false)) t(b);
+SELECT b, (valueTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, 1.0, b)).*
+  FROM (VALUES (true), (false)) t(b);
+SELECT b, (timeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', duration := '1 day', torigin := '2001-09-01', borderInc := b)).*
+  FROM (VALUES (true), (false)) t(b);
+SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b),
+  valueTimeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, '1 day', 1.0,
+    '2001-09-01', b) GROUP BY b ORDER BY b DESC;
+SELECT b, (valueSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (valueSplit(tint '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, 1, b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (timeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (timeSplit(tint '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (timeSplit(tint '{1@2001-09-01, 3@2001-09-02, 5@2001-09-03}', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (timeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03)', duration := '1 day', torigin := '2001-09-01', borderInc := b)).* FROM (VALUES (true), (false)) t(b);
+SELECT b, (valueTimeSplit(tfloat '[1@2001-09-01, 3@2001-09-02, 5@2001-09-03]', 2, '1 day', 1, '2001-09-01', b)).*
+  FROM (VALUES (true), (false)) t(b);
+
 -------------------------------------------------------------------------------
