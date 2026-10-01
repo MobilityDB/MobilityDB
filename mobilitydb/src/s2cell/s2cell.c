@@ -90,6 +90,41 @@ S2cell_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(s2cell_out(cell));
 }
 
+PGDLLEXPORT Datum S2cell_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cell_as_text);
+/**
+ * @ingroup mobilitydb_s2cell_base_inout
+ * @brief Return the text representation of an S2 cell
+ * @sqlfn asText()
+ */
+Datum
+S2cell_as_text(PG_FUNCTION_ARGS)
+{
+  S2CellId cell = PG_GETARG_S2CELL(0);
+  char *str = s2cell_out(cell);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum S2cell_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(S2cell_from_text);
+/**
+ * @ingroup mobilitydb_s2cell_base_inout
+ * @brief Return an S2 cell from its text representation
+ * @sqlfn s2cellFromText()
+ */
+Datum
+S2cell_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  S2CellId result = s2cell_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_S2CELL(result);
+}
+
 PGDLLEXPORT Datum S2cell_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_recv);
 /**

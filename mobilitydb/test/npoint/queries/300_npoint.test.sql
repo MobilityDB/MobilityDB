@@ -100,6 +100,16 @@ SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
 SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
 
+SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
+SELECT asText(nsegment 'NSegment(1,0.123456,0.7)', 2);
+SELECT asEWKT(nsegment 'NSegment(1,0.5,0.7)');
+SELECT nsegmentFromText(asText(nsegment 'NSegment(1,0.5,0.7)'))
+       = nsegment 'NSegment(1,0.5,0.7)';
+SELECT nsegmentFromEWKT(asEWKT(nsegment 'NSegment(1,0.5,0.7)'))
+       = nsegment 'NSegment(1,0.5,0.7)';
+/* Errors */
+SELECT nsegmentFromEWKT('SRID=4326;NSegment(1,0.5,0.7)');
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------

@@ -93,12 +93,17 @@ CREATE TYPE s2cell (
 -- GENERATED-REPRESENTATIONS-BEGIN s2cell_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /******************************************************************************
- * Well-Known Binary representations
+ * Text and Well-Known Binary representations
  *
  * An S2 cell is a cell of a grid over WGS84 (EPSG:4326), which the grid
  * fixes, so these round-trip a cell through a portable byte string with no
  * spatial extension involved, as the sibling h3index cell does.
  ******************************************************************************/
+
+CREATE FUNCTION s2cellFromText(text)
+  RETURNS s2cell
+  AS 'MODULE_PATHNAME', 'S2cell_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION s2cellFromBinary(bytea)
   RETURNS s2cell
@@ -108,6 +113,11 @@ CREATE FUNCTION s2cellFromBinary(bytea)
 CREATE FUNCTION s2cellFromHexWKB(text)
   RETURNS s2cell
   AS 'MODULE_PATHNAME', 'S2cell_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(s2cell)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'S2cell_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(s2cell, endian text DEFAULT '')

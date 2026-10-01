@@ -1234,7 +1234,7 @@ s2cell_parse(const char *str)
  * @ingroup meos_s2cell_base_inout
  * @brief Return an S2 cell from its string representation
  * @param[in] str String
- * @csqlfn #S2cell_in()
+ * @csqlfn #S2cell_in(), #S2cell_from_text()
  */
 S2CellId
 s2cell_in(const char *str)
@@ -1265,7 +1265,7 @@ bigint_to_s2cell(int64 i)
  * @brief Return the string representation of an S2 cell
  * @param[in] cell S2 cell
  * @return A palloc'd, null-terminated string (caller frees)
- * @csqlfn #S2cell_out()
+ * @csqlfn #S2cell_out(), #S2cell_as_text()
  */
 char *
 s2cell_out(S2CellId cell)

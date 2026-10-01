@@ -48,6 +48,7 @@
 #include <meos_pointcloud.h>
 #include <pgtypes.h>
 #include "temporal/span.h"  /* PG_GETARG_SPAN_P */
+#include "temporal/type_inout.h"  /* OUT_DEFAULT_DECIMAL_DIGITS */
 #include "temporal/type_util.h"  /* bstring2bytea */
 #include "pointcloud/tpcbox.h"
 #include "pointcloud/pcpoint.h"
@@ -78,14 +79,52 @@ PGDLLEXPORT Datum Tpcbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_out);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
- * @brief Return the hex-encoded text representation of a TPCBox
+ * @brief Return the Well-Known Text (WKT) representation of a TPCBox
  * @sqlfn tpcbox_out()
  */
 Datum
 Tpcbox_out(PG_FUNCTION_ARGS)
 {
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  PG_RETURN_CSTRING(tpcbox_out(box, 15));
+  PG_RETURN_CSTRING(tpcbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
+}
+
+PGDLLEXPORT Datum Tpcbox_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_text);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the Well-Known Text (WKT) representation of a TPCBox
+ * @sqlfn asText()
+ */
+Datum
+Tpcbox_as_text(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = tpcbox_out(box, dbl_dig_for_wkt);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_from_text);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return a TPCBox from its Well-Known Text (WKT) representation
+ * @sqlfn tpcboxFromText()
+ */
+Datum
+Tpcbox_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  TPCBox *result = tpcbox_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_TPCBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tpcbox_recv(PG_FUNCTION_ARGS);

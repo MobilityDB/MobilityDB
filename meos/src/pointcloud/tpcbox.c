@@ -308,7 +308,7 @@ tpcbox_parse(const char **str)
  * @details Round-trips with #tpcbox_out, matching the `(GEOD)STBOX` text form
  * of the sibling STBox plus a trailing `PCID`. Binary interchange goes through
  * #tpcbox_from_wkb and #tpcbox_as_wkb.
- * @csqlfn #Tpcbox_in()
+ * @csqlfn #Tpcbox_in(), #Tpcbox_from_text()
  */
 TPCBox *
 tpcbox_in(const char *str)
@@ -329,7 +329,7 @@ tpcbox_in(const char *str)
  * TPCBOX(T([2024-01-01, 2024-01-02]), 1)
  * GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)
  * @endcode
- * @csqlfn #Tpcbox_out()
+ * @csqlfn #Tpcbox_out(), #Tpcbox_as_text()
  */
 char *
 tpcbox_out(const TPCBox *box, int maxdd)

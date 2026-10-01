@@ -94,6 +94,16 @@ SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
 SELECT s2cellFromHexWKB('01000000000000000000');
 
 -------------------------------------------------------------------------------
+-- Text round trip
+-------------------------------------------------------------------------------
+
+SELECT asText(s2cell '47c3c444c');
+SELECT s2cellFromText(asText(s2cell '47c3c444c')) = s2cell '47c3c444c';
+SELECT s2cellFromText('54b5c9') = s2cell '54b5c9';
+/* Errors */
+SELECT s2cellFromText('47c3cxyz');
+
+-------------------------------------------------------------------------------
 -- Comparison operators
 --
 -- The order is the order of the identifier, which follows the Hilbert curve.

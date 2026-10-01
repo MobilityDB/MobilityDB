@@ -285,6 +285,34 @@ SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', 
 -- ERROR:  Could not parse tpcbox value: The value states SRID 3857 and the schema of pcid 5 states SRID 4326
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpcbox_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+					<para>Devuelve la representación de texto conocido (WKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asText(tpcbox,maxdecimaldigits integer=15) → text
+</programlisting>
+					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)');
+-- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
+SELECT asText(tpcbox 'TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)', 1);
+-- TPCBOX(X((0.1,1.2),(2.4,3.5)), 1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromText">
+					<indexterm significance="normal"><primary><varname>tpcboxFromText</varname></primary></indexterm>
+					<para>Entrada desde la representación de texto conocido (WKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromText(text) → tpcbox
+</programlisting>
+					<para>La función es la inversa de <varname>asText</varname>: lee el texto en el que se escribe un literal del tipo, tanto de una constante como de una columna <varname>text</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcboxFromText('TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)');
+-- TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

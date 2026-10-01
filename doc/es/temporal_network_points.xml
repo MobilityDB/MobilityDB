@@ -96,17 +96,23 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 					<para>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({npoint,npoint[]}) → {text,text[]}
+asText(nsegment) → text
 asEWKT({npoint,npoint[]}) → {text,text[]}
+asEWKT(nsegment) → text
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
 -- NPoint(1,0.5)
 SELECT asText(ARRAY[npoint 'Npoint(1,0.2)', 'Npoint(1,0.5)']);
 -- {"NPoint(1,0.2)","NPoint(1,0.5)"}
+SELECT asText(nsegment 'Nsegment(1,0.3,0.5)');
+-- NSegment(1,0.3,0.5)
 SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
 -- SRID=5676;NPoint(1,0.5)
 SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']);
 -- {"SRID=5676;NPoint(1,0.2)","SRID=5676;NPoint(1,0.5)"}
+SELECT asEWKT(nsegment 'Nsegment(1,0.3,0.5)');
+-- SRID=5676;NSegment(1,0.3,0.5)
 </programlisting>
 				</listitem>
 
@@ -138,10 +144,14 @@ SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 				<listitem xml:id="npointFromText">
 					<indexterm significance="normal"><primary><varname>npointFromText</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromEWKT</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentFromEWKT</varname></primary></indexterm>
 					<para>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 npointFromText(text) → npoint
 npointFromEWKT(text) → npoint
+nsegmentFromText(text) → nsegment
+nsegmentFromEWKT(text) → nsegment
 </programlisting>
 					<para>Un SRID indicado por la entrada extendida debe ser el SRID de la red de rutas. Cuando no hay ninguna red de rutas cargada, un punto de red no tiene SRID y el indicado no se conserva.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -151,6 +161,10 @@ SELECT asEWKT(npointFromEWKT(text 'SRID=5676;Npoint(1,0.5)'));
 -- SRID=5676;NPoint(1,0.5)
 SELECT npointFromEWKT(text 'SRID=4326;Npoint(1,0.5)');
 -- ERROR:  The SRID of the npoint (4326) does not match the SRID of the network (5676)
+SELECT asText(nsegmentFromText(text 'Nsegment(1,0.3,0.5)'));
+-- NSegment(1,0.3,0.5)
+SELECT asEWKT(nsegmentFromEWKT(text 'SRID=5676;Nsegment(1,0.3,0.5)'));
+-- SRID=5676;NSegment(1,0.3,0.5)
 </programlisting>
 				</listitem>
 

@@ -699,28 +699,37 @@ representation_families:
 - family: nsegment_base
   file: mobilitydb/sql/npoint/300_npoint.in.sql
   reference: true
-  begin: "\n * Input/output of network segments in (E)WKB and HexWKB representation\n"
+  begin: "\n * Input/output of network segments in (E)WKT, (E)WKB and HexWKB representation\n"
   end: "\n * Constructors\n"
   temps:
   - temp: nsegment
+    maxdd: true
   syms:
+    FromText: Nsegment_from_ewkt
+    FromEWKT: Nsegment_from_ewkt
     FromBinary: Nsegment_from_wkb
     FromEWKB: Nsegment_from_wkb
     FromHexWKB: Nsegment_from_hexwkb
     FromHexEWKB: Nsegment_from_hexwkb
+    asText: Nsegment_as_text
+    asEWKT: Nsegment_as_ewkt
     asBinary: Nsegment_as_wkb
     asEWKB: Nsegment_as_ewkb
     asHexWKB: Nsegment_as_hexwkb
     asHexEWKB: Nsegment_as_hexewkb
   blocks:
-  - lit: "/******************************************************************************\n * Input/output of network segments in (E)WKB and HexWKB representation\n *\n * A network segment carries the SRID of the ways table, as a network point\n * does, which the E forms write.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Input/output of network segments in (E)WKT, (E)WKB and HexWKB representation\n *\n * A network segment carries the SRID of the ways table, as a network point\n * does, which the E forms write.\n ******************************************************************************/"
   - ops:
+    - FromText
+    - FromEWKT
     - FromBinary
     - FromEWKB
     - FromHexWKB
     - FromHexEWKB
   - lit: /*****************************************************************************/
   - ops:
+    - asText
+    - asEWKT
     - asBinary
     - asEWKB
     - asHexWKB
@@ -728,57 +737,70 @@ representation_families:
 - family: quadbin_base
   file: mobilitydb/sql/quadbin/350_quadbin.in.sql
   reference: true
-  begin: "\n * Well-Known Binary representations\n"
+  begin: "\n * Text and Well-Known Binary representations\n"
   end: "\n * Casts to / from bigint\n"
   temps:
   - temp: quadbin
   syms:
+    FromText: Quadbin_from_text
     FromBinary: Quadbin_from_wkb
     FromHexWKB: Quadbin_from_hexwkb
+    asText: Quadbin_as_text
     asBinary: Quadbin_as_wkb
     asHexWKB: Quadbin_as_hexwkb
   blocks:
-  - lit: "/******************************************************************************\n * Well-Known Binary representations\n *\n * A quadbin is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes,\n * so these round-trip a cell through a portable byte string with no spatial\n * extension involved, as the sibling h3index cell does.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A quadbin is a cell of a grid over WGS84 (EPSG:4326), which the grid fixes,\n * so these round-trip a cell through a portable byte string with no spatial\n * extension involved, as the sibling h3index cell does.\n ******************************************************************************/"
   - ops:
+    - FromText
     - FromBinary
     - FromHexWKB
+    - asText
     - asBinary
     - asHexWKB
 - family: s2cell_base
   file: mobilitydb/sql/s2cell/600_s2cell.in.sql
   reference: true
-  begin: "\n * Well-Known Binary representations\n"
+  begin: "\n * Text and Well-Known Binary representations\n"
   end: "\n * Casts to and from bigint\n"
   temps:
   - temp: s2cell
   syms:
+    FromText: S2cell_from_text
     FromBinary: S2cell_from_wkb
     FromHexWKB: S2cell_from_hexwkb
+    asText: S2cell_as_text
     asBinary: S2cell_as_wkb
     asHexWKB: S2cell_as_hexwkb
   blocks:
-  - lit: "/******************************************************************************\n * Well-Known Binary representations\n *\n * An S2 cell is a cell of a grid over WGS84 (EPSG:4326), which the grid\n * fixes, so these round-trip a cell through a portable byte string with no\n * spatial extension involved, as the sibling h3index cell does.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * An S2 cell is a cell of a grid over WGS84 (EPSG:4326), which the grid\n * fixes, so these round-trip a cell through a portable byte string with no\n * spatial extension involved, as the sibling h3index cell does.\n ******************************************************************************/"
   - ops:
+    - FromText
     - FromBinary
     - FromHexWKB
+    - asText
     - asBinary
     - asHexWKB
 - family: tpcbox_base
   file: mobilitydb/sql/pointcloud/410_tpcbox.in.sql
   reference: true
-  begin: "\n * Well-Known Binary representations\n"
+  begin: "\n * Text and Well-Known Binary representations\n"
   end: "\n * Constructors\n"
   temps:
   - temp: tpcbox
+    maxdd: true
   syms:
+    FromText: Tpcbox_from_text
     FromBinary: Tpcbox_from_wkb
     FromHexWKB: Tpcbox_from_hexwkb
+    asText: Tpcbox_as_text
     asBinary: Tpcbox_as_wkb
     asHexWKB: Tpcbox_as_hexwkb
   blocks:
-  - lit: "/******************************************************************************\n * Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes\n * no EWKB form.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes\n * no EWKT or EWKB form.\n ******************************************************************************/"
   - ops:
+    - FromText
     - FromBinary
     - FromHexWKB
+    - asText
     - asBinary
     - asHexWKB

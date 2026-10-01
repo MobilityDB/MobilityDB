@@ -87,7 +87,42 @@ Datum
 Quadbin_out(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  PG_RETURN_CSTRING(quadbin_index_to_string(cell));
+  PG_RETURN_CSTRING(quadbin_out(cell));
+}
+
+PGDLLEXPORT Datum Quadbin_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_as_text);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return the text representation of a quadbin
+ * @sqlfn asText()
+ */
+Datum
+Quadbin_as_text(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  char *str = quadbin_out(cell);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Quadbin_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_from_text);
+/**
+ * @ingroup mobilitydb_quadbin_base_inout
+ * @brief Return a quadbin from its text representation
+ * @sqlfn quadbinFromText()
+ */
+Datum
+Quadbin_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  Quadbin result = quadbin_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_QUADBIN(result);
 }
 
 PGDLLEXPORT Datum Quadbin_recv(PG_FUNCTION_ARGS);

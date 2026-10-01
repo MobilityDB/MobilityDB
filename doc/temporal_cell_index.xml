@@ -232,6 +232,38 @@ SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="cell_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Return the text representation of a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asText(cell) → text
+</programlisting>
+				<para>In the signature above, <varname>cell</varname> replaces <varname>quadbin</varname> or <varname>s2cell</varname>. The text is the hexadecimal index of QUADBIN and the token of S2, the form the output function emits. The type <varname>h3index</varname> is the type of h3-pg, which provides its text input and output.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(quadbin '48a6227affffffff');
+-- 48a6227affffffff
+SELECT asText(s2cell '47c3c');
+-- 47c3c
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="cellFromText">
+				<indexterm significance="normal"><primary><varname>cellFromText</varname></primary></indexterm>
+				<para>Input from the text representation of a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellFromText(text) → cell
+</programlisting>
+				<para>There is one function per cell type, the name of the function has as prefix the name of the type, which is <varname>quadbin</varname> or <varname>s2cell</varname>. The function is the inverse of <varname>asText</varname> and reads the forms a literal of the type accepts, from a constant or from a <varname>text</varname> column alike.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinFromText('48a6227affffffff');
+-- 48a6227affffffff
+SELECT quadbinFromText('0x48a6227affffffff');
+-- 48a6227affffffff
+SELECT s2cellFromText('47c3c');
+-- 47c3c
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raquet_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Return the Well-Known Binary (WKB) representation of a raster or a Raquet tile</para>

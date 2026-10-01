@@ -1815,7 +1815,7 @@
 						<para><link linkend="npoint_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npointFromText"><varname>npointFromText</varname>, <varname>npointFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
+						<para><link linkend="npointFromText"><varname>npointFromText</varname>, <varname>npointFromEWKT</varname>, <varname>nsegmentFromText</varname>, <varname>nsegmentFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="npointFromBinary"><varname>npointFromBinary</varname>, <varname>npointFromEWKB</varname>, <varname>npointFromHexWKB</varname>, <varname>npointFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
@@ -2897,6 +2897,12 @@
 					<para><link linkend="cellFromBinary"><varname>h3indexFromBinary</varname>, <varname>h3indexFromHexWKB</varname>, <varname>quadbinFromBinary</varname>, <varname>quadbinFromHexWKB</varname>, <varname>s2cellFromBinary</varname>, <varname>s2cellFromHexWKB</varname></link>: Entrada de una celda desde la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="cell_asText"><varname>asText</varname></link>: Devuelve la representación de texto de una celda</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="cellFromText"><varname>cellFromText</varname></link>: Entrada desde la representación de texto de una celda</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
@@ -3430,6 +3436,12 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcboxFromBinary"><varname>tpcboxFromBinary</varname>, <varname>tpcboxFromHexWKB</varname></link>: Entrada de una caja de nube de puntos desde la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (WKT)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromText"><varname>tpcboxFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
