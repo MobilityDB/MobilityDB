@@ -34,6 +34,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Reject int64_t / uint64_t in MobilityDB public headers
         run: ./tools/scripts/check_int64_in_headers.sh
+      - name: Define every type name once, and a PostgreSQL type alike beside PostgreSQL
+        run: python3 tools/scripts/check_typedef_sites.py
 
   doxygen_briefs_check:
     name: Every @brief states text, once

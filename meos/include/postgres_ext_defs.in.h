@@ -1,7 +1,8 @@
 /* The scalar types come from the header that states them once, so this file and
  * every pg_*.h answer the same type for a name. It is read BEFORE POSTGRES_H is
  * defined below, because that macro is what tells it PostgreSQL has already
- * supplied them. */
+ * supplied them. This file states the structures alone, which a second
+ * definition would conflict with. */
 #include <pg_basetypes.h>
 
 #ifndef POSTGRES_H
@@ -10,9 +11,6 @@
 #define DatumGetPointer(X) ((Pointer) (X))
 
 #include <stdint.h>
-
-typedef char *Pointer;
-typedef uintptr_t Datum;
 
 /* State vector of the PostgreSQL pseudo-random number generator, mirroring the
  * definition in <common/pg_prng.h>. Its include guard is defined here as well
@@ -30,13 +28,6 @@ typedef struct pg_prng_state
 
 #endif /* PG_PRNG_H */
 
-typedef int32 DateADT;
-typedef int64 TimeADT;
-typedef int64 Timestamp;
-typedef int64 TimestampTz;
-typedef int64 TimeOffset;
-typedef int32 fsec_t;      /* fractional seconds (in microseconds) */
-
 typedef struct
 {
   TimeOffset time;  /* all time units other than days, months and years */
@@ -49,11 +40,6 @@ typedef struct varlena
   char vl_len_[4];  /* Do not touch this field directly! */
   char vl_dat[];    /* Data content is here */
 } varlena;
-
-typedef varlena text;
-typedef struct varlena bytea;
-
-typedef unsigned int Oid;
 
 /* The following functions have the same name as external PostgreSQL functions */
 

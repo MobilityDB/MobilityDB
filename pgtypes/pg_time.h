@@ -38,17 +38,15 @@
 
 #include "pg_basetypes.h"
 
-typedef int32 DateADT;
-typedef int64 TimeADT;
-
+/* The structure of <utils/date.h>, stated where that header is not in scope;
+ * a second definition of it would conflict */
+#ifndef DATE_H
 typedef struct
 {
   TimeADT time;    /* all time units other than months and years */
   int32 zone;      /* numeric time zone, in seconds */
 } TimeTzADT;
-
-struct NumericData;
-typedef struct NumericData *Numeric;
+#endif /* DATE_H */
 
 /*****************************************************************************/
 

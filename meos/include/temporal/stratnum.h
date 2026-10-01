@@ -30,7 +30,8 @@
 /**
  * @file
  * @brief Strategy numbers for MEOS indexes
- * @note Definitions borrowed from startnum.h
+ * @details The strategy numbers of PostgreSQL come from its
+ * <access/stratnum.h>, and this header adds those of the temporal operators.
  */
 
 #ifndef __STRATNUM_H__
@@ -38,57 +39,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <access/stratnum.h>
 
 /*****************************************************************************/
-
-#if ! MEOS
-/*
- * Strategy numbers identify the semantics that particular operators have
- * with respect to particular operator classes.  In some cases a strategy
- * subtype (an OID) is used as further information.
- */
-typedef uint16 StrategyNumber;
-
-#define InvalidStrategy ((StrategyNumber) 0)
-
-/*
- * Strategy numbers common to (some) GiST, SP-GiST and BRIN opclasses.
- *
- * The first few of these come from the R-Tree indexing method (hence the
- * names); the others have been added over time as they have been needed.
- */
-#define RTLeftStrategyNumber			1	/* for << */
-#define RTOverLeftStrategyNumber		2	/* for &< */
-#define RTOverlapStrategyNumber			3	/* for && */
-#define RTOverRightStrategyNumber		4	/* for &> */
-#define RTRightStrategyNumber			5	/* for >> */
-#define RTSameStrategyNumber			6	/* for ~= */
-#define RTContainsStrategyNumber		7	/* for @> */
-#define RTContainedByStrategyNumber		8	/* for <@ */
-#define RTOverBelowStrategyNumber		9	/* for &<| */
-#define RTBelowStrategyNumber			10	/* for <<| */
-#define RTAboveStrategyNumber			11	/* for |>> */
-#define RTOverAboveStrategyNumber		12	/* for |&> */
-#define RTOldContainsStrategyNumber		13	/* for old spelling of @> */
-#define RTOldContainedByStrategyNumber	14	/* for old spelling of <@ */
-#define RTKNNSearchStrategyNumber		15	/* for <-> (distance) */
-#define RTContainsElemStrategyNumber	16	/* for range types @> elem */
-#define RTAdjacentStrategyNumber		17	/* for -|- */
-#define RTEqualStrategyNumber			18	/* for = */
-#define RTNotEqualStrategyNumber		19	/* for != */
-#define RTLessStrategyNumber			20	/* for < */
-#define RTLessEqualStrategyNumber		21	/* for <= */
-#define RTGreaterStrategyNumber			22	/* for > */
-#define RTGreaterEqualStrategyNumber	23	/* for >= */
-#define RTSubStrategyNumber				24	/* for inet >> */
-#define RTSubEqualStrategyNumber		25	/* for inet <<= */
-#define RTSuperStrategyNumber			26	/* for inet << */
-#define RTSuperEqualStrategyNumber		27	/* for inet >>= */
-#define RTPrefixStrategyNumber			28	/* for text ^@ */
-#define RTOldBelowStrategyNumber		29	/* for old spelling of <<| */
-#define RTOldAboveStrategyNumber		30	/* for old spelling of |>> */
-
-#endif /* ! MEOS */
 
 /* Additional operator strategy numbers used for temporal types */
 
