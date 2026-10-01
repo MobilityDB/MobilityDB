@@ -1737,7 +1737,7 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       return MEOS_WKB_INT8_SIZE;
 #endif /* S2CELL */
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
         meostype_name(basetype));
       return SIZE_MAX;
