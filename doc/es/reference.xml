@@ -3688,6 +3688,14 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+			<sect3>
+				<title>Simplificación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname>, <varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Devuelve un tpcpoint simplificado asegurando que los puntos consecutivos estén separados al menos una cierta distancia o intervalo de tiempo, o simplificado mediante el algoritmo de Douglas-Peucker</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Parches de nube de puntos temporales</title>

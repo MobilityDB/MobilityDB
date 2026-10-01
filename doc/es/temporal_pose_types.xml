@@ -1926,7 +1926,7 @@ SELECT ST_AsText(convexHull(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 minDistSimplify(tpose,mindist float) &#8594; tpose
 minTimeDeltaSimplify(tpose,mint interval) &#8594; tpose
 </programlisting>
-				<para>La simplificación opera sobre la trayectoria de los puntos de la pose temporal y preserva la orientación en cada instante que sobrevive. La simplificación se aplica únicamente a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del valor dado.</para>
+				<para>La simplificación opera sobre la trayectoria de los puntos de la pose temporal y preserva la orientación en cada instante que sobrevive. La trayectoria se simplifica en el plano, por lo que una pose geodésica con interpolación lineal genera un error. La simplificación se aplica únicamente a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del valor dado.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(minDistSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
   Pose(Point(2 2), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 2));
