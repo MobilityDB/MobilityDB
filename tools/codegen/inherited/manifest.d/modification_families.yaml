@@ -215,6 +215,8 @@ modification_families:
   - fns:
     - {sig: "appendInstant(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_tinstant"}
     - {sig: "appendSequence(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_tsequence"}
+    - {sig: "merge(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
+    - {sig: "merge(tpcpoint[])", ret: "tpcpoint", sym: "Temporal_merge_array"}
   - lit: "\n"
 - family: tpcpatch
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
@@ -236,6 +238,8 @@ modification_families:
   - fns:
     - {sig: "appendInstant(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_tinstant"}
     - {sig: "appendSequence(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_tsequence"}
+    - {sig: "merge(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
+    - {sig: "merge(tpcpatch[])", ret: "tpcpatch", sym: "Temporal_merge_array"}
   - lit: "\n"
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql

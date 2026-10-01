@@ -366,6 +366,15 @@ SELECT appendInstant(tpcpatchSeq(ARRAY[:inst1, :inst2]), :inst3) IS NOT NULL;
 SELECT appendSequence(tpcpatchSeq(ARRAY[:inst1, :inst2]),
   tpcpatchSeq(ARRAY[:inst3])) IS NOT NULL;
 
+SELECT merge(tpcpatchSeq(ARRAY[:inst1, :inst2]), tpcpatchSeq(ARRAY[:inst2, :inst3])) =
+  tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]);
+SELECT merge(:inst1, NULL::tpcpatch) = :inst1;
+SELECT numInstants(merge(ARRAY[:inst1, :inst3])), interp(merge(ARRAY[:inst1, :inst3]));
+SELECT merge(ARRAY[tpcpatchSeq(ARRAY[:inst1, :inst2]), tpcpatchSeq(ARRAY[:inst2, :inst3])]) =
+  tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]);
+/* Errors */
+SELECT merge(:inst2, tpcpatch(:patch1, '2024-01-02'::timestamptz));
+
 -------------------------------------------------------------------------------
 -- Unnest
 -- One row per distinct value, with the span set on which the temporal value

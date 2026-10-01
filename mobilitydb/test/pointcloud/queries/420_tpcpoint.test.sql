@@ -255,6 +255,15 @@ SELECT appendInstant(tpcpointSeq(ARRAY[:inst1, :inst2]), :inst3) IS NOT NULL;
 SELECT appendSequence(tpcpointSeq(ARRAY[:inst1]),
   tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
 
+SELECT merge(tpcpointSeq(ARRAY[:inst1, :inst2]), tpcpointSeq(ARRAY[:inst2, :inst3])) =
+  tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]);
+SELECT merge(:inst1, NULL::tpcpoint) = :inst1;
+SELECT numInstants(merge(ARRAY[:inst1, :inst3])), interp(merge(ARRAY[:inst1, :inst3]));
+SELECT merge(ARRAY[tpcpointSeq(ARRAY[:inst1, :inst2]), tpcpointSeq(ARRAY[:inst2, :inst3])]) =
+  tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]);
+/* Errors */
+SELECT merge(:inst2, tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02'::timestamptz));
+
 -------------------------------------------------------------------------------
 -- SRID
 -- Reading the SRID of a tpcpoint goes through the generic spatiotemporal

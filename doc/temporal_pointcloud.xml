@@ -958,6 +958,25 @@ SELECT numInstants(appendInstant(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1)
 -- 3
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpcpoint_merge">
+					<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+					<para>Merge the temporal values</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+merge(tpcpoint,tpcpoint) → tpcpoint
+merge(tpcpoint[]) → tpcpoint
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numInstants(merge(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]),
+  tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)])));
+-- 3
+SELECT numInstants(merge(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]));
+-- 2
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1792,6 +1811,25 @@ SELECT numInstants(appendInstant(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)));
 -- 3
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_merge">
+					<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+					<para>Merge the temporal values</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+merge(tpcpatch,tpcpatch) → tpcpatch
+merge(tpcpatch[]) → tpcpatch
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numInstants(merge(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 2, 2, 2)), '2001-01-02'::timestamptz)]),
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 2, 2, 2)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3)), '2001-01-03'::timestamptz)])));
+-- 3
+SELECT numInstants(merge(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3)), '2001-01-03'::timestamptz)]));
+-- 2
 </programlisting>
 				</listitem>
 			</itemizedlist>

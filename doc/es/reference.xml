@@ -3609,6 +3609,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añade un instante o una secuencia a un tpcpoint</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -3789,6 +3792,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añade un instante o una secuencia a un tpcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
