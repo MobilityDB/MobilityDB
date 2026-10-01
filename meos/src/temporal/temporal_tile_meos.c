@@ -309,8 +309,10 @@ tfloatbox_time_tiles(const TBox *box, const Interval *duration,
 TBox *
 tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), NULL,
-    Int32GetDatum(vorigin), Int64GetDatum(0), count);
+    Int32GetDatum(vorigin), 0, count);
 }
 
 /**
@@ -327,6 +329,8 @@ TBox *
 tint_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(0), duration,
     Int32GetDatum(0), torigin, count);
 }
@@ -347,6 +351,8 @@ TBox *
 tint_value_time_boxes(const Temporal *temp, int vsize,
   const Interval *duration, int vorigin, TimestampTz torigin, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
 }
@@ -431,8 +437,10 @@ TBox *
 tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
   int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), NULL,
-    Float8GetDatum(vorigin), Float8GetDatum(0.0), count);
+    Float8GetDatum(vorigin), 0, count);
 }
 
 /**
@@ -446,9 +454,11 @@ tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
  * @csqlfn #Tnumber_time_boxes()
  */
 TBox *
-tfloat_time_boxes(const Temporal *temp, const Interval *duration, 
+tfloat_time_boxes(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(0.0), duration,
     Float8GetDatum(0.0), torigin, count);
 }
@@ -469,6 +479,8 @@ TBox *
 tfloat_value_time_boxes(const Temporal *temp, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
     Float8GetDatum(vorigin), torigin, count);
 }
