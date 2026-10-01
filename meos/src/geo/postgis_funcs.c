@@ -4926,6 +4926,25 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
 }
 
 /**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the length of a geometry or a geography, the one of a
+ * geography in meters on the spheroid
+ * @details A geometry is measured as #geom_length measures it and a geography
+ * as #geog_length measures it on the spheroid, which is the default of the
+ * PostGIS function @p ST_Length over a geography
+ * @param[in] gs Geometry or geography
+ * @errval DBL_MAX
+ */
+double
+geo_length(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, true) :
+    geom_length(gs);
+}
+
+/**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geographies are within a distance
  * @param[in] gs1,gs2 Geographies

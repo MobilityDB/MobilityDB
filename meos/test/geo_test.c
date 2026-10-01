@@ -3707,6 +3707,18 @@ int main(void)
   free(ggeo); free(gtrip);
   meos_errno_reset();
 
+  /* geo_length measures a geometry as geom_length does and a geography as
+   * geog_length does on the spheroid, which a sphere measures otherwise */
+  GSERIALIZED *lgeom = geom_in("Linestring(0 0,3 4)", -1);
+  GSERIALIZED *lgeog = geog_in("Linestring(0 0,0 1)", -1);
+  assert(lgeom != NULL && lgeog != NULL);
+  double glen = geo_length(lgeom), gglen = geo_length(lgeog);
+  printf("geo_length: geometry %.17g, geography %.17g\n", glen, gglen);
+  assert(glen == 5.0 && glen == geom_length(lgeom));
+  assert(gglen == geog_length(lgeog, true));
+  assert(gglen != geog_length(lgeog, false));
+  free(lgeom); free(lgeog);
+
   /* Finalize MEOS */
   meos_finalize();
 
