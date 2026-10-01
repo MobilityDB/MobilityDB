@@ -898,9 +898,9 @@ econtains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if a temporal geometry ever contains another one, 0 if not,
- * and -1 on error
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal geometry always contains another one, 0 if
+ * not, and -1 on error
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Acontains_tgeo_tgeo()
  */
