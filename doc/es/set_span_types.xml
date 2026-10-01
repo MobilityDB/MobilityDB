@@ -284,6 +284,33 @@ SELECT asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="setspan_FromText">
+				<indexterm significance="normal"><primary><varname>settypeFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spantypeFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spansettypeFromText</varname></primary></indexterm>
+				<para>Entrada desde la representación de texto conocido (WKT)</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+settypeFromText(text) → set
+spantypeFromText(text) → span
+spansettypeFromText(text) → spanset
+</programlisting>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo. La función es la inversa de <varname>asText</varname>: lee el texto en el que se escribe un literal del tipo, tanto de una constante como de una columna <varname>text</varname>. Un conjunto espacial lee el texto conocido de sus elementos; su texto conocido extendido, que indica el SRID, lo lee <varname>FromEWKT</varname> a continuación.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT intsetFromText('{1, 2, 3}');
+-- {1, 2, 3}
+SELECT textsetFromText('{"highway", "car"}');
+-- {"car", "highway"}
+SELECT floatspanFromText('[1.5, 2.5)');
+-- [1.5, 2.5)
+SELECT tstzspanFromText('[2001-01-01, 2001-01-03)');
+-- [2001-01-01, 2001-01-03)
+SELECT intspansetFromText('{[1, 3), [4, 5]}');
+-- {[1, 3), [4, 6)}
+SELECT asText(geomsetFromText('{"Point(1 1)", "Point(2 2)"}'));
+-- {"POINT(1 1)", "POINT(2 2)"}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_FromBinary">
 				<indexterm significance="normal"><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spantypeFromBinary</varname></primary></indexterm>

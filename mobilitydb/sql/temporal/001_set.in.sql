@@ -218,6 +218,31 @@ CREATE TYPE tstzset (
 
 -- Input/output in WKT, WKB, and HexWKB representation
 
+CREATE FUNCTION intsetFromText(text)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintsetFromText(text)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatsetFromText(text)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textsetFromText(text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datesetFromText(text)
+  RETURNS dateset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzsetFromText(text)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intsetFromBinary(bytea)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'

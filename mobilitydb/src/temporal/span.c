@@ -77,6 +77,25 @@ Span_in(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(span_in(str, oid_meostype(spantypid)));
 }
 
+PGDLLEXPORT Datum Span_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_from_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a span from its Well-Known Text (WKT) representation, the type read
+ * from the return type of the function
+ * @sqlfn intspanFromText(), floatspanFromText(), ...
+ */
+Datum
+Span_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  Span *result = span_in(str, oid_meostype(get_fn_expr_rettype(fcinfo->flinfo)));
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_SPAN_P(result);
+}
+
 PGDLLEXPORT Datum Span_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_out);
 /**

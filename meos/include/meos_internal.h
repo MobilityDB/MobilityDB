@@ -825,7 +825,7 @@ extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 
 /* Input and output functions for set and span types */
 
-extern Set *set_in(const char *str, MeosType basetype);
+extern Set *set_in(const char *str, MeosType settype);
 extern char *set_out(const Set *s, int maxdd);
 extern Span *span_in(const char *str, MeosType spantype);
 extern char *span_out(const Span *s, int maxdd);

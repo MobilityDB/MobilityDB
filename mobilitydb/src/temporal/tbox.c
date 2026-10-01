@@ -78,6 +78,24 @@ Tbox_in(PG_FUNCTION_ARGS)
   PG_RETURN_TBOX_P(tbox_in(input));
 }
 
+PGDLLEXPORT Datum Tbox_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_from_text);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return a temporal box from its Well-Known Text (WKT) representation
+ * @sqlfn tboxFromText()
+ */
+Datum
+Tbox_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  TBox *result = tbox_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_TBOX_P(result);
+}
+
 PGDLLEXPORT Datum Tbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_out);
 /**

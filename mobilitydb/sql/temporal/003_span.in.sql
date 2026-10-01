@@ -187,6 +187,27 @@ CREATE TYPE tstzspan (
 
 -- Input/output in WKT, WKB and HexWKB representation
 
+CREATE FUNCTION intspanFromText(text)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanFromText(text)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspanFromText(text)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespanFromText(text)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Span_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspanFromText(text)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Span_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intspanFromBinary(bytea)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_from_wkb'

@@ -12,12 +12,14 @@ representation_families:
     maxdd: true
   - temp: ttext
   syms:
+    FromText: Temporal_from_text
     asText: Temporal_as_text
   arrsyms:
     asText: Temporalarr_as_text
   blocks:
   - lit: "/*****************************************************************************\n * Input\n *****************************************************************************/"
   - ops:
+    - FromText
     - FromMFJSON
   - lit: /*****************************************************************************/
   - ops:

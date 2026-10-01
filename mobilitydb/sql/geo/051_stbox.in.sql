@@ -71,6 +71,11 @@ CREATE FUNCTION stboxFromBinary(bytea)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxFromText(text)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION stboxFromHexWKB(text)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'

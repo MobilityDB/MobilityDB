@@ -108,6 +108,21 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="boxFromText">
+					<indexterm significance="normal"><primary><varname>boxFromText</varname></primary></indexterm>
+					<para>Entrada desde la representación de texto conocido (WKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+boxFromText(text) → box
+</programlisting>
+					<para>En la función anterior, <varname>box</varname> reemplaza cualquier tipo de cuadro delimitador, a saber, <varname>tbox</varname> o <varname>stbox</varname>. La función es la inversa de <varname>asText</varname>: lee el texto en el que se escribe un literal del tipo, tanto de una constante como de una columna <varname>text</varname>, incluido el SRID de un cuadro delimitador espaciotemporal.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tboxFromText('TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
+-- TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])
+SELECT stboxFromText('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+-- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="boxFromBinary">
 					<indexterm significance="normal"><primary><varname>boxFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>boxFromHexWKB</varname></primary></indexterm>

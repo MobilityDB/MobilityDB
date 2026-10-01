@@ -32,6 +32,8 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [tstz]}
   - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB and HexWKB representation\n\n"
+  - {sig: "{sp}FromText(text)", ret: "{sp}", sym: Span_from_text}
+  - lit: "\n"
   - {sig: "{sp}FromBinary(bytea)", ret: "{sp}", sym: Span_from_wkb, order: [int, bigint, float, tstz, date]}
   - lit: "\n"
   - {sig: "{sp}FromHexWKB(text)", ret: "{sp}", sym: Span_from_hexwkb, order: [int, bigint, float, tstz, date]}
@@ -190,6 +192,8 @@ span_families:
   - {stmt: "CREATE TYPE {ss} (\n  internallength = variable,\n  input = {ss}_in,\n  output = {ss}_out,\n  receive = {ss}_recv,\n  send = {ss}_send,\n  alignment = double,\n-- The following line makes NULL if size < 128\n  storage = extended,\n  analyze = span_analyze\n);", only: [int, bigint, float]}
   - {stmt: "CREATE TYPE {ss} (\n  internallength = variable,\n  input = {ss}_in,\n  output = {ss}_out,\n  receive = {ss}_recv,\n  send = {ss}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [date, tstz]}
   - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - {sig: "{ss}FromText(text)", ret: "{ss}", sym: Spanset_from_text}
+  - lit: "\n"
   - {sig: "{ss}FromBinary(bytea)", ret: "{ss}", sym: Spanset_from_wkb}
   - lit: "\n"
   - {sig: "{ss}FromHexWKB(text)", ret: "{ss}", sym: Spanset_from_hexwkb}
@@ -2792,6 +2796,8 @@ span_families:
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [tstz]}
   - lit: "\n"
   - lit: "/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Set_from_text}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
@@ -3020,6 +3026,8 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  INTERNALLENGTH = VARIABLE,\n  INPUT = {vs}_in,\n  OUTPUT = {vs}_out,\n  RECEIVE = {vs}_recv,\n  SEND = {vs}_send,\n  ALIGNMENT = DOUBLE,\n  STORAGE = EXTENDED\n);"}
   - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Set_from_text}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}

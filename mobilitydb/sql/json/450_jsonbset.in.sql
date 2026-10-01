@@ -70,6 +70,11 @@ CREATE TYPE jsonbset (
 
 -- Input/output in WKB and HexWKB representation
 
+CREATE FUNCTION jsonbsetFromText(text)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION jsonbsetFromBinary(bytea)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'

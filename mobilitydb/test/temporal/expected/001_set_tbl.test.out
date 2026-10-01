@@ -172,6 +172,42 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_intset WHERE intsetFromText(asText(i)) <> asText(i)::intset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromText(asText(b)) <> asText(b)::bigintset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromText(asText(f)) <> asText(f)::floatset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset WHERE textsetFromText(asText(t)) <> t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromText(asText(d)) <> asText(d)::dateset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromText(asText(t)) <> asText(t)::tstzset;
+ count 
+-------
+     0
+(1 row)
+
 SELECT numValues(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL;
  numvalues 
 -----------

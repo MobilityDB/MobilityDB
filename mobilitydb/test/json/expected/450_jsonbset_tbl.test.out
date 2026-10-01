@@ -21,6 +21,12 @@ SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromText(asText(s)) <> asText(s)::jsonbset;
+ count 
+-------
+     0
+(1 row)
+
 SELECT numValues(set(array_agg(DISTINCT jb ORDER BY jb))) FROM tbl_jsonb WHERE jb IS NOT NULL;
  numvalues 
 -----------

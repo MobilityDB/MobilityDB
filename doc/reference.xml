@@ -198,6 +198,9 @@
 					<para><link linkend="setspan_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_FromText"><varname>settypeFromText</varname>, <varname>spantypeFromText</varname>, <varname>spansettypeFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Input from the Well-Known Binary (WKB) representation</para>
 				</listitem>
 				<listitem>
@@ -444,6 +447,9 @@
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
@@ -623,6 +629,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="ttypeFromText"><varname>ttypeFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttypeFromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>

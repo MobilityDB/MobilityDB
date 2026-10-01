@@ -73,6 +73,25 @@ Set_in(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(set_in(input, oid_meostype(typid)));
 }
 
+PGDLLEXPORT Datum Set_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_from_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation, the type read
+ * from the return type of the function
+ * @sqlfn intsetFromText(), floatsetFromText(), ...
+ */
+Datum
+Set_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  Set *result = set_in(str, oid_meostype(get_fn_expr_rettype(fcinfo->flinfo)));
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum Set_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_out);
 /**
