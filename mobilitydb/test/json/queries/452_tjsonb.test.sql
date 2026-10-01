@@ -550,3 +550,7 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
 SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' >= tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03], [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}';
 
 -------------------------------------------------------------------------------
+
+-- A NULL operand of merge returns the other one
+SELECT merge(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01', NULL::tjsonb) = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
+SELECT merge(NULL::tjsonb, tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01') = tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';

@@ -262,3 +262,15 @@ SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(P
  t
 (1 row)
 
+SELECT merge(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', NULL::tposechain) = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT merge(NULL::tposechain, tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01') = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+

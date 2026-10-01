@@ -118,7 +118,7 @@ modification_families:
     - {sig: "appendSequence(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_tsequence"}
   - lit: "\n"
   - fns:
-    - {sig: "merge(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+    - {sig: "merge(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "merge(tcbuffer[])", ret: "tcbuffer", sym: "Temporal_merge_array"}
@@ -171,7 +171,7 @@ modification_families:
     - {sig: "appendSequence(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_tsequence"}
   - lit: "\n"
   - fns:
-    - {sig: "merge(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+    - {sig: "merge(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "merge(tjsonb[])", ret: "tjsonb", sym: "Temporal_merge_array"}
@@ -273,7 +273,7 @@ modification_families:
     - {sig: "appendSequence(tpose, tpose)", ret: "tpose", sym: "Temporal_append_tsequence"}
   - lit: "\n"
   - fns:
-    - {sig: "merge(tpose, tpose)", ret: "tpose", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+    - {sig: "merge(tpose, tpose)", ret: "tpose", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "merge(tpose[])", ret: "tpose", sym: "Temporal_merge_array"}
@@ -310,7 +310,7 @@ modification_families:
     - {sig: "appendSequence(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_tsequence"}
   - lit: "\n"
   - fns:
-    - {sig: "merge(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+    - {sig: "merge(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "merge(tposechain[])", ret: "tposechain", sym: "Temporal_merge_array"}
