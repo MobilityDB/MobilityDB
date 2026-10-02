@@ -1192,7 +1192,9 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
   lfinfo.reslinear = (interp == LINEAR);
   /* Set the error value to test */
   if (resbasetype == T_INT4)
-    lfinfo.reserror = Int32GetDatum(INT_MAX); 
+    lfinfo.reserror = Int32GetDatum(INT_MAX);
+  else if (resbasetype == T_INT8)
+    lfinfo.reserror = Int64GetDatum(INT64_MAX);
   else if (resbasetype == T_FLOAT8)
     lfinfo.reserror = Float8GetDatum(DBL_MAX);
   lfinfo.resnull = null_handle; /* per-instant result may be NULL */
