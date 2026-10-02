@@ -1348,7 +1348,7 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
 
 /**
  * @brief Return a temporal geo scaled by given factors, the scaling
- * #tgeo_scale and #tgeo_scale_xyz share
+ * #tgeo_scale_geo and #tgeo_scale share
  * @param[in] temp Temporal geo
  * @param[in] factors Scale factors
  */
@@ -1373,10 +1373,10 @@ tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
  * @param[in] sorigin Point geometry for the origin, may be `NULL`
- * @csqlfn #Tgeo_scale()
+ * @csqlfn #Tgeo_scale_geo()
  */
 Temporal *
-tgeo_scale(const Temporal *temp, const GSERIALIZED *scale, 
+tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale,
   const GSERIALIZED *sorigin)
 {
   /* Ensure the validity of the arguments */
@@ -1457,10 +1457,10 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
  * @brief Scale a temporal geo by the given factors along the x, y, and z axes
  * @param[in] temp Temporal geo
  * @param[in] xfactor,yfactor,zfactor Scale factors
- * @csqlfn #Tgeo_scale_xyz()
+ * @csqlfn #Tgeo_scale()
  */
 Temporal *
-tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor,
+tgeo_scale(const Temporal *temp, double xfactor, double yfactor,
   double zfactor)
 {
   /* Ensure the validity of the arguments */
@@ -1558,7 +1558,7 @@ tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
  * @brief Return a temporal geo rotated counter-clockwise around a point
  * geometry
  * @details The rotation of #tgeo_rotate about the coordinates of the point,
- * whose origin #tgeo_scale reads the same way: the point is not empty, and it
+ * whose origin #tgeo_scale_geo reads the same way: the point is not empty, and it
  * states the SRID of the value or none
  * @param[in] temp Temporal geo
  * @param[in] angle Rotation angle in radians
@@ -1801,17 +1801,17 @@ geo_rotate_z(const GSERIALIZED *gs, double angle)
 /**
  * @ingroup meos_geo_base_transf
  * @brief Scale a geometry by the factors a point states, about an origin
- * @details The scaling of #tgeo_scale: the factors and the origin are
+ * @details The scaling of #tgeo_scale_geo: the factors and the origin are
  * non-empty points, the factor of a point without Z is 1 along z, and a
  * two-dimensional geometry scaled about an origin off its plane leaves the
  * plane when the vertical factor moves it
  * @param[in] gs Geometry
  * @param[in] scale Point geometry stating the scale factors
  * @param[in] sorigin Point geometry for the origin, may be `NULL`
- * @csqlfn #Geo_scale()
+ * @csqlfn #Geo_scale_geo()
  */
 GSERIALIZED *
-geo_scale(const GSERIALIZED *gs, const GSERIALIZED *scale,
+geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale,
   const GSERIALIZED *sorigin)
 {
   /* Ensure the validity of the arguments */
@@ -1849,10 +1849,10 @@ geo_scale(const GSERIALIZED *gs, const GSERIALIZED *scale,
  * @brief Scale a geometry by the given factors along the x, y, and z axes
  * @param[in] gs Geometry
  * @param[in] xfactor,yfactor,zfactor Scale factors
- * @csqlfn #Geo_scale_xyz()
+ * @csqlfn #Geo_scale()
  */
 GSERIALIZED *
-geo_scale_xyz(const GSERIALIZED *gs, double xfactor, double yfactor,
+geo_scale(const GSERIALIZED *gs, double xfactor, double yfactor,
   double zfactor)
 {
   /* Ensure the validity of the arguments */

@@ -1593,9 +1593,9 @@ TGEOMETRY_CONFIG = dict(
         # Scale factors and the false origin are read as point coordinates;
         # the default polygon geom1 is rejected ("Only point geometries
         # accepted"). The same holds for every space-tiling origin.
-        "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
+        "tgeo_scale_geo":             {1: "geom_point1", 2: "geom_point1"},
         "tgeo_rotate_geo":        {2: "geom_point1"},
-        "geo_scale":              {1: "geom_point1", 2: "geom_point1"},
+        "geo_scale_geo":              {1: "geom_point1", 2: "geom_point1"},
         "geo_rotate_geo":         {2: "geom_point1"},
         "tgeo_space_boxes":       {4: "geom_point1"},
         "tgeo_space_time_boxes":  {5: "geom_point1"},
