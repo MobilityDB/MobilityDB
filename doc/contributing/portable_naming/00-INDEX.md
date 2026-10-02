@@ -138,6 +138,7 @@ The rules the gist applied and where this brainstorm departs from them:
 | 9 | [Unnesting](09-UNNESTING.md) | `unnest` | 38 | final |
 | 10 | Constructors | `set` | 36 | `setMake` merged (#2736) |
 | 11 | PostgreSQL-typed results | `range` | 4 | out of scope: no engine has a range type |
+| 12 | [Native geometry operations](12-NATIVE-GEOMETRY.md) | `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`, `equals`, `distance`, `area`, `points`, ... over geometry and geography; `geoX` in Flink and Spark | about 40 operations | decided (1–9), plan in the document |
 
 The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the function a query calls in their place in every engine, type by type: [I/O plan](IO-PLAN.md).
 

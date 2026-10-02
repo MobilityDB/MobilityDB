@@ -318,6 +318,14 @@ J9 first (it also clears JMEOS's failing gaps check), then J10–J12, which brin
 to one base; G19–G22, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
 renames land on that base. J3 waits on decision 0.13; the forms of G23 taking an expression or a callback wait on decision 0.14.
 
+## Part V — the native geometry operations under their plain names
+
+[Family 12](12-NATIVE-GEOMETRY.md) states the operations MEOS answers natively without a plain
+SQL name, the nine decisions they rest on, what each decision requires of the lifting
+infrastructure, and the commits of the one MobilityDB pull request that delivers them, the
+lifting kernel's equality and the dimension of the base relationships first. Its `@altsqlfn`
+names (`geoX`, `cbufferX`) reach Flink and Spark with the tags of R9 and A1.
+
 ## Acceptance of the whole
 
 - Before PR R2: the harness of 0.3, its per-signature table kept with the PR.

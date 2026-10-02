@@ -407,6 +407,11 @@
 						<row><entry></entry><entry>trgeometry</entry><entry>geoTranslate, geoRotate, geoRotateX, geoRotateY, geoRotateZ</entry></row>
 						<row><entry>length, cumulativeLength</entry><entry>geometry, geography, tgeompoint, tgeogpoint, trgeometry</entry><entry>geoLength, geoCumulativeLength</entry></row>
 						<row><entry></entry><entry>tnpoint</entry><entry>npointLength, npointCumulativeLength</entry></row>
+						<row><entry>contains, covers, disjoint, intersects, touches, dwithin, equals, relate</entry><entry>geometry; geography (intersects, disjoint, dwithin)</entry><entry>geoContains, geoCovers, geoDisjoint, geoIntersects, geoTouches, geoDwithin, geoEquals, geoRelate</entry></row>
+						<row><entry></entry><entry>cbuffer</entry><entry>cbufferContains, cbufferCovers, cbufferDisjoint, cbufferIntersects, cbufferTouches, cbufferDwithin</entry></row>
+						<row><entry>distance, shortestLine, maxDistance, area, perimeter, centroid</entry><entry>geometry, geography</entry><entry>geoDistance, geoShortestLine, geoMaxDistance, geoArea, geoPerimeter, geoCentroid</entry></row>
+						<row><entry>boundary, reverse, numGeometries, geometryN, numPoints, lineInterpolatePoint, lineSubstring, lineLocatePoint, collect, makeLine, asText, asEWKB, asGeoJSON, clusterKMeans, clusterDBSCAN, clusterIntersecting, clusterWithin</entry><entry>geometry, geography</entry><entry>geo followed by the name: geoBoundary, geoReverse, …, geoClusterWithin</entry></row>
+						<row><entry>the MultiPoint of ST_Points</entry><entry>geometry</entry><entry>geoPoints, in every engine (points answers a geomset)</entry></row>
 						<row><entry>hash, hashExtended</entry><entry>set, span, span set, box, temporal, base type</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, and their …HashExtended</entry></row>
 						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
 						<row><entry>merge (the aggregate)</entry><entry>temporal</entry><entry>mergeAgg</entry></row>
