@@ -19,9 +19,10 @@ nothing and moves with `hash` (rule 5).
 
 They are the support functions of the hash operator classes, function 1 (`hash`) and function 2
 (`hashExtended`): PostgreSQL reaches them for hash joins, hash aggregation, `DISTINCT` and hash
-partitioning. Neither has an entry in the manual. Like the topological functions of family 6,
-they are reached through an operator class and not written in a query, so this family takes new
-names in PostgreSQL as well.
+partitioning. Unlike the topological functions of family 6, which the manual names only through
+their operators, the manual documents `hash` and `hashExtended` themselves, in the entries
+`box_hash`, `setspan_hash`, `tcell_hash` and `ttype_hash`: they are functions users call, and
+PostgreSQL keeps their names.
 
 ## The signatures and their names
 
@@ -53,8 +54,9 @@ and Flink's parser refuses it. None of the 28 is a MobilityDB SQL name at `b98cd
 
 ## Decision
 
-**PostgreSQL takes the new names**, as in family 6: operator classes reach these functions, not
-queries.
+**PostgreSQL keeps `hash` and `hashExtended`** over every type, as it keeps `insert`, `update`,
+`merge` (family 8) and `unnest` (family 9), and gains no function (decision 0.4). Flink and Spark
+take the names of the table above, each the `@altsqlfn` of the PostgreSQL wrapper it names (R9).
 
 With rule 8, Spark also answers the PostgreSQL spelling `hash(tint)` beside its own variadic
 `hash`, the builder sending a single MEOS argument to MEOS.
