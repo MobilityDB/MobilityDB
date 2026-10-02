@@ -250,6 +250,7 @@ extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);
 /* Restriction functions */
 
 extern Temporal *tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc);
+extern Temporal *tgeo_restrict_elevation_intl(const Temporal *temp, const Span *s, bool atfunc);
 extern Temporal *tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
 extern TInstant *tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs, bool atfunc);

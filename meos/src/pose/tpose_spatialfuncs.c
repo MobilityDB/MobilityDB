@@ -212,7 +212,7 @@ tpose_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
     return NULL;
 
   Temporal *tpoint = tpose_to_tpoint(temp);
-  Temporal *res = tgeo_restrict_elevation(tpoint, s, atfunc);
+  Temporal *res = tgeo_restrict_elevation_intl(tpoint, s, atfunc);
   Temporal *result = NULL;
   if (res)
   {

@@ -2808,6 +2808,26 @@ tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
   VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(s, NULL);
   if (! ensure_has_Z(temp->temptype, temp->flags))
     return NULL;
+  return tgeo_restrict_elevation_intl(temp, s, atfunc);
+}
+
+/**
+ * @ingroup meos_internal_geo_restrict
+ * @brief Return a temporal point restricted to (the complement of) an
+ * elevation span, for a caller that has validated its arguments
+ * @details The internal twin of #tgeo_restrict_elevation, as
+ * #rtree_search_intl is of #rtree_search: it asserts the conditions the
+ * validating entry tests, for a temporal point the caller derived itself, such
+ * as the positions of a temporal pose
+ * @param[in] temp Temporal point with Z
+ * @param[in] s Elevation span
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+Temporal *
+tgeo_restrict_elevation_intl(const Temporal *temp, const Span *s, bool atfunc)
+{
+  assert(temp); assert(s); assert(tpoint_type(temp->temptype));
+  assert(MEOS_FLAGS_GET_Z(temp->flags));
 
   /* Bounding box test */
   STBox box;
