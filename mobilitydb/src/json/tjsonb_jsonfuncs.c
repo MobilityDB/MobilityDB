@@ -77,9 +77,9 @@ PGDLLEXPORT Datum Jsonb_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Jsonb_as_text);
 /**
  * @ingroup mobilitydb_json_json
- * @brief Transform a JSONB value into a text value
- * @sqlfn text()
- * @sqlop @p ::
+ * @brief Return the text representation of a JSONB value, as #Set_as_text
+ * does for a set
+ * @sqlfn asText()
  */
 Datum
 Jsonb_as_text(PG_FUNCTION_ARGS)
@@ -87,7 +87,7 @@ Jsonb_as_text(PG_FUNCTION_ARGS)
   /* Input arguments */
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   /* Compute the result */
-  text *result = pg_jsonb_to_text(jb);
+  text *result = jsonb_to_text(jb);
   /* Clean up and return */
   PG_FREE_IF_COPY(jb, 0);
   PG_RETURN_TEXT_P(result);

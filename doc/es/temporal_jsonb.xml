@@ -472,9 +472,12 @@ SELECT tjsonb 'Point(0 0)@2001-01-01 08:05:00';
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Devuelve la representación de texto conocido (WKT)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asText({tjsonb,tjsonb[]}) → {text,text[]}
+asText({tjsonb,tjsonb[],jsonb}) → {text,text[]}
 </programlisting>
+				<para>Sobre un valor JSONB, la función devuelve el texto que PostgreSQL escribe para el valor, como <varname>jsonb::text</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
+-- {"a": "x", "b": {"c": [1, {"d": null}]}}
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":

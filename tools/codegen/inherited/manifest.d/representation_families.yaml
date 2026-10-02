@@ -285,11 +285,10 @@ representation_families:
     - FromHexWKB
     - FromMFJSON
   - lit: /*****************************************************************************/
+  - lit: "CREATE FUNCTION asText(jsonb)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonb_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - asText
-  - lit: '-- CREATE CAST (jsonb AS text) WITH FUNCTION asText(jsonb);
-
-      CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);'
+  - lit: CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);
   - ops:
     - asMFJSON
     - asBinary

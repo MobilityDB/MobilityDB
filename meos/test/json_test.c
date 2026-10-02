@@ -543,6 +543,12 @@ int main(void)
   printf("json_strip_nulls(%s, true): %s\n", js1_out, char_result);
   free(jsonb_result); free(char_result);
 
+  /* text *jsonb_to_text(const Jsonb *jb); */
+  text_result = jsonb_to_text(jb1);
+  char_result = text_out(text_result);
+  printf("jsonb_to_text(%s): %s\n", jb1_out, char_result);
+  free(text_result); free(char_result);
+
   /* JsonPath *jsonpath_in(const char *str); */
   jsonpath_result = jsonpath_in(jp1_in);
   char_result = jsonpath_out(jsonpath_result);
