@@ -602,13 +602,12 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 
 			<listitem xml:id="tgeo_length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoLength</varname></primary></indexterm>
 				<para>Return the length traversed by the temporal point &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tpoint) → float
-geoLength(geo) → float
+length(geo) → float
 </programlisting>
-				<para>The function <varname>geoLength</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does.</para>
+				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
 -- 1.73205080756888
@@ -618,9 +617,9 @@ SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT length(tgeompoint 'Interp=Step;
   [Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- 0
-SELECT geoLength(geometry 'Linestring(0 0,3 4)');
+SELECT length(geometry 'Linestring(0 0,3 4)');
 -- 5
-SELECT round(geoLength(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
+SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
 -- 3521.188745
 </programlisting>
 			</listitem>
@@ -832,17 +831,16 @@ ramp_color('RdYlBu', scale_linear(
 
 			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoAffine</varname></primary></indexterm>
 				<para>Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 affine(tgeo,a float,b float,c float,d float,e float,f float,g float,
   h float,i float,xoff float,yoff float,zoff float) → tgeo
 affine(tgeo,a float,b float,d float,e float,xoff float,yoff float) → tgeo
-geoAffine(geometry,a float,b float,c float,d float,e float,f float,g float,
+affine(geometry,a float,b float,c float,d float,e float,f float,g float,
   h float,i float,xoff float,yoff float,zoff float) → geometry
-geoAffine(geometry,a float,b float,d float,e float,xoff float,yoff float) → geometry
+affine(geometry,a float,b float,d float,e float,xoff float,yoff float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoAffine</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Rotate a 3D temporal point 180 degrees about the z axis
 SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1,
@@ -857,7 +855,7 @@ SELECT asEWKT(round(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()),
    0, sin(pi()), cos(pi()), 0, 0, 0), 6)) FROM (SELECT tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02]' AS temp) t;
 -- [POINT Z (-1 -1 0)@2001-01-01, LINESTRING Z (-1 -1 0,-2 -2 0)@2001-01-02]
-SELECT ST_AsEWKT(geoAffine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
+SELECT ST_AsEWKT(affine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
   sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0));
 -- POINT(-1 -2 3)
 </programlisting>
@@ -865,17 +863,16 @@ SELECT ST_AsEWKT(geoAffine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
 
 			<listitem xml:id="tgeo_rotate">
 				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoRotate</varname></primary></indexterm>
 				<para>Return the temporal point rotated counter-clockwise about the origin point</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rotate(tgeo,radians float) → tgeo
 rotate(tgeo,radians float,x0 float,y0 float) → tgeo
 rotate(tgeo,radians float,origin geometry) → tgeo
-geoRotate(geometry,radians float) → geometry
-geoRotate(geometry,radians float,x0 float,y0 float) → geometry
-geoRotate(geometry,radians float,origin geometry) → geometry
+rotate(geometry,radians float) → geometry
+rotate(geometry,radians float,x0 float,y0 float) → geometry
+rotate(geometry,radians float,origin geometry) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoRotate</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
 				<para>An origin given as a geometry is a point that is not empty and states the SRID of the temporal value or none, otherwise an error is raised.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Rotate a temporal point 180 degrees
@@ -892,25 +889,24 @@ SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))),
   Linestring(5 5,10 5)@2001-01-03]' AS temp) AS t;
 /* [POINT(10.58 9.67)@2001-01-01, POINT(6.25 7.17)@2001-01-02, 
    LINESTRING(6.25 7.17,8.75 2.83)@2001-01-03] */
-SELECT ST_AsEWKT(geoRotate(geometry 'Linestring(5 10,5 5)', pi()/6, 5, 10), 2);
+SELECT ST_AsEWKT(rotate(geometry 'Linestring(5 10,5 5)', pi()/6, 5, 10), 2);
 -- LINESTRING(5 10,7.5 5.67)
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tgeo_rotateX">
 				<indexterm significance="normal"><primary><varname>rotateX</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoRotateX</varname></primary></indexterm>
 				<para>Return a temporal geometry rotated counter-clockwise about the x axis &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rotateX(tgeo,radians float) → tgeo
-geoRotateX(geometry,radians float) → geometry
+rotateX(geometry,radians float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoRotateX</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(rotateX(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]',
   pi()), 6);
 -- [POINT Z (1 -2 -3)@2001-01-01, POINT Z (1 -4 -3)@2001-01-02]
-SELECT ST_AsEWKT(round(geoRotateX(geometry 'Point(1 1)', pi()/2), 6));
+SELECT ST_AsEWKT(round(rotateX(geometry 'Point(1 1)', pi()/2), 6));
 -- POINT(1 0 1)
 SELECT asEWKT(round(rotateX(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
   pi()/2), 6));
@@ -920,55 +916,52 @@ SELECT asEWKT(round(rotateX(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-
 
 			<listitem xml:id="tgeo_rotateY">
 				<indexterm significance="normal"><primary><varname>rotateY</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoRotateY</varname></primary></indexterm>
 				<para>Return a temporal geometry rotated counter-clockwise about the y axis &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rotateY(tgeo,radians float) → tgeo
-geoRotateY(geometry,radians float) → geometry
+rotateY(geometry,radians float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoRotateY</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(rotateY(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]',
   pi()), 6);
 -- [POINT Z (-1 2 -3)@2001-01-01, POINT Z (-1 4 -3)@2001-01-02]
-SELECT ST_AsEWKT(round(geoRotateY(geometry 'Linestring(1 1,2 2)', pi()/2), 6));
+SELECT ST_AsEWKT(round(rotateY(geometry 'Linestring(1 1,2 2)', pi()/2), 6));
 -- LINESTRING(0 1 -1,0 2 -2)
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tgeo_rotateZ">
 				<indexterm significance="normal"><primary><varname>rotateZ</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoRotateZ</varname></primary></indexterm>
 				<para>Return a temporal geometry rotated counter-clockwise about the z axis &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rotateZ(tgeo,radians float) → tgeo
-geoRotateZ(geometry,radians float) → geometry
+rotateZ(geometry,radians float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoRotateZ</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(rotateZ(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]',
   pi()/2), 6);
 -- [POINT(-1 1)@2001-01-01, LINESTRING(-1 1,-2 2)@2001-01-02]
-SELECT ST_AsEWKT(geoRotateZ(geometry 'Linestring(1 1,2 2)', pi()/2), 6);
+SELECT ST_AsEWKT(rotateZ(geometry 'Linestring(1 1,2 2)', pi()/2), 6);
 -- LINESTRING(-1 1,-2 2)
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tgeo_scale">
 				<indexterm significance="normal"><primary><varname>scale</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoScale</varname></primary></indexterm>
 				<para>Return a temporal point scaled by given factors &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 scale(tgeo,xfactor float,yfactor float,zfactor float) → tgeo
 scale(tgeo,xfactor float,yfactor float) → tgeo
 scale(tgeo,factor geometry) → tgeo
 scale(tgeo,factor geometry,origin geometry) → tgeo
-geoScale(geometry,xfactor float,yfactor float,zfactor float) → geometry
-geoScale(geometry,xfactor float,yfactor float) → geometry
-geoScale(geometry,factor geometry) → geometry
-geoScale(geometry,factor geometry,origin geometry) → geometry
+scale(geometry,xfactor float,yfactor float,zfactor float) → geometry
+scale(geometry,xfactor float,yfactor float) → geometry
+scale(geometry,factor geometry) → geometry
+scale(geometry,factor geometry,origin geometry) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoScale</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5,
   0.75, 0.8));
@@ -982,7 +975,7 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-0
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]',
   geometry 'Point(2 2)', geometry 'Point(1 1)'));
 -- [POINT(1 1)@2001-01-01, LINESTRING(1 1,3 3)@2001-01-02]
-SELECT ST_AsEWKT(geoScale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
+SELECT ST_AsEWKT(scale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
   geometry 'Point(1 1)'));
 -- LINESTRING(1 1,3 3)
 </programlisting>
@@ -990,33 +983,31 @@ SELECT ST_AsEWKT(geoScale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
 
 			<listitem xml:id="tgeo_transscale">
 				<indexterm significance="normal"><primary><varname>transscale</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoTransscale</varname></primary></indexterm>
 				<para>Return a temporal geometry translated by given offsets and then scaled by given factors &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transscale(tgeo,deltax float,deltay float,xfactor float,yfactor float) → tgeo
-geoTransscale(geometry,deltax float,deltay float,xfactor float,yfactor float) → geometry
+transscale(geometry,deltax float,deltay float,xfactor float,yfactor float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoTransscale</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transscale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
   1, 1, 2, 3));
 -- [POINT(4 6)@2001-01-01, POINT(6 9)@2001-01-02]
-SELECT ST_AsEWKT(geoTransscale(geometry 'Point(1 1)', 1, 1, 2, 3));
+SELECT ST_AsEWKT(transscale(geometry 'Point(1 1)', 1, 1, 2, 3));
 -- POINT(4 6)
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tgeo_translate">
 				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoTranslate</varname></primary></indexterm>
 				<para>Return a temporal geometry translated by given offsets &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 translate(tgeo,deltax float,deltay float) → tgeo
 translate(tgeo,deltax float,deltay float,deltaz float) → tgeo
-geoTranslate(geometry,deltax float,deltay float) → geometry
-geoTranslate(geometry,deltax float,deltay float,deltaz float) → geometry
+translate(geometry,deltax float,deltay float) → geometry
+translate(geometry,deltax float,deltay float,deltaz float) → geometry
 </programlisting>
-				<para>Over a geometry, the function carries the name <varname>geoTranslate</varname>, as <varname>geoUnion</varname> does, and answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
+				<para>Over a geometry, the function answers as its PostGIS sibling for a geometry the transformation keeps in its plane. A two-dimensional value the transformation moves out of its plane becomes three-dimensional, as a pose does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(translate(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
   10, 20));
@@ -1024,9 +1015,9 @@ SELECT asEWKT(translate(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-0
 SELECT asEWKT(translate(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]',
   10, 20, 30));
 -- [POINT Z (11 21 31)@2001-01-01, POINT Z (12 22 32)@2001-01-02]
-SELECT ST_AsEWKT(geoTranslate(geometry 'Point(1 1)', 10, 20));
+SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 10, 20));
 -- POINT(11 21)
-SELECT ST_AsEWKT(geoTranslate(geometry 'Point(1 1)', 0, 0, 5));
+SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 0, 0, 5));
 -- POINT(1 1 5)
 </programlisting>
 			</listitem>

@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Geo_transform_pipeline);
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry or a geography transformed to an SRID using a
  * pipeline
- * @sqlfn geoTransformPipeline()
+ * @sqlfn transformPipeline()
  */
 Datum
 Geo_transform_pipeline(PG_FUNCTION_ARGS)

@@ -161,16 +161,15 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 			<listitem xml:id="tgeo_transform">
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geoTransformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(tspatial,integer) → tspatial
 transformPipeline(tspatial,pipeline text,srid integer,
   is_forward boolean=true) → tspatial
-geoTransformPipeline(geo,pipeline text,srid integer,
+transformPipeline(geo,pipeline text,srid integer,
   is_forward boolean=true) → geo
 </programlisting>
-				<para>The function <varname>geoTransformPipeline</varname> transforms a geometry or a geography with a pipeline in the same way.</para>
+				<para>The function <varname>transformPipeline</varname> transforms a geometry or a geography with a pipeline in the same way.</para>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal point has an unknown SRID (represented by 0).</para>
 				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
@@ -178,7 +177,7 @@ geoTransformPipeline(geo,pipeline text,srid integer,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
 -- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
-SELECT ST_AsText(geoTransformPipeline(geometry 'SRID=4326;Point(2 49)',
+SELECT ST_AsText(transformPipeline(geometry 'SRID=4326;Point(2 49)',
   'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
 -- POINT(426857.988 5427937.523)
 </programlisting>

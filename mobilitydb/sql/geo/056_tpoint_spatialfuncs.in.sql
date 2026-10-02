@@ -122,12 +122,12 @@ CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geoTransformPipeline(geometry, text, srid integer DEFAULT 0,
+CREATE FUNCTION transformPipeline(geometry, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geo_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geoTransformPipeline(geography, text, srid integer DEFAULT 0,
+CREATE FUNCTION transformPipeline(geography, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Geo_transform_pipeline'
@@ -222,11 +222,11 @@ CREATE FUNCTION length(tgeogpoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geoLength(geometry)
+CREATE FUNCTION length(geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION geoLength(geography)
+CREATE FUNCTION length(geography)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

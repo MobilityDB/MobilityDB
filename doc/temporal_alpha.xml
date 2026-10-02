@@ -660,19 +660,12 @@ SELECT ttext '[A@2001-01-01, B@2001-01-03,
 				<indexterm significance="normal"><primary><varname>lower</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>upper</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>initcap</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>textLower</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>textUpper</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>textInitcap</varname></primary></indexterm>
 				<para>Transform in lowercase, uppercase, or initcap</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 upper(ttext) → ttext
 lower(ttext) → ttext
 initcap(ttext) → ttext
-textUpper(text) → text
-textLower(text) → text
-textInitcap(text) → text
 </programlisting>
-				<para>The functions <varname>textUpper</varname>, <varname>textLower</varname> and <varname>textInitcap</varname> transform a text value in the same way.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT lower(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["aa"@2001-01-01, "bb"@2001-01-02]
@@ -680,8 +673,6 @@ SELECT upper(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["AA"@2001-01-01, "BB"@2001-01-02]
 SELECT initcap(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["Aa"@2001-01-01, "Bb"@2001-01-02]
-SELECT textLower('AbC'), textUpper('AbC'), textInitcap('hello WORLD');
--- abc | ABC | Hello World
 </programlisting>
 			</listitem>
 		</itemizedlist>

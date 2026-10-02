@@ -513,7 +513,7 @@ PG_FUNCTION_INFO_V1(Geo_affine);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return the 3D affine transformation of a geometry
- * @sqlfn geoAffine()
+ * @sqlfn affine()
  */
 Datum
 Geo_affine(PG_FUNCTION_ARGS)
@@ -542,7 +542,7 @@ PG_FUNCTION_INFO_V1(Geo_affine_2d);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return the 2D affine transformation of a geometry
- * @sqlfn geoAffine()
+ * @sqlfn affine()
  */
 Datum
 Geo_affine_2d(PG_FUNCTION_ARGS)
@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Geo_translate);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry translated by the given offsets
- * @sqlfn geoTranslate()
+ * @sqlfn translate()
  */
 Datum
 Geo_translate(PG_FUNCTION_ARGS)
@@ -582,7 +582,7 @@ PG_FUNCTION_INFO_V1(Geo_rotate);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry rotated counter-clockwise around a point
- * @sqlfn geoRotate()
+ * @sqlfn rotate()
  */
 Datum
 Geo_rotate(PG_FUNCTION_ARGS)
@@ -599,7 +599,7 @@ PG_FUNCTION_INFO_V1(Geo_rotate_geo);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry rotated counter-clockwise around a point geometry
- * @sqlfn geoRotate()
+ * @sqlfn rotate()
  */
 Datum
 Geo_rotate_geo(PG_FUNCTION_ARGS)
@@ -618,7 +618,7 @@ PG_FUNCTION_INFO_V1(Geo_rotate_x);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry rotated counter-clockwise around the x axis
- * @sqlfn geoRotateX()
+ * @sqlfn rotateX()
  */
 Datum
 Geo_rotate_x(PG_FUNCTION_ARGS)
@@ -634,7 +634,7 @@ PG_FUNCTION_INFO_V1(Geo_rotate_y);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry rotated counter-clockwise around the y axis
- * @sqlfn geoRotateY()
+ * @sqlfn rotateY()
  */
 Datum
 Geo_rotate_y(PG_FUNCTION_ARGS)
@@ -650,7 +650,7 @@ PG_FUNCTION_INFO_V1(Geo_rotate_z);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry rotated counter-clockwise around the z axis
- * @sqlfn geoRotateZ(), geoRotate()
+ * @sqlfn rotateZ(), rotate()
  */
 Datum
 Geo_rotate_z(PG_FUNCTION_ARGS)
@@ -667,7 +667,7 @@ PG_FUNCTION_INFO_V1(Geo_scale);
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry scaled by the factors a point states, about an
  * optional origin
- * @sqlfn geoScale()
+ * @sqlfn scale()
  */
 Datum
 Geo_scale(PG_FUNCTION_ARGS)
@@ -691,7 +691,7 @@ PG_FUNCTION_INFO_V1(Geo_scale_xyz);
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry scaled by the given factors along the x, y, and z
  * axes
- * @sqlfn geoScale()
+ * @sqlfn scale()
  */
 Datum
 Geo_scale_xyz(PG_FUNCTION_ARGS)
@@ -713,7 +713,7 @@ PG_FUNCTION_INFO_V1(Geo_transscale);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry translated and then scaled
- * @sqlfn geoTransscale()
+ * @sqlfn transscale()
  */
 Datum
 Geo_transscale(PG_FUNCTION_ARGS)
@@ -858,7 +858,7 @@ PG_FUNCTION_INFO_V1(Geo_length);
  * @ingroup mobilitydb_geo_base_accessor
  * @brief Return the length of a geometry or a geography, the one of a
  * geography in meters on the spheroid
- * @sqlfn geoLength()
+ * @sqlfn length()
  */
 Datum
 Geo_length(PG_FUNCTION_ARGS)
