@@ -79,8 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga025d33083cec5ccf19a1f8fd5905db34.html#ga025d33083cec5ccf19a1f8fd5905db34">geo_affine</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaf1e0035629c0858434901ab7172c104a.html#gaf1e0035629c0858434901ab7172c104a">geo_affine_2d</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga396b64f605564642d544846bb17d6fb4.html#ga396b64f605564642d544846bb17d6fb4">geo_affine</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga299cf84d92b4ed714ddb03c9b98ed9e9.html#ga299cf84d92b4ed714ddb03c9b98ed9e9">geo_reverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga2ac2a5f8b3bf5b957a8ea2fc28d98b9a.html#ga2ac2a5f8b3bf5b957a8ea2fc28d98b9a">geo_rotate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga5127ce53ba21d0f5266a3fb5966e166d.html#ga5127ce53ba21d0f5266a3fb5966e166d">geo_rotate_geo</a></td></tr>
@@ -97,8 +96,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga025d33083cec5ccf19a1f8fd5905db34" name="ga025d33083cec5ccf19a1f8fd5905db34"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga025d33083cec5ccf19a1f8fd5905db34">&#9670;&#160;</a></span>geo_affine()</h2>
+<a id="ga396b64f605564642d544846bb17d6fb4" name="ga396b64f605564642d544846bb17d6fb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga396b64f605564642d544846bb17d6fb4">&#9670;&#160;</a></span>geo_affine()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -112,8 +111,74 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structAFFINE.html">AFFINE</a> *&#160;</td>
-          <td class="paramname"><em>a</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>g</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>yoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>zoff</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -123,11 +188,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the 3D affine transformation of a geometry. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the affine transformation of a geometry, which translates, rotates and scales it in one step. </p>
+<p >The coefficients follow PostGIS ST_Affine </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">a</td><td>Matrix specifying the transformation @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_gae9d2bcae0f51237b57654827a14f90da.html#gae9d2bcae0f51237b57654827a14f90da" title="Return the 3D affine transformation of a geometry @sqlfn affine()">Geo_affine()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">a,b,c,d,e,f,g,h,i</td><td>Coefficients of the 3x3 matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xoff,yoff,zoff</td><td>Translation @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_gae9d2bcae0f51237b57654827a14f90da.html#gae9d2bcae0f51237b57654827a14f90da" title="Return the 3D affine transformation of a geometry @sqlfn affine()">Geo_affine()</a>, <a class="el" href="group__mobilitydb__geo__base__transf_ga5f6dd52a0301ce974be52423c7dd2582.html#ga5f6dd52a0301ce974be52423c7dd2582" title="Return the 2D affine transformation of a geometry @sqlfn affine()">Geo_affine_2d()</a> </td></tr>
   </table>
   </dd>
 </dl>

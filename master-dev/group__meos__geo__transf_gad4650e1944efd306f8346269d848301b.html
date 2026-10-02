@@ -79,8 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_gaa86786440f13658fc47687a75ba99779.html#gaa86786440f13658fc47687a75ba99779">tgeo_affine</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gacec84a9e5ec2f6ad3b073bea3c83fd14.html#gacec84a9e5ec2f6ad3b073bea3c83fd14">tgeo_affine_2d</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_gad4650e1944efd306f8346269d848301b.html#gad4650e1944efd306f8346269d848301b">tgeo_affine</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga93906050f156306725fc664503166c7f.html#ga93906050f156306725fc664503166c7f">tgeo_rotate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gaf39c33f57eb0b90173cd26a08289aa60.html#gaf39c33f57eb0b90173cd26a08289aa60">tgeo_rotate_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga07c128f6a5f19f8782246343bd2e9da4.html#ga07c128f6a5f19f8782246343bd2e9da4">tgeo_rotate_x</a></td></tr>
@@ -96,8 +95,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa86786440f13658fc47687a75ba99779" name="gaa86786440f13658fc47687a75ba99779"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa86786440f13658fc47687a75ba99779">&#9670;&#160;</a></span>tgeo_affine()</h2>
+<a id="gad4650e1944efd306f8346269d848301b" name="gad4650e1944efd306f8346269d848301b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad4650e1944efd306f8346269d848301b">&#9670;&#160;</a></span>tgeo_affine()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -111,8 +110,74 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structAFFINE.html">AFFINE</a> *&#160;</td>
-          <td class="paramname"><em>a</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>g</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>yoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>zoff</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,11 +187,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the 3D affine transform of a temporal geo to do things like translate, rotate, scale in one step. </p>
-<p >A two-dimensional value moved by a transformation leaving the plane becomes three-dimensional (<a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a57d832a51c5d4180afa3b7adc00a9cba.html#a57d832a51c5d4180afa3b7adc00a9cba" title="Return a geometry moved by an affine transformation, read in three dimensions when the transformation...">geo_affine_lift</a>). An affine map of longitude and latitude is no transformation of the sphere, so a geodetic value is refused </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the affine transformation of a temporal geo, which translates, rotates and scales it in one step. </p>
+<p >The coefficients follow PostGIS ST_Affine. A two-dimensional value moved by a transformation leaving the plane becomes three-dimensional (<a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a57d832a51c5d4180afa3b7adc00a9cba.html#a57d832a51c5d4180afa3b7adc00a9cba" title="Return a geometry moved by an affine transformation, read in three dimensions when the transformation...">geo_affine_lift</a>). An affine map of longitude and latitude is no transformation of the sphere, so a geodetic value is refused </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">a</td><td>Matrix specifying the transformation @csqlfn <a class="el" href="group__mobilitydb__geo__transf_ga711920dbe255f431286077446b433ae1.html#ga711920dbe255f431286077446b433ae1" title="Return the 3D affine transform of a temporal point to do things like translate, rotate,...">Tgeo_affine()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">a,b,c,d,e,f,g,h,i</td><td>Coefficients of the 3x3 matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xoff,yoff,zoff</td><td>Translation @csqlfn <a class="el" href="group__mobilitydb__geo__transf_ga711920dbe255f431286077446b433ae1.html#ga711920dbe255f431286077446b433ae1" title="Return the 3D affine transform of a temporal point to do things like translate, rotate,...">Tgeo_affine()</a>, <a class="el" href="group__mobilitydb__geo__transf_ga40054a11ef654858eb02496714910c3e.html#ga40054a11ef654858eb02496714910c3e" title="Return the 2D affine transformation of a temporal geo @sqlfn affine()">Tgeo_affine_2d()</a> </td></tr>
   </table>
   </dd>
 </dl>
