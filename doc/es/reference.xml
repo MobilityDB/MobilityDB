@@ -2564,9 +2564,6 @@
 				<listitem>
 					<para><link linkend="trgeometry_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringe una trgeometry a (el complemento de) una caja espaciotemporal</para>
 				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restringe una trgeometry al (complemento de) un span de elevación</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

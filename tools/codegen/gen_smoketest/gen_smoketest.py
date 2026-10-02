@@ -661,10 +661,6 @@ TRGEO_CONFIG = dict(
         # The merge refuses two values that disagree where they overlap, so its
         # second operand is the LATER sequence rather than the canned one.
         "trgeometry_merge":                 {1: "(Temporal *) trgeo_tseq2"},
-        # An elevation is a range of Z, so the span is a FLOATSPAN and the value
-        # must carry Z -- neither of which the defaults give them.
-        "trgeometry_at_elevation":          {0: "trgeo_z1", 1: "floatspan1"},
-        "trgeometry_minus_elevation":       {0: "trgeo_z1", 1: "floatspan1"},
         # The body-point trajectory follows one POINT of the rigid body; the
         # default polygon geom1 is rejected ("Only point geometries accepted").
         "trgeometry_body_point_trajectory": {1: "geom_point1"},
@@ -756,13 +752,6 @@ TRGEO_CONFIG = dict(
     (Temporal *) trgeo_inst3, trgeo_inst4, LINEAR, 0.0, NULL, false);
   Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
-  /* A rigid geometry carrying Z and the elevation span that cuts it, spelled
-   * as 153_trgeo_spatialfuncs.test.sql spells them. The body climbs from 0 to
-   * 4 so the span crosses it rather than missing it entirely. */
-  Temporal *trgeo_z1 = trgeometry_in(
-    "Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));"
-    "[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]");
-  Span *floatspan1 = floatspan_in("[1, 2]");
   /* Canned input arrays for the array-input constructors: two same-geometry
    * instants in increasing time, and the canned trgeometry sequence. The
    * constructors copy their elements, so these stay owned by the blocks that
@@ -792,8 +781,6 @@ TRGEO_CONFIG = dict(
   if (trgeo_seq1) free(trgeo_seq1);
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
-  if (trgeo_z1) free(trgeo_z1);
-  if (floatspan1) free(floatspan1);
   free(stbox1);
   free(poseset1);
   free(pose1);
