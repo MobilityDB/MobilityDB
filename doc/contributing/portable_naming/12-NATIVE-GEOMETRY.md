@@ -131,8 +131,8 @@ sequence drops a change of value. Geography answers structurally throughout.
 
 ## The plan
 
-One pull request, "Answer the native geometry operations under their plain names", of these
-commits in this order, each with its SQL, its `@sqlfn` and `@altsqlfn` tags, its regression tests
+One pull request, "Answer the native geometry operations under their plain names", on the branch
+`geo/native-operations-plain-names`, of these commits in this order, each with its SQL, its `@sqlfn` and `@altsqlfn` tags, its regression tests
 against the `ST_` function of PostGIS on the same inputs, and its manual entries in English and
 Spanish:
 
@@ -165,3 +165,5 @@ Spanish:
 
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
+
+**State.** The branch holds `049_geo_equality.test.sql` (the measurement above); commit 1 is next.

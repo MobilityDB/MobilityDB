@@ -328,6 +328,10 @@ names (`geoX`, `cbufferX`) reach Flink and Spark with the tags of R9 and A1.
 
 ## Acceptance of the whole
 
+- Every pull request of the plan names its branch in its row or its family document, and these
+  notes record the state of the branch before each push of it: what is done, what is measured,
+  what is left. A session works from these notes as GitHub holds them, never from a copy.
+
 - Before PR R2: the harness of 0.3, its per-signature table kept with the PR.
 - Each MobilityDB PR: strict-ci and CI green; the manual builds with
   `dblatex -s texstyle.sty -p dblatex.xsl` in both languages (the CMake documentation targets
