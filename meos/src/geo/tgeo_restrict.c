@@ -2852,41 +2852,14 @@ tpoint_at_elevation(const Temporal *temp, const Span *s)
 
 /**
  * @ingroup meos_geo_restrict
- * @brief Return a temporal geo restricted to an elevation span
- * @param[in] temp Temporal geo
- * @param[in] s Elevation span
- * @csqlfn #Tgeo_at_elevation()
- */
-Temporal *
-tgeo_at_elevation(const Temporal *temp, const Span *s)
-{
-  return tgeo_restrict_elevation(temp, s, REST_AT);
-}
-
-/**
- * @ingroup meos_geo_restrict
- * @brief Return a temporal point restricted to the complement of a geometry
+ * @brief Return a temporal point restricted to the complement of an elevation
+ * span
  * @param[in] temp Temporal point
  * @param[in] s Elevation span
  * @csqlfn #Tgeo_minus_elevation()
- * @note This function has a last parameter for the Z dimension which is not
- * available for temporal geometries
  */
 Temporal *
 tpoint_minus_elevation(const Temporal *temp, const Span *s)
-{
-  return tgeo_restrict_elevation(temp, s, REST_MINUS);
-}
-
-/**
- * @ingroup meos_geo_restrict
- * @brief Return a temporal geo restricted to the complement of a geometry
- * @param[in] temp Temporal geo
- * @param[in] s Elevation span
- * @csqlfn #Tgeo_minus_elevation()
- */
-Temporal *
-tgeo_minus_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_MINUS);
 }
