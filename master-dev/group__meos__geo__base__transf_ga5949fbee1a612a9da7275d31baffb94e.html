@@ -87,8 +87,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaba34d227e4332fc371bcb18761ad8f29.html#gaba34d227e4332fc371bcb18761ad8f29">geo_rotate_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gae53b4d7029df8688b69d14d5b6ae3baa.html#gae53b4d7029df8688b69d14d5b6ae3baa">geo_rotate_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaf1f310502ec4c77d431d37109403766f.html#gaf1f310502ec4c77d431d37109403766f">geo_round</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga9c0fcab90c738e534129863dc2a18126.html#ga9c0fcab90c738e534129863dc2a18126">geo_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga3a3c412d9852911692ea8a109f5fbeca.html#ga3a3c412d9852911692ea8a109f5fbeca">geo_scale_xyz</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga5949fbee1a612a9da7275d31baffb94e.html#ga5949fbee1a612a9da7275d31baffb94e">geo_scale</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaff41865bbead7bb34c11366c40e55bac.html#gaff41865bbead7bb34c11366c40e55bac">geo_scale_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gadc44703178acecd2fa7edde93015fa32.html#gadc44703178acecd2fa7edde93015fa32">geo_translate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaa48a6cf834d205bb500b2b0a2814e4bd.html#gaa48a6cf834d205bb500b2b0a2814e4bd">geo_transscale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga55994ab1d404b6328c8604937d24d23e.html#ga55994ab1d404b6328c8604937d24d23e">geog_array_union</a></td></tr>
@@ -96,8 +96,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga9c0fcab90c738e534129863dc2a18126" name="ga9c0fcab90c738e534129863dc2a18126"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga9c0fcab90c738e534129863dc2a18126">&#9670;&#160;</a></span>geo_scale()</h2>
+<a id="ga5949fbee1a612a9da7275d31baffb94e" name="ga5949fbee1a612a9da7275d31baffb94e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5949fbee1a612a9da7275d31baffb94e">&#9670;&#160;</a></span>geo_scale()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -111,14 +111,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>scale</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xfactor</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>sorigin</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>yfactor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>zfactor</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -128,12 +134,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Scale a geometry by the factors a point states, about an origin. </p>
-<p >The scaling of <a class="el" href="group__meos__geo__transf_ga85eddd3f6f6ec179a8a98e06de787261.html#ga85eddd3f6f6ec179a8a98e06de787261" title="Scale a temporal geo by given factors.">tgeo_scale</a>: the factors and the origin are non-empty points, the factor of a point without Z is 1 along z, and a two-dimensional geometry scaled about an origin off its plane leaves the plane when the vertical factor moves it </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Scale a geometry by the given factors along the x, y, and z axes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Point geometry stating the scale factors </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Point geometry for the origin, may be <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_ga77519bb70faacff3ab83b5c908081692.html#ga77519bb70faacff3ab83b5c908081692" title="Return a geometry scaled by the factors a point states, about an optional origin @sqlfn scale()">Geo_scale()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xfactor,yfactor,zfactor</td><td>Scale factors @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_ga77519bb70faacff3ab83b5c908081692.html#ga77519bb70faacff3ab83b5c908081692" title="Return a geometry scaled by the given factors along the x, y, and z axes @sqlfn scale()">Geo_scale()</a> </td></tr>
   </table>
   </dd>
 </dl>

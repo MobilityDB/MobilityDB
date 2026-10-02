@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geog_array_union</title>
+<title>MobilityDB: geo_scale_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,31 +88,37 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gae53b4d7029df8688b69d14d5b6ae3baa.html#gae53b4d7029df8688b69d14d5b6ae3baa">geo_rotate_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaf1f310502ec4c77d431d37109403766f.html#gaf1f310502ec4c77d431d37109403766f">geo_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga5949fbee1a612a9da7275d31baffb94e.html#ga5949fbee1a612a9da7275d31baffb94e">geo_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaff41865bbead7bb34c11366c40e55bac.html#gaff41865bbead7bb34c11366c40e55bac">geo_scale_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_gaff41865bbead7bb34c11366c40e55bac.html#gaff41865bbead7bb34c11366c40e55bac">geo_scale_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gadc44703178acecd2fa7edde93015fa32.html#gadc44703178acecd2fa7edde93015fa32">geo_translate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaa48a6cf834d205bb500b2b0a2814e4bd.html#gaa48a6cf834d205bb500b2b0a2814e4bd">geo_transscale</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga55994ab1d404b6328c8604937d24d23e.html#ga55994ab1d404b6328c8604937d24d23e">geog_array_union</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga55994ab1d404b6328c8604937d24d23e.html#ga55994ab1d404b6328c8604937d24d23e">geog_array_union</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga55994ab1d404b6328c8604937d24d23e" name="ga55994ab1d404b6328c8604937d24d23e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga55994ab1d404b6328c8604937d24d23e">&#9670;&#160;</a></span>geog_array_union()</h2>
+<a id="gaff41865bbead7bb34c11366c40e55bac" name="gaff41865bbead7bb34c11366c40e55bac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaff41865bbead7bb34c11366c40e55bac">&#9670;&#160;</a></span>geo_scale_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geog_array_union </td>
+          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geo_scale_geo </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
-          <td class="paramname"><em>gsarr</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>scale</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>sorigin</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,16 +128,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the union of an array of geographies. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Scale a geometry by the factors a point states, about an origin. </p>
+<p >The scaling of <a class="el" href="group__meos__geo__transf_ga526195e866caca48d4303524318f5379.html#ga526195e866caca48d4303524318f5379" title="Scale a temporal geo by given factors.">tgeo_scale_geo</a>: the factors and the origin are non-empty points, the factor of a point without Z is 1 along z, and a two-dimensional geometry scaled about an origin off its plane leaves the plane when the vertical factor moves it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geographies </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Point geometry stating the scale factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Point geometry for the origin, may be <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__geo__base__transf_ga5b2b02f08c64079c27d75d25ea94eb35.html#ga5b2b02f08c64079c27d75d25ea94eb35" title="Return a geometry scaled by the factors a point states, about an optional origin @sqlfn scale()">Geo_scale_geo()</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL</dd></dl>
-<p>The union of a set of positions is the set with its duplicates removed, and two positions are the same when their coordinates are, so the answer is read without measuring anything and holds on the spheroid as it does on the plane. A geodetic array carrying anything else is a different question: a geodesic is not the segment joining two positions in degree space, and two geodesics meet where those segments need not, so the answer awaits an overlay that works on the spheroid. </p>
 
 </div>
 </div>

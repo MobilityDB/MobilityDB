@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeo_scale_xyz</title>
+<title>MobilityDB: tgeo_scale_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,8 +85,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga07c128f6a5f19f8782246343bd2e9da4.html#ga07c128f6a5f19f8782246343bd2e9da4">tgeo_rotate_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gab0dd58a6a59a3b9b51028b97fb6864ef.html#gab0dd58a6a59a3b9b51028b97fb6864ef">tgeo_rotate_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gaa0aa60aee4eb553890d17fdb7d8fb54b.html#gaa0aa60aee4eb553890d17fdb7d8fb54b">tgeo_rotate_z</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga85eddd3f6f6ec179a8a98e06de787261.html#ga85eddd3f6f6ec179a8a98e06de787261">tgeo_scale</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_ga33884afa0e75b6a4050af7d773aff222.html#ga33884afa0e75b6a4050af7d773aff222">tgeo_scale_xyz</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga55b4b401d71f257180b07fe94019984d.html#ga55b4b401d71f257180b07fe94019984d">tgeo_scale</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_ga526195e866caca48d4303524318f5379.html#ga526195e866caca48d4303524318f5379">tgeo_scale_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga90c6fb5547de23209a5d96069e3ef819.html#ga90c6fb5547de23209a5d96069e3ef819">tgeo_translate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga507c93d53ce617be67efddef7de64884.html#ga507c93d53ce617be67efddef7de64884">tgeo_transscale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gadaca52beb5863526629e5006113b973d.html#gadaca52beb5863526629e5006113b973d">tgeo_unnest</a></td></tr>
@@ -95,14 +95,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga33884afa0e75b6a4050af7d773aff222" name="ga33884afa0e75b6a4050af7d773aff222"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga33884afa0e75b6a4050af7d773aff222">&#9670;&#160;</a></span>tgeo_scale_xyz()</h2>
+<a id="ga526195e866caca48d4303524318f5379" name="ga526195e866caca48d4303524318f5379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga526195e866caca48d4303524318f5379">&#9670;&#160;</a></span>tgeo_scale_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tgeo_scale_xyz </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tgeo_scale_geo </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -110,20 +110,14 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>xfactor</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>scale</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>yfactor</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>zfactor</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>sorigin</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -133,11 +127,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Scale a temporal geo by the given factors along the x, y, and z axes. </p>
+<p>Scale a temporal geo by given factors. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xfactor,yfactor,zfactor</td><td>Scale factors @csqlfn <a class="el" href="group__mobilitydb__geo__transf_ga5a079ffd6ad74c2614aae26550664fb4.html#ga5a079ffd6ad74c2614aae26550664fb4" title="Return a temporal geo scaled by the given factors along the x, y, and z axes @sqlfn scale()">Tgeo_scale_xyz()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Geometry for the scale factors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Point geometry for the origin, may be <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__geo__transf_gae23fef1b5e8ffcfcbfe5ed68b0f55e09.html#gae23fef1b5e8ffcfcbfe5ed68b0f55e09" title="Return a temporal geo scaled by the factors a point states, about an optional origin @sqlfn scale()">Tgeo_scale_geo()</a> </td></tr>
   </table>
   </dd>
 </dl>
