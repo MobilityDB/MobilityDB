@@ -119,4 +119,11 @@ SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzspan t2;
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspan t2;
 
+-- The named portable form of the <-> operator tested above
+SELECT spanDistance(1, intspan '[3, 7]');
+SELECT spanDistance(intspan '[3, 7]', 1);
+SELECT spanDistance(intspan '[1, 2]', intspan '[5, 7]');
+SELECT round(spanDistance(1.0, floatspan '[3.5, 7.5]')::numeric, 6);
+SELECT spanDistance(date '2001-01-01', datespan '[2001-01-05, 2001-01-10]');
+
 -------------------------------------------------------------------------------

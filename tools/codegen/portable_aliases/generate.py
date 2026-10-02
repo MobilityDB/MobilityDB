@@ -126,7 +126,7 @@ def classify(sym):
     if sym in TEMP or sym in EVER or sym in ALWAYS:
         return "bare comparison function (temp/ever/always named directly)"
     if sym in DIST:
-        return "bare distance function (tDistance / nearestApproachDistance)"
+        return "distance function (tDistance / nearestApproachDistance / setDistance / spanDistance / spansetDistance)"
     if sym in SCALAR_SQL:
         return "standard SQL operator (portable as-is on all engines)"
     if sym in ALREADY_NAMED:

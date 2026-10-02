@@ -358,3 +358,33 @@ SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspan t2;
    0
 (1 row)
 
+SELECT spanDistance(1, intspan '[3, 7]');
+ spandistance 
+--------------
+            2
+(1 row)
+
+SELECT spanDistance(intspan '[3, 7]', 1);
+ spandistance 
+--------------
+            2
+(1 row)
+
+SELECT spanDistance(intspan '[1, 2]', intspan '[5, 7]');
+ spandistance 
+--------------
+            3
+(1 row)
+
+SELECT round(spanDistance(1.0, floatspan '[3.5, 7.5]')::numeric, 6);
+  round   
+----------
+ 2.500000
+(1 row)
+
+SELECT spanDistance(date '2001-01-01', datespan '[2001-01-05, 2001-01-10]');
+ spandistance 
+--------------
+            4
+(1 row)
+

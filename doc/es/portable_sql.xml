@@ -58,7 +58,7 @@
 				<row><entry></entry><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGreaterEqual</varname></primary></indexterm>tGreaterEqual(a, b)</entry></row>
 				<row><entry>Distancia</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
 				<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
-				<row><entry>Distancia (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance (a, b)</entry></row>
+				<row><entry>Distancia (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
 				<row><entry>Distancia de rejilla (índice de celda)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
 				<row><entry>Igual</entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same(a, b)</entry></row>
 				<row><entry>Comparación tradicional</entry><entry>=</entry><entry><indexterm significance="normal"><primary><varname>eq</varname></primary></indexterm>eq(a, b)</entry></row>
