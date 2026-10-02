@@ -13,7 +13,9 @@
 This plan turns families 1–9, the set-returning analysis (10), the I/O plan, rules 8–9 and the
 manual draft into pull requests, MobilityDB first. Measured at MobilityDB master `3e507c9695`,
 MEOS-API `20efba8`, 2026-09-28; the set-returning functions and the I/O plan at MobilityDB master
-`0be1b51060`, MEOS-API `20efba81`, JMEOS `e47aa744`, 2026-09-29.
+`0be1b51060`, MEOS-API `20efba81`, JMEOS `e47aa744`, 2026-09-29. Part IV, the parity of the Spark
+and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730bb`, MEOS-API
+`5ba0cd8492`, JMEOS `5422d27c`, 2026-10-02.
 
 ## Where things stand
 
@@ -163,6 +165,159 @@ carries over the MobilityDB types (decision 0.5).
 | MobilityDuck | D1 | Re-vendor the catalog; generate the index routing from A8's statement in place of `src/include/index/index_search_ops.hpp`, which routes predicates to the R-tree by function name, for PRs R2–R4 (as #410 did for positions); rename the temporal table function `tempUnnest` to `temporalUnnest` over all 20 types, `tbool` included, and restore its tests |
 | PyMEOS, GoMEOS, MEOS.NET, MEOS.js | — | no SQL names; each regenerates on the catalog and gains the MEOS functions of G1, G4, G6, G7, G9, G11, G12, G14 and G17 |
 
+## Part IV — parity of Spark and Flink with MobilityDB
+
+A user who knows MobilityDB calls the same function, under the same name and over the same
+types, in Spark and in Flink. Parts I–III close the gaps a renaming would carry and give the
+colliding names their engine spelling; this part closes the rest of the distance between the two
+JVM surfaces and MobilityDB's.
+
+### Measured
+
+At MobilityDB master `30a9a730bb`, MEOS-API `5ba0cd8492` and JMEOS `5422d27c`, on 2026-10-02.
+The MobilityDB surface is the extension script `make mobilitydb_sql` writes, its `CREATE
+FUNCTION` statements read by MEOS-API's own reader (`sql_statements` of `parser/sqlfn.py`). A
+signature users call is one the script gives no plumbing role: type input and output, aggregate
+state, selectivity, index or planner support are left out, while a function behind an operator
+or a cast stays, since Flink and Spark reach an operator or a cast through its function. That
+leaves 8,164 signatures: 4,005 called by name, 3,311 behind an operator, 499 behind a cast and 349
+aggregates. Flink's verdict per signature is its generator's own (`_overload` and
+`_setret_overload` of `codegen_jvm.py`); Spark reaches a signature when a registration under its
+SQL name calls its C function.
+
+| | Signatures reached | Share |
+|---|---|---|
+| Flink | 5,354 | 66% |
+| Spark, under the MobilityDB name | 2,979 | 36% |
+| Both | 2,408 | 29% |
+| Neither | 2,239 | 27% |
+
+### Why a signature is missed
+
+Four causes sit upstream of both engines, so one fix reaches both:
+
+| Cause | Signatures | Examples | Owner |
+|---|---|---|---|
+| U0. An aggregate | 349; Flink carries none, Spark 7 names (`tCount`, `tSum`, `tAndAgg`, `tOrAgg`, `tMinAgg`, `tMaxAgg`, `mergeAgg`) | `extent`, `tAvg`, `tCentroid`, `setUnion`, `appendInstantAgg` | JMEOS |
+| U1. A `LANGUAGE SQL` body with no C backing | 351, 42 names | the spatial relationships of `tpose`, `tnpoint`, the cells and the point clouds through a cast (`aContains`, `tIntersects`, `eDwithin`); `spaceSplit`, `spaceBoxes`, `spaceTimeTiles` over `tpose` and `tpcpoint`; `expandSpace` | MEOS-API, JMEOS |
+| U2. A C wrapper the catalog maps to no MEOS function | 464, 237 names | the `<type>FromText` wrappers of G13; `asEWKB` and `asHexEWKB` taking an endian text; `round(tfloat[], integer)`; `setDistance(geometry, geomset)`; `same_rid`; the casts from ranges | MobilityDB |
+| U3. A signature whose catalog backer is internal | 214 in Flink, 319 in Spark, about 35 names | `asText(tint)` on `temporal_out`, `atValue`, `getValue`, `instants`, `memSize`, `<type>FromBinary` on `set_from_wkb` | MobilityDB |
+
+A binding calls a public MEOS function only, so U3 is closed by the tag pointing the catalog at
+the public typed function (`tint_out` beside the internal `temporal_out`), never by a binding
+calling the internal one.
+
+The engines' own causes, by the reason each generator gives:
+
+| Engine | Cause | Signatures |
+|---|---|---|
+| Flink | no `geometry` or `geography` value | 369 arguments, 58 results |
+| Flink | `<type>FromBinary`, `<type>FromEWKB`: the `bytea` input against the jar's data and length | 316 |
+| Flink | a `text` argument: the endian text the C function takes as `uint8_t` (118), a `text *` (65) | 187 |
+| Flink | the cells `h3index`, `quadbin`, `s2cell` | 144 arguments, 13 results |
+| Flink | an SQL argument count other than the C one (`geography(tgeogpoint)`, `getX(pcpoint)`) | 74 |
+| Flink | the bound `NORMALIZE` of the `<type>Seq` and `<type>SeqSet` constructors | 38 |
+| Flink | a base value in the distance functions (`setDistance`, `spanDistance`, `nearestApproachDistance`) | about 41 |
+| Flink | a set-returning signature with a `geometry` column | 34 |
+| Flink | `jsonpath`, `text[]`, a bound `INVERT` | 28 |
+| Spark | a C function registered under its C name and not under its SQL name | 2,896 |
+| Spark | an enum argument read from text (`interpType`, `nullHandleType`), which Flink reads through the catalog's parser of that enum | about 160 |
+| Spark | a count out-parameter (`spaceBoxes`, `splitNSpans`), which Flink passes | 184 |
+| Spark | `TPCBox`, `PoseChain`, `Raster` values | about 240 |
+| Spark | an array of timestamps or dates, a `uint32_t` | about 50 |
+| Both | a type spelled `float8` or `int` where MobilityDB writes `float` and `integer` (`affine`, `rotateX`, `scale` over `tgeometry`; `valueN(tbool, int)`) | 49 |
+
+The Spark surface registers every public C function under its C name (3,013 names) and the SQL
+names over a dispatch: `asText` dispatches over the temporal types only, so `asText(intset)` is
+reached as `intset_out`.
+
+JMEOS's Spark gaps check fails against MobilityDB `30a9a730bb`: `tjsonb_to_tbigint`, public since
+`21a15203ba`, takes a `nullHandleType`, which the Spark arm does not read (J9). Flink reads an
+`interpType` through `interptype_from_string`, which `meos_catalog.h` declares internal while its
+sibling `null_handle_type_from_string` is public in `meos_json.h`; 39 generated Flink classes call
+it (G22).
+
+### Rasters derived from rasters
+
+PostgreSQL users derive rasters with PostGIS, and MobilityDB composes with it:
+`rasterValue(trip, ST_MapAlgebra(...))` reads a derived raster along a trajectory. Spark and Flink
+carry no PostGIS, so there the only raster operations are those MEOS states. A raster analysis of
+moving objects derives rasters throughout (the clearance under a vessel from the depth, the slope
+and the banks of the seabed, the highest waves of a day from its hourly fields), and MEOS answers
+part of it:
+
+| Operation | PostGIS function | MEOS today | `rt_core` function MEOS vendors |
+|---|---|---|---|
+| clip, reclassify, polygonize, summarize, transform, rescale | `ST_Clip`, `ST_Reclass`, `ST_DumpAsPolygons`, `ST_SummaryStats`, `ST_Transform`, `ST_Rescale` | `raster_clip`, `raster_reclass`, `raster_dump_as_polygons`, `raster_summary_stats`, `raster_transform`, `raster_rescale` | — |
+| local operation over one or two rasters (`'[rast] - 10'`, NDVI, the difference of two time steps) | `ST_MapAlgebra` with an expression | none | `rt_raster_iterator` |
+| focal operation over a window, also across tiles (`customextent`) | `ST_MapAlgebra` with `ST_Mean4ma`, `ST_Min4ma`, … | none | `rt_raster_iterator` with a neighbourhood |
+| slope, ruggedness, topographic position | `ST_Slope`, `ST_TRI`, `ST_TPI` | none | `rt_raster_iterator` with a neighbourhood |
+| union of tiles, and of time steps by a pixel operation (`'MAX'`) | `ST_Union` | none | `rt_raster_iterator`, `rt_raster_from_two_rasters` |
+| value histogram | `ST_ValueCount` | none | `rt_band_get_value_count` |
+| pixels as points, values as an array | `ST_PixelAsPoints`, `ST_DumpValues` | none | `rt_band_get_pixel`, `rt_pixel_set_to_array` |
+| statistics over many rasters | `ST_SummaryStatsAgg` | none | `rt_band_get_summary_stats`, its running count, mean and Q |
+| resample onto another raster's grid, alignment test | `ST_Resample`, `ST_SameAlignment` | `raster_transform_raster` resamples | `rt_raster_same_alignment` |
+| a raster built from values | `ST_MakeEmptyRaster`, `ST_AddBand`, `ST_SetValues` | none | `rt_raster_new`, `rt_raster_generate_new_band`, `rt_band_set_pixel` |
+
+MEOS gives an engine without PostGIS the functions the PostGIS raster extension already
+provides, from the `rt_core` it vendors, as the GEOS opt-out gave MEOS its native `geo_*`
+functions and SQL their plain names (`buffer`, `convexHull`, `relate`) beside PostGIS's `ST_`
+ones (decision 0.5), and as the raster family already stands (`raster_clip` and `clip`,
+`raster_reclass` and `reclass`, `raster_width` and `width`). What PostGIS keeps outside `rt_core`
+is not vendored: the expression form of `ST_MapAlgebra` evaluates SQL through SPI, the `4ma`
+callbacks (`st_min4ma`, `st_mean4ma`, `_st_slope4ma`, `_st_tpi4ma`, `_st_tri4ma`) are `plpgsql`,
+and the union aggregate lives in `rt_pg`. MEOS states those as callbacks of `rt_raster_iterator`
+computing PostGIS's own formulas.
+
+### Decisions Part IV rests on
+
+| # | Item | Decided |
+|---|---|---|
+| 0.13 | Spark's registrations under C names | open: kept beside the SQL names, or removed so that Flink and Spark carry one name set (decision 0.4) |
+| 0.14 | The names of the raster operations of the table above | decided by the precedent of decision 0.5 and the raster family: MEOS `raster_<operation>`, SQL the PostGIS name without `ST_` with PostGIS's argument names, order and defaults, declared in PostgreSQL beside PostGIS's; open: what takes the place of the SQL expression and of the callback where PostGIS takes one (a typed operator, an enumerated statistic) |
+
+### MobilityDB
+
+| PR | Topic | What it changes |
+|---|---|---|
+| G19 | Spell every SQL type as the rest of MobilityDB does | `float8` → `float`, `int` → `integer` in the declarations that spell them so (`affine`, `rotate`, `rotateX`, `rotateY`, `rotateZ`, `scale` over `tgeometry`, `rescale` and `transform` over `raster`, `valueN(tbool, int)`) |
+| G20 | Map every C wrapper to its MEOS function | the `@csqlfn` tag on the MEOS function each of the 237 names of U2 calls, and the MEOS function where none exists |
+| G21 | Back every signature by a public MEOS function | the tags of U3 on the public typed functions (`tint_out`, …), the internal kernels keeping theirs for the C callers |
+| G22 | Read an interpolation from its name in the public API | `interptype_from_string` declared in `meos.h` beside `null_handle_type_from_string`, validating its argument as an external function does |
+| G23 | Give MEOS the raster operations an engine without PostGIS needs | for each row "none" of the table above, a public MEOS `raster_<operation>` over the vendored `rt_core` function its last column names, the `4ma` statistics, slope, ruggedness and topographic position as `rt_raster_iterator` callbacks on PostGIS's formulas, and its SQL function under the PostGIS name without `ST_` (decision 0.14); SQL tests, smoke tests, the manual entries EN and ES |
+
+### MEOS-API
+
+| PR | Topic |
+|---|---|
+| A9 | State MobilityDB's whole SQL surface: the `LANGUAGE SQL` functions with their bodies and the aggregates with their state functions, beside the C-backed signatures |
+| A10 | State the compositions of U1 (the relationships through a cast, the grid functions of `tpose` and `tpcpoint`, `expandSpace`) as A7 states those of the grid functions |
+
+### JMEOS
+
+Every JMEOS PR changes the Spark and Flink arms together, each surface proven by MobilitySpark
+and MobilityFlink built with the branch generator.
+
+| PR | Topic |
+|---|---|
+| J9 | Both engines read an enum argument from its text through the public catalog function returning that enum from a string (`null_handle_type_from_string`, `interptype_from_string` once G22 publishes it); Spark gains it, Flink keeps to public parsers |
+| J10 | Spark passes the count out-parameters the catalog states (`shape.outParams`), as Flink does |
+| J11 | Both engines take a `text` argument: a `text *` through `text_in`, an endian text through the value the catalog states for it |
+| J12 | Both engines take the `bytea` of `<type>FromBinary` and `<type>FromEWKB`, passing its length |
+| J13 | Flink carries `geometry` and `geography` through the reader and writer A6 states for each SQL type |
+| J14 | Flink carries the cells `h3index`, `quadbin`, `s2cell` |
+| J15 | Flink resolves an SQL argument count other than the C one, the bound `NORMALIZE`, and a base value in the distance functions |
+| J16 | Both engines render the compositions A7 and A10 state |
+| J17 | Spark carries `TPCBox`, `PoseChain` and `Raster`; a raster travels as the raster WKB `asBinary(raster)` writes, the GDAL readers (`rasterValue(tgeompoint, path text, band)`, `atRasterValue`, `minusRasterValue`, `eRasterValue`, `aRasterValue`, `raquetRead(path, quadbin)`) are how an engine without PostGIS reads a raster file, and both engines carry the raster operations of G23 |
+| J18 | Both engines carry the aggregates the catalog states (A9) |
+| J19 | A parity ledger per engine, keyed on MobilityDB's SQL signatures, that CI holds and that only shrinks, as the Spark gaps ledger does |
+
+### Order
+
+J9 first (it also clears JMEOS's failing gaps check), then J10–J12, which bring Spark and Flink
+to one base; G19–G22, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
+renames land on that base. J3 waits on decision 0.13; the forms of G23 taking an expression or a callback wait on decision 0.14.
+
 ## Acceptance of the whole
 
 - Before PR R2: the harness of 0.3, its per-signature table kept with the PR.
@@ -176,3 +331,5 @@ carries over the MobilityDB types (decision 0.5).
 - After PRs G13–G14, G6, G8, G9 and A6: every type round-trips through every format it supports,
   `<type>From<Format>(as<Format>(v))` returning `v`, in PostgreSQL and through each binding, and
   the I/O matrix (`io_matrix.py`) reads yes in every cell but the n/a ones.
+- After Part IV: J19's ledgers are empty for Flink and Spark, but for a signature whose meaning
+  is undefined for an engine, each argued and decided on its own.
