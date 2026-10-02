@@ -291,20 +291,11 @@ Datum
 Tgeo_affine(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  AFFINE affine;
-  affine.afac = PG_GETARG_FLOAT8(1);
-  affine.bfac = PG_GETARG_FLOAT8(2);
-  affine.cfac = PG_GETARG_FLOAT8(3);
-  affine.dfac = PG_GETARG_FLOAT8(4);
-  affine.efac = PG_GETARG_FLOAT8(5);
-  affine.ffac = PG_GETARG_FLOAT8(6);
-  affine.gfac = PG_GETARG_FLOAT8(7);
-  affine.hfac = PG_GETARG_FLOAT8(8);
-  affine.ifac = PG_GETARG_FLOAT8(9);
-  affine.xoff = PG_GETARG_FLOAT8(10);
-  affine.yoff = PG_GETARG_FLOAT8(11);
-  affine.zoff = PG_GETARG_FLOAT8(12);
-  Temporal *result = tgeo_affine(temp, &affine);
+  Temporal *result = tgeo_affine(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
+    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6), PG_GETARG_FLOAT8(7),
+    PG_GETARG_FLOAT8(8), PG_GETARG_FLOAT8(9), PG_GETARG_FLOAT8(10),
+    PG_GETARG_FLOAT8(11), PG_GETARG_FLOAT8(12));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -373,9 +364,9 @@ Datum
 Tgeo_affine_2d(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeo_affine_2d(temp, PG_GETARG_FLOAT8(1),
-    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
-    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6));
+  Temporal *result = tgeo_affine(temp, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), 0, PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4), 0, 0, 0,
+    1, PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6), 0);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -519,20 +510,11 @@ Datum
 Geo_affine(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  AFFINE affine;
-  affine.afac = PG_GETARG_FLOAT8(1);
-  affine.bfac = PG_GETARG_FLOAT8(2);
-  affine.cfac = PG_GETARG_FLOAT8(3);
-  affine.dfac = PG_GETARG_FLOAT8(4);
-  affine.efac = PG_GETARG_FLOAT8(5);
-  affine.ffac = PG_GETARG_FLOAT8(6);
-  affine.gfac = PG_GETARG_FLOAT8(7);
-  affine.hfac = PG_GETARG_FLOAT8(8);
-  affine.ifac = PG_GETARG_FLOAT8(9);
-  affine.xoff = PG_GETARG_FLOAT8(10);
-  affine.yoff = PG_GETARG_FLOAT8(11);
-  affine.zoff = PG_GETARG_FLOAT8(12);
-  GSERIALIZED *result = geo_affine(gs, &affine);
+  GSERIALIZED *result = geo_affine(gs, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
+    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6), PG_GETARG_FLOAT8(7),
+    PG_GETARG_FLOAT8(8), PG_GETARG_FLOAT8(9), PG_GETARG_FLOAT8(10),
+    PG_GETARG_FLOAT8(11), PG_GETARG_FLOAT8(12));
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }
@@ -548,9 +530,9 @@ Datum
 Geo_affine_2d(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = geo_affine_2d(gs, PG_GETARG_FLOAT8(1),
-    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
-    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6));
+  GSERIALIZED *result = geo_affine(gs, PG_GETARG_FLOAT8(1),
+    PG_GETARG_FLOAT8(2), 0, PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4), 0, 0, 0,
+    1, PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6), 0);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }
