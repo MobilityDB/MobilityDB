@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeoseq_restrict_stbox</title>
+<title>MobilityDB: tgeo_restrict_elevation_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,42 +80,36 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga72f399184cfbf55803c040c2dd067ba7.html#ga72f399184cfbf55803c040c2dd067ba7">tgeo_restrict_elevation</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_gacb900f82e2a0b4814ccfa3149cb6f52b.html#gacb900f82e2a0b4814ccfa3149cb6f52b">tgeo_restrict_elevation_intl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__restrict_gacb900f82e2a0b4814ccfa3149cb6f52b.html#gacb900f82e2a0b4814ccfa3149cb6f52b">tgeo_restrict_elevation_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_gabc8ab7a0d4f69e9343bd50304d34fefb.html#gabc8ab7a0d4f69e9343bd50304d34fefb">tgeo_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga064e0be85bcdb251bbe3f2ab27d89e2e.html#ga064e0be85bcdb251bbe3f2ab27d89e2e">tgeo_restrict_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga47dec455c48a6ea5d2395e9328d57ca6.html#ga47dec455c48a6ea5d2395e9328d57ca6">tgeoinst_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga6f56afc6938be9418e6535a8cb46b581.html#ga6f56afc6938be9418e6535a8cb46b581">tgeoinst_restrict_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga87496d4396e997d608782c79348b02b6.html#ga87496d4396e997d608782c79348b02b6">tgeoseq_restrict_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__restrict_gaeb3e5d38b8d91a9144740d0daf7620ae.html#gaeb3e5d38b8d91a9144740d0daf7620ae">tgeoseq_restrict_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_gaeb3e5d38b8d91a9144740d0daf7620ae.html#gaeb3e5d38b8d91a9144740d0daf7620ae">tgeoseq_restrict_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_gac7e1cf5969424a35a42e1b0d21ecd7e1.html#gac7e1cf5969424a35a42e1b0d21ecd7e1">tgeoseqset_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__restrict_ga78a13f0768dfadb801a8e23af6e6505f.html#ga78a13f0768dfadb801a8e23af6e6505f">tgeoseqset_restrict_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaeb3e5d38b8d91a9144740d0daf7620ae" name="gaeb3e5d38b8d91a9144740d0daf7620ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaeb3e5d38b8d91a9144740d0daf7620ae">&#9670;&#160;</a></span>tgeoseq_restrict_stbox()</h2>
+<a id="gacb900f82e2a0b4814ccfa3149cb6f52b" name="gacb900f82e2a0b4814ccfa3149cb6f52b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacb900f82e2a0b4814ccfa3149cb6f52b">&#9670;&#160;</a></span>tgeo_restrict_elevation_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tgeoseq_restrict_stbox </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tgeo_restrict_elevation_intl </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>border_inc</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -131,18 +125,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal geo sequence restricted to (the complement of) a spatiotemporal box. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a temporal point restricted to (the complement of) an elevation span, for a caller that has validated its arguments. </p>
+<p >The internal twin of <a class="el" href="group__meos__internal__geo__restrict_ga72f399184cfbf55803c040c2dd067ba7.html#ga72f399184cfbf55803c040c2dd067ba7" title="Return a temporal point restricted to (the complement of) an elevation span.">tgeo_restrict_elevation</a>, as <a class="el" href="group__meos__internal__box__index_gaeb30d4b04885c6e55bf0567f3df2adbf.html#gaeb30d4b04885c6e55bf0567f3df2adbf" title="Search an RTree with a bounding box, collecting matching IDs into a MeosArray, for a caller that has ...">rtree_search_intl</a> is of <a class="el" href="group__meos__temporal__box__index_ga5aa659c83ca888f10910a85254c67b85.html#ga5aa659c83ca888f10910a85254c67b85" title="Search an RTree with a bounding box, collecting matching IDs into a MeosArray.">rtree_search</a>: it asserts the conditions the validating entry tests, for a temporal point the caller derived itself, such as the positions of a temporal pose </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td>temporal geo sequence </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point with Z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Elevation span </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">atfunc</td><td>True if the restriction is <code>at</code>, false for <code>minus</code> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section pre"><dt>Precondition</dt><dd>The box has only spatial dimension and the arguments have the same SRID. </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The function only restricts to the spatial dimension, the restriction to the time dimension is made in function <a class="el" href="group__meos__internal__geo__restrict_ga064e0be85bcdb251bbe3f2ab27d89e2e.html#ga064e0be85bcdb251bbe3f2ab27d89e2e" title="Return a temporal geo restricted to (the complement of) a spatiotemporal box.">tgeo_restrict_stbox</a>. @csqlfn <a class="el" href="group__mobilitydb__geo__restrict_ga58dd4e4108abf295a6b48e8bf141c885.html#ga58dd4e4108abf295a6b48e8bf141c885" title="Return a temporal geo restricted to a spatiotemporal box @sqlfn atStbox()">Tgeo_at_stbox()</a>, <a class="el" href="group__mobilitydb__geo__restrict_ga99cbb8bd2a27d9e101c29fa87b189964.html#ga99cbb8bd2a27d9e101c29fa87b189964" title="Return a temporal geo restricted to the complement of a spatiotemporal box @sqlfn minusStbox()">Tgeo_minus_stbox()</a> </dd></dl>
 
 </div>
 </div>
