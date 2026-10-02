@@ -71,8 +71,8 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
    LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
 </pre></li><li class="listitem"><a name="tgeo_atElevation"></a><a class="indexterm" name="id6501"></a><a class="indexterm" name="id6504"></a><p>Restrict to (the complement of) an elevation span <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
-atElevation(tgeom,zspan) → tgeom
-minusElevation(tgeom,zspan) → tgeom
+atElevation(tpoint,zspan) → tpoint
+minusElevation(tpoint,zspan) → tpoint
 </pre><p>The elevation of a temporal point is its Z coordinate, which runs linearly in time whether the point is planar or geodetic, so the periods the span admits are the same for both. The positions at the bounds of those periods are not: a geodetic point travels the great circle between two positions and reaches the elevation of a bound there rather than on the straight line in longitude and latitude.</p><pre class="programlisting">
 SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04,
   Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));

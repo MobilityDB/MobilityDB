@@ -71,8 +71,8 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
    LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
 </pre></li><li class="listitem"><a name="tgeo_atElevation"></a><a class="indexterm" name="id5950"></a><a class="indexterm" name="id5953"></a><p>Restringe a (al complemento de) un rango de altitud <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
-atElevation(tgeom,zspan) → tgeom
-minusElevation(tgeom,zspan) → tgeom
+atElevation(tpoint,zspan) → tpoint
+minusElevation(tpoint,zspan) → tpoint
 </pre><p>La altitud de un punto temporal es su coordenada Z, que varía linealmente en el tiempo tanto si el punto es planar como si es geodésico, de modo que los períodos que el rango admite son los mismos para ambos. Las posiciones en los límites de esos períodos no lo son: un punto geodésico recorre el círculo máximo entre dos posiciones y alcanza allí la altitud de un límite, y no sobre la línea recta en longitud y latitud.</p><pre class="programlisting">
 SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04,
   Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
