@@ -4280,7 +4280,8 @@ ensure_same_srid_geoarr(const GSERIALIZED **geoms, int count)
 }
 
 /**
- * @brief Ensure that two geometries/geographies have the same dimensionality
+ * @brief Ensure that two geometries/geographies are both planar or both
+ * geodetic
  */
 bool
 ensure_same_geodetic_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -4289,6 +4290,21 @@ ensure_same_geodetic_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed planar and geodetic coordinates");
+  return false;
+}
+
+/**
+ * @brief Ensure that two geometries/geographies have the same dimensionality,
+ * as #ensure_same_dimensionality_tspatial_geo requires it of a
+ * spatiotemporal value and a geometry/geography
+ */
+bool
+ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
   return false;
 }
 /**

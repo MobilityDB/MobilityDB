@@ -424,6 +424,7 @@ extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZE
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius);
 extern GSERIALIZED *geom_oriented_envelope(const GSERIALIZED *gs);
+extern GSERIALIZED *geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);
@@ -437,6 +438,7 @@ extern bool geog_dwithin(const GSERIALIZED *g1, const GSERIALIZED *g2, double to
 extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern bool geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
@@ -457,6 +459,7 @@ extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *cou
 /* Distance functions */
 
 extern double geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2);
+extern double geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);

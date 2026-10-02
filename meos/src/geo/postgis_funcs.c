@@ -1087,12 +1087,35 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *line = lwgeom_closest_line_3d(geom1, geom2);
-  if (lwgeom_is_empty(line))
-    return NULL;
-
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line); lwgeom_free(geom1); lwgeom_free(geom2);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  GSERIALIZED *result = NULL;
+  if (! lwgeom_is_empty(line))
+    result = geo_serialize(line);
+  lwgeom_free(line);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the shortest line between two geometries
+ * @details The line is computed in 3D when the geometries have Z and in 2D
+ * otherwise, as #geo_distance_fn selects the temporal distance, which refuses
+ * operands of different dimensions; this is PostGIS @p ST_3DShortestLine when
+ * both have Z and @p ST_ShortestLine otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p LWGEOM_shortestline2d(PG_FUNCTION_ARGS),
+ * @p LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
+ * @errval NULL
+ */
+GSERIALIZED *
+geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, NULL); VALIDATE_NOT_NULL(gs2, NULL);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return NULL;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_shortestline3d(gs1, gs2) : geom_shortestline2d(gs1, gs2);
 }
 
 /**
@@ -1212,6 +1235,31 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the distance between two geometries
+ * @details The distance is measured in 3D when the geometries have Z and in
+ * 2D otherwise, as #geo_distance_fn selects the temporal distance, which
+ * refuses operands of different dimensions; this is PostGIS @p ST_3DDistance
+ * when both have Z and @p ST_Distance otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p ST_Distance(PG_FUNCTION_ARGS),
+ * @p ST_3DDistance(PG_FUNCTION_ARGS)
+ * @note An empty geometry has no point to measure from, so the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
+ */
+double
+geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
+}
+
+/**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the 3D geometries intersect
  * @param[in] gs1,gs2 Geometries
@@ -1301,20 +1349,22 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
- * @details Bare name for the planar (2D) distance-within test, the portable
- * counterpart of @ref geog_dwithin() for geometry; equivalent to PostGIS
- * @p ST_DWithin.
+ * @details The distance is measured in 3D when both geometries have Z and in
+ * 2D otherwise, as #geo_dwithin_fn selects it for the temporal dwithin at
+ * every instant; this is PostGIS @p ST_3DDWithin when both have Z and
+ * @p ST_DWithin otherwise
  * @param[in] gs1,gs2 Geometries
  * @param[in] tolerance Tolerance
- * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ * @note PostGIS functions: @p LWGEOM_dwithin(PG_FUNCTION_ARGS),
+ * @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  */
 bool
 geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs1, false);
-  return FLAGS_GET_Z(gs1->gflags) ?
-    geom_dwithin2d(gs1, gs2, tolerance) : geom_dwithin3d(gs1, gs2, tolerance);
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
 }
 
 /**
@@ -2102,16 +2152,39 @@ geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries intersect
- * @details Bare name for the planar (2D) intersection test, the portable
- * counterpart of @ref geog_intersects() for geometry; equivalent to PostGIS
- * @p ST_Intersects.
+ * @details The intersection is tested in 3D when both geometries have Z and
+ * in 2D otherwise, as #geo_intersects_fn selects it for the temporal
+ * intersects at every instant; this is PostGIS @p ST_3DIntersects when both
+ * have Z and @p ST_Intersects otherwise
  * @param[in] gs1,gs2 Geometries
- * @note PostGIS function: @p ST_Intersects(PG_FUNCTION_ARGS)
+ * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
+ * @p ST_3DIntersects(PG_FUNCTION_ARGS)
  */
 bool
 geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  return geom_intersects2d(gs1, gs2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    geom_intersects3d(gs1, gs2) : geom_intersects2d(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if two geometries are disjoint
+ * @details The relationship is tested in 3D when both geometries have Z and
+ * in 2D otherwise, as #geo_disjoint_fn selects it for the temporal disjoint
+ * at every instant
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_Disjoint(PG_FUNCTION_ARGS)
+ */
+bool
+geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    ! geom_intersects3d(gs1, gs2) : geom_disjoint2d(gs1, gs2);
 }
 
 /**
