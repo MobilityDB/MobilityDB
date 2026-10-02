@@ -450,6 +450,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   if (xsize > 0)
   {
     state->hasx = true;
+    state->spacegrid = true;
     state->xsize = xsize;
     state->ysize = ysize;
     state->box.xmin = float_get_bin(box->xmin, xsize, sorigin.x);
@@ -502,7 +503,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     if (MEOS_FLAGS_GET_Z(box->flags))
     {
       state->box.zmin = box->zmin;
-      state->box.zmax = box->ymax;
+      state->box.zmax = box->zmax;
       state->max_coords[2] = 0;
     }
   }
@@ -688,10 +689,20 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
         return false;
     }
   }
-  stbox_tile_state_set(state->x, state->y, state->z, state->t, state->xsize,
-    state->ysize, state->zsize, state->tunits, state->hasx, state->hasz,
-    state->hast, MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
-    box);
+  /* A grid laid over a box with no space dimension keeps the spatial extent
+   * of the box in every tile, Z included */
+  if (! state->spacegrid && ! state->temp)
+    stbox_tile_state_set(state->box.xmin, state->box.ymin, state->box.zmin,
+      state->t, state->box.xmax - state->box.xmin,
+      state->box.ymax - state->box.ymin, state->box.zmax - state->box.zmin,
+      state->tunits, state->hasx, MEOS_FLAGS_GET_Z(state->box.flags),
+      state->hast, MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
+      box);
+  else
+    stbox_tile_state_set(state->x, state->y, state->z, state->t, state->xsize,
+      state->ysize, state->zsize, state->tunits, state->hasx, state->hasz,
+      state->hast, MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
+      box);
   return true;
 }
 
@@ -1000,9 +1011,21 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   /* Stop when we've used up all the grid tiles */
   for (int i = 0; i < count1; i++)
   {
-    stbox_tile_state_set(state->x, state->y, state->z, state->t, state->xsize,
-      state->ysize, state->zsize, state->tunits, hasx, hasz, hast,
-      MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid, &result[i]);
+    /* A grid with no space dimension keeps the spatial extent of the box in
+     * every tile, from the lower to the upper bound of each spatial
+     * dimension */
+    if (state->spacegrid)
+      stbox_tile_state_set(state->x, state->y, state->z, state->t,
+        state->xsize, state->ysize, state->zsize, state->tunits, hasx, hasz,
+        hast, MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
+        &result[i]);
+    else
+      stbox_tile_state_set(state->box.xmin, state->box.ymin, state->box.zmin,
+        state->t, state->box.xmax - state->box.xmin,
+        state->box.ymax - state->box.ymin, state->box.zmax - state->box.zmin,
+        state->tunits, hasx, hasz, hast,
+        MEOS_FLAGS_GET_GEODETIC(state->box.flags), state->box.srid,
+        &result[i]);
     stbox_tile_state_next(state);
   }
   *count = count1;

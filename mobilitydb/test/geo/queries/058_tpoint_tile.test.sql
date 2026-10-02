@@ -393,6 +393,14 @@ FROM spaceTiles(stbox 'STBOX Z((1,1,1),(10,3,3))', 5.0, 5.0, 5.0,
 SELECT count(*) AS tiles
 FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
   duration := '2 days', torigin := '2001-01-01');
+
+-- A time tile keeps the spatial extent of the box, in X, Y and Z
+SELECT index, tile
+FROM timeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])',
+  duration := '2 days', torigin := '2001-01-01');
+SELECT index, tile
+FROM timeTiles(stbox 'STBOX ZT(((0,0,0),(10,10,20)),[2001-01-01, 2001-01-03])',
+  duration := '1 day', torigin := '2001-01-01');
 SELECT count(*) AS tiles
 FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', xsize := 5.0,
   duration := '2 days', torigin := '2001-01-01');

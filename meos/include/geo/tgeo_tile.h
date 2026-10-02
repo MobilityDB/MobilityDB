@@ -62,6 +62,7 @@ typedef struct STboxGridState
 {
   bool done;               /**< True when all tiles have been processed */
   bool hasx;               /**< True when tiles have X dimension */
+  bool spacegrid;          /**< True when the grid lays tiles in space */
   bool hasz;               /**< True when tiles have Z dimension */
   bool hast;               /**< True when tiles have T dimension */
   int i;                   /**< Number of current tile */
