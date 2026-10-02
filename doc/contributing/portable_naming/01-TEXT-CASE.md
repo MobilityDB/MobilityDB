@@ -12,7 +12,7 @@
 
 `lower`, `upper` and `initcap` are built-in functions of Spark 3.5.1 and Flink 2.0.0. Their
 siblings `lowerInc` and `upperInc` conflict with nothing and take the same prefix. The family
-holds the 86 signatures of master `2495c4cc36` and 3 new ones over `text`: 89 in all.
+holds the 86 signatures of master `2495c4cc36`.
 
 ## Rules
 
@@ -20,7 +20,8 @@ holds the 86 signatures of master `2495c4cc36` and 3 new ones over `text`: 89 in
    the case of text and reading the bound of a span. Each operation takes its own name.
 2. **An operation that also applies to the base type takes the base type's name.** Text case
    applies to `text`, `textset` and `ttext`, and MEOS spells it `text_lower`, `textset_lower`,
-   `ttext_lower`: the name is `textLower`.
+   `ttext_lower`: the name is `textLower`. The name serves `textset` and `ttext`; a plain `text`
+   keeps the function each engine has over a string.
 3. **Related functions take the same prefix.** `spanLower` goes with `spanUpper`,
    `spanLowerInc` and `spanUpperInc`, and likewise for every class that carries the group. One
    operation keeps one spelling across classes: the temporal `lowerInc` becomes
@@ -32,9 +33,9 @@ holds the 86 signatures of master `2495c4cc36` and 3 new ones over `text`: 89 in
 
 | Flink and Spark name | PostgreSQL name | Operand types | PostgreSQL wrapper | MEOS function | Signatures |
 |---|---|---|---|---|---|
-| `textLower` | `lower` | `text`, `textset`, `ttext` | `Textset_lower`, `Ttext_lower` | `text_lower`, `textset_lower`, `ttext_lower` | 3 |
-| `textUpper` | `upper` | `text`, `textset`, `ttext` | `Textset_upper`, `Ttext_upper` | `text_upper`, `textset_upper`, `ttext_upper` | 3 |
-| `textInitcap` | `initcap` | `text`, `textset`, `ttext` | `Textset_initcap`, `Ttext_initcap` | `text_initcap`, `textset_initcap`, `ttext_initcap` | 3 |
+| `textLower` | `lower` | `textset`, `ttext` | `Textset_lower`, `Ttext_lower` | `textset_lower`, `ttext_lower` | 2 |
+| `textUpper` | `upper` | `textset`, `ttext` | `Textset_upper`, `Ttext_upper` | `textset_upper`, `ttext_upper` | 2 |
+| `textInitcap` | `initcap` | `textset`, `ttext` | `Textset_initcap`, `Ttext_initcap` | `textset_initcap`, `ttext_initcap` | 2 |
 | `spanLower` | `lower` | the 5 spans | `Span_lower` | `intspan_lower`, `bigintspan_lower`, `floatspan_lower`, `datespan_lower`, `tstzspan_lower` | 5 |
 | `spanUpper` | `upper` | the 5 spans | `Span_upper` | `intspan_upper`, ..., `tstzspan_upper` | 5 |
 | `spanLowerInc` | `lowerInc` | the 5 spans | `Span_lower_inc` | `span_lower_inc` | 5 |
@@ -45,12 +46,13 @@ holds the 86 signatures of master `2495c4cc36` and 3 new ones over `text`: 89 in
 | `spansetUpperInc` | `upperInc` | the 5 span sets | `Spanset_upper_inc` | `spanset_upper_inc` | 5 |
 | `temporalLowerInc` | `lowerInc` | the 20 temporal types | `Temporal_lower_inc` | `temporal_lower_inc` | 20 |
 | `temporalUpperInc` | `upperInc` | the 20 temporal types | `Temporal_upper_inc` | `temporal_upper_inc` | 20 |
-| | | | | **Total** | **89** |
+| | | | | **Total** | **86** |
 
-The `text` signatures are new in every engine: PostgreSQL declares `textLower(text)`,
-`textUpper(text)`, `textInitcap(text)` over the MEOS functions `text_lower`, `text_upper`,
-`text_initcap`, beside its own `lower(text)`, `upper(text)`, `initcap(text)`. The other 86
-signatures keep their PostgreSQL names and take the Flink and Spark name as `@altsqlfn`.
+A plain `text` gains no function in any engine: every engine changes the case of a string with
+its own function, PostgreSQL with `lower('Hello')`, Spark and Flink with `lower('Hello')`. A
+function over a base type exists only where an engine lacks it, as [family 3](03-MATH.md) states
+for the base numbers. The 86 signatures keep their PostgreSQL names and take the Flink and Spark
+name as `@altsqlfn`.
 
 The 5 spans are `intspan`, `bigintspan`, `floatspan`, `datespan`, `tstzspan`; the 5 span sets
 `intspanset`, `bigintspanset`, `floatspanset`, `datespanset`, `tstzspanset`. The 20 temporal

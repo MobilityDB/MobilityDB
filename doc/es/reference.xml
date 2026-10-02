@@ -1035,7 +1035,7 @@
 					<para><link linkend="tgeo_isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_length"><varname>length</varname>, <varname>geoLength</varname></link>: Devuelve la longitud de una geometría o de una geografía, o la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_length"><varname>length</varname></link>: Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_cumulativeLength"><varname>cumulativeLength</varname></link>: Devuelve la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>

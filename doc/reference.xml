@@ -1035,7 +1035,7 @@
 					<para><link linkend="tgeo_isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_length"><varname>length</varname>, <varname>geoLength</varname></link>: Return the length of a geometry or a geography, or the length traversed by the temporal point &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_length"><varname>length</varname></link>: Return the length traversed by the temporal point &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_cumulativeLength"><varname>cumulativeLength</varname></link>: Return the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
