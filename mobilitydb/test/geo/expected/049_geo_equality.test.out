@@ -1,0 +1,114 @@
+SELECT geometry 'Linestring(0 0,2 0)' = geometry 'Linestring(0 0,1 0,2 0)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT geography 'Linestring(0 0,2 0)' = geography 'Linestring(0 0,1 0,2 0)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeometry '[Linestring(0 0,2 0)@2001-01-01]' = tgeometry '[Linestring(0 0,1 0,2 0)@2001-01-01]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cmp(tgeometry '[Linestring(0 0,2 0)@2001-01-01]', tgeometry '[Linestring(0 0,1 0,2 0)@2001-01-01]');
+ cmp 
+-----
+  -1
+(1 row)
+
+SELECT hash(tgeometry '[Linestring(0 0,2 0)@2001-01-01]') = hash(tgeometry '[Linestring(0 0,1 0,2 0)@2001-01-01]');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeography '[Linestring(0 0,2 0)@2001-01-01]' = tgeography '[Linestring(0 0,1 0,2 0)@2001-01-01]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cmp(tgeography '[Linestring(0 0,2 0)@2001-01-01]', tgeography '[Linestring(0 0,1 0,2 0)@2001-01-01]');
+ cmp 
+-----
+  -1
+(1 row)
+
+SELECT hash(tgeography '[Linestring(0 0,2 0)@2001-01-01]') = hash(tgeography '[Linestring(0 0,1 0,2 0)@2001-01-01]');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT eEqual(tgeometry '[Linestring(0 0,2 0)@2001-01-01]', geometry 'Linestring(0 0,1 0,2 0)');
+ eequal 
+--------
+ f
+(1 row)
+
+SELECT eEqual(tgeography '[Linestring(0 0,2 0)@2001-01-01]', geography 'Linestring(0 0,1 0,2 0)');
+ eequal 
+--------
+ f
+(1 row)
+
+SELECT geomset '{"Linestring(0 0,2 0)"}' = geomset '{"Linestring(0 0,1 0,2 0)"}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT numValues(geomset '{"Linestring(0 0,2 0)", "Linestring(0 0,1 0,2 0)"}');
+ numvalues 
+-----------
+         2
+(1 row)
+
+SELECT numInstants(tgeometry 'Interp=Step;[Linestring(0 0,2 0)@2001-01-01, Linestring(0 0,1 0,2 0)@2001-01-02, Linestring(0 0,2 0)@2001-01-03]');
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT ST_AsText(valueAtTimestamp(tgeometry 'Interp=Step;[Linestring(0 0,2 0)@2001-01-01, Linestring(0 0,1 0,2 0)@2001-01-02, Linestring(0 0,2 0)@2001-01-03]', '2001-01-02'));
+        st_astext        
+-------------------------
+ LINESTRING(0 0,1 0,2 0)
+(1 row)
+
+CREATE TEMP TABLE tbl_geo_eq(t tgeometry);
+CREATE TABLE
+INSERT INTO tbl_geo_eq VALUES (tgeometry '[Linestring(0 0,2 0)@2001-01-01]'), (tgeometry '[Linestring(0 0,1 0,2 0)@2001-01-01]');
+INSERT 0 2
+SET enable_hashagg = on;
+SET
+SET enable_sort = off;
+SET
+SELECT COUNT(*) FROM (SELECT DISTINCT t FROM tbl_geo_eq) s;
+ count 
+-------
+     2
+(1 row)
+
+SET enable_hashagg = off;
+SET
+SET enable_sort = on;
+SET
+SELECT COUNT(*) FROM (SELECT DISTINCT t FROM tbl_geo_eq) s;
+ count 
+-------
+     2
+(1 row)
+
+RESET enable_hashagg;
+RESET
+RESET enable_sort;
+RESET
+DROP TABLE tbl_geo_eq;
+DROP TABLE
