@@ -503,9 +503,9 @@ SELECT perimeter(stbox 'GEODSTBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))', fa
 				<indexterm significance="normal"><primary><varname>shiftScaleValue</varname></primary></indexterm>
 				<para>Desplaza y/o escalear el rango de valores de un cuadro delimitador con uno o dos valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-shiftValue(tbox,{integer,float}) &#8594; tbox
-scaleValue(tbox,{integer,float}) &#8594; tbox
-shiftScaleValue(tbox,{integer,float},{integer,float}) &#8594; tbox
+shiftValue(tbox,number) &#8594; tbox
+scaleValue(tbox,number) &#8594; tbox
+shiftScaleValue(tbox,number,number) &#8594; tbox
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
@@ -579,7 +579,7 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 					<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
 					<para>Extiende la dimensión numérica, espacial o temporal del cuadro delimitador con un valor o un intervalo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-expandValue(tbox,{integer,float}) → tbox
+expandValue(tbox,number) → tbox
 expandSpace(stbox,float) → stbox
 expandTime(box,interval) → box
 </programlisting>
