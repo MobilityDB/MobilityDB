@@ -36,35 +36,35 @@
  * Overlaps
  *****************************************************************************/
 
-CREATE FUNCTION overlaps_rid(bigintset, tnpoint)
+CREATE FUNCTION overlapsRid(bigintset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_rid_bigintset_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @@ (
-  PROCEDURE = overlaps_rid,
+  PROCEDURE = overlapsRid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION overlaps_rid(tnpoint, bigintset)
+CREATE FUNCTION overlapsRid(tnpoint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_rid_tnpoint_bigintset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps_rid(tnpoint, tnpoint)
+CREATE FUNCTION overlapsRid(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_rid_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @@ (
-  PROCEDURE = overlaps_rid,
+  PROCEDURE = overlapsRid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @@ (
-  PROCEDURE = overlaps_rid,
+  PROCEDURE = overlapsRid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -74,55 +74,55 @@ CREATE OPERATOR @@ (
  * Contains
  *****************************************************************************/
 
-CREATE FUNCTION contains_rid(bigintset, tnpoint)
+CREATE FUNCTION containsRid(bigintset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_rid_bigintset_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @? (
-  PROCEDURE = contains_rid,
+  PROCEDURE = containsRid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = ?@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION contains_rid(tnpoint, bigint)
+CREATE FUNCTION containsRid(tnpoint, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_rid_tnpoint_bigint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_rid(tnpoint, bigintset)
+CREATE FUNCTION containsRid(tnpoint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_rid_tnpoint_bigintset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_rid(tnpoint, npoint)
+CREATE FUNCTION containsRid(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_rid_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_rid(tnpoint, tnpoint)
+CREATE FUNCTION containsRid(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_rid_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @? (
-  PROCEDURE = contains_rid,
+  PROCEDURE = containsRid,
   LEFTARG = tnpoint, RIGHTARG = bigint,
   COMMUTATOR = ?@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
-  PROCEDURE = contains_rid,
+  PROCEDURE = containsRid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = ?@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
-  PROCEDURE = contains_rid,
+  PROCEDURE = containsRid,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = ?@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
-  PROCEDURE = contains_rid,
+  PROCEDURE = containsRid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = ?@
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -132,55 +132,55 @@ CREATE OPERATOR @? (
  * Contained
  *****************************************************************************/
 
-CREATE FUNCTION contained_rid(bigint, tnpoint)
+CREATE FUNCTION containedRid(bigint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_rid_bigint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_rid(bigintset, tnpoint)
+CREATE FUNCTION containedRid(bigintset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_rid_bigintset_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_rid(npoint, tnpoint)
+CREATE FUNCTION containedRid(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_rid_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?@ (
-  PROCEDURE = contained_rid,
+  PROCEDURE = containedRid,
   LEFTARG = bigint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
-  PROCEDURE = contained_rid,
+  PROCEDURE = containedRid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @?
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
-  PROCEDURE = contained_rid,
+  PROCEDURE = containedRid,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION contained_rid(tnpoint, bigintset)
+CREATE FUNCTION containedRid(tnpoint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_rid_tnpoint_bigintset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_rid(tnpoint, tnpoint)
+CREATE FUNCTION containedRid(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_rid_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?@ (
-  PROCEDURE = contained_rid,
+  PROCEDURE = containedRid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @?
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
-  PROCEDURE = contained_rid,
+  PROCEDURE = containedRid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -190,75 +190,75 @@ CREATE OPERATOR ?@ (
  * Same
  *****************************************************************************/
 
-CREATE FUNCTION same_rid(bigint, tnpoint)
+CREATE FUNCTION sameRid(bigint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_bigint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_rid(bigintset, tnpoint)
+CREATE FUNCTION sameRid(bigintset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_bigintset_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_rid(npoint, tnpoint)
+CREATE FUNCTION sameRid(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = bigint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION same_rid(tnpoint, bigint)
+CREATE FUNCTION sameRid(tnpoint, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_tnpoint_bigint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_rid(tnpoint, bigintset)
+CREATE FUNCTION sameRid(tnpoint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_tnpoint_bigintset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_rid(tnpoint, npoint)
+CREATE FUNCTION sameRid(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_rid(tnpoint, tnpoint)
+CREATE FUNCTION sameRid(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_rid_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = tnpoint, RIGHTARG = bigint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
-  PROCEDURE = same_rid,
+  PROCEDURE = sameRid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
   -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
