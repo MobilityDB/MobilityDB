@@ -957,33 +957,33 @@ SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([3,9])';
  f
 (1 row)
 
-SELECT overlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
- overlaps 
-----------
+SELECT tboxOverlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+ tboxoverlaps 
+--------------
  t
 (1 row)
 
-SELECT contains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
- contains 
-----------
+SELECT tboxContains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+ tboxcontains 
+--------------
  f
 (1 row)
 
-SELECT contained(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
- contained 
------------
+SELECT tboxContained(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+ tboxcontained 
+---------------
  f
 (1 row)
 
-SELECT adjacent(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
- adjacent 
-----------
+SELECT tboxAdjacent(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+ tboxadjacent 
+--------------
  t
 (1 row)
 
-SELECT same(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
- same 
-------
+SELECT tboxSame(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+ tboxsame 
+----------
  f
 (1 row)
 

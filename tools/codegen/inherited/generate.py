@@ -338,11 +338,15 @@ def _boxops_directions(bt: dict) -> list:
     return dirs
 
 
-def _boxops_sub(fragment: str, d: dict, bt: dict) -> str:
+def _boxops_sub(fragment: str, d: dict, bt: dict, op: str = "") -> str:
     """Substitute the per-direction tokens into one template block. {PRIM} is the
     box name for a self-contained box (overlaps_stbox_stbox) but differs for a
-    span<T> instance (overlaps_span_span for tstzspan/numspan) — defaults to box."""
+    span<T> instance (overlaps_span_span for tstzspan/numspan) — defaults to box.
+    {SQLFN} names the SQL functions the wrapper backs through #_possqlfn, which
+    names those of a position wrapper (spanOverlaps, tboxOverlaps, stboxOverlaps,
+    tpcboxOverlaps for a time-span direction)."""
     vals = {
+        "SQLFN": _possqlfn({"op": op}, d, bt) if op else "",
         "BOX": d["box"], "BOXC": d["boxc"], "GETARG": d["getarg"],
         "PRIM": d.get("prim", d["box"]),
         "DISPBOX": d.get("dispbox", ""), "DISPTT": d.get("disptt", bt.get("disptt", "")),
@@ -362,7 +366,8 @@ def render_boxops(bt: dict) -> str:
     out += [_boxops_sub(dispatch[d["kind"]], d, bt) for d in dirs]
     for banner, wraps in ops:
         out.append(banner)
-        out += [_boxops_sub(wraps[d["kind"]], d, bt) for d in dirs]
+        op = re.search(r"^ \* (\w+)$", banner, re.M).group(1).capitalize()
+        out += [_boxops_sub(wraps[d["kind"]], d, bt, op) for d in dirs]
     out.append(trailer)
     return "\n\n".join(out)
 
@@ -2440,17 +2445,17 @@ def _topops_markers(family: str):
 
 # Per predicate: signature patterns and backing C symbols (all RETURNS boolean).
 _TOPOP_FNS = {
-    "contains": [("contains({s}, {v})", "Contains_set_value"),
-                 ("contains({s}, {s})", "Contains_set_set")],
-    "contained": [("contained({v}, {s})", "Contained_value_set"),
-                  ("contained({s}, {s})", "Contained_set_set")],
-    "overlaps": [("overlaps({s}, {s})", "Overlaps_set_set")],
+    "contains": [("setContains({s}, {v})", "Contains_set_value"),
+                 ("setContains({s}, {s})", "Contains_set_set")],
+    "contained": [("setContained({v}, {s})", "Contained_value_set"),
+                  ("setContained({s}, {s})", "Contained_set_set")],
+    "overlaps": [("setOverlaps({s}, {s})", "Overlaps_set_set")],
 }
 # Per predicate: operator symbol, PROCEDURE, COMMUTATOR and argument directions.
 _TOPOP_OPS = {
-    "contains": ("@>", "contains", "<@", (("{s}", "{v}"), ("{s}", "{s}"))),
-    "contained": ("<@", "contained", "@>", (("{v}", "{s}"), ("{s}", "{s}"))),
-    "overlaps": ("&&", "overlaps", "&&", (("{s}", "{s}"),)),
+    "contains": ("@>", "setContains", "<@", (("{s}", "{v}"), ("{s}", "{s}"))),
+    "contained": ("<@", "setContained", "@>", (("{v}", "{s}"), ("{s}", "{s}"))),
+    "overlaps": ("&&", "setOverlaps", "&&", (("{s}", "{s}"),)),
 }
 # selectivity token -> the text closing the COMMUTATOR line and, when present,
 # the RESTRICT line (active or commented).
@@ -3335,13 +3340,15 @@ def _spanfile_sub(text: str, tok: dict) -> str:
 # its own opclass declares, so it carries the support function that rewrites it
 # into that operator. The clause is inserted into the shared four-line skeleton
 # here rather than added to the skeleton itself, which a dozen other surfaces
-# render and which carries no support function. A position predicate carries
-# the prefix of its class (setLeft, spanBefore, spansetOverright), the names
-# compared in lower case as the declarations fold them.
+# render and which carries no support function. A topological or position
+# predicate carries the prefix of its class (setContains, spanOverlaps, setLeft,
+# spanBefore, spansetOverright), the names compared in lower case as the
+# declarations fold them.
 _SPAN_POSITIONS = ("before", "after", "overbefore", "overafter",
                    "left", "right", "overleft", "overright")
-_SPAN_PORTABLE = {"overlaps", "contains", "contained", "adjacent", "same"} | {
-    cls + pos for cls in ("set", "span", "spanset") for pos in _SPAN_POSITIONS}
+_SPAN_TOPOLOGY = ("overlaps", "contains", "contained", "adjacent", "same")
+_SPAN_PORTABLE = {cls + op for cls in ("set", "span", "spanset")
+                  for op in _SPAN_TOPOLOGY + _SPAN_POSITIONS}
 
 
 def _with_span_support(text: str) -> str:

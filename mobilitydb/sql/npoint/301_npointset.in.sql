@@ -339,25 +339,25 @@ CREATE OPERATOR CLASS npointset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION contains(npointset, npoint)
+CREATE FUNCTION setContains(npointset, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(npointset, npointset)
+CREATE FUNCTION setContains(npointset, npointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = npointset, RIGHTARG = npoint,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = npointset, RIGHTARG = npointset,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -365,25 +365,25 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION contained(npoint, npointset)
+CREATE FUNCTION setContained(npoint, npointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(npointset, npointset)
+CREATE FUNCTION setContained(npointset, npointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = npoint, RIGHTARG = npointset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = npointset, RIGHTARG = npointset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -391,14 +391,14 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION overlaps(npointset, npointset)
+CREATE FUNCTION setOverlaps(npointset, npointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = npointset, RIGHTARG = npointset,
   COMMUTATOR = &&
   -- RESTRICT = span_sel, JOIN = span_joinsel

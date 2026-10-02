@@ -614,5 +614,41 @@ SET client_min_messages TO notice;
 				</tbody>
 			</tgroup>
 		</informaltable>
+		<para>
+			Las funciones topológicas, entre las cuales <varname>contains</varname> y <varname>overlaps</varname> coinciden con una función o una palabra reservada de Apache Spark y Apache Flink, llevan como prefijo la clase cuyos valores o cuadros delimitadores comparan, como las funciones de posición. La función <varname>same</varname> de un búfer circular, un punto de red, una pose y una cadena de poses, que el manual documenta como función de estos tipos, conserva su nombre. La siguiente tabla da las funciones en ambas versiones.
+		</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Versión 1.3</entry>
+						<entry>Versión 1.4</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>overlaps</varname></entry>
+						<entry><varname>setOverlaps</varname>, <varname>spanOverlaps</varname>, <varname>spansetOverlaps</varname>, <varname>tboxOverlaps</varname>, <varname>stboxOverlaps</varname>, <varname>tpcboxOverlaps</varname></entry>
+					</row>
+					<row>
+						<entry><varname>contains</varname></entry>
+						<entry><varname>setContains</varname>, <varname>spanContains</varname>, <varname>spansetContains</varname>, <varname>tboxContains</varname>, <varname>stboxContains</varname>, <varname>tpcboxContains</varname></entry>
+					</row>
+					<row>
+						<entry><varname>contained</varname></entry>
+						<entry><varname>setContained</varname>, <varname>spanContained</varname>, <varname>spansetContained</varname>, <varname>tboxContained</varname>, <varname>stboxContained</varname>, <varname>tpcboxContained</varname></entry>
+					</row>
+					<row>
+						<entry><varname>adjacent</varname></entry>
+						<entry><varname>spanAdjacent</varname>, <varname>spansetAdjacent</varname>, <varname>tboxAdjacent</varname>, <varname>stboxAdjacent</varname>, <varname>tpcboxAdjacent</varname></entry>
+					</row>
+					<row>
+						<entry><varname>same</varname></entry>
+						<entry><varname>spanSame</varname>, <varname>tboxSame</varname>, <varname>stboxSame</varname>, <varname>tpcboxSame</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 	</sect1>
 </chapter>

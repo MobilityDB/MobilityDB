@@ -394,58 +394,58 @@ AS 'MODULE_PATHNAME', 'Tspatial_joinsel'
 * Topological operators
 *****************************************************************************/
 
-CREATE FUNCTION contains(stbox, stbox)
+CREATE FUNCTION stboxContains(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_stbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(stbox, stbox)
+CREATE FUNCTION stboxContained(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_stbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(stbox, stbox)
+CREATE FUNCTION stboxOverlaps(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_stbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same(stbox, stbox)
+CREATE FUNCTION stboxSame(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_stbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(stbox, stbox)
+CREATE FUNCTION stboxAdjacent(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_stbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel

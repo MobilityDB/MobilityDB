@@ -37,36 +37,36 @@
  *****************************************************************************/
 
 
-CREATE FUNCTION contains(tstzspan, tjsonb)
+CREATE FUNCTION spanContains(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(tjsonb, tstzspan)
+CREATE FUNCTION spanContains(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(tjsonb, tjsonb)
+CREATE FUNCTION spanContains(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #@> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = tstzspan, RIGHTARG = tjsonb,
   COMMUTATOR = <@#,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #@> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = tjsonb, RIGHTARG = tstzspan,
   COMMUTATOR = <@#,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #@> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = <@#,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
@@ -76,36 +76,36 @@ CREATE OPERATOR #@> (
  * Contained
  *****************************************************************************/
 
-CREATE FUNCTION contained(tstzspan, tjsonb)
+CREATE FUNCTION spanContained(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(tjsonb, tstzspan)
+CREATE FUNCTION spanContained(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(tjsonb, tjsonb)
+CREATE FUNCTION spanContained(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@# (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = tstzspan, RIGHTARG = tjsonb,
   COMMUTATOR = #@>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <@# (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = tjsonb, RIGHTARG = tstzspan,
   COMMUTATOR = #@>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <@# (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = #@>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
@@ -115,36 +115,36 @@ CREATE OPERATOR <@# (
  * Overlaps
  *****************************************************************************/
 
-CREATE FUNCTION overlaps(tstzspan, tjsonb)
+CREATE FUNCTION spanOverlaps(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tjsonb, tstzspan)
+CREATE FUNCTION spanOverlaps(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tjsonb, tjsonb)
+CREATE FUNCTION spanOverlaps(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = tstzspan, RIGHTARG = tjsonb,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = tjsonb, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG    = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = &&,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
@@ -154,36 +154,36 @@ CREATE OPERATOR && (
  * Same
  *****************************************************************************/
 
-CREATE FUNCTION same(tstzspan, tjsonb)
+CREATE FUNCTION spanSame(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same(tjsonb, tstzspan)
+CREATE FUNCTION spanSame(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same(tjsonb, tjsonb)
+CREATE FUNCTION spanSame(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = spanSame,
   LEFTARG = tstzspan, RIGHTARG = tjsonb,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = spanSame,
   LEFTARG = tjsonb, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = spanSame,
   LEFTARG    = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = ~=,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel
@@ -193,36 +193,36 @@ CREATE OPERATOR ~= (
  * Adjacent
  *****************************************************************************/
 
-CREATE FUNCTION adjacent(tstzspan, tjsonb)
+CREATE FUNCTION spanAdjacent(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(tjsonb, tstzspan)
+CREATE FUNCTION spanAdjacent(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(tjsonb, tjsonb)
+CREATE FUNCTION spanAdjacent(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_temporal'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = tstzspan, RIGHTARG = tjsonb,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = tjsonb, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG    = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = -|-,
   RESTRICT   = temporal_sel, JOIN = temporal_joinsel

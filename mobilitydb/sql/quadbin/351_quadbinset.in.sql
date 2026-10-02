@@ -335,25 +335,25 @@ CREATE AGGREGATE setUnion(quadbinset) (
  * contains @>
  ******************************************************************************/
 
-CREATE FUNCTION contains(quadbinset, quadbin)
+CREATE FUNCTION setContains(quadbinset, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(quadbinset, quadbinset)
+CREATE FUNCTION setContains(quadbinset, quadbinset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = quadbinset, RIGHTARG = quadbin,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = quadbinset, RIGHTARG = quadbinset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -363,25 +363,25 @@ CREATE OPERATOR @> (
  * contained by <@
  ******************************************************************************/
 
-CREATE FUNCTION contained(quadbin, quadbinset)
+CREATE FUNCTION setContained(quadbin, quadbinset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(quadbinset, quadbinset)
+CREATE FUNCTION setContained(quadbinset, quadbinset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = quadbin, RIGHTARG = quadbinset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = quadbinset, RIGHTARG = quadbinset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -391,14 +391,14 @@ CREATE OPERATOR <@ (
  * overlaps &&
  ******************************************************************************/
 
-CREATE FUNCTION overlaps(quadbinset, quadbinset)
+CREATE FUNCTION setOverlaps(quadbinset, quadbinset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = quadbinset, RIGHTARG = quadbinset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel

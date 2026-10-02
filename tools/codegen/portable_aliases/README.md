@@ -5,12 +5,13 @@ Licensed under the PostgreSQL License (see LICENSE.txt).
 
 # Portable operator coverage verifier
 
-Every MobilityDB operator names its backing function with the bare portable
-name directly — positional (`left`/`right`/`before`/`after` and the `over*`
-variants), topological (`contains`/`contained`/`overlaps`/`adjacent`/`same`)
-and comparison (`tEqual`/`eEqual`/`aEqual`, …) — so the same SQL runs unchanged on
-MobilityDB, MobilityDuck and MobilitySpark (RFC: `doc/rfc/sql-portability`). The
-bare names live in the operator definitions; there is no generated SQL.
+Every MobilityDB operator names its backing function with its portable name
+directly — positional and topological functions with the prefix of the class
+they compare (`spanLeft`, `stboxBefore`, `spanOverlaps`, `tboxContains`, …) and
+comparison functions with their own (`tEqual`/`eEqual`/`aEqual`, …) — so the same
+SQL runs unchanged on MobilityDB, MobilityDuck and MobilitySpark (RFC:
+`doc/rfc/sql-portability`). The names live in the operator definitions; there is
+no generated SQL.
 
 `generate.py` classifies every `CREATE OPERATOR` symbol in `mobilitydb/sql`
 against the dialect and fails when any symbol is unclassified, so a parity gap

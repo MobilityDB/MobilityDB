@@ -104,7 +104,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a set contains a value
- * @sqlfn contains()
+ * @sqlfn setContains()
  * @sqlop @p @>
  */
 inline Datum
@@ -118,7 +118,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first set contains the second one
- * @sqlfn contains()
+ * @sqlfn setContains()
  * @sqlop @p @>
  */
 inline Datum
@@ -135,7 +135,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value is contained in a set
- * @sqlfn contained()
+ * @sqlfn setContained()
  * @sqlop @p <@
  */
 inline Datum
@@ -149,7 +149,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first set is contained in the second one
- * @sqlfn contained()
+ * @sqlfn setContained()
  * @sqlop @p <@
  */
 inline Datum
@@ -166,7 +166,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two sets overlap
- * @sqlfn overlaps()
+ * @sqlfn setOverlaps()
  * @sqlop @p &&
  */
 inline Datum

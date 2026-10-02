@@ -68,25 +68,25 @@ CREATE FUNCTION expandSpace({TEMP}, float)
  * Contains
  *****************************************************************************/
 
-CREATE FUNCTION contains(tstzspan, {TEMP})
+CREATE FUNCTION stboxContains(tstzspan, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains({TEMP}, tstzspan)
+CREATE FUNCTION stboxContains({TEMP}, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -94,36 +94,36 @@ CREATE OPERATOR @> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION contains(stbox, {TEMP})
+CREATE FUNCTION stboxContains(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains({TEMP}, stbox)
+CREATE FUNCTION stboxContains({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains({TEMP}, {TEMP})
+CREATE FUNCTION stboxContains({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = <@,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = stboxContains,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -133,25 +133,25 @@ CREATE OPERATOR @> (
  * Contained
  *****************************************************************************/
 
-CREATE FUNCTION contained(tstzspan, {TEMP})
+CREATE FUNCTION stboxContained(tstzspan, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained({TEMP}, tstzspan)
+CREATE FUNCTION stboxContained({TEMP}, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -159,36 +159,36 @@ CREATE OPERATOR <@ (
 
 /*****************************************************************************/
 
-CREATE FUNCTION contained(stbox, {TEMP})
+CREATE FUNCTION stboxContained(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained({TEMP}, stbox)
+CREATE FUNCTION stboxContained({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained({TEMP}, {TEMP})
+CREATE FUNCTION stboxContained({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = @>,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = stboxContained,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -198,25 +198,25 @@ CREATE OPERATOR <@ (
  * Overlaps
  *****************************************************************************/
 
-CREATE FUNCTION overlaps(tstzspan, {TEMP})
+CREATE FUNCTION stboxOverlaps(tstzspan, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps({TEMP}, tstzspan)
+CREATE FUNCTION stboxOverlaps({TEMP}, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -224,36 +224,36 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION overlaps(stbox, {TEMP})
+CREATE FUNCTION stboxOverlaps(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps({TEMP}, stbox)
+CREATE FUNCTION stboxOverlaps({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps({TEMP}, {TEMP})
+CREATE FUNCTION stboxOverlaps({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = &&,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = stboxOverlaps,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -263,25 +263,25 @@ CREATE OPERATOR && (
  * Same
  *****************************************************************************/
 
-CREATE FUNCTION same(tstzspan, {TEMP})
+CREATE FUNCTION stboxSame(tstzspan, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same({TEMP}, tstzspan)
+CREATE FUNCTION stboxSame({TEMP}, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -289,36 +289,36 @@ CREATE OPERATOR ~= (
 
 /*****************************************************************************/
 
-CREATE FUNCTION same(stbox, {TEMP})
+CREATE FUNCTION stboxSame(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same({TEMP}, stbox)
+CREATE FUNCTION stboxSame({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same({TEMP}, {TEMP})
+CREATE FUNCTION stboxSame({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = ~=,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = stboxSame,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -328,25 +328,25 @@ CREATE OPERATOR ~= (
  * Adjacent
  *****************************************************************************/
 
-CREATE FUNCTION adjacent(tstzspan, {TEMP})
+CREATE FUNCTION stboxAdjacent(tstzspan, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent({TEMP}, tstzspan)
+CREATE FUNCTION stboxAdjacent({TEMP}, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
@@ -354,36 +354,36 @@ CREATE OPERATOR -|- (
 
 /*****************************************************************************/
 
-CREATE FUNCTION adjacent(stbox, {TEMP})
+CREATE FUNCTION stboxAdjacent(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent({TEMP}, stbox)
+CREATE FUNCTION stboxAdjacent({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent({TEMP}, {TEMP})
+CREATE FUNCTION stboxAdjacent({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = -|-,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = stboxAdjacent,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
   RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel

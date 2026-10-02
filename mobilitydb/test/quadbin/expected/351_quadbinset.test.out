@@ -270,15 +270,15 @@ SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fff
  {"48427fffffffffff"}
 (1 row)
 
-SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
- contains 
-----------
+SELECT setContains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
+ setcontains 
+-------------
  t
 (1 row)
 
-SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{480fffffffffffff}');
- contains 
-----------
+SELECT setContains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{480fffffffffffff}');
+ setcontains 
+-------------
  t
 (1 row)
 
@@ -288,15 +288,15 @@ SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' @> quadbin '48a6227afff
  f
 (1 row)
 
-SELECT contained(quadbin '480fffffffffffff', quadbinset '{480fffffffffffff, 48427fffffffffff}');
- contained 
------------
+SELECT setContained(quadbin '480fffffffffffff', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+ setcontained 
+--------------
  t
 (1 row)
 
-SELECT contained(quadbinset '{480fffffffffffff}', quadbinset '{480fffffffffffff, 48427fffffffffff}');
- contained 
------------
+SELECT setContained(quadbinset '{480fffffffffffff}', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+ setcontained 
+--------------
  t
 (1 row)
 
@@ -306,9 +306,9 @@ SELECT quadbin '48a6227affffffff' <@ quadbinset '{480fffffffffffff}';
  f
 (1 row)
 
-SELECT overlaps(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
- overlaps 
-----------
+SELECT setOverlaps(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+ setoverlaps 
+-------------
  t
 (1 row)
 

@@ -376,133 +376,133 @@ span_families:
   blocks:
   - group:
     - {stmt: "/******************************************************************************\n * Topological operators\n ******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION contains({sp}, {v})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanContains({sp}, {v})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanContains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
-    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "spanContains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
-    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "spanContains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
-    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "spanContains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION contained({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanContained({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanContained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
-    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "spanContained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
-    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "spanContained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
-    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "spanContained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION overlaps({sp}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanOverlaps({sp}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION adjacent({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
-    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanAdjacent({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanAdjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "spanAdjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
-    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
-    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanAdjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "spanAdjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "spanAdjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
-    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
-    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanAdjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "spanAdjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "spanAdjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
-    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
-    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanAdjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "spanAdjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "spanAdjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
@@ -855,140 +855,140 @@ span_families:
   blocks:
   - group:
     - {stmt: "/******************************************************************************\n * Operators\n ******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION contains({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
-    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
-    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanContains({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spansetContains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "spansetContains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "spansetContains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
-    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
-    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
-    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "spansetContains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "spansetContains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "spansetContains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
-    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
-    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
-    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "spansetContains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "spansetContains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "spansetContains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
-    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
-    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
-    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanContains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "spansetContains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "spansetContains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "spansetContains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = spanContains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = spansetContains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
   - group:
     - {stmt: "/*****************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION contained({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
-    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
-    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spansetContained({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanContained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "spansetContained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "spansetContained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
-    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
-    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
-    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetContained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "spanContained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "spansetContained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "spansetContained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
-    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
-    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
-    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetContained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "spanContained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "spansetContained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "spansetContained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
-    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
-    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
-    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetContained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "spanContained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "spansetContained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "spansetContained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spanContained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = spansetContained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
   - group:
     - {stmt: "/*****************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION overlaps({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
-    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spanOverlaps({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spansetOverlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "spansetOverlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
-    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
-    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "spansetOverlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "spansetOverlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
-    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
-    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "spansetOverlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "spansetOverlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
-    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
-    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spanOverlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "spansetOverlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "spansetOverlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = spanOverlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = spansetOverlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"
@@ -1222,58 +1222,58 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/*****************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION adjacent({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
-    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
-    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
-    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "\nCREATE FUNCTION spansetAdjacent({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanAdjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "spansetAdjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "spansetAdjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "spansetAdjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
-    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
-    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
-    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
-    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetAdjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "spanAdjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "spansetAdjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "spansetAdjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "spansetAdjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
-    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
-    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
-    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
-    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetAdjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "spanAdjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "spansetAdjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "spansetAdjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "spansetAdjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
-    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
-    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
-    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
-    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
-    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {sig: "spansetAdjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "spanAdjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "spansetAdjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "spansetAdjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "spansetAdjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spanAdjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = spansetAdjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
     sep: "\n"
     order: [date, tstz]
   - lit: "\n"

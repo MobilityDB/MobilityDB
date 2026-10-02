@@ -36,121 +36,121 @@
  * Topological operators
  ******************************************************************************/
 
-CREATE FUNCTION contains(intspan, integer)
+CREATE FUNCTION spanContains(intspan, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(intspan, intspan)
+CREATE FUNCTION spanContains(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = intspan, RIGHTARG = integer,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contains(bigintspan, bigint)
+CREATE FUNCTION spanContains(bigintspan, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(bigintspan, bigintspan)
+CREATE FUNCTION spanContains(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = bigintspan, RIGHTARG = bigint,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contains(floatspan, float)
+CREATE FUNCTION spanContains(floatspan, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(floatspan, floatspan)
+CREATE FUNCTION spanContains(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contains(datespan, date)
+CREATE FUNCTION spanContains(datespan, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(datespan, datespan)
+CREATE FUNCTION spanContains(datespan, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = datespan, RIGHTARG = date,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contains(tstzspan, timestamptz)
+CREATE FUNCTION spanContains(tstzspan, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(tstzspan, tstzspan)
+CREATE FUNCTION spanContains(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = tstzspan, RIGHTARG = timestamptz,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = spanContains,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -158,121 +158,121 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION contained(integer, intspan)
+CREATE FUNCTION spanContained(integer, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(intspan, intspan)
+CREATE FUNCTION spanContained(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = integer, RIGHTARG = intspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contained(bigint, bigintspan)
+CREATE FUNCTION spanContained(bigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(bigintspan, bigintspan)
+CREATE FUNCTION spanContained(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = bigint, RIGHTARG = bigintspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contained(float, floatspan)
+CREATE FUNCTION spanContained(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(floatspan, floatspan)
+CREATE FUNCTION spanContained(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contained(date, datespan)
+CREATE FUNCTION spanContained(date, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(datespan, datespan)
+CREATE FUNCTION spanContained(datespan, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = date, RIGHTARG = datespan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION contained(timestamptz, tstzspan)
+CREATE FUNCTION spanContained(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(tstzspan, tstzspan)
+CREATE FUNCTION spanContained(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = timestamptz, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = spanContained,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -280,66 +280,66 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION overlaps(intspan, intspan)
+CREATE FUNCTION spanOverlaps(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION overlaps(bigintspan, bigintspan)
+CREATE FUNCTION spanOverlaps(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION overlaps(floatspan, floatspan)
+CREATE FUNCTION spanOverlaps(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION overlaps(datespan, datespan)
+CREATE FUNCTION spanOverlaps(datespan, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION overlaps(tstzspan, tstzspan)
+CREATE FUNCTION spanOverlaps(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = spanOverlaps,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -347,176 +347,176 @@ CREATE OPERATOR && (
 
 /******************************************************************************/
 
-CREATE FUNCTION adjacent(integer, intspan)
+CREATE FUNCTION spanAdjacent(integer, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(intspan, integer)
+CREATE FUNCTION spanAdjacent(intspan, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(intspan, intspan)
+CREATE FUNCTION spanAdjacent(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = integer, RIGHTARG = intspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = intspan, RIGHTARG = integer,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION adjacent(bigint, bigintspan)
+CREATE FUNCTION spanAdjacent(bigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(bigintspan, bigint)
+CREATE FUNCTION spanAdjacent(bigintspan, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(bigintspan, bigintspan)
+CREATE FUNCTION spanAdjacent(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = bigint, RIGHTARG = bigintspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = bigintspan, RIGHTARG = bigint,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION adjacent(float, floatspan)
+CREATE FUNCTION spanAdjacent(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(floatspan, float)
+CREATE FUNCTION spanAdjacent(floatspan, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(floatspan, floatspan)
+CREATE FUNCTION spanAdjacent(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION adjacent(date, datespan)
+CREATE FUNCTION spanAdjacent(date, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(datespan, date)
+CREATE FUNCTION spanAdjacent(datespan, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(datespan, datespan)
+CREATE FUNCTION spanAdjacent(datespan, datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = date, RIGHTARG = datespan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = datespan, RIGHTARG = date,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION adjacent(timestamptz, tstzspan)
+CREATE FUNCTION spanAdjacent(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(tstzspan, timestamptz)
+CREATE FUNCTION spanAdjacent(tstzspan, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(tstzspan, tstzspan)
+CREATE FUNCTION spanAdjacent(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_span'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = timestamptz, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = tstzspan, RIGHTARG = timestamptz,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = spanAdjacent,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel

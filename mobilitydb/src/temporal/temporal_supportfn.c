@@ -245,14 +245,16 @@ static const int16 TSpatialStrategies[] =
 * so most common functions first. Could be sorted
 * and searched with binary search.
 */
-/* The portable spellings of the topological operators, which every class
- * carries under the same names. Listed here once and reused by every table */
-#define TOPO_PORTABLE_FUNCTIONS \
-  {"overlaps", OVERLAPS_IDX, 2, 0}, \
-  {"contains", CONTAINS_IDX, 2, 0}, \
-  {"contained", CONTAINED_IDX, 2, 0}, \
-  {"adjacent", ADJACENT_IDX, 2, 0}, \
-  {"same", SAME_IDX, 2, 0}
+/* The portable spellings of the topological operators. A topological function
+ * carries the prefix of the class whose values or boxes it compares
+ * (spanOverlaps, tboxContains, stboxSame), so a table lists it under each
+ * prefix its family declares */
+#define TOPO_PORTABLE_FUNCTIONS(prefix) \
+  {prefix "Overlaps", OVERLAPS_IDX, 2, 0}, \
+  {prefix "Contains", CONTAINS_IDX, 2, 0}, \
+  {prefix "Contained", CONTAINED_IDX, 2, 0}, \
+  {prefix "Adjacent", ADJACENT_IDX, 2, 0}, \
+  {prefix "Same", SAME_IDX, 2, 0}
 
 /* The portable spellings of the time-dimension position operators. A position
  * function carries the prefix of the class whose values or boxes it compares
@@ -274,7 +276,7 @@ static const int16 TSpatialStrategies[] =
 /* A temporal Boolean, text or JSONB value is bounded by its time span */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  TOPO_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS("span"),
   TIME_PORTABLE_FUNCTIONS("span"),
   {NULL, 0, 0, 0}
 };
@@ -284,7 +286,14 @@ static const IndexableFunction TemporalIndexableFunctions[] =
  * of the box types over themselves */
 static const IndexableFunction SpanIndexableFunctions[] =
 {
-  TOPO_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS("set"),
+  TOPO_PORTABLE_FUNCTIONS("span"),
+  TOPO_PORTABLE_FUNCTIONS("spanset"),
+  TOPO_PORTABLE_FUNCTIONS("tbox"),
+  TOPO_PORTABLE_FUNCTIONS("stbox"),
+  TOPO_PORTABLE_FUNCTIONS("tpcbox"),
+  /* A base type that is its own bounding box keeps the bare name */
+  {"same", SAME_IDX, 2, 0},
   TIME_PORTABLE_FUNCTIONS("set"),
   TIME_PORTABLE_FUNCTIONS("span"),
   TIME_PORTABLE_FUNCTIONS("spanset"),
@@ -304,7 +313,7 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
   /* Ever/always comparison functions */
   {"eEqual", EVER_EQ_IDX, 2, 0},
   {"aEqual", ALWAYS_EQ_IDX, 2, 0},
-  TOPO_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS("tbox"),
   TIME_PORTABLE_FUNCTIONS("tbox"),
   AXIS1_PORTABLE_FUNCTIONS("tbox"),
   {NULL, 0, 0, 0}
@@ -329,7 +338,8 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {"aTouches", ATOUCHES_IDX, 2, 0},
   {"aDwithin", ADWITHIN_IDX, 3, 3},
   /* Portable spellings of the bounding-box operators */
-  TOPO_PORTABLE_FUNCTIONS,
+  TOPO_PORTABLE_FUNCTIONS("stbox"),
+  TOPO_PORTABLE_FUNCTIONS("tpcbox"),
   TIME_PORTABLE_FUNCTIONS("stbox"),
   AXIS1_PORTABLE_FUNCTIONS("stbox"),
   {"stboxBelow", BELOW_IDX, 2, 0},

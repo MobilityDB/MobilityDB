@@ -580,58 +580,58 @@ CREATE OPERATOR CLASS pcpointset_hash_ops
  * pcpointset — Set operations (value ↔ set, set ↔ set)
  ******************************************************************************/
 
-CREATE FUNCTION contains(pcpointset, pcpoint)
+CREATE FUNCTION setContains(pcpointset, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(pcpointset, pcpointset)
+CREATE FUNCTION setContains(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = pcpointset, RIGHTARG = pcpoint,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = <@
 );
 
-CREATE FUNCTION contained(pcpoint, pcpointset)
+CREATE FUNCTION setContained(pcpoint, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(pcpointset, pcpointset)
+CREATE FUNCTION setContained(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = pcpoint, RIGHTARG = pcpointset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = @>
 );
 
-CREATE FUNCTION overlaps(pcpointset, pcpointset)
+CREATE FUNCTION setOverlaps(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = &&
 );
@@ -989,58 +989,58 @@ CREATE OPERATOR CLASS pcpatchset_hash_ops
  * pcpatchset — Set operations
  ******************************************************************************/
 
-CREATE FUNCTION contains(pcpatchset, pcpatch)
+CREATE FUNCTION setContains(pcpatchset, pcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(pcpatchset, pcpatchset)
+CREATE FUNCTION setContains(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = pcpatchset, RIGHTARG = pcpatch,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = <@
 );
 
-CREATE FUNCTION contained(pcpatch, pcpatchset)
+CREATE FUNCTION setContained(pcpatch, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(pcpatchset, pcpatchset)
+CREATE FUNCTION setContained(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = pcpatch, RIGHTARG = pcpatchset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = @>
 );
 
-CREATE FUNCTION overlaps(pcpatchset, pcpatchset)
+CREATE FUNCTION setOverlaps(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = &&
 );

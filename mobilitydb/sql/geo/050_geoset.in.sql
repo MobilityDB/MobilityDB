@@ -637,47 +637,47 @@ CREATE OPERATOR CLASS geogset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION contains(geomset, geometry)
+CREATE FUNCTION setContains(geomset, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(geomset, geomset)
+CREATE FUNCTION setContains(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(geogset, geography)
+CREATE FUNCTION setContains(geogset, geography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(geogset, geogset)
+CREATE FUNCTION setContains(geogset, geogset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = geomset, RIGHTARG = geometry,
   COMMUTATOR = <@
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = <@
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = <@
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = <@
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
@@ -685,47 +685,47 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION contained(geometry, geomset)
+CREATE FUNCTION setContained(geometry, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(geomset, geomset)
+CREATE FUNCTION setContained(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(geography, geogset)
+CREATE FUNCTION setContained(geography, geogset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(geogset, geogset)
+CREATE FUNCTION setContained(geogset, geogset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = geometry, RIGHTARG = geomset,
   COMMUTATOR = @>
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = @>
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = @>
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = @>
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
@@ -733,25 +733,25 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION overlaps(geomset, geomset)
+CREATE FUNCTION setOverlaps(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(geogset, geogset)
+CREATE FUNCTION setOverlaps(geogset, geogset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = &&
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = &&
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel

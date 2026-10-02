@@ -340,25 +340,25 @@ CREATE AGGREGATE setUnion(h3indexset) (
  * contains @>
  ******************************************************************************/
 
-CREATE FUNCTION contains(h3indexset, h3index)
+CREATE FUNCTION setContains(h3indexset, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(h3indexset, h3indexset)
+CREATE FUNCTION setContains(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = h3indexset, RIGHTARG = h3index,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -368,25 +368,25 @@ CREATE OPERATOR @> (
  * contained by <@
  ******************************************************************************/
 
-CREATE FUNCTION contained(h3index, h3indexset)
+CREATE FUNCTION setContained(h3index, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(h3indexset, h3indexset)
+CREATE FUNCTION setContained(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = h3index, RIGHTARG = h3indexset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -396,14 +396,14 @@ CREATE OPERATOR <@ (
  * overlaps &&
  ******************************************************************************/
 
-CREATE FUNCTION overlaps(h3indexset, h3indexset)
+CREATE FUNCTION setOverlaps(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel

@@ -1172,7 +1172,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one
- * @sqlfn contains()
+ * @sqlfn stboxContains()
  * @sqlop @p @>
  */
 Datum
@@ -1189,7 +1189,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if the first spatiotemporal box is contained in the
  * second one
- * @sqlfn contained()
+ * @sqlfn stboxContained()
  * @sqlop @p <@
  */
 Datum
@@ -1205,7 +1205,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes overlap
- * @sqlfn overlaps()
+ * @sqlfn stboxOverlaps()
  * @sqlop @p &&
  */
 Datum
@@ -1222,7 +1222,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_stbox);
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes are equal in the common
  * dimensions
- * @sqlfn same()
+ * @sqlfn stboxSame()
  * @sqlop @p ~=
  */
 Datum
@@ -1238,7 +1238,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes are adjacent
- * @sqlfn adjacent()
+ * @sqlfn stboxAdjacent()
  * @sqlop @p -|-
  */
 Datum
