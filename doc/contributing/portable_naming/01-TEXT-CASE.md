@@ -48,11 +48,12 @@ holds the 86 signatures of master `2495c4cc36`.
 | `temporalUpperInc` | `upperInc` | the 20 temporal types | `Temporal_upper_inc` | `temporal_upper_inc` | 20 |
 | | | | | **Total** | **86** |
 
-A plain `text` gains no function in any engine: every engine changes the case of a string with
-its own function, PostgreSQL with `lower('Hello')`, Spark and Flink with `lower('Hello')`. A
-function over a base type exists only where an engine lacks it, as [family 3](03-MATH.md) states
-for the base numbers. The 86 signatures keep their PostgreSQL names and take the Flink and Spark
-name as `@altsqlfn`.
+A plain `text` gains no function in any engine: PostgreSQL changes the case of a string with
+its own `lower('Hello')`, the name MobilityDB gives the operation over `ttext`, and Spark and
+Flink with their own `lower('Hello')`. An operation over a base type takes the name MobilityDB
+gives it over its own types, and nothing is declared where the engine answers under that name
+([decision 0.5](IMPLEMENTATION-PLAN.md)). The 86 signatures keep their PostgreSQL names and take
+the Flink and Spark name as `@altsqlfn`.
 
 The 5 spans are `intspan`, `bigintspan`, `floatspan`, `datespan`, `tstzspan`; the 5 span sets
 `intspanset`, `bigintspanset`, `floatspanset`, `datespanset`, `tstzspanset`. The 20 temporal

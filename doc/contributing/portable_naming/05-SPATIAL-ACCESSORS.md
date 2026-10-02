@@ -27,16 +27,17 @@ Each `length` answers a `float`, the length of the trajectory; each `cumulativeL
 `tfloat`, the length travelled up to each instant.
 
 The base types: MEOS has `geom_length(geometry)` and `geog_length(geography, bool use_spheroid)`,
-which no MobilityDB SQL function exposes (PostgreSQL users call PostGIS `ST_Length`). A network
+which `length(geometry)` and `length(geography)` expose through `geo_length`, beside PostGIS's
+`ST_Length`. A network
 point has no length of its own: `route_length(rid)` measures a route, not a point.
 
 ## Final names by the decided rules
 
 | Flink and Spark name | Operand types | `length` | `cumulativeLength` name | its signatures |
 |---|---|---|---|---|
-| `geoLength` | `tgeompoint`, `tgeogpoint`, `trgeometry`; in Spark and Flink also `geometry`, `geography` (decision 2) | 3 | `geoCumulativeLength` | 3 |
+| `geoLength` | `tgeompoint`, `tgeogpoint`, `trgeometry`, `geometry`, `geography` (decision 2) | 5 | `geoCumulativeLength` | 3 |
 | `npointLength` | `tnpoint` | 1 | `npointCumulativeLength` | 1 |
-| | **Total** | **4** | | **4** |
+| | **Total** | **6** | | **4** |
 
 Each prefix is the base type as in families 2 and 4 (`geoRound`, `npointRound`; `geoTransform`),
 `trgeometry` taking `geo` by the geometry it answers at an instant. The MEOS stem `tpoint_` is an internal
@@ -55,9 +56,10 @@ built-ins, which holds `upper`, does not hold `length`.
    and `npointCumulativeLength`, as `lowerInc` moved with `lower`
    and `transformPipeline` with `transform`: it is the running form of the same quantity over the
    same types.
-2. **PostgreSQL declares no `geoLength` over `geometry` or `geography`**: it has PostGIS's
-   `ST_Length(geometry 'Linestring(0 0,3 4)')`. Spark and Flink, which have no PostGIS, call
-   `geoLength(geom)` generated from the MEOS `geo_length`, one function serving both, as
+2. **PostgreSQL declares `length` over `geometry` and `geography`**, the name the operation
+   carries over the temporal points, beside PostGIS's `ST_Length(geometry 'Linestring(0 0,3 4)')`
+   ([decision 0.5](IMPLEMENTATION-PLAN.md)); a string literal keeps PostgreSQL's own
+   `length('abc')`. Spark and Flink, which have no PostGIS, call `geoLength(geom)`, the
+   `@altsqlfn` of the same wrapper over the MEOS `geo_length`, one function serving both, as
    `geo_round` does, over `geom_length` and `geog_length` with the spheroid, the PostGIS default
-   of `ST_Length(geography)` (G17). A function over a base type exists only where an engine lacks
-   it, as [family 3](03-MATH.md) states for the base numbers.
+   of `ST_Length(geography)` (G17).
