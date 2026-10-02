@@ -62,6 +62,9 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
 #include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -241,6 +244,71 @@ TInstant *
 tquadbininst_make(Quadbin value, TimestampTz t)
 {
   return tinstant_make(QuadbinGetDatum(value), T_TQUADBIN, t);
+}
+
+/**
+ * @ingroup meos_quadbin_constructor
+ * @brief Return a temporal quadbin cell from a quadbin cell and the time frame
+ * of another temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tquadbin_from_base_temp(Quadbin value, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(QuadbinGetDatum(value), T_TQUADBIN, temp);
+}
+
+/**
+ * @ingroup meos_quadbin_constructor
+ * @brief Return a temporal quadbin cell discrete sequence from a quadbin cell
+ * and a timestamptz set
+ * @param[in] value Value
+ * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
+ */
+TSequence *
+tquadbinseq_from_base_tstzset(Quadbin value, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(QuadbinGetDatum(value), T_TQUADBIN, s);
+}
+
+/**
+ * @ingroup meos_quadbin_constructor
+ * @brief Return a temporal quadbin cell sequence from a quadbin cell and a
+ * timestamptz span
+ * @param[in] value Value
+ * @param[in] s Span
+ * @csqlfn #Tsequence_from_base_tstzspan()
+ */
+TSequence *
+tquadbinseq_from_base_tstzspan(Quadbin value, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(QuadbinGetDatum(value), T_TQUADBIN, s,
+    STEP);
+}
+
+/**
+ * @ingroup meos_quadbin_constructor
+ * @brief Return a temporal quadbin cell sequence set from a quadbin cell and a
+ * timestamptz span set
+ * @param[in] value Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+tquadbinseqset_from_base_tstzspanset(Quadbin value, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(QuadbinGetDatum(value),
+    T_TQUADBIN, ss, STEP);
 }
 
 /**

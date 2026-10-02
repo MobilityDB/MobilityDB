@@ -259,6 +259,10 @@ extern Temporal *tquadbin_from_mfjson(const char *mfjson);
 
 extern Temporal *tquadbin_make(Quadbin value, TimestampTz t);
 extern TInstant *tquadbininst_make(Quadbin value, TimestampTz t);
+extern Temporal *tquadbin_from_base_temp(Quadbin value, const Temporal *temp);
+extern TSequence *tquadbinseq_from_base_tstzset(Quadbin value, const Set *s);
+extern TSequence *tquadbinseq_from_base_tstzspan(Quadbin value, const Span *s);
+extern TSequenceSet *tquadbinseqset_from_base_tstzspanset(Quadbin value, const SpanSet *ss);
 extern TSequence *tquadbinseq_make(const Quadbin *values,
   const TimestampTz *times, int count, bool lower_inc, bool upper_inc);
 extern TSequenceSet *tquadbinseqset_make(const TSequence **sequences, int count);

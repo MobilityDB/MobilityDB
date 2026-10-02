@@ -61,6 +61,9 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
 #include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -237,6 +240,71 @@ TInstant *
 ts2cellinst_make(S2CellId value, TimestampTz t)
 {
   return tinstant_make(S2CellGetDatum(value), T_TS2CELL, t);
+}
+
+/**
+ * @ingroup meos_s2cell_constructor
+ * @brief Return a temporal S2 cell from an S2 cell and the time frame of
+ * another temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+ts2cell_from_base_temp(S2CellId value, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(S2CellGetDatum(value), T_TS2CELL, temp);
+}
+
+/**
+ * @ingroup meos_s2cell_constructor
+ * @brief Return a temporal S2 cell discrete sequence from an S2 cell and a
+ * timestamptz set
+ * @param[in] value Value
+ * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
+ */
+TSequence *
+ts2cellseq_from_base_tstzset(S2CellId value, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(S2CellGetDatum(value), T_TS2CELL, s);
+}
+
+/**
+ * @ingroup meos_s2cell_constructor
+ * @brief Return a temporal S2 cell sequence from an S2 cell and a timestamptz
+ * span
+ * @param[in] value Value
+ * @param[in] s Span
+ * @csqlfn #Tsequence_from_base_tstzspan()
+ */
+TSequence *
+ts2cellseq_from_base_tstzspan(S2CellId value, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(S2CellGetDatum(value), T_TS2CELL, s,
+    STEP);
+}
+
+/**
+ * @ingroup meos_s2cell_constructor
+ * @brief Return a temporal S2 cell sequence set from an S2 cell and a
+ * timestamptz span set
+ * @param[in] value Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+ts2cellseqset_from_base_tstzspanset(S2CellId value, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(S2CellGetDatum(value),
+    T_TS2CELL, ss, STEP);
 }
 
 /**

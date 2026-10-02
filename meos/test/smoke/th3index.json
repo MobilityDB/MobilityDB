@@ -12,6 +12,7 @@
     "TSequence * *": "(const TSequence **) &th3seq1",
     "Set *": "h3set1",
     "Span *": "tstzspan1",
+    "SpanSet *": "tstzspanset1",
     "GSERIALIZED *": "geom1",
     "TimestampTz": "tstz1",
     "interpType": "STEP",
@@ -40,7 +41,8 @@
     "^th3index_(vertex_to_latlng|is_valid_vertex)$": {"Temporal *": "th3index_vertex1"},
     "^tbigint_to_th3index$": {"Temporal *": "tbigint1"},
     "^tgeogpoint_": {"Temporal *": "tgeogpoint1"},
-    "^tgeompoint_": {"Temporal *": "tgeompoint1"}
+    "^tgeompoint_": {"Temporal *": "tgeompoint1"},
+    "tstzset": {"Set *": "tstzset1"}
   },
   "override_args": {
     "bigint_to_h3index": {"0": "(int64) h3cell1"},
@@ -63,6 +65,8 @@
   "common_inputs": [
     "  TimestampTz tstz1 = timestamptz_in(\"2001-01-01\", -1);",
     "  Span *tstzspan1 = tstzspan_in(\"[2001-01-01, 2001-01-03]\");",
+    "  Set *tstzset1 = tstzset_in(\"{2001-01-02, 2001-01-03}\");",
+    "  SpanSet *tstzspanset1 = tstzspanset_in(\"{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}\");",
     "  TimestampTz tstzarr1[] = { timestamptz_in(\"2001-01-01\", -1), timestamptz_in(\"2001-01-03\", -1) };",
     "  /* A cell of resolution 10, one of its neighbours, and the directed edge",
     "   * and vertex MEOS itself derives from the cell, so every edge and vertex",
@@ -140,6 +144,8 @@
     "  free(h3wkb1);",
     "  free(h3hexwkb1);",
     "  free(th3mfjson1);",
+    "  free(tstzset1);",
+    "  free(tstzspanset1);",
     "  free(tstzspan1);"
   ]
 }

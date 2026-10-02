@@ -260,6 +260,10 @@ extern Temporal *ts2cell_from_mfjson(const char *mfjson);
 
 extern Temporal *ts2cell_make(S2CellId value, TimestampTz t);
 extern TInstant *ts2cellinst_make(S2CellId value, TimestampTz t);
+extern Temporal *ts2cell_from_base_temp(S2CellId value, const Temporal *temp);
+extern TSequence *ts2cellseq_from_base_tstzset(S2CellId value, const Set *s);
+extern TSequence *ts2cellseq_from_base_tstzspan(S2CellId value, const Span *s);
+extern TSequenceSet *ts2cellseqset_from_base_tstzspanset(S2CellId value, const SpanSet *ss);
 extern TSequence *ts2cellseq_make(const S2CellId *values,
   const TimestampTz *times, int count, bool lower_inc, bool upper_inc);
 extern TSequenceSet *ts2cellseqset_make(const TSequence **sequences,

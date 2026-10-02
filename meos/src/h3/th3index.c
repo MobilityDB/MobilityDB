@@ -63,6 +63,9 @@
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
 #include "temporal/tcellindex.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -249,6 +252,71 @@ TInstant *
 th3indexinst_make(H3Index value, TimestampTz t)
 {
   return tinstant_make(H3IndexGetDatum(value), T_TH3INDEX, t);
+}
+
+/**
+ * @ingroup meos_h3_constructor
+ * @brief Return a temporal H3 cell from an H3 cell and the time frame of
+ * another temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+th3index_from_base_temp(H3Index value, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(H3IndexGetDatum(value), T_TH3INDEX, temp);
+}
+
+/**
+ * @ingroup meos_h3_constructor
+ * @brief Return a temporal H3 cell discrete sequence from an H3 cell and a
+ * timestamptz set
+ * @param[in] value Value
+ * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
+ */
+TSequence *
+th3indexseq_from_base_tstzset(H3Index value, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(H3IndexGetDatum(value), T_TH3INDEX, s);
+}
+
+/**
+ * @ingroup meos_h3_constructor
+ * @brief Return a temporal H3 cell sequence from an H3 cell and a timestamptz
+ * span
+ * @param[in] value Value
+ * @param[in] s Span
+ * @csqlfn #Tsequence_from_base_tstzspan()
+ */
+TSequence *
+th3indexseq_from_base_tstzspan(H3Index value, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(H3IndexGetDatum(value), T_TH3INDEX, s,
+    STEP);
+}
+
+/**
+ * @ingroup meos_h3_constructor
+ * @brief Return a temporal H3 cell sequence set from an H3 cell and a
+ * timestamptz span set
+ * @param[in] value Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+th3indexseqset_from_base_tstzspanset(H3Index value, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(H3IndexGetDatum(value),
+    T_TH3INDEX, ss, STEP);
 }
 
 /**
