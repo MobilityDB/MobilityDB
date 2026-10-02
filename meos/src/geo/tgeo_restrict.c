@@ -2792,9 +2792,12 @@ tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_geo_restrict
- * @brief Return a temporal geo restricted to (the complement of) an elevation
- * span
- * @param[in] temp Temporal geo
+ * @brief Return a temporal point restricted to (the complement of) an
+ * elevation span
+ * @details The elevation is the Z coordinate of a point, read through
+ * #tpoint_get_coord, so a temporal geometry whose values are not points is
+ * refused
+ * @param[in] temp Temporal point
  * @param[in] s Elevation span
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
@@ -2802,8 +2805,7 @@ Temporal *
 tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(s, NULL); 
-  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(s, NULL);
   if (! ensure_has_Z(temp->temptype, temp->flags))
     return NULL;
 
