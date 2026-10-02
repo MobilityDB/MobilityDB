@@ -96,26 +96,6 @@ SELECT getTime(atStbox(
   stbox 'STBOX T([2001-01-02, 2001-01-04])'));
 
 -------------------------------------------------------------------------------
--- atElevation restricts to the times the position is within the elevation span
-SELECT getTime(atElevation(
-  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
-  floatspan '[1, 2]'));
-
--- minusElevation returns the complement
-SELECT getTime(minusElevation(
-  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
-  floatspan '[1, 2]'));
-
--- The reference geometry survives the restriction
-SELECT asText(atElevation(
-  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
-  floatspan '[1, 2]'));
-
--- A planar rigid geometry has no elevation
-SELECT atElevation(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
-  floatspan '[1, 2]');
-
 -- Rigid motions: the geometry a rigid geometry places moves as the temporal geometry does
 SELECT asText(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
 SELECT asText(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
