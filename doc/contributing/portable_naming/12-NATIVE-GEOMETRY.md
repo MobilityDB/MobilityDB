@@ -166,4 +166,6 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** The branch holds `049_geo_equality.test.sql` (the measurement above); commit 1 is next.
+**State.** Commit 1 is on the branch, not pushed: `datum_eq` compares two geometries and two
+geographies exactly, `049_geo_equality.test.sql` answers structurally throughout, and the whole
+pg_regress suite passes on PostgreSQL 18 with no other expected output changed. Commit 2 is next.
