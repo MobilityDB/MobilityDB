@@ -3675,8 +3675,10 @@ int main(void)
      "[POINT(2 3)@2001-01-01 00:00:00+00, POINT(4 6)@2001-01-02 00:00:00+00]"},
     {"tgeo_transscale", tgeo_transscale(trip, 1, 1, 2, 3),
      "[POINT(4 6)@2001-01-01 00:00:00+00, POINT(6 9)@2001-01-02 00:00:00+00]"},
-    {"tgeo_affine_2d", tgeo_affine_2d(trip, 1, 0, 0, 1, 5, 5),
+    {"tgeo_affine", tgeo_affine(trip, 1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5, 0),
      "[POINT(6 6)@2001-01-01 00:00:00+00, POINT(7 7)@2001-01-02 00:00:00+00]"},
+    {"tgeo_affine", tgeo_affine(trip, 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 5),
+     "[POINT Z (1 0 6)@2001-01-01 00:00:00+00, POINT Z (2 0 7)@2001-01-02 00:00:00+00]"},
   };
   for (size_t k = 0; k < sizeof(aff) / sizeof(aff[0]); k++)
   {
@@ -3688,6 +3690,17 @@ int main(void)
     free(txt); free(rounded); free(aff[k].res);
   }
   free(trip);
+
+  /* A geometry moved out of its plane by geo_affine becomes three-dimensional,
+   * as the temporal value is */
+  GSERIALIZED *affpt = geom_in("Point(1 1)", -1);
+  assert(affpt != NULL);
+  GSERIALIZED *affres = geo_affine(affpt, 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 5);
+  assert(affres != NULL);
+  char *affres_txt = geo_as_text(affres, 6);
+  printf("geo_affine: %s\n", affres_txt);
+  assert(strcmp(affres_txt, "POINT Z (1 0 6)") == 0);
+  free(affpt); free(affres); free(affres_txt);
 
   /* The affine family refuses a geodetic value: an affine map of longitude
    * and latitude is no transformation of the sphere */

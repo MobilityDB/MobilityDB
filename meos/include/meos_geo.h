@@ -383,8 +383,7 @@ extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 
 /* Transformation functions */
 
-extern GSERIALIZED *geo_affine(const GSERIALIZED *gs, const AFFINE *a);
-extern GSERIALIZED *geo_affine_2d(const GSERIALIZED *gs, double a, double b, double d, double e, double xoff, double yoff);
+extern GSERIALIZED *geo_affine(const GSERIALIZED *gs, double a, double b, double c, double d, double e, double f, double g, double h, double i, double xoff, double yoff, double zoff);
 extern GSERIALIZED *geo_reverse(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_rotate(const GSERIALIZED *gs, double angle, double x0, double y0);
 extern GSERIALIZED *geo_rotate_geo(const GSERIALIZED *gs, double angle, const GSERIALIZED *origin);
@@ -703,8 +702,7 @@ extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
 /* Transformation functions */
 
-extern Temporal *tgeo_affine(const Temporal *temp, const AFFINE *a);
-extern Temporal *tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e, double xoff, double yoff);
+extern Temporal *tgeo_affine(const Temporal *temp, double a, double b, double c, double d, double e, double f, double g, double h, double i, double xoff, double yoff, double zoff);
 extern Temporal *tgeo_rotate(const Temporal *temp, double angle, double x0, double y0);
 extern Temporal *tgeo_rotate_geo(const Temporal *temp, double angle, const GSERIALIZED *origin);
 extern Temporal *tgeo_rotate_x(const Temporal *temp, double angle);

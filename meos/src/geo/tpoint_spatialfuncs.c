@@ -1833,7 +1833,6 @@ static Temporal *
 tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
-  AFFINE affine = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   gridspec grid;
   memset(&grid, 0, sizeof(gridspec));
   double width = box->xmax - box->xmin;
@@ -1854,12 +1853,8 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   pfree(tpoint1);
 
   /* Transform into tile coordinate space */
-  affine.afac = fx;
-  affine.efac = fy;
-  affine.ifac = 1;
-  affine.xoff = -box->xmin * fx;
-  affine.yoff = -box->ymax * fy;
-  Temporal *tpoint3 = tgeo_affine(tpoint2, &affine);
+  Temporal *tpoint3 = tgeo_affine(tpoint2, fx, 0, 0, 0, fy, 0, 0, 0, 1,
+    -box->xmin * fx, -box->ymax * fy, 0);
   pfree(tpoint2);
 
   /* Snap to integer precision, removing duplicate and single points */

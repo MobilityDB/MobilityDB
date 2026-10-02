@@ -1261,28 +1261,6 @@ tgeo_affine_lift(const Temporal *temp, const AFFINE *a, bool lift)
   }
 }
 
-/**
- * @ingroup meos_geo_transf
- * @brief Return the 3D affine transform of a temporal geo to do things like
- * translate, rotate, scale in one step
- * @details A two-dimensional value moved by a transformation leaving the
- * plane becomes three-dimensional (#geo_affine_lift). An affine map of
- * longitude and latitude is no transformation of the sphere, so a geodetic
- * value is refused
- * @param[in] temp Temporal geo
- * @param[in] a Matrix specifying the transformation
- * @csqlfn #Tgeo_affine()
- */
-Temporal *
-tgeo_affine(const Temporal *temp, const AFFINE *a)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(a, NULL);
-  if (! ensure_not_geodetic(temp->flags))
-    return NULL;
-  return tgeo_affine_lift(temp, a, affine_leaves_plane(a));
-}
-
 /*****************************************************************************/
 
 /**
@@ -1498,8 +1476,8 @@ tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor,
 /**
  * @brief Return the affine transformation of a temporal geo given the
  * coefficients of its matrix
- * @details The coefficients follow PostGIS ST_Affine, as #tgeo_affine reads
- * them from an AFFINE. A geodetic value is refused, as #tgeo_affine refuses it
+ * @details The coefficients follow PostGIS ST_Affine, as #tgeo_affine takes
+ * them. A geodetic value is refused, as #tgeo_affine refuses it
  * @param[in] temp Temporal geo
  * @param[in] lift True when the transformation is three-dimensional
  */
@@ -1517,19 +1495,29 @@ tgeo_affine_coefs(const Temporal *temp, bool lift,
 
 /**
  * @ingroup meos_geo_transf
- * @brief Return the 2D affine transformation of a temporal geo
+ * @brief Return the affine transformation of a temporal geo, which translates,
+ * rotates and scales it in one step
+ * @details The coefficients follow PostGIS ST_Affine. A two-dimensional value
+ * moved by a transformation leaving the plane becomes three-dimensional
+ * (#geo_affine_lift). An affine map of longitude and latitude is no
+ * transformation of the sphere, so a geodetic value is refused
  * @param[in] temp Temporal geo
- * @param[in] a,b,d,e Coefficients of the 2x2 matrix
- * @param[in] xoff,yoff Translation
- * @csqlfn #Tgeo_affine_2d()
+ * @param[in] a,b,c,d,e,f,g,h,i Coefficients of the 3x3 matrix
+ * @param[in] xoff,yoff,zoff Translation
+ * @csqlfn #Tgeo_affine(), #Tgeo_affine_2d()
  */
 Temporal *
-tgeo_affine_2d(const Temporal *temp, double a, double b, double d, double e,
-  double xoff, double yoff)
+tgeo_affine(const Temporal *temp, double a, double b, double c,
+  double d, double e, double f, double g, double h, double i, double xoff,
+  double yoff, double zoff)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
-  return tgeo_affine_coefs(temp, false, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff,
-    0);
+  if (! ensure_not_geodetic(temp->flags))
+    return NULL;
+  AFFINE aff;
+  affine_set(&aff, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff);
+  return tgeo_affine_lift(temp, &aff, affine_leaves_plane(&aff));
 }
 
 /**
@@ -1665,27 +1653,10 @@ tgeo_transscale(const Temporal *temp, double deltax, double deltay,
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_base_transf
- * @brief Return the 3D affine transformation of a geometry
- * @param[in] gs Geometry
- * @param[in] a Matrix specifying the transformation
- * @csqlfn #Geo_affine()
- */
-GSERIALIZED *
-geo_affine(const GSERIALIZED *gs, const AFFINE *a)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(a, NULL);
-  if (! ensure_not_geodetic_geo(gs))
-    return NULL;
-  return geo_affine_lift(gs, a, affine_leaves_plane(a));
-}
-
-/**
  * @brief Return the affine transformation of a geometry given the
  * coefficients of its matrix
- * @details The coefficients follow PostGIS ST_Affine, as #geo_affine reads
- * them from an AFFINE
+ * @details The coefficients follow PostGIS ST_Affine, as #geo_affine takes
+ * them
  * @param[in] gs Geometry
  * @param[in] lift True when the transformation is three-dimensional
  */
@@ -1705,18 +1676,26 @@ geo_affine_coefs(const GSERIALIZED *gs, bool lift,
 
 /**
  * @ingroup meos_geo_base_transf
- * @brief Return the 2D affine transformation of a geometry
+ * @brief Return the affine transformation of a geometry, which translates,
+ * rotates and scales it in one step
+ * @details The coefficients follow PostGIS ST_Affine
  * @param[in] gs Geometry
- * @param[in] a,b,d,e Coefficients of the 2x2 matrix
- * @param[in] xoff,yoff Translation
- * @csqlfn #Geo_affine_2d()
+ * @param[in] a,b,c,d,e,f,g,h,i Coefficients of the 3x3 matrix
+ * @param[in] xoff,yoff,zoff Translation
+ * @csqlfn #Geo_affine(), #Geo_affine_2d()
  */
 GSERIALIZED *
-geo_affine_2d(const GSERIALIZED *gs, double a, double b, double d, double e,
-  double xoff, double yoff)
+geo_affine(const GSERIALIZED *gs, double a, double b, double c,
+  double d, double e, double f, double g, double h, double i, double xoff,
+  double yoff, double zoff)
 {
-  return geo_affine_coefs(gs, false, a, b, 0, d, e, 0, 0, 0, 1, xoff, yoff,
-    0);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+  AFFINE aff;
+  affine_set(&aff, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff);
+  return geo_affine_lift(gs, &aff, affine_leaves_plane(&aff));
 }
 
 /**

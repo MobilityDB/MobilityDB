@@ -1537,7 +1537,6 @@ TGEOMETRY_CONFIG = dict(
         "bool *":              "&bool_out",
         "BOX3D *":             "box3d1",
         "GBOX *":              "gbox1",
-        "AFFINE *":            "affine1",
         "double":              "1.0",
         "double *":            "&double_out",
         "int":                 "1",
@@ -1781,7 +1780,6 @@ TGEOMETRY_CONFIG = dict(
         # Functions whose argument types need bespoke setup the
         # default canned-inputs don't supply. First-pass skip list;
         # refine as needed.
-        "re:AFFINE":     "needs an AFFINE matrix",
         "re:GBOX":       "needs a GBOX",
         "re:SkipList":   "needs a SkipList state",
         "re:bitmatrix":  "needs a bitmatrix",
@@ -1830,13 +1828,9 @@ TGEOMETRY_CONFIG = dict(
   Datum geom_point1_datum = (Datum) geom_point1;
   size_t size_out = 0;
   bool bool_out = false;
-  /* Canned PostGIS box / affine-matrix inputs for the box3d, gbox and
-   * tgeo_affine surface. */
+  /* Canned PostGIS box inputs for the box3d and gbox surface. */
   BOX3D *box3d1 = box3d_in("BOX3D(0 0 0,10 10 10)");
   GBOX *gbox1 = gbox_in("GBOX((0,0,0),(10,10,10))");
-  /* The identity affine transform (no scale, rotation or translation). */
-  AFFINE affine1_val = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
-  AFFINE *affine1 = &affine1_val;
   double double_out = 0.0;
   /* Parallel coordinate/timestamp arrays for tpointseq_make_coords. */
   double xcoords1[] = {0.0, 1.0};
