@@ -43,7 +43,9 @@
  * NULL and setting #meos_errno, and that a valid call still answers with no
  * error left behind. It also verifies that an empty geometry is reported by
  * the constructors of a temporal instant and of a sequence from a timestamptz
- * span, and a geometry that is not a point by the temporal point one.
+ * span, and a geometry that is not a point by the temporal point one. It
+ * verifies as well that the elevation restriction refuses a temporal geometry
+ * whose values are not points and restricts a temporal point.
  *
  * The program can be build as follows
  * @code
@@ -171,6 +173,27 @@ int main(void)
   assert(inst != NULL && seq != NULL);
   assert(meos_errno() == 0);
   free(inst); free(seq); free(point); free(period);
+
+  /* The elevation restriction reads the Z coordinate of a point, so it
+   * refuses a temporal geometry whose values are polygons, and restricts a
+   * temporal point */
+  Span *zspan = floatspan_in("[0, 5]");
+  Temporal *tpoly = tgeometry_in("[Polygon((0 0 1,1 0 1,1 1 1,0 0 1))@2001-01-01, "
+    "Polygon((0 0 10,1 0 10,1 1 10,0 0 10))@2001-01-02]");
+  Temporal *elev = tpoint_at_elevation(tpoly, zspan);
+  printf("tpoint_at_elevation(tgeometry of polygons, [0, 5]): %s, errno %d\n",
+    elev ? "a value" : "NULL", meos_errno());
+  assert(elev == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  Temporal *tpt = tgeompoint_in("[Point(1 1 1)@2001-01-01, "
+    "Point(2 2 10)@2001-01-02]");
+  elev = tpoint_at_elevation(tpt, zspan);
+  printf("tpoint_at_elevation(tgeompoint, [0, 5]): %s, errno %d\n",
+    elev ? "a value" : "NULL", meos_errno());
+  assert(elev != NULL);
+  assert(meos_errno() == 0);
+  free(elev); free(tpt); free(tpoly); free(zspan);
 
   /* Finalize MEOS */
   meos_finalize();
