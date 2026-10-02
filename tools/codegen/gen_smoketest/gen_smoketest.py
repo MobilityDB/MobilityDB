@@ -939,9 +939,12 @@ TPOSE_CONFIG = dict(
     # tposechain. The chain rule matches the name anywhere, so it covers the
     # set operations spelled with the operand on either side
     # (contained_posechain_set, union_set_posechain) as well as the accessors.
+    # A Set * that must be a tstzset (tposechainseq_from_base_tstzset) is
+    # matched last, so it wins over the chain rule, as in the cbuffer config.
     name_arg_map={
         r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
         r"posechain": {"Set *": "posechainset1", "Temporal *": "tposechain1"},
+        r"tstzset": {"Set *": "tstzset1"},
     },
     skip={},
     # posearr_round's `Pose **` return has neither an `int *` count arg nor a

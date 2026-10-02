@@ -344,6 +344,7 @@ tnpoint_from_base_temp(const Npoint *np, const Temporal *temp)
  * point and a timestamptz set
  * @param[in] np Value
  * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
  */
 TSequence *
 tnpointseq_from_base_tstzset(const Npoint *np, const Set *s)
@@ -360,6 +361,7 @@ tnpointseq_from_base_tstzset(const Npoint *np, const Set *s)
  * @param[in] np Value
  * @param[in] s Span
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequence_from_base_tstzspan()
  */
 TSequence *
 tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s,
@@ -378,6 +380,7 @@ tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s,
  * @param[in] np Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss,

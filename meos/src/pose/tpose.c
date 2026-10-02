@@ -444,6 +444,7 @@ tpose_from_base_temp(const Pose *pose, const Temporal *temp)
  * timestamptz set
  * @param[in] pose Value
  * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
  */
 TSequence *
 tposeseq_from_base_tstzset(const Pose *pose, const Set *s)
@@ -459,6 +460,7 @@ tposeseq_from_base_tstzset(const Pose *pose, const Set *s)
  * @param[in] pose Value
  * @param[in] s Span
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequence_from_base_tstzspan()
  */
 TSequence *
 tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp)
@@ -476,6 +478,7 @@ tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp)
  * @param[in] pose Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss,

@@ -60,6 +60,7 @@
  * timestamptz span set
  * @param[in] b Value
  * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
@@ -76,6 +77,7 @@ tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
  * timestamptz span set
  * @param[in] i Value
  * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
@@ -92,6 +94,7 @@ tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
  * timestamptz span set
  * @param[in] i Value
  * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tbigintseqset_from_base_tstzspanset(int64 i, const SpanSet *ss)
@@ -109,6 +112,7 @@ tbigintseqset_from_base_tstzspanset(int64 i, const SpanSet *ss)
  * @param[in] d Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
@@ -126,6 +130,7 @@ tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
  * span set
  * @param[in] txt Value
  * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
