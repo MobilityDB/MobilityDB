@@ -290,10 +290,16 @@ datum_eq(Datum l, Datum r, MeosType type)
       GSERIALIZED *gs2 = DatumGetGserializedP(r);
       if (gserialized_get_type(gs1) == POINTTYPE &&
           gserialized_get_type(gs2) == POINTTYPE)
+      {
+        /* A 3D and a 2D point, which the walks of the relationships measuring
+         * them in 2D compare, are not equal, as #datum_point_eq answers */
+        if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
+          return false;
         /* This walk compares one element after another and its entry has
          * established the shared reference system, so the internal twin
          * asserts what the external form tests */
         return datum_point_eq_intl(l, r);
+      }
       else
         return geo_same(gs1, gs2);
     }

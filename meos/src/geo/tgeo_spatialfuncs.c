@@ -730,7 +730,7 @@ bool
 ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   VALIDATE_TGEO(temp1, false); VALIDATE_TGEO(temp2, false); 
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) &&
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
   return true;

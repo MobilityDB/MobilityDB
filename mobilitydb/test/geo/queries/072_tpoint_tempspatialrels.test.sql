@@ -409,4 +409,11 @@ SELECT tDwithin(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1,2 2
 SELECT tDwithin(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point(0 0)', -1);
 SELECT tDwithin(tgeompoint 'Point(1 1 1)@2001-01-01', geometry 'Point(0 0 0)', -1);
 
+-- A 3D and a 2D temporal point are within a distance in 2D, in either order
+-- and against a geometry, and two 3D temporal points in 3D
+SELECT tDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 1.2);
+SELECT tDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', 1.2);
+SELECT tDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', geometry 'Point(1 1)', 1.2);
+SELECT tDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 5)@2001-01-01, Point(2 1 5)@2001-01-03]', 1.2);
+
 -------------------------------------------------------------------------------

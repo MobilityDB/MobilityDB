@@ -2209,8 +2209,12 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   double duration = (double) (upper - lower);
   const GSERIALIZED *gs1 = DatumGetGserializedP(start1);
   const GSERIALIZED *gs2 = DatumGetGserializedP(start2);
-  datum_func3 func = geo_dwithin_fn(gs1->gflags, gs2->gflags);
-  bool hasz = FLAGS_GET_Z(gs1->gflags);
+  /* The distance of the lift that calls this function, as #geo_dwithin_fn
+   * selects it from the flags of the temporal values: 3D only if both
+   * arguments are 3D */
+  bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
+  datum_func3 func = FLAGS_GET_GEODETIC(gs1->gflags) ? &datum_geog_dwithin :
+    (hasz ? &datum_geom_dwithin3d : &datum_geom_dwithin2d);
   long double a, b, c;
   if (hasz) /* 3D */
   {

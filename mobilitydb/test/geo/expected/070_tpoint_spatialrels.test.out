@@ -2299,3 +2299,39 @@ SELECT atGeometry(
  {[0101000000000000000000F0BF000000000000F0BF@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+SELECT eDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 1.2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', 1.2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', geometry 'Point(1 1)', 1.2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 5)@2001-01-01, Point(2 1 5)@2001-01-03]', 1.2);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 1.5);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 6)@2001-01-01, Point(2 1 6)@2001-01-03]', 6.1);
+ adwithin 
+----------
+ t
+(1 row)
+

@@ -3760,6 +3760,33 @@ int main(void)
   assert(gglen != geog_length(lgeog, false));
   free(lgeom); free(lgeog);
 
+  /* A relationship is tested in 3D when both geometries have Z and in 2D
+   * otherwise, as the temporal relationships decide it at every instant; a
+   * distance and a shortest line refuse geometries of different dimensions,
+   * as the temporal distance does */
+  GSERIALIZED *dz1 = geom_in("Point(0 0 0)", -1);
+  GSERIALIZED *dz2 = geom_in("Point(0 1 5)", -1);
+  GSERIALIZED *dz3 = geom_in("Point(0 0 5)", -1);
+  GSERIALIZED *d2 = geom_in("Point(0 1)", -1);
+  GSERIALIZED *d0 = geom_in("Point(0 0)", -1);
+  assert(dz1 && dz2 && dz3 && d2 && d0);
+  assert(! geom_dwithin(dz1, dz2, 1.2));
+  assert(geom_dwithin(dz1, d2, 1.2) && geom_dwithin(d2, dz1, 1.2));
+  assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
+  assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
+  assert(geom_distance(dz1, dz2) == sqrt(26.0));
+  GSERIALIZED *dline = geom_shortestline(dz1, dz2);
+  char *dline_wkt = geo_as_text(dline, 6);
+  printf("shortest line in 3D: %s\n", dline_wkt);
+  assert(strcmp(dline_wkt, "LINESTRING Z (0 0 0,0 1 5)") == 0);
+  assert(meos_errno() == 0);
+  assert(geom_distance(dz1, d2) == DBL_MAX && meos_errno() != 0);
+  meos_errno_reset();
+  assert(geom_shortestline(dz1, d2) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  free(dline_wkt); free(dline);
+  free(dz1); free(dz2); free(dz3); free(d2); free(d0);
+
   /* Finalize MEOS */
   meos_finalize();
 
