@@ -526,6 +526,7 @@ tspatial_out(const Temporal *temp, int maxdd)
  * and a timestamptz set
  * @param[in] gs Value
  * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
  */
 TSequence *
 tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
@@ -545,6 +546,7 @@ tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
  * and a timestamptz set
  * @param[in] gs Value
  * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
  */
 TSequence *
 tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
@@ -566,6 +568,7 @@ tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
  * @param[in] gs Value
  * @param[in] s Span
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequence_from_base_tstzspan()
  */
 TSequence *
 tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
@@ -589,6 +592,7 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
  * @param[in] gs Value
  * @param[in] s Span
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequence_from_base_tstzspan()
  */
 TSequence *
 tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
@@ -613,6 +617,7 @@ tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
  * @param[in] gs Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
@@ -635,6 +640,7 @@ tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
  * @param[in] gs Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,

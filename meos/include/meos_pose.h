@@ -538,7 +538,11 @@ extern Temporal *tposechain_from_mfjson(const char *mfjson);
 
 /* Constructor functions */
 
+extern TInstant *tposechaininst_make(const PoseChain *pc, TimestampTz t);
 extern Temporal *tposechain_from_base_temp(const PoseChain *pc, const Temporal *temp);
+extern TSequence *tposechainseq_from_base_tstzset(const PoseChain *pc, const Set *s);
+extern TSequence *tposechainseq_from_base_tstzspan(const PoseChain *pc, const Span *s, interpType interp);
+extern TSequenceSet *tposechainseqset_from_base_tstzspanset(const PoseChain *pc, const SpanSet *ss, interpType interp);
 
 /* Conversion functions */
 

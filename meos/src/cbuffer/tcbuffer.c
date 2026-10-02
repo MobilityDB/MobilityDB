@@ -826,6 +826,7 @@ tcbuffer_from_base_temp(const Cbuffer *cb, const Temporal *temp)
  * buffer and a timestamptz set
  * @param[in] cb Value
  * @param[in] s Set
+ * @csqlfn #Tsequence_from_base_tstzset()
  */
 TSequence *
 tcbufferseq_from_base_tstzset(const Cbuffer *cb, const Set *s)
@@ -842,6 +843,7 @@ tcbufferseq_from_base_tstzset(const Cbuffer *cb, const Set *s)
  * @param[in] cb Value
  * @param[in] s Span
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequence_from_base_tstzspan()
  */
 TSequence *
 tcbufferseq_from_base_tstzspan(const Cbuffer *cb, const Span *s,
@@ -860,6 +862,7 @@ tcbufferseq_from_base_tstzspan(const Cbuffer *cb, const Span *s,
  * @param[in] cb Value
  * @param[in] ss Span set
  * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
  */
 TSequenceSet *
 tcbufferseqset_from_base_tstzspanset(const Cbuffer *cb, const SpanSet *ss,
