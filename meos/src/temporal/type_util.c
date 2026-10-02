@@ -275,31 +275,25 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_DOUBLE4:
       return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
     case T_GEOMETRY:
+    case T_GEOGRAPHY:
     {
+      /* Two geometries or geographies are equal when they are the same
+       * values, vertex by vertex, exactly, as #datum_cmp() and #datum_hash()
+       * read them and as PostGIS answers = between them. A temporal value
+       * applies this equality at every instant, so its =, its ever and always
+       * equalities, the de-duplication of a set and the normalization of a
+       * sequence agree with the B-tree order and the hash. The point-set
+       * equality is #geo_equals(). Two points compare their coordinates
+       * exactly, which keeps the serialization and the relate engine out of
+       * the temporal-distance hot path */
       GSERIALIZED *gs1 = DatumGetGserializedP(l);
       GSERIALIZED *gs2 = DatumGetGserializedP(r);
-      /* Fast path: equality of two points reduces to exact coordinate
-       * equality, avoiding the intersection matrix. This keeps the relate
-       * engine out of the temporal-distance hot path, where the lifting
-       * turning-point loop tests segment constancy via datum_eq. Uses the
-       * exact point equality (datum_point_eq, not the FP-tolerant _same) to
-       * preserve the exact semantics of geo_equals */
       if (gserialized_get_type(gs1) == POINTTYPE &&
           gserialized_get_type(gs2) == POINTTYPE)
         /* This walk compares one element after another and its entry has
          * established the shared reference system, so the internal twin
          * asserts what the external form tests */
         return datum_point_eq_intl(l, r);
-      else
-        return geo_equals(gs1, gs2);
-    }
-    case T_GEOGRAPHY:
-    {
-      GSERIALIZED *gs1 = DatumGetGserializedP(l);
-      GSERIALIZED *gs2 = DatumGetGserializedP(r);
-      if (gserialized_get_type(gs1) == POINTTYPE &&
-          gserialized_get_type(gs2) == POINTTYPE)
-        return geopoint_same(gs1, gs2);
       else
         return geo_same(gs1, gs2);
     }
