@@ -3671,7 +3671,7 @@ int main(void)
      "[POINT Z (1 0 1)@2001-01-01 00:00:00+00, POINT Z (2 0 2)@2001-01-02 00:00:00+00]"},
     {"tgeo_rotate_y", tgeo_rotate_y(trip, M_PI_2),
      "[POINT Z (0 1 -1)@2001-01-01 00:00:00+00, POINT Z (0 2 -2)@2001-01-02 00:00:00+00]"},
-    {"tgeo_scale_xyz", tgeo_scale_xyz(trip, 2, 3, 1),
+    {"tgeo_scale", tgeo_scale(trip, 2, 3, 1),
      "[POINT(2 3)@2001-01-01 00:00:00+00, POINT(4 6)@2001-01-02 00:00:00+00]"},
     {"tgeo_transscale", tgeo_transscale(trip, 1, 1, 2, 3),
      "[POINT(4 6)@2001-01-01 00:00:00+00, POINT(6 9)@2001-01-02 00:00:00+00]"},

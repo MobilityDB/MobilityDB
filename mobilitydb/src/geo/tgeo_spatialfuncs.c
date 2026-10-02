@@ -300,8 +300,8 @@ Tgeo_affine(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tgeo_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeo_scale);
+PGDLLEXPORT Datum Tgeo_scale_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_scale_geo);
 /**
  * @ingroup mobilitydb_geo_transf
  * @brief Return a temporal geo scaled by the factors a point states, about an
@@ -309,7 +309,7 @@ PG_FUNCTION_INFO_V1(Tgeo_scale);
  * @sqlfn scale()
  */
 Datum
-Tgeo_scale(PG_FUNCTION_ARGS)
+Tgeo_scale_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
@@ -317,7 +317,7 @@ Tgeo_scale(PG_FUNCTION_ARGS)
   /* Do we have the optional false origin? */
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     sorigin = PG_GETARG_GSERIALIZED_P(2);
-  Temporal *result = tgeo_scale(temp, scale, sorigin);
+  Temporal *result = tgeo_scale_geo(temp, scale, sorigin);
   if (! result)
     PG_RETURN_NULL();
   PG_FREE_IF_COPY(temp, 0);
@@ -330,8 +330,8 @@ Tgeo_scale(PG_FUNCTION_ARGS)
  * #Tgeo_affine passes its twelve to tgeo_affine
  */
 
-PGDLLEXPORT Datum Tgeo_scale_xyz(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeo_scale_xyz);
+PGDLLEXPORT Datum Tgeo_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_scale);
 /**
  * @ingroup mobilitydb_geo_transf
  * @brief Return a temporal geo scaled by the given factors along the x, y,
@@ -339,7 +339,7 @@ PG_FUNCTION_INFO_V1(Tgeo_scale_xyz);
  * @sqlfn scale()
  */
 Datum
-Tgeo_scale_xyz(PG_FUNCTION_ARGS)
+Tgeo_scale(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double xfactor = PG_GETARG_FLOAT8(1);
@@ -348,7 +348,7 @@ Tgeo_scale_xyz(PG_FUNCTION_ARGS)
   double zfactor = 1;
   if (PG_NARGS() > 3)
     zfactor = PG_GETARG_FLOAT8(3);
-  Temporal *result = tgeo_scale_xyz(temp, xfactor, yfactor, zfactor);
+  Temporal *result = tgeo_scale(temp, xfactor, yfactor, zfactor);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -643,8 +643,8 @@ Geo_rotate_z(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
-PGDLLEXPORT Datum Geo_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_scale);
+PGDLLEXPORT Datum Geo_scale_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_scale_geo);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry scaled by the factors a point states, about an
@@ -652,14 +652,14 @@ PG_FUNCTION_INFO_V1(Geo_scale);
  * @sqlfn scale()
  */
 Datum
-Geo_scale(PG_FUNCTION_ARGS)
+Geo_scale_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
   GSERIALIZED *sorigin = NULL;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     sorigin = PG_GETARG_GSERIALIZED_P(2);
-  GSERIALIZED *result = geo_scale(gs, scale, sorigin);
+  GSERIALIZED *result = geo_scale_geo(gs, scale, sorigin);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(scale, 1);
   if (! result)
@@ -667,8 +667,8 @@ Geo_scale(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
-PGDLLEXPORT Datum Geo_scale_xyz(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_scale_xyz);
+PGDLLEXPORT Datum Geo_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_scale);
 /**
  * @ingroup mobilitydb_geo_base_transf
  * @brief Return a geometry scaled by the given factors along the x, y, and z
@@ -676,7 +676,7 @@ PG_FUNCTION_INFO_V1(Geo_scale_xyz);
  * @sqlfn scale()
  */
 Datum
-Geo_scale_xyz(PG_FUNCTION_ARGS)
+Geo_scale(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double xfactor = PG_GETARG_FLOAT8(1);
@@ -685,7 +685,7 @@ Geo_scale_xyz(PG_FUNCTION_ARGS)
   double zfactor = 1;
   if (PG_NARGS() > 3)
     zfactor = PG_GETARG_FLOAT8(3);
-  GSERIALIZED *result = geo_scale_xyz(gs, xfactor, yfactor, zfactor);
+  GSERIALIZED *result = geo_scale(gs, xfactor, yfactor, zfactor);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }

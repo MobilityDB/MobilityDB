@@ -391,8 +391,8 @@ extern GSERIALIZED *geo_rotate_x(const GSERIALIZED *gs, double angle);
 extern GSERIALIZED *geo_rotate_y(const GSERIALIZED *gs, double angle);
 extern GSERIALIZED *geo_rotate_z(const GSERIALIZED *gs, double angle);
 extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
-extern GSERIALIZED *geo_scale(const GSERIALIZED *gs, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
-extern GSERIALIZED *geo_scale_xyz(const GSERIALIZED *gs, double xfactor, double yfactor, double zfactor);
+extern GSERIALIZED *geo_scale(const GSERIALIZED *gs, double xfactor, double yfactor, double zfactor);
+extern GSERIALIZED *geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
 extern GSERIALIZED *geo_translate(const GSERIALIZED *gs, double deltax, double deltay, double deltaz);
 extern GSERIALIZED *geo_transscale(const GSERIALIZED *gs, double deltax, double deltay, double xfactor, double yfactor);
 
@@ -708,8 +708,8 @@ extern Temporal *tgeo_rotate_geo(const Temporal *temp, double angle, const GSERI
 extern Temporal *tgeo_rotate_x(const Temporal *temp, double angle);
 extern Temporal *tgeo_rotate_y(const Temporal *temp, double angle);
 extern Temporal *tgeo_rotate_z(const Temporal *temp, double angle);
-extern Temporal *tgeo_scale(const Temporal *temp, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
-extern Temporal *tgeo_scale_xyz(const Temporal *temp, double xfactor, double yfactor, double zfactor);
+extern Temporal *tgeo_scale(const Temporal *temp, double xfactor, double yfactor, double zfactor);
+extern Temporal *tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
 extern Temporal *tgeo_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 extern Temporal *tgeo_transscale(const Temporal *temp, double deltax, double deltay, double xfactor, double yfactor);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);

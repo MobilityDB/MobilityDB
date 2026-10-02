@@ -92,22 +92,22 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeometry,geometry)
 RETURNS tgeometry
-AS 'MODULE_PATHNAME', 'Tgeo_scale'
+AS 'MODULE_PATHNAME', 'Tgeo_scale_geo'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeometry,geometry,origin geometry)
 RETURNS tgeometry
-AS 'MODULE_PATHNAME', 'Tgeo_scale'
+AS 'MODULE_PATHNAME', 'Tgeo_scale_geo'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeometry,float8,float8,float8)
 RETURNS tgeometry
-AS 'MODULE_PATHNAME', 'Tgeo_scale_xyz'
+AS 'MODULE_PATHNAME', 'Tgeo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeometry,float8,float8)
 RETURNS tgeometry
-AS 'MODULE_PATHNAME', 'Tgeo_scale_xyz'
+AS 'MODULE_PATHNAME', 'Tgeo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
