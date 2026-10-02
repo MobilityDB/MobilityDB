@@ -17,23 +17,23 @@
 
 		<itemizedlist>
 			<listitem>
-				<para><varname>torder</varname> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>,</para>
+				<para><varname>torder</varname> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>talpha</varname> representa cualquier tipo temporal alfanumérico, por ejemplo, <varname>tint</varname> or <varname>ttext</varname>,</para>
+				<para><varname>talpha</varname> representa cualquier tipo temporal alfanumérico, por ejemplo, <varname>tint</varname> o <varname>ttext</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>tnumber</varname> representa cualquier tipo de número temporal, es decir, <varname>tint</varname> o <varname>tfloat</varname>,</para>
+				<para><varname>tnumber</varname> representa cualquier tipo de número temporal, es decir, <varname>tint</varname>, <varname>tbigint</varname> o <varname>tfloat</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>number</varname> represents any number base type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
+				<para><varname>number</varname> representa cualquier tipo de base numérico, es decir, <varname>integer</varname>, <varname>bigint</varname> o <varname>float</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>numspan</varname> represents any number span type, that is, either <varname>intspan</varname> or <varname>floatspan</varname>,</para>
+				<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname>, <varname>bigintspan</varname> o <varname>floatspan</varname>,</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

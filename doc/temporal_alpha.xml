@@ -16,7 +16,7 @@
 		<para>We presented in <xref linkend="ttype_notation"/> the notation used for defining the signature of the functions and operators for temporal alphanumeric types. We extend next this notations for temporal alphanumeric types.</para>
 		<itemizedlist>
 			<listitem>
-				<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
+				<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
 			</listitem>
 
 			<listitem>
