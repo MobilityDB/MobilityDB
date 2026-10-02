@@ -922,17 +922,17 @@ geoarr_set_stbox(const Datum *values, int count, STBox *result)
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * timestamptz
  * @param[in] t Timestamp
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-timestamptz_set_stbox(TimestampTz t, STBox *box)
+timestamptz_set_stbox(TimestampTz t, STBox *result)
 {
-  assert(box);
+  assert(result);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
+  memset(result, 0, sizeof(STBox));
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &result->period);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return;
 }
 
