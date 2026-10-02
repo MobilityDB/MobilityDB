@@ -30,7 +30,8 @@
 /**
  * @file
  * @brief Test how temporal restrictions, time overlaps, the timestamp of an
- * instant and the boxes of a temporal number report an invalid argument
+ * instant, the boxes of a temporal number and the interpolation read from its
+ * name report an invalid argument
  * @details A program that tests how the temporal restrictions to the instants
  * before or after a timestamptz, the test of whether the time of two temporal
  * values overlaps, the timestamp of a temporal instant, and the value and time
@@ -53,6 +54,8 @@
  * and answers the timestamp of an instant, and that #tint_value_boxes and
  * #tfloat_time_boxes report a null value, a null count and a value of the
  * other temporal number type, and answer the boxes of a value of their own.
+ * It verifies last that #interptype_from_string reports a null name and an
+ * unknown one, and reads a name in any case.
  *
  * The program can be build as follows
  * @code
@@ -200,6 +203,32 @@ int main(void)
   assert(boxes != NULL && count == 3);
   assert(meos_errno() == 0);
   free(boxes); free(day); free(tfloat);
+
+  /* The interpolation a binding passes as text is read from its name in any
+   * case: a null name and an unknown one are reported with the error value
+   * INTERP_NONE, and a name answers its interpolation */
+  interpType interp = interptype_from_string(NULL);
+  printf("interptype_from_string(NULL): %d, errno %d\n", (int) interp,
+    meos_errno());
+  assert(interp == INTERP_NONE);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  interp = interptype_from_string("cubic");
+  printf("interptype_from_string(\"cubic\"): %d, errno %d\n", (int) interp,
+    meos_errno());
+  assert(interp == INTERP_NONE);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  interp = interptype_from_string("linear");
+  printf("interptype_from_string(\"linear\"): %d, errno %d\n", (int) interp,
+    meos_errno());
+  assert(interp == LINEAR);
+  assert(meos_errno() == 0);
+  interp = interptype_from_string("Step");
+  printf("interptype_from_string(\"Step\"): %d, errno %d\n", (int) interp,
+    meos_errno());
+  assert(interp == STEP);
+  assert(meos_errno() == 0);
 
   free(temp);
 

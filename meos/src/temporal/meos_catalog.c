@@ -43,7 +43,9 @@
 #include <common/hashfn.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "temporal/doublen.h"
+#include "temporal/temporal.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
 #endif
@@ -499,11 +501,21 @@ interptype_name(interpType interp)
 }
 
 /**
- * @brief Get the interpolation type from the interpolation string
+ * @ingroup meos_temporal_inout
+ * @brief Return the interpolation corresponding to its name
+ * @details The name is read without regard to case, so a host passing the
+ * interpolation of a constructor or a conversion as text, as the SQL
+ * functions do, reaches the value the C function takes.
+ * @param[in] str Interpolation name: `none`, `discrete`, `step` or `linear`
+ * @note This is the parser counterpart of #interptype_name()
+ * @errval INTERP_NONE
  */
 interpType
 interptype_from_string(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, INTERP_NONE);
+
   int n = sizeof(MEOS_INTERPTYPE_NAMES) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
