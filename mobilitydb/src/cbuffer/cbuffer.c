@@ -589,8 +589,8 @@ Cbuffer_transform_pipeline(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_contains(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_contains);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
- * @brief Return true if two circular buffers are disjoint
+ * @ingroup mobilitydb_cbuffer_base_rel
+ * @brief Return true if the first circular buffer contains the second one
  * @sqlfn contains()
  */
 Datum
@@ -607,8 +607,8 @@ Cbuffer_contains(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_covers(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_covers);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
- * @brief Return true if two circular buffers are disjoint
+ * @ingroup mobilitydb_cbuffer_base_rel
+ * @brief Return true if the first circular buffer covers the second one
  * @sqlfn cbuffer_covers()
  */
 Datum
@@ -625,7 +625,7 @@ Cbuffer_covers(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_disjoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_disjoint);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
+ * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers are disjoint
  * @sqlfn cbuffer_disjoint()
  */
@@ -643,7 +643,7 @@ Cbuffer_disjoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_intersects(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_intersects);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
+ * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers intersect
  * @sqlfn cbuffer_intersects()
  */
@@ -661,8 +661,8 @@ Cbuffer_intersects(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_touches(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_touches);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
- * @brief Return true if two circular buffers intersect
+ * @ingroup mobilitydb_cbuffer_base_rel
+ * @brief Return true if the first circular buffer touches the second one
  * @sqlfn cbuffer_touches()
  */
 Datum
@@ -679,7 +679,7 @@ Cbuffer_touches(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Cbuffer_dwithin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_dwithin);
 /**
- * @ingroup mobilitydb_cbuffer_base_comp
+ * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers are within a distance
  * @sqlfn cbuffer_dwithin()
  */

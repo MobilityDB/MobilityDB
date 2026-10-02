@@ -139,6 +139,10 @@
  * @ingroup mobilitydb_cbuffer_base
  * @brief Spatial reference system functions for static circular buffers
  *
+ * @defgroup mobilitydb_cbuffer_base_rel Spatial relationship functions
+ * @ingroup mobilitydb_cbuffer_base
+ * @brief Spatial relationship functions for static circular buffers
+ *
  * @defgroup mobilitydb_cbuffer_base_comp Comparison functions
  * @ingroup mobilitydb_cbuffer_base
  * @brief Comparison functions for static circular buffers
