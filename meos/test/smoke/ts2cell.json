@@ -12,6 +12,7 @@
     "TSequence * *": "(const TSequence **) &ts2seq1",
     "Set *": "s2set1",
     "Span *": "tstzspan1",
+    "SpanSet *": "tstzspanset1",
     "GSERIALIZED *": "geom1",
     "TimestampTz": "tstz1",
     "interpType": "STEP",
@@ -40,7 +41,8 @@
     "^tbigint_to_ts2cell$": {"Temporal *": "tbigint1"},
     "^tgeogpoint_": {"Temporal *": "tgeogpoint1"},
     "^tgeompoint_": {"Temporal *": "tgeompoint1"},
-    "^geo_to_s2cell_set$": {"GSERIALIZED *": "geog1"}
+    "^geo_to_s2cell_set$": {"GSERIALIZED *": "geog1"},
+    "tstzset": {"Set *": "tstzset1"}
   },
   "override_args": {
     "bigint_to_s2cell": {"0": "(int64) s2cell1"},
@@ -56,6 +58,8 @@
   "common_inputs": [
     "  TimestampTz tstz1 = timestamptz_in(\"2001-01-01\", -1);",
     "  Span *tstzspan1 = tstzspan_in(\"[2001-01-01, 2001-01-03]\");",
+    "  Set *tstzset1 = tstzset_in(\"{2001-01-02, 2001-01-03}\");",
+    "  SpanSet *tstzspanset1 = tstzspanset_in(\"{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}\");",
     "  TimestampTz tstzarr1[] = { timestamptz_in(\"2001-01-01\", -1), timestamptz_in(\"2001-01-03\", -1) };",
     "  /* A cell of level 15 on face 2 and the first of its edge neighbours, which",
     "   * MEOS derives from the cell, so the functions of two cells read neighbours",
@@ -112,6 +116,8 @@
     "  free(tgeompoint1);",
     "  free(geom1);",
     "  free(geog1);",
+    "  free(tstzset1);",
+    "  free(tstzspanset1);",
     "  free(tstzspan1);"
   ]
 }

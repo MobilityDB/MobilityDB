@@ -185,6 +185,10 @@ extern Temporal *th3index_from_mfjson(const char *mfjson);
 /* Constructors */
 extern Temporal *th3index_make(H3Index value, TimestampTz t);
 extern TInstant *th3indexinst_make(H3Index value, TimestampTz t);
+extern Temporal *th3index_from_base_temp(H3Index value, const Temporal *temp);
+extern TSequence *th3indexseq_from_base_tstzset(H3Index value, const Set *s);
+extern TSequence *th3indexseq_from_base_tstzspan(H3Index value, const Span *s);
+extern TSequenceSet *th3indexseqset_from_base_tstzspanset(H3Index value, const SpanSet *ss);
 extern TSequence *th3indexseq_make(const H3Index *values,
   const TimestampTz *times, int count, bool lower_inc, bool upper_inc);
 extern TSequenceSet *th3indexseqset_make(const TSequence **sequences, int count);
