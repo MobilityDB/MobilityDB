@@ -607,27 +607,27 @@ WITH g(geom) AS (VALUES (geometry 'Point(1 2 3)'),
   (geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'),
   (geometry 'SRID=3812;MultiPoint(50 160,50 50)'))
 SELECT
-  bool_and(ST_AsEWKT(geoAffine(geom, 1, 2, 3, 4, 5, 6, 0, 0, 1, 5, 6, 0)) =
+  bool_and(ST_AsEWKT(affine(geom, 1, 2, 3, 4, 5, 6, 0, 0, 1, 5, 6, 0)) =
     ST_AsEWKT(ST_Affine(geom, 1, 2, 3, 4, 5, 6, 0, 0, 1, 5, 6, 0))) AS affine,
-  bool_and(ST_AsEWKT(geoAffine(geom, 1, 2, 3, 4, 5, 6)) =
+  bool_and(ST_AsEWKT(affine(geom, 1, 2, 3, 4, 5, 6)) =
     ST_AsEWKT(ST_Affine(geom, 1, 2, 3, 4, 5, 6))) AS affine_2d,
-  bool_and(ST_AsEWKT(geoRotate(geom, pi()/6)) =
+  bool_and(ST_AsEWKT(rotate(geom, pi()/6)) =
     ST_AsEWKT(ST_Rotate(geom, pi()/6))) AS rotate,
-  bool_and(ST_AsEWKT(geoRotate(geom, pi()/6, 50, 160)) =
+  bool_and(ST_AsEWKT(rotate(geom, pi()/6, 50, 160)) =
     ST_AsEWKT(ST_Rotate(geom, pi()/6, 50, 160))) AS rotate_xy,
-  bool_and(ST_AsEWKT(geoRotate(geom, pi()/6, ST_SetSRID(ST_Point(50, 160), ST_SRID(geom)))) =
+  bool_and(ST_AsEWKT(rotate(geom, pi()/6, ST_SetSRID(ST_Point(50, 160), ST_SRID(geom)))) =
     ST_AsEWKT(ST_Rotate(geom, pi()/6, ST_SetSRID(ST_Point(50, 160), ST_SRID(geom))))) AS rotate_geo,
-  bool_and(ST_AsEWKT(geoRotateZ(geom, pi()/6)) =
+  bool_and(ST_AsEWKT(rotateZ(geom, pi()/6)) =
     ST_AsEWKT(ST_RotateZ(geom, pi()/6))) AS rotate_z,
-  bool_and(ST_AsEWKT(geoTranslate(geom, 5, 10)) =
+  bool_and(ST_AsEWKT(translate(geom, 5, 10)) =
     ST_AsEWKT(ST_Translate(geom, 5, 10))) AS translate,
-  bool_and(ST_AsEWKT(geoScale(geom, 0.5, 0.75)) =
+  bool_and(ST_AsEWKT(scale(geom, 0.5, 0.75)) =
     ST_AsEWKT(ST_Scale(geom, 0.5, 0.75))) AS scale,
-  bool_and(ST_AsEWKT(geoScale(geom, ST_MakePoint(2, 3))) =
+  bool_and(ST_AsEWKT(scale(geom, ST_MakePoint(2, 3))) =
     ST_AsEWKT(ST_Scale(geom, ST_MakePoint(2, 3)))) AS scale_geo,
-  bool_and(ST_AsEWKT(geoScale(geom, ST_MakePoint(2, 3), ST_MakePoint(1, 1))) =
+  bool_and(ST_AsEWKT(scale(geom, ST_MakePoint(2, 3), ST_MakePoint(1, 1))) =
     ST_AsEWKT(ST_Scale(geom, ST_MakePoint(2, 3), ST_MakePoint(1, 1)))) AS scale_origin,
-  bool_and(ST_AsEWKT(geoTransscale(geom, 1, 2, 3, 4)) =
+  bool_and(ST_AsEWKT(transscale(geom, 1, 2, 3, 4)) =
     ST_AsEWKT(ST_TransScale(geom, 1, 2, 3, 4))) AS transscale
 FROM g;
  affine | affine_2d | rotate | rotate_xy | rotate_geo | rotate_z | translate | scale | scale_geo | scale_origin | transscale 
@@ -638,13 +638,13 @@ FROM g;
 WITH g(geom) AS (VALUES (geometry 'Point(1 2 3)'),
   (geometry 'Linestring(1 1 1,2 2 4)'))
 SELECT
-  bool_and(ST_AsEWKT(geoRotateX(geom, pi()/6)) =
+  bool_and(ST_AsEWKT(rotateX(geom, pi()/6)) =
     ST_AsEWKT(ST_RotateX(geom, pi()/6))) AS rotate_x,
-  bool_and(ST_AsEWKT(geoRotateY(geom, pi()/6)) =
+  bool_and(ST_AsEWKT(rotateY(geom, pi()/6)) =
     ST_AsEWKT(ST_RotateY(geom, pi()/6))) AS rotate_y,
-  bool_and(ST_AsEWKT(geoTranslate(geom, 5, 10, 1)) =
+  bool_and(ST_AsEWKT(translate(geom, 5, 10, 1)) =
     ST_AsEWKT(ST_Translate(geom, 5, 10, 1))) AS translate_z,
-  bool_and(ST_AsEWKT(geoScale(geom, 0.5, 0.75, 0.8)) =
+  bool_and(ST_AsEWKT(scale(geom, 0.5, 0.75, 0.8)) =
     ST_AsEWKT(ST_Scale(geom, 0.5, 0.75, 0.8))) AS scale_xyz
 FROM g;
  rotate_x | rotate_y | translate_z | scale_xyz 
@@ -652,49 +652,55 @@ FROM g;
  t        | t        | t           | t
 (1 row)
 
-SELECT ST_AsEWKT(round(geoRotateX(geometry 'Point(1 1)', pi()/2), 6));
+SELECT translate('Point(1 1)', '1', '2'), scale(1.250);
+ translate  | scale 
+------------+-------
+ Point(2 2) |     3
+(1 row)
+
+SELECT ST_AsEWKT(round(rotateX(geometry 'Point(1 1)', pi()/2), 6));
   st_asewkt   
 --------------
  POINT(1 0 1)
 (1 row)
 
-SELECT ST_AsEWKT(round(geoRotateY(geometry 'Linestring(1 1,2 2)', pi()/2), 6));
+SELECT ST_AsEWKT(round(rotateY(geometry 'Linestring(1 1,2 2)', pi()/2), 6));
          st_asewkt         
 ---------------------------
  LINESTRING(0 1 -1,0 2 -2)
 (1 row)
 
-SELECT ST_AsEWKT(geoTranslate(geometry 'Point(1 1)', 0, 0, 5));
+SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 0, 0, 5));
   st_asewkt   
 --------------
  POINT(1 1 5)
 (1 row)
 
-SELECT ST_AsEWKT(geoAffine(geometry 'Point(1 1)', 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0));
+SELECT ST_AsEWKT(affine(geometry 'Point(1 1)', 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0));
   st_asewkt   
 --------------
  POINT(1 1 1)
 (1 row)
 
-SELECT ST_AsEWKT(geoScale(geometry 'Point(1 1)', geometry 'Point(2 2 2)', geometry 'Point(0 0 1)'));
+SELECT ST_AsEWKT(scale(geometry 'Point(1 1)', geometry 'Point(2 2 2)', geometry 'Point(0 0 1)'));
    st_asewkt   
 ---------------
  POINT(2 2 -1)
 (1 row)
 
-SELECT ST_AsEWKT(geoRotateZ(geometry 'Point(1 1)', pi()/2), 6);
+SELECT ST_AsEWKT(rotateZ(geometry 'Point(1 1)', pi()/2), 6);
   st_asewkt  
 -------------
  POINT(-1 1)
 (1 row)
 
-SELECT ST_AsEWKT(geoTranslate(geometry 'Point(1 1)', 0, 0, 0));
+SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 0, 0, 0));
  st_asewkt  
 ------------
  POINT(1 1)
 (1 row)
 
-SELECT ST_AsEWKT(geoScale(geometry 'Point(1 1)', geometry 'Point(2 2)', geometry 'Point(0 0 1)'));
+SELECT ST_AsEWKT(scale(geometry 'Point(1 1)', geometry 'Point(2 2)', geometry 'Point(0 0 1)'));
  st_asewkt  
 ------------
  POINT(2 2)
@@ -724,7 +730,7 @@ SELECT asEWKT(rotateZ(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]
  [POINT(-1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(-2 2)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT ST_AsEWKT(geoAffine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
+SELECT ST_AsEWKT(affine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
   sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0));
    st_asewkt    
 ----------------
@@ -739,45 +745,45 @@ SELECT asEWKT(round(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()),
  [POINT Z (-1 -1 0)@Mon Jan 01 00:00:00 2001 PST, LINESTRING Z (-1 -1 0,-2 -2 0)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT ST_AsEWKT(geoRotate(geometry 'Linestring(5 10,5 5)', pi()/6, 5, 10), 2);
+SELECT ST_AsEWKT(rotate(geometry 'Linestring(5 10,5 5)', pi()/6, 5, 10), 2);
          st_asewkt         
 ---------------------------
  LINESTRING(5 10,7.5 5.67)
 (1 row)
 
-SELECT ST_AsEWKT(geoRotateZ(geometry 'Linestring(1 1,2 2)', pi()/2), 6);
+SELECT ST_AsEWKT(rotateZ(geometry 'Linestring(1 1,2 2)', pi()/2), 6);
        st_asewkt       
 -----------------------
  LINESTRING(-1 1,-2 2)
 (1 row)
 
-SELECT ST_AsEWKT(geoScale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
+SELECT ST_AsEWKT(scale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
   geometry 'Point(1 1)'));
       st_asewkt      
 ---------------------
  LINESTRING(1 1,3 3)
 (1 row)
 
-SELECT ST_AsEWKT(geoTransscale(geometry 'Point(1 1)', 1, 1, 2, 3));
+SELECT ST_AsEWKT(transscale(geometry 'Point(1 1)', 1, 1, 2, 3));
  st_asewkt  
 ------------
  POINT(4 6)
 (1 row)
 
-SELECT ST_AsEWKT(geoTranslate(geometry 'Point(1 1)', 10, 20));
+SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 10, 20));
   st_asewkt   
 --------------
  POINT(11 21)
 (1 row)
 
 /* Errors */
-SELECT geoRotate(geometry 'Point(1 1)', pi()/6, geometry 'Linestring(0 0,1 1)');
+SELECT rotate(geometry 'Point(1 1)', pi()/6, geometry 'Linestring(0 0,1 1)');
 ERROR:  Only point geometries accepted
-SELECT geoRotate(geometry 'Point(1 1)', pi()/6, geometry 'Point Empty');
+SELECT rotate(geometry 'Point(1 1)', pi()/6, geometry 'Point Empty');
 ERROR:  Only non-empty geometries accepted
-SELECT geoRotate(geometry 'SRID=3812;Point(1 1)', pi()/6, geometry 'SRID=5676;Point(0 0)');
+SELECT rotate(geometry 'SRID=3812;Point(1 1)', pi()/6, geometry 'SRID=5676;Point(0 0)');
 ERROR:  Operation on mixed SRID
-SELECT geoScale(geometry 'Point(1 1)', geometry 'Linestring(1 1,2 2)');
+SELECT scale(geometry 'Point(1 1)', geometry 'Linestring(1 1,2 2)');
 ERROR:  Only point geometries accepted
 SELECT asText(minDistSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(1.000001 1)@2001-01-02, Point(3 3)@2001-01-03]', 1), 6);
                                        astext                                       

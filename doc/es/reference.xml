@@ -942,7 +942,7 @@
 					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname>, <varname>textLower</varname>, <varname>textUpper</varname>, <varname>textInitcap</varname></link>: Transforma en minúsculas, mayúsculas o initcap</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transforma en minúsculas, mayúsculas o initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1035,7 +1035,7 @@
 					<para><link linkend="tgeo_isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_length"><varname>length</varname>, <varname>geoLength</varname></link>: Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_length"><varname>length</varname></link>: Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_cumulativeLength"><varname>cumulativeLength</varname></link>: Devuelve la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
@@ -1073,28 +1073,28 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_affine"><varname>affine</varname>, <varname>geoAffine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
+					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotate"><varname>rotate</varname>, <varname>geoRotate</varname></link>: Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
+					<para><link linkend="tgeo_rotate"><varname>rotate</varname></link>: Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname>, <varname>geoRotateX</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje x &Z_support;</para>
+					<para><link linkend="tgeo_rotateX"><varname>rotateX</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje x &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname>, <varname>geoRotateY</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje y &Z_support;</para>
+					<para><link linkend="tgeo_rotateY"><varname>rotateY</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje y &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname>, <varname>geoRotateZ</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje z &Z_support;</para>
+					<para><link linkend="tgeo_rotateZ"><varname>rotateZ</varname></link>: Devuelve una geometría temporal rotada en sentido antihorario alrededor del eje z &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_scale"><varname>scale</varname>, <varname>geoScale</varname></link>: Devuelve un punto temporal escalado por factores dados &Z_support;</para>
+					<para><link linkend="tgeo_scale"><varname>scale</varname></link>: Devuelve un punto temporal escalado por factores dados &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transscale"><varname>transscale</varname>, <varname>geoTransscale</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados y luego escalada por factores dados &Z_support;</para>
+					<para><link linkend="tgeo_transscale"><varname>transscale</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados y luego escalada por factores dados &Z_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_translate"><varname>translate</varname>, <varname>geoTranslate</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados &Z_support;</para>
+					<para><link linkend="tgeo_translate"><varname>translate</varname></link>: Devuelve una geometría temporal trasladada por desplazamientos dados &Z_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
@@ -1125,7 +1125,7 @@
 					<para><link linkend="tgeo_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname>, <varname>geoTransformPipeline</varname></link>: Transforma a una referencia espacial diferente &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a una referencia espacial diferente &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

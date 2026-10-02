@@ -76,10 +76,3 @@ SELECT initcap(ttext '[AA@2001-01-01, BB@2001-01-02, AA@2001-01-03]');
 SELECT initcap(ttext '{[AA@2001-01-01, BB@2001-01-02, AA@2001-01-03],[CC@2001-01-04, CC@2001-01-05]}');
 
 -------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
--- Upper, lower case and initcap of a text value
-
-SELECT textLower('AbC'), textUpper('AbC'), textInitcap('hello WORLD');
-SELECT textLower(t) = lower(t), textUpper(t) = upper(t), textInitcap(t) = initcap(t)
-FROM (VALUES (text 'MobilityDB'), (text 'hello world'), (text '')) AS v(t);

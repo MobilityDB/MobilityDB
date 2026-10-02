@@ -87,77 +87,77 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 /*****************************************************************************/
 -- Affine transforms of a geometry
 
-CREATE FUNCTION geoAffine(geometry,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8)
+CREATE FUNCTION affine(geometry,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_affine'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoAffine(geometry,float8,float8,float8,float8,float8,float8)
+CREATE FUNCTION affine(geometry,float8,float8,float8,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_affine_2d'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotate(geometry,float8)
+CREATE FUNCTION rotate(geometry,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate_z'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotate(geometry,float8,float8,float8)
+CREATE FUNCTION rotate(geometry,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotate(geometry,float8,geometry)
+CREATE FUNCTION rotate(geometry,float8,geometry)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate_geo'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotateX(geometry,float8)
+CREATE FUNCTION rotateX(geometry,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate_x'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotateY(geometry,float8)
+CREATE FUNCTION rotateY(geometry,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate_y'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoRotateZ(geometry,float8)
+CREATE FUNCTION rotateZ(geometry,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_rotate_z'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoTranslate(geometry,float8,float8,float8)
+CREATE FUNCTION translate(geometry,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_translate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoTranslate(geometry,float8,float8)
+CREATE FUNCTION translate(geometry,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_translate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoTransscale(geometry,float8,float8,float8,float8)
+CREATE FUNCTION transscale(geometry,float8,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_transscale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoScale(geometry,geometry)
+CREATE FUNCTION scale(geometry,geometry)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoScale(geometry,geometry,origin geometry)
+CREATE FUNCTION scale(geometry,geometry,origin geometry)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoScale(geometry,float8,float8,float8)
+CREATE FUNCTION scale(geometry,float8,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_scale_xyz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geoScale(geometry,float8,float8)
+CREATE FUNCTION scale(geometry,float8,float8)
 RETURNS geometry
 AS 'MODULE_PATHNAME', 'Geo_scale_xyz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
