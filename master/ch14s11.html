@@ -3,7 +3,7 @@ SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
 -- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
 -- a convex polygon without holes
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11628"></a><p>Return the temporal distance</p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11652"></a><p>Return the temporal distance</p><pre class="programlisting">
 {geometry,tgeompoint,trgeometry} &lt;-&gt; {geometry,tgeompoint,trgeometry} → tfloat
 tDistance({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → tfloat
 </pre><p>In the first example, a square moves past a point. Its side stays at distance 2 from the point from 10:00 to 14:00. In the second example, the square turns a quarter turn next to the point. A corner of the square comes nearest to the point at 12:00, and the result has an instant there.</p><pre class="programlisting">
@@ -27,7 +27,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(2 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]';
 -- [1@2001-01-01, 9@2001-01-02]
-</pre></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11636"></a><p>Return the nearest approach distance</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11660"></a><p>Return the nearest approach distance</p><pre class="programlisting">
 {geometry,stbox,tgeompoint,trgeometry} |=| {geometry,stbox,tgeompoint,trgeometry} → float
 nearestApproachDistance({geometry,stbox,tgeompoint,trgeometry},
   {geometry,stbox,tgeompoint,trgeometry}) → float
@@ -41,7 +41,7 @@ SELECT round(nearestApproachDistance(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
   geometry 'Point(3 0)')::numeric, 6);
 -- 1.585786
-</pre><p>The <code class="varname">|=|</code> operator can be used for nearest-neighbour searches with GiST or SP-GiST indexes (see <a class="xref" href="ch14s20.html" title="Indexing">the section called “Indexing”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11646"></a><p>Return the instant of the first argument at which the two arguments are nearest</p><pre class="programlisting">
+</pre><p>The <code class="varname">|=|</code> operator can be used for nearest-neighbour searches with GiST or SP-GiST indexes (see <a class="xref" href="ch14s20.html" title="Indexing">the section called “Indexing”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11670"></a><p>Return the instant of the first argument at which the two arguments are nearest</p><pre class="programlisting">
 nearestApproachInstant({geometry,tgeompoint,trgeometry},
   {geometry,tgeompoint,trgeometry}) → trgeometry
 </pre><p>If the distance stays at its minimum during an interval, the result is the first instant of the interval. In the second example, the square is at distance 4 from the point from 09:36 to 12:00.</p><pre class="programlisting">
@@ -53,7 +53,7 @@ SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(5 5)'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@2001-01-01 09:36:00
-</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11654"></a><p>Return the line between the nearest points of the two arguments at their nearest approach instant</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11678"></a><p>Return the line between the nearest points of the two arguments at their nearest approach instant</p><pre class="programlisting">
 shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
