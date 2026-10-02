@@ -2,8 +2,8 @@ var searchData=
 [
   ['a_0',['A',['../trgeo__distance_8txt_a4512e746095747aa740bf8b40184ef4f.html#a4512e746095747aa740bf8b40184ef4f',1,'trgeo_distance.txt']]],
   ['a_1',['a',['../structCase_ac8fc5128797e77b145359cbf5c01bd50.html#ac8fc5128797e77b145359cbf5c01bd50',1,'Case::a()'],['../structsrid__ellipsoid_a8f59dcd3a5df75228998b73319edbbba.html#a8f59dcd3a5df75228998b73319edbbba',1,'srid_ellipsoid::a()'],['../structDggsArc_a4267e623f6a77585a3f8a95997bd20b1.html#a4267e623f6a77585a3f8a95997bd20b1',1,'DggsArc::a()'],['../structdouble4_ab23c443e11a6f28a616f2d0fb3f4075e.html#ab23c443e11a6f28a616f2d0fb3f4075e',1,'double4::a()'],['../structdouble3_a6afa8455362a4cb323ef7991bdbd8fc6.html#a6afa8455362a4cb323ef7991bdbd8fc6',1,'double3::a()'],['../structdouble2_adc4886657df13a2acd15bb38d82aa962.html#adc4886657df13a2acd15bb38d82aa962',1,'double2::a()'],['../structSPHEROID_ab7b96d6f64ca6c684ceeeda176a08644.html#ab7b96d6f64ca6c684ceeeda176a08644',1,'SPHEROID::a()'],['../structtrip__t_a576ffe390fbbfadc5f5e02595b201e5f.html#a576ffe390fbbfadc5f5e02595b201e5f',1,'trip_t::a()']]],
-  ['a0_2',['A0',['../structRecipe_a8fa2434a74566efbc77ed7a9035fdd52.html#a8fa2434a74566efbc77ed7a9035fdd52',1,'Recipe']]],
-  ['a0_3',['a0',['../structDistFunTerm_a02ca8d93223be3bdf83d74f2118edc49.html#a02ca8d93223be3bdf83d74f2118edc49',1,'DistFunTerm']]],
+  ['a0_2',['a0',['../structDistFunTerm_a02ca8d93223be3bdf83d74f2118edc49.html#a02ca8d93223be3bdf83d74f2118edc49',1,'DistFunTerm']]],
+  ['a0_3',['A0',['../structRecipe_a8fa2434a74566efbc77ed7a9035fdd52.html#a8fa2434a74566efbc77ed7a9035fdd52',1,'Recipe']]],
   ['a1_4',['a1',['../structDistFunTerm_a134ad2c6296c7ccb50f5a88db212591e.html#a134ad2c6296c7ccb50f5a88db212591e',1,'DistFunTerm']]],
   ['a1_5',['A1',['../structRecipe_af629afbbce6a1a36efd45661b62767bb.html#af629afbbce6a1a36efd45661b62767bb',1,'Recipe']]],
   ['a1x_6',['a1x',['../structM1Ctx_a822e1cadfd142d7929867786a007c3f4.html#a822e1cadfd142d7929867786a007c3f4',1,'M1Ctx']]],
