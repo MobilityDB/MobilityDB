@@ -128,16 +128,18 @@ lower-cased, as both engines match them). `geoRotateX`, `geoRotateY`, `geoRotate
 4. **The family reaches `geometry` and refuses `geography`.** MEOS gains `geo_affine`,
    `geo_affine_2d`, `geo_rotate`, `geo_rotate_x`, `geo_rotate_y`, `geo_rotate_z`, `geo_scale`,
    `geo_scale_xyz`, `geo_translate` and `geo_transscale`, each `lwgeom_affine` over a copy as
-   `tgeoinst_affine_iter` computes it, and SQL declares the 15 PostGIS signatures under the `geo`
-   names over `geometry`. The
+   `tgeoinst_affine_iter` computes it, and SQL declares the 15 PostGIS signatures over
+   `geometry` under the names the family carries over the temporal types, `translate`, `affine`,
+   `rotate`, `rotateX`, `rotateY`, `rotateZ`, `scale` and `transscale`. The
    `tgeo_*` affine functions and the new `geo_*` ones refuse a geodetic value, as the planar
    `geom_*` entries do.
-5. **PostgreSQL declares no `geoTransformPipeline` over `geometry` or `geography`**: it has
-   PostGIS's `ST_TransformPipeline(geom, 'urn:ogc:def:coordinateOperation:EPSG::16031')`. Spark
-   and Flink, which have no PostGIS, call `geoTransformPipeline(geom, ...)` generated from the MEOS
-   `geo_transform_pipeline`, a function over a base type existing only where an engine lacks it,
-   as [family 3](03-MATH.md) states for the base numbers. The raster gains `transformPipeline`
-   (G7): 18 `transformPipeline` signatures in PostgreSQL.
+5. **PostgreSQL declares `transformPipeline` over `geometry` and `geography`**, the name the
+   operation carries over the temporal types, beside PostGIS's
+   `ST_TransformPipeline(geom, 'urn:ogc:def:coordinateOperation:EPSG::16031')`
+   ([decision 0.5](IMPLEMENTATION-PLAN.md)). Spark and Flink, which have no PostGIS, call
+   `geoTransformPipeline(geom, ...)`, the `@altsqlfn` of the same wrapper over the MEOS
+   `geo_transform_pipeline`. The raster gains `transformPipeline` (G7): 20 `transformPipeline`
+   signatures in PostgreSQL.
 6. **`translate` and `rotate` reach `tcbuffer`, `tpose`, `tposechain` and `trgeometry`;
    `scale`, `affine` and `transscale` do not.** A translation or a rotation keeps each value what
    its type states: a `Cbuffer` is one centre and one radius (`cbuffer/cbuffer.h`), a pose a
