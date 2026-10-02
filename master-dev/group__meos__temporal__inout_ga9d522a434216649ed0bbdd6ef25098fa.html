@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ttext_from_mfjson</title>
+<title>MobilityDB: interptype_from_string</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga9d522a434216649ed0bbdd6ef25098fa.html#ga9d522a434216649ed0bbdd6ef25098fa">interptype_from_string</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__inout_ga9d522a434216649ed0bbdd6ef25098fa.html#ga9d522a434216649ed0bbdd6ef25098fa">interptype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga36782d69b57ccdda8e122a9cb8093241.html#ga36782d69b57ccdda8e122a9cb8093241">tbigint_from_mfjson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gab9b9476cd04cf46fd052f59e4f897596.html#gab9b9476cd04cf46fd052f59e4f897596">tbigint_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gad12a97f0e22abae2ae8e5ee967ed3661.html#gad12a97f0e22abae2ae8e5ee967ed3661">tbigint_out</a></td></tr>
@@ -97,7 +97,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga5d10018337b91b94e31bdc8ea7c0ff8e.html#ga5d10018337b91b94e31bdc8ea7c0ff8e">tint_from_mfjson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gacab2aaf42e12e73b1eb25901117f60f3.html#gacab2aaf42e12e73b1eb25901117f60f3">tint_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga833806d4de0cb2d2eca21ab74c5a4818.html#ga833806d4de0cb2d2eca21ab74c5a4818">tint_out</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__inout_ga3a93965f17cef89a6900a1d02ee4a062.html#ga3a93965f17cef89a6900a1d02ee4a062">ttext_from_mfjson</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga3a93965f17cef89a6900a1d02ee4a062.html#ga3a93965f17cef89a6900a1d02ee4a062">ttext_from_mfjson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga5a47f702a66c086b845235550ac4a48c.html#ga5a47f702a66c086b845235550ac4a48c">ttext_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gab20608a46eded9c2343bd6b94febfb2f.html#gab20608a46eded9c2343bd6b94febfb2f">ttext_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_ga2f97be25f3f2503f005b8206aac64b3d.html#ga2f97be25f3f2503f005b8206aac64b3d">wkb_variant_from_endian</a></td></tr>
@@ -105,31 +105,31 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga3a93965f17cef89a6900a1d02ee4a062" name="ga3a93965f17cef89a6900a1d02ee4a062"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga3a93965f17cef89a6900a1d02ee4a062">&#9670;&#160;</a></span>ttext_from_mfjson()</h2>
+<a id="ga9d522a434216649ed0bbdd6ef25098fa" name="ga9d522a434216649ed0bbdd6ef25098fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9d522a434216649ed0bbdd6ef25098fa">&#9670;&#160;</a></span>interptype_from_string()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * ttext_from_mfjson </td>
+          <td class="memname"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interptype_from_string </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>mfjson</em></td><td>)</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal text from its MF-JSON representation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the interpolation corresponding to its name. </p>
+<p >The name is read without regard to case, so a host passing the interpolation of a constructor or a conversion as text, as the SQL functions do, reaches the value the C function takes. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mfjson</td><td>MFJSON string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Interpolation name: <code>none</code>, <code>discrete</code>, <code>step</code> or <code>linear</code> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__temporal__inout_gacf5671971bcff54042ae3c318205f232.html#gacf5671971bcff54042ae3c318205f232" title="Return a temporal value from its Moving-Features JSON (MF-JSON) representation @sqlfn tintFromMFJSON(...">Temporal_from_mfjson()</a> </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__internal__temporal__inout_ga324355a514014458467cc40870b240d2.html#ga324355a514014458467cc40870b240d2" title="Return a temporal object from its MF-JSON representation.">temporal_from_mfjson()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This is the parser counterpart of <a class="el" href="meos_2src_2temporal_2meos__catalog_8c_a7cd3ba99ad4786e2fec308f1f4b64a53.html#a7cd3ba99ad4786e2fec308f1f4b64a53" title="Return the string representation of the subtype of the temporal type corresponding to the enum value.">interptype_name()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return INTERP_NONE </dd></dl>
 
 </div>
 </div>
