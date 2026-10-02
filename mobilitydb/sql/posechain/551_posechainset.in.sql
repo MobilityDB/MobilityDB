@@ -361,25 +361,25 @@ CREATE OPERATOR CLASS posechainset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION contains(posechainset, posechain)
+CREATE FUNCTION setContains(posechainset, posechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(posechainset, posechainset)
+CREATE FUNCTION setContains(posechainset, posechainset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = posechainset, RIGHTARG = posechain,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = posechainset, RIGHTARG = posechainset,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -387,25 +387,25 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION contained(posechain, posechainset)
+CREATE FUNCTION setContained(posechain, posechainset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(posechainset, posechainset)
+CREATE FUNCTION setContained(posechainset, posechainset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = posechain, RIGHTARG = posechainset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = posechainset, RIGHTARG = posechainset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -413,14 +413,14 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION overlaps(posechainset, posechainset)
+CREATE FUNCTION setOverlaps(posechainset, posechainset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = posechainset, RIGHTARG = posechainset,
   COMMUTATOR = &&
   -- RESTRICT = span_sel, JOIN = span_joinsel

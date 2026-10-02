@@ -176,12 +176,12 @@ SELECT tpcboxX(0, 0, 5, 5, 1)   && tpcboxX(50, 50, 60, 60, 1);
 SELECT tpcboxX(0, 0, 5, 5, 1)   ~= tpcboxX(0, 0, 5, 5, 1);
 
 -- The portable spelling of each operator above answers the same
-SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxX(2, 2, 8, 8, 1));
-SELECT contained(tpcboxX(2, 2, 8, 8, 1), tpcboxX(0, 0, 10, 10, 1));
-SELECT overlaps(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
-SELECT same(tpcboxX(0, 0, 5, 5, 1), tpcboxX(0, 0, 5, 5, 1));
+SELECT tpcboxContains(tpcboxX(0, 0, 10, 10, 1), tpcboxX(2, 2, 8, 8, 1));
+SELECT tpcboxContained(tpcboxX(2, 2, 8, 8, 1), tpcboxX(0, 0, 10, 10, 1));
+SELECT tpcboxOverlaps(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+SELECT tpcboxSame(tpcboxX(0, 0, 5, 5, 1), tpcboxX(0, 0, 5, 5, 1));
 SELECT tpcboxX(0, 0, 5, 5, 1)  -|- tpcboxX(5, 0, 10, 5, 1);
-SELECT adjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
+SELECT tpcboxAdjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
 
 -------------------------------------------------------------------------------
 -- Topological predicates — the boxes must share a dimension to be compared
@@ -198,11 +198,11 @@ SELECT tpcboxX(0, 0, 10, 10, 1) -|- tpcboxT(tstzspan '[2024-01-01, 2024-01-02]',
 SELECT tpcboxX(0, 0, 10, 10, 1) ~= tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
 
 -- The portable spelling of each of them refuses the same pair
-SELECT overlaps(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
-SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
-SELECT contained(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
-SELECT adjacent(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
-SELECT same(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxOverlaps(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxContains(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxContained(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxAdjacent(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxSame(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 
 -- A box carrying both axes shares one with each of them, so it is compared
 SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 1) &&

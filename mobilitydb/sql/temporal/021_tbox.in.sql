@@ -409,58 +409,58 @@ CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
  * Topological operators
  *****************************************************************************/
 
-CREATE FUNCTION contains(tbox, tbox)
+CREATE FUNCTION tboxContains(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tbox_tbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(tbox, tbox)
+CREATE FUNCTION tboxContained(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tbox_tbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tbox, tbox)
+CREATE FUNCTION tboxOverlaps(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tbox_tbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same(tbox, tbox)
+CREATE FUNCTION tboxSame(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tbox_tbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent(tbox, tbox)
+CREATE FUNCTION tboxAdjacent(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tbox_tbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = tboxContains,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = <@,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = tboxContained,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = @>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = tboxOverlaps,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = &&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = same,
+  PROCEDURE = tboxSame,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = ~=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
+  PROCEDURE = tboxAdjacent,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = -|-,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel

@@ -296,11 +296,11 @@ SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([5,9])';
 SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([3,9])';
 
 -- The portable spelling of each operator above answers the same
-SELECT overlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
-SELECT contains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
-SELECT contained(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
-SELECT adjacent(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
-SELECT same(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+SELECT tboxOverlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+SELECT tboxContains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+SELECT tboxContained(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+SELECT tboxAdjacent(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
+SELECT tboxSame(tbox 'TBOXFLOAT XT([1.0, 2.0],[2001-01-02, 2001-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
 
 /* Errors */
 SELECT tbox 'TBOXFLOAT X([1,2])' && tbox 'TBOX T([2001-01-01,2001-01-02])';

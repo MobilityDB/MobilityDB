@@ -62,7 +62,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{BOX}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
  * {VALDESC} overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p &&
  */
 inline Datum
@@ -77,7 +77,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{BOX});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of a {VALDESC} and
  * a {BOXDESC} overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p &&
  */
 inline Datum
@@ -92,7 +92,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
  * overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p &&
  */
 inline Datum
@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Contains_{BOX}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if a {BOXDESC} contains the one of a
  * {VALDESC}
- * @sqlfn contains_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p @>
  */
 inline Datum
@@ -126,7 +126,7 @@ PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{BOX});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of a {VALDESC}
  * contains a {BOXDESC}
- * @sqlfn contains_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p @>
  */
 inline Datum
@@ -141,7 +141,7 @@ PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of the first {VALDESC}
  * contains the one of the second {VALDESC}
- * @sqlfn contains_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p @>
  */
 inline Datum
@@ -160,7 +160,7 @@ PG_FUNCTION_INFO_V1(Contained_{BOX}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if a {BOXDESC} is contained in the
  * {BOXDESC} of a {VALDESC}
- * @sqlfn contained_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p <@
  */
 inline Datum
@@ -175,7 +175,7 @@ PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{BOX});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of a {VALDESC} is
  * contained in the {BOXDESC}
- * @sqlfn contained_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p <@
  */
 inline Datum
@@ -190,7 +190,7 @@ PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of the first {VALDESC}
  * is contained in the one of the second {VALDESC}
- * @sqlfn contained_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p <@
  */
 inline Datum
@@ -209,7 +209,7 @@ PG_FUNCTION_INFO_V1(Same_{BOX}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
  * {VALDESC} are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p ~=
  */
 inline Datum
@@ -224,7 +224,7 @@ PG_FUNCTION_INFO_V1(Same_{TSIDE}_{BOX});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of a {VALDESC} and
  * a {BOXDESC} are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p ~=
  */
 inline Datum
@@ -239,7 +239,7 @@ PG_FUNCTION_INFO_V1(Same_{TSIDE}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
  * are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p ~=
  */
 inline Datum
@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{BOX}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
  * {VALDESC} are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p -|-
  */
 inline Datum
@@ -273,7 +273,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{BOX});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESC} of a {VALDESC}
  * and a {BOXDESC} are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p -|-
  */
 inline Datum
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{TSIDE});
  * @ingroup {INGROUP}
  * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
  * are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn {SQLFN}
  * @sqlop @p -|-
  */
 inline Datum

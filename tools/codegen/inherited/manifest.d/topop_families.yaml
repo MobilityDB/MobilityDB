@@ -2,7 +2,7 @@ topop_families:
 - family: set
   file: mobilitydb/sql/temporal/002_set_ops.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(intset,"
+  begin: "CREATE FUNCTION setContains(intset,"
   end: "CREATE FUNCTION setLeft(integer"
   selectivity: [span, span, span, none, none, span]
   pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [text, textset], [date, dateset], [timestamptz, tstzset]]
@@ -23,7 +23,7 @@ topop_families:
 - family: geoset
   file: mobilitydb/sql/geo/050_geoset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(geomset,"
+  begin: "CREATE FUNCTION setContains(geomset,"
   end: "CREATE FUNCTION setUnion(geometry,"
   selectivity: stbox_comment
   pairs: [[geometry, geomset], [geography, geogset]]
@@ -44,7 +44,7 @@ topop_families:
 - family: cbufferset
   file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(cbufferset,"
+  begin: "CREATE FUNCTION setContains(cbufferset,"
   end: "CREATE FUNCTION setUnion(cbuffer,"
   selectivity: span_comment
   pairs: [[cbuffer, cbufferset]]
@@ -65,7 +65,7 @@ topop_families:
 - family: h3indexset
   file: mobilitydb/sql/h3/251_h3indexset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(h3indexset,"
+  begin: "CREATE FUNCTION setContains(h3indexset,"
   end: "CREATE FUNCTION setUnion(h3index,"
   selectivity: span
   pairs: [[h3index, h3indexset]]
@@ -86,7 +86,7 @@ topop_families:
 - family: jsonbset
   file: mobilitydb/sql/json/450_jsonbset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(jsonbset,"
+  begin: "CREATE FUNCTION setContains(jsonbset,"
   end: "CREATE FUNCTION setUnion(jsonb,"
   selectivity: none
   pairs: [[jsonb, jsonbset]]
@@ -107,7 +107,7 @@ topop_families:
 - family: npointset
   file: mobilitydb/sql/npoint/301_npointset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(npointset,"
+  begin: "CREATE FUNCTION setContains(npointset,"
   end: "CREATE FUNCTION setUnion(npoint,"
   selectivity: span_comment
   pairs: [[npoint, npointset]]
@@ -128,7 +128,7 @@ topop_families:
 - family: pcpointset
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(pcpointset,"
+  begin: "CREATE FUNCTION setContains(pcpointset,"
   end: "CREATE FUNCTION setUnion(pcpoint,"
   end_exact: true
   selectivity: none
@@ -150,7 +150,7 @@ topop_families:
 - family: pcpatchset
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(pcpatchset,"
+  begin: "CREATE FUNCTION setContains(pcpatchset,"
   end: "CREATE FUNCTION setUnion(pcpatch,"
   end_exact: true
   selectivity: none
@@ -172,7 +172,7 @@ topop_families:
 - family: poseset
   file: mobilitydb/sql/pose/101_poseset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(poseset,"
+  begin: "CREATE FUNCTION setContains(poseset,"
   end: "CREATE FUNCTION setUnion(pose,"
   selectivity: span_comment
   pairs: [[pose, poseset]]
@@ -194,7 +194,7 @@ topop_families:
 - family: posechainset
   file: mobilitydb/sql/posechain/551_posechainset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(posechainset,"
+  begin: "CREATE FUNCTION setContains(posechainset,"
   end: "CREATE FUNCTION setUnion(posechain,"
   selectivity: span_comment
   pairs: [[posechain, posechainset]]
@@ -216,7 +216,7 @@ topop_families:
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true
-  begin: "CREATE FUNCTION contains(quadbinset,"
+  begin: "CREATE FUNCTION setContains(quadbinset,"
   end: "CREATE FUNCTION setUnion(quadbin,"
   selectivity: span
   pairs: [[quadbin, quadbinset]]

@@ -315,62 +315,62 @@ CREATE OPERATOR CLASS jsonbset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION contains(jsonbset, jsonb)
+CREATE FUNCTION setContains(jsonbset, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(jsonbset, jsonbset)
+CREATE FUNCTION setContains(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = jsonbset, RIGHTARG = jsonb,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = <@
 );
 
 /******************************************************************************/
 
-CREATE FUNCTION contained(jsonb, jsonbset)
+CREATE FUNCTION setContained(jsonb, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(jsonbset, jsonbset)
+CREATE FUNCTION setContained(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = jsonb, RIGHTARG = jsonbset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = @>
 );
 
 /******************************************************************************/
 
-CREATE FUNCTION overlaps(jsonbset, jsonbset)
+CREATE FUNCTION setOverlaps(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = &&
 );

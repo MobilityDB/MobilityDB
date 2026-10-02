@@ -728,7 +728,7 @@ PG_FUNCTION_INFO_V1(Contains_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_topo
  * @brief PG wrapper: tpcbox @> tpcbox
- * @sqlfn contains()
+ * @sqlfn tpcboxContains()
  * @sqlop @p \@>
  */
 Datum Contains_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -739,7 +739,7 @@ PG_FUNCTION_INFO_V1(Contained_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_topo
  * @brief PG wrapper: tpcbox <@ tpcbox
- * @sqlfn contained()
+ * @sqlfn tpcboxContained()
  * @sqlop @p <@
  */
 Datum Contained_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -750,7 +750,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_topo
  * @brief PG wrapper: tpcbox && tpcbox
- * @sqlfn overlaps()
+ * @sqlfn tpcboxOverlaps()
  * @sqlop @p &&
  */
 Datum Overlaps_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -761,7 +761,7 @@ PG_FUNCTION_INFO_V1(Same_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_topo
  * @brief PG wrapper: tpcbox ~= tpcbox
- * @sqlfn same()
+ * @sqlfn tpcboxSame()
  * @sqlop @p ~=
  */
 Datum Same_tpcbox_tpcbox(PG_FUNCTION_ARGS)
@@ -772,7 +772,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_topo
  * @brief PG wrapper: tpcbox -|- tpcbox
- * @sqlfn adjacent()
+ * @sqlfn tpcboxAdjacent()
  * @sqlop @p -|-
  */
 Datum Adjacent_tpcbox_tpcbox(PG_FUNCTION_ARGS)

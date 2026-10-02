@@ -312,8 +312,8 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 ⚠️ **`tbigint` and `tjsonb` are full members** of `tnumber_type()` / `talpha_type()` but are **absent from the MEOS-API lattice** (§8) — a curation gap.
 
 **The generic base `Temporal<T>` reference files** (`032_temporal_boxops`
-(extraction: spans/tboxes/split*), `033_temporal_topops` (topological: overlaps/
-contains/contained/same/adjacent), `034_temporal_posops`, `040/042` aggfuncs,
+(extraction: spans/tboxes/split*), `033_temporal_topops` (topological: spanOverlaps/
+spanContains/spanContained/spanSame/spanAdjacent), `034_temporal_posops`, `040/042` aggfuncs,
 `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
 similarity/analytics) are likewise the hand reference; the generator re-emits their
 *shape* onto the derived families (§6) and regenerates the **C boxops region** for
@@ -1248,21 +1248,22 @@ uses for its estimators.
 
 What the support function buys is the index: it rewrites a predicate into the
 bounding-box operator an opclass answers, so the portable spellings of those
-operators — `overlaps` for `&&`, `contains` for `@>`, `stboxBefore` for `<<#`
-over a spatiotemporal value, the table in `doc/portable_sql.xml` — reach the
-same index as the operator, rather than being kept as a filter over a
-sequential scan. `temporal_supportfn.c` recognizes a position predicate by its
-name, so each of its tables lists the class prefixes its family declares.
+operators — `stboxOverlaps` for `&&`, `stboxContains` for `@>`, `stboxBefore`
+for `<<#` over a spatiotemporal value, the table in `doc/portable_sql.xml` —
+reach the same index as the operator, rather than being kept as a filter over a
+sequential scan. `temporal_supportfn.c` recognizes a topological or position
+predicate by its name, so each of its tables lists the class prefixes its
+family declares.
 
 Three facts bound which declarations carry the clause:
 
 - **A predicate is rewritten under the commuted spelling when its indexed
   operand is on the right**, the support function putting that operand on the
   left. The commuting pairs are the ones the operators declare as `COMMUTATOR`:
-  `contains`/`contained` and, under each class prefix, the positions
+  under each class prefix, `Contains`/`Contained` and the positions
   `Before`/`After`, `Left`/`Right`, `Below`/`Above` and `Front`/`Back`
-  (`stboxBefore`/`stboxAfter`), with `overlaps`, `same` and `adjacent`
-  commuting to themselves. ⛔ The eight `over` predicates declare **no** commutator —
+  (`stboxContains`/`stboxContained`, `stboxBefore`/`stboxAfter`), with
+  `Overlaps`, `Same` and `Adjacent` commuting to themselves. ⛔ The eight `over` predicates declare **no** commutator —
   `s &< v` bounds one side and is no `v` OP `s` — so they keep the predicate as
   a filter in that operand order instead of rewriting it into a different
   question.
@@ -1279,9 +1280,10 @@ Three facts bound which declarations carry the clause:
   type. A span set answers its adjacency to a value, to a span and to a span
   set alike from its bounding span, which is the key its classes store, so all
   three are members, as they are for a span whose key is the value itself.
-- **The temporal pointcloud types carry no clause.** Their bounding box is a
-  `TPCBox` and no scalar conversion to it exists to build an index expression
-  from, so a clause there could never fire.
+- **The temporal pointcloud types carry the clause on their topological and
+  comparison predicates**, `tspatial_supportfn`, whose table lists the
+  `tpcbox` topological names beside the `stbox` ones (`tpcboxOverlaps`); their
+  position predicates carry none.
 
 ### 10.6 The value domain is its own bounding box
 

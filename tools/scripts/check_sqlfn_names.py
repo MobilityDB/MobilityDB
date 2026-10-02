@@ -39,11 +39,11 @@ passes its tests while the tag says whatever it says.
 The oracle is mechanical and lives in the same tree.  Each CREATE FUNCTION
 names both the SQL function and the C symbol it binds:
 
-    CREATE FUNCTION contains(tcbuffer, tstzspan)
+    CREATE FUNCTION stboxContains(stbox, stbox)
       RETURNS boolean
-      AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+      AS 'MODULE_PATHNAME', 'Contains_stbox_stbox'
 
-so the SQL name of the wrapper `Contains_tstzspan_temporal` is `contains`,
+so the SQL name of the wrapper `Contains_stbox_stbox` is `stboxContains`,
 and its tag must say so.
 
 A wrapper the SQL binds is answered against the name it is bound to.  A
@@ -65,7 +65,7 @@ FUNCTION nobody calls while implementing a CREATE AGGREGATE everybody does.
 The tag states the first and @sqlaggfn the second, so an aggregate member
 answers this guard like any other wrapper and needs no exemption.
 
-Three shapes name the SQL correctly without repeating its spelling, and are
+Two shapes name the SQL correctly without repeating its spelling, and are
 accepted rather than reported:
 
   PER TYPE   The symbol serves a FAMILY of SQL functions, each carrying its
@@ -82,13 +82,6 @@ accepted rather than reported:
               visible, never repaired here: stating the laggard in the tag
               would walk the dialect backwards, and renaming the function is a
               change to the public API, not to a comment.
-
-  BOUNDING    The five bounding-box topological tags below.  MobilityDB
-  BOX         exposes these through their operator and its bare alias, and
-              the `_bbox` suffix distinguishes the three families that share
-              a name (`contains`, `contains_bbox`, `contains_rid`) in the
-              tag namespace.  Kept deliberately, and classified as
-              backing-only by the catalog the generators read.
 
 Usage:
   check_sqlfn_names.py              report every tag that names no SQL function
@@ -121,12 +114,6 @@ BASELINE_HEADER = (
     '# that an edit above a finding does not read as a new one. The list only\n'
     '# shrinks: a new unreachable wrapper fails the check. Regenerate with\n'
     '# --rebaseline after a fix.\n')
-
-# The bounding-box topological tags: a family of MobilityDB's own, exposed
-# through `@>`/`<@`/`&&`/`-|-`/`~=` and their bare aliases rather than under
-# the tag's spelling.  The catalog carries them as backing-only names.
-BBOX_TAGS = {'contains_bbox', 'contained_bbox', 'overlaps_bbox',
-             'adjacent_bbox', 'same_bbox'}
 
 # The name and C symbol of one CREATE FUNCTION statement.  The statement ends
 # at its first semicolon: reading past it walks into the next statement and
@@ -226,8 +213,6 @@ def wrappers():
 
 def accepted(tagged, declared):
     """True if the tag names the SQL correctly without repeating its spelling."""
-    if tagged & BBOX_TAGS:
-        return True
     return len(declared) > 1
 
 

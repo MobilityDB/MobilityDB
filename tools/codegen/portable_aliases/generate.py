@@ -68,20 +68,23 @@ POSITION = {
 # GreaterEqual} with a single-letter prefix (t / e / a).
 OP_TO_NAME = {}
 
+# Topological operator -> the operation its backing function names. The
+# function carries the prefix of the class it compares, as a position function
+# does, so `&&` over two spans is spanOverlaps and over two boxes stboxOverlaps.
+TOPOLOGY = {"&&": "overlaps", "@>": "contains", "<@": "contained",
+            "-|-": "adjacent", "~=": "same"}
+
 # Operators whose backing PROCEDURE is a callable named function that is already
-# portable under its own name -- documented, not a gap.
+# portable under its own name -- documented, not a gap. #@>/<@# are the tjsonb
+# time-containment operators.
 ALREADY_NAMED = {
     "@=": "same_rid", "?@": "contained_rid", "@?": "contains_rid",
-    "@@": "overlaps_rid", "&": "tAnd", "|": "tOr",
-    "~": "tNot", "||": "setConcat / tConcat",
+    "@@": "overlaps_rid", "#@>": "tjsonbContains", "<@#": "tjsonbContained",
+    "&": "tAnd", "|": "tOr", "~": "tNot", "||": "setConcat / tConcat",
 }
 
 # Coverage-audit buckets: operators that need no portable rename.
 SCALAR_SQL = {"+", "-", "*", "/", "=", "<>", "<", "<=", ">", ">=", "@"}
-# Topological operators whose backing functions are named directly by the bare
-# portable name (overlaps/contains/contained/adjacent/same). #@>/<@# are the
-# tjsonb time-containment operators, backed by the bare contains()/contained().
-TOPO = {"&&", "@>", "<@", "-|-", "~=", "#@>", "<@#"}
 TEMP = {"#=", "#<>", "#<", "#<=", "#>", "#>="}
 EVER = {"?=", "?<>", "?<", "?<=", "?>", "?>="}
 ALWAYS = {"%=", "%<>", "%<", "%<=", "%>", "%>="}
@@ -121,8 +124,9 @@ def classify(sym):
         return f"class-prefixed <class>{pos[0].upper()}{pos[1:]}() (position backing)"
     if sym in OP_TO_NAME:
         return f"bare {OP_TO_NAME[sym]}() (comparison backing)"
-    if sym in TOPO:
-        return "bare topological function (contains/contained/overlaps/adjacent/same)"
+    if sym in TOPOLOGY:
+        top = TOPOLOGY[sym]
+        return f"class-prefixed <class>{top[0].upper()}{top[1:]}() (topological backing)"
     if sym in TEMP or sym in EVER or sym in ALWAYS:
         return "bare comparison function (temp/ever/always named directly)"
     if sym in DIST:

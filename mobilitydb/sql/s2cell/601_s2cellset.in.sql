@@ -336,25 +336,25 @@ CREATE AGGREGATE setUnion(s2cellset) (
  * contains @>
  ******************************************************************************/
 
-CREATE FUNCTION contains(s2cellset, s2cell)
+CREATE FUNCTION setContains(s2cellset, s2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(s2cellset, s2cellset)
+CREATE FUNCTION setContains(s2cellset, s2cellset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = s2cellset, RIGHTARG = s2cell,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = contains,
+  PROCEDURE = setContains,
   LEFTARG = s2cellset, RIGHTARG = s2cellset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -364,25 +364,25 @@ CREATE OPERATOR @> (
  * contained by <@
  ******************************************************************************/
 
-CREATE FUNCTION contained(s2cell, s2cellset)
+CREATE FUNCTION setContained(s2cell, s2cellset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained(s2cellset, s2cellset)
+CREATE FUNCTION setContained(s2cellset, s2cellset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = s2cell, RIGHTARG = s2cellset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = contained,
+  PROCEDURE = setContained,
   LEFTARG = s2cellset, RIGHTARG = s2cellset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -392,14 +392,14 @@ CREATE OPERATOR <@ (
  * overlaps &&
  ******************************************************************************/
 
-CREATE FUNCTION overlaps(s2cellset, s2cellset)
+CREATE FUNCTION setOverlaps(s2cellset, s2cellset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = overlaps,
+  PROCEDURE = setOverlaps,
   LEFTARG = s2cellset, RIGHTARG = s2cellset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel

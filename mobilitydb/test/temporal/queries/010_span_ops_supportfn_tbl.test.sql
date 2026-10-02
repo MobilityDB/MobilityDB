@@ -69,11 +69,11 @@ CREATE TABLE test_spansupport(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE overlaps(t1.i, t2.i);
+SELECT 'overlaps', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverlaps(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contains(t1.i, t2.i);
+SELECT 'contains', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContains(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contained(t1.i, t2.i);
+SELECT 'contained', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContained(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'left', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setLeft(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -83,11 +83,11 @@ SELECT 'right', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 W
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overright', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverright(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE overlaps(t1.i, t2.i);
+SELECT 'overlaps', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverlaps(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contains(t1.i, t2.i);
+SELECT 'contains', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContains(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contained(t1.i, t2.i);
+SELECT 'contained', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContained(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'left', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanLeft(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -97,13 +97,13 @@ SELECT 'right', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan 
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overright', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverright(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE adjacent(t1.i, t2.i);
+SELECT 'adjacent', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanAdjacent(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i);
+SELECT 'overlaps', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverlaps(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i);
+SELECT 'contains', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContains(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i);
+SELECT 'contained', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContained(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'left', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetLeft(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -113,13 +113,13 @@ SELECT 'right', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overright', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverright(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i);
+SELECT 'adjacent', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetAdjacent(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i);
+SELECT 'overlaps', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverlaps(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i);
+SELECT 'contains', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContains(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i);
+SELECT 'contained', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContained(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'left', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanLeft(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -129,13 +129,13 @@ SELECT 'right', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intsp
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overright', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverright(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i);
+SELECT 'adjacent', 'intspan', 'intspanset', COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanAdjacent(t1.i, t2.i);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE overlaps(t1.t, t2.t);
+SELECT 'overlaps', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverlaps(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contains(t1.t, t2.t);
+SELECT 'contains', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContains(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contained(t1.t, t2.t);
+SELECT 'contained', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContained(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'before', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setBefore(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -145,11 +145,11 @@ SELECT 'after', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset 
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overafter', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverafter(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE overlaps(t1.t, t2.t);
+SELECT 'overlaps', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverlaps(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contains(t1.t, t2.t);
+SELECT 'contains', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContains(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contained(t1.t, t2.t);
+SELECT 'contained', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContained(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'before', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanBefore(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -159,13 +159,13 @@ SELECT 'after', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzs
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overafter', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverafter(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE adjacent(t1.t, t2.t);
+SELECT 'adjacent', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanAdjacent(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t);
+SELECT 'overlaps', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverlaps(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t);
+SELECT 'contains', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContains(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t);
+SELECT 'contained', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContained(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'before', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetBefore(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -175,13 +175,13 @@ SELECT 'after', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, 
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overafter', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverafter(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t);
+SELECT 'adjacent', 'tstzspanset', 'tstzspanset', COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetAdjacent(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'overlaps', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t);
+SELECT 'overlaps', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverlaps(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contains', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t);
+SELECT 'contains', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContains(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'contained', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t);
+SELECT 'contained', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContained(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'before', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanBefore(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
@@ -191,7 +191,7 @@ SELECT 'after', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_ts
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
 SELECT 'overafter', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverafter(t1.t, t2.t);
 INSERT INTO test_spansupport(func, leftarg, rightarg, no_idx)
-SELECT 'adjacent', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t);
+SELECT 'adjacent', 'tstzspan', 'tstzspanset', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanAdjacent(t1.t, t2.t);
 
 -------------------------------------------------------------------------------
 
@@ -203,13 +203,13 @@ CREATE INDEX tbl_tstzspan_rtree_idx ON tbl_tstzspan USING GIST(t);
 CREATE INDEX tbl_tstzspanset_rtree_idx ON tbl_tstzspanset USING GIST(t);
 
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE overlaps(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contains(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contained(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setLeft(t1.i, t2.i) )
@@ -224,13 +224,13 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE overlaps(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contains(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contained(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanLeft(t1.i, t2.i) )
@@ -245,16 +245,16 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE adjacent(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetLeft(t1.i, t2.i) )
@@ -269,16 +269,16 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanLeft(t1.i, t2.i) )
@@ -293,16 +293,16 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE overlaps(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contains(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contained(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setBefore(t1.t, t2.t) )
@@ -317,13 +317,13 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE overlaps(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contains(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contained(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanBefore(t1.t, t2.t) )
@@ -338,16 +338,16 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE adjacent(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetBefore(t1.t, t2.t) )
@@ -362,16 +362,16 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanBefore(t1.t, t2.t) )
@@ -386,7 +386,7 @@ UPDATE test_spansupport
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 
 DROP INDEX tbl_intset_rtree_idx;
@@ -406,13 +406,13 @@ CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING SPGIST(t);
 CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING SPGIST(t);
 
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE overlaps(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contains(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contained(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setLeft(t1.i, t2.i) )
@@ -427,13 +427,13 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE overlaps(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contains(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contained(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanLeft(t1.i, t2.i) )
@@ -448,16 +448,16 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE adjacent(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetLeft(t1.i, t2.i) )
@@ -472,16 +472,16 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanLeft(t1.i, t2.i) )
@@ -496,16 +496,16 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE overlaps(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contains(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contained(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setBefore(t1.t, t2.t) )
@@ -520,13 +520,13 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE overlaps(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contains(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contained(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanBefore(t1.t, t2.t) )
@@ -541,16 +541,16 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE adjacent(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetBefore(t1.t, t2.t) )
@@ -565,16 +565,16 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanBefore(t1.t, t2.t) )
@@ -589,7 +589,7 @@ UPDATE test_spansupport
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 
 DROP INDEX tbl_intset_quadtree_idx;
@@ -609,13 +609,13 @@ CREATE INDEX tbl_tstzspan_kdtree_idx ON tbl_tstzspan USING SPGIST(t tstzspan_kdt
 CREATE INDEX tbl_tstzspanset_kdtree_idx ON tbl_tstzspanset USING SPGIST(t tstzspanset_kdtree_ops);
 
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE overlaps(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contains(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE contained(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setLeft(t1.i, t2.i) )
@@ -630,13 +630,13 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE setOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE overlaps(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contains(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE contained(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanLeft(t1.i, t2.i) )
@@ -651,16 +651,16 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE adjacent(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetLeft(t1.i, t2.i) )
@@ -675,16 +675,16 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spansetAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE overlaps(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverlaps(t1.i, t2.i) )
 WHERE func = 'overlaps' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contains(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContains(t1.i, t2.i) )
 WHERE func = 'contains' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE contained(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanContained(t1.i, t2.i) )
 WHERE func = 'contained' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanLeft(t1.i, t2.i) )
@@ -699,16 +699,16 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanOverright(t1.i, t2.i) )
 WHERE func = 'overright' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE adjacent(t1.i, t2.i) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE spanAdjacent(t1.i, t2.i) )
 WHERE func = 'adjacent' AND leftarg = 'intspan' AND rightarg = 'intspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE overlaps(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contains(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE contained(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setBefore(t1.t, t2.t) )
@@ -723,13 +723,13 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE setOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzset' AND rightarg = 'tstzset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE overlaps(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contains(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE contained(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanBefore(t1.t, t2.t) )
@@ -744,16 +744,16 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE adjacent(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetBefore(t1.t, t2.t) )
@@ -768,16 +768,16 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spansetAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspanset' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE overlaps(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverlaps(t1.t, t2.t) )
 WHERE func = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contains(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContains(t1.t, t2.t) )
 WHERE func = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE contained(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanContained(t1.t, t2.t) )
 WHERE func = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanBefore(t1.t, t2.t) )
@@ -792,7 +792,7 @@ UPDATE test_spansupport
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanOverafter(t1.t, t2.t) )
 WHERE func = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 UPDATE test_spansupport
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE adjacent(t1.t, t2.t) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE spanAdjacent(t1.t, t2.t) )
 WHERE func = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'tstzspanset';
 
 DROP INDEX tbl_intset_kdtree_idx;

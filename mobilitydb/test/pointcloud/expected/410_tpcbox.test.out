@@ -312,27 +312,27 @@ SELECT tpcboxX(0, 0, 5, 5, 1)   ~= tpcboxX(0, 0, 5, 5, 1);
  t
 (1 row)
 
-SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxX(2, 2, 8, 8, 1));
- contains 
-----------
+SELECT tpcboxContains(tpcboxX(0, 0, 10, 10, 1), tpcboxX(2, 2, 8, 8, 1));
+ tpcboxcontains 
+----------------
  t
 (1 row)
 
-SELECT contained(tpcboxX(2, 2, 8, 8, 1), tpcboxX(0, 0, 10, 10, 1));
- contained 
------------
+SELECT tpcboxContained(tpcboxX(2, 2, 8, 8, 1), tpcboxX(0, 0, 10, 10, 1));
+ tpcboxcontained 
+-----------------
  t
 (1 row)
 
-SELECT overlaps(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
- overlaps 
-----------
+SELECT tpcboxOverlaps(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+ tpcboxoverlaps 
+----------------
  t
 (1 row)
 
-SELECT same(tpcboxX(0, 0, 5, 5, 1), tpcboxX(0, 0, 5, 5, 1));
- same 
-------
+SELECT tpcboxSame(tpcboxX(0, 0, 5, 5, 1), tpcboxX(0, 0, 5, 5, 1));
+ tpcboxsame 
+------------
  t
 (1 row)
 
@@ -342,9 +342,9 @@ SELECT tpcboxX(0, 0, 5, 5, 1)  -|- tpcboxX(5, 0, 10, 5, 1);
  t
 (1 row)
 
-SELECT adjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
- adjacent 
-----------
+SELECT tpcboxAdjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
+ tpcboxadjacent 
+----------------
  t
 (1 row)
 
@@ -358,15 +358,15 @@ SELECT tpcboxX(0, 0, 10, 10, 1) -|- tpcboxT(tstzspan '[2024-01-01, 2024-01-02]',
 ERROR:  The temporal values must have at least one common dimension
 SELECT tpcboxX(0, 0, 10, 10, 1) ~= tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
 ERROR:  The temporal values must have at least one common dimension
-SELECT overlaps(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxOverlaps(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 ERROR:  The temporal values must have at least one common dimension
-SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxContains(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 ERROR:  The temporal values must have at least one common dimension
-SELECT contained(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxContained(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 ERROR:  The temporal values must have at least one common dimension
-SELECT adjacent(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxAdjacent(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 ERROR:  The temporal values must have at least one common dimension
-SELECT same(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT tpcboxSame(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
 ERROR:  The temporal values must have at least one common dimension
 SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 1) &&
   tpcboxX(2, 2, 8, 8, 1);

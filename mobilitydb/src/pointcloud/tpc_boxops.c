@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpcbox_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if a tpcbox and the tpcbox of a
  * temporal pointcloud value overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn tpcboxOverlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpointcloud_tpcbox);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of a temporal pointcloud value and
  * a tpcbox overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn tpcboxOverlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpointcloud_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcboxes of two temporal pointcloud values
  * overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn tpcboxOverlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Contains_tpcbox_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if a tpcbox contains the one of a
  * temporal pointcloud value
- * @sqlfn contains_bbox()
+ * @sqlfn tpcboxContains()
  * @sqlop @p @>
  */
 inline Datum
@@ -193,7 +193,7 @@ PG_FUNCTION_INFO_V1(Contains_tpointcloud_tpcbox);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of a temporal pointcloud value
  * contains a tpcbox
- * @sqlfn contains_bbox()
+ * @sqlfn tpcboxContains()
  * @sqlop @p @>
  */
 inline Datum
@@ -208,7 +208,7 @@ PG_FUNCTION_INFO_V1(Contains_tpointcloud_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of the first temporal pointcloud value
  * contains the one of the second temporal pointcloud value
- * @sqlfn contains_bbox()
+ * @sqlfn tpcboxContains()
  * @sqlop @p @>
  */
 inline Datum
@@ -227,7 +227,7 @@ PG_FUNCTION_INFO_V1(Contained_tpcbox_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if a tpcbox is contained in the
  * tpcbox of a temporal pointcloud value
- * @sqlfn contained_bbox()
+ * @sqlfn tpcboxContained()
  * @sqlop @p <@
  */
 inline Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Contained_tpointcloud_tpcbox);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of a temporal pointcloud value is
  * contained in the tpcbox
- * @sqlfn contained_bbox()
+ * @sqlfn tpcboxContained()
  * @sqlop @p <@
  */
 inline Datum
@@ -257,7 +257,7 @@ PG_FUNCTION_INFO_V1(Contained_tpointcloud_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of the first temporal pointcloud value
  * is contained in the one of the second temporal pointcloud value
- * @sqlfn contained_bbox()
+ * @sqlfn tpcboxContained()
  * @sqlop @p <@
  */
 inline Datum
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(Same_tpcbox_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if a tpcbox and the tpcbox of a
  * temporal pointcloud value are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn tpcboxSame()
  * @sqlop @p ~=
  */
 inline Datum
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Same_tpointcloud_tpcbox);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of a temporal pointcloud value and
  * a tpcbox are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn tpcboxSame()
  * @sqlop @p ~=
  */
 inline Datum
@@ -306,7 +306,7 @@ PG_FUNCTION_INFO_V1(Same_tpointcloud_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcboxes of two temporal pointcloud values
  * are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn tpcboxSame()
  * @sqlop @p ~=
  */
 inline Datum
@@ -325,7 +325,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpcbox_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if a tpcbox and the tpcbox of a
  * temporal pointcloud value are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn tpcboxAdjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -340,7 +340,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpointcloud_tpcbox);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcbox of a temporal pointcloud value
  * and a tpcbox are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn tpcboxAdjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -355,7 +355,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpointcloud_tpointcloud);
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true if the tpcboxes of two temporal pointcloud values
  * are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn tpcboxAdjacent()
  * @sqlop @p -|-
  */
 inline Datum
