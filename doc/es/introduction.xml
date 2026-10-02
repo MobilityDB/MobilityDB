@@ -615,7 +615,7 @@ SET client_min_messages TO notice;
 			</tgroup>
 		</informaltable>
 		<para>
-			Las funciones topológicas, entre las cuales <varname>contains</varname> y <varname>overlaps</varname> coinciden con una función o una palabra reservada de Apache Spark y Apache Flink, llevan como prefijo la clase cuyos valores o cuadros delimitadores comparan, como las funciones de posición. La función <varname>same</varname> de un búfer circular, un punto de red, una pose y una cadena de poses, que el manual documenta como función de estos tipos, conserva su nombre. La siguiente tabla da las funciones en ambas versiones.
+			Las funciones topológicas, entre las cuales <varname>contains</varname> y <varname>overlaps</varname> coinciden con una función o una palabra reservada de Apache Spark y Apache Flink, llevan como prefijo la clase cuyos valores o cuadros delimitadores comparan, como las funciones de posición. La función <varname>same</varname> de un búfer circular, un punto de red, una pose y una cadena de poses, que el manual documenta como función de estos tipos, conserva su nombre. Las funciones que comparan los identificadores de ruta de los puntos de red temporales se escriben sin guion bajo. La siguiente tabla da las funciones en ambas versiones.
 		</para>
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2"?>
@@ -646,6 +646,22 @@ SET client_min_messages TO notice;
 					<row>
 						<entry><varname>same</varname></entry>
 						<entry><varname>spanSame</varname>, <varname>tboxSame</varname>, <varname>stboxSame</varname>, <varname>tpcboxSame</varname></entry>
+					</row>
+					<row>
+						<entry><varname>same_rid</varname></entry>
+						<entry><varname>sameRid</varname></entry>
+					</row>
+					<row>
+						<entry><varname>contains_rid</varname></entry>
+						<entry><varname>containsRid</varname></entry>
+					</row>
+					<row>
+						<entry><varname>contained_rid</varname></entry>
+						<entry><varname>containedRid</varname></entry>
+					</row>
+					<row>
+						<entry><varname>overlaps_rid</varname></entry>
+						<entry><varname>overlapsRid</varname></entry>
 					</row>
 				</tbody>
 			</tgroup>

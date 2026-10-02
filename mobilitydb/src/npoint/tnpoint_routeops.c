@@ -182,7 +182,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes in a set and the routes of
  * a temporal network point overlap
- * @sqlfn overlaps_rid()
+ * @sqlfn overlapsRid()
  * @sqlop @p @@
  */
 Datum
@@ -199,7 +199,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point and
  * the routes in a set overlap
- * @sqlfn overlaps_rid()
+ * @sqlfn overlapsRid()
  * @sqlop @p @@
  */
 Datum
@@ -213,7 +213,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of two temporal network points overlap
- * @sqlfn overlaps_rid()
+ * @sqlfn overlapsRid()
  * @sqlop @p @@
  */
 Datum
@@ -232,7 +232,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if routes in a set contain the routes of a temporal
  * network point
- * @sqlfn contains_rid()
+ * @sqlfn containsRid()
  * @sqlop @p \@?
  */
 Datum
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point
  * contain the routes in a set
- * @sqlfn contains_rid()
+ * @sqlfn containsRid()
  * @sqlop @p \@?
  */
 Datum
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point
  * contain the routes in a set
- * @sqlfn contains_rid()
+ * @sqlfn containsRid()
  * @sqlop @p \@?
  */
 Datum
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point
  * contain the route of a network point
- * @sqlfn contains_rid()
+ * @sqlfn containsRid()
  * @sqlop @p \@?
  */
 Datum
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of the first temporal network point
  * contain the routes of the second one
- * @sqlfn contains_rid()
+ * @sqlfn containsRid()
  * @sqlop @p \@?
  */
 Datum
@@ -313,7 +313,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if a route is contained in the routes of a temporal
  * network point
- * @sqlfn contained_rid()
+ * @sqlfn containedRid()
  * @sqlop @p ?@
  */
 Datum
@@ -328,7 +328,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes in the set are contained in the routes of
  * a temporal network point
- * @sqlfn contained_rid()
+ * @sqlfn containedRid()
  * @sqlop @p ?@
  */
 Datum
@@ -343,7 +343,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the route of a network point is contained in
  * the routes of a temporal network point
- * @sqlfn contained_rid()
+ * @sqlfn containedRid()
  * @sqlop @p ?@
  */
 Datum
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of the temporal network point are
  * contained in the routes of a set
- * @sqlfn contained_rid()
+ * @sqlfn containedRid()
  * @sqlop @p ?@
  */
 Datum
@@ -375,7 +375,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of the first temporal network point
  * are contained in the routes of the second temporal network point
- * @sqlfn contained_rid()
+ * @sqlfn containedRid()
  * @sqlop @p ?@
  */
 Datum
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if a route and the routes of a temporal network point
  * are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a set and the routes of a temporal
  * network point are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -424,7 +424,7 @@ PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the route of a network point and the routes of a
  * temporal network point are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -441,7 +441,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point and a route
  * are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -456,7 +456,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point and the
  * routes of a set are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -471,7 +471,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of a temporal network point and the route
  * of a network point are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum
@@ -485,7 +485,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_route
  * @brief Return true if the routes of two temporal network points are equal
- * @sqlfn same_rid()
+ * @sqlfn sameRid()
  * @sqlop @p @=
  */
 Datum

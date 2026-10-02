@@ -72,10 +72,10 @@
 					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>spanSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxSame</varname></primary></indexterm>spanSame / tboxSame / stboxSame / tpcboxSame (a, b), <indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same (a, b) over a circular buffer, a network point, a pose or a pose chain</entry></row>
 					<row><entry>Time span of a temporal JSONB value</entry><entry>#@&gt;</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContains</varname></primary></indexterm>tjsonbContains(a, b)</entry></row>
 					<row><entry></entry><entry>&lt;@#</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContained</varname></primary></indexterm>tjsonbContained(a, b)</entry></row>
-					<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>same_rid(a, b)</entry></row>
-					<row><entry></entry><entry>@?</entry><entry><indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>contains_rid(a, b)</entry></row>
-					<row><entry></entry><entry>?@</entry><entry><indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>contained_rid(a, b)</entry></row>
-					<row><entry></entry><entry>@@</entry><entry><indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>overlaps_rid(a, b)</entry></row>
+					<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>sameRid</varname></primary></indexterm>sameRid(a, b)</entry></row>
+					<row><entry></entry><entry>@?</entry><entry><indexterm significance="normal"><primary><varname>containsRid</varname></primary></indexterm>containsRid(a, b)</entry></row>
+					<row><entry></entry><entry>?@</entry><entry><indexterm significance="normal"><primary><varname>containedRid</varname></primary></indexterm>containedRid(a, b)</entry></row>
+					<row><entry></entry><entry>@@</entry><entry><indexterm significance="normal"><primary><varname>overlapsRid</varname></primary></indexterm>overlapsRid(a, b)</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>

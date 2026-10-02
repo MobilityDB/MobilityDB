@@ -78,8 +78,8 @@ TOPOLOGY = {"&&": "overlaps", "@>": "contains", "<@": "contained",
 # portable under its own name -- documented, not a gap. #@>/<@# are the tjsonb
 # time-containment operators.
 ALREADY_NAMED = {
-    "@=": "same_rid", "?@": "contained_rid", "@?": "contains_rid",
-    "@@": "overlaps_rid", "#@>": "tjsonbContains", "<@#": "tjsonbContained",
+    "@=": "sameRid", "?@": "containedRid", "@?": "containsRid",
+    "@@": "overlapsRid", "#@>": "tjsonbContains", "<@#": "tjsonbContained",
     "&": "tAnd", "|": "tOr", "~": "tNot", "||": "setConcat / tConcat",
 }
 
