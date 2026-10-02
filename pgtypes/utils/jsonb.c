@@ -145,14 +145,14 @@ pg_jsonb_from_text(const text *txt, bool unique_keys)
 /**
  * @ingroup meos_json_base_conversion
  * @brief Return the text representation of a JSONB value
+ * @csqlfn #Jsonb_as_text()
  */
-#if MEOS
 text *
 jsonb_to_text(const Jsonb *jb)
 {
   return pg_jsonb_to_text(jb);
 }
-#endif /* MEOS */
+
 text *
 pg_jsonb_to_text(const Jsonb *jb)
 {

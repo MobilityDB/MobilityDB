@@ -110,6 +110,11 @@ CREATE FUNCTION tjsonbFromMFJSON(text)
 
 /*****************************************************************************/
 
+CREATE FUNCTION asText(jsonb)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Jsonb_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asText(tjsonb)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
@@ -119,7 +124,6 @@ CREATE FUNCTION asText(tjsonb[])
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE CAST (jsonb AS text) WITH FUNCTION asText(jsonb);
 CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);
 
 CREATE FUNCTION asMFJSON(tjsonb, options integer DEFAULT 0, flags integer DEFAULT 0)

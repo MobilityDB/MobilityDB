@@ -55,6 +55,21 @@ SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-0
 SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}';
 
 -------------------------------------------------------------------------------
+-- Text of a JSONB value
+
+SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
+SELECT asText(jsonb '[1, "two", [3, 4], {"five": 5}]');
+SELECT asText(jsonb '"tab\tquote\"backslash\\"');
+SELECT asText(jsonb '-1.50e3');
+SELECT asText(jsonb 'null');
+SELECT asText(NULL::jsonb);
+-- The text answered is the one PostgreSQL writes for the value
+SELECT COUNT(*), bool_and(asText(j) = j::text), bool_and(asText(j) = format('%s', j))
+FROM (VALUES (jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}'),
+  (jsonb '[1, "two", [3, 4], {"five": 5}]'), (jsonb '"tab\tquote\"backslash\\"'),
+  (jsonb '-1.50e3'), (jsonb 'null'), (jsonb 'true'), (jsonb '{}'), (jsonb '[]')) t(j);
+
+-------------------------------------------------------------------------------
 -- Maximum decimal digits
 
 SELECT tjsonbFromBinary(asBinary(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'));

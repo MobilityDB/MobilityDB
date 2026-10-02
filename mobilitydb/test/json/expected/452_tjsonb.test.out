@@ -82,6 +82,51 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-
  {["{\"geom\": \"Point(1 1)\"}"@Mon Jan 01 00:00:00 2001 PST, "{\"geom\": \"Point(1 1)\"}"@Wed Jan 03 00:00:00 2001 PST], ["{\"geom\": \"Point(2 2)\"}"@Thu Jan 04 00:00:00 2001 PST, "{\"geom\": \"Point(2 2)\"}"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
+                  astext                  
+------------------------------------------
+ {"a": "x", "b": {"c": [1, {"d": null}]}}
+(1 row)
+
+SELECT asText(jsonb '[1, "two", [3, 4], {"five": 5}]');
+             astext              
+---------------------------------
+ [1, "two", [3, 4], {"five": 5}]
+(1 row)
+
+SELECT asText(jsonb '"tab\tquote\"backslash\\"');
+          astext           
+---------------------------
+ "tab\tquote\"backslash\\"
+(1 row)
+
+SELECT asText(jsonb '-1.50e3');
+ astext 
+--------
+ -1500
+(1 row)
+
+SELECT asText(jsonb 'null');
+ astext 
+--------
+ null
+(1 row)
+
+SELECT asText(NULL::jsonb);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT COUNT(*), bool_and(asText(j) = j::text), bool_and(asText(j) = format('%s', j))
+FROM (VALUES (jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}'),
+  (jsonb '[1, "two", [3, 4], {"five": 5}]'), (jsonb '"tab\tquote\"backslash\\"'),
+  (jsonb '-1.50e3'), (jsonb 'null'), (jsonb 'true'), (jsonb '{}'), (jsonb '[]')) t(j);
+ count | bool_and | bool_and 
+-------+----------+----------
+     8 | t        | t
+(1 row)
+
 SELECT tjsonbFromBinary(asBinary(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01'));
                      tjsonbfrombinary                      
 -----------------------------------------------------------
