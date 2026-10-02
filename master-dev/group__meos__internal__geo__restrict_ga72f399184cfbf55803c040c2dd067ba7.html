@@ -124,10 +124,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal geo restricted to (the complement of) an elevation span. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a temporal point restricted to (the complement of) an elevation span. </p>
+<p >The elevation is the Z coordinate of a point, read through <a class="el" href="group__meos__internal__geo__accessor_ga71a6a07594fe5a2f96a8909d7b200985.html#ga71a6a07594fe5a2f96a8909d7b200985" title="Return one of the coordinates of a temporal point as a temporal float.">tpoint_get_coord</a>, so a temporal geometry whose values are not points is refused </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Elevation span </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">atfunc</td><td>True if the restriction is <code>at</code>, false for <code>minus</code> </td></tr>
   </table>
