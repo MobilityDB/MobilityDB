@@ -55,6 +55,15 @@ jobs:
       - name: Reject an @ingroup naming no @defgroup
         run: python3 tools/scripts/check_doxygen_groups.py
 
+  public_declared_check:
+    name: Every public function has its prototype in an installed header
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject a public function no installed header declares
+        run: python3 tools/scripts/check_public_declared.py
+
   param_direction_check:
     name: Every @param[in] names a parameter only read
     runs-on: ubuntu-latest
