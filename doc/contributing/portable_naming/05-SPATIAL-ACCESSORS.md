@@ -34,9 +34,9 @@ point has no length of its own: `route_length(rid)` measures a route, not a poin
 
 | Flink and Spark name | Operand types | `length` | `cumulativeLength` name | its signatures |
 |---|---|---|---|---|
-| `geoLength` | `geometry`, `geography` (declared, decision 2), `tgeompoint`, `tgeogpoint`, `trgeometry` | 2 + 3 | `geoCumulativeLength` | 3 |
+| `geoLength` | `tgeompoint`, `tgeogpoint`, `trgeometry`; in Spark and Flink also `geometry`, `geography` (decision 2) | 3 | `geoCumulativeLength` | 3 |
 | `npointLength` | `tnpoint` | 1 | `npointCumulativeLength` | 1 |
-| | **Total** | **4 + 2** | | **4** |
+| | **Total** | **4** | | **4** |
 
 Each prefix is the base type as in families 2 and 4 (`geoRound`, `npointRound`; `geoTransform`),
 `trgeometry` taking `geo` by the geometry it answers at an instant. The MEOS stem `tpoint_` is an internal
@@ -55,8 +55,9 @@ built-ins, which holds `upper`, does not hold `length`.
    and `npointCumulativeLength`, as `lowerInc` moved with `lower`
    and `transformPipeline` with `transform`: it is the running form of the same quantity over the
    same types.
-2. **`geoLength(geometry|geography)` is declared** (rule 4), as `textLower(text)` in family 1 and
-   `geoTransformPipeline(geometry|geography)` in family 4: `length` applies to the base type, and
-   Flink and Spark have no PostGIS. MEOS gains `geo_length`, one function serving both, as
+2. **PostgreSQL declares no `geoLength` over `geometry` or `geography`**: it has PostGIS's
+   `ST_Length(geometry 'Linestring(0 0,3 4)')`. Spark and Flink, which have no PostGIS, call
+   `geoLength(geom)` generated from the MEOS `geo_length`, one function serving both, as
    `geo_round` does, over `geom_length` and `geog_length` with the spheroid, the PostGIS default
-   of `ST_Length(geography)`. `geoLength` then serves 4 signatures and `geoCumulativeLength` 2.
+   of `ST_Length(geography)` (G17). A function over a base type exists only where an engine lacks
+   it, as [family 3](03-MATH.md) states for the base numbers.

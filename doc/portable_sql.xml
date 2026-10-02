@@ -392,7 +392,7 @@
 						</row>
 					</thead>
 					<tbody>
-						<row><entry>lower, upper, initcap</entry><entry>text, textset, ttext</entry><entry>textLower, textUpper, textInitcap</entry></row>
+						<row><entry>lower, upper, initcap</entry><entry>textset, ttext</entry><entry>textLower, textUpper, textInitcap</entry></row>
 						<row><entry>lower, upper, lowerInc, upperInc</entry><entry>span, span set</entry><entry>spanLower, spanUpper, spanLowerInc, spanUpperInc, spansetLower, spansetUpper, spansetLowerInc, spansetUpperInc</entry></row>
 						<row><entry>lowerInc, upperInc</entry><entry>temporal</entry><entry>temporalLowerInc, temporalUpperInc</entry></row>
 						<row><entry>round</entry><entry>float and its set, span, span set and temporal types</entry><entry>floatRound</entry></row>
