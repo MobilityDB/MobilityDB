@@ -361,6 +361,7 @@ extern Temporal *tjsonb_path_query_first(const Temporal *temp, const JsonPath *j
 extern Temporal *tjsonb_pretty(const Temporal *temp);
 extern Temporal *tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool create, const text *handle_null, bool lax);
 extern Temporal *tjsonb_strip_nulls(const Temporal *temp, bool strip_in_arrays);
+extern Temporal *tjsonb_to_tbigint(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tbool(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tfloat(const Temporal *temp, const char *key, interpType interp, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tint(const Temporal *temp, const char *key, nullHandleType null_handle);
