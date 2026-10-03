@@ -159,7 +159,7 @@ carries over the MobilityDB types (decision 0.5).
 |---|---|---|
 | JMEOS | J1 | The Flink SQL generator reads `altSqlName` else `sqlName`, registers aggregates under their `Agg` spelling, and gains the temporal `FromText` readers |
 | JMEOS | J2 | MEOS values travel as binary WKB (rule 6): Flink `BYTES`, Spark `BinaryType`, through the codec each class states (A6) |
-| JMEOS | J3 | One Spark user-defined type per MEOS SQL type and one registration per name resolving its overloads (rule 8), a conflicting function under its class-prefixed name alone (rule 1) |
+| JMEOS | J3 | One Spark user-defined type per MEOS SQL type and one registration per name resolving its overloads (rule 8), a conflicting function under its class-prefixed name alone (rule 1); merged, JMEOS #137 (`codegen_jvm.py --engine spark-sql`, on the overloads of the Flink SQL surface) and MobilitySpark #65, which builds and tests it beside the UDF surface |
 | JMEOS | J8 | Generate the index search operation enum from the catalog's `IndexSearchOp`, in place of `jmeos-core/src/main/java/functions/RTreeSearchOp.java`, which declares 3 of its 21 values under the enum's former name |
 | MobilityFlink, MobilitySpark | F1, S1 | Regenerate the surfaces on J1–J7 and their tests |
 | MobilityDuck | D1 | Re-vendor the catalog; generate the index routing from A8's statement in place of `src/include/index/index_search_ops.hpp`, which routes predicates to the R-tree by function name, for PRs R2–R4 (as #410 did for positions); rename the temporal table function `tempUnnest` to `temporalUnnest` over all 20 types, `tbool` included, and restore its tests |
@@ -198,7 +198,7 @@ Four causes sit upstream of both engines, so one fix reaches both:
 
 | Cause | Signatures | Examples | Owner |
 |---|---|---|---|
-| U0. An aggregate | 349; Flink carries none, Spark 7 names (`tCount`, `tSum`, `tAndAgg`, `tOrAgg`, `tMinAgg`, `tMaxAgg`, `mergeAgg`) | `extent`, `tAvg`, `tCentroid`, `setUnion`, `appendInstantAgg` | JMEOS |
+| U0. An aggregate | 349; Flink carries none, Spark 7 names (`tCount`, `tSum`, `tAndAgg`, `tOrAgg`, `tMinAgg`, `tMaxAgg`, `mergeAgg`) | `extent`, `tAvg`, `tCentroid`, `setUnion`, `appendInstantAgg` | MEOS-API (A9), MobilityDB (G24), JMEOS (J18) |
 | U1. A `LANGUAGE SQL` body with no C backing | 351, 42 names | the spatial relationships of `tpose`, `tnpoint`, the cells and the point clouds through a cast (`aContains`, `tIntersects`, `eDwithin`); `spaceSplit`, `spaceBoxes`, `spaceTimeTiles` over `tpose` and `tpcpoint`; `expandSpace` | MEOS-API, JMEOS |
 | U2. A C wrapper the catalog maps to no MEOS function | 464, 237 names | the `<type>FromText` wrappers of G13; `asEWKB` and `asHexEWKB` taking an endian text; `round(tfloat[], integer)`; `setDistance(geometry, geomset)`; `same_rid`; the casts from ranges | MobilityDB |
 | U3. A signature whose catalog backer is internal | 214 in Flink, 319 in Spark, about 35 names | `asText(tint)` on `temporal_out`, `atValue`, `getValue`, `instants`, `memSize`, `<type>FromBinary` on `set_from_wkb` | MobilityDB |
@@ -273,7 +273,7 @@ computing PostGIS's own formulas.
 
 | # | Item | Decided |
 |---|---|---|
-| 0.13 | Spark's registrations under C names | open: kept beside the SQL names, or removed so that Flink and Spark carry one name set (decision 0.4) |
+| 0.13 | Spark's registrations under C names | decided: removed, both the C names of functions with a MobilityDB SQL name and those without one, so that Flink and Spark carry one name set (decision 0.4); an operator reaches both engines through the function chapter 18 names for it, and MobilitySpark's tests and benchmark queries call those names before the generator stops registering C names |
 | 0.14 | The names of the raster operations of the table above | decided by the precedent of decision 0.5 and the raster family: MEOS `raster_<operation>`, SQL the PostGIS name without `ST_` with PostGIS's argument names, order and defaults, declared in PostgreSQL beside PostGIS's; open: what takes the place of the SQL expression and of the callback where PostGIS takes one (a typed operator, an enumerated statistic) |
 
 ### MobilityDB
@@ -281,17 +281,19 @@ computing PostGIS's own formulas.
 | PR | Topic | What it changes |
 |---|---|---|
 | G19 | Spell every SQL type as the rest of MobilityDB does | `float8` → `float`, `int` → `integer` in the declarations that spell them so (`affine`, `rotate`, `rotateX`, `rotateY`, `rotateZ`, `scale` over `tgeometry`, `rescale` and `transform` over `raster`, `valueN(tbool, int)`) |
-| G20 | Map every C wrapper to its MEOS function | the `@csqlfn` tag on the MEOS function each of the 237 names of U2 calls, and the MEOS function where none exists |
-| G21 | Back every signature by a public MEOS function | the tags of U3 on the public typed functions (`tint_out`, …), the internal kernels keeping theirs for the C callers |
-| G22 | Read an interpolation from its name in the public API | `interptype_from_string` declared in `meos.h` beside `null_handle_type_from_string`, validating its argument as an external function does |
+| G20 | Map every C wrapper to its MEOS function | the `@csqlfn` tag on the MEOS function each of the 237 names of U2 calls, and the MEOS function where none exists; #2938 (merged) backs 51 of the 58 `<type>FromText` wrappers with the public typed readers; left are the readers of `th3index`, `tquadbin`, `ts2cell`, `tpcpoint` and `tpcpatch`, which read no `SRID=` and so not their own EWKT (each to parse as `tcbuffer_in` does, then tagged `#Tspatial_from_ewkt()`), and `poseFromText`, `tposeFromText`: `tpose_in` reads the temporal text alone, a leading brace opening a discrete sequence or a sequence set as in every temporal text (`tjsonb` quotes a JSON value inside one), so it backs `tposeFromText`, while `pose_in` keeps reading a GeoPose document as the `jsonb` and `geometry` inputs read theirs and a public `pose_from_text`, the sibling of `geo_from_text`, backs `poseFromText`; GeoPose is read by `poseFromGeoPose` and `tposeFromGeoPose` |
+| G21 | Back every signature by a public MEOS function | the tags of U3 on the public typed functions (`tint_out`, …), the internal kernels keeping theirs for the C callers; #2936 (merged) reads and writes a `numeric` through a public text pair |
+| G22 | Read an interpolation from its name in the public API | `interptype_from_string` declared in `meos.h` beside `null_handle_type_from_string`, validating its argument as an external function does; merged, #2932 |
+| G24 | Back every role of an aggregate by a public MEOS function | of the 349 aggregates A9 states, 97 name a public MEOS function for each role; the others reach a role through `temporal_append_finalfn`, `span_union_finalfn`, `wCountTransition`, the `extent` transition and combine functions of the spans, boxes and point clouds, `tcentroid_combinefn`, `tdensity_transfn`, `tnpoints_transfn` and `set_union_transfn`, wrappers no public MEOS function is tagged for, through the internal `temporal_app_tinst_transfn` and `temporal_app_tseq_transfn`, or through PostgreSQL's `array_agg_transfn` and `array_agg_combine` (`setUnion`, `spanUnion`, `spansetUnion`), which an engine without PostgreSQL does not have |
+| G25 | Give the GeoPose stream documents their SQL functions | `asGeoPoseStreamHeader(tpose, integer)` and `asGeoPoseStreamElement(tpose, tpose, integer)` over `tpose_as_geopose_stream_header` and `tpose_as_geopose_stream_element`, the header's doxygen block moved onto it from the static helper it sits on, so that the catalog reads it public; a stream engine writes a header and then an element per instant as the instants arrive, where `asGeoPoseStream` writes a finished value |
 | G23 | Give MEOS the raster operations an engine without PostGIS needs | for each row "none" of the table above, a public MEOS `raster_<operation>` over the vendored `rt_core` function its last column names, the `4ma` statistics, slope, ruggedness and topographic position as `rt_raster_iterator` callbacks on PostGIS's formulas, and its SQL function under the PostGIS name without `ST_` (decision 0.14); SQL tests, smoke tests, the manual entries EN and ES |
 
 ### MEOS-API
 
-| PR | Topic |
-|---|---|
-| A9 | State MobilityDB's whole SQL surface: the `LANGUAGE SQL` functions with their bodies and the aggregates with their state functions, beside the C-backed signatures |
-| A10 | State the compositions of U1 (the relationships through a cast, the grid functions of `tpose` and `tpcpoint`, `expandSpace`) as A7 states those of the grid functions |
+| PR | Topic | State |
+|---|---|---|
+| A9 | State the aggregates (U0): per `CREATE AGGREGATE` its arguments, its result type and, for each role of chapter 18 and the serialize and deserialize functions, the SQL function PostgreSQL calls and the public MEOS function carrying it; the `LANGUAGE SQL` functions (U1) are A10's | branch `catalog/sql-aggregates` (MEOS-API): the top-level `aggregates`, 349 over MobilityDB `985fdb26b7`, 97 with a public MEOS function for every role (G24 the others); every other section of the catalog unchanged |
+| A10 | State the compositions of U1 (the relationships through a cast, the grid functions of `tpose` and `tpcpoint`, `expandSpace`) as A7 states those of the grid functions | open |
 
 ### JMEOS
 
@@ -300,7 +302,7 @@ and MobilityFlink built with the branch generator.
 
 | PR | Topic |
 |---|---|
-| J9 | Both engines read an enum argument from its text through the public catalog function returning that enum from a string (`null_handle_type_from_string`, `interptype_from_string` once G22 publishes it); Spark gains it, Flink keeps to public parsers |
+| J9 | Both engines read an enum argument from its text through the public catalog function returning that enum from a string (`null_handle_type_from_string`, `interptype_from_string` once G22 publishes it); Spark gains it, Flink keeps to public parsers; merged, JMEOS #135, with #136 registering on Spark the public functions alone |
 | J10 | Spark passes the count out-parameters the catalog states (`shape.outParams`), as Flink does |
 | J11 | Both engines take a `text` argument: a `text *` through `text_in`, an endian text through the value the catalog states for it |
 | J12 | Both engines take the `bytea` of `<type>FromBinary` and `<type>FromEWKB`, passing its length |
@@ -315,8 +317,8 @@ and MobilityFlink built with the branch generator.
 ### Order
 
 J9 first (it also clears JMEOS's failing gaps check), then J10–J12, which bring Spark and Flink
-to one base; G19–G22, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
-renames land on that base. J3 waits on decision 0.13; the forms of G23 taking an expression or a callback wait on decision 0.14.
+to one base; G19–G22, G24, G25, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
+renames land on that base. J3 rests on decision 0.13; the forms of G23 taking an expression or a callback wait on decision 0.14.
 
 ## Part V — the native geometry operations under their plain names
 
