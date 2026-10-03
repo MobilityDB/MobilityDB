@@ -64,6 +64,12 @@ SELECT asEWKT(ts2cellFromEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01
  SRID=4326;[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+SELECT asEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')::ts2cell);
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=4326;[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
                                         asewkt                                        
 --------------------------------------------------------------------------------------

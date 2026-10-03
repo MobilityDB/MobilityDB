@@ -137,7 +137,7 @@ ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_h3_inout
  * @brief Parse a temporal H3 cell index from its Well-Known Text representation
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 th3index_in(const char *str)

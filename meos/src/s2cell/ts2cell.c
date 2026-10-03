@@ -137,13 +137,13 @@ ensure_valid_ts2cell_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_s2cell_inout
  * @brief Return a temporal S2 cell from its Well-Known Text representation
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 ts2cell_in(const char *str)
 {
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return temporal_parse(&str, T_TS2CELL);
 }
 

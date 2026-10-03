@@ -116,6 +116,7 @@ SELECT asText(tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'
 SELECT asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
 SELECT asText(tquadbinFromText(asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
 SELECT asEWKT(tquadbinFromEWKT(asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+SELECT asEWKT(asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')::tquadbin);
 SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}')));
 SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '480fffffffffffff@2001-01-01', 'NDR')));
 SELECT asEWKT(tquadbinFromHexEWKB(asHexEWKB(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')));

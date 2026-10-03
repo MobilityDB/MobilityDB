@@ -122,6 +122,7 @@ SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '880326b885fffff@2001-01-01')
 SELECT asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
 SELECT asText(th3indexFromText(asText(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
 SELECT asEWKT(th3indexFromEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+SELECT asEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')::th3index);
 SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}')));
 SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '880326b885fffff@2001-01-01', 'NDR')));
 SELECT asEWKT(th3indexFromHexEWKB(asHexEWKB(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}')));

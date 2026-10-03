@@ -908,6 +908,14 @@ temporal_parse(const char **str, MeosType temptype)
   if (temptype == T_TRGEOMETRY)
     return trgeo_parse(str, temptype);
 #endif /* RGEO */
+  /* A spatiotemporal value may state its SRID ahead of the value, the form its
+   * extended text is written in, which the general shape below does not read,
+   * so the spatial parser answers for it, as #tgeometry_in reads it.
+   * Without this a temporal cell or point cloud read by its type cannot read
+   * back what asEWKT writes for it */
+  if (tspatial_type(temptype))
+    return tpoint_type(temptype) ?
+      tpoint_parse(str, temptype) : tspatial_parse(str, temptype);
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
   interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;

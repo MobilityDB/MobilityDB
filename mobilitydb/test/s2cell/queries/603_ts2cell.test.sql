@@ -57,6 +57,7 @@ SELECT asText(ts2cellFromHexWKB(asHexWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@200
 SELECT asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 SELECT asText(ts2cellFromText(asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
 SELECT asEWKT(ts2cellFromEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+SELECT asEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')::ts2cell);
 SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
 SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '47c3c3@2001-01-01', 'NDR')));
 SELECT asEWKT(ts2cellFromHexEWKB(asHexEWKB(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));

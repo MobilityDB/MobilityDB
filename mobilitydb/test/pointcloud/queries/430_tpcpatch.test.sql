@@ -94,6 +94,7 @@ SELECT tpcpatchFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
   tpcpatchFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
   tpcpatchFromText(asText(temp)) = temp AS text_roundtrips,
   tpcpatchFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  asEWKT(temp)::tpcpatch = temp AS ewkt_cast_roundtrips,
   octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
   split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
   SRID(temp) AS srid
