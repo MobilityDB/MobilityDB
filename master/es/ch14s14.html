@@ -1,16 +1,16 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones siempre y alguna vez</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s13.html" title="Operaciones de caja delimitadora"><link rel="next" href="ch14s15.html" title="Relaciones espaciotemporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones siempre y alguna vez</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_everalways_rels"></a>Relaciones siempre y alguna vez</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_eContains"></a><a class="indexterm" name="id11248"></a><a class="indexterm" name="id11251"></a><a class="indexterm" name="id11254"></a><a class="indexterm" name="id11257"></a><a class="indexterm" name="id11260"></a><a class="indexterm" name="id11263"></a><a class="indexterm" name="id11266"></a><a class="indexterm" name="id11269"></a><a class="indexterm" name="id11272"></a><a class="indexterm" name="id11275"></a><a class="indexterm" name="id11278"></a><a class="indexterm" name="id11281"></a><p>Relaciones siempre y alguna vez</p><pre class="programlisting">
-eContains(OPS) → boolean
-aContains(OPS) → boolean
-eCovers(OPS) → boolean
-aCovers(OPS) → boolean
-eDisjoint(OPS) → boolean
-aDisjoint(OPS) → boolean
-eDwithin(OPS,float) → boolean
-aDwithin(OPS,float) → boolean
-eIntersects(OPS) → boolean
-aIntersects(OPS) → boolean
-eTouches(OPS) → boolean
-aTouches(OPS) → boolean
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones siempre y alguna vez</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s13.html" title="Operaciones de caja delimitadora"><link rel="next" href="ch14s15.html" title="Relaciones espaciotemporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones siempre y alguna vez</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_everalways_rels"></a>Relaciones siempre y alguna vez</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_eContains"></a><a class="indexterm" name="id11304"></a><a class="indexterm" name="id11307"></a><a class="indexterm" name="id11310"></a><a class="indexterm" name="id11313"></a><a class="indexterm" name="id11316"></a><a class="indexterm" name="id11319"></a><a class="indexterm" name="id11322"></a><a class="indexterm" name="id11325"></a><a class="indexterm" name="id11328"></a><a class="indexterm" name="id11331"></a><a class="indexterm" name="id11334"></a><a class="indexterm" name="id11337"></a><p>Relaciones siempre y alguna vez</p><pre class="programlisting">
+eContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+aDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+eIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </pre><p>Las relaciones <span class="emphasis"><em>alguna vez</em></span> determinan si la relación se cumple en algún instante, y las relaciones <span class="emphasis"><em>siempre</em></span> si se cumple en todos los instantes. Una geometría rígida temporal las responde sobre el cuerpo que su geometría de referencia sitúa en cada instante, de modo que la relación leída es la del cuerpo situado y no la de la geometría de referencia en el origen.</p><pre class="programlisting">
 SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
