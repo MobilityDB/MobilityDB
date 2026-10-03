@@ -97,10 +97,14 @@ with the same rule, the lifts having `datum_geom_disjoint3d`, `datum_geom_distan
 (`datum_geog_intersects`, `datum_geog_disjoint`, `datum_geog_dwithin`, `geog_distance`,
 `geog_length` in the length of a sequence) but one: `datum2_geog_centroid` passes the sphere.
 `geog_distance` sets `use_spheroid = true` in its body where its siblings take it as an argument.
-The lifting engine passes up to `MAX_PARAMS` (5) parameters to a unary lift (`lfunc_base`) but at
-most one to a binary lift: `tfunc_base_base` ends in `else /* if (lfinfo->numparam == 1) */`, and
-four ever/always paths call the kernel directly as `func3(a, b, param)`
-(`tgeo_spatialrels.c` twice, `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`).
+The lifting engine passes up to `MAX_PARAMS` (5) parameters to a unary lift (`lfunc_base`) only
+in a build with the JSON family, and at most one to a binary lift (`tfunc_base_base`). A geography
+dwithin reaches its kernel through the binary lift and through the direct `func(v1, v2, dist)`
+calls of the temporal dwithin (`tdwithin_tspatial_spatial`, `tdwithin_tspatial_tspatial`) and of
+its turning point (`tpointsegm_tdwithin_turnpt`). The four ever/always paths that call a kernel
+as `func3(a, b, param)` never reach a geography kernel: `spatialrel_tgeo_tgeo` serves the
+containment family, which refuses geodetic values, a circular buffer is planar
+(`spatialrel_geo_geo_simple`), and `spatialrel_trgeo_trav_geo` has no caller.
 
 **The geography relationships.** The lifts answer `disjoint` over geography
 (`datum_geog_disjoint`) where MEOS has no public `geog_disjoint`.
@@ -144,10 +148,11 @@ Spanish:
    `geom_intersects` on the lifts' rule; `geom_disjoint` accepting mixed operands as the
    relationships do, `geom_distance` and `geom_shortestline` refusing them as the distances do;
    the turning points of the temporal dwithin (`tpointsegm_tdwithin_turnpt`) on the same rule.
-3. **The binary lifts carry their parameters** (decision 8): `tfunc_base_base` and the four direct
-   calls dispatch `numparam` up to `MAX_PARAMS`.
+3. **The binary lifts carry their parameters** (decision 8): `tfunc_base_base` and `lfunc_base`
+   dispatch `numparam` up to `MAX_PARAMS` in every build.
 4. **The earth model** (decision 7): the geography kernels take the spheroid last, `geog_distance`
-   as an argument, `geog_disjoint`, the centroid lift on the spheroid; the geography operations and
+   as an argument, the direct dwithin calls of the temporal dwithin and its turning point passing
+   it after the distance, `geog_disjoint`, the centroid lift on the spheroid; the geography operations and
    their lifts in SQL take `spheroid boolean DEFAULT true`.
 5. **The relationships**: `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`,
    `equals`, `relate(geometry, geometry, text)` over geometry, `intersects`, `disjoint`, `dwithin`
@@ -167,10 +172,11 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 and 2 are on the branch, not pushed. Commit 1: `datum_eq` compares two
+**State.** Commits 1 to 3 are on the branch, not pushed. Commit 1: `datum_eq` compares two
 geometries and two geographies exactly, and `049_geo_equality.test.sql` answers structurally
 throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new `geom_disjoint` measure in 3D
 only when both geometries have Z, the new `geom_distance` and `geom_shortestline` refuse a 3D and
 a 2D geometry, and the turning points of the temporal dwithin follow the same rule, so a 3D and a
 2D temporal point answer the same in either order and two parallel 3D points are measured in 3D.
-The whole pg_regress suite passes on PostgreSQL 18 after each. Commit 3 is next.
+Commit 3: `lfunc_base` and `tfunc_base_base` pass up to five parameters in every build. The whole
+pg_regress suite passes on PostgreSQL 18 after each. Commit 4 is next.
