@@ -142,7 +142,7 @@ ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return a temporal rigid geometry from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Trgeometry_in()
+ * @csqlfn #Trgeometry_in(), #Trgeometry_from_ewkt()
  */
 Temporal *
 trgeometry_in(const char *str)

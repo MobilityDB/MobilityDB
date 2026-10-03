@@ -171,7 +171,7 @@ stbox_expand(const STBox *box1, STBox *box2)
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  * @param[in] str String
- * @csqlfn #Stbox_in()
+ * @csqlfn #Stbox_in(), #Stbox_from_text()
  */
 STBox *
 stbox_in(const char *str)

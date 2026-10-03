@@ -67,12 +67,12 @@ PGDLLEXPORT Datum Spatialset_from_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spatialset_from_ewkt);
 /**
  * @ingroup mobilitydb_geo_inout
- * @brief Return a temporal geo from its Extended Well-Known Text (EWKT)
- * representation
- * @note This just does the same thing as the SQL function tgeo_in, except it
+ * @brief Return a spatial set from its Extended Well-Known Text (EWKT)
+ * representation, the type read from the return type of the function
+ * @note This just does the same thing as the SQL function set_in, except it
  * has to handle a 'text' input. First, unwrap the text into a cstring, then
- * do as tgeo_in
- * @sqlfn tgeometryFromEWKT(), tgeographyFromEWKT()
+ * do as set_in
+ * @sqlfn geomsetFromText(), geomsetFromEWKT(), ...
  */
 Datum
 Spatialset_from_ewkt(PG_FUNCTION_ARGS)

@@ -96,7 +96,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * where the commas are optional.
  * @errval NULL
  * @param[in] str String
- * @csqlfn #Tbox_in()
+ * @csqlfn #Tbox_in(), #Tbox_from_text()
  */
 TBox *
 tbox_in(const char *str)

@@ -348,7 +348,7 @@ posechain_parse(const char **str, bool end)
  * @ingroup meos_posechain_base_inout
  * @brief Return a pose chain from its string representation
  * @param[in] str String
- * @csqlfn #Posechain_in()
+ * @csqlfn #Posechain_in(), #Posechain_from_ewkt()
  */
 PoseChain *
 posechain_in(const char *str)

@@ -200,7 +200,7 @@ PG_FUNCTION_INFO_V1(Npoint_from_ewkt);
  * @note This just does the same thing as the SQL function npoint_in, except it
  * has to handle a 'text' input. First, unwrap the text into a cstring, then
  * do as npoint_in
- * @sqlfn poseFromEWKT(), poseFromEWKT()
+ * @sqlfn npointFromText(), npointFromEWKT()
  */
 Datum
 Npoint_from_ewkt(PG_FUNCTION_ARGS)

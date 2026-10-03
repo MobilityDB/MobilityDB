@@ -697,7 +697,7 @@ tpoint_parse(const char **str, MeosType temptype)
  * @brief Return a temporal geometry point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tpoint_in()
+ * @csqlfn #Tpoint_in(), #Tpoint_from_ewkt()
  */
 Temporal *
 tgeompoint_in(const char *str)
@@ -712,7 +712,7 @@ tgeompoint_in(const char *str)
  * @brief Return a temporal geography point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tpoint_in()
+ * @csqlfn #Tpoint_in(), #Tpoint_from_ewkt()
  */
 Temporal *
 tgeogpoint_in(const char *str)
@@ -727,7 +727,7 @@ tgeogpoint_in(const char *str)
  * @brief Return a temporal geometry from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tgeo_in()
+ * @csqlfn #Tgeo_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tgeometry_in(const char *str)
@@ -741,7 +741,7 @@ tgeometry_in(const char *str)
  * @brief Return a temporal geography from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tgeo_in()
+ * @csqlfn #Tgeo_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tgeography_in(const char *str)

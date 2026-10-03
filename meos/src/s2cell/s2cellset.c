@@ -95,7 +95,7 @@ s2cellset_from_buffer(S2CellId *cells, int count)
  * @brief Return an S2 cell set from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 s2cellset_in(const char *str)

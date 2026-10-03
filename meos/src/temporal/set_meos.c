@@ -58,7 +58,7 @@
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 intset_in(const char *str)
@@ -72,7 +72,7 @@ intset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 bigintset_in(const char *str)
@@ -86,7 +86,7 @@ bigintset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 floatset_in(const char *str)
@@ -100,7 +100,7 @@ floatset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 textset_in(const char *str)
@@ -114,7 +114,7 @@ textset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 dateset_in(const char *str)
@@ -128,7 +128,7 @@ dateset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 tstzset_in(const char *str)

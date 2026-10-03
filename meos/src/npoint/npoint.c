@@ -315,7 +315,7 @@ npoint_parse(const char **str, bool end)
  * @ingroup meos_npoint_base_inout
  * @brief Return a network point from its string representation
  * @param[in] str String
- * @csqlfn #Npoint_in()
+ * @csqlfn #Npoint_in(), #Npoint_from_ewkt()
  */
 Npoint *
 npoint_in(const char *str)
