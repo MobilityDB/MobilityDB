@@ -516,7 +516,7 @@ static void compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_numeric
+ * @ingroup meos_base_numeric
  * @brief Return a numeric value from its string representation
  * @param[in] str String
  * @param[in] typmod Typmod
@@ -696,8 +696,8 @@ invalid_syntax:
 }
 
 /**
- * @ingroup meos_internal_numeric
- * @brief Return the string representation a numeric value
+ * @ingroup meos_base_numeric
+ * @brief Return the string representation of a numeric value
  * @note Derived from PostgreSQL function @p numeric_out()
  */
 #if MEOS
