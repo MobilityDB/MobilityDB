@@ -114,8 +114,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal geo from its Extended Well-Known Text (EWKT) representation. </p>
-<dl class="section note"><dt>Note</dt><dd>This just does the same thing as the SQL function tgeo_in, except it has to handle a 'text' input. First, unwrap the text into a cstring, then do as tgeo_in @sqlfn tgeometryFromEWKT(), tgeographyFromEWKT() </dd></dl>
+<p>Return a spatial set from its Extended Well-Known Text (EWKT) representation, the type read from the return type of the function. </p>
+<dl class="section note"><dt>Note</dt><dd>This just does the same thing as the SQL function set_in, except it has to handle a 'text' input. First, unwrap the text into a cstring, then do as set_in @sqlfn geomsetFromText(), geomsetFromEWKT(), ... </dd></dl>
 
 </div>
 </div>
