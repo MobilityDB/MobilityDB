@@ -186,6 +186,7 @@ poseFromEWKT(text) &#8594; pose
 posechainFromText(text) &#8594; posechain
 posechainFromEWKT(text) &#8594; posechain
 </programlisting>
+					<para>Estas funciones leen solo la forma de texto. La entrada del tipo, <varname>pose '...'</varname>, lee además un documento OGC GeoPose, como la entrada de <varname>geometry</varname> lee uno GeoJSON, y <link linkend="pose_geopose_funcs"><varname>poseFromGeoPose</varname></link> lee solo un documento GeoPose.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
 -- Pose(POINT(1 2),1)
@@ -764,6 +765,7 @@ tposeFromText(text) &#8594; tpose
 tposeFromEWKT(text) &#8594; tpose
 tposechainFromText(text) &#8594; tposechain
 </programlisting>
+				<para>Estas funciones leen solo la forma de texto temporal, como la entrada del tipo <varname>tpose '...'</varname>. Como en el texto de todo tipo temporal, una llave inicial abre una secuencia discreta o un conjunto de secuencias, y un valor dentro de ella puede ir entre comillas. Un documento GeoPose se lee con <link linkend="tpose_geopose_funcs"><varname>tposeFromGeoPose</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01,
   Pose(Point(3 4),2)@2001-01-02]'));

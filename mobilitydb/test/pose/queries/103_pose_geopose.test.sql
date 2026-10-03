@@ -206,7 +206,9 @@ SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y"
 -- The text form of a pose reads as before.
 SELECT pose 'Geodpose(Point(8 47), 0)';
 
--- A temporal pose reads a GeoPose document too.
+-- A temporal pose reads its text form alone: a brace opens a discrete
+-- sequence or a sequence set, and a GeoPose document goes through
+-- tposeFromGeoPose.
 SELECT asText(tpose (asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
 
 -- A brace opens a sequence set as well, and one still reads as such: neither a

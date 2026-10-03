@@ -2608,3 +2608,43 @@ SELECT merge(NULL::tpose, tpose 'Pose(Point(1 1), 0.5)@2001-01-01') = tpose 'Pos
  t
 (1 row)
 
+SELECT asText(tpose '"Pose(Point(1 1),0.5)"@2001-01-01');
+                      astext                       
+---------------------------------------------------
+ Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tpose '["Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02]');
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ [Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tpose '{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}');
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ {Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tpose '{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}' =
+  tpose '{Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tposeFromText('{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}'));
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ {Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+/* A GeoPose document is read by tposeFromGeoPose, not by the type input */
+SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
+                             astext                              
+-----------------------------------------------------------------
+ GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
+(1 row)
+
+SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)::tpose;
+ERROR:  Missing delimeter character '@': "position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}

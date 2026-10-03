@@ -425,3 +425,12 @@ SELECT applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(1 1), 0)@2026-01-02]');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Input forms: the type input reads the text form and a GeoPose document,
+-- poseFromText the text form alone
+-------------------------------------------------------------------------------
+
+SELECT asText(pose 'Pose(Point(1 2),1)'), asText(poseFromText('Pose(Point(1 2),1)'));
+SELECT asText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6)::pose, 6);
+SELECT poseFromText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6));
