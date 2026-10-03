@@ -635,7 +635,8 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 
   /* Call the GEOS function for each trapezoid in the collection */
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(trav1));
-  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  bool found = false;
+  for (uint32_t i = 0; i < coll->ngeoms && ! found; i++)
   {
     const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
     dtrav1 = PointerGetDatum(geo_serialize(elem));
@@ -649,12 +650,12 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       datum_func3 func3 = (datum_func3) func;
       result = func3(dtrav1, dtrav2, param);
     }
+    pfree(DatumGetPointer(dtrav1));
     /* We cannot lwgeom_free((LWGEOM *) coll); */
-    if (result)
-      return 1;
+    found = DatumGetBool(result);
   }
   pfree(trav1); pfree(trav2);
-  return 0;
+  return found ? 1 : 0;
 }
 
 /*****************************************************************************/

@@ -223,7 +223,6 @@ lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
     datum_func2 func2 = (datum_func2)(*lfinfo->func);
     return func2(value, lfinfo->param[0]);
   }
-#if JSON
   else if (lfinfo->numparam == 2)
   {
     datum_func3 func3 = (datum_func3)(*lfinfo->func);
@@ -241,14 +240,12 @@ lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
     return func5(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
       lfinfo->param[3]);
   }
-  else if (lfinfo->numparam == 5)
+  else /* lfinfo->numparam == 5 */
   {
     datum_func6 func6 = (datum_func6)(*lfinfo->func);
     return func6(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
       lfinfo->param[3], lfinfo->param[4]);
   }
-#endif /* JSON */
-  return 0;
 }
 
 /*****************************************************************************
@@ -783,17 +780,41 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
+  /* The two base values are the arguments of the function, in the order the
+   * lift states, and the parameters follow them as #lfunc_base passes them
+   * after its one base value */
+  Datum v1 = lfinfo->invert ? value2 : value1;
+  Datum v2 = lfinfo->invert ? value1 : value2;
+  const Datum *p = lfinfo->param;
   if (lfinfo->numparam == 0)
   {
     datum_func2 func2 = (datum_func2)(*lfinfo->func);
-    return lfinfo->invert ? func2(value2, value1) : func2(value1, value2);
+    return func2(v1, v2);
   }
-  else /* if (lfinfo->numparam == 1) */
+  else if (lfinfo->numparam == 1)
   {
     datum_func3 func3 = (datum_func3)(*lfinfo->func);
-    return lfinfo->invert ?
-      func3(value2, value1, lfinfo->param[0]) :
-      func3(value1, value2, lfinfo->param[0]);
+    return func3(v1, v2, p[0]);
+  }
+  else if (lfinfo->numparam == 2)
+  {
+    datum_func4 func4 = (datum_func4)(*lfinfo->func);
+    return func4(v1, v2, p[0], p[1]);
+  }
+  else if (lfinfo->numparam == 3)
+  {
+    datum_func5 func5 = (datum_func5)(*lfinfo->func);
+    return func5(v1, v2, p[0], p[1], p[2]);
+  }
+  else if (lfinfo->numparam == 4)
+  {
+    datum_func6 func6 = (datum_func6)(*lfinfo->func);
+    return func6(v1, v2, p[0], p[1], p[2], p[3]);
+  }
+  else /* lfinfo->numparam == 5 */
+  {
+    datum_func7 func7 = (datum_func7)(*lfinfo->func);
+    return func7(v1, v2, p[0], p[1], p[2], p[3], p[4]);
   }
 }
 
