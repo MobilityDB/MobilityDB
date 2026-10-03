@@ -223,6 +223,7 @@ PG_FUNCTION_INFO_V1(Tposechain_translate);
  * @ingroup mobilitydb_posechain_transf
  * @brief Return a temporal pose chain translated by offsets
  * @sqlfn translate()
+ * @altsqlfn posechainTranslate()
  */
 Datum
 Tposechain_translate(PG_FUNCTION_ARGS)
@@ -240,6 +241,7 @@ PG_FUNCTION_INFO_V1(Tposechain_rotate);
  * @ingroup mobilitydb_posechain_transf
  * @brief Return a temporal pose chain rotated counter-clockwise about the vertical through a point
  * @sqlfn rotate()
+ * @altsqlfn posechainRotate()
  */
 Datum
 Tposechain_rotate(PG_FUNCTION_ARGS)
@@ -257,6 +259,7 @@ PG_FUNCTION_INFO_V1(Tposechain_rotate_x);
  * @ingroup mobilitydb_posechain_transf
  * @brief Return a temporal pose chain rotated counter-clockwise about the x axis
  * @sqlfn rotateX()
+ * @altsqlfn posechainRotateX()
  */
 Datum
 Tposechain_rotate_x(PG_FUNCTION_ARGS)
@@ -273,6 +276,7 @@ PG_FUNCTION_INFO_V1(Tposechain_rotate_y);
  * @ingroup mobilitydb_posechain_transf
  * @brief Return a temporal pose chain rotated counter-clockwise about the y axis
  * @sqlfn rotateY()
+ * @altsqlfn posechainRotateY()
  */
 Datum
 Tposechain_rotate_y(PG_FUNCTION_ARGS)
@@ -289,6 +293,7 @@ PG_FUNCTION_INFO_V1(Tposechain_rotate_z);
  * @ingroup mobilitydb_posechain_transf
  * @brief Return a temporal pose chain rotated counter-clockwise about the z axis
  * @sqlfn rotateZ(), rotate()
+ * @altsqlfn posechainRotateZ(), posechainRotate()
  */
 Datum
 Tposechain_rotate_z(PG_FUNCTION_ARGS)

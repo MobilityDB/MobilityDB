@@ -516,6 +516,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_unnest);
  * @details Each row pairs the reference geometry with that pose applied with
  * the span set on which the pose is taken.
  * @sqlfn unnest()
+ * @altsqlfn temporalUnnest()
  */
 Datum
 Trgeometry_unnest(PG_FUNCTION_ARGS)
@@ -730,6 +731,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_translate);
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry translated by offsets
  * @sqlfn translate()
+ * @altsqlfn geoTranslate()
  */
 Datum
 Trgeometry_translate(PG_FUNCTION_ARGS)
@@ -747,6 +749,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_rotate);
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry rotated counter-clockwise about the vertical through a point
  * @sqlfn rotate()
+ * @altsqlfn geoRotate()
  */
 Datum
 Trgeometry_rotate(PG_FUNCTION_ARGS)
@@ -764,6 +767,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_rotate_x);
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry rotated counter-clockwise about the x axis
  * @sqlfn rotateX()
+ * @altsqlfn geoRotateX()
  */
 Datum
 Trgeometry_rotate_x(PG_FUNCTION_ARGS)
@@ -780,6 +784,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_rotate_y);
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry rotated counter-clockwise about the y axis
  * @sqlfn rotateY()
+ * @altsqlfn geoRotateY()
  */
 Datum
 Trgeometry_rotate_y(PG_FUNCTION_ARGS)
@@ -796,6 +801,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_rotate_z);
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry rotated counter-clockwise about the z axis
  * @sqlfn rotateZ(), rotate()
+ * @altsqlfn geoRotateZ(), geoRotate()
  */
 Datum
 Trgeometry_rotate_z(PG_FUNCTION_ARGS)

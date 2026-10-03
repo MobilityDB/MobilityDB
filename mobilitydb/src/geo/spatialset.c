@@ -302,6 +302,7 @@ PG_FUNCTION_INFO_V1(Spatialset_transform);
  * @ingroup mobilitydb_geo_set_srid
  * @brief Return a spatial set transformed to an SRID
  * @sqlfn transform()
+ * @altsqlfn geoTransform(), cbufferTransform(), poseTransform(), posechainTransform()
  */
 Datum
 Spatialset_transform(PG_FUNCTION_ARGS)
@@ -322,6 +323,7 @@ PG_FUNCTION_INFO_V1(Spatialset_transform_pipeline);
  * @brief Return a spatial set transformed to an SRID using a transformation
  * pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn geoTransformPipeline(), cbufferTransformPipeline(), poseTransformPipeline(), posechainTransformPipeline()
  */
 Datum
 Spatialset_transform_pipeline(PG_FUNCTION_ARGS)

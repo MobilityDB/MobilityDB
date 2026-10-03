@@ -274,6 +274,7 @@ PG_FUNCTION_INFO_V1(Tspatial_transform);
  * @ingroup mobilitydb_geo_srid
  * @brief Return a spatiotemporal value transformed to an SRID
  * @sqlfn transform()
+ * @altsqlfn geoTransform(), cbufferTransform(), poseTransform(), posechainTransform()
  */
 Datum
 Tspatial_transform(PG_FUNCTION_ARGS)
@@ -292,6 +293,7 @@ PG_FUNCTION_INFO_V1(Tspatial_transform_pipeline);
  * @brief Return a spatiotemporal value transformed to an SRID using a
  * pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn geoTransformPipeline(), cbufferTransformPipeline(), poseTransformPipeline(), posechainTransformPipeline()
  */
 Datum
 Tspatial_transform_pipeline(PG_FUNCTION_ARGS)
@@ -316,6 +318,7 @@ PG_FUNCTION_INFO_V1(Geo_transform_pipeline);
  * @brief Return a geometry or a geography transformed to an SRID using a
  * pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn geoTransformPipeline()
  */
 Datum
 Geo_transform_pipeline(PG_FUNCTION_ARGS)

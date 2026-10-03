@@ -558,6 +558,7 @@ PG_FUNCTION_INFO_V1(Posechain_round);
  * @brief Return a pose chain with the values of its links rounded to a number
  * of decimal places
  * @sqlfn round()
+ * @altsqlfn posechainRound()
  */
 Datum
 Posechain_round(PG_FUNCTION_ARGS)
@@ -606,6 +607,7 @@ PG_FUNCTION_INFO_V1(Posechain_transform);
  * @ingroup mobilitydb_posechain_base_srid
  * @brief Return a pose chain transformed to another SRID
  * @sqlfn transform()
+ * @altsqlfn posechainTransform()
  */
 Datum
 Posechain_transform(PG_FUNCTION_ARGS)
@@ -626,6 +628,7 @@ PG_FUNCTION_INFO_V1(Posechain_transform_pipeline);
  * @brief Return a pose chain transformed to another SRID using a
  * transformation pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn posechainTransformPipeline()
  */
 Datum
 Posechain_transform_pipeline(PG_FUNCTION_ARGS)
@@ -790,6 +793,7 @@ PG_FUNCTION_INFO_V1(Posechain_hash);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return the 32-bit hash value of a pose chain
  * @sqlfn hash()
+ * @altsqlfn posechainHash()
  */
 Datum
 Posechain_hash(PG_FUNCTION_ARGS)
@@ -804,6 +808,7 @@ PG_FUNCTION_INFO_V1(Posechain_hash_extended);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return the 64-bit hash value of a pose chain using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn posechainHashExtended()
  */
 Datum
 Posechain_hash_extended(PG_FUNCTION_ARGS)

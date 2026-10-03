@@ -415,6 +415,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_length);
  * @brief Return the length traversed by the centroid of a temporal rigid
  * geometry
  * @sqlfn length()
+ * @altsqlfn geoLength()
  */
 Datum
 Trgeometry_length(PG_FUNCTION_ARGS)
@@ -434,6 +435,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_cumulative_length);
  * @brief Return the cumulative length traversed by the centroid of a temporal
  * rigid geometry
  * @sqlfn cumulativeLength()
+ * @altsqlfn geoCumulativeLength()
  */
 Datum
 Trgeometry_cumulative_length(PG_FUNCTION_ARGS)

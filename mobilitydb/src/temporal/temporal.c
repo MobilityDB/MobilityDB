@@ -1240,6 +1240,7 @@ PG_FUNCTION_INFO_V1(Temporal_lower_inc);
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return true if the start instant of a temporal value is inclusive
  * @sqlfn lowerInc()
+ * @altsqlfn temporalLowerInc()
  */
 Datum
 Temporal_lower_inc(PG_FUNCTION_ARGS)
@@ -1256,6 +1257,7 @@ PG_FUNCTION_INFO_V1(Temporal_upper_inc);
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return true if the end instant of a temporal value is inclusive
  * @sqlfn upperInc()
+ * @altsqlfn temporalUpperInc()
  */
 Datum
 Temporal_upper_inc(PG_FUNCTION_ARGS)
@@ -1504,6 +1506,7 @@ PG_FUNCTION_INFO_V1(Temporal_round);
  * @brief Return a temporal value with the component values set to a number of
  * decimal places
  * @sqlfn round()
+ * @altsqlfn floatRound(), geoRound(), cbufferRound(), npointRound(), poseRound(), posechainRound()
  */
 Datum
 Temporal_round(PG_FUNCTION_ARGS)
@@ -1527,6 +1530,7 @@ PG_FUNCTION_INFO_V1(Temporalarr_round);
  * @brief Return an array of temporal floats with the precision of the values
  * set to a number of decimal places
  * @sqlfn round()
+ * @altsqlfn floatRound(), geoRound(), cbufferRound(), npointRound(), poseRound(), posechainRound()
  */
 Datum
 Temporalarr_round(PG_FUNCTION_ARGS)
@@ -1820,6 +1824,7 @@ PG_FUNCTION_INFO_V1(Temporal_unnest);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the list of values and associated span sets of a temporal value
  * @sqlfn unnest()
+ * @altsqlfn temporalUnnest()
  */
 Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
@@ -1897,6 +1902,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge);
  * @ingroup mobilitydb_temporal_modif
  * @brief Merge two temporal values
  * @sqlfn merge()
+ * @altsqlfn temporalMerge()
  */
 Datum
 Temporal_merge(PG_FUNCTION_ARGS)
@@ -1919,6 +1925,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_array);
  * @ingroup mobilitydb_temporal_modif
  * @brief Merge an array of temporal values
  * @sqlfn merge()
+ * @altsqlfn temporalMerge()
  */
 Datum
 Temporal_merge_array(PG_FUNCTION_ARGS)
@@ -2550,6 +2557,7 @@ PG_FUNCTION_INFO_V1(Temporal_insert);
  * @ingroup mobilitydb_temporal_modif
  * @brief Insert the second temporal value into the first one
  * @sqlfn insert()
+ * @altsqlfn temporalInsert()
  */
 Datum
 Temporal_insert(PG_FUNCTION_ARGS)
@@ -2569,6 +2577,7 @@ PG_FUNCTION_INFO_V1(Temporal_update);
  * @ingroup mobilitydb_temporal_modif
  * @brief Update the first temporal value with the second one
  * @sqlfn update()
+ * @altsqlfn temporalUpdate()
  */
 Datum
 Temporal_update(PG_FUNCTION_ARGS)
@@ -2880,6 +2889,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return the hash value of a temporal value
  * @sqlfn hash()
+ * @altsqlfn temporalHash()
  */
 Datum
 Temporal_hash(PG_FUNCTION_ARGS)
@@ -2896,6 +2906,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash_extended);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return the 64-bit hash value of a temporal value using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn temporalHashExtended()
  */
 Datum
 Temporal_hash_extended(PG_FUNCTION_ARGS)

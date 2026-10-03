@@ -468,6 +468,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_round);
  * @brief Return a circular buffer with the precision of the values set to a
  * number of decimal places
  * @sqlfn round()
+ * @altsqlfn cbufferRound()
  */
 Datum
 Cbuffer_round(PG_FUNCTION_ARGS)
@@ -548,6 +549,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_transform);
  * @ingroup mobilitydb_cbuffer_base_srid
  * @brief Return a circular buffer transformed to an SRID
  * @sqlfn transform()
+ * @altsqlfn cbufferTransform()
  */
 Datum
 Cbuffer_transform(PG_FUNCTION_ARGS)
@@ -565,6 +567,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_transform_pipeline);
  * @ingroup mobilitydb_cbuffer_base_srid
  * @brief Return a circular buffer transformed to an SRID using a pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn cbufferTransformPipeline()
  */
 Datum
 Cbuffer_transform_pipeline(PG_FUNCTION_ARGS)
@@ -847,6 +850,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_hash);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return the 32-bit hash value of a circular buffer
  * @sqlfn hash()
+ * @altsqlfn cbufferHash()
  */
 Datum
 Cbuffer_hash(PG_FUNCTION_ARGS)
@@ -863,6 +867,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_hash_extended);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return the 64-bit hash value of a circular buffer using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn cbufferHashExtended()
  */
 Datum
 Cbuffer_hash_extended(PG_FUNCTION_ARGS)

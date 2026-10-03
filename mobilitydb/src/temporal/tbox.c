@@ -796,6 +796,7 @@ PG_FUNCTION_INFO_V1(Tbox_round);
  * @brief Return a temporal box with the precision of the value span set to a
  * number of decimal places
  * @sqlfn round()
+ * @altsqlfn tboxRound()
  */
 Datum
 Tbox_round(PG_FUNCTION_ARGS)
@@ -1259,6 +1260,7 @@ PG_FUNCTION_INFO_V1(Tbox_hash);
  * @ingroup mobilitydb_box_comp
  * @brief Return the hash value of a temporal box
  * @sqlfn hash()
+ * @altsqlfn tboxHash()
  */
 Datum
 Tbox_hash(PG_FUNCTION_ARGS)
@@ -1273,6 +1275,7 @@ PG_FUNCTION_INFO_V1(Tbox_hash_extended);
  * @ingroup mobilitydb_box_comp
  * @brief Return the hash value of a temporal box
  * @sqlfn hashExtended()
+ * @altsqlfn tboxHashExtended()
  */
 Datum
 Tbox_hash_extended(PG_FUNCTION_ARGS)

@@ -630,6 +630,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_round);
  * @brief Return a TPCBox with coordinates rounded to a given number of decimal
  * digits
  * @sqlfn round()
+ * @altsqlfn tpcboxRound()
  */
 Datum
 Tpcbox_round(PG_FUNCTION_ARGS)

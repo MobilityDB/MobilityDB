@@ -797,6 +797,7 @@ PG_FUNCTION_INFO_V1(Pose_round);
  * @brief Return a pose with the precision of the values set to a number of
  * decimal places
  * @sqlfn round()
+ * @altsqlfn poseRound()
  */
 Datum
 Pose_round(PG_FUNCTION_ARGS)
@@ -878,6 +879,7 @@ PG_FUNCTION_INFO_V1(Pose_transform);
  * @ingroup mobilitydb_pose_base_srid
  * @brief Return a pose transformed to an SRID
  * @sqlfn transform()
+ * @altsqlfn poseTransform()
  */
 Datum
 Pose_transform(PG_FUNCTION_ARGS)
@@ -895,6 +897,7 @@ PG_FUNCTION_INFO_V1(Pose_transform_pipeline);
  * @ingroup mobilitydb_pose_base_srid
  * @brief Return a pose transformed to an SRID using a pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn poseTransformPipeline()
  */
 Datum
 Pose_transform_pipeline(PG_FUNCTION_ARGS)
@@ -1061,6 +1064,7 @@ PG_FUNCTION_INFO_V1(Pose_hash);
  * @ingroup mobilitydb_pose_base_comp
  * @brief Return the 32-bit hash value of a pose
  * @sqlfn hash()
+ * @altsqlfn poseHash()
  */
 Datum
 Pose_hash(PG_FUNCTION_ARGS)
@@ -1077,6 +1081,7 @@ PG_FUNCTION_INFO_V1(Pose_hash_extended);
  * @ingroup mobilitydb_pose_base_comp
  * @brief Return the 64-bit hash value of a pose using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn poseHashExtended()
  */
 Datum
 Pose_hash_extended(PG_FUNCTION_ARGS)

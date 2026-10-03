@@ -284,6 +284,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_translate);
  * @ingroup mobilitydb_cbuffer_transf
  * @brief Return a temporal circular buffer translated by offsets
  * @sqlfn translate()
+ * @altsqlfn cbufferTranslate()
  */
 Datum
 Tcbuffer_translate(PG_FUNCTION_ARGS)
@@ -301,6 +302,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_rotate);
  * @ingroup mobilitydb_cbuffer_transf
  * @brief Return a temporal circular buffer rotated counter-clockwise about the vertical through a point
  * @sqlfn rotate()
+ * @altsqlfn cbufferRotate()
  */
 Datum
 Tcbuffer_rotate(PG_FUNCTION_ARGS)
@@ -318,6 +320,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_rotate_z);
  * @ingroup mobilitydb_cbuffer_transf
  * @brief Return a temporal circular buffer rotated counter-clockwise about the z axis
  * @sqlfn rotateZ(), rotate()
+ * @altsqlfn cbufferRotateZ(), cbufferRotate()
  */
 Datum
 Tcbuffer_rotate_z(PG_FUNCTION_ARGS)

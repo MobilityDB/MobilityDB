@@ -369,6 +369,7 @@ PG_FUNCTION_INFO_V1(Tpose_translate);
  * @ingroup mobilitydb_pose_transf
  * @brief Return a temporal pose translated by offsets
  * @sqlfn translate()
+ * @altsqlfn poseTranslate()
  */
 Datum
 Tpose_translate(PG_FUNCTION_ARGS)
@@ -386,6 +387,7 @@ PG_FUNCTION_INFO_V1(Tpose_rotate);
  * @ingroup mobilitydb_pose_transf
  * @brief Return a temporal pose rotated counter-clockwise about the vertical through a point
  * @sqlfn rotate()
+ * @altsqlfn poseRotate()
  */
 Datum
 Tpose_rotate(PG_FUNCTION_ARGS)
@@ -403,6 +405,7 @@ PG_FUNCTION_INFO_V1(Tpose_rotate_x);
  * @ingroup mobilitydb_pose_transf
  * @brief Return a temporal pose rotated counter-clockwise about the x axis
  * @sqlfn rotateX()
+ * @altsqlfn poseRotateX()
  */
 Datum
 Tpose_rotate_x(PG_FUNCTION_ARGS)
@@ -419,6 +422,7 @@ PG_FUNCTION_INFO_V1(Tpose_rotate_y);
  * @ingroup mobilitydb_pose_transf
  * @brief Return a temporal pose rotated counter-clockwise about the y axis
  * @sqlfn rotateY()
+ * @altsqlfn poseRotateY()
  */
 Datum
 Tpose_rotate_y(PG_FUNCTION_ARGS)
@@ -435,6 +439,7 @@ PG_FUNCTION_INFO_V1(Tpose_rotate_z);
  * @ingroup mobilitydb_pose_transf
  * @brief Return a temporal pose rotated counter-clockwise about the z axis
  * @sqlfn rotateZ(), rotate()
+ * @altsqlfn poseRotateZ(), poseRotate()
  */
 Datum
 Tpose_rotate_z(PG_FUNCTION_ARGS)

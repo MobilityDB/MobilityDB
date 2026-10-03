@@ -108,6 +108,7 @@ PG_FUNCTION_INFO_V1(Ttext_lower);
  * @ingroup mobilitydb_temporal_text
  * @brief Return a temporal text transformed to lowercase
  * @sqlfn lower()
+ * @altsqlfn textLower()
  */
 Datum
 Ttext_lower(PG_FUNCTION_ARGS)
@@ -124,6 +125,7 @@ PG_FUNCTION_INFO_V1(Ttext_upper);
  * @ingroup mobilitydb_temporal_text
  * @brief Return a temporal text transformed to uppercase
  * @sqlfn upper()
+ * @altsqlfn textUpper()
  */
 Datum
 Ttext_upper(PG_FUNCTION_ARGS)
@@ -140,6 +142,7 @@ PG_FUNCTION_INFO_V1(Ttext_initcap);
  * @ingroup mobilitydb_temporal_text
  * @brief Return a temporal text transformed to uppercase
  * @sqlfn initcap()
+ * @altsqlfn textInitcap()
  */
 Datum
 Ttext_initcap(PG_FUNCTION_ARGS)

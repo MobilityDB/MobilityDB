@@ -581,6 +581,7 @@ PG_FUNCTION_INFO_V1(Floatset_floor);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set rounded down to the nearest integer
  * @sqlfn floor()
+ * @altsqlfn floatFloor()
  */
 Datum
 Floatset_floor(PG_FUNCTION_ARGS)
@@ -597,6 +598,7 @@ PG_FUNCTION_INFO_V1(Floatset_ceil);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set rounded up to the nearest integer
  * @sqlfn ceil()
+ * @altsqlfn floatCeil()
  */
 Datum
 Floatset_ceil(PG_FUNCTION_ARGS)
@@ -614,6 +616,7 @@ PG_FUNCTION_INFO_V1(Set_round);
  * @brief Return a set with the precision of the values set to a number
  * of decimal places
  * @sqlfn round()
+ * @altsqlfn floatRound(), geoRound(), cbufferRound(), npointRound(), poseRound(), posechainRound()
  */
 Datum
 Set_round(PG_FUNCTION_ARGS)
@@ -631,6 +634,7 @@ PG_FUNCTION_INFO_V1(Floatset_degrees);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set with the values converted to degrees
  * @sqlfn degrees()
+ * @altsqlfn floatDegrees()
  */
 Datum
 Floatset_degrees(PG_FUNCTION_ARGS)
@@ -650,6 +654,7 @@ PG_FUNCTION_INFO_V1(Floatset_radians);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set with the values converted to radians
  * @sqlfn radians()
+ * @altsqlfn floatRadians()
  */
 Datum
 Floatset_radians(PG_FUNCTION_ARGS)
@@ -666,6 +671,7 @@ PG_FUNCTION_INFO_V1(Textset_lower);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a text set with the values transformed to lowercase
  * @sqlfn lower()
+ * @altsqlfn textLower()
  */
 Datum
 Textset_lower(PG_FUNCTION_ARGS)
@@ -682,6 +688,7 @@ PG_FUNCTION_INFO_V1(Textset_upper);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a text set with the values transformed to uppercase
  * @sqlfn upper()
+ * @altsqlfn textUpper()
  */
 Datum
 Textset_upper(PG_FUNCTION_ARGS)
@@ -698,6 +705,7 @@ PG_FUNCTION_INFO_V1(Textset_initcap);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a text set with the values transformed to initcap
  * @sqlfn initcap()
+ * @altsqlfn textInitcap()
  */
 Datum
 Textset_initcap(PG_FUNCTION_ARGS)
@@ -756,6 +764,7 @@ PG_FUNCTION_INFO_V1(Set_unnest);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return the list of values of a set
  * @sqlfn unnest()
+ * @altsqlfn setUnnest()
  */
 Datum
 Set_unnest(PG_FUNCTION_ARGS)
@@ -950,6 +959,7 @@ PG_FUNCTION_INFO_V1(Set_hash);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return the 32-bit hash value of a set
  * @sqlfn hash()
+ * @altsqlfn setHash()
  */
 Datum
 Set_hash(PG_FUNCTION_ARGS)
@@ -966,6 +976,7 @@ PG_FUNCTION_INFO_V1(Set_hash_extended);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return the 64-bit hash value of a set using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn setHashExtended()
  */
 Datum
 Set_hash_extended(PG_FUNCTION_ARGS)
