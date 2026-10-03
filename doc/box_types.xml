@@ -997,7 +997,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<para>Traditional comparisons</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 box {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} box → boolean
-cmp(box,box) → int
+cmp(box,box) → integer
 </programlisting>
 				<para>Function <varname>cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1030,7 +1030,7 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])',
 				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 				<para>Hash values</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash(box) → int
+hash(box) → integer
 hashExtended(box,seed bigint) → bigint
 </programlisting>
 				<para>Function <varname>hash</varname> returns a 32-bit hash value and function <varname>hashExtended</varname> a 64-bit hash value computed with the given seed. Equal values have equal hash values, which is what hash indexes, hash joins, and hash aggregation rely on.</para>

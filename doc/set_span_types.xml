@@ -38,7 +38,7 @@
 			<para><varname>set</varname> represents any set type, such as <varname>intset</varname> or <varname>tstzset</varname>.</para>
 		</listitem>
 		<listitem>
-			<para><varname>span</varname> represents any span type, such as <varname>intspan</varname> or <varname>tstzspanset</varname>.</para>
+			<para><varname>span</varname> represents any span type, such as <varname>intspan</varname> or <varname>tstzspan</varname>.</para>
 		</listitem>
 		<listitem>
 			<para><varname>spanset</varname> represents any span set type, such as <varname>intspanset</varname> or <varname>tstzspanset</varname>.</para>
@@ -56,7 +56,25 @@
 			<para><varname>numset</varname> represents any number set type, such as <varname>intset</varname> or <varname>floatset</varname>.</para>
 		</listitem>
 		<listitem>
-			<para><varname>numspans</varname> represents any number span type, such as <varname>intspan</varname> or <varname>floatspanset</varname>.</para>
+			<para><varname>numspans</varname> represents any number span or span set type, such as <varname>intspan</varname> or <varname>floatspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspan</varname> represents any number span type, that is, <varname>intspan</varname>, <varname>bigintspan</varname>, or <varname>floatspan</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspanset</varname> represents any number span set type, that is, <varname>intspanset</varname>, <varname>bigintspanset</varname>, or <varname>floatspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>floatspans</varname> represents a float span or span set type, that is, <varname>floatspan</varname> or <varname>floatspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>datespans</varname> represents a date span or span set type, that is, <varname>datespan</varname> or <varname>datespanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>tstzspans</varname> represents a timestamptz span or span set type, that is, <varname>tstzspan</varname> or <varname>tstzspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>spatialset</varname> represents any spatial set type, such as <varname>geomset</varname> or <varname>geogset</varname>.</para>
 		</listitem>
 		<listitem>
 			<para><varname>numbers</varname> represents any number set or range type, such as <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname>, or <varname>intspanset</varname>,</para>
@@ -1520,7 +1538,7 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean
 spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean
-cmp({set,span,spanset},{set,span,spanset}) → int
+cmp({set,span,spanset},{set,span,spanset}) → integer
 </programlisting>
 				<para>Function <varname>cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1559,7 +1577,7 @@ SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 				<para>Hash values</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash({set,span,spanset}) → int
+hash({set,span,spanset}) → integer
 hashExtended({set,span,spanset},seed bigint) → bigint
 </programlisting>
 				<para>Function <varname>hash</varname> returns a 32-bit hash value and function <varname>hashExtended</varname> a 64-bit hash value computed with the given seed. Equal values have equal hash values, which is what hash indexes, hash joins, and hash aggregation rely on.</para>
@@ -1624,9 +1642,9 @@ SELECT extent(ps) FROM periods;
 				<indexterm significance="normal"><primary><varname>spansetUnion</varname></primary></indexterm>
 				<para>Aggregate union</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setUnion({value,set}) → set
+setUnion({base,set}) → set
 spanUnion(spans) → spanset
-spansetUnion(spansets) → spanset
+spansetUnion(spanset) → spanset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH times(ts) AS (

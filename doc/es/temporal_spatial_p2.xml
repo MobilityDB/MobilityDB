@@ -113,8 +113,8 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
 				<para>Restringe a (al complemento de) un rango de altitud &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atElevation(tpoint,zspan) → tpoint
-minusElevation(tpoint,zspan) → tpoint
+atElevation(tpoint,floatspan) → tpoint
+minusElevation(tpoint,floatspan) → tpoint
 </programlisting>
 				<para>La altitud de un punto temporal es su coordenada Z, que varía linealmente en el tiempo tanto si el punto es planar como si es geodésico, de modo que los períodos que el rango admite son los mismos para ambos. Las posiciones en los límites de esos períodos no lo son: un punto geodésico recorre el círculo máximo entre dos posiciones y alcanza allí la altitud de un límite, y no sobre la línea recta en longitud y latitud.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

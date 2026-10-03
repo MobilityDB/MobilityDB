@@ -732,7 +732,7 @@ SELECT tnpointSeqSet(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transforma un punto de red temporal en otra interpolación</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tnpoint,interp) → tnpoint
+setInterp(tnpoint,interp text) → tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
@@ -816,10 +816,10 @@ SELECT asText(mergeAgg(inst)) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restringe al (complemento de) un valor o un conjunto de valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atValue(tnpoint,value) → tnpoint
-minusValue(tnpoint,value) → tnpoint
-atValues(tnpoint,valueset) → tnpoint
-minusValues(tnpoint,valueset) → tnpoint
+atValue(tnpoint,base) → tnpoint
+minusValue(tnpoint,base) → tnpoint
+atValues(tnpoint,values) → tnpoint
+minusValues(tnpoint,values) → tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',

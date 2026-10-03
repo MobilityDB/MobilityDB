@@ -328,11 +328,14 @@ SELECT tpcboxFromText('TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]),
 					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
 					<para>Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid, whose schema states the SRID</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcboxX(xmin,ymin,xmax,ymax,pcid) → tpcbox
-tpcboxZ(xmin,ymin,zmin,xmax,ymax,zmax,pcid) → tpcbox
-tpcboxT(period,pcid) → tpcbox
-tpcboxXT(xmin,ymin,xmax,ymax,period,pcid) → tpcbox
-tpcboxZT(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid) → tpcbox
+tpcboxX(xmin float,ymin float,xmax float,ymax float,pcid integer=0) → tpcbox
+tpcboxZ(xmin float,ymin float,zmin float,xmax float,ymax float,zmax float,
+  pcid integer=0) → tpcbox
+tpcboxT(period tstzspan,pcid integer=0) → tpcbox
+tpcboxXT(xmin float,ymin float,xmax float,ymax float,period tstzspan,
+  pcid integer=0) → tpcbox
+tpcboxZT(xmin float,ymin float,zmin float,xmax float,ymax float,zmax float,
+  period tstzspan,pcid integer=0) → tpcbox
 </programlisting>
 					<para>The SRID is not a parameter: it is read from the schema the pcid names, and a pcid naming no registered schema is an error</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -666,7 +669,7 @@ SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 					<indexterm significance="normal"><primary><varname>tpcpointFromMFJSON</varname></primary></indexterm>
 					<para>Return the Moving Features JSON (MF-JSON) representation of a tpcpoint and read it back; the round trip is lossless</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMFJSON(tpcpoint,options int=0,flags int=0,maxdecimaldigits int=15) → text
+asMFJSON(tpcpoint,options integer=0,flags integer=0,maxdecimaldigits integer=15) → text
 tpcpointFromMFJSON(text) → tpcpoint
 </programlisting>
 					<para>A <varname>tpcpoint</varname> is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "values":[{"pcid":N,"pt":[…]}, …], "datetimes":[…]}</varname>. The coordinates are the X, Y and Z of each instant read from its <varname>pcpoint</varname> through the schema cache, and a schema stating neither X nor Y leaves the coordinate array of that instant empty. The values are pgPointCloud's text form of each point, every dimension of its schema in the order the schema states them and in the shortest decimal form that reads back as the same double, whatever <varname>maxdecimaldigits</varname> states. <varname>tpcpointFromMFJSON</varname> rebuilds each point from its values through the schema of its <varname>pcid</varname>, so a scaled integer dimension reads back as the integer it stores.</para>
@@ -890,7 +893,7 @@ SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 					<para>Transform a tpcpoint to another interpolation</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tpcpoint,interp) → tpcpoint
+setInterp(tpcpoint,interp text) → tpcpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A tpcpoint carries step interpolation.
@@ -1472,8 +1475,8 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minDistSimplify(tpcpoint,mindist float) → tpcpoint
 minTimeDeltaSimplify(tpcpoint,mint interval) → tpcpoint
-maxDistSimplify(tpcpoint,maxdist float,syncdist bool=true) → tpcpoint
-douglasPeuckerSimplify(tpcpoint,maxdist float,syncdist bool=true) → tpcpoint
+maxDistSimplify(tpcpoint,maxdist float,syncdist boolean=true) → tpcpoint
+douglasPeuckerSimplify(tpcpoint,maxdist float,syncdist boolean=true) → tpcpoint
 </programlisting>
 					<para>Simplification applies only to temporal sequences or sequence sets with linear interpolation, and a tpcpoint has step or discrete interpolation, so each function returns a copy of the given value.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1576,7 +1579,7 @@ SELECT tpcpatchFromEWKT('SRID=4326;' || asText(tpcpatch(pcpatch(pcpoint(1, 1, 1,
 					<indexterm significance="normal"><primary><varname>tpcpatchFromMFJSON</varname></primary></indexterm>
 					<para>Return the Moving Features JSON (MF-JSON) representation of a tpcpatch and read it back; the round trip is lossless</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMFJSON(tpcpatch,options int=0,flags int=0,maxdecimaldigits int=15) → text
+asMFJSON(tpcpatch,options integer=0,flags integer=0,maxdecimaldigits integer=15) → text
 tpcpatchFromMFJSON(text) → tpcpatch
 </programlisting>
 					<para>A <varname>tpcpatch</varname> is emitted under the type tag <varname>"MovingPCPatch"</varname>, each instant stating the object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax], "pts":[[…], …]}</varname>. The points are pgPointCloud's text form of the patch, every dimension of each point in the order its schema states them and in the shortest decimal form that reads back as the same double, whatever <varname>maxdecimaldigits</varname> states. <varname>tpcpatchFromMFJSON</varname> rebuilds each patch from its points in the compression its schema states, and refuses a point that does not state every dimension of the schema.</para>
@@ -1742,7 +1745,7 @@ SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 					<para>Transform a tpcpatch to another interpolation</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tpcpatch,interp) → tpcpatch
+setInterp(tpcpatch,interp text) → tpcpatch
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT interp(setInterp(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
@@ -2330,7 +2333,7 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
 				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
 				<para>Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint
+appendInstantAgg(tpcpoint[,interp text,maxt interval]) → tpcpoint
 appendInstantAgg(tpcpatch) → tpcpatch
 appendSequenceAgg(tpcpoint) → tpcpoint
 appendSequenceAgg(tpcpatch) → tpcpatch

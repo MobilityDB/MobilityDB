@@ -48,7 +48,7 @@ SELECT tCount(NoEmps) FROM Department;
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-extent(temp) → {tstzspan,tbox,stbox}
+extent(ttype) → {tstzspan,tbox,stbox}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(noEmps) FROM Department;

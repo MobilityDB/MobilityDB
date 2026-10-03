@@ -56,7 +56,7 @@ SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Devuelve la representación de texto conocido (WKT)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+asText({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
@@ -69,7 +69,7 @@ SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<para>Devuelve la representación extendida de texto conocido (EWKT), prefijada con el SRID</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
@@ -82,7 +82,8 @@ SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Devuelve la representación JSON de características móviles (MF-JSON)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
+asMFJSON(trgeometry [, options integer=0 [, flags integer=0
+  [, maxdecimaldigits integer=15]]]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -330,7 +331,7 @@ SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Devuelve el área atravesada por la geometría rígida temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-traversedArea(trgeometry,unary_union bool=false) → geometry
+traversedArea(trgeometry,unary_union boolean=false) → geometry
 </programlisting>
 				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren. <emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Sobremuestrear la <varname>tpose</varname> antes de construir la <varname>trgeometry</varname> ajusta la aproximación.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -843,7 +844,8 @@ SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Devuelve la línea entre los puntos más cercanos de los dos argumentos en su instante de aproximación más cercana</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → geometry
+shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry})
+  → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -980,18 +982,18 @@ SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<para>Relaciones siempre y alguna vez</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eContains(OPS) → boolean
-aContains(OPS) → boolean
-eCovers(OPS) → boolean
-aCovers(OPS) → boolean
-eDisjoint(OPS) → boolean
-aDisjoint(OPS) → boolean
-eDwithin(OPS,float) → boolean
-aDwithin(OPS,float) → boolean
-eIntersects(OPS) → boolean
-aIntersects(OPS) → boolean
-eTouches(OPS) → boolean
-aTouches(OPS) → boolean
+eContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+aDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+eIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </programlisting>
 				<para>Las relaciones <emphasis>alguna vez</emphasis> determinan si la relación se cumple en algún instante, y las relaciones <emphasis>siempre</emphasis> si se cumple en todos los instantes. Una geometría rígida temporal las responde sobre el cuerpo que su geometría de referencia sitúa en cada instante, de modo que la relación leída es la del cuerpo situado y no la de la geometría de referencia en el origen.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

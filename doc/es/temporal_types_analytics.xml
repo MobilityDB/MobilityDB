@@ -49,9 +49,9 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 				<para>Simplifica un flotante o un punto temporal usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 maxDistSimplify({tfloat,tgeompoint,tgeometry},maxdist float,
-  syncdist bool=true) → {tfloat,tgeompoint,tgeometry}
+  syncdist boolean=true) → {tfloat,tgeompoint,tgeometry}
 douglasPeuckerSimplify({tfloat,tgeompoint,tgeometry},maxdist float,
-  syncdist bool=true) → {tfloat,tgeompoint,tgeometry}
+  syncdist boolean=true) → {tfloat,tgeompoint,tgeometry}
 </programlisting>
 				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> usa una versión del algoritmo de un solo recorrido, mientras que <varname>douglasPeuckerSimplify</varname> usa el algoritmo recursivo estándar. La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como segundo argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento se aplica solo a puntos temporales y especifica si se utiliza la distancia espacial o la distancia  sincronizada. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -100,8 +100,8 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tsample</varname></primary></indexterm>
 				<para>Muestrea un valor temporal con respecto a un intervalo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tsample(temporal,duration interval,torigin timestamptz='2000-01-03',
-  interp='discrete') → temporal
+tsample(ttype,duration interval,torigin timestamptz='2000-01-03',
+  interp text='discrete') → ttype
 </programlisting>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -348,7 +348,7 @@ SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 				<para>Devuelve una matriz de N rangos de tiempo a partir de los instantes o segmentos de un valor temporal &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-splitNSpans(temp,integer) → tstzspan[]
+splitNSpans(ttype,integer) → tstzspan[]
 </programlisting>
 				<para>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. El último argumento especifica el número de rangos de salida. Si el número de instantes o segmentos es inferior o igual al número especificado, la matriz resultante tendrá un rango por instante o segmento del valor temporal. En caso contrario, el número de rangos especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -379,7 +379,7 @@ SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-0
 				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 				<para>Devuelve una matriz de rangos de tiempo obtenida fusionando N instantes o segmentos consecutivos de un valor temporal &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-splitEachNSpans(temp,integer) → tstzspan[]
+splitEachNSpans(ttype,integer) → tstzspan[]
 </programlisting>
 				<para>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. El último argumento especifica el número de instantes o segmentos de entrada que se fusionan para producir un rango de salida. Si el número de instantes o segmentos es inferior o igual al número especificado, la matriz resultante tendrá un único rango por secuencia. En caso contrario, el número especificado de instantes o segmentos consecutivos será fusionado en cada rango de salida. Observe que, a diferencia de la función <link linkend="ttype_splitNSpans"><varname>splitNSpans</varname></link>, el número de cuadros en el resultado depende del número de instantes o de segmentos de entrada.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -805,7 +805,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 					<para>Devuelve una matriz de rangos de valores o de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueBins(tnumber,vsize number,vorigin number=0,borderInc boolean=true) → numspan[]
-timeBins(temp,duration interval,torigin timestamptz='2000-01-03',
+timeBins(ttype,duration interval,torigin timestamptz='2000-01-03',
   borderInc boolean=true) → tstzspan[]
 </programlisting>
 					<para>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si no se especifica el origen de los valores, se establece por defecto en 0 para los rangos de valores y en el lunes 3 de enero de 2000 para los rangos de tiempo. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión y, por lo tanto, se genera el rango que comienza en ese borde y solo lo contiene.</para>
@@ -1011,13 +1011,13 @@ SELECT (sp).number, (sp).time,
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 spaceSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  origin {geompoint,geogpoint}='Point(0 0 0)',bitmatrix boolean=true,
+  origin point='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
 timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03',
   borderInc boolean=true) → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeogpoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-  duration interval,sorigin {geompoint,geogpoint}='Point(0 0 0)',
+  duration interval,sorigin point='Point(0 0 0)',
   torigin timestamptz='2000-01-03',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,time,tpoint)}
 </programlisting>

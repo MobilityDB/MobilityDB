@@ -772,7 +772,7 @@ SELECT asText(tcbufferSeqSet(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transform a temporal circular buffer to another interpolation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tcbuffer,interp) → tcbuffer
+setInterp(tcbuffer,interp text) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1),0.2)@2001-01-01','linear'));
@@ -921,10 +921,10 @@ SELECT asText(mergeAgg(inst)) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a value or a set of values</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atValue(tcbuffer,value) → tcbuffer
-minusValue(tcbuffer,value) → tcbuffer
-atValues(tcbuffer,valueset) → tcbuffer
-minusValues(tcbuffer,valueset) → tcbuffer
+atValue(tcbuffer,base) → tcbuffer
+minusValue(tcbuffer,base) → tcbuffer
+atValues(tcbuffer,values) → tcbuffer
+minusValues(tcbuffer,values) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
@@ -1025,7 +1025,7 @@ SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pip
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Return the area traversed by the temporal circular buffer</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-traversedArea(tcbuffer,unary_union bool=false) → geometry
+traversedArea(tcbuffer,unary_union boolean=false) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
@@ -1482,8 +1482,8 @@ SELECT asText(minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Return a temporal circular buffer simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-maxDistSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
-douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
+maxDistSimplify(tcbuffer,maxdist float,syncdist boolean=true) → tcbuffer
+douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist boolean=true) → tcbuffer
 </programlisting>
 				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm. As for the functions above, the simplification operates on the center trajectory and preserves the radius at each surviving instant.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
