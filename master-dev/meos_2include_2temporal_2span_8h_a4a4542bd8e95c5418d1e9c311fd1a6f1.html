@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tstzspan_shift_scale1</title>
+<title>MobilityDB: distance_span_span_double</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_ada5f8f51ab57de0bb15eece3cce6a85e.html#ada5f8f51ab57de0bb15eece3cce6a85e">DatumGetSpanSetP</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a7f2d4baee45a171031e37a9acc90df41.html#a7f2d4baee45a171031e37a9acc90df41">distance_double</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a786ca38e8ba37474d9c86fe94af7b5fd.html#a786ca38e8ba37474d9c86fe94af7b5fd">distance_sentinel</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a4a4542bd8e95c5418d1e9c311fd1a6f1.html#a4a4542bd8e95c5418d1e9c311fd1a6f1">distance_span_span_double</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2include_2temporal_2span_8h_a4a4542bd8e95c5418d1e9c311fd1a6f1.html#a4a4542bd8e95c5418d1e9c311fd1a6f1">distance_span_span_double</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_ab69be6c555ad8e39ae83b0ed3818f35e.html#ab69be6c555ad8e39ae83b0ed3818f35e">distance_value_value_double</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_af71e67127ac056dcbf95dc2575af6335.html#af71e67127ac056dcbf95dc2575af6335">ensure_same_span_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_aaa80265d046684471740763c87bf9a6c.html#aaa80265d046684471740763c87bf9a6c">ensure_span_isof_basetype</a></td></tr>
@@ -111,46 +111,28 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a1399f59afe3114c014377cdb28db51d2.html#a1399f59afe3114c014377cdb28db51d2">SpanPGetDatum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a647c05ea5f099c16d2e8c9700a7a82ca.html#a647c05ea5f099c16d2e8c9700a7a82ca">SpanSetPGetDatum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a9910be1cf8970c5b7258ff779aaba3f9.html#a9910be1cf8970c5b7258ff779aaba3f9">tstzspan_delta_scale_iter</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2include_2temporal_2span_8h_a71c09a274716e48745ca8f3951ddbe97.html#a71c09a274716e48745ca8f3951ddbe97">tstzspan_shift_scale1</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2include_2temporal_2span_8h_a71c09a274716e48745ca8f3951ddbe97.html#a71c09a274716e48745ca8f3951ddbe97">tstzspan_shift_scale1</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a71c09a274716e48745ca8f3951ddbe97" name="a71c09a274716e48745ca8f3951ddbe97"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a71c09a274716e48745ca8f3951ddbe97">&#9670;&#160;</a></span>tstzspan_shift_scale1()</h2>
+<a id="a4a4542bd8e95c5418d1e9c311fd1a6f1" name="a4a4542bd8e95c5418d1e9c311fd1a6f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a4542bd8e95c5418d1e9c311fd1a6f1">&#9670;&#160;</a></span>distance_span_span_double()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void tstzspan_shift_scale1 </td>
+          <td class="memname">double distance_span_span_double </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>s1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structInterval.html">Interval</a> *&#160;</td>
-          <td class="paramname"><em>shift</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structInterval.html">Interval</a> *&#160;</td>
-          <td class="paramname"><em>duration</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TimestampTz *&#160;</td>
-          <td class="paramname"><em>delta</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>scale</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>s2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -160,8 +142,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a timestamptz span shifted and/or scaled by two intervals. </p>
-<dl class="section note"><dt>Note</dt><dd>Returns the delta and scale of the transformation </dd></dl>
+<p>Return the distance between two spans as a double. </p>
+<p >The distance is the one <a class="el" href="group__meos__internal__setspan__dist_ga532871c956cb5a0929019d5f4e58173b.html#ga532871c956cb5a0929019d5f4e58173b" title="Return the distance between two spans.">distance_span_span</a> returns, read as <a class="el" href="meos_2src_2temporal_2span__ops_8c_a7f2d4baee45a171031e37a9acc90df41.html#a7f2d4baee45a171031e37a9acc90df41" title="Return a distance of a base type as a double for the indexes.">distance_double</a> reads it, for the indexes that rank their candidates with a double, and is computed by <a class="el" href="meos_2src_2temporal_2span__ops_8c_ab69be6c555ad8e39ae83b0ed3818f35e.html#ab69be6c555ad8e39ae83b0ed3818f35e" title="Return the distance between two values as a double.">distance_value_value_double</a> without overflow </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">s1,s2</td><td>Spans </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
