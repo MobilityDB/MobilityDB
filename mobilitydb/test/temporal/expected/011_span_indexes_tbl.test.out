@@ -271,20 +271,20 @@ INSERT 0 1
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)';
 INSERT 0 1
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
 CREATE INDEX tbl_intspan_big_rtree_idx ON tbl_intspan_big USING GIST(i);
@@ -567,20 +567,20 @@ UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
@@ -871,31 +871,47 @@ UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
+SET enable_seqscan = off;
+SET
+SELECT (SELECT array_agg(d) FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big ORDER BY f <-> 101.0 LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT array_agg(d) FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big ORDER BY t <-> timestamptz '2002-06-01' LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+ ?column? 
+----------
+ t
+(1 row)
+
+RESET enable_seqscan;
+RESET
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspan_big_quadtree_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_datespan_big_datetree_idx;
-NOTICE:  index "tbl_datespan_big_datetree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_datespan_big_quadtree_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tstzspan_big_datetree_idx;
-NOTICE:  index "tbl_tstzspan_big_datetree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tstzspan_big_quadtree_idx;
 DROP INDEX
 CREATE INDEX tbl_intspan_big_kdtree_idx ON tbl_intspan_big USING SPGIST(i intspan_kdtree_ops);
 CREATE INDEX
@@ -1177,22 +1193,40 @@ UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 13161960
- 13164840
- 13167780
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+     ?column?      
+-------------------
+ 152 days 08:06:00
+ 152 days 08:54:00
+ 152 days 09:43:00
 (3 rows)
 
+SET enable_seqscan = off;
+SET
+SELECT (SELECT array_agg(d) FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big ORDER BY f <-> 101.0 LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT array_agg(d) FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big ORDER BY t <-> timestamptz '2002-06-01' LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+ ?column? 
+----------
+ t
+(1 row)
+
+RESET enable_seqscan;
+RESET
 DROP INDEX IF EXISTS tbl_intspan_big_kdtree_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspan_big_kdtree_idx;
@@ -1222,11 +1256,11 @@ ANALYZE
 SET enable_seqscan = off;
 SET
 SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_allthesame ORDER BY 1 LIMIT 3;
- ?column? 
-----------
- 44492400
- 44492400
- 44492400
+     ?column?      
+-------------------
+ 514 days 23:00:00
+ 514 days 23:00:00
+ 514 days 23:00:00
 (3 rows)
 
 RESET enable_seqscan;

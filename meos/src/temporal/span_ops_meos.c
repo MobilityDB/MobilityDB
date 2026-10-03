@@ -1416,19 +1416,19 @@ distance_span_date(const Span *s, DateADT d)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a span and a timestamptz as a
- * double
+ * @brief Return the distance between a span and a timestamptz as an
+ * interval
  * @param[in] s Span
  * @param[in] t Value
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
-double
+Interval *
 distance_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, DBL_MAX);
-  return DatumGetFloat8(distance_span_value(s, TimestampTzGetDatum(t)));
+  VALIDATE_TSTZSPAN(s, NULL);
+  return DatumGetIntervalP(distance_span_value(s, TimestampTzGetDatum(t)));
 }
 
 /******************************************************************************/
@@ -1495,17 +1495,17 @@ distance_datespan_datespan(const Span *s1, const Span *s2)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between two timestamptz spans
+ * @brief Return the distance between two timestamptz spans
  * @param[in] s1,s2 Spans
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_span_span()
  */
-double
+Interval *
 distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s1, DBL_MAX); VALIDATE_TSTZSPAN(s2, DBL_MAX);
-  return DatumGetFloat8(distance_span_span(s1, s2));
+  VALIDATE_TSTZSPAN(s1, NULL); VALIDATE_TSTZSPAN(s2, NULL);
+  return DatumGetIntervalP(distance_span_span(s1, s2));
 }
 
 /******************************************************************************/

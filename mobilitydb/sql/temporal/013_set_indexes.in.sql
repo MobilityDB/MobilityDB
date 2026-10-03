@@ -256,8 +256,8 @@ CREATE OPERATOR CLASS tstzset_rtree_ops
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -458,8 +458,8 @@ CREATE OPERATOR CLASS tstzset_quadtree_ops
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -640,8 +640,8 @@ CREATE OPERATOR CLASS tstzset_kdtree_ops
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),

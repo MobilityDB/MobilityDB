@@ -5,7 +5,7 @@ distance_families:
   begin: "CREATE FUNCTION setDistance(integer"
   whole_file: true
   pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [date, dateset], [timestamptz, tstzset]]
-  rets: [integer, [bigint, bigint, float], float, integer, float]
+  rets: [integer, bigint, float, integer, interval]
   blocks:
   - lit: "/*****************************************************************************/\n\n"
   - distfns: true

@@ -1184,21 +1184,21 @@ extern int64 distance_set_bigint(const Set *s, int64 i);
 extern int distance_set_date(const Set *s, DateADT d);
 extern double distance_set_float(const Set *s, double d);
 extern int distance_set_int(const Set *s, int i);
-extern double distance_set_timestamptz(const Set *s, TimestampTz t);
+extern Interval *distance_set_timestamptz(const Set *s, TimestampTz t);
 extern int64 distance_span_bigint(const Span *s, int64 i);
 extern int distance_span_date(const Span *s, DateADT d);
 extern double distance_span_float(const Span *s, double d);
 extern int distance_span_int(const Span *s, int i);
-extern double distance_span_timestamptz(const Span *s, TimestampTz t);
+extern Interval *distance_span_timestamptz(const Span *s, TimestampTz t);
 extern int64 distance_spanset_bigint(const SpanSet *ss, int64 i);
 extern int distance_spanset_date(const SpanSet *ss, DateADT d);
 extern double distance_spanset_float(const SpanSet *ss, double d);
 extern int distance_spanset_int(const SpanSet *ss, int i);
-extern double distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
-extern double distance_tstzset_tstzset(const Set *s1, const Set *s2);
-extern double distance_tstzspan_tstzspan(const Span *s1, const Span *s2);
-extern double distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s);
-extern double distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern Interval *distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
+extern Interval *distance_tstzset_tstzset(const Set *s1, const Set *s2);
+extern Interval *distance_tstzspan_tstzspan(const Span *s1, const Span *s2);
+extern Interval *distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s);
+extern Interval *distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /*****************************************************************************
  * Aggregate functions for set and span types

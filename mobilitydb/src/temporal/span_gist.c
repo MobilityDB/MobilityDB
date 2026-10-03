@@ -782,8 +782,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
    * operators answer in the base type */
   *recheck = false;
 
-  PG_RETURN_FLOAT8(distance_double(distance_span_span(key, &query),
-    key->basetype));
+  PG_RETURN_FLOAT8(distance_span_span_double(key, &query));
 }
 
 /*****************************************************************************

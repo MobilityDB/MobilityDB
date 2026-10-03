@@ -1656,7 +1656,7 @@ CREATE FUNCTION setDistance(bigintset, bigint)
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(bigintset, bigintset)
-  RETURNS float
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1687,15 +1687,15 @@ CREATE FUNCTION setDistance(dateset, dateset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setDistance(timestamptz, tstzset)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(tstzset, timestamptz)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(tstzset, tstzset)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

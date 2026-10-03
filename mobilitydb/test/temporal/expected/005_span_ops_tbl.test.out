@@ -341,21 +341,21 @@ SELECT MIN(t1.d <-> t2.d) FROM tbl_datespan t1, tbl_datespan t2;
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzspan t2;
- min  
-------
- 2760
+   min    
+----------
+ 00:46:00
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
- min  
-------
- 2760
+   min    
+----------
+ 00:46:00
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzspan t1, tbl_tstzspan t2;
- min 
------
-   0
+   min    
+----------
+ 00:00:00
 (1 row)
 
 SELECT spanDistance(1, intspan '[3, 7]');

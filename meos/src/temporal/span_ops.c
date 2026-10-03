@@ -47,6 +47,7 @@
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Generic functions
@@ -1026,9 +1027,11 @@ distance_sentinel(MeosType type)
     case T_INT8:
       return Int64GetDatum(INT64_MAX);
     case T_FLOAT8:
-    case T_TIMESTAMPTZ:
-      /* The distance between timestamptz values is expressed in seconds */
       return Float8GetDatum(DBL_MAX);
+    case T_TIMESTAMPTZ:
+      /* The distance between timestamptz values is an interval, and a missing
+       * interval is the sentinel of a function answering one */
+      return PointerGetDatum(NULL);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown base type for the distance sentinel: %s", meostype_name(type));
@@ -1059,9 +1062,16 @@ distance_double(Datum dist, MeosType type)
     case T_INT8:
       return (double) DatumGetInt64(dist);
     case T_FLOAT8:
-    case T_TIMESTAMPTZ:
-      /* The distance between timestamptz values is expressed in seconds */
       return DatumGetFloat8(dist);
+    case T_TIMESTAMPTZ:
+    {
+      /* The distance between timestamptz values is an interval, read here in
+       * seconds */
+      const Interval *interv = DatumGetIntervalP(dist);
+      return ((double) interv->month * DAYS_PER_MONTH * USECS_PER_DAY +
+        (double) interv->day * USECS_PER_DAY + (double) interv->time) /
+        USECS_PER_SEC;
+    }
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown distance type for conversion to double: %s",
@@ -1108,9 +1118,16 @@ distance_value_value(Datum l, Datum r, MeosType type)
       return Int64GetDatum(result);
     }
     case T_FLOAT8:
-    case T_TIMESTAMPTZ:
-      /* The distance between timestamptz values is expressed in seconds */
       return Float8GetDatum(distance_value_value_double(l, r, type));
+    case T_TIMESTAMPTZ:
+    {
+      /* The distance between timestamptz values is the interval PostgreSQL's
+       * timestamptz_mi answers for the later one minus the earlier one */
+      TimestampTz t1 = DatumGetTimestampTz(l), t2 = DatumGetTimestampTz(r);
+      Interval *result = minus_timestamptz_timestamptz(Max(t1, t2),
+        Min(t1, t2));
+      return result ? IntervalPGetDatum(result) : distance_sentinel(type);
+    }
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
@@ -1161,8 +1178,22 @@ distance_value_value_double(Datum l, Datum r, MeosType type)
 }
 
 /**
+ * @brief Return the zero distance between two values of a span base type
+ * @details The zero of the integers, the dates and the floats is the null
+ * Datum, while the zero of the timestamptz values is an interval
+ * @param[in] type Type of the values
+ */
+static Datum
+distance_zero(MeosType type)
+{
+  if (type == T_TIMESTAMPTZ)
+    return IntervalPGetDatum(palloc0(sizeof(Interval)));
+  return (Datum) 0;
+}
+
+/**
  * @ingroup meos_internal_setspan_dist
- * @brief Return the distance between a span and a value as a double
+ * @brief Return the distance between a span and a value
  * @param[in] s Span
  * @param[in] value Value
  */
@@ -1172,7 +1203,7 @@ distance_span_value(const Span *s, Datum value)
   assert(s);
   /* If the span contains the value return 0 */
   if (contains_span_value(s, value))
-    return (Datum) 0;
+    return distance_zero(s->basetype);
 
   /* If the span is to the right of the value return the distance
    * between the value and the lower bound of the span
@@ -1191,7 +1222,7 @@ distance_span_value(const Span *s, Datum value)
 
 /**
  * @ingroup meos_internal_setspan_dist
- * @brief Return the distance between two spans as a double
+ * @brief Return the distance between two spans
  * @param[in] s1,s2 Spans
  * @errval #distance_sentinel()
  * @csqlfn #Distance_span_span()
@@ -1202,7 +1233,7 @@ distance_span_span(const Span *s1, const Span *s2)
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   /* If the spans intersect return 0 */
   if (overlaps_span_span(s1, s2))
-    return (Datum) 0;
+    return distance_zero(s1->basetype);
 
   /* Account for canonicalized spans */
   Datum upper1 = span_decr_bound(s1->upper, s1->basetype);
@@ -1218,6 +1249,37 @@ distance_span_span(const Span *s1, const Span *s2)
    * between the upper bound of the second and the lower bound of the first
    *     [---- s2 ----]   [---- s1 ----] */
   return distance_value_value(upper2, s1->lower, s1->basetype);
+}
+
+/**
+ * @brief Return the distance between two spans as a double
+ * @details The distance is the one #distance_span_span returns, read as
+ * #distance_double reads it, for the indexes that rank their candidates with
+ * a double, and is computed by #distance_value_value_double without overflow
+ * @param[in] s1,s2 Spans
+ */
+double
+distance_span_span_double(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+  /* If the spans intersect return 0 */
+  if (overlaps_span_span(s1, s2))
+    return 0.0;
+
+  /* Account for canonicalized spans */
+  Datum upper1 = span_decr_bound(s1->upper, s1->basetype);
+  Datum upper2 = span_decr_bound(s2->upper, s2->basetype);
+
+  /* If the first span is to the left of the second one return the distance
+   * between the upper bound of the first and lower bound of the second
+   *     [---- s1 ----]   [---- s2 ----] */
+  if (left_span_span(s1, s2))
+    return distance_value_value_double(upper1, s2->lower, s1->basetype);
+
+  /* If the first span is to the right of the second one return the distance
+   * between the upper bound of the second and the lower bound of the first
+   *     [---- s2 ----]   [---- s1 ----] */
+  return distance_value_value_double(upper2, s1->lower, s1->basetype);
 }
 
 /******************************************************************************/

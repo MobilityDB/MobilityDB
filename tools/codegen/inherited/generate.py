@@ -2710,11 +2710,11 @@ def bootstrap_posops(filetext: str, fam: dict, rendered: str) -> str:
 # followed by the `<->` operators with COMMUTATOR = <-> and no selectivity
 # clause; functions and operators group pair-outer like the set operations (a
 # pair's three blocks packed, one blank line between pairs). The RETURNS type is
-# per pair (`rets:` parallel to `pairs:`) — integer for intset/dateset, bigint
-# for bigintset, float for the continuous and spatial families — and a pair may
-# spell a per-direction list: bigintset declares bigint on its value directions
-# but float on (set, set), reproduced verbatim, never normalized. Every distance
-# region is its file's tail (whole_file), closed by a trailing bare divider.
+# per pair (`rets:` parallel to `pairs:`), the type of the difference of two
+# values of the base — integer for intset/dateset, bigint for bigintset, float
+# for floatset and the spatial families, interval for tstzset — and a pair may
+# spell a per-direction list. Every distance region is its file's tail
+# (whole_file), closed by a trailing bare divider.
 def _distance_markers(family: str):
     begin = (f"-- GENERATED-DISTANCE-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
