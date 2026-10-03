@@ -11,7 +11,6 @@
 # their tags takes the SQL name out of every generated binding instead of
 # resolving the multiplicity. The type the surface answers is the one the
 # CREATE FUNCTION declares, and a binding reads it from there.
-Distance_set_set
 NAD_number_tnumber
 NAD_tbox_tbox
 NAD_tnumber_number
