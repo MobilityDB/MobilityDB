@@ -1466,11 +1466,12 @@ temporal_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return an array of temporal floats with the precision of the
- * coordinates set to a number of decimal places
+ * @brief Return an array of temporal values rounded to a given number of
+ * decimal places
  * @param[in] temparr Array of temporal values
  * @param[in] count Number of values in the input array
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Temporalarr_round()
  */
 Temporal **
 temparr_round(Temporal **temparr, int count, int maxdd)
