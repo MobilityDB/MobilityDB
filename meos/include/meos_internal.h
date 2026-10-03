@@ -782,7 +782,7 @@ typedef enum
 } SkipListType;
 
 /*****************************************************************************
- * Definition of a function with one to three Datum arguments and returning 
+ * Definition of a function with one to seven Datum arguments and returning
  * a Datum
  *****************************************************************************/
 
@@ -792,6 +792,8 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 typedef Datum (*datum_func4) (Datum, Datum, Datum, Datum);
 typedef Datum (*datum_func5) (Datum, Datum, Datum, Datum, Datum);
 typedef Datum (*datum_func6) (Datum, Datum, Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func7) (Datum, Datum, Datum, Datum, Datum, Datum,
+  Datum);
 
 /*****************************************************************************
  * Internal functions accessing the PostgreSQL pseudo-random number generator
