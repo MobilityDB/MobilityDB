@@ -147,3 +147,39 @@ SELECT floatspan '[1, 3]' <-> floatspan '[1, 3]';
 SELECT floatspan '[1, 3]' <-> floatspan '(3, 5]';
 
 -------------------------------------------------------------------------------
+-- A distance or a width that an integer of the span cannot hold
+-------------------------------------------------------------------------------
+
+SELECT intspan '[-2147483648, -2147483648]' <-> intspan '[2147483646, 2147483646]';
+SELECT bigintspan '[-9223372036854775808, -9223372036854775808]' <-> bigintspan '[9223372036854775806, 9223372036854775806]';
+SELECT -2147483648 <-> intspan '[2147483646, 2147483646]';
+SELECT width(intspan '[-2147483648, 2147483646]');
+SELECT width(bigintspan '[-9223372036854775808, 9223372036854775806]');
+SELECT intspan '[-1073741824, -1073741824]' <-> intspan '[1073741822, 1073741822]';
+SELECT timestamptz '2001-01-01 00:00:00.5' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
+SELECT tstzspan '[2001-01-01, 2001-01-01 00:00:00.25]' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
+
+-- An index and the statistics over spans that wide are built
+CREATE TEMP TABLE tbl_intspan_wide(s intspan);
+INSERT INTO tbl_intspan_wide SELECT intspan '[-2147483648, -2147483640]' FROM generate_series(1, 50);
+INSERT INTO tbl_intspan_wide SELECT intspan '[2147483640, 2147483646]' FROM generate_series(1, 50);
+CREATE INDEX tbl_intspan_wide_gist ON tbl_intspan_wide USING gist(s);
+CREATE INDEX tbl_intspan_wide_spgist ON tbl_intspan_wide USING spgist(s);
+INSERT INTO tbl_intspan_wide SELECT intspan '[-2147483648, 2147483646]' FROM generate_series(1, 50);
+ANALYZE tbl_intspan_wide;
+SELECT COUNT(*) FROM tbl_intspan_wide WHERE s && intspan '[0, 1]';
+DROP TABLE tbl_intspan_wide;
+
+-- The length histograms of the statistics hold the lengths of the spans
+CREATE TEMP TABLE tbl_span_length(f floatspan, t tstzspan);
+INSERT INTO tbl_span_length SELECT floatspan '[1, 3.5]', tstzspan '[2001-01-01, 2001-01-02]' FROM generate_series(1, 5);
+ANALYZE tbl_span_length;
+SELECT a.attname, (CASE k WHEN 1 THEN stavalues1 WHEN 2 THEN stavalues2 WHEN 3 THEN stavalues3
+  WHEN 4 THEN stavalues4 ELSE stavalues5 END)::text
+FROM pg_statistic s JOIN pg_attribute a ON a.attrelid = s.starelid AND a.attnum = s.staattnum,
+  LATERAL (SELECT k FROM generate_series(1, 5) k WHERE (ARRAY[stakind1, stakind2, stakind3,
+    stakind4, stakind5])[k] IN (9, 11)) slot
+WHERE s.starelid = 'tbl_span_length'::regclass ORDER BY 1;
+DROP TABLE tbl_span_length;
+
+-------------------------------------------------------------------------------

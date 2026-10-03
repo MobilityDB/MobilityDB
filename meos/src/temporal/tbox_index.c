@@ -273,8 +273,8 @@ tbox_size(const TBox *box)
   /* The value span of a tint box holds integers, so its width is read
    * through the base type the span names */
   if (hasx)
-    result_size *= distance_double(distance_value_value(box->span.lower,
-      box->span.upper, box->span.basetype), box->span.basetype);
+    result_size *= distance_value_value_double(box->span.lower,
+      box->span.upper, box->span.basetype);
   if (hast)
     result_size *= (double) (DatumGetTimestampTz(box->period.upper) -
       DatumGetTimestampTz(box->period.lower));

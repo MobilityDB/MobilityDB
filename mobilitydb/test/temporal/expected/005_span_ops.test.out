@@ -358,3 +358,73 @@ SELECT floatspan '[1, 3]' <-> floatspan '(3, 5]';
         0
 (1 row)
 
+SELECT intspan '[-2147483648, -2147483648]' <-> intspan '[2147483646, 2147483646]';
+ERROR:  integer out of range
+SELECT bigintspan '[-9223372036854775808, -9223372036854775808]' <-> bigintspan '[9223372036854775806, 9223372036854775806]';
+ERROR:  bigint out of range
+SELECT -2147483648 <-> intspan '[2147483646, 2147483646]';
+ERROR:  integer out of range
+SELECT width(intspan '[-2147483648, 2147483646]');
+ERROR:  integer out of range
+SELECT width(bigintspan '[-9223372036854775808, 9223372036854775806]');
+ERROR:  bigint out of range
+SELECT intspan '[-1073741824, -1073741824]' <-> intspan '[1073741822, 1073741822]';
+  ?column?  
+------------
+ 2147483646
+(1 row)
+
+SELECT timestamptz '2001-01-01 00:00:00.5' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
+ ?column? 
+----------
+      0.5
+(1 row)
+
+SELECT tstzspan '[2001-01-01, 2001-01-01 00:00:00.25]' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
+ ?column? 
+----------
+     0.75
+(1 row)
+
+CREATE TEMP TABLE tbl_intspan_wide(s intspan);
+CREATE TABLE
+INSERT INTO tbl_intspan_wide SELECT intspan '[-2147483648, -2147483640]' FROM generate_series(1, 50);
+INSERT 0 50
+INSERT INTO tbl_intspan_wide SELECT intspan '[2147483640, 2147483646]' FROM generate_series(1, 50);
+INSERT 0 50
+CREATE INDEX tbl_intspan_wide_gist ON tbl_intspan_wide USING gist(s);
+CREATE INDEX
+CREATE INDEX tbl_intspan_wide_spgist ON tbl_intspan_wide USING spgist(s);
+CREATE INDEX
+INSERT INTO tbl_intspan_wide SELECT intspan '[-2147483648, 2147483646]' FROM generate_series(1, 50);
+INSERT 0 50
+ANALYZE tbl_intspan_wide;
+ANALYZE
+SELECT COUNT(*) FROM tbl_intspan_wide WHERE s && intspan '[0, 1]';
+ count 
+-------
+    50
+(1 row)
+
+DROP TABLE tbl_intspan_wide;
+DROP TABLE
+CREATE TEMP TABLE tbl_span_length(f floatspan, t tstzspan);
+CREATE TABLE
+INSERT INTO tbl_span_length SELECT floatspan '[1, 3.5]', tstzspan '[2001-01-01, 2001-01-02]' FROM generate_series(1, 5);
+INSERT 0 5
+ANALYZE tbl_span_length;
+ANALYZE
+SELECT a.attname, (CASE k WHEN 1 THEN stavalues1 WHEN 2 THEN stavalues2 WHEN 3 THEN stavalues3
+  WHEN 4 THEN stavalues4 ELSE stavalues5 END)::text
+FROM pg_statistic s JOIN pg_attribute a ON a.attrelid = s.starelid AND a.attnum = s.staattnum,
+  LATERAL (SELECT k FROM generate_series(1, 5) k WHERE (ARRAY[stakind1, stakind2, stakind3,
+    stakind4, stakind5])[k] IN (9, 11)) slot
+WHERE s.starelid = 'tbl_span_length'::regclass ORDER BY 1;
+ attname |           stavalues5            
+---------+---------------------------------
+ f       | {2.5,2.5,2.5,2.5,2.5}
+ t       | {86400,86400,86400,86400,86400}
+(2 rows)
+
+DROP TABLE tbl_span_length;
+DROP TABLE

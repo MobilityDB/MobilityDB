@@ -177,7 +177,7 @@ double
 datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
 {
   if (tnumber_basetype(type))
-    return datum_double(distance_value_value(value1, value2, type), type);
+    return distance_value_value_double(value1, value2, type);
   if (geo_basetype(type))
   {
     datum_func2 point_distance = pt_distance_fn(flags);
