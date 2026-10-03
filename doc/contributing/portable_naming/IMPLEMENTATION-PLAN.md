@@ -286,6 +286,7 @@ computing PostGIS's own formulas.
 | G22 | Read an interpolation from its name in the public API | `interptype_from_string` declared in `meos.h` beside `null_handle_type_from_string`, validating its argument as an external function does; merged, #2932 |
 | G24 | Back every role of an aggregate by a public MEOS function | of the 349 aggregates A9 states, 97 name a public MEOS function for each role; the others reach a role through `temporal_append_finalfn`, `span_union_finalfn`, `wCountTransition`, the `extent` transition and combine functions of the spans, boxes and point clouds, `tcentroid_combinefn`, `tdensity_transfn`, `tnpoints_transfn` and `set_union_transfn`, wrappers no public MEOS function is tagged for, through the internal `temporal_app_tinst_transfn` and `temporal_app_tseq_transfn`, or through PostgreSQL's `array_agg_transfn` and `array_agg_combine` (`setUnion`, `spanUnion`, `spansetUnion`), which an engine without PostgreSQL does not have |
 | G25 | Give the GeoPose stream documents their SQL functions | `asGeoPoseStreamHeader(tpose, integer)` and `asGeoPoseStreamElement(tpose, tpose, integer)` over `tpose_as_geopose_stream_header` and `tpose_as_geopose_stream_element`, the header's doxygen block moved onto it from the static helper it sits on, so that the catalog reads it public; a stream engine writes a header and then an element per instant as the instants arrive, where `asGeoPoseStream` writes a finished value |
+| G26 | Write and read an aggregate state in MEOS | a public MEOS pair writing a `SkipList` state as bytes (its temporal values as `temporal_as_wkb` writes them, then its `extra` bytes) and reading it back, named after `temporal_tagg_finalfn` and `temporal_to_taggstate`, called by `Taggstate_serialize` and `Taggstate_deserialize`, which write it through the static `aggstate_write`/`aggstate_read` over PostgreSQL's `pq_send*`; until then the catalog states the serialize and deserialize roles of every `SkipList` aggregate (`tCount` … `wAvg`, 16 names) with no MEOS function, so neither engine moves a partial state between workers |
 | G23 | Give MEOS the raster operations an engine without PostGIS needs | for each row "none" of the table above, a public MEOS `raster_<operation>` over the vendored `rt_core` function its last column names, the `4ma` statistics, slope, ruggedness and topographic position as `rt_raster_iterator` callbacks on PostGIS's formulas, and its SQL function under the PostGIS name without `ST_` (decision 0.14); SQL tests, smoke tests, the manual entries EN and ES |
 
 ### MEOS-API
@@ -312,13 +313,13 @@ and MobilityFlink built with the branch generator.
 | J15 | Flink resolves an SQL argument count other than the C one, the bound `NORMALIZE`, and a base value in the distance functions |
 | J16 | Both engines render the compositions A7 and A10 state |
 | J17 | Spark carries `TPCBox`, `PoseChain` and `Raster`; a raster travels as the raster WKB `asBinary(raster)` writes, the GDAL readers (`rasterValue(tgeompoint, path text, band)`, `atRasterValue`, `minusRasterValue`, `eRasterValue`, `aRasterValue`, `raquetRead(path, quadbin)`) are how an engine without PostGIS reads a raster file, and both engines carry the raster operations of G23 |
-| J18 | Both engines carry the aggregates the catalog states (A9) |
+| J18 | Both engines carry the aggregates the catalog states (A9); an aggregate is generated when every role it defines, serialize and deserialize included, names a public MEOS function, so it waits on G24 and G26: over MobilityDB `985fdb26b7` no `SkipList` aggregate meets this, the serialize role being on no MEOS function; the Spark arm's pairing of `temporal_tagg_finalfn` with `temporal_to_taggstate` is a hand rule that cannot carry `tAvg` or `tCentroid`, and leaves with it |
 | J19 | A parity ledger per engine, keyed on MobilityDB's SQL signatures, that CI holds and that only shrinks, as the Spark gaps ledger does |
 
 ### Order
 
 J9 first (it also clears JMEOS's failing gaps check), then J10–J12, which bring Spark and Flink
-to one base; G19–G22, G24, G25, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
+to one base; G19–G22, G24–G26, A9 and A10 next, since they reach both engines; then J13–J18; Part III's
 renames land on that base. J3 rests on decision 0.13; the forms of G23 taking an expression or a callback wait on decision 0.14.
 
 ## Part V — the native geometry operations under their plain names
