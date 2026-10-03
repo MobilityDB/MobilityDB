@@ -101,10 +101,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal pose from its Well-Known Text (WKT) representation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a temporal pose from its Well-Known Text (WKT) or Extended Well-Known Text (EWKT) representation. </p>
+<p >A leading brace opens a discrete sequence or a sequence set, as in the text of every temporal type, and a value inside it may be quoted, as <a class="el" href="group__meos__json__inout_ga681659b2cab6d45b4351beccc4bdb4a8.html#ga681659b2cab6d45b4351beccc4bdb4a8" title="Return a temporal JSONB from its Well-Known Text (WKT) representation.">tjsonb_in</a> reads it. A GeoPose document is read by <a class="el" href="group__meos__pose__geopose__accessor_ga6645db4832cba4a8f2abaf7cf0770013.html#ga6645db4832cba4a8f2abaf7cf0770013" title="Return a temporal pose from its OGC GeoPose JSON representation.">tpose_from_geopose</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String @csqlfn <a class="el" href="group__mobilitydb__pose__inout_gaaf6da9af19dd471be700df3aa8e6e9d7.html#gaaf6da9af19dd471be700df3aa8e6e9d7" title="Generic input function for temporal pose objects.">Tpose_in()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String @csqlfn <a class="el" href="group__mobilitydb__pose__inout_gaaf6da9af19dd471be700df3aa8e6e9d7.html#gaaf6da9af19dd471be700df3aa8e6e9d7" title="Generic input function for temporal pose objects.">Tpose_in()</a>, <a class="el" href="group__mobilitydb__geo__inout_ga03c31220ad1439e5b7a7111dbe234538.html#ga03c31220ad1439e5b7a7111dbe234538" title="Return a temporal geo from its Extended Well-Known Text (EWKT) representation.">Tspatial_from_ewkt()</a> </td></tr>
   </table>
   </dd>
 </dl>

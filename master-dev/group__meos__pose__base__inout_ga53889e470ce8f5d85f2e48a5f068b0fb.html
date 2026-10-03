@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_out</title>
+<title>MobilityDB: pose_from_text</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,45 +84,34 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga8b95d1b2badb3923de1a5f9b7d7377da.html#ga8b95d1b2badb3923de1a5f9b7d7377da">pose_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga9d33eb77211a5cf0c9bff0596e5783e4.html#ga9d33eb77211a5cf0c9bff0596e5783e4">pose_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga3ef39685c3d97cabb68d239f6de3be82.html#ga3ef39685c3d97cabb68d239f6de3be82">pose_from_hexwkb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga53889e470ce8f5d85f2e48a5f068b0fb.html#ga53889e470ce8f5d85f2e48a5f068b0fb">pose_from_text</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__inout_ga53889e470ce8f5d85f2e48a5f068b0fb.html#ga53889e470ce8f5d85f2e48a5f068b0fb">pose_from_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_gad90f4c6fe4f5d62566371e1366c54f28.html#gad90f4c6fe4f5d62566371e1366c54f28">pose_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_gae0dc0ab86dcfee76eac8d7b75a7dc471.html#gae0dc0ab86dcfee76eac8d7b75a7dc471">pose_in</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__inout_ga7b7703716196240e4a6694ee31a06d81.html#ga7b7703716196240e4a6694ee31a06d81">pose_out</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga7b7703716196240e4a6694ee31a06d81.html#ga7b7703716196240e4a6694ee31a06d81">pose_out</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga7b7703716196240e4a6694ee31a06d81" name="ga7b7703716196240e4a6694ee31a06d81"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7b7703716196240e4a6694ee31a06d81">&#9670;&#160;</a></span>pose_out()</h2>
+<a id="ga53889e470ce8f5d85f2e48a5f068b0fb" name="ga53889e470ce8f5d85f2e48a5f068b0fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga53889e470ce8f5d85f2e48a5f068b0fb">&#9670;&#160;</a></span>pose_from_text()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * pose_out </td>
+          <td class="memname"><a class="el" href="structPose.html">Pose</a> * pose_from_text </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
-          <td class="paramname"><em>pose</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxdd</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the string representation of a pose. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a pose from its Well-Known Text (WKT) or Extended Well-Known Text (EWKT) representation. </p>
+<p >The text form alone, as <a class="el" href="group__meos__geo__base__inout_ga46d7c4be05f01aa9b0b8a0ae4092fb0f.html#ga46d7c4be05f01aa9b0b8a0ae4092fb0f" title="Return a geometry/geography from its WKT representation (and optionally a SRID)">geo_from_text</a> reads it beside <a class="el" href="group__meos__geo__base__inout_ga30b02b5b5b332e9b6dc48b0f09da77a5.html#ga30b02b5b5b332e9b6dc48b0f09da77a5" title="Return a geometry from its Well-Known Text (WKT), Well-Known Binary (WKB) or GeoJSON representation.">geom_in</a>: a GeoPose document, which <a class="el" href="group__meos__pose__base__inout_gae0dc0ab86dcfee76eac8d7b75a7dc471.html#gae0dc0ab86dcfee76eac8d7b75a7dc471" title="Return a pose from its string representation.">pose_in</a> also reads, is read by <a class="el" href="group__meos__pose__base__geopose_ga2c6aeab3635ad3d3437d3d7b01abe4b0.html#ga2c6aeab3635ad3d3437d3d7b01abe4b0" title="Return a pose from its OGC GeoPose JSON representation.">pose_from_geopose</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_ga2b70ec239ef24abe675dba0798b5c2dc.html#ga2b70ec239ef24abe675dba0798b5c2dc" title="Output function for pose values @sqlfn pose_out()">Pose_out()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_gab93d7d51ad662bc24e38f761c39a80ec.html#gab93d7d51ad662bc24e38f761c39a80ec" title="Return a pose from its Well-Known Text (WKT) or Extended Well-Known Text (EWKT) representation @sqlfn...">Pose_from_ewkt()</a> </td></tr>
   </table>
   </dd>
 </dl>
