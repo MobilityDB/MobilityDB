@@ -292,9 +292,9 @@ computing PostGIS's own formulas.
 
 | PR | Topic | State |
 |---|---|---|
-| A9 | State the aggregates (U0): per `CREATE AGGREGATE` its arguments, its result type and, for each role of chapter 18 and the serialize and deserialize functions, the SQL function PostgreSQL calls and the public MEOS function carrying it; the `LANGUAGE SQL` functions (U1) are A10's | branch `catalog/sql-aggregates` (MEOS-API): the top-level `aggregates`, 349 over MobilityDB `985fdb26b7`, 97 with a public MEOS function for every role (G24 the others); every other section of the catalog unchanged |
+| A9 | State the aggregates (U0): per `CREATE AGGREGATE` its arguments, its result type and, for each role of chapter 18 and the serialize and deserialize functions, the SQL function PostgreSQL calls and the public MEOS function carrying it; the `LANGUAGE SQL` functions (U1) are A10's | merged, MEOS-API #168: the top-level `aggregates`, 349 over MobilityDB `985fdb26b7`, 97 with a public MEOS function for every role (G24 the others); every other section of the catalog unchanged |
 | A10 | State the compositions of U1 (the relationships through a cast, the grid functions of `tpose` and `tpcpoint`, `expandSpace`) as A7 states those of the grid functions | open |
-| A11 | Name every function by a SQL name it deploys: where its signatures carry several names and none is its tag, the first, its tagged wrapper's | branch `catalog/deployed-sqlfn` (MEOS-API): since the `FromText` readers of G13 and #2938 deploy beside the type inputs, 62 functions read a sibling's tag (`floatset_in` read `intset_in`, `tfloat_in` `tint_in`) and MEOS-API's pytest failed on master's catalog; it changes those 62 `sqlfn` and nothing else, and its test reads `tboxAdjacent`, R2's name of the operator function |
+| A11 | Name every function by a SQL name it deploys: where its signatures carry several names and none is its tag, the first, its tagged wrapper's | merged, MEOS-API #169: since the `FromText` readers of G13 and #2938 deploy beside the type inputs, 62 functions read a sibling's tag (`floatset_in` read `intset_in`, `tfloat_in` `tint_in`) and MEOS-API's pytest failed on master's catalog; it changes those 62 `sqlfn` and nothing else, and its test reads `tboxAdjacent`, R2's name of the operator function |
 
 ### JMEOS
 
