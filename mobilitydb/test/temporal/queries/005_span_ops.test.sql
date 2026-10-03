@@ -182,4 +182,16 @@ FROM pg_statistic s JOIN pg_attribute a ON a.attrelid = s.starelid AND a.attnum 
 WHERE s.starelid = 'tbl_span_length'::regclass ORDER BY 1;
 DROP TABLE tbl_span_length;
 
+-- A distance answers in the type of the difference of its values
+SELECT tstzspan '[2001-01-02, 2001-01-06)' <-> timestamptz '2001-01-07';
+SELECT tstzspan '[2001-01-01, 2001-01-02]' <-> tstzspan '[2001-01-03 12:00:00, 2001-01-04]';
+SELECT tstzspan '[2001-01-01, 2001-01-03]' <-> tstzspan '[2001-01-02, 2001-01-04]';
+SELECT pg_typeof(tstzspan '[2001-01-01, 2001-01-02]' <-> timestamptz '2001-01-05');
+SELECT setDistance(tstzset '{2001-01-01, 2001-01-02}', tstzset '{2001-01-05}');
+SELECT setDistance(tstzset '{2001-01-01}', timestamptz '2001-01-01 00:00:00.5');
+SELECT spansetDistance(tstzspanset '{[2001-01-01, 2001-01-02]}', tstzspanset '{[2001-01-03, 2001-01-04]}');
+SELECT setDistance(bigintset '{1, 2}', bigintset '{10, 20}');
+SELECT pg_typeof(setDistance(bigintset '{1, 2}', bigintset '{10, 20}'));
+SELECT datespan '[2001-01-01, 2001-01-02]' <-> datespan '[2001-01-05, 2001-01-06]';
+
 -------------------------------------------------------------------------------

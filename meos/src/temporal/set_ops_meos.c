@@ -1593,19 +1593,19 @@ distance_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a set and a timestamptz as a
- * double
+ * @brief Return the distance between a set and a timestamptz as an
+ * interval
  * @param[in] s Set
  * @param[in] t Value
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
-double
+Interval *
 distance_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSET(s, DBL_MAX);
-  return DatumGetFloat8(distance_set_value(s, TimestampTzGetDatum(t)));
+  VALIDATE_TSTZSET(s, NULL);
+  return DatumGetIntervalP(distance_set_value(s, TimestampTzGetDatum(t)));
 }
 
 /*****************************************************************************/
@@ -1676,18 +1676,18 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between two timestamptz sets
+ * @brief Return the distance between two timestamptz sets
  * @param[in] s1,s2 Sets
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_set_set()
  */
-double
+Interval *
 distance_tstzset_tstzset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_TSTZSET))
-    return DBL_MAX;
-  return DatumGetFloat8(distance_set_set(s1, s2));
+    return NULL;
+  return DatumGetIntervalP(distance_set_set(s1, s2));
 }
 
 /******************************************************************************/

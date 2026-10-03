@@ -2960,23 +2960,23 @@ CREATE OPERATOR <-> (
 );
 
 CREATE FUNCTION spansetDistance(timestamptz, tstzspanset)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanDistance(tstzspan, tstzspanset)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spansetDistance(tstzspanset, timestamptz)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spansetDistance(tstzspanset, tstzspan)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spansetDistance(tstzspanset, tstzspanset)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

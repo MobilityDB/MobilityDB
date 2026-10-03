@@ -3410,9 +3410,11 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   int32_result = distance_set_int(iset1, int32_in1);
   printf("distance_set_int(%s, %d): %d\n", iset1_out, int32_in1, int32_result);
 
-  /* double distance_set_timestamptz(const Set *s, TimestampTz t); */
-  float8_result = distance_set_timestamptz(tstzset1, tstz1);
-  printf("distance_set_timestamptz(%s, %s): %lf\n", tstzset1_out, tstz1_out, float8_result);
+  /* Interval *distance_set_timestamptz(const Set *s, TimestampTz t); */
+  interv_result = distance_set_timestamptz(tstzset1, tstz1);
+  char_result = interval_out(interv_result);
+  printf("distance_set_timestamptz(%s, %s): %s\n", tstzset1_out, tstz1_out, char_result);
+  free(interv_result); free(char_result);
 
   /* int64 distance_span_bigint(const Span *s, int64 i); */
   int64_result = distance_span_bigint(bspan1, int64_in1);
@@ -3430,9 +3432,11 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   int32_result = distance_span_int(ispan1, int32_in1);
   printf("distance_span_int(%s, %d): %d\n", ispan1_out, int32_in1, int32_result);
 
-  /* double distance_span_timestamptz(const Span *s, TimestampTz t); */
-  float8_result = distance_span_timestamptz(tstzspan1, tstz1);
-  printf("distance_span_timestamptz(%s, %s): %lf\n", tstzspan1_out, tstz1_out, float8_result);
+  /* Interval *distance_span_timestamptz(const Span *s, TimestampTz t); */
+  interv_result = distance_span_timestamptz(tstzspan1, tstz1);
+  char_result = interval_out(interv_result);
+  printf("distance_span_timestamptz(%s, %s): %s\n", tstzspan1_out, tstz1_out, char_result);
+  free(interv_result); free(char_result);
 
   /* int64 distance_spanset_bigint(spanset1, int64 i); */
   int64_result = distance_spanset_bigint(bspanset1, int64_in1);
@@ -3450,25 +3454,35 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   int32_result = distance_spanset_int(ispanset1, int32_in1);
   printf("distance_spanset_int(%s, %d): %d\n", ispanset1_out, int32_in1, int32_result);
 
-  /* double distance_spanset_timestamptz(spanset1, TimestampTz t); */
-  float8_result = distance_spanset_timestamptz(tstzspanset1, tstz1);
-  printf("distance_spanset_timestamptz(%s, %s): %lf\n", tstzspanset1_out, tstz1_out, float8_result);
+  /* Interval *distance_spanset_timestamptz(spanset1, TimestampTz t); */
+  interv_result = distance_spanset_timestamptz(tstzspanset1, tstz1);
+  char_result = interval_out(interv_result);
+  printf("distance_spanset_timestamptz(%s, %s): %s\n", tstzspanset1_out, tstz1_out, char_result);
+  free(interv_result); free(char_result);
 
-  /* double distance_tstzset_tstzset(const Set *s1, const Set *s2); */
-  float8_result = distance_tstzset_tstzset(tstzset1, tstzset2);
-  printf("distance_tstzset_tstzset(%s, %s): %lf\n", tstzset1_out, tstzset2_out, float8_result);
+  /* Interval *distance_tstzset_tstzset(const Set *s1, const Set *s2); */
+  interv_result = distance_tstzset_tstzset(tstzset1, tstzset2);
+  char_result = interval_out(interv_result);
+  printf("distance_tstzset_tstzset(%s, %s): %s\n", tstzset1_out, tstzset2_out, char_result);
+  free(interv_result); free(char_result);
 
-  /* double distance_tstzspan_tstzspan(const Span *s1, const Span *s2); */
-  float8_result = distance_tstzspan_tstzspan(tstzspan1, tstzspan2);
-  printf("distance_tstzspan_tstzspan(%s, %s): %lf\n", tstzspan1_out, tstzspan2_out, float8_result);
+  /* Interval *distance_tstzspan_tstzspan(const Span *s1, const Span *s2); */
+  interv_result = distance_tstzspan_tstzspan(tstzspan1, tstzspan2);
+  char_result = interval_out(interv_result);
+  printf("distance_tstzspan_tstzspan(%s, %s): %s\n", tstzspan1_out, tstzspan2_out, char_result);
+  free(interv_result); free(char_result);
 
-  /* double distance_tstzspanset_tstzspan(spanset1, const Span *s); */
-  float8_result = distance_tstzspanset_tstzspan(tstzspanset1, tstzspan1);
-  printf("distance_tstzspanset_tstzspan(%s, %s): %lf\n", tstzspanset1_out, tstzspan1_out, float8_result);
+  /* Interval *distance_tstzspanset_tstzspan(spanset1, const Span *s); */
+  interv_result = distance_tstzspanset_tstzspan(tstzspanset1, tstzspan1);
+  char_result = interval_out(interv_result);
+  printf("distance_tstzspanset_tstzspan(%s, %s): %s\n", tstzspanset1_out, tstzspan1_out, char_result);
+  free(interv_result); free(char_result);
 
-  /* double distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2); */
-  float8_result = distance_tstzspanset_tstzspanset(tstzspanset1, tstzspanset2);
-  printf("distance_tstzspanset_tstzspanset(%s, %s): %lf\n", tstzspanset1_out, tstzspanset2_out, float8_result);
+  /* Interval *distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2); */
+  interv_result = distance_tstzspanset_tstzspanset(tstzspanset1, tstzspanset2);
+  char_result = interval_out(interv_result);
+  printf("distance_tstzspanset_tstzspanset(%s, %s): %s\n", tstzspanset1_out, tstzspanset2_out, char_result);
+  free(interv_result); free(char_result);
 
   /*****************************************************************************
    * Aggregate functions for set and span types

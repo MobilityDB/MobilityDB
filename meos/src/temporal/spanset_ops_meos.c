@@ -1411,18 +1411,18 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a span set and a timestamptz
+ * @brief Return the distance between a span set and a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
-double
+Interval *
 distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, DBL_MAX);
-  return DatumGetFloat8(distance_spanset_value(ss, TimestampTzGetDatum(t)));
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return DatumGetIntervalP(distance_spanset_value(ss, TimestampTzGetDatum(t)));
 }
 
 /*****************************************************************************/
@@ -1493,19 +1493,19 @@ distance_datespanset_datespan(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a timestamptz span set and a
+ * @brief Return the distance between a timestamptz span set and a
  * span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_spanset_span()
  */
-double
+Interval *
 distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, DBL_MAX); VALIDATE_TSTZSPAN(s, DBL_MAX);
-  return DatumGetFloat8(distance_spanset_span(ss, s));
+  VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return DatumGetIntervalP(distance_spanset_span(ss, s));
 }
 
 /*****************************************************************************/
@@ -1572,16 +1572,16 @@ distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between two timestamptz span sets
+ * @brief Return the distance between two timestamptz span sets
  * @param[in] ss1,ss2 Spanset
- * @errval DBL_MAX
+ * @errval NULL
  * @csqlfn #Distance_spanset_spanset()
  */
-double
+Interval *
 distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  VALIDATE_TSTZSPANSET(ss1, DBL_MAX); VALIDATE_TSTZSPANSET(ss2, DBL_MAX);
-  return DatumGetFloat8(distance_spanset_spanset(ss1, ss2));
+  VALIDATE_TSTZSPANSET(ss1, NULL); VALIDATE_TSTZSPANSET(ss2, NULL);
+  return DatumGetIntervalP(distance_spanset_spanset(ss1, ss2));
 }
 
 /******************************************************************************/

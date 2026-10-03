@@ -327,7 +327,7 @@ distance_span_nodespan(const Span *query, const SpanNode *nodebox)
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
 
   /* Compute the distance between the query span and the nodebox span */
-  return distance_span_span(query, &s);
+  return distance_span_span_double(query, &s);
 }
 
 /**

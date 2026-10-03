@@ -198,8 +198,8 @@ SELECT '#>>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #>>
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)';
 
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 -- R-tree Index
@@ -395,8 +395,8 @@ UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_rtree_idx;
@@ -597,13 +597,21 @@ UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+
+-- The nearest neighbors the index returns are the nearest ones
+SET enable_seqscan = off;
+SELECT (SELECT array_agg(d) FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big ORDER BY f <-> 101.0 LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+SELECT (SELECT array_agg(d) FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big ORDER BY t <-> timestamptz '2002-06-01' LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+RESET enable_seqscan;
 
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_quadtree_idx;
-DROP INDEX IF EXISTS tbl_datespan_big_datetree_idx;
-DROP INDEX IF EXISTS tbl_tstzspan_big_datetree_idx;
+DROP INDEX IF EXISTS tbl_datespan_big_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tstzspan_big_quadtree_idx;
 
 -------------------------------------------------------------------------------
 -- K-d Tree Index
@@ -799,8 +807,16 @@ UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 
-SELECT round((t <-> timestamptz '2002-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-SELECT round((t <-> tstzspan '[2002-06-01,2002-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> timestamptz '2002-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspan '[2002-06-01,2002-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+
+-- The nearest neighbors the index returns are the nearest ones
+SET enable_seqscan = off;
+SELECT (SELECT array_agg(d) FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big ORDER BY f <-> 101.0 LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT f <-> 101.0 AS d FROM tbl_floatspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+SELECT (SELECT array_agg(d) FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big ORDER BY t <-> timestamptz '2002-06-01' LIMIT 10) a) =
+  (SELECT array_agg(d) FROM (SELECT d FROM (SELECT t <-> timestamptz '2002-06-01' AS d FROM tbl_tstzspan_big OFFSET 0) s ORDER BY d LIMIT 10) b);
+RESET enable_seqscan;
 
 DROP INDEX IF EXISTS tbl_intspan_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_kdtree_idx;

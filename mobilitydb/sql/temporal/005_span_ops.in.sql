@@ -1763,15 +1763,15 @@ CREATE OPERATOR <-> (
 );
 
 CREATE FUNCTION spanDistance(timestamptz, tstzspan)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanDistance(tstzspan, timestamptz)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanDistance(tstzspan, tstzspan)
-  RETURNS float
+  RETURNS interval
   AS 'MODULE_PATHNAME', 'Distance_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

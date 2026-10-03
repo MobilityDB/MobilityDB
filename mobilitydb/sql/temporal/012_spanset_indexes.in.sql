@@ -287,9 +287,9 @@ CREATE OPERATOR CLASS tstzspanset_rtree_ops
   -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -537,9 +537,9 @@ CREATE OPERATOR CLASS tstzspanset_quadtree_ops
 -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -779,9 +779,9 @@ CREATE OPERATOR CLASS tstzspanset_kdtree_ops
 -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
   -- nearest approach distance
-  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),

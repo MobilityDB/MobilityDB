@@ -375,15 +375,15 @@ SELECT intspan '[-1073741824, -1073741824]' <-> intspan '[1073741822, 1073741822
 (1 row)
 
 SELECT timestamptz '2001-01-01 00:00:00.5' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
- ?column? 
-----------
-      0.5
+  ?column?  
+------------
+ 00:00:00.5
 (1 row)
 
 SELECT tstzspan '[2001-01-01, 2001-01-01 00:00:00.25]' <-> tstzspan '[2001-01-01 00:00:01, 2001-01-01 00:00:02]';
- ?column? 
-----------
-     0.75
+  ?column?   
+-------------
+ 00:00:00.75
 (1 row)
 
 CREATE TEMP TABLE tbl_intspan_wide(s intspan);
@@ -428,3 +428,63 @@ WHERE s.starelid = 'tbl_span_length'::regclass ORDER BY 1;
 
 DROP TABLE tbl_span_length;
 DROP TABLE
+SELECT tstzspan '[2001-01-02, 2001-01-06)' <-> timestamptz '2001-01-07';
+ ?column? 
+----------
+ 1 day
+(1 row)
+
+SELECT tstzspan '[2001-01-01, 2001-01-02]' <-> tstzspan '[2001-01-03 12:00:00, 2001-01-04]';
+    ?column?    
+----------------
+ 1 day 12:00:00
+(1 row)
+
+SELECT tstzspan '[2001-01-01, 2001-01-03]' <-> tstzspan '[2001-01-02, 2001-01-04]';
+ ?column? 
+----------
+ 00:00:00
+(1 row)
+
+SELECT pg_typeof(tstzspan '[2001-01-01, 2001-01-02]' <-> timestamptz '2001-01-05');
+ pg_typeof 
+-----------
+ interval
+(1 row)
+
+SELECT setDistance(tstzset '{2001-01-01, 2001-01-02}', tstzset '{2001-01-05}');
+ setdistance 
+-------------
+ 3 days
+(1 row)
+
+SELECT setDistance(tstzset '{2001-01-01}', timestamptz '2001-01-01 00:00:00.5');
+ setdistance 
+-------------
+ 00:00:00.5
+(1 row)
+
+SELECT spansetDistance(tstzspanset '{[2001-01-01, 2001-01-02]}', tstzspanset '{[2001-01-03, 2001-01-04]}');
+ spansetdistance 
+-----------------
+ 1 day
+(1 row)
+
+SELECT setDistance(bigintset '{1, 2}', bigintset '{10, 20}');
+ setdistance 
+-------------
+           8
+(1 row)
+
+SELECT pg_typeof(setDistance(bigintset '{1, 2}', bigintset '{10, 20}'));
+ pg_typeof 
+-----------
+ bigint
+(1 row)
+
+SELECT datespan '[2001-01-01, 2001-01-02]' <-> datespan '[2001-01-05, 2001-01-06]';
+ ?column? 
+----------
+        3
+(1 row)
+
