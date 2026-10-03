@@ -717,3 +717,18 @@ SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1)
 -- A NULL operand of merge returns the other one
 SELECT merge(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', NULL::tpose) = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
 SELECT merge(NULL::tpose, tpose 'Pose(Point(1 1), 0.5)@2001-01-01') = tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
+
+-------------------------------------------------------------------------------
+-- Input forms: the temporal text form, whose values may be quoted, and
+-- GeoPose through tposeFromGeoPose
+-------------------------------------------------------------------------------
+
+SELECT asText(tpose '"Pose(Point(1 1),0.5)"@2001-01-01');
+SELECT asText(tpose '["Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02]');
+SELECT asText(tpose '{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}');
+SELECT tpose '{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}' =
+  tpose '{Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02}';
+SELECT asText(tposeFromText('{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2),0.5)"@2001-01-02}'));
+/* A GeoPose document is read by tposeFromGeoPose, not by the type input */
+SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
+SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)::tpose;

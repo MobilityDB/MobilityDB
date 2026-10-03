@@ -139,23 +139,19 @@ PGDLLEXPORT Datum Pose_from_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_from_ewkt);
 /**
  * @ingroup mobilitydb_pose_base_inout
- * @brief Return a pose from its Extended Well-Known Text (EWKT) representation
- * @note This just does the same thing as the SQL function pose_in, except it
- * has to handle a 'text' input. First, unwrap the text into a cstring, then
- * do as pose_in
- * @sqlfn poseFromEWKT(), poseFromEWKT()
+ * @brief Return a pose from its Well-Known Text (WKT) or Extended Well-Known
+ * Text (EWKT) representation
+ * @sqlfn poseFromText(), poseFromEWKT()
  */
 Datum
 Pose_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   char *wkt = text_to_cstring(wkt_text);
-  /* Copy the pointer since it will be advanced during parsing */
-  const char *wkt_ptr = wkt;
-  Pose *result = pose_parse(&wkt_ptr, true);
+  Pose *result = pose_from_text(wkt);
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
-  PG_RETURN_TEMPORAL_P(result);
+  PG_RETURN_POSE_P(result);
 }
 
 PGDLLEXPORT Datum Pose_from_wkb(PG_FUNCTION_ARGS);

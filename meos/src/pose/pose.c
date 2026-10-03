@@ -802,6 +802,24 @@ pose_in(const char *str)
 
 /**
  * @ingroup meos_pose_base_inout
+ * @brief Return a pose from its Well-Known Text (WKT) or Extended Well-Known
+ * Text (EWKT) representation
+ * @details The text form alone, as #geo_from_text reads it beside #geom_in:
+ * a GeoPose document, which #pose_in also reads, is read by
+ * #pose_from_geopose
+ * @param[in] str String
+ * @csqlfn #Pose_from_ewkt()
+ */
+Pose *
+pose_from_text(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return pose_parse(&str, true);
+}
+
+/**
+ * @ingroup meos_pose_base_inout
  * @brief Return the string representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits

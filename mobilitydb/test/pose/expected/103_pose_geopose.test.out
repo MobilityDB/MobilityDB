@@ -216,11 +216,7 @@ SELECT pose 'Geodpose(Point(8 47), 0)';
 (1 row)
 
 SELECT asText(tpose (asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
-                             astext                              
------------------------------------------------------------------
- GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
-(1 row)
-
+ERROR:  Missing delimeter character '@': "position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}
 SELECT asText(tpose '{Geodpose(Point(8 47), 0)@2026-01-01, Geodpose(Point(9 48), 0.5)@2026-01-02}');
                                                      astext                                                     
 ----------------------------------------------------------------------------------------------------------------

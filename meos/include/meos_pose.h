@@ -106,6 +106,7 @@ extern char *pose_as_text(const Pose *pose, int maxdd);
 extern uint8_t *pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern Pose *pose_from_wkb(const uint8_t *wkb, size_t size);
 extern Pose *pose_from_hexwkb(const char *hexwkb);
+extern Pose *pose_from_text(const char *str);
 extern Pose *pose_in(const char *str);
 extern char *pose_out(const Pose *pose, int maxdd);
 

@@ -574,6 +574,38 @@ int main(void)
   assert(torn == NULL);
   assert(meos_errno() != 0);
 
+  /*--------------------------------------------------------------------------
+   * The text readers read the text form alone, as pose_from_text beside
+   * pose_in; a GeoPose document goes through pose_from_geopose
+   *------------------------------------------------------------------------*/
+
+  meos_errno_reset();
+  Pose *ptext = pose_from_text("SRID=4326;Pose(Point(1 2),1)");
+  assert(ptext != NULL);
+  assert(meos_errno() == 0);
+  s1 = pose_as_ewkt(ptext, 6);
+  printf("pose_from_text: %s\n", s1);
+  assert(strcmp(s1, "SRID=4326;Pose(POINT(1 2),1)") == 0);
+  free(s1); free(ptext);
+
+  meos_errno_reset();
+  Pose *pjson = pose_from_text(quat_json);
+  printf("pose_from_text(GeoPose document): %s, errno %d\n",
+    pjson ? "non-NULL" : "NULL", meos_errno());
+  assert(pjson == NULL);
+  assert(meos_errno() != 0);
+
+  /* The temporal input reads quoted values in a discrete sequence */
+  meos_errno_reset();
+  Temporal *tquoted = tpose_in("{\"Pose(Point(1 1),0.5)\"@2001-01-01, "
+    "\"Pose(Point(2 2),0.5)\"@2001-01-02}");
+  Temporal *tplain = tpose_in("{Pose(Point(1 1),0.5)@2001-01-01, "
+    "Pose(Point(2 2),0.5)@2001-01-02}");
+  assert(tquoted != NULL && tplain != NULL);
+  assert(temporal_eq(tquoted, tplain));
+  printf("tpose_in(quoted discrete sequence): equal to the unquoted one\n");
+  free(tquoted); free(tplain);
+
   printf("****************************************************************\n");
   printf("All GeoPose assertions hold\n");
   printf("****************************************************************\n");

@@ -809,3 +809,17 @@ ERROR:  The inverse of a pose over a geographic frame is not defined: the frame 
 SELECT applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(1 1), 0)@2026-01-02]');
 ERROR:  Operation on mixed 2D/3D dimensions
+SELECT asText(pose 'Pose(Point(1 2),1)'), asText(poseFromText('Pose(Point(1 2),1)'));
+       astext       |       astext       
+--------------------+--------------------
+ Pose(POINT(1 2),1) | Pose(POINT(1 2),1)
+(1 row)
+
+SELECT asText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6)::pose, 6);
+                       astext                        
+-----------------------------------------------------
+ GeodPose(POINT Z (8 47 1500),0.707107,0,0,0.707107)
+(1 row)
+
+SELECT poseFromText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6));
+ERROR:  unexpected end of data (at offset 21)
