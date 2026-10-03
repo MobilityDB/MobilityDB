@@ -806,6 +806,10 @@ the bullet above refuses it.
   track, since the axes project a behaviour across the temporal families and
   this file has one entry per function, and it is named in
   `coverage_exceptions.txt`.
+- The jsonb base surface (`json/453_jsonb_jsonfuncs`): the operations of the
+  PostgreSQL type `jsonb` under the names of their `jsonbset` and `tjsonb` twins,
+  one entry per function over a wrapper of the pgtypes function, as `049_geo_funcs`
+  is for `geometry`; it is named in `coverage_exceptions.txt`.
 - `distance` (tDistance/nad/nai/shortestLine).
 - `spatialfuncs` (SRID / transform / trajectory / atGeometry / atStbox
   scaffolding — the TSpatial<T>-level Accessors/Transformations/Restrictions/SRS

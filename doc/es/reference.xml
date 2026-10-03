@@ -2673,6 +2673,68 @@
 	<sect1>
 		<title>Temporal JSON</title>
 		<sect2>
+			<title>Operaciones sobre valores JSONB</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="jsonb_object_field"><varname>jsonbObjectField</varname>, <varname>jsonbObjectFieldText</varname></link>: Extrae un campo de objeto JSON especificado por una clave</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_extract_path"><varname>jsonbExtractPath</varname>, <varname>jsonbExtractPathText</varname></link>: Extrae un valor JSON especificado por una ruta</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_element"><varname>jsonbArrayElement</varname>, <varname>jsonbArrayElementText</varname></link>: Extrae un elemento de un arreglo JSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_length"><varname>jsonbArrayLength</varname></link>: Devuelve el número de elementos de un arreglo JSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_elements"><varname>jsonbArrayElements</varname>, <varname>jsonbArrayElementsText</varname></link>: Devuelve los elementos de un arreglo JSON como filas</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_each"><varname>jsonbEach</varname>, <varname>jsonbEachText</varname></link>: Devuelve los campos de un objeto JSON como filas de una clave y un valor</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_object_keys"><varname>jsonbObjectKeys</varname></link>: Devuelve las claves de un objeto JSON como filas</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_pretty"><varname>jsonbPretty</varname></link>: Devuelve el texto indentado de un valor JSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_concat"><varname>jsonbConcat</varname></link>: Concatena dos valores JSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_delete"><varname>jsonbDelete</varname>, <varname>jsonbDeleteArray</varname>, <varname>jsonbDeleteIndex</varname>, <varname>jsonbDeletePath</varname></link>: Elimina de un valor JSON una clave, las claves de un arreglo, un elemento de arreglo o el elemento en una ruta</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_exists"><varname>jsonbExists</varname>, <varname>jsonbExistsAny</varname>, <varname>jsonbExistsAll</varname></link>: ¿Existe un texto, o alguno o todos los textos de un arreglo, como clave de nivel superior o elemento de arreglo de un valor JSON?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_contains"><varname>jsonbContains</varname>, <varname>jsonbContained</varname></link>: ¿Contiene el primer valor JSON al segundo, o está contenido en él?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_set"><varname>jsonbSet</varname>, <varname>jsonbSetLax</varname></link>: Devuelve un valor JSON con el elemento en una ruta establecido en un valor</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_insert"><varname>jsonbInsert</varname></link>: Devuelve un valor JSON con un valor insertado en una ruta</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_strip_nulls"><varname>jsonbStripNulls</varname></link>: Devuelve un valor JSON sin sus campos de objeto cuyo valor es nulo</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_exists"><varname>jsonbPathExists</varname>, <varname>jsonbPathExistsTz</varname></link>: ¿Devuelve la ruta JSON algún elemento para un valor JSON?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_match"><varname>jsonbPathMatch</varname>, <varname>jsonbPathMatchTz</varname></link>: Devuelve el resultado de una comprobación de predicado de ruta JSON para un valor JSON</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_query"><varname>jsonbPathQuery</varname>, <varname>jsonbPathQueryTz</varname>, <varname>jsonbPathQueryArray</varname>, <varname>jsonbPathQueryArrayTz</varname>, <varname>jsonbPathQueryFirst</varname>, <varname>jsonbPathQueryFirstTz</varname></link>: Devuelve los elementos que una ruta JSON devuelve para un valor JSON, como filas, como un arreglo JSON, o el primero de ellos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_comp"><varname>eq</varname>, <varname>cmp</varname>, <varname>hash</varname>, <varname>hashExtended</varname></link>: Compara dos valores JSON, o devuelve el valor hash de un valor JSON</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Operaciones sobre conjuntos JSONB</title>
 			<itemizedlist>
 				<listitem>
@@ -3169,7 +3231,7 @@
 			<title>Comparaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Comparaciones tradicionales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Comparaciones siempre y alguna vez</para>
@@ -3420,6 +3482,12 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial (heredado del esquema)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Devuelve el número de puntos de un pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_pointN"><varname>pointN</varname></link>: Devuelve el n-ésimo punto de un pcpatch</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</para>

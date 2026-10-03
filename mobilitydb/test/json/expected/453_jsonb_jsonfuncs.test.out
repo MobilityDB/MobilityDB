@@ -1,0 +1,364 @@
+SELECT jsonbArrayLength(jsonb '[1, 2, 3]');
+ jsonbarraylength 
+------------------
+                3
+(1 row)
+
+SELECT jsonbObjectField(jsonb '{"a": {"b": 1}}', 'a');
+ jsonbobjectfield 
+------------------
+ {"b": 1}
+(1 row)
+
+SELECT jsonbObjectField(jsonb '{"a": 1}', 'z') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbObjectFieldText(jsonb '{"a": "x"}', 'a');
+ jsonbobjectfieldtext 
+----------------------
+ x
+(1 row)
+
+SELECT jsonbArrayElement(jsonb '[1, [2, 3]]', 1);
+ jsonbarrayelement 
+-------------------
+ [2, 3]
+(1 row)
+
+SELECT jsonbArrayElement(jsonb '[1, 2, 3]', -1);
+ jsonbarrayelement 
+-------------------
+ 3
+(1 row)
+
+SELECT jsonbArrayElementText(jsonb '["x", "y"]', 0);
+ jsonbarrayelementtext 
+-----------------------
+ x
+(1 row)
+
+SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']);
+ jsonbextractpath 
+------------------
+ 20
+(1 row)
+
+SELECT jsonbExtractPathText(jsonb '{"a": {"b": "z"}}', ARRAY['a', 'b']);
+ jsonbextractpathtext 
+----------------------
+ z
+(1 row)
+
+SELECT jsonbPretty(jsonb '{"a": 1}');
+ jsonbpretty 
+-------------
+ {          +
+     "a": 1 +
+ }
+(1 row)
+
+SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']) =
+  jsonb '{"a": {"b": [10, 20]}}' #> ARRAY['a', 'b', '1'];
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT * FROM jsonbArrayElements(jsonb '[1, "two", {"three": 3}]');
+ jsonbarrayelements 
+--------------------
+ 1
+ "two"
+ {"three": 3}
+(3 rows)
+
+SELECT * FROM jsonbArrayElementsText(jsonb '[1, "two"]');
+ jsonbarrayelementstext 
+------------------------
+ 1
+ two
+(2 rows)
+
+SELECT * FROM jsonbEach(jsonb '{"a": 1, "b": [2]}') ORDER BY key;
+ key | value 
+-----+-------
+ a   | 1
+ b   | [2]
+(2 rows)
+
+SELECT * FROM jsonbEachText(jsonb '{"a": 1, "b": "x"}') ORDER BY key;
+ key | value 
+-----+-------
+ a   | 1
+ b   | x
+(2 rows)
+
+SELECT * FROM jsonbObjectKeys(jsonb '{"b": 1, "a": 2}') ORDER BY 1;
+ jsonbobjectkeys 
+-----------------
+ a
+ b
+(2 rows)
+
+SELECT COUNT(*) FROM jsonbArrayElements(jsonb '[]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT jsonbExists(jsonb '{"a": 1}', 'a'), jsonbExists(jsonb '{"a": 1}', 'b');
+ jsonbexists | jsonbexists 
+-------------+-------------
+ t           | f
+(1 row)
+
+SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', 'a']);
+ jsonbexistsany 
+----------------
+ t
+(1 row)
+
+SELECT jsonbExistsAll(jsonb '{"a": 1}', ARRAY['b', 'a']);
+ jsonbexistsall 
+----------------
+ f
+(1 row)
+
+SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}');
+ jsonbcontains 
+---------------
+ t
+(1 row)
+
+SELECT jsonbContained(jsonb '{"a": 1}', jsonb '{"a": 1, "b": 2}');
+ jsonbcontained 
+----------------
+ t
+(1 row)
+
+SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}') =
+  (jsonb '{"a": 1, "b": 2}' @> jsonb '{"a": 1}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbConcat(jsonb '{"a": 1}', jsonb '{"b": 2}');
+   jsonbconcat    
+------------------
+ {"a": 1, "b": 2}
+(1 row)
+
+SELECT jsonbDelete(jsonb '{"a": 1, "b": 2}', 'a');
+ jsonbdelete 
+-------------
+ {"b": 2}
+(1 row)
+
+SELECT jsonbDeleteArray(jsonb '{"a": 1, "b": 2, "c": 3}', ARRAY['a', 'c']);
+ jsonbdeletearray 
+------------------
+ {"b": 2}
+(1 row)
+
+SELECT jsonbDeleteIndex(jsonb '[1, 2, 3]', -1);
+ jsonbdeleteindex 
+------------------
+ [1, 2]
+(1 row)
+
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1, "c": 2}}', ARRAY['a', 'b']);
+ jsonbdeletepath 
+-----------------
+ {"a": {"c": 2}}
+(1 row)
+
+SELECT jsonbSet(jsonb '{"a": 1}', ARRAY['b'], jsonb '2');
+     jsonbset     
+------------------
+ {"a": 1, "b": 2}
+(1 row)
+
+SELECT jsonbSet(jsonb '{"a": 1}', ARRAY['b'], jsonb '2', false);
+ jsonbset 
+----------
+ {"a": 1}
+(1 row)
+
+SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL);
+ jsonbsetlax 
+-------------
+ {"a": null}
+(1 row)
+
+SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'delete_key');
+ jsonbsetlax 
+-------------
+ {}
+(1 row)
+
+SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'return_target');
+ jsonbsetlax 
+-------------
+ {"a": 1}
+(1 row)
+
+SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2');
+ jsonbinsert 
+-------------
+ [1, 2, 3]
+(1 row)
+
+SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2', true);
+ jsonbinsert 
+-------------
+ [1, 3, 2]
+(1 row)
+
+SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}');
+ jsonbstripnulls  
+------------------
+ {"b": [1, null]}
+(1 row)
+
+SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}', true);
+ jsonbstripnulls 
+-----------------
+ {"b": [1]}
+(1 row)
+
+SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > 2)');
+ jsonbpathexists 
+-----------------
+ t
+(1 row)
+
+SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > $x)',
+  '{"x": 5}');
+ jsonbpathexists 
+-----------------
+ f
+(1 row)
+
+SELECT jsonbPathExists(jsonb '{"a": 1}', 'strict $.b', '{}', true) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbPathExistsTz(jsonb '["2015-08-01 12:00:00-05"]',
+  '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+ jsonbpathexiststz 
+-------------------
+ t
+(1 row)
+
+SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ > 2))');
+ jsonbpathmatch 
+----------------
+ t
+(1 row)
+
+SELECT jsonbPathMatchTz(jsonb '["2015-08-01 12:00:00-05"]',
+  'exists($[*] ? (@.datetime() < "2015-08-02".datetime()))');
+ jsonbpathmatchtz 
+------------------
+ t
+(1 row)
+
+SELECT * FROM jsonbPathQuery(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+ jsonbpathquery 
+----------------
+ 2
+ 3
+(2 rows)
+
+SELECT * FROM jsonbPathQueryTz(jsonb '["2015-08-01 12:00:00-05"]',
+  '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+     jsonbpathquerytz     
+--------------------------
+ "2015-08-01 12:00:00-05"
+(1 row)
+
+SELECT jsonbPathQueryArray(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+ jsonbpathqueryarray 
+---------------------
+ [2, 3]
+(1 row)
+
+SELECT jsonbPathQueryArrayTz(jsonb '["2015-08-01 12:00:00-05"]',
+  '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+   jsonbpathqueryarraytz    
+----------------------------
+ ["2015-08-01 12:00:00-05"]
+(1 row)
+
+SELECT jsonbPathQueryFirst(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+ jsonbpathqueryfirst 
+---------------------
+ 2
+(1 row)
+
+SELECT jsonbPathQueryFirst(jsonb '{"a": [1]}', '$.a[*] ? (@ > 5)') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbPathQueryFirstTz(jsonb '["2015-08-01 12:00:00-05"]',
+  '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+  jsonbpathqueryfirsttz   
+--------------------------
+ "2015-08-01 12:00:00-05"
+(1 row)
+
+SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > 2)') =
+  jsonb_path_exists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > 2)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT eq(jsonb '{"a": 1}', jsonb '{"a": 1}'), ne(jsonb '1', jsonb '2');
+ eq | ne 
+----+----
+ t  | t
+(1 row)
+
+SELECT lt(jsonb '1', jsonb '2'), le(jsonb '2', jsonb '2'),
+  gt(jsonb '1', jsonb '2'), ge(jsonb '2', jsonb '1');
+ lt | le | gt | ge 
+----+----+----+----
+ t  | t  | f  | t
+(1 row)
+
+SELECT cmp(jsonb '1', jsonb '2'), cmp(jsonb '2', jsonb '2'),
+  cmp(jsonb '3', jsonb '2');
+ cmp | cmp | cmp 
+-----+-----+-----
+  -1 |   0 |   1
+(1 row)
+
+SELECT cmp(jsonb '[1]', jsonb '{"a": 1}') =
+  CASE WHEN jsonb '[1]' < jsonb '{"a": 1}' THEN -1 ELSE 1 END;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT hash(jsonb '{"a": 1}') = jsonb_hash(jsonb '{"a": 1}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT hashExtended(jsonb '{"a": 1}', 7) =
+  jsonb_hash_extended(jsonb '{"a": 1}', 7);
+ ?column? 
+----------
+ t
+(1 row)
+

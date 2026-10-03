@@ -555,6 +555,7 @@ okeys_scalar(void *state, char *token UNUSED, JsonTokenType tokentype UNUSED)
  * keys is unlikely to be so huge that it has major memory implications.
  * @param[in] jb JSONB value
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_object_keys()
  * @note Derived from PostgreSQL function @p jsonb_object_keys()
  */
 #if MEOS
@@ -634,6 +635,7 @@ pg_json_object_field(const text *js, const text *key)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB object field given by a key
+ * @csqlfn #Jsonb_object_field()
  * @note Derived from PostgreSQL function @p jsonb_object_field(jsonb, text)
  */
 #if MEOS
@@ -679,6 +681,7 @@ pg_json_object_field_text(const text *js, const text *key)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB object field given by a key as text
+ * @csqlfn #Jsonb_object_field_text()
  * @note Derived from PostgreSQL function @p json_object_field_text(jsonb, text)
  */
 #if MEOS
@@ -728,6 +731,7 @@ pg_json_array_element(const text *js, int idx)
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB array element given by an index
  * @details 0-based, negative integers count from the end
+ * @csqlfn #Jsonb_array_element()
  * @note Derived from PostgreSQL function @p jsonb_array_element(jsonb, int)
  */
 #if MEOS
@@ -787,6 +791,7 @@ pg_json_array_element_text(const text *js, int idx)
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB array element given by an index as text
  * @details 0-based, negative integers count from the end
+ * @csqlfn #Jsonb_array_element_text()
  * @note Derived from PostgreSQL function @p jsonb_array_element_text(jsonb, int)
  */
 #if MEOS
@@ -1302,6 +1307,7 @@ get_scalar(void *state, char *token, JsonTokenType tokentype)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB object field given by a path
+ * @csqlfn #Jsonb_extract_path()
  * @note Derived from PostgreSQL function @p jsonb_extract_path()
  */
 #if MEOS
@@ -1321,6 +1327,7 @@ pg_jsonb_extract_path(const Jsonb *jb, text **path_elems, int path_len)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return a JSONB object field given by a path as text
+ * @csqlfn #Jsonb_extract_path_text()
  * @note Derived from PostgreSQL function @p jsonb_extract_path_text(text, text **, int)
  */
 #if MEOS
@@ -1672,6 +1679,7 @@ pg_json_array_length(const text *js)
  * @ingroup meos_json_base_accessor
  * @brief Returns the length of a JSONB array
  * @param[in] jb JSONB value
+ * @csqlfn #Jsonb_array_length()
  * @note Derived from PostgreSQL function @p jsonb_array_length()
  */
 #if MEOS
@@ -2098,6 +2106,7 @@ elements_scalar(void *state, char *token, JsonTokenType tokentype UNUSED)
  * @param[in] jb JSONB value
  * @param[out] values Array of values
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_each()
  * @note Derived from PostgreSQL function: @p jsonb_each()
  */
 #if MEOS
@@ -2119,6 +2128,7 @@ pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count)
  * @param[in] jb JSONB value
  * @param[out] values Array of values
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_each_text()
  * @note Derived from PostgreSQL function: @p jsonb_each_text()
  */
 #if MEOS
@@ -2193,6 +2203,7 @@ each_worker_jsonb(const Jsonb *jb, void **values, int *count,
  * @brief Return the elements of a JSONB array
  * @param[in] jb JSONB value
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_array_elements()
  * @note Derived from PostgreSQL function: @p jsonb_array_elements()
  */
 #if MEOS
@@ -2214,6 +2225,7 @@ pg_jsonb_array_elements(const Jsonb *jb, int *count)
  * @brief Return the elements of a JSONB array as text
  * @param[in] jb JSONB value
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_array_elements_text()
  * @note Derived from PostgreSQL function: @p jsonb_array_elements()
  */
 #if MEOS
@@ -2436,6 +2448,7 @@ pg_json_strip_nulls(const text *js, bool strip_in_arrays)
  * @ingroup meos_json_base_transf
  * @brief Return a JSONB value without nulls
  * @return On error return @p DBL_MAX
+ * @csqlfn #Jsonb_strip_nulls()
  * @note Derived from PostgreSQL function: @p jsonb_strip_nulls()
  */
 #if MEOS
@@ -2504,6 +2517,7 @@ pg_jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays)
  * @ingroup meos_json_base_transf
  * @brief Return a pretty-printed text from a JSONB value
  * @return On error return @p DBL_MAX
+ * @csqlfn #Jsonb_pretty()
  * @note Derived from PostgreSQL function: @p jsonb_pretty()
  */
 #if MEOS
@@ -2529,6 +2543,7 @@ pg_jsonb_pretty(const Jsonb *jb)
  * @ingroup meos_json_base_transf
  * @brief Return the concatenation of two JSONB values (objects ou arrays)
  * @return On error return @p DBL_MAX
+ * @csqlfn #Jsonb_concat()
  * @note Derived from PostgreSQL function: @p jsonb_concat()
  */
 #if MEOS
@@ -2569,6 +2584,7 @@ pg_jsonb_concat(const Jsonb *jb1, const Jsonb *jb2)
 /**
  * @ingroup meos_json_base_transf
  * @brief Return a copy of a JSONB value with an item removed
+ * @csqlfn #Jsonb_delete()
  * @note Derived from the PostgreSQL function @p jsonb_delete()
  */
 #if MEOS
@@ -2624,6 +2640,7 @@ pg_jsonb_delete(const Jsonb *jb, const text *key)
 /**
  * @ingroup meos_json_base_transf
  * @brief Return a copy of a JSONB value with an array of items removed
+ * @csqlfn #Jsonb_delete_array()
  * @note Derived from PostgreSQL function @p jsonb_delete_array()
  */
 #if MEOS
@@ -2698,6 +2715,7 @@ pg_jsonb_delete_array(const Jsonb *jb, text **keys_elems, int keys_len)
  * @ingroup meos_json_base_transf
  * @brief Return a copy of a JSONB array with an item removed
  * @details Negative int means count back from the end of the items
+ * @csqlfn #Jsonb_delete_index()
  * @note Derived from PostgreSQL function @p jsonb_delete_idx(jsonb, int)
  */
 #if MEOS
@@ -2766,6 +2784,7 @@ pg_jsonb_delete_index(const Jsonb *jb, int idx)
 /**
  * @ingroup meos_json_base_transf
  * @brief Replace a JSONB value specified by a path with a new value
+ * @csqlfn #Jsonb_set()
  * @note Derived from the PostgreSQL function @p
  * jsonb_set(jsonb, text[], jsonb, boolean)
  */
@@ -2809,6 +2828,7 @@ pg_jsonb_set(const Jsonb *jb, text **path_elems, int path_len,
  * @ingroup meos_json_base_transf
  * @brief Replace a JSONB value specified by a path with a new value
  * elements can be either field keys or array indexes
+ * @csqlfn #Jsonb_set_lax()
  * @note Derived from PostgreSQL function
  * @p jsonb_set_lax(jsonb, text[], jsonb, boolean, text)
  */
@@ -2884,6 +2904,7 @@ pg_jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len,
  * @ingroup meos_json_base_transf
  * @brief Delete the field or array element at the specified path, where path
  * elements can be either field keys or array indexes
+ * @csqlfn #Jsonb_delete_path()
  * @note Derived from PostgreSQL function @p jsonb_delete_path()
  */
 #if MEOS
@@ -2922,6 +2943,7 @@ pg_jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len)
 /**
  * @ingroup meos_json_base_transf
  * @brief Replace a JSONB value specified by a path with a new value
+ * @csqlfn #Jsonb_insert()
  * @note Derived from the PostgreSQL function @p
  * jsonb_insert(jsonb, text[], jsonb, boolean)
  */

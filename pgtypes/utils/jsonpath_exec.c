@@ -407,6 +407,7 @@ static void checkTimezoneIsUsedForCast(bool useTz, const char *type1,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonb_path_exists() #Jsonb_path_exists_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_exists()
  */
 #if MEOS
@@ -445,6 +446,7 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonb_path_match() #Jsonb_path_match_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_match()
  */
 #if MEOS
@@ -495,6 +497,7 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonb_path_query_array() #Jsonb_path_query_array_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_query_array()
  */
 #if MEOS
@@ -530,6 +533,7 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonb_path_query_first() #Jsonb_path_query_first_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_query_first()
  */
 #if MEOS
@@ -567,6 +571,7 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Jsonb_path_query() #Jsonb_path_query_tz()
  * @note Derived from PostgreSQL function @p jsonb_path_query_first() and
  * @p wrapItemsInArray
  */

@@ -2682,6 +2682,68 @@
 	<sect1>
 		<title>Temporal JSON</title>
 		<sect2>
+			<title>JSONB Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="jsonb_object_field"><varname>jsonbObjectField</varname>, <varname>jsonbObjectFieldText</varname></link>: Extract a JSON object field specified by a key</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_extract_path"><varname>jsonbExtractPath</varname>, <varname>jsonbExtractPathText</varname></link>: Extract a JSON value specified by a path</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_element"><varname>jsonbArrayElement</varname>, <varname>jsonbArrayElementText</varname></link>: Extract an element from a JSON array</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_length"><varname>jsonbArrayLength</varname></link>: Return the number of elements of a JSON array</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_elements"><varname>jsonbArrayElements</varname>, <varname>jsonbArrayElementsText</varname></link>: Return the elements of a JSON array as rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_each"><varname>jsonbEach</varname>, <varname>jsonbEachText</varname></link>: Return the fields of a JSON object as rows of a key and a value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_object_keys"><varname>jsonbObjectKeys</varname></link>: Return the keys of a JSON object as rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_pretty"><varname>jsonbPretty</varname></link>: Return the indented text of a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_concat"><varname>jsonbConcat</varname></link>: Concatenate two JSON values</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_delete"><varname>jsonbDelete</varname>, <varname>jsonbDeleteArray</varname>, <varname>jsonbDeleteIndex</varname>, <varname>jsonbDeletePath</varname></link>: Delete a key, the keys of an array, an array element or the item at a path from a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_exists"><varname>jsonbExists</varname>, <varname>jsonbExistsAny</varname>, <varname>jsonbExistsAll</varname></link>: Does a text, or any or all the texts of an array, exist as a top-level key or array element of a JSON value?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_contains"><varname>jsonbContains</varname>, <varname>jsonbContained</varname></link>: Does the first JSON value contain, or is it contained in, the second one?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_set"><varname>jsonbSet</varname>, <varname>jsonbSetLax</varname></link>: Return a JSON value with the item at a path set to a value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_insert"><varname>jsonbInsert</varname></link>: Return a JSON value with a value inserted at a path</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_strip_nulls"><varname>jsonbStripNulls</varname></link>: Return a JSON value without its object fields whose value is null</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_exists"><varname>jsonbPathExists</varname>, <varname>jsonbPathExistsTz</varname></link>: Does the JSON path return any item for a JSON value?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_match"><varname>jsonbPathMatch</varname>, <varname>jsonbPathMatchTz</varname></link>: Return the result of a JSON path predicate check for a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_query"><varname>jsonbPathQuery</varname>, <varname>jsonbPathQueryTz</varname>, <varname>jsonbPathQueryArray</varname>, <varname>jsonbPathQueryArrayTz</varname>, <varname>jsonbPathQueryFirst</varname>, <varname>jsonbPathQueryFirstTz</varname></link>: Return the items a JSON path returns for a JSON value, as rows, as a JSON array, or the first one</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_comp"><varname>eq</varname>, <varname>cmp</varname>, <varname>hash</varname>, <varname>hashExtended</varname></link>: Compare two JSON values, or return the hash value of a JSON value</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>JSONB Set Operations</title>
 			<itemizedlist>
 				<listitem>
@@ -3178,7 +3240,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
@@ -3429,6 +3491,12 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Return the number of points of a pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_pointN"><varname>pointN</varname></link>: Return the n-th point of a pcpatch</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Return the multipoint of the positions the points of a patch occupy</para>

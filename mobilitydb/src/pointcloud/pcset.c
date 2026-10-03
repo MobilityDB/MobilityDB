@@ -207,6 +207,46 @@ Pcpatch_pcid(PG_FUNCTION_ARGS)
   PG_RETURN_INT32((int32) pcid);
 }
 
+PGDLLEXPORT Datum Pcpatch_npoints(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_npoints);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the number of points of a pcpatch
+ * @details The accessor the pointcloud extension calls `PC_NumPoints`, the
+ * value of each instant of #Tpcpatch_npoints
+ * @sqlfn numPoints()
+ */
+Datum
+Pcpatch_npoints(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  uint32_t result = pcpatch_npoints(pa);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_UINT32(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_point_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_point_n);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the n-th point of a pcpatch, counting from the end when n is
+ * negative, NULL when n addresses no point
+ * @details The accessor the pointcloud extension calls `PC_PointN`, beside
+ * #Pcpatch_npoints
+ * @sqlfn pointN()
+ */
+Datum
+Pcpatch_point_n(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  int n = PG_GETARG_INT32(1);
+  Pcpoint *result = pcpatch_point_n(pa, n);
+  PG_FREE_IF_COPY(pa, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Schema-aware pcpoint dimension getters
  *

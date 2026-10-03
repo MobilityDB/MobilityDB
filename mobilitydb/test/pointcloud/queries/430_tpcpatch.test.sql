@@ -48,6 +48,14 @@ SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))::text =
 SELECT numPoints(tpcpatch(
   pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
   '2024-01-01'::timestamptz)) = 2;
+-- the static accessors of a pcpatch
+SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
+  = pcpoint(1, 2.0, 2.0, 2.0);
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), -2)
+  = pcpoint(1, 1.0, 1.0, 1.0);
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
+  IS NULL;
 
 -------------------------------------------------------------------------------
 -- SRID
