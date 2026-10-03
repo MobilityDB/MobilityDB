@@ -59,7 +59,7 @@
  * @ingroup meos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Spanset_in()
+ * @csqlfn #Spanset_in(), #Spanset_from_text()
  */
 SpanSet *
 intspanset_in(const char *str)
@@ -74,7 +74,7 @@ intspanset_in(const char *str)
  * @brief Return a big integer span from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Spanset_in()
+ * @csqlfn #Spanset_in(), #Spanset_from_text()
  */
 SpanSet *
 bigintspanset_in(const char *str)
@@ -88,7 +88,7 @@ bigintspanset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Spanset_in()
+ * @csqlfn #Spanset_in(), #Spanset_from_text()
  */
 SpanSet *
 floatspanset_in(const char *str)
@@ -102,7 +102,7 @@ floatspanset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a date set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Spanset_in()
+ * @csqlfn #Spanset_in(), #Spanset_from_text()
  */
 SpanSet *
 datespanset_in(const char *str)
@@ -117,7 +117,7 @@ datespanset_in(const char *str)
  * @brief Return a timestamptz set from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Spanset_in()
+ * @csqlfn #Spanset_in(), #Spanset_from_text()
  */
 SpanSet *
 tstzspanset_in(const char *str)

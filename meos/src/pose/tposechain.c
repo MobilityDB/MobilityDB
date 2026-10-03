@@ -194,7 +194,7 @@ tposechainsegm_intersection(Datum start1, Datum end1, Datum start2,
  * @brief Return a temporal pose chain from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tposechain_in()
+ * @csqlfn #Tposechain_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tposechain_in(const char *str)

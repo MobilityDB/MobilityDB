@@ -111,7 +111,7 @@ ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa)
  * @ingroup meos_pointcloud_set_inout
  * @brief Return a pcpoint set from its textual (hex-WKB) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 pcpointset_in(const char *str)
@@ -404,7 +404,7 @@ pcpoint_union_transfn(Set *state, const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_set_inout
  * @brief Return a pcpatch set from its textual (hex-WKB) representation
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 pcpatchset_in(const char *str)

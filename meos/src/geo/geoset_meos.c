@@ -51,7 +51,7 @@
  * @ingroup meos_geo_set_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 geomset_in(const char *str)
@@ -65,7 +65,7 @@ geomset_in(const char *str)
  * @ingroup meos_geo_set_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 geogset_in(const char *str)

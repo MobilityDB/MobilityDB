@@ -55,7 +55,7 @@
  * @ingroup meos_npoint_set_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 npointset_in(const char *str)

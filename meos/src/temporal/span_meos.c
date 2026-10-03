@@ -60,7 +60,7 @@
  * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @errval NULL
- * @csqlfn #Span_in()
+ * @csqlfn #Span_in(), #Span_from_text()
  */
 Span *
 intspan_in(const char *str)
@@ -75,7 +75,7 @@ intspan_in(const char *str)
  * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @errval NULL
- * @csqlfn #Span_in()
+ * @csqlfn #Span_in(), #Span_from_text()
  */
 Span *
 bigintspan_in(const char *str)
@@ -90,7 +90,7 @@ bigintspan_in(const char *str)
  * @brief Return a float span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @errval NULL
- * @csqlfn #Span_in()
+ * @csqlfn #Span_in(), #Span_from_text()
  */
 Span *
 floatspan_in(const char *str)
@@ -105,7 +105,7 @@ floatspan_in(const char *str)
  * @brief Return a date span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @errval NULL
- * @csqlfn #Span_in()
+ * @csqlfn #Span_in(), #Span_from_text()
  */
 Span *
 datespan_in(const char *str)
@@ -121,7 +121,7 @@ datespan_in(const char *str)
  * representation
  * @param[in] str String
  * @errval NULL
- * @csqlfn #Span_in()
+ * @csqlfn #Span_in(), #Span_from_text()
  */
 Span *
 tstzspan_in(const char *str)

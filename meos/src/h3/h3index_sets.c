@@ -112,7 +112,7 @@ h3index_set_from_buffer(H3Index *cells, int64_t max)
  * @brief Return an H3 cell set from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Spatialset_from_ewkt()
  */
 Set *
 h3indexset_in(const char *str)

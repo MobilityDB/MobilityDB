@@ -295,7 +295,7 @@ cbuffer_parse(const char **str, bool end)
  * @ingroup meos_cbuffer_base_inout
  * @brief Return a circular buffer from its string representation
  * @param[in] str String
- * @csqlfn #Cbuffer_in()
+ * @csqlfn #Cbuffer_in(), #Cbuffer_from_ewkt()
  */
 Cbuffer *
 cbuffer_in(const char *str)

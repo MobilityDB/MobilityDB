@@ -69,7 +69,7 @@
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
  */
 Temporal *
 tbool_in(const char *str)
@@ -84,7 +84,7 @@ tbool_in(const char *str)
  * @brief Return a temporal integer from its Well-Known Text (WKT) 
  * representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
  */
 Temporal *
 tint_in(const char *str)
@@ -99,7 +99,7 @@ tint_in(const char *str)
  * @brief Return a temporal big integer from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
  */
 Temporal *
 tbigint_in(const char *str)
@@ -113,7 +113,7 @@ tbigint_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
  */
 Temporal *
 tfloat_in(const char *str)
@@ -127,7 +127,7 @@ tfloat_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
  */
 Temporal *
 ttext_in(const char *str)

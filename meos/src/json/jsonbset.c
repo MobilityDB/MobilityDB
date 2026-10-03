@@ -55,7 +55,7 @@
  * @ingroup meos_json_set_inout
  * @brief Return a JSONB set from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @csqlfn #Set_in()
+ * @csqlfn #Set_in(), #Set_from_text()
  */
 Set *
 jsonbset_in(const char *str)

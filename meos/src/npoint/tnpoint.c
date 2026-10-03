@@ -214,7 +214,7 @@ tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * @brief Return a temporal network point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Tnpoint_in()
+ * @csqlfn #Tnpoint_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tnpoint_in(const char *str)
