@@ -603,3 +603,27 @@ SELECT asGeoPoseStream(tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@
 SELECT asGeoPoseStream(tpose '[Pose(Point(8 47), 0)@2026-01-01,
   Pose(Point(9 47), 0)@2026-01-02]', 6);
 \set VERBOSITY default
+
+-- The header and the elements are the documents a stream engine writes one
+-- at a time: the header once, then an element for each instant as it
+-- arrives. They are the members of the stream written whole.
+SELECT asGeoPoseStreamHeader(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]',
+  tpose 'Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02', 6);
+WITH t(v) AS (SELECT tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(8.001 47 1500), 1, 0, 0, 0)@2026-01-02]')
+SELECT asGeoPoseStream(v, 6)::jsonb -> 'header' =
+    asGeoPoseStreamHeader(v, 6)::jsonb AS same_header,
+  asGeoPoseStream(v, 6)::jsonb -> 'streamElements' -> 1 =
+    asGeoPoseStreamElement(v, endInstant(v), 6)::jsonb AS same_element
+FROM t;
+
+\set VERBOSITY terse
+-- The element is written for an instant, not a sequence.
+SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]',
+  tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+\set VERBOSITY default

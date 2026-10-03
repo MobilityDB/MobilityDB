@@ -486,6 +486,52 @@ Tpose_as_geopose_stream(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result_text);
 }
 
+PGDLLEXPORT Datum Tpose_as_geopose_stream_header(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream_header);
+/**
+ * @ingroup mobilitydb_pose_inout
+ * @brief Return the OGC GeoPose StreamHeader of a temporal pose, the
+ * document that opens the stream #Tpose_as_geopose_stream writes whole
+ * @sqlfn asGeoPoseStreamHeader()
+ */
+Datum
+Tpose_as_geopose_stream_header(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int precision = PG_GETARG_INT32(1);
+  char *result = tpose_as_geopose_stream_header(temp, precision);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
+PGDLLEXPORT Datum Tpose_as_geopose_stream_element(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream_element);
+/**
+ * @ingroup mobilitydb_pose_inout
+ * @brief Return the OGC GeoPose StreamElement of an instant of a temporal
+ * pose, one of the elements of the stream #Tpose_as_geopose_stream writes
+ * whole
+ * @sqlfn asGeoPoseStreamElement()
+ */
+Datum
+Tpose_as_geopose_stream_element(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  int precision = PG_GETARG_INT32(2);
+  char *result = tpose_as_geopose_stream_element(temp, (TInstant *) inst,
+    precision);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(inst, 1);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
 /*****************************************************************************
  * Body-to-world rigid transform (workstream #4)
  *****************************************************************************/

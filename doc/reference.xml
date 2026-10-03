@@ -1800,6 +1800,9 @@
 					<listitem>
 						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Write a temporal pose as an OGC GeoPose Stream</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpose_geopose_stream_parts"><varname>asGeoPoseStreamHeader</varname>, <varname>asGeoPoseStreamElement</varname></link>: Write the OGC GeoPose StreamHeader of a temporal pose, or the StreamElement of one of its instants</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
