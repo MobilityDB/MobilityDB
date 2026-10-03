@@ -482,6 +482,7 @@ PG_FUNCTION_INFO_V1(Pcpoint_hash);
  * @ingroup mobilitydb_pointcloud_base_comp
  * @brief Return the 32-bit hash value of a pcpoint
  * @sqlfn hash()
+ * @altsqlfn pcpointHash()
  */
 Datum
 Pcpoint_hash(PG_FUNCTION_ARGS)
@@ -498,6 +499,7 @@ PG_FUNCTION_INFO_V1(Pcpoint_hash_extended);
  * @ingroup mobilitydb_pointcloud_base_comp
  * @brief Return the 64-bit hash value of a pcpoint using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn pcpointHashExtended()
  */
 Datum
 Pcpoint_hash_extended(PG_FUNCTION_ARGS)
@@ -681,6 +683,7 @@ PG_FUNCTION_INFO_V1(Pcpatch_hash);
  * @ingroup mobilitydb_pointcloud_base_comp
  * @brief Return the 32-bit hash value of a pcpatch
  * @sqlfn hash()
+ * @altsqlfn pcpatchHash()
  */
 Datum
 Pcpatch_hash(PG_FUNCTION_ARGS)
@@ -697,6 +700,7 @@ PG_FUNCTION_INFO_V1(Pcpatch_hash_extended);
  * @ingroup mobilitydb_pointcloud_base_comp
  * @brief Return the 64-bit hash value of a pcpatch using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn pcpatchHashExtended()
  */
 Datum
 Pcpatch_hash_extended(PG_FUNCTION_ARGS)

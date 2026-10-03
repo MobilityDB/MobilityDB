@@ -346,6 +346,7 @@ PG_FUNCTION_INFO_V1(Quadbin_hash);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return the hash code of a quadbin value
  * @sqlfn hash()
+ * @altsqlfn quadbinHash()
  */
 Datum
 Quadbin_hash(PG_FUNCTION_ARGS)
@@ -359,6 +360,7 @@ PG_FUNCTION_INFO_V1(Quadbin_hash_extended);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return the 64-bit hash value of a quadbin value using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn quadbinHashExtended()
  */
 Datum
 Quadbin_hash_extended(PG_FUNCTION_ARGS)

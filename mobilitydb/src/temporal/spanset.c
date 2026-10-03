@@ -497,6 +497,7 @@ PG_FUNCTION_INFO_V1(Spanset_lower);
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the lower bound of a span set
  * @sqlfn lower()
+ * @altsqlfn spansetLower()
  */
 Datum
 Spanset_lower(PG_FUNCTION_ARGS)
@@ -513,6 +514,7 @@ PG_FUNCTION_INFO_V1(Spanset_upper);
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the upper bound of a span set
  * @sqlfn upper()
+ * @altsqlfn spansetUpper()
  */
 Datum
 Spanset_upper(PG_FUNCTION_ARGS)
@@ -531,6 +533,7 @@ PG_FUNCTION_INFO_V1(Spanset_lower_inc);
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound of a span set is inclusive
  * @sqlfn lowerInc()
+ * @altsqlfn spansetLowerInc()
  */
 Datum
 Spanset_lower_inc(PG_FUNCTION_ARGS)
@@ -547,6 +550,7 @@ PG_FUNCTION_INFO_V1(Spanset_upper_inc);
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound of a span set is inclusive
  * @sqlfn upperInc()
+ * @altsqlfn spansetUpperInc()
  */
 Datum
 Spanset_upper_inc(PG_FUNCTION_ARGS)
@@ -965,6 +969,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_floor);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span set rounded down to the nearest integer
  * @sqlfn floor()
+ * @altsqlfn floatFloor()
  */
 Datum
 Floatspanset_floor(PG_FUNCTION_ARGS)
@@ -981,6 +986,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_ceil);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span set rounded up to the nearest integer
  * @sqlfn ceil()
+ * @altsqlfn floatCeil()
  */
 Datum
 Floatspanset_ceil(PG_FUNCTION_ARGS)
@@ -998,6 +1004,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_round);
  * @brief Return a float span set with the precision of the values set to a
  * number of decimal places
  * @sqlfn round()
+ * @altsqlfn floatRound()
  */
 Datum
 Floatspanset_round(PG_FUNCTION_ARGS)
@@ -1015,6 +1022,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_degrees);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span set with the values converted to degrees
  * @sqlfn degrees()
+ * @altsqlfn floatDegrees()
  */
 Datum
 Floatspanset_degrees(PG_FUNCTION_ARGS)
@@ -1034,6 +1042,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_radians);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float set with the values converted to radians
  * @sqlfn radians()
+ * @altsqlfn floatRadians()
  */
 Datum
 Floatspanset_radians(PG_FUNCTION_ARGS)
@@ -1257,6 +1266,7 @@ PG_FUNCTION_INFO_V1(Spanset_hash);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return the 32-bit hash value of a span set
  * @sqlfn hash()
+ * @altsqlfn spansetHash()
  */
 Datum
 Spanset_hash(PG_FUNCTION_ARGS)
@@ -1273,6 +1283,7 @@ PG_FUNCTION_INFO_V1(Spanset_hash_extended);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return the 64-bit hash value of a span set using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn spansetHashExtended()
  */
 Datum
 Spanset_hash_extended(PG_FUNCTION_ARGS)

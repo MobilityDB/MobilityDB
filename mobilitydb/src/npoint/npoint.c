@@ -839,6 +839,7 @@ PG_FUNCTION_INFO_V1(Npoint_round);
  * @brief Return a network point with the precision of the position set to a
  * number of decimal places
  * @sqlfn round()
+ * @altsqlfn npointRound()
  */
 Datum
 Npoint_round(PG_FUNCTION_ARGS)
@@ -855,6 +856,7 @@ PG_FUNCTION_INFO_V1(Nsegment_round);
  * @brief Return a network segment with the precision of the positions set to a
  * number of decimal places
  * @sqlfn round()
+ * @altsqlfn nsegmentRound()
  */
 Datum
 Nsegment_round(PG_FUNCTION_ARGS)

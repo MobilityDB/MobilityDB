@@ -78,6 +78,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_length);
  * @ingroup mobilitydb_npoint_accessor
  * @brief Return the length traversed by a temporal network point
  * @sqlfn length()
+ * @altsqlfn npointLength()
  */
 Datum
 Tnpoint_length(PG_FUNCTION_ARGS)
@@ -96,6 +97,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
  * @ingroup mobilitydb_npoint_accessor
  * @brief Return the cumulative length traversed by a temporal network point
  * @sqlfn cumulativeLength()
+ * @altsqlfn npointCumulativeLength()
  */
 Datum
 Tnpoint_cumulative_length(PG_FUNCTION_ARGS)

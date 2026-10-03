@@ -1053,6 +1053,7 @@ PG_FUNCTION_INFO_V1(Stbox_round);
  * @brief Return a spatiotemporal box with the precision of the space bounds
  * set to a number of decimal values
  * @sqlfn round()
+ * @altsqlfn stboxRound()
  */
 Datum
 Stbox_round(PG_FUNCTION_ARGS)
@@ -1069,6 +1070,7 @@ PG_FUNCTION_INFO_V1(Stboxarr_round);
  * @brief Return an array of temporal points with the precision of the
  * coordinates set to a number of decimal places
  * @sqlfn round()
+ * @altsqlfn stboxRound()
  */
 Datum
 Stboxarr_round(PG_FUNCTION_ARGS)
@@ -1130,6 +1132,7 @@ PG_FUNCTION_INFO_V1(Stbox_transform);
  * @ingroup mobilitydb_geo_box_srid
  * @brief Return a spatiotemporal box transformed to an SRID
  * @sqlfn transform()
+ * @altsqlfn stboxTransform()
  */
 Datum
 Stbox_transform(PG_FUNCTION_ARGS)
@@ -1148,6 +1151,7 @@ PG_FUNCTION_INFO_V1(Stbox_transform_pipeline);
  * @ingroup mobilitydb_geo_box_srid
  * @brief Return a spatiotemporal box transformed to an SRID using a pipeline
  * @sqlfn transformPipeline()
+ * @altsqlfn stboxTransformPipeline()
  */
 Datum
 Stbox_transform_pipeline(PG_FUNCTION_ARGS)
@@ -1774,6 +1778,7 @@ PG_FUNCTION_INFO_V1(Stbox_hash);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return the hash value of a spatiotemporal box
  * @sqlfn hash()
+ * @altsqlfn stboxHash()
  */
 Datum
 Stbox_hash(PG_FUNCTION_ARGS)
@@ -1788,6 +1793,7 @@ PG_FUNCTION_INFO_V1(Stbox_hash_extended);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return the hash value of a spatiotemporal box
  * @sqlfn hashExtended()
+ * @altsqlfn stboxHashExtended()
  */
 Datum
 Stbox_hash_extended(PG_FUNCTION_ARGS)

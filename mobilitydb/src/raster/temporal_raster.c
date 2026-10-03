@@ -910,6 +910,7 @@ PG_FUNCTION_INFO_V1(Raster_transform);
  * @param[in] scalex,scaley Pixel size of the result, 0 to let the warp derive
  * it
  * @sqlfn transform()
+ * @altsqlfn rasterTransform()
  */
 Datum
 Raster_transform(PG_FUNCTION_ARGS)
@@ -944,6 +945,7 @@ PG_FUNCTION_INFO_V1(Raster_transform_pipeline);
  * @param[in] scalex,scaley Pixel size of the result, 0 to let the warp derive
  * it
  * @sqlfn transformPipeline()
+ * @altsqlfn rasterTransformPipeline()
  */
 Datum
 Raster_transform_pipeline(PG_FUNCTION_ARGS)
@@ -975,6 +977,7 @@ PG_FUNCTION_INFO_V1(Raster_transform_raster);
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] maxerr Error in input pixels the warp may commit
  * @sqlfn transform()
+ * @altsqlfn rasterTransform()
  */
 Datum
 Raster_transform_raster(PG_FUNCTION_ARGS)
@@ -1742,6 +1745,7 @@ PG_FUNCTION_INFO_V1(Raquet_hash);
  * @ingroup mobilitydb_raster
  * @brief Return the 32-bit hash of a Raquet tile
  * @sqlfn hash()
+ * @altsqlfn raquetHash()
  */
 Datum
 Raquet_hash(PG_FUNCTION_ARGS)
@@ -1758,6 +1762,7 @@ PG_FUNCTION_INFO_V1(Raquet_hash_extended);
  * @ingroup mobilitydb_raster
  * @brief Return the 64-bit hash of a Raquet tile using a seed
  * @sqlfn hashExtended()
+ * @altsqlfn raquetHashExtended()
  */
 Datum
 Raquet_hash_extended(PG_FUNCTION_ARGS)
