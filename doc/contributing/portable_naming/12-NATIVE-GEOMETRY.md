@@ -71,7 +71,7 @@ master already declares `distance`, `shortestLine`, `area`, `perimeter`, `centro
 | 7 | The earth model of a geography operation | every geography operation and its lifts take `spheroid boolean DEFAULT true`, as `area(stbox, spheroid)` names it; `length(geography)` included; `intersects(geography, geography)` mirrors the flagless `ST_Intersects` |
 | 8 | How the earth model reaches the lifts | as an `lfinfo` parameter: the two operands are the arguments of the lift and `param[]` carries the rest, as the `tjsonb` lifts carry up to four; `dwithin` carries the distance in `param[0]` and the model in `param[1]` |
 | 9 | Which equality the lifting kernel uses | structural, for geometry as for geography: a lift applies the base operation at every instant, the base `=` of two geometries is structural (PostGIS's `=`, and MobilityDB's `cmp` and `hash`), so the temporal `=`, the ever and always equalities, the sets and the normalization of a sequence are structural; the point-set equality is `equals` (decision 1) |
-| 10 | The distance operators over geography | an operator uses the default and the function switches, as `->` and `jsonbsetObjectField(jsonbset, text, null_handle text DEFAULT 'use_json_null')` (`doc/temporal_jsonb.xml`): `tDistance` and `nearestApproachDistance` over geography take `spheroid boolean DEFAULT true`, and `<->` and `\|=\|` over geography call the two-argument procedures `tDistanceOpr` and `nearestApproachDistanceOpr`, as `->` calls `jsonbsetObjectFieldOpr`; the operators answer on the spheroid, where PostGIS's geography `<->` answers on the sphere to agree with its index ([Geodetic boxes](GEODETIC-BOXES.md) states what the index-ordered search needs) |
+| 10 | The distance operators over geography | an operator uses the default and the function switches, as `->` and `jsonbsetObjectField(jsonbset, text, null_handle text DEFAULT 'use_json_null')` (`doc/temporal_jsonb.xml`): `tDistance` and `nearestApproachDistance` over geography take `spheroid boolean DEFAULT true`, and `<->` and `\|=\|` over geography call the two-argument procedures `tDistanceOp` and `nearestApproachDistanceOp`, as `->` calls `jsonbsetObjectFieldOpr`, the suffix `Op` naming the procedure after its `@sqlop` tag; the operators answer on the spheroid, where PostGIS's geography `<->` answers on the sphere to agree with its index ([Geodetic boxes](GEODETIC-BOXES.md) states what the index-ordered search needs) |
 
 ## What the lifting infrastructure requires
 
@@ -158,7 +158,7 @@ Spanish:
    each wrapper reading it as `bool spheroid = true; if (PG_NARGS() > k) spheroid =
    PG_GETARG_BOOL(k);` and calling the public function by name, the form from which the MEOS-API
    catalog derives the value a signature omitting it passes; `<->` and `|=|` over geography call
-   `tDistanceOpr` and `nearestApproachDistanceOpr`.
+   `tDistanceOp` and `nearestApproachDistanceOp`.
 5. **The relationships**: `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`,
    `equals`, `relate(geometry, geometry, text)` over geometry, `intersects`, `disjoint`, `dwithin`
    over geography, the containment family refusing Z; the six `cbuffer_*` relationships as
@@ -189,5 +189,5 @@ its C layer builds without a warning in both builds and the 69 MEOS test program
 and always dwithin wrappers come from the generator's `dwithin` shape with the manifest key
 `spheroid: 3`; the SQL of the 24 geography overloads no operator calls, the four geography
 `DwithinPairs`, and `length(geography)` take the argument. Left: the 18 operator signatures and
-their `…Opr` procedures (decision 10), the tests against PostGIS on both models, the manual
+their `…Op` procedures (decision 10), the tests against PostGIS on both models, the manual
 entries.
