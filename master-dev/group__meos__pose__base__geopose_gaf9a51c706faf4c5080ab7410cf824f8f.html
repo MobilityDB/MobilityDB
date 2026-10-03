@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geopose_stream_header_obj</title>
+<title>MobilityDB: tpose_as_geopose_stream_header</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,7 +81,6 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">geopose_frame</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_ga94ca66714e6c9f92dca7b5cddfe26dda.html#ga94ca66714e6c9f92dca7b5cddfe26dda">geopose_stream_header_obj</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba">pose_apply_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
@@ -92,30 +91,22 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47">pose_yaw</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga8d09f2ca02849162f5b905e50dd85e82.html#ga8d09f2ca02849162f5b905e50dd85e82">tpose_as_geopose_stream</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gae02c37ac519c4920772df78b8a7a0ccc.html#gae02c37ac519c4920772df78b8a7a0ccc">tpose_as_geopose_stream_element</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_gaf9a51c706faf4c5080ab7410cf824f8f.html#gaf9a51c706faf4c5080ab7410cf824f8f">tpose_as_geopose_stream_header</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga94ca66714e6c9f92dca7b5cddfe26dda" name="ga94ca66714e6c9f92dca7b5cddfe26dda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga94ca66714e6c9f92dca7b5cddfe26dda">&#9670;&#160;</a></span>geopose_stream_header_obj()</h2>
+<a id="gaf9a51c706faf4c5080ab7410cf824f8f" name="gaf9a51c706faf4c5080ab7410cf824f8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf9a51c706faf4c5080ab7410cf824f8f">&#9670;&#160;</a></span>tpose_as_geopose_stream_header()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static json_object * geopose_stream_header_obj </td>
+          <td class="memname">char * tpose_as_geopose_stream_header </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structGeoPoseAnchor.html">GeoPoseAnchor</a> *&#160;</td>
-          <td class="paramname"><em>anchor</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -129,11 +120,6 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Return the OGC GeoPose StreamHeader of a temporal pose. </p>
@@ -145,7 +131,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__pose__inout_ga726c59c9e27dec7370e8c24eb4495dfc.html#ga726c59c9e27dec7370e8c24eb4495dfc" title="Return the OGC GeoPose StreamHeader of a temporal pose, the document that opens the stream Tpose_as_g...">Tpose_as_geopose_stream_header()</a> </dd></dl>
 
 </div>
 </div>
