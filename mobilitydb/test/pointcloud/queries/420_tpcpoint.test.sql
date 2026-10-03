@@ -311,6 +311,7 @@ SELECT tpcpointFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
   tpcpointFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
   tpcpointFromText(asText(temp)) = temp AS text_roundtrips,
   tpcpointFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  asEWKT(temp)::tpcpoint = temp AS ewkt_cast_roundtrips,
   octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
   split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
   SRID(temp) AS srid

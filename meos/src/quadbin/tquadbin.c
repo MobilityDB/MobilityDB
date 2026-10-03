@@ -140,13 +140,13 @@ ensure_valid_tquadbin_tgeompoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_quadbin_inout
  * @brief Parse a temporal quadbin cell index from its Well-Known Text
  * representation
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tquadbin_in(const char *str)
 {
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return temporal_parse(&str, T_TQUADBIN);
 }
 

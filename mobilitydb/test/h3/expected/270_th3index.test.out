@@ -304,6 +304,12 @@ SELECT asEWKT(th3indexFromEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880
  SRID=4326;[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+SELECT asEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')::th3index);
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}')));
                                                  asewkt                                                 
 --------------------------------------------------------------------------------------------------------

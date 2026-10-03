@@ -64,7 +64,7 @@
  * @brief Return a temporal pgpointcloud point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @csqlfn #Temporal_in()
+ * @csqlfn #Temporal_in(), #Tspatial_from_ewkt()
  */
 Temporal *
 tpcpoint_in(const char *str)
