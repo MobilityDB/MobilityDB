@@ -1297,9 +1297,11 @@ span_cmp_size(const Span *s1, const Span *s2)
   int result;
   if (numspan_type(s1->spantype))
   {
-    Datum d1 = distance_value_value(s1->upper, s1->lower, s1->basetype);
-    Datum d2 = distance_value_value(s2->upper, s2->lower, s2->basetype);
-    result = datum_cmp(d1, d2, s1->basetype);
+    /* The widths are compared as doubles, since an integer of the base type
+     * cannot hold every width of a span of that type */
+    double d1 = distance_value_value_double(s1->upper, s1->lower, s1->basetype);
+    double d2 = distance_value_value_double(s2->upper, s2->lower, s2->basetype);
+    result = (d1 < d2) ? -1 : ((d1 > d2) ? 1 : 0);
   }
   else /* timespan_type(s1->spantype) */
   {

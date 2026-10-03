@@ -39,6 +39,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/int.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -1083,23 +1084,79 @@ distance_value_value(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
-    case T_INT8:
-      return Int64GetDatum(llabs(DatumGetInt64(l) - DatumGetInt64(r)));
-    case T_FLOAT8:
-      return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
     case T_DATE:
-      /* Distance in days if the base type is DateADT */
-      return Int32GetDatum(abs(DatumGetDateADT(l) - DatumGetDateADT(r)));
+    {
+      /* The distance between dates is expressed in days. The difference of
+       * two integers is checked as PostgreSQL's int4mi checks it, since an
+       * integer cannot hold every distance between two integers */
+      int32 v1 = DatumGetInt32(l), v2 = DatumGetInt32(r), result;
+      if (pg_sub_s32_overflow(Max(v1, v2), Min(v1, v2), &result))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "integer out of range");
+        return distance_sentinel(type);
+      }
+      return Int32GetDatum(result);
+    }
+    case T_INT8:
+    {
+      int64 v1 = DatumGetInt64(l), v2 = DatumGetInt64(r), result;
+      if (pg_sub_s64_overflow(Max(v1, v2), Min(v1, v2), &result))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "bigint out of range");
+        return distance_sentinel(type);
+      }
+      return Int64GetDatum(result);
+    }
+    case T_FLOAT8:
     case T_TIMESTAMPTZ:
-      /* Distance in seconds if the base type is TimestampTz */
-      return Float8GetDatum((llabs((DatumGetTimestampTz(l) -
-        DatumGetTimestampTz(r)))) / USECS_PER_SEC);
+      /* The distance between timestamptz values is expressed in seconds */
+      return Float8GetDatum(distance_value_value_double(l, r, type));
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
       return distance_sentinel(type);
+  }
+}
+
+/**
+ * @brief Return the distance between two values as a double
+ * @param[in] l,r Values
+ * @param[in] type Type of the values
+ * @errval DBL_MAX
+ * @details The distance is the one #distance_value_value returns, read as
+ * #distance_double reads it. It is computed without overflow, so that the
+ * indexes and the statistics, which rank and histogram the distances as
+ * doubles, can ask for the distance between any two values, while an integer
+ * of the base type cannot hold every distance between two of its values
+ */
+double
+distance_value_value_double(Datum l, Datum r, MeosType type)
+{
+  assert(span_basetype(type));
+  switch (type)
+  {
+    case T_INT4:
+    case T_DATE:
+      /* The distance between dates is expressed in days */
+      return fabs((double) DatumGetInt32(l) - (double) DatumGetInt32(r));
+    case T_INT8:
+    case T_TIMESTAMPTZ:
+    {
+      /* The unsigned difference of two 64-bit integers does not overflow */
+      int64 v1 = DatumGetInt64(l), v2 = DatumGetInt64(r);
+      double result = (double) (v1 > v2 ? (uint64) v1 - (uint64) v2 :
+        (uint64) v2 - (uint64) v1);
+      /* The distance between timestamptz values is expressed in seconds */
+      return (type == T_INT8) ? result : result / USECS_PER_SEC;
+    }
+    case T_FLOAT8:
+      return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+    default:
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown types for distance between values: %s",
+        meostype_name(type));
+      return DBL_MAX;
   }
 }
 

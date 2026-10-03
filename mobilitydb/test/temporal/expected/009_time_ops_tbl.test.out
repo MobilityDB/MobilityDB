@@ -87,25 +87,25 @@ SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'
 SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator, floatspan '[50, 55]'), 6);
   round   
 ----------
- 0.112218
+ 0.104515
 (1 row)
 
 SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator, floatspan '[50, 55]'), 6);
-  round   
-----------
- 0.008924
+  round  
+---------
+ 0.00801
 (1 row)
 
 SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]'), 6);
   round   
 ----------
- 0.102045
+ 0.103003
 (1 row)
 
 SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01 00:00:00, 2001-06-01:00:00:03]'), 6);
-  round   
-----------
- 0.004094
+  round  
+---------
+ 3.1e-05
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator), 6);
@@ -123,25 +123,25 @@ SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::re
 SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator), 6);
   round   
 ----------
- 0.115991
+ 0.115656
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator), 6);
   round   
 ----------
- 0.014777
+ 0.014657
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator), 6);
   round   
 ----------
- 0.009185
+ 0.000186
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator), 6);
-  round   
-----------
- 0.001349
+  round  
+---------
+ 7.4e-05
 (1 row)
 
 /* Errors */

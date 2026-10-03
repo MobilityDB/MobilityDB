@@ -296,7 +296,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     lowers[non_null_cnt] = lower;
     uppers[non_null_cnt] = upper;
-    lengths[non_null_cnt] = distance_value_value(upper.val, lower.val,
+    lengths[non_null_cnt] = distance_value_value_double(upper.val, lower.val,
       upper.basetype);
 
     /* Increment non null count */
