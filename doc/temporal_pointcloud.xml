@@ -930,7 +930,7 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpoint</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-deleteTime(tpcpoint,time,connect boolean=true) → tpcpoint
+deleteTime(tpcpoint,times,connect boolean=true) → tpcpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),
@@ -1014,8 +1014,8 @@ SELECT numInstants(minusValue(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to a time selector (timestamp, period, set, or spanset), or remove it</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atTime(tpcpoint,time) → tpcpoint
-minusTime(tpcpoint,time) → tpcpoint
+atTime(tpcpoint,times) → tpcpoint
+minusTime(tpcpoint,times) → tpcpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
@@ -1781,7 +1781,7 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpatch</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-deleteTime(tpcpatch,time,connect boolean=true) → tpcpatch
+deleteTime(tpcpatch,times,connect boolean=true) → tpcpatch
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),
