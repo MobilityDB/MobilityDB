@@ -3550,7 +3550,25 @@ int main(void)
   printf("%s\n", tfloat2_out);
   printf("tnumber_tavg result\n");
   printf("%s\n", char_result);
-  free(tfloat_result); free(char_result);
+  free(char_result);
+
+  /* uint8_t *taggstate_serialize(SkipList *state, size_t *size_out); */
+  /* SkipList *taggstate_deserialize(const uint8_t *bytes, size_t size); */
+  /* A partial state written as bytes and read back by another worker
+   * combines into the aggregate of both values; the state of tAvg holds
+   * temporal values of the internal type tdouble2 */
+  SkipList *sklist_avg = tnumber_tavg_transfn(NULL, tfloat1);
+  binchar_result = taggstate_serialize(sklist_avg, &size);
+  free(temporal_tagg_finalfn(sklist_avg));
+  sklist_avg = taggstate_deserialize(binchar_result, size);
+  free(binchar_result);
+  SkipList *sklist_avg2 = tnumber_tavg_transfn(NULL, tfloat2);
+  sklist = tnumber_tavg_combinefn(sklist_avg, sklist_avg2);
+  free(temporal_tagg_finalfn(sklist == sklist_avg ? sklist_avg2 : sklist_avg));
+  Temporal *tfloat_result2 = tnumber_tavg_finalfn(sklist);
+  printf("tnumber_tavg combined from a state read back from its bytes: %c\n",
+    temporal_eq(tfloat_result, tfloat_result2) ? 't' : 'n');
+  free(tfloat_result); free(tfloat_result2);
 
   /* SkipList *tnumber_wavg_transfn(SkipList *state, const Temporal *temp, const Interval *interv); */
   sklist = tnumber_wavg_transfn(NULL, tfloat1, interv3);

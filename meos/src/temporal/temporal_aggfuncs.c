@@ -1051,6 +1051,130 @@ temporal_to_taggstate(const Temporal *temp)
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the bytes of an aggregate state, read back by
+ * #taggstate_deserialize
+ * @details The bytes hold the number of values of the state, each value as
+ * its size followed by its extended Well-Known Binary in little endian, and
+ * the size and the bytes of the extra data of the state, such as the SRID of
+ * a spatial aggregate. The number and the sizes are written in the byte order
+ * of the machine, as the extra data is, so that a partial aggregate moves
+ * between the workers of one engine.
+ * @param[in] state State
+ * @param[out] size_out Size of the result in bytes
+ * @errval NULL
+ * @csqlfn #Taggstate_serialize()
+ */
+uint8_t *
+taggstate_serialize(SkipList *state, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+
+  int count = state->length;
+  void **values = skiplist_values(state);
+  uint8_t **wkbs = palloc(sizeof(uint8_t *) * count);
+  size_t *sizes = palloc(sizeof(size_t) * count);
+  size_t size = sizeof(int) + sizeof(size_t) * (count + 1) + state->extrasize;
+  for (int i = 0; i < count; i++)
+  {
+    wkbs[i] = temporal_as_wkb((Temporal *) values[i], WKB_EXTENDED | WKB_NDR,
+      &sizes[i]);
+    size += sizes[i];
+  }
+  uint8_t *result = palloc(size);
+  uint8_t *pos = result;
+  memcpy(pos, &count, sizeof(int));
+  pos += sizeof(int);
+  for (int i = 0; i < count; i++)
+  {
+    memcpy(pos, &sizes[i], sizeof(size_t));
+    pos += sizeof(size_t);
+    memcpy(pos, wkbs[i], sizes[i]);
+    pos += sizes[i];
+  }
+  memcpy(pos, &state->extrasize, sizeof(size_t));
+  pos += sizeof(size_t);
+  if (state->extrasize)
+    memcpy(pos, state->extra, state->extrasize);
+  pfree_array((void **) wkbs, count);
+  pfree(sizes); pfree(values);
+  *size_out = size;
+  return result;
+}
+
+/**
+ * @brief Read the values of an aggregate state from its bytes, return the
+ * number of bytes read or 0 when the bytes are not those of a state
+ */
+static size_t
+taggstate_read_values(const uint8_t *bytes, size_t size, Temporal **values,
+  int count)
+{
+  size_t read = sizeof(int);
+  for (int i = 0; i < count; i++)
+  {
+    size_t vsize;
+    if (size - read < sizeof(size_t))
+      return 0;
+    memcpy(&vsize, bytes + read, sizeof(size_t));
+    read += sizeof(size_t);
+    if (size - read < vsize)
+      return 0;
+    values[i] = temporal_from_wkb(bytes + read, vsize);
+    if (! values[i])
+      return 0;
+    read += vsize;
+  }
+  return read;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Return the aggregate state written by #taggstate_serialize
+ * @param[in] bytes Bytes
+ * @param[in] size Size of the bytes
+ * @errval NULL
+ * @csqlfn #Taggstate_deserialize()
+ */
+SkipList *
+taggstate_deserialize(const uint8_t *bytes, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(bytes, NULL);
+
+  int count = -1;
+  if (size >= sizeof(int))
+    memcpy(&count, bytes, sizeof(int));
+  Temporal **values = count > 0 ? palloc0(sizeof(Temporal *) * count) : NULL;
+  size_t read = count >= 0 ?
+    taggstate_read_values(bytes, size, values, count) : 0;
+  size_t extrasize = 0;
+  if (read && size - read >= sizeof(size_t))
+  {
+    memcpy(&extrasize, bytes + read, sizeof(size_t));
+    read += sizeof(size_t);
+  }
+  else
+    read = 0;
+  if (! read || size - read != extrasize)
+  {
+    if (values)
+      pfree_array((void **) values, count);
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Invalid bytes of a temporal aggregate state");
+    return NULL;
+  }
+  SkipList *result = temporal_skiplist_make();
+  temporal_skiplist_splice(result, (void **) values, count, NULL, false);
+  if (extrasize)
+    skiplist_set_extra(result, (void *) (bytes + read), extrasize);
+  if (values)
+    pfree_array((void **) values, count);
+  return result;
+}
+
 /*****************************************************************************
  * Generic functions for aggregating temporal values that require a
  * transformation to be applied to each composing instant/sequence

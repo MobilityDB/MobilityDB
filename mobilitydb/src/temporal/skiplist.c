@@ -35,8 +35,8 @@
 #include "temporal/skiplist.h"
 
 /* PostgreSQL */
-#include <executor/spi.h>
-#include <libpq/pqformat.h>
+#include <postgres.h>
+#include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -75,54 +75,6 @@ unset_aggregation_context(MemoryContext ctx)
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
 
-/**
- * @brief Write the state value into the buffer
- * @param[in] state State
- * @param[in] buf Buffer
- */
-static void
-aggstate_write(SkipList *state, StringInfo buf)
-{
-  int i;
-  void **values = skiplist_values(state);
-  pq_sendint32(buf, (uint32) state->length);
-  for (i = 0; i < state->length; i ++)
-  {
-    SPI_connect();
-    temporal_write((Temporal *) values[i], buf);
-    SPI_finish();
-  }
-  pq_sendint64(buf, state->extrasize);
-  if (state->extra)
-    pq_sendbytes(buf, state->extra, (int) state->extrasize);
-  pfree(values);
-  return;
-}
-
-/**
- * @brief Read the state value from the buffer
- * @param[in] buf Buffer
- */
-static SkipList *
-aggstate_read(StringInfo buf)
-{
-  int length = pq_getmsgint(buf, 4);
-  void **values = palloc0(sizeof(void *) * length);
-  SkipList *result = NULL; /* make compiler quiet */
-  for (int i = 0; i < length; i ++)
-    values[i] = temporal_recv(buf);
-  size_t extrasize = (size_t) pq_getmsgint64(buf);
-  result = temporal_skiplist_make();
-  temporal_skiplist_splice(result, values, length, NULL, false);
-  if (extrasize)
-  {
-    const char *extra = pq_getmsgbytes(buf, (int) extrasize);
-    skiplist_set_extra(result, (void *) extra, extrasize);
-  }
-  pfree_array(values, length);
-  return result;
-}
-
 Datum Taggstate_serialize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Taggstate_serialize);
 /**
@@ -132,10 +84,15 @@ Datum
 Taggstate_serialize(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  aggstate_write(state, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  /* #skiplist_values takes the aggregation context from #fetch_fcinfo */
+  store_fcinfo(fcinfo);
+  size_t size;
+  uint8_t *bytes = taggstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
 }
 
 Datum Taggstate_deserialize(PG_FUNCTION_ARGS);
@@ -147,13 +104,6 @@ Datum
 Taggstate_deserialize(PG_FUNCTION_ARGS)
 {
   bytea *data = PG_GETARG_BYTEA_P(0);
-  StringInfoData buf =
-  {
-    .cursor = 0,
-    .data = VARDATA(data),
-    .len = VARSIZE(data),
-    .maxlen = VARSIZE(data)
-  };
   /* The skiplist this reads is built by #temporal_skiplist_make and
    * #temporal_skiplist_splice, which take the aggregation context from
    * #fetch_fcinfo. Every other entry point of the aggregate stores its own
@@ -161,7 +111,8 @@ Taggstate_deserialize(PG_FUNCTION_ARGS)
    * left and build the state in a context that is reset before the final
    * function runs. */
   store_fcinfo(fcinfo);
-  SkipList *result = aggstate_read(&buf);
+  SkipList *result = taggstate_deserialize((uint8_t *) VARDATA(data),
+    VARSIZE(data) - VARHDRSZ);
   PG_RETURN_SKIPLIST_P(result);
 }
 

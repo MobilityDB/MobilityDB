@@ -170,11 +170,6 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 extern interpType input_interp_string(FunctionCallInfo fcinfo, int argno);
 
-/* Send/receive functions */
-
-extern Temporal *temporal_recv(StringInfo buf);
-extern void temporal_write(const Temporal *temp, StringInfo buf);
-
 extern uint8_t get_endian_variant(const text *txt);
 extern bytea *Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, MeosType type,
   bool extended);

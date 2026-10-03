@@ -306,91 +306,6 @@ Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 }
 
 /*****************************************************************************
- * Send and receive functions
- * The send and receive functions are needed for temporal aggregation
- *****************************************************************************/
-
-/**
- * @brief Return a temporal instant from its binary representation read from
- * a buffer
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TInstant *
-tinstant_recv(StringInfo buf, MeosType temptype)
-{
-  TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
-  int size = pq_getmsgint(buf, 4);
-  StringInfoData buf2 =
-  {
-    .cursor = 0,
-    .len = size,
-    .maxlen = size,
-    .data = buf->data + buf->cursor
-  };
-  MeosType basetype = temptype_basetype(temptype);
-  Datum value = call_recv(basetype, &buf2);
-  buf->cursor += size;
-  return tinstant_make(value, temptype, t);
-}
-
-/**
- * @brief Write the binary representation of a temporal instant into a buffer
- * @param[in] inst Temporal instant
- * @param[in] buf Buffer
- */
-void
-tinstant_write(const TInstant *inst, StringInfo buf)
-{
-  MeosType basetype = temptype_basetype(inst->temptype);
-  bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(basetype, tinstant_value_p(inst));
-  pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
-  pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ);
-  pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return a temporal sequence from its binary representation read from
- * a buffer
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TSequence *
-tsequence_recv(StringInfo buf, MeosType temptype)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  bool lower_inc = (char) pq_getmsgbyte(buf);
-  bool upper_inc = (char) pq_getmsgbyte(buf);
-  interpType interp = (char) pq_getmsgbyte(buf);
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-    instants[i] = tinstant_recv(buf, temptype);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
-    NORMALIZE);
-}
-
-/**
- * @brief Write the binary representation of a temporal sequence into a buffer
- * @param[in] seq Temporal sequence
- * @param[in] buf Buffer
- */
-void
-tsequence_write(const TSequence *seq, StringInfo buf)
-{
-  pq_sendint32(buf, seq->count);
-  pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, (uint8) MEOS_FLAGS_GET_INTERP(seq->flags));
-  for (int i = 0; i < seq->count; i++)
-    tinstant_write(TSEQUENCE_INST_N(seq, i), buf);
-  return;
-}
-
-/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -429,45 +344,6 @@ Temporal_out(PG_FUNCTION_ARGS)
   char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
-}
-
-/**
- * @brief Return a temporal value from its binary representation read from
- * a buffer
- * @note Function needed for temporal aggregation and thus only instant and
- * sequence subtypes must be considered
- */
-Temporal *
-temporal_recv(StringInfo buf)
-{
-  uint8 temptype = (uint8) pq_getmsgbyte(buf);
-  uint8 subtype = (uint8) pq_getmsgbyte(buf);
-  Temporal *result;
-  assert(subtype == TINSTANT || subtype == TSEQUENCE);
-  if (subtype == TINSTANT)
-    result = (Temporal *) tinstant_recv(buf, temptype);
-  else /* subtype == TSEQUENCE */
-    result = (Temporal *) tsequence_recv(buf, temptype);
-  return result;
-}
-
-/**
- * @brief Write the binary representation of a temporal value into a buffer
- * @note Function needed for temporal aggregation and thus only instant and
- * sequence subtypes must be considered
- */
-void
-temporal_write(const Temporal *temp, StringInfo buf)
-{
-  pq_sendbyte(buf, temp->temptype);
-  pq_sendbyte(buf, temp->subtype);
-  assert(temptype_subtype(temp->subtype));
-  assert(temp->subtype == TINSTANT || temp->subtype == TSEQUENCE);
-  if (temp->subtype == TINSTANT)
-    tinstant_write((TInstant *) temp, buf);
-  else /* temp->subtype == TSEQUENCE */
-    tsequence_write((TSequence *) temp, buf);
-  return;
 }
 
 PGDLLEXPORT Datum Temporal_recv(PG_FUNCTION_ARGS);

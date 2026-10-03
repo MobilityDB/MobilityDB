@@ -2004,6 +2004,8 @@ extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
  * Aggregate functions for temporal types
  *****************************************************************************/
 
+extern SkipList *taggstate_deserialize(const uint8_t *bytes, size_t size);
+extern uint8_t *taggstate_serialize(SkipList *state, size_t *size_out);
 extern SkipList *tbigint_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbigint_tmax_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tbigint_tmin_transfn(SkipList *state, const Temporal *temp);
