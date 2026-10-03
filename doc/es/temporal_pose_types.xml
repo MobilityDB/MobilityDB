@@ -1305,7 +1305,7 @@ SELECT asText(mergeAgg(temp)) FROM (VALUES
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 insert({tpose,tposechain},{tpose,tposechain},connect boolean=true) &#8594; {tpose,tposechain}
 update({tpose,tposechain},{tpose,tposechain},connect boolean=true) &#8594; {tpose,tposechain}
-deleteTime({tpose,tposechain},time,connect boolean=true) &#8594; {tpose,tposechain}
+deleteTime({tpose,tposechain},times,connect boolean=true) &#8594; {tpose,tposechain}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(deleteTime(tposechain
@@ -1388,7 +1388,7 @@ SELECT asText(minusElevation(tpose '[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atValue</varname></primary></indexterm>
 				<para>Restringe una cadena de poses temporal a un tiempo o a un valor</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atTime({tpose,tposechain},time) &#8594; {tpose,tposechain}
+atTime({tpose,tposechain},times) &#8594; {tpose,tposechain}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,

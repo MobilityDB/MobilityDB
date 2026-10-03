@@ -930,7 +930,7 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Elimina un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpoint</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-deleteTime(tpcpoint,time,connect boolean=true) → tpcpoint
+deleteTime(tpcpoint,times,connect boolean=true) → tpcpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),
@@ -1014,8 +1014,8 @@ SELECT numInstants(minusValue(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
 					<para>Restringe un tpcpoint a un selector temporal (marca de tiempo, periodo, conjunto o spanset), o eliminarlo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atTime(tpcpoint,time) → tpcpoint
-minusTime(tpcpoint,time) → tpcpoint
+atTime(tpcpoint,times) → tpcpoint
+minusTime(tpcpoint,times) → tpcpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
@@ -1781,7 +1781,7 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Elimina un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpatch</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-deleteTime(tpcpatch,time,connect boolean=true) → tpcpatch
+deleteTime(tpcpatch,times,connect boolean=true) → tpcpatch
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),

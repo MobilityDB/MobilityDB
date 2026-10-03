@@ -348,7 +348,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 
 		<itemizedlist>
 			<listitem>
-				<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname>, or <varname>tstzspanset</varname>,</para>
+				<para><varname>times</varname> represents any time type with <varname>timestamptz</varname> granularity, that is, <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname>, or <varname>tstzspanset</varname>,</para>
 			</listitem>
 
 			<listitem>

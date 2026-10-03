@@ -940,7 +940,7 @@ SELECT insert(ts2cell '[47c3c@2001-01-01,
 				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 				<para>Eliminar un valor de tiempo de una celda temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-deleteTime(tcell,time,connect boolean=true) → tcell
+deleteTime(tcell,times,connect boolean=true) → tcell
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT deleteTime(th3index '[871fa4418ffffff@2001-01-01,
@@ -989,8 +989,8 @@ SELECT atValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}',
 				<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
 				<para>Restringir una celda temporal a (el complemento de) un valor de tiempo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atTime(tcell,time) → tcell
-minusTime(tcell,time) → tcell
+atTime(tcell,times) → tcell
+minusTime(tcell,times) → tcell
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(th3index '[871fa4418ffffff@2001-01-01,
