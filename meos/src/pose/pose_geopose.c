@@ -1689,23 +1689,11 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
 }
 
 /**
- * @ingroup meos_pose_base_geopose
- * @brief Return the OGC GeoPose StreamHeader of a temporal pose
- * @details A Stream is the open-ended member of the Composite Sequence
- * classes: it carries the same frames as an Irregular Series but states
- * neither how many poses there are nor when they end, since more may
- * arrive. The standard splits it into two documents, and this is the one
- * that "appears once at the beginning of a stream": the transition model
- * of Requirement 35 and, per Requirement 34, the outer frame that every
- * element is expressed against.
- *
- * The frame is anchored at the first pose of @p temp, so a producer that
- * accumulates its value with @p temporal_append_tinstant writes the header
- * from the same value it goes on to stream, and the elements it emits speak
- * of the same tangent point.
+ * @brief Return the JSON object of the OGC GeoPose StreamHeader of a temporal
+ * pose, its outer frame anchored at @p anchor
  * @param[in] temp Temporal pose
+ * @param[in] anchor Anchor of the outer frame
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
- * @errval NULL
  */
 static json_object *
 geopose_stream_header_obj(const Temporal *temp, const GeoPoseAnchor *anchor,
@@ -1741,6 +1729,26 @@ geopose_stream_element_obj(const GeoPoseAnchor *anchor, const TInstant *inst,
   return res;
 }
 
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the OGC GeoPose StreamHeader of a temporal pose
+ * @details A Stream is the open-ended member of the Composite Sequence
+ * classes: it carries the same frames as an Irregular Series but states
+ * neither how many poses there are nor when they end, since more may
+ * arrive. The standard splits it into two documents, and this is the one
+ * that "appears once at the beginning of a stream": the transition model
+ * of Requirement 35 and, per Requirement 34, the outer frame that every
+ * element is expressed against.
+ *
+ * The frame is anchored at the first pose of @p temp, so a producer that
+ * accumulates its value with @p temporal_append_tinstant writes the header
+ * from the same value it goes on to stream, and the elements it emits speak
+ * of the same tangent point.
+ * @param[in] temp Temporal pose
+ * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @errval NULL
+ * @csqlfn #Tpose_as_geopose_stream_header()
+ */
 char *
 tpose_as_geopose_stream_header(const Temporal *temp, int precision)
 {
@@ -1773,13 +1781,16 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
  * @param[in] inst Instant to write
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
  * @errval NULL
+ * @csqlfn #Tpose_as_geopose_stream_element()
  */
 char *
 tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
   int precision)
 {
   VALIDATE_TPOSE(temp, NULL);
-  VALIDATE_NOT_NULL(inst, NULL);
+  VALIDATE_TPOSE((const Temporal *) inst, NULL);
+  if (! ensure_temporal_isof_subtype((const Temporal *) inst, TINSTANT))
+    return NULL;
 
   const TInstant *first = temporal_start_inst(temp);
   if (first == NULL)

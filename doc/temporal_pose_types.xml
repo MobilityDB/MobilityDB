@@ -2361,7 +2361,7 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asGeoPoseStream(tpose,maxdecimaldigits integer=-1) → text
 </programlisting>
-					<para>A stream carries the frames of an Irregular Series while stating neither how many poses there are nor when they end, since more may arrive. The standard writes it as a <varname>header</varname>, holding the transition model and the outer frame, and a <varname>streamElements</varname> array holding one element per pose. The outer frame is the local tangent plane East-North-Up frame at the position of the first pose, so the header and every element speak of one tangent point. The C library also writes the two documents a piece at a time, through <varname>tpose_as_geopose_stream_header</varname> and <varname>tpose_as_geopose_stream_element</varname>, for a producer emitting poses as they arrive. A query returns a value it already holds whole, which is what this writes.</para>
+					<para>A stream carries the frames of an Irregular Series while stating neither how many poses there are nor when they end, since more may arrive. The standard writes it as a <varname>header</varname>, holding the transition model and the outer frame, and a <varname>streamElements</varname> array holding one element per pose. The outer frame is the local tangent plane East-North-Up frame at the position of the first pose, so the header and every element speak of one tangent point. This function writes a value already held whole; <link linkend="tpose_geopose_stream_parts"><varname>asGeoPoseStreamHeader</varname></link> and <varname>asGeoPoseStreamElement</varname> write the same two documents a piece at a time.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
 /* {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"none",
@@ -2370,6 +2370,30 @@ SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6)
    "streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0",
    "id":"RotateTranslate","parameters":"translation=[0, 0, 0]&amp;rotation=[1, 0, 0, 0]"},
    "validTime":1767254400000}}]} */
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpose_geopose_stream_parts">
+					<indexterm significance="normal"><primary><varname>asGeoPoseStreamHeader</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asGeoPoseStreamElement</varname></primary></indexterm>
+					<para>Write the OGC GeoPose StreamHeader of a temporal pose, or the StreamElement of one of its instants</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asGeoPoseStreamHeader(tpose,maxdecimaldigits integer=-1) → text
+asGeoPoseStreamElement(tpose,tpose,maxdecimaldigits integer=-1) → text
+</programlisting>
+					<para>These are the two documents a stream engine writes one at a time: the header once, then an element for each instant as it arrives. The second argument of <varname>asGeoPoseStreamElement</varname> is an instant of the first, and the element states its frame against the outer frame the header anchors at the first pose, so the documents are the members of the stream <varname>asGeoPoseStream</varname> writes whole.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPoseStreamHeader(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+/* {"transitionModel":{"authority":"/geopose/1.0","id":"interpolate",
+   "parameters":"interpolation=Linear"},"outerFrame":{"authority":"/geopose/1.0",
+   "id":"LTP-ENU","parameters":"longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"}} */
+SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]',
+  tpose 'Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02', 6);
+/* {"streamElement":{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate",
+   "parameters":"translation=[0, 0, 0]&amp;rotation=[0.707107, 0, 0, 0.707107]"},
+   "validTime":1767340800000}} */
 </programlisting>
 				</listitem>
 			</itemizedlist>

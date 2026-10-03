@@ -126,6 +126,20 @@ CREATE FUNCTION asGeoPoseStream(tpose, maxdecimaldigits integer DEFAULT -1)
   AS 'MODULE_PATHNAME', 'Tpose_as_geopose_stream'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The two documents a stream engine writes one at a time: the header once,
+-- then an element for each instant of the temporal pose as it arrives.
+CREATE FUNCTION asGeoPoseStreamHeader(tpose,
+    maxdecimaldigits integer DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpose_as_geopose_stream_header'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asGeoPoseStreamElement(tpose, tpose,
+    maxdecimaldigits integer DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpose_as_geopose_stream_element'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION applyPose(geometry, tpose)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpose_apply_geo'

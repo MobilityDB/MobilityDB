@@ -686,3 +686,35 @@ SELECT asGeoPoseStream(tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@
 SELECT asGeoPoseStream(tpose '[Pose(Point(8 47), 0)@2026-01-01,
   Pose(Point(9 47), 0)@2026-01-02]', 6);
 ERROR:  GeoPose JSON requires a geodetic pose, got a planar one
+SELECT asGeoPoseStreamHeader(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+                                                                                                     asgeoposestreamheader                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"}}
+(1 row)
+
+SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]',
+  tpose 'Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02', 6);
+                                                                               asgeoposestreamelement                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"streamElement":{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.707107, 0, 0, 0.707107]"},"validTime":1767340800000}}
+(1 row)
+
+WITH t(v) AS (SELECT tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(8.001 47 1500), 1, 0, 0, 0)@2026-01-02]')
+SELECT asGeoPoseStream(v, 6)::jsonb -> 'header' =
+    asGeoPoseStreamHeader(v, 6)::jsonb AS same_header,
+  asGeoPoseStream(v, 6)::jsonb -> 'streamElements' -> 1 =
+    asGeoPoseStreamElement(v, endInstant(v), 6)::jsonb AS same_element
+FROM t;
+ same_header | same_element 
+-------------+--------------
+ t           | t
+(1 row)
+
+SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]',
+  tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+ERROR:  The temporal value must be of subtype Instant

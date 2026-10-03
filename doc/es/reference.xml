@@ -1797,6 +1797,9 @@
 					<listitem>
 						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Escribe una pose temporal como un Stream de OGC GeoPose</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpose_geopose_stream_parts"><varname>asGeoPoseStreamHeader</varname>, <varname>asGeoPoseStreamElement</varname></link>: Escribe la cabecera de Stream de OGC GeoPose de una pose temporal, o el elemento de Stream de uno de sus instantes</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>

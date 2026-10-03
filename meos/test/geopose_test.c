@@ -424,6 +424,15 @@ int main(void)
   assert(strstr(sw, "translation=[0, 0, 0]") != NULL);
   free(sw);
 
+  /* An element is written for an instant, never for a sequence */
+  meos_errno_reset();
+  char *seq_se = tpose_as_geopose_stream_element(stream,
+    (const TInstant *) stream, 6);
+  printf("stream element(sequence as instant): %s, errno %d\n",
+    seq_se ? "non-NULL" : "NULL", meos_errno());
+  assert(seq_se == NULL);
+  assert(meos_errno() != 0);
+
   free(sh); free(stream);
 
   /*--------------------------------------------------------------------------
