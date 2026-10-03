@@ -142,7 +142,8 @@ Spanish:
    the set, three instants in the sequence.
 2. **The dimension of the base relationships and measures** (decision 5): `geom_dwithin`,
    `geom_intersects` on the lifts' rule; `geom_disjoint` accepting mixed operands as the
-   relationships do, `geom_distance` and `geom_shortestline` refusing them as the distances do.
+   relationships do, `geom_distance` and `geom_shortestline` refusing them as the distances do;
+   the turning points of the temporal dwithin (`tpointsegm_tdwithin_turnpt`) on the same rule.
 3. **The binary lifts carry their parameters** (decision 8): `tfunc_base_base` and the four direct
    calls dispatch `numparam` up to `MAX_PARAMS`.
 4. **The earth model** (decision 7): the geography kernels take the spheroid last, `geog_distance`
@@ -166,6 +167,10 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commit 1 is on the branch, not pushed: `datum_eq` compares two geometries and two
-geographies exactly, `049_geo_equality.test.sql` answers structurally throughout, and the whole
-pg_regress suite passes on PostgreSQL 18 with no other expected output changed. Commit 2 is next.
+**State.** Commits 1 and 2 are on the branch, not pushed. Commit 1: `datum_eq` compares two
+geometries and two geographies exactly, and `049_geo_equality.test.sql` answers structurally
+throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new `geom_disjoint` measure in 3D
+only when both geometries have Z, the new `geom_distance` and `geom_shortestline` refuse a 3D and
+a 2D geometry, and the turning points of the temporal dwithin follow the same rule, so a 3D and a
+2D temporal point answer the same in either order and two parallel 3D points are measured in 3D.
+The whole pg_regress suite passes on PostgreSQL 18 after each. Commit 3 is next.
