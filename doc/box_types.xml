@@ -14,7 +14,28 @@
 
 	<itemizedlist>
 		<listitem>
-			<para><varname>box</varname> represents any bounding box type, that is, <varname>tbox</varname> or <varname>stbox</varname>.</para>
+			<para><varname>box</varname> represents any bounding box type, that is, <varname>tbox</varname> or <varname>stbox</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>number</varname> represents any number base type, that is, <varname>integer</varname>, <varname>bigint</varname>, or <varname>float</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspan</varname> represents any number span type, that is, <varname>intspan</varname>, <varname>bigintspan</varname>, or <varname>floatspan</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>numbers</varname> represents any number set or range type, such as <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname>, or <varname>intspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>times</varname> represents any time type with <varname>timestamptz</varname> granularity, that is, <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname>, or <varname>tstzspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname>, <varname>tbigint</varname>, or <varname>tfloat</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>geo</varname> represents the types <varname>geometry</varname> or <varname>geography</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>tgeo</varname> represents a temporal geometry/geography type, that is, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname>.</para>
 		</listitem>
 	</itemizedlist>
 
