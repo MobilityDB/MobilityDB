@@ -87,7 +87,7 @@
 
 	<sect1 xml:id="pose_notation">
 		<title>Notation</title>
-		<para>Most functions and operators for temporal types described in the previous chapters can be applied to poses and to pose chains. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>pose</varname> or a <varname>posechain</varname> and the notation <varname>ttype</varname> a <varname>tpose</varname> or a <varname>tposechain</varname>. To avoid redundancy, we present next only what is specific to the two types.</para>
+		<para>Most functions and operators for temporal types described in the previous chapters can be applied to poses and to pose chains. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>pose</varname> or a <varname>posechain</varname> and the notation <varname>ttype</varname> a <varname>tpose</varname> or a <varname>tposechain</varname>; the notations <varname>geompoint2D</varname> and <varname>geompoint3D</varname> represent a <varname>geompoint</varname> with, respectively, two and three dimensions. To avoid redundancy, we present next only what is specific to the two types.</para>
 
 		<para>A signature both types answer names them as an alternation, <varname>{pose,posechain}</varname>, and a signature only one of them answers names that one. A function whose <emphasis>name</emphasis> differs between the two keeps a line of its own, so <varname>tpose(pose,timestamptz)</varname> and <varname>tposechain(posechain,timestamptz)</varname> are never collapsed into one callable name that does not exist.</para>
 	</sect1>
@@ -1122,7 +1122,7 @@ SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transform to another interpolation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tpose,interp) → tpose
+setInterp(tpose,interp text) → tpose
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
@@ -1156,7 +1156,8 @@ SELECT asEWKT(shiftTime(tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01'
 				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
 				<para>Return a temporal value translated by given offsets &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-translate({tpose,tposechain},deltax float,deltay float,deltaz float=0) &#8594; {tpose,tposechain}
+translate({tpose,tposechain},deltax float,deltay float,deltaz float=0)
+  &#8594; {tpose,tposechain}
 </programlisting>
 				<para>A vertical offset takes a two-dimensional value out of its plane, so the result is three-dimensional.</para>
 				<para>The chain of every instant moves its first link, which is expressed in the outer frame of the chain, and keeps the others.</para>
@@ -1947,8 +1948,8 @@ SELECT asText(minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Return a temporal pose simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-maxDistSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
-douglasPeuckerSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
+maxDistSimplify(tpose,maxdist float,syncdist boolean=true) &#8594; tpose
+douglasPeuckerSimplify(tpose,maxdist float,syncdist boolean=true) &#8594; tpose
 </programlisting>
 				<para>The <varname>syncdist</varname> argument states whether the distance is measured between synchronized instants; when it is false the distance is the spatial one, ignoring time.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -2163,7 +2164,7 @@ SELECT count(*) FROM geoPoseFrames();
 					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>
 					<para>Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoPoseFrameSRID(int) → int
+geoPoseFrameSRID(integer) → integer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameSRID(1), geoPoseFrameSRID(2);
@@ -2176,7 +2177,7 @@ SELECT geoPoseFrameSRID(3);
 					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
 					<para>Return the human-readable name of a frame</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoPoseFrameName(int) → text
+geoPoseFrameName(integer) → text
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameName(1);
@@ -2189,7 +2190,7 @@ SELECT geoPoseFrameName(2), geoPoseFrameName(3);
 					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
 					<para>Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoPoseFrameIsGeographic(int) → boolean
+geoPoseFrameIsGeographic(integer) → boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);

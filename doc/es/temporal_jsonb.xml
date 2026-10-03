@@ -163,7 +163,7 @@ SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}'])
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
 				<para>Eliminación en un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-jsonbset - {int,text,text[]} → jsonbset
+jsonbset - {integer,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -661,7 +661,7 @@ SELECT tjsonbSeqSetGaps(ARRAY[tjsonb '"{\"vehicleId\": 1,
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convierte un JSONB temporal a un <varname>tstzspan</varname></para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tjsonb::tstzpan
+tjsonb::tstzspan
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -765,7 +765,7 @@ SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@200
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transforma un valor JSONB temporal a otra interpolación</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(tjsonb,interp) → tjsonb
+setInterp(tjsonb,interp text) → tjsonb
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT setInterp(tjsonb '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01',
@@ -948,7 +948,7 @@ SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-03]}' ||
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
 				<para>Eliminación JSONB temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tjsonb - {int,text,text[]} → tjsonb
+tjsonb - {integer,text,text[]} → tjsonb
 tjsonb #- text[] → tjsonb
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1232,10 +1232,10 @@ SELECT tjsonbPathQueryArrayTz(tjsonb
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restringe a (el complemento de) un valor o un conjunto de valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atValue(tjsonb,value) → tjsonb
-minusValue(tjsonb,value) → tjsonb
-atValues(tjsonb,valueset) → tjsonb
-minusValues(tjsonb,valueset) → tjsonb
+atValue(tjsonb,base) → tjsonb
+minusValue(tjsonb,base) → tjsonb
+atValues(tjsonb,values) → tjsonb
+minusValues(tjsonb,values) → tjsonb
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,

@@ -929,7 +929,7 @@ SELECT getTimestamp(tfloat '1@2001-01-01');
 				<indexterm significance="normal"><primary><varname>getTime</varname></primary></indexterm>
 				<para>Return the values or the time on which a temporal value is defined</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-getValues(ttype) → baseset
+getValues(ttype) → {boolean[],numspanset,set}
 getTime(ttype) → tstzspanset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -985,7 +985,7 @@ SELECT timeSpan(tint '[1@2001-01-01, 1@2001-01-15)');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 startValue(ttype) → base
 endValue(ttype) → base
-valueN(ttype,int) → base
+valueN(ttype,integer) → base
 </programlisting>
 				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1217,7 +1217,7 @@ SELECT tfloatSeqSet(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transform a temporal value to another interpolation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setInterp(ttype,interp) → ttype
+setInterp(ttype,interp text) → ttype
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT setInterp(tbool 'true@2001-01-01','discrete');
@@ -1243,8 +1243,8 @@ SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-
 				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
 				<para>Return a temporal boolean stating whether each segment of a continuous temporal sequence (set) has, respectively, at least or at most a given duration</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-segmentMinDuration(temp,interval,strict boolean=true) → tbool
-segmentMaxDuration(temp,interval,strict boolean=true) → tbool
+segmentMinDuration(ttype,interval,strict boolean=true) → tbool
+segmentMaxDuration(ttype,interval,strict boolean=true) → tbool
 </programlisting>
 				<para>If <varname>strict</varname> is not specified, the value <varname>true</varname> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <varname>false</varname>, the function checks whether the segment duration is less/greater than or <emphasis>equal to</emphasis> the interval.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

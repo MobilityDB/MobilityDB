@@ -504,8 +504,8 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Devuelve la trayectoria o el área atravesada &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-trajectory(tpoint,unary_union bool=false) → geo
-traversedArea(tgeo,unary_union bool=false) → geo
+trajectory(tpoint,unary_union boolean=false) → geo
+traversedArea(tgeo,unary_union boolean=false) → geo
 </programlisting>
 				<para>Esta función es equivalente a <link linkend="ttype_getValues"><varname>getValues</varname></link> para los valores temporales alphanuméricos. El último argumento indica si se aplica la función PostGIS <ulink url="https://postgis.net/docs/ST_UnaryUnion.html">ST_UnaryUnion</ulink> para eliminar geometrías redundantes en el resultado. Tenga en cuenta que establecer este argumento como verdadero implica un alto consumo computacional.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1025,7 +1025,7 @@ SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 0, 0, 5));
 				<indexterm significance="normal"><primary><varname>asMVTGeom</varname></primary></indexterm>
 				<para>Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMVTGeom(tpoint,bounds,extent integer=4096,buffer integer=256,
+asMVTGeom(tpoint,bounds stbox,extent integer=4096,buffer integer=256,
   clip boolean=true) → (geom,times)
 </programlisting>
 				<para>El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix. Los parámetros son los siguientes:</para>

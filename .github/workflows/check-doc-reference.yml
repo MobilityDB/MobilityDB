@@ -12,12 +12,14 @@ on:
       - '.github/workflows/check-doc-reference.yml'
       - '.github/actions/apt-resilient/**'
       - 'tools/doc/**'
+      - 'tools/scripts/check_binding_io_ownership.py'
       - 'doc/**'
   pull_request:
     paths:
       - '.github/workflows/check-doc-reference.yml'
       - '.github/actions/apt-resilient/**'
       - 'tools/doc/**'
+      - 'tools/scripts/check_binding_io_ownership.py'
       - 'doc/**'
 
 permissions:
@@ -43,6 +45,9 @@ jobs:
 
       - name: An entry carries the same support icons in both manuals
         run: python3 tools/doc/check_icon_parity.py
+
+      - name: Every signature type is a type or a notation defined before it
+        run: python3 tools/doc/check_notation.py
 
       - name: Both manuals parse with the generated appendix
         run: |

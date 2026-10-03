@@ -338,10 +338,10 @@ SELECT tfloat '5@2001-01-05' ) SELECT mergeAgg(inst) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusSpanset</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a value or a set of values, or, for a temporal number, a span or a span set of values</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atValue(ttype,value) → ttype
-minusValue(ttype,value) → ttype
-atValues(ttype,valueset) → ttype
-minusValues(ttype,valueset) → ttype
+atValue(ttype,base) → ttype
+minusValue(ttype,base) → ttype
+atValues(ttype,values) → ttype
+minusValues(ttype,values) → ttype
 atSpan(tnumber,span) → tnumber
 minusSpan(tnumber,span) → tnumber
 atSpanset(tnumber,spanset) → tnumber
@@ -507,7 +507,7 @@ SELECT tgeography '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]' =
 					<para>Traditional comparisons</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean
-cmp(ttype,ttype) → int
+cmp(ttype,ttype) → integer
 </programlisting>
 				<para>Function <varname>cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -533,7 +533,7 @@ SELECT cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)'
 					<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 					<para>Hash values</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash(ttype) → int
+hash(ttype) → integer
 hashExtended(ttype,seed bigint) → bigint
 </programlisting>
 					<para>Function <varname>hash</varname> returns a 32-bit hash value and function <varname>hashExtended</varname> a 64-bit hash value computed with the given seed. Equal values have equal hash values, which is what hash indexes, hash joins, and hash aggregation rely on; this holds across subtypes, so that an instant has the hash value of a sequence or sequence set holding only that instant.</para>

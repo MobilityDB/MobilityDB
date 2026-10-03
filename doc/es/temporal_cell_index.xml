@@ -389,7 +389,7 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 				<para>Construye una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 raquet(bytea,width integer,height integer,quadbin,pixtype text,
-  nodata float8) → raquet
+  nodata float) → raquet
 </programlisting>
 				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>. Una tabla Raquet indica las dimensiones, el tipo de píxel y el valor nodata de sus teselas una sola vez, en la fila de metadatos en <varname>block</varname> = 0, que la consulta siguiente lee y deja fuera de las teselas: 0 no es un índice QUADBIN, por lo que la conversión a <varname>quadbin</varname> lo rechaza. El constructor lee los bytes de píxel tal como están, por lo que las bandas de un archivo Raquet cuyos metadatos indican una compresión <varname>gzip</varname> se descomprimen antes de llegar a él.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -654,8 +654,8 @@ SELECT SRID(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857));
 				<indexterm significance="normal"><primary><varname>upperLeftY</varname></primary></indexterm>
 				<para>Devuelve la coordenada X o Y de la esquina superior izquierda de un ráster</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-upperLeftX(raster) → float8
-upperLeftY(raster) → float8
+upperLeftX(raster) → float
+upperLeftY(raster) → float
 </programlisting>
 				<para>La esquina es el origen que establece la geotransformación, alrededor del cual la inclinación gira la malla, de modo que es una esquina de la extensión solo cuando ambas inclinaciones son cero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -669,8 +669,8 @@ FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS
 				<indexterm significance="normal"><primary><varname>scaleY</varname></primary></indexterm>
 				<para>Devuelve el ancho o el alto de píxel de un ráster, es decir, la componente X o Y de su escala</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-scaleX(raster) → float8
-scaleY(raster) → float8
+scaleX(raster) → float
+scaleY(raster) → float
 </programlisting>
 				<para>El alto de píxel es negativo para una malla cuyas filas van de norte a sur, que es como se escribe habitualmente un ráster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -684,8 +684,8 @@ FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS
 				<indexterm significance="normal"><primary><varname>skewY</varname></primary></indexterm>
 				<para>Devuelve la componente X o Y de la inclinación de un ráster</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-skewX(raster) → float8
-skewY(raster) → float8
+skewX(raster) → float
+skewY(raster) → float
 </programlisting>
 				<para>Un ráster cuyas dos inclinaciones son cero está alineado con los ejes.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -770,8 +770,8 @@ SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817fffffff
 				<indexterm significance="normal"><primary><varname>bandNoDataValue</varname></primary></indexterm>
 				<para>Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-bandNoDataValue(raster,band integer=1) → float8
-bandNoDataValue(raquet) → float8
+bandNoDataValue(raster,band integer=1) → float
+bandNoDataValue(raquet) → float
 </programlisting>
 				<para>Una banda que no establece ningún valor nodata devuelve <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1501,7 +1501,7 @@ SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c4@2001-01-05';
 				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
 				<para>Devolver el área de una celda, y el área temporal de cada celda de una trayectoria</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-cellArea(cell) → float8
+cellArea(cell) → float
 cellArea(tcell) → tfloat
 </programlisting>
 				<para>El área de una celda se encoge hacia los polos en la cuadrícula QUADBIN, ya que los cuadrados de Web-Mercator cubren progresivamente menos terreno en latitudes más altas. Una celda H3 o S2 se define sobre la esfera, de modo que su área varía únicamente con la resolución y con la posición de la celda en el sólido base.</para>
@@ -1801,7 +1801,7 @@ SELECT DISTINCT tile FROM elevation_tiles;
 				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 				<para>Valores hash</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash({quadbin,s2cell,cellset,tcell,raquet}) → int
+hash({quadbin,s2cell,cellset,tcell,raquet}) → integer
 hashExtended({quadbin,s2cell,cellset,tcell,raquet},seed bigint) → bigint
 </programlisting>
 				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada, y los valores iguales tienen valores hash iguales. El tipo <varname>h3index</varname> pertenece a la extensión <varname>h3</varname>, que nombra estas funciones <varname>h3index_hash</varname> y <varname>h3index_hash_extended</varname>.</para>
@@ -2599,7 +2599,7 @@ FROM t, r, ST_Tile(rast, 2, 2) AS tile;
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-reclass(raster,nband integer,reclassexpr text,pixeltype text,nodataval float8=NULL)
+reclass(raster,nband integer,reclassexpr text,pixeltype text,nodataval float=NULL)
   → raster
 </programlisting>
 				<para>La expresión sigue la gramática de <varname>ST_Reclass</varname> de PostGIS: una lista de asignaciones separadas por comas, cada una un rango de origen y un destino separados por dos puntos, siendo un rango un valor o dos separados por un guion. Un rango escrito sin corchetes incluye su extremo inferior y excluye el superior, mientras que <varname>(</varname> excluye el extremo inferior y <varname>]</varname> incluye el superior, de modo que <varname>0-50</varname> deja 50 sin asignar mientras que <varname>[50-100]</varname> lo toma. Un píxel que ningún rango toma contiene el valor nodata de la banda resultante, o cero cuando la banda no declara ninguno. Esa banda tiene el tipo de píxel <varname>pixeltype</varname>, con el nombre que le da PostGIS raster, como <varname>8BUI</varname>, y no declara valor nodata cuando se omite <varname>nodataval</varname>. El ráster conserva su malla y sus demás bandas, de modo que las clases pueden leerse a lo largo de una trayectoria con <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
@@ -2634,7 +2634,7 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 clip(raster,geom geometry,crop boolean=true,touched boolean=false) → raster
-clip(raster,nband integer[],geom geometry,nodataval float8[]=NULL,crop boolean=true,
+clip(raster,nband integer[],geom geometry,nodataval float[]=NULL,crop boolean=true,
   touched boolean=false) → raster
 </programlisting>
 				<para>Cada banda se lee contra una máscara en la que se graba la geometría, tal como la lee <varname>ST_Clip</varname> de PostGIS: un píxel que la geometría no cubre devuelve el valor nodata de su banda, y el menor valor que admite su tipo de píxel cuando la banda no declara ninguno. Con <varname>crop</varname> el resultado conserva la extensión que comparten el ráster y la geometría, y en caso contrario la extensión del ráster. La geometría está en el sistema de referencia del ráster; una en otro sistema genera un error. Con <varname>nband</varname> el resultado conserva las bandas nombradas, todas cuando es NULL, <varname>nodataval</varname> declara el valor nodata de los píxeles que la geometría no cubre, uno para todas las bandas o uno por banda, y con <varname>touched</varname> se conserva un píxel que la geometría toca donde de otro modo solo se conserva uno cuyo centro cubre.</para>
@@ -2660,13 +2660,13 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Devuelve un ráster expresado en otro sistema de referencia espacial</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(raster,srid integer,algorithm text='NearestNeighbour',maxerr float8=0.125,
-  scalex float8=0,scaley float8=0) → raster
+transform(raster,srid integer,algorithm text='NearestNeighbour',maxerr float=0.125,
+  scalex float=0,scaley float=0) → raster
 transform(raster,alignto raster,algorithm text='NearestNeighbour',
-  maxerr float8=0.125) → raster
+  maxerr float=0.125) → raster
 transformPipeline(raster,pipeline text,srid integer=0,is_forward boolean=true,
-  algorithm text='NearestNeighbour',maxerr float8=0.125,scalex float8=0,
-  scaley float8=0) → raster
+  algorithm text='NearestNeighbour',maxerr float=0.125,scalex float=0,
+  scaley float=0) → raster
 </programlisting>
 				<para>Cada banda se lleva al sistema de destino y se remuestrea sobre la malla que implica la reproyección, mediante la misma deformación de GDAL que <varname>ST_Transform</varname> de PostGIS, de modo que el resultado expresa la misma cobertura leída a través de otro sistema. El algoritmo es uno de <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> y <varname>Min</varname>, nombrado sin distinguir mayúsculas de minúsculas, y <varname>maxerr</varname> es el error en píxeles de entrada que la deformación puede cometer, 0 para un cálculo exacto. <varname>scalex</varname> y <varname>scaley</varname> declaran el tamaño de píxel del resultado, 0 dejando que la deformación lo derive, y <varname>alignto</varname> toma el sistema de referencia, el tamaño de píxel, el origen de la malla y la inclinación de otro ráster, de modo que el resultado queda sobre su malla.</para>
 				<para>La función <varname>transformPipeline</varname> lleva el ráster a través de una operación de coordenadas, expresada como una cadena PROJ, un WKT o un código de autoridad como <varname>urn:ogc:def:coordinateOperation:EPSG::16031</varname>, en lugar de la que GDAL deriva de los dos sistemas, y la lee como lo hace <varname>transformPipeline</varname> sobre una geometría: primero la longitud y en grados. El resultado expresa el sistema de referencia dado por <varname>srid</varname>, 0 por defecto. Por defecto la operación se aplica hacia adelante; poner <varname>is_forward</varname> a falso aplica su inversa. Los demás argumentos son los de <varname>transform</varname>, de modo que una operación que GDAL derivaría responde como <varname>transform</varname> al mismo sistema.</para>
@@ -2701,8 +2701,8 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>rescale</varname></primary></indexterm>
 				<para>Devuelve un ráster remuestreado a otro tamaño de píxel</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-rescale(raster,scalex float8,scaley float8,algorithm text='NearestNeighbour',
-  maxerr float8=0.125) → raster
+rescale(raster,scalex float,scaley float,algorithm text='NearestNeighbour',
+  maxerr float=0.125) → raster
 </programlisting>
 				<para>El resultado conserva el sistema de referencia y la esquina superior izquierda del ráster y expresa su cobertura sobre una malla del tamaño de píxel pedido, mediante la misma deformación de GDAL que <varname>ST_Rescale</varname> de PostGIS, de modo que una escala más gruesa lee menos píxeles sobre el mismo terreno. Las escalas están en las unidades del sistema de referencia del ráster, y el algoritmo y el error son los de <link linkend="raster_transform"><varname>transform</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -2799,7 +2799,7 @@ GROUP BY t.tripid, t.trip;
 				<para>Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
-  quadbin,pixtype text,nodata float8,has_nodata boolean) → tfloat
+  quadbin,pixtype text,nodata float,has_nodata boolean) → tfloat
 </programlisting>
 				<para>Lee un arreglo de píxeles de banda única en orden de fila mayor a lo largo de <varname>traj</varname> (SRID 4326), como <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> lee un ráster. La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <varname>quadbin</varname> mediante la transformada de tesela deslizante Web-Mercator. El argumento <varname>pixtype</varname> debe ser uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Cuando <varname>has_nodata</varname> es verdadero, un píxel igual a <varname>nodata</varname> no lleva valor. Devuelve <varname>NULL</varname> cuando el trayecto nunca encuentra un píxel con datos.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

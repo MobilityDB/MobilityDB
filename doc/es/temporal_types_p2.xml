@@ -338,10 +338,10 @@ SELECT tfloat '5@2001-01-05' ) SELECT mergeAgg(inst) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusSpanset</varname></primary></indexterm>
 				<para>Restringe a (al complemento de) un valor o un conjunto de valores o, para un número temporal, un span o un conjunto de spans de valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-atValue(ttype,value) → ttype
-minusValue(ttype,value) → ttype
-atValues(ttype,valueset) → ttype
-minusValues(ttype,valueset) → ttype
+atValue(ttype,base) → ttype
+minusValue(ttype,base) → ttype
+atValues(ttype,values) → ttype
+minusValues(ttype,values) → ttype
 atSpan(tnumber,span) → tnumber
 minusSpan(tnumber,span) → tnumber
 atSpanset(tnumber,spanset) → tnumber
@@ -507,7 +507,7 @@ SELECT tgeography '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]' =
 					<para>Comparaciones tradicionales</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean
-cmp(ttype,ttype) → int
+cmp(ttype,ttype) → integer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
@@ -532,7 +532,7 @@ SELECT cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)'
 					<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 					<para>Valores hash</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash(ttype) → int
+hash(ttype) → integer
 hashExtended(ttype,seed bigint) → bigint
 </programlisting>
 					<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada. Los valores iguales tienen valores hash iguales, que es en lo que se basan los índices hash, las uniones hash y la agregación hash; esto se cumple entre subtipos, de modo que un instante tiene el valor hash de una secuencia o de un conjunto de secuencias que contiene solo ese instante.</para>

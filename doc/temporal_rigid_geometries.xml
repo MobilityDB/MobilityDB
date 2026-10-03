@@ -56,7 +56,7 @@ SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the Well-Known Text (WKT) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+asText({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
@@ -69,7 +69,7 @@ SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<para>Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits integer=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
@@ -82,7 +82,8 @@ SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Return the Moving Features JSON representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
+asMFJSON(trgeometry [, options integer=0 [, flags integer=0
+  [, maxdecimaldigits integer=15]]]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -330,7 +331,7 @@ SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Return the area traversed by the temporal rigid geometry</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-traversedArea(trgeometry,unary_union bool=false) → geometry
+traversedArea(trgeometry,unary_union boolean=false) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -844,7 +845,8 @@ SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Return the line between the nearest points of the two arguments at their nearest approach instant</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → geometry
+shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry})
+  → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -981,18 +983,18 @@ SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<para>Ever and always relationships</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eContains(OPS) → boolean
-aContains(OPS) → boolean
-eCovers(OPS) → boolean
-aCovers(OPS) → boolean
-eDisjoint(OPS) → boolean
-aDisjoint(OPS) → boolean
-eDwithin(OPS,float) → boolean
-aDwithin(OPS,float) → boolean
-eIntersects(OPS) → boolean
-aIntersects(OPS) → boolean
-eTouches(OPS) → boolean
-aTouches(OPS) → boolean
+eContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aContains({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aCovers({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aDisjoint({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+aDwithin({geometry,trgeometry},{geometry,trgeometry},float) → boolean
+eIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
+eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
+aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </programlisting>
 				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

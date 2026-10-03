@@ -199,7 +199,7 @@ SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-0
 				<para>Shift and/or the value span of a temporal number by one or two numbers</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shiftValue(tnumber,base) → tnumber
-scaleValue(tnumber,width) → tnumber
+scaleValue(tnumber,base) → tnumber
 shiftScaleValue(tnumber,base,base) → tnumber
 </programlisting>
 				<para>For scaling, if the value span of the temporal value is a single value (for example, for a temporal instant), the result is the temporal value. Furthermore, the given width must be strictly greater than zero.</para>

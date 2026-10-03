@@ -59,16 +59,22 @@
 			<para><varname>numspans</varname> representa cualquier tipo de rango o conjunto de rangos numérico, como <varname>intspan</varname> o <varname>floatspanset</varname>.</para>
 		</listitem>
 		<listitem>
-			<para><varname>numbers</varname> representa cualquier tipo de conjunto o de rango numérico, como <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname> o <varname>intspanset</varname>,</para>
+			<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname>, <varname>bigintspan</varname> o <varname>floatspan</varname>,</para>
 		</listitem>
 		<listitem>
-			<para><varname>dates</varname> representa cualquier tipo de tiempo con granularidad <varname>date</varname>, a saber <varname>date</varname>, <varname>dateset</varname>, <varname>datespan</varname> o <varname>datespanset</varname>,</para>
+			<para><varname>numspanset</varname> representa cualquier tipo de conjunto de rangos numérico, es decir, <varname>intspanset</varname>, <varname>bigintspanset</varname> o <varname>floatspanset</varname>,</para>
 		</listitem>
 		<listitem>
-			<para><varname>numset</varname> representa cualquier tipo de conjunto numérico, como <varname>intset</varname> o <varname>floatset</varname>.</para>
+			<para><varname>floatspans</varname> representa un tipo de rango o conjunto de rangos de números flotantes, es decir, <varname>floatspan</varname> o <varname>floatspanset</varname>,</para>
 		</listitem>
 		<listitem>
-			<para><varname>numspans</varname> representa cualquier tipo de rango o conjunto de rangos numérico, como <varname>intspan</varname> o <varname>floatspanset</varname>.</para>
+			<para><varname>datespans</varname> representa un tipo de rango o conjunto de rangos de fechas, es decir, <varname>datespan</varname> o <varname>datespanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>tstzspans</varname> representa un tipo de rango o conjunto de rangos de timestamptz, es decir, <varname>tstzspan</varname> o <varname>tstzspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>spatialset</varname> representa cualquier tipo de conjunto espacial, como <varname>geomset</varname> o <varname>geogset</varname>.</para>
 		</listitem>
 		<listitem>
 			<para><varname>numbers</varname> representa cualquier tipo de conjunto o de rango numérico, como <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname> o <varname>intspanset</varname>,</para>
@@ -1527,7 +1533,7 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean
 spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean
-cmp({set,span,spanset},{set,span,spanset}) → int
+cmp({set,span,spanset},{set,span,spanset}) → integer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intspan '[1,3]' = intspan '[1,4)';
@@ -1565,7 +1571,7 @@ SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 				<para>Valores hash</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash({set,span,spanset}) → int
+hash({set,span,spanset}) → integer
 hashExtended({set,span,spanset},seed bigint) → bigint
 </programlisting>
 				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada. Los valores iguales tienen valores hash iguales, que es en lo que se basan los índices hash, las uniones hash y la agregación hash.</para>
@@ -1630,9 +1636,9 @@ SELECT extent(ps) FROM periods;
 				<indexterm significance="normal"><primary><varname>spansetUnion</varname></primary></indexterm>
 				<para>Unión agregada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-setUnion({value,set}) → set
+setUnion({base,set}) → set
 spanUnion(spans) → spanset
-spansetUnion(spansets) → spanset
+spansetUnion(spanset) → spanset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH times(ts) AS (

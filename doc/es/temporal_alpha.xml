@@ -200,7 +200,7 @@ SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-0
 				<para>Desplaza y/o escalear el rango de valores de un número temporal con uno o dos números</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shiftValue(tnumber,base) → tnumber
-scaleValue(tnumber,width) → tnumber
+scaleValue(tnumber,base) → tnumber
 shiftScaleValue(tnumber,base,base) → tnumber
 </programlisting>
 				<para>Cuando se escalea, si el rango de valores del valor temporal es un valor único (por ejemplo, para un instante temporal), el resultado es el valor temporal. Además, el ancho data debe ser estrictamente superio que cero.</para>
