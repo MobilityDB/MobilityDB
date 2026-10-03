@@ -1342,3 +1342,93 @@ SELECT COUNT(*) FROM Temp;
      5
 (1 row)
 
+SELECT hausdorffDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+ hausdorffdistance 
+-------------------
+                 2
+(1 row)
+
+SELECT hausdorffDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+ hausdorffdistance 
+-------------------
+                 2
+(1 row)
+
+SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+ hausdorffdistance 
+-------------------
+                 2
+(1 row)
+
+SELECT round(averageHausdorffDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+  round   
+----------
+ 0.833333
+(1 row)
+
+SELECT round(averageHausdorffDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+  round   
+----------
+ 0.833333
+(1 row)
+
+SELECT round(averageHausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+  round   
+----------
+ 0.833333
+(1 row)
+
+SELECT round(lcssDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(lcssDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(lcssDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT frechetDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+ frechetdistance 
+-----------------
+               1
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
+(1 row)
+
+SELECT hausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+ hausdorffdistance 
+-------------------
+                 1
+(1 row)
+
+SELECT averageHausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+ averagehausdorffdistance 
+--------------------------
+                        1
+(1 row)
+
+SELECT lcssDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01', 0.5);
+ lcssdistance 
+--------------
+            0
+(1 row)
+
+SELECT hausdorffDistance(tbigint '9223372036854775807@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
+ ?column? 
+----------
+ t
+(1 row)
+

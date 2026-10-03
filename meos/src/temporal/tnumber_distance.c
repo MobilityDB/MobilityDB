@@ -59,6 +59,18 @@
 double
 tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
+  assert(inst1->temptype == inst2->temptype);
+  /* Two big integers are subtracted as integers, as #distance_value_value
+   * does, since a float holds their difference rounded once but cannot hold
+   * each of them beyond 53 bits; the subtraction is unsigned, so that the
+   * difference of the two ends of the range does not overflow */
+  if (inst1->temptype == T_TBIGINT)
+  {
+    int64 value1 = DatumGetInt64(tinstant_value_p(inst1));
+    int64 value2 = DatumGetInt64(tinstant_value_p(inst2));
+    return (double) (value1 > value2 ? (uint64) value1 - (uint64) value2 :
+      (uint64) value2 - (uint64) value1);
+  }
   return fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
 }
 

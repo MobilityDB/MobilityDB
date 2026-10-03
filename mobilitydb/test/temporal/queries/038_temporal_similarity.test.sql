@@ -440,3 +440,27 @@ WITH Temp AS (
 SELECT COUNT(*) FROM Temp;
 
 -------------------------------------------------------------------------------
+-- Hausdorff, average Hausdorff and LCSS distances
+-------------------------------------------------------------------------------
+
+SELECT hausdorffDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+SELECT hausdorffDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]');
+
+SELECT round(averageHausdorffDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+SELECT round(averageHausdorffDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+SELECT round(averageHausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]')::numeric, 6);
+
+SELECT round(lcssDistance(tint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+SELECT round(lcssDistance(tbigint '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tbigint '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+SELECT round(lcssDistance(tfloat '[1@2001-01-01, 3@2001-01-02, 2@2001-01-03]', tfloat '[2@2001-01-01, 5@2001-01-02, 4@2001-01-03]', 1.0)::numeric, 6);
+
+-- Two big integers keep their difference beyond the 53 bits of a float mantissa
+SELECT frechetDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+SELECT dynTimeWarpDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+SELECT hausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+SELECT averageHausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
+SELECT lcssDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01', 0.5);
+SELECT hausdorffDistance(tbigint '9223372036854775807@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
+
+-------------------------------------------------------------------------------
