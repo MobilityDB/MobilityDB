@@ -43,10 +43,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/doublen.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tcellindex.h"
 #include "temporal/tbox.h"
+#include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
@@ -2565,6 +2567,33 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_FLOAT8:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
+    case T_DOUBLE2:
+    {
+      double2 *d = palloc(sizeof(double2));
+      d->a = double_from_wkb_state(s);
+      d->b = double_from_wkb_state(s);
+      result = Double2PGetDatum(d);
+      break;
+    }
+    case T_DOUBLE3:
+    {
+      double3 *d = palloc(sizeof(double3));
+      d->a = double_from_wkb_state(s);
+      d->b = double_from_wkb_state(s);
+      d->c = double_from_wkb_state(s);
+      result = Double3PGetDatum(d);
+      break;
+    }
+    case T_DOUBLE4:
+    {
+      double4 *d = palloc(sizeof(double4));
+      d->a = double_from_wkb_state(s);
+      d->b = double_from_wkb_state(s);
+      d->c = double_from_wkb_state(s);
+      d->d = double_from_wkb_state(s);
+      result = Double4PGetDatum(d);
+      break;
+    }
     case T_DATE:
       result = DateADTGetDatum(date_from_wkb_state(s));
       break;

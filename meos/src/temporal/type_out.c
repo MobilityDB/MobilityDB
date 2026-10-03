@@ -1686,6 +1686,12 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       return MEOS_WKB_INT8_SIZE;
     case T_FLOAT8:
       return MEOS_WKB_DOUBLE_SIZE;
+    case T_DOUBLE2:
+      return MEOS_WKB_DOUBLE_SIZE * 2;
+    case T_DOUBLE3:
+      return MEOS_WKB_DOUBLE_SIZE * 3;
+    case T_DOUBLE4:
+      return MEOS_WKB_DOUBLE_SIZE * 4;
     case T_DATE:
       return MEOS_WKB_DATE_SIZE;
     case T_TIMESTAMPTZ:
@@ -2677,6 +2683,30 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
     case T_FLOAT8:
       buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
       break;
+    case T_DOUBLE2:
+    {
+      const double2 *d = DatumGetDouble2P(value);
+      buf = double_to_wkb_buf(d->a, buf, variant);
+      buf = double_to_wkb_buf(d->b, buf, variant);
+      break;
+    }
+    case T_DOUBLE3:
+    {
+      const double3 *d = DatumGetDouble3P(value);
+      buf = double_to_wkb_buf(d->a, buf, variant);
+      buf = double_to_wkb_buf(d->b, buf, variant);
+      buf = double_to_wkb_buf(d->c, buf, variant);
+      break;
+    }
+    case T_DOUBLE4:
+    {
+      const double4 *d = DatumGetDouble4P(value);
+      buf = double_to_wkb_buf(d->a, buf, variant);
+      buf = double_to_wkb_buf(d->b, buf, variant);
+      buf = double_to_wkb_buf(d->c, buf, variant);
+      buf = double_to_wkb_buf(d->d, buf, variant);
+      break;
+    }
     case T_DATE:
       buf = date_to_wkb_buf(DatumGetDateADT(value), buf, variant);
       break;
