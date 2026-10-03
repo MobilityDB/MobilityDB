@@ -431,6 +431,7 @@ uint32_t pcpatch_get_pcid(const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the number of points stored in a pcpatch
+ * @csqlfn #Pcpatch_npoints()
  */
 uint32_t pcpatch_npoints(const Pcpatch *pa)
 {
@@ -464,6 +465,7 @@ pcpoint_serialize(const PCPOINT *pcpt)
  * @param[in] n Number of the point, one-based: 1 is the first point and the
  * number of points of the patch the last one. A negative @p n counts from the
  * end, so that -1 is the last point and minus the number of points the first
+ * @csqlfn #Pcpatch_point_n()
  * @note A @p n that addresses no point of the patch has no point to copy, so
  * the answer is NULL
  * @errval NULL
@@ -608,6 +610,7 @@ pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpatch values are equal
+ * @csqlfn #Pcpatch_eq()
  */
 bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
 {
@@ -617,6 +620,7 @@ bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpatch values differ
+ * @csqlfn #Pcpatch_ne()
  */
 bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
 {
@@ -626,6 +630,7 @@ bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch precedes the second in total order
+ * @csqlfn #Pcpatch_lt()
  */
 bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
 {
@@ -636,6 +641,7 @@ bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch precedes or equals the second
  *   in total order
+ * @csqlfn #Pcpatch_le()
  */
 bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
 {
@@ -645,6 +651,7 @@ bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch follows the second in total order
+ * @csqlfn #Pcpatch_gt()
  */
 bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) >  0; }
@@ -653,6 +660,7 @@ bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch follows or equals the second
  *   in total order
+ * @csqlfn #Pcpatch_ge()
  */
 bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2)
 {

@@ -847,6 +847,7 @@ h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if two h3index values are equal
+ * @csqlfn #H3index_eq()
  * @sqlop @p =
  */
 #if MEOS
@@ -865,6 +866,7 @@ meos_h3index_eq(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if two h3index values are not equal
+ * @csqlfn #H3index_ne()
  * @sqlop @p <>
  */
 #if MEOS
@@ -883,6 +885,7 @@ meos_h3index_ne(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is less than the second
+ * @csqlfn #H3index_lt()
  * @sqlop @p <
  */
 #if MEOS
@@ -902,6 +905,7 @@ meos_h3index_lt(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is less than or equal to
  * the second
+ * @csqlfn #H3index_le()
  * @sqlop @p <=
  */
 #if MEOS
@@ -920,6 +924,7 @@ meos_h3index_le(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is greater than the second
+ * @csqlfn #H3index_gt()
  * @sqlop @p >
  */
 #if MEOS
@@ -939,6 +944,7 @@ meos_h3index_gt(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is greater than or equal
  * to the second
+ * @csqlfn #H3index_ge()
  * @sqlop @p >=
  */
 #if MEOS
@@ -958,7 +964,7 @@ meos_h3index_ge(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return -1 / 0 / 1 depending on whether the first h3index is
  * less than, equal to, or greater than the second
- * @sqlfn h3index_cmp()
+ * @csqlfn #H3index_cmp()
  */
 #if MEOS
 int
@@ -982,7 +988,7 @@ meos_h3index_cmp(H3Index a, H3Index b)
  * @brief Return the 32-bit hash value of an h3index
  * @details The value matches the result `hashint8` would produce on the same
  * bit pattern.
- * @sqlfn hash()
+ * @csqlfn #H3index_hash()
  */
 #if MEOS
 uint32
@@ -995,6 +1001,17 @@ uint32
 meos_h3index_hash(H3Index cell)
 {
   return int64_hash((int64) cell);
+}
+
+/**
+ * @brief Return the 64-bit hash value of an h3index using a seed, the body of
+ * #h3index_hash_extended that the PostgreSQL extension also calls
+ */
+uint64
+meos_h3index_hash_extended(H3Index cell, uint64 seed)
+{
+  int64 value = cell;
+  return int64_hash_extended(value, seed);
 }
 
 /*****************************************************************************/

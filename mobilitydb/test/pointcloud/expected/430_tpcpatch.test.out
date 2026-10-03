@@ -13,6 +13,33 @@ SELECT numPoints(tpcpatch(
  t
 (1 row)
 
+SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+ numpoints 
+-----------
+         2
+(1 row)
+
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
+  = pcpoint(1, 2.0, 2.0, 2.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), -2)
+  = pcpoint(1, 1.0, 1.0, 1.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
+  IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT SRID(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  srid 
 ------

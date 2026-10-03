@@ -1718,11 +1718,16 @@ SELECT tIntersects(ts2cell '47c3c@2001-01-01', ts2cell '47c3c@2001-01-01');
 			<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 			<para>Comparaciones tradicionales</para>
 			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} cell → boolean
 tcell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcell → boolean
 </programlisting>
+			<para>Las funciones que respaldan estos operadores son <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname>, junto con <varname>cmp({cell,tcell},{cell,tcell}) → integer</varname>, que devuelve -1, 0 o 1. Los operadores sobre <varname>h3index</varname> son los de la extensión <varname>h3</varname>, y las funciones responden como ellos.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cmp(h3index '831c02fffffffff', h3index '8a2a1072b59ffff');
+-- -1
 SELECT th3index '831c02fffffffff@2001-01-01' = th3index '831c02fffffffff@2001-01-01';
 -- t
 SELECT tquadbin '48a6227affffffff@2001-01-01' = tquadbin '48a6227affffffff@2001-01-01';
@@ -1801,10 +1806,10 @@ SELECT DISTINCT tile FROM elevation_tiles;
 				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
 				<para>Valores hash</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hash({quadbin,s2cell,cellset,tcell,raquet}) → integer
-hashExtended({quadbin,s2cell,cellset,tcell,raquet},seed bigint) → bigint
+hash({cell,cellset,tcell,raquet}) → integer
+hashExtended({cell,cellset,tcell,raquet},seed bigint) → bigint
 </programlisting>
-				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada, y los valores iguales tienen valores hash iguales. El tipo <varname>h3index</varname> pertenece a la extensión <varname>h3</varname>, que nombra estas funciones <varname>h3index_hash</varname> y <varname>h3index_hash_extended</varname>.</para>
+				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada, y los valores iguales tienen valores hash iguales. Sobre <varname>h3index</varname> responden como las funciones <varname>h3index_hash</varname> y <varname>h3index_hash_extended</varname> de la extensión <varname>h3</varname>, que proporciona el tipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT hash(th3index '831c02fffffffff@2001-01-01') =
   hash(th3index '{831c02fffffffff@2001-01-01}');

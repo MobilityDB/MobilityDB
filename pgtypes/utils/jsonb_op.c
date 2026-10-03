@@ -37,6 +37,7 @@
  * element within the JSON value
  * @param[in] jb JSONB value
  * @param[in] key Key
+ * @csqlfn #Jsonb_exists()
  * @note Derived from PostgreSQL function @p jsonb_exists()
  */
 #if MEOS
@@ -73,6 +74,7 @@ pg_jsonb_exists(const Jsonb *jb, const text *key)
  * @ingroup meos_json_base_accessor
  * @brief Return true if the text string exists as a top-level key or array
  * element within the JSONB value
+ * @csqlfn #Jsonb_exists_any() #Jsonb_exists_all()
  * @note Derived from PostgreSQL function @p jsonb_exists_array()
  */
 #if MEOS
@@ -109,6 +111,7 @@ pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len,
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return true if the first JSON value contains the second one
+ * @csqlfn #Jsonb_contains()
  * @note Derived from PostgreSQL function @p jsonb_contains()
  */
 #if MEOS
@@ -144,6 +147,7 @@ pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return true if the first JSON value is contained into the second one
+ * @csqlfn #Jsonb_contained()
  * @note Derived from PostgreSQL function @p jsonb_contained()
  */
 #if MEOS
@@ -163,6 +167,7 @@ pg_jsonb_contained(const Jsonb *jb1, const Jsonb *jb2)
  * @ingroup meos_json_base_comp
  * @brief Return true if two JSONB values are equal
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_eq()
  * @note Derived from PostgreSQL function @p jsonb_eq()
  */
 #if MEOS
@@ -192,6 +197,7 @@ pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
  * @ingroup meos_json_base_comp
  * @brief Return true if two JSONB values are not equal
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_ne()
  * @note Derived from PostgreSQL function @p jsonb_ne()
  */
 #if MEOS
@@ -221,6 +227,7 @@ pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
  * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is less than the second one
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_lt()
  * @note Derived from PostgreSQL function @p jsonb_lt()
  */
 #if MEOS
@@ -250,6 +257,7 @@ pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
  * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is greater than the second one
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_gt()
  * @note Derived from PostgreSQL function @p jsonb_gt()
  */
 #if MEOS
@@ -280,6 +288,7 @@ pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
  * @brief Return true if the first JSONB value is less than or equal to the
  * second one
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_le()
  * @note Derived from PostgreSQL function @p jsonb_le()
  */
 #if MEOS
@@ -310,6 +319,7 @@ pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
  * @brief Return true if the first JSONB value is greater than or equal to the
  * second one
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_ge()
  * @note Derived from PostgreSQL function @p jsonb_ge()
  */
 #if MEOS
@@ -340,6 +350,7 @@ pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
  * @brief Return -1, 0, or 1 depending on whether the first JSONB value
  * is less than, equal to, or greater than the second one
  * @param[in] jb1,jb2 JSONB values
+ * @csqlfn #Jsonb_cmp()
  * @note Derived from PostgreSQL function @p jsonb_cmp()
  */
 #if MEOS
@@ -371,6 +382,7 @@ pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the 32-bit hash value of a JSONB value
+ * @csqlfn #Jsonb_hash()
  * @note Derived from PostgreSQL function @p jsonb_hash()
  */
 #if MEOS
@@ -423,6 +435,7 @@ pg_jsonb_hash(const Jsonb *jb)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the 64-bit hash of a JSONB value using a seed
+ * @csqlfn #Jsonb_hash_extended()
  * @note Derived from PostgreSQL function @p jsonb_hash_extended()
  */
 #if MEOS

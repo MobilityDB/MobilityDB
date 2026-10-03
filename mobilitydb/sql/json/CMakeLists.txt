@@ -28,6 +28,7 @@
 SET(LOCAL_FILES
   450_jsonbset
   451_jsonbset_jsonfuncs
+  453_jsonb_jsonfuncs
   452_tjsonb
   454_tjsonb_jsonfuncs
   456_tjsonb_op

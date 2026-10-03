@@ -59,6 +59,16 @@ CREATE FUNCTION pcid(pcpatch)
   AS 'MODULE_PATHNAME', 'Pcpatch_pcid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION numPoints(pcpatch)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pcpatch_npoints'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pointN(pcpatch, integer)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpatch_point_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Schema-aware dimension getters for pcpoint
  *

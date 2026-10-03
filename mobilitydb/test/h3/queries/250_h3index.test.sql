@@ -158,3 +158,22 @@ SELECT (SELECT MAX(cnt) FROM (SELECT COUNT(*) AS cnt FROM tbl_h3index_test GROUP
 DROP TABLE tbl_h3index_test;
 
 -------------------------------------------------------------------------------
+-- Comparison and hash functions
+-------------------------------------------------------------------------------
+
+SELECT eq(h3index '8a2a1072b59ffff', h3index '8a2a1072b59ffff');
+SELECT ne(h3index '8a2a1072b59ffff', h3index '831c02fffffffff');
+SELECT lt(h3index '831c02fffffffff', h3index '8a2a1072b59ffff');
+SELECT le(h3index '8a2a1072b59ffff', h3index '8a2a1072b59ffff');
+SELECT gt(h3index '831c02fffffffff', h3index '8a2a1072b59ffff');
+SELECT ge(h3index '831c02fffffffff', h3index '8a2a1072b59ffff');
+SELECT cmp(h3index '831c02fffffffff', h3index '8a2a1072b59ffff');
+-- the functions answer as the operators of the h3 extension
+SELECT cmp(h3index '831c02fffffffff', h3index '8a2a1072b59ffff') =
+  CASE WHEN h3index '831c02fffffffff' < h3index '8a2a1072b59ffff' THEN -1
+    ELSE 1 END;
+SELECT hash(h3index '8a2a1072b59ffff') = hashint8(x'8a2a1072b59ffff'::bigint);
+SELECT hashExtended(h3index '8a2a1072b59ffff', 7) =
+  hashint8extended(x'8a2a1072b59ffff'::bigint, 7);
+
+-------------------------------------------------------------------------------

@@ -200,6 +200,35 @@ SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)))
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pcpatch_numPoints">
+					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
+					<para>Devuelve el número de puntos de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+numPoints(pcpatch) → integer
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- 2
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpatch_pointN">
+					<indexterm significance="normal"><primary><varname>pointN</varname></primary></indexterm>
+					<para>Devuelve el n-ésimo punto de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pointN(pcpatch,integer) → pcpoint
+</programlisting>
+					<para>Los puntos se numeran desde uno, un entero negativo cuenta desde el final del parche, y un entero que no designa ningún punto devuelve NULL.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
+  = pcpoint(1, 2.0, 2.0, 2.0);
+-- true
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
+  IS NULL;
+-- true
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pcpatch_geometry">
 					<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
 					<para>Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</para>

@@ -37,7 +37,9 @@
  * `-DH3=ON` (see `MOBILITYDB_REQUIRES` in the top-level CMakeLists).
  * Defining them here as well would collide on `CREATE EXTENSION`, so
  * this file only adds the surface h3-pg does not provide: the WKB and
- * HexWKB base-value I/O and the validity predicates.
+ * HexWKB base-value I/O, the validity predicates, and the comparison
+ * and hash functions under the names a query uses in every engine
+ * (`eq`, `cmp`, `hash`, …), which h3-pg spells `h3index_eq`, … .
  *
  * The on-disk representation is identical to `bigint`: an int64
  * passed by value. The dedicated SQL type exists only to make
@@ -46,8 +48,8 @@
  * cell, and vice-versa.
  *
  * The four commented-out blocks below — type plumbing, the bigint
- * casts, the comparison functions and operators, and the btree and
- * hash operator classes — are RETAINED ON PURPOSE and are not dead
+ * casts, the comparison operators, and the btree and hash operator
+ * classes — are RETAINED ON PURPOSE and are not dead
  * code to be cleaned up. Together they spell out a complete,
  * self-contained base-type surface, and they are kept here as the
  * WORKED REFERENCE for the SQL bindings that have no host h3
@@ -80,14 +82,10 @@
  * Deferring is a host-side decision that never removes anything from
  * the kernel.
  *
- * Their PG C wrappers (`H3index_in`, `H3index_eq`, …) no longer exist
+ * The PG C wrappers of the type plumbing (`H3index_in`, …) do not exist
  * in `mobilitydb/src/h3/h3index.c`, so the blocks cannot be
  * uncommented as they stand — they are a reference, not switchable
  * code.
- *
- * A grep for `h3index_eq` or `h3index_cmp` in this file therefore
- * matches comment text, not live SQL: h3index is not a bare-naming
- * laggard, it has no live base-type comparison surface at all.
  */
 
 /******************************************************************************
@@ -185,50 +183,46 @@ CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
 -- CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************
- * Comparison operators
+ * Comparison functions
  *
- * Thin PG wrappers over the MEOS-layer `h3index_eq / _lt / …` helpers
- * declared in `h3/h3index.h`. H3 cell equality and ordering are
- * exactly int64 bit equality / ordering; putting the bodies at the
- * MEOS layer keeps the MobilityDB extension close to pure
- * boiler-plate and lets MobilityDuck consume the same primitives.
+ * Thin PG wrappers over the MEOS-layer `meos_h3index_eq / _lt / …`
+ * helpers declared in `h3/h3index.h`. H3 cell equality and ordering are
+ * exactly int64 bit equality / ordering. The h3 extension provides the
+ * operators and the operator classes; these functions are the names a
+ * query uses in every engine, as for quadbin and s2cell.
  ******************************************************************************/
 
--- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
--- ⛔ RETAINED AS A WORKED REFERENCE — the six comparison functions and
--- operators a host must provide. See the file header.
-/*
-CREATE FUNCTION h3index_eq(h3index, h3index)
+CREATE FUNCTION eq(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_ne(h3index, h3index)
+CREATE FUNCTION ne(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_lt(h3index, h3index)
+CREATE FUNCTION lt(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_le(h3index, h3index)
+CREATE FUNCTION le(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_gt(h3index, h3index)
+CREATE FUNCTION gt(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_ge(h3index, h3index)
+CREATE FUNCTION ge(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_cmp(h3index, h3index)
+CREATE FUNCTION cmp(h3index, h3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'H3index_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -238,9 +232,22 @@ CREATE FUNCTION hash(h3index)
   AS 'MODULE_PATHNAME', 'H3index_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION hashExtended(h3index, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'H3index_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Comparison operators
+ ******************************************************************************/
+
+-- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
+-- ⛔ RETAINED AS A WORKED REFERENCE — the six comparison operators a host
+-- must provide over the functions above. See the file header.
+/*
 CREATE OPERATOR = (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel,
   HASHES, MERGES
@@ -248,35 +255,35 @@ CREATE OPERATOR = (
 
 CREATE OPERATOR <> (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = h3index, RIGHTARG = h3index,
-  PROCEDURE = h3index_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
@@ -300,7 +307,7 @@ CREATE OPERATOR CLASS h3index_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  h3index_cmp(h3index, h3index);
+    FUNCTION  1  cmp(h3index, h3index);
 
 CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING hash AS

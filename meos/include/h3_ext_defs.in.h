@@ -36,6 +36,7 @@ extern bool h3index_gt(H3Index a, H3Index b);
 extern bool h3index_ge(H3Index a, H3Index b);
 extern int h3index_cmp(H3Index a, H3Index b);
 extern uint32 h3index_hash(H3Index cell);
+extern uint64 h3index_hash_extended(H3Index cell, uint64 seed);
 
 /* Cell operations. Each returns a heap-allocated `Set *` owned by the
  * caller; NULL on libh3 failure after raising a `meos_error`. */
