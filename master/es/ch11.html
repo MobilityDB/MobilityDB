@@ -22,7 +22,7 @@ SELECT npoint 'Npoint(87.5, 1.0)';
 SELECT npoint 'Npoint(87, 2.0)';
 -- rid value not found in the ways table
 SELECT npoint 'Npoint(99999999, 1.0)';
-</pre><p>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_asText"></a><a class="indexterm" name="id7497"></a><a class="indexterm" name="id7500"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+</pre><p>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_asText"></a><a class="indexterm" name="id7499"></a><a class="indexterm" name="id7502"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 asText({npoint,npoint[]}) → {text,text[]}
 asText(nsegment) → text
 asEWKT({npoint,npoint[]}) → {text,text[]}
@@ -40,7 +40,7 @@ SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']
 -- {"SRID=5676;NPoint(1,0.2)","SRID=5676;NPoint(1,0.5)"}
 SELECT asEWKT(nsegment 'Nsegment(1,0.3,0.5)');
 -- SRID=5676;NSegment(1,0.3,0.5)
-</pre></li><li class="listitem"><a name="npoint_asBinary"></a><a class="indexterm" name="id7507"></a><a class="indexterm" name="id7510"></a><a class="indexterm" name="id7513"></a><a class="indexterm" name="id7516"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_asBinary"></a><a class="indexterm" name="id7509"></a><a class="indexterm" name="id7512"></a><a class="indexterm" name="id7515"></a><a class="indexterm" name="id7518"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 asBinary(npoint,endian text='') → bytea
 asEWKB(npoint,endian text='') → bytea
 asHexWKB(npoint,endian text='') → text
@@ -54,7 +54,7 @@ SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- 01010100000000000000000000000000E03F
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- 01412C1600000100000000000000000000000000E03F
-</pre></li><li class="listitem"><a name="npointFromText"></a><a class="indexterm" name="id7528"></a><a class="indexterm" name="id7531"></a><a class="indexterm" name="id7534"></a><a class="indexterm" name="id7537"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npointFromText"></a><a class="indexterm" name="id7530"></a><a class="indexterm" name="id7533"></a><a class="indexterm" name="id7536"></a><a class="indexterm" name="id7539"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 npointFromText(text) → npoint
 npointFromEWKT(text) → npoint
 nsegmentFromText(text) → nsegment
@@ -70,7 +70,7 @@ SELECT asText(nsegmentFromText(text 'Nsegment(1,0.3,0.5)'));
 -- NSegment(1,0.3,0.5)
 SELECT asEWKT(nsegmentFromEWKT(text 'SRID=5676;Nsegment(1,0.3,0.5)'));
 -- SRID=5676;NSegment(1,0.3,0.5)
-</pre></li><li class="listitem"><a name="npointFromBinary"></a><a class="indexterm" name="id7545"></a><a class="indexterm" name="id7548"></a><a class="indexterm" name="id7551"></a><a class="indexterm" name="id7554"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npointFromBinary"></a><a class="indexterm" name="id7547"></a><a class="indexterm" name="id7550"></a><a class="indexterm" name="id7553"></a><a class="indexterm" name="id7556"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 npointFromBinary(bytea) → npoint
 npointFromEWKB(bytea) → npoint
 npointFromHexWKB(text) → npoint
@@ -80,7 +80,7 @@ SELECT asEWKT(npointFromEWKB('\x01412c1600000100000000000000000000000000e03f'));
 -- SRID=5676;NPoint(1,0.5)
 SELECT asEWKT(npointFromHexEWKB('01412C1600000100000000000000000000000000E03F'));
 -- SRID=5676;NPoint(1,0.5)
-</pre></li><li class="listitem"><a name="nsegment_asBinary"></a><a class="indexterm" name="id7561"></a><a class="indexterm" name="id7564"></a><a class="indexterm" name="id7567"></a><a class="indexterm" name="id7570"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) de un segmento de red</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="nsegment_asBinary"></a><a class="indexterm" name="id7563"></a><a class="indexterm" name="id7566"></a><a class="indexterm" name="id7569"></a><a class="indexterm" name="id7572"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) de un segmento de red</p><pre class="programlisting">
 asBinary(nsegment,endian text='') → bytea
 asEWKB(nsegment,endian text='') → bytea
 asHexWKB(nsegment,endian text='') → text
@@ -94,7 +94,7 @@ SELECT asHexWKB(nsegment 'NSegment(1,0.5,0.7)');
 -- 01010100000000000000000000000000E03F666666666666E63F
 SELECT asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR');
 -- 00410000162C00000000000000013FE00000000000003FE6666666666666
-</pre></li><li class="listitem"><a name="nsegmentFromBinary"></a><a class="indexterm" name="id7582"></a><a class="indexterm" name="id7585"></a><a class="indexterm" name="id7588"></a><a class="indexterm" name="id7591"></a><p>Entrada de un segmento de red desde la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="nsegmentFromBinary"></a><a class="indexterm" name="id7584"></a><a class="indexterm" name="id7587"></a><a class="indexterm" name="id7590"></a><a class="indexterm" name="id7593"></a><p>Entrada de un segmento de red desde la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 nsegmentFromBinary(bytea) → nsegment
 nsegmentFromEWKB(bytea) → nsegment
 nsegmentFromHexWKB(text) → nsegment
@@ -104,13 +104,13 @@ SELECT nsegmentFromBinary(asBinary(nsegment 'NSegment(1,0.5,0.7)'));
 -- NSegment(1,0.5,0.7)
 SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
 -- NSegment(1,0.5,0.7)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_constructor_functions"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint"></a><a class="indexterm" name="id7602"></a><a class="indexterm" name="id7605"></a><p>Constructores de puntos o segmentos de red</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_constructor_functions"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint"></a><a class="indexterm" name="id7604"></a><a class="indexterm" name="id7607"></a><p>Constructores de puntos o segmentos de red</p><pre class="programlisting">
 npoint(bigint,float) → npoint
 nsegment(bigint,float,float) → nsegment
 </pre><pre class="programlisting">
 SELECT npoint(76, 0.3);
 SELECT nsegment(76, 0.3, 0.5);
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_conversion_functions"></a>Conversión de tipos</h3></div></div></div><p>Los valores de los tipos <code class="varname">npoint</code> y <code class="varname">nsegment</code> se pueden convertir al tipo <code class="varname">geometry</code> utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code> como se muestra a continuación. De manera similar, los valores <code class="varname">geometry</code> del subtipo <code class="varname">point</code> o <code class="varname">linestring</code> (restringidos a dos puntos) se pueden convertir, respectivamente, a valores <code class="varname">npoint</code> y <code class="varname">nsegment</code>. Para ello, se debe encontrar la ruta que interseca los puntos dados, donde se supone una tolerancia de 0,00001 unidades (según el sistema de coordenadas), por lo que se considera que un punto y una ruta que están cerca se intersecan. Si no se encuentra dicha ruta, se devuelve un valor nulo.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id7626"></a><p>Convierte entre un punto o un segmento de red y una geometría</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_conversion_functions"></a>Conversión de tipos</h3></div></div></div><p>Los valores de los tipos <code class="varname">npoint</code> y <code class="varname">nsegment</code> se pueden convertir al tipo <code class="varname">geometry</code> utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code> como se muestra a continuación. De manera similar, los valores <code class="varname">geometry</code> del subtipo <code class="varname">point</code> o <code class="varname">linestring</code> (restringidos a dos puntos) se pueden convertir, respectivamente, a valores <code class="varname">npoint</code> y <code class="varname">nsegment</code>. Para ello, se debe encontrar la ruta que interseca los puntos dados, donde se supone una tolerancia de 0,00001 unidades (según el sistema de coordenadas), por lo que se considera que un punto y una ruta que están cerca se intersecan. Si no se encuentra dicha ruta, se devuelve un valor nulo.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id7628"></a><p>Convierte entre un punto o un segmento de red y una geometría</p><pre class="programlisting">
 {npoint,nsegment}::geometry
 geometry::{npoint,nsegment}
 </pre><pre class="programlisting">
@@ -130,7 +130,7 @@ SELECT geometry 'SRID=5676;Point(279.3 811.5)'::npoint;
 -- NULL
 SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 -- NULL
-</pre></li><li class="listitem"><a name="npoint_stbox"></a><a class="indexterm" name="id7634"></a><p>Construye una caja espaciotemporal a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_stbox"></a><a class="indexterm" name="id7636"></a><p>Construye una caja espaciotemporal a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</p><pre class="programlisting">
 stbox(npoint) → stbox
 stbox(npoint,{timestamptz,tstzspan}) → stbox
 </pre><pre class="programlisting">
@@ -142,19 +142,19 @@ SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
 /* SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
    2001-01-02]) */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id7644"></a><p>Devuelve el identificador de ruta</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id7646"></a><p>Devuelve el identificador de ruta</p><pre class="programlisting">
 route({npoint,nsegment}) → bigint
 </pre><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63
 SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 -- 76
-</pre></li><li class="listitem"><a name="npoint_getPosition"></a><a class="indexterm" name="id7651"></a><p>Devuelve la posición</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_getPosition"></a><a class="indexterm" name="id7653"></a><p>Devuelve la posición</p><pre class="programlisting">
 getPosition(npoint) → float
 </pre><pre class="programlisting">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
 -- 0.3
-</pre></li><li class="listitem"><a name="npoint_startPosition"></a><a class="indexterm" name="id7658"></a><a class="indexterm" name="id7661"></a><p>Devuelve la posición inicial/final</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_startPosition"></a><a class="indexterm" name="id7660"></a><a class="indexterm" name="id7663"></a><p>Devuelve la posición inicial/final</p><pre class="programlisting">
 startPosition(nsegment) → float
 endPosition(nsegment) → float
 </pre><pre class="programlisting">
@@ -162,21 +162,21 @@ SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.3
 SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_transformation_functions"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id7671"></a><p>Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_transformation_functions"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id7673"></a><p>Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</p><pre class="programlisting">
 round({npoint,nsegment},integer=0) → {npoint,nsegment}
 </pre><pre class="programlisting">
 SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
 SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_spatial_operations"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id7681"></a><p>Devuelve el identificador de referencia espacial</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_spatial_operations"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id7683"></a><p>Devuelve el identificador de referencia espacial</p><pre class="programlisting">
 SRID({npoint,nsegment}) → integer
 </pre><pre class="programlisting">
 SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
-</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">same</code> se utiliza para verificar la similitud espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7692"></a><p>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</p><pre class="programlisting">
+</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">same</code> se utiliza para verificar la similitud espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7694"></a><p>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</p><pre class="programlisting">
 same(npoint,npoint) → boolean
 npoint ~= npoint → boolean
 </pre><pre class="programlisting">
@@ -187,7 +187,7 @@ WITH inter(geom) AS (
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
 SELECT same(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7703"></a><a class="indexterm" name="id7706"></a><a class="indexterm" name="id7709"></a><a class="indexterm" name="id7712"></a><a class="indexterm" name="id7715"></a><a class="indexterm" name="id7718"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7705"></a><a class="indexterm" name="id7708"></a><a class="indexterm" name="id7711"></a><a class="indexterm" name="id7714"></a><a class="indexterm" name="id7717"></a><a class="indexterm" name="id7720"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint
 nsegment {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} nsegment
 </pre><pre class="programlisting">
