@@ -3661,6 +3661,63 @@ geom_array_shared_dims(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return an array whose geometry collection members are listed
+ * component by component, or NULL where it holds no such member
+ * @details The union of an array is the union of what its members hold, and a
+ * geometry collection holds its components, so the array a collection is a
+ * member of has the union of the array listing those components in its place.
+ * The arms read a member as one geometry of one kind, and a collection holding
+ * a surface beside the line two surfaces meet along -- what an intersection of
+ * a collection gives for each of its components -- is neither. The components
+ * are split by #geo_collection_components(), which the overlay of a collection
+ * splits its operand with; a collection nested in one is split by the union of
+ * the array this returns. An empty collection holds no component and stays a
+ * member
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @param[out] nflat Number of elements of the array returned
+ */
+static GSERIALIZED **
+union_collection_members(GSERIALIZED **gsarr, int count, int *nflat)
+{
+  assert(gsarr); assert(nflat);
+  *nflat = 0;
+  int total = 0;
+  bool any = false;
+  for (int i = 0; i < count; i++)
+  {
+    int ncomp = 1;
+    if (gserialized_get_type(gsarr[i]) == COLLECTIONTYPE &&
+        ! gserialized_is_empty(gsarr[i]))
+    {
+      LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+      ncomp = (int) ((const LWCOLLECTION *) geom)->ngeoms;
+      lwgeom_free(geom);
+      any = true;
+    }
+    total += ncomp;
+  }
+  if (! any)
+    return NULL;
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * total);
+  for (int i = 0; i < count; i++)
+  {
+    int ncomp = 0;
+    GSERIALIZED **comps = (gserialized_get_type(gsarr[i]) == COLLECTIONTYPE) ?
+      geo_collection_components(gsarr[i], &ncomp) : NULL;
+    if (! comps)
+    {
+      result[(*nflat)++] = geo_copy(gsarr[i]);
+      continue;
+    }
+    for (int j = 0; j < ncomp; j++)
+      result[(*nflat)++] = comps[j];
+    pfree(comps);
+  }
+  return result;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members share their
  * dimensions
  * @details The function will iteratively call @p GEOSUnion on the
@@ -3676,6 +3733,18 @@ static GSERIALIZED *
 geom_array_union_shared(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
+
+  /* A collection member is read as the components it holds, as
+   * #geom_unary_union() reads a collection through the union of its parts */
+  int nflat;
+  GSERIALIZED **flat = union_collection_members(gsarr, count, &nflat);
+  if (flat)
+  {
+    GSERIALIZED *result = (nflat > 1) ? geom_array_union_shared(flat, nflat) :
+      geo_copy(flat[0]);
+    geo_free_array(flat, nflat);
+    return result;
+  }
 
   /* An array holding nothing but empties has an empty union, which is read
    * from the array alone. It is answered here so that a build carrying no
