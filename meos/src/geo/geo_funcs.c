@@ -1042,6 +1042,59 @@ dot_product_sign_exact(const POINT3D *p, const POINT3D *q)
 }
 
 /**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of a distance, computed exactly
+ * @details Expanding the two squared differences over the input coordinates
+ * leaves a sum of seven products of coordinates and none of a rounded
+ * difference:
+ * @code
+ *   (qx - px)^2 + (qy - py)^2 - d^2
+ *     = qx*qx - 2*qx*px + px*px + qy*qy - 2*qy*py + py*py - d*d
+ * @endcode
+ * Each product is its rounded value plus its error (#two_product), doubling
+ * and negating a pair of doubles is exact, and the seven are added into one
+ * expansion whose last component carries the sign of the whole.
+ * #point_within_distance_sign calls it where its filter cannot tell
+ * @note Exact where no product of a coordinate with a coordinate overflows or
+ * underflows
+ * @return -1 where the points are nearer than the distance, 1 where they are
+ * farther, 0 exactly where the distance is the one they are apart
+ */
+int
+point_within_distance_sign_exact(double px, double py, double qx, double qy,
+  double d)
+{
+  /* The seven products, each as a factor and the two coordinates it multiplies */
+  const double factor[7] = {1.0, -2.0, 1.0, 1.0, -2.0, 1.0, -1.0};
+  const double left[7] = {qx, qx, px, qy, qy, py, d};
+  const double right[7] = {qx, px, px, qy, py, py, d};
+  double buf1[16], buf2[16], *cur = buf1, *nxt = buf2;
+  int len = 0;
+  for (int k = 0; k < 7; k++)
+  {
+    double x, y;
+    two_product(left[k], right[k], &x, &y);
+    /* A factor of 1, -1 or -2 scales both components exactly */
+    x *= factor[k];
+    y *= factor[k];
+    if (y != 0.0)
+    {
+      len = grow_expansion(len, cur, y, nxt);
+      double *swap = cur; cur = nxt; nxt = swap;
+    }
+    if (x != 0.0)
+    {
+      len = grow_expansion(len, cur, x, nxt);
+      double *swap = cur; cur = nxt; nxt = swap;
+    }
+  }
+  if (len == 0)
+    return 0;
+  double top = cur[len - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
  * @brief Return the sign of the triple product `<p, q x r>` of three vectors,
  * computed exactly
  * @details The triple product is the determinant of the three vectors, a sum

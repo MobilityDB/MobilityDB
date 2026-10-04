@@ -181,8 +181,7 @@ set_append_value(Set *set, Datum value)
   for (int i = 0; i < set->count; i++)
     values[i] = SET_VAL_N(set, i);
   values[set->count] = value;
-  int maxcount = (set->count < set->maxcount) ?
-    set->maxcount : set->maxcount * 2;
+  int maxcount = set->maxcount * 2;
 #ifdef DEBUG_EXPAND
   meos_error(WARNING, " Set -> %d\n", maxcount);
 #endif /* DEBUG_EXPAND */
