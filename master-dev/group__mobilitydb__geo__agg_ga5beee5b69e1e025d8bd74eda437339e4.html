@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpcbox_extent_transfn</title>
+<title>MobilityDB: Stbox_extent_transfn</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pointcloud__box__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__geo__agg.html">Aggregate functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,42 +79,34 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga932d94fa4bc720c3b32c35c6818c4573.html#ga932d94fa4bc720c3b32c35c6818c4573">pcpoint_to_tpcbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_gadfe87b6c77e6dfe27e796f087a8d169b.html#gadfe87b6c77e6dfe27e796f087a8d169b">tpcbox_copy</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__constructor_gaf8d566caff2d679fccd37b76e53925fd.html#gaf8d566caff2d679fccd37b76e53925fd">tpcbox_extent_transfn</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga38f057409ec34c43074c20214cb4f7e6.html#ga38f057409ec34c43074c20214cb4f7e6">tpcbox_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_ga35e1daa9372363580eefb571d2a0a804.html#ga35e1daa9372363580eefb571d2a0a804">Stbox_extent_combinefn</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__geo__agg_ga5beee5b69e1e025d8bd74eda437339e4.html#ga5beee5b69e1e025d8bd74eda437339e4">Stbox_extent_transfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_gaf29a1f15d4361361e4c11ed21bc6dd18.html#gaf29a1f15d4361361e4c11ed21bc6dd18">Tpoint_tcentroid_combinefn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_gafb62f91ca34b74bb2299a694005fd7a9.html#gafb62f91ca34b74bb2299a694005fd7a9">Tpoint_tcentroid_finalfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_gae764f5d2bdb5371fd011a14fe4349c7b.html#gae764f5d2bdb5371fd011a14fe4349c7b">Tpoint_tcentroid_transfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_ga4577098ddb0f8482cf9fe46c54b4c644.html#ga4577098ddb0f8482cf9fe46c54b4c644">Tpoint_twcentroid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__agg_ga0a2582e69d1640bdafa668b57c238ad8.html#ga0a2582e69d1640bdafa668b57c238ad8">Tspatial_extent_transfn</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf8d566caff2d679fccd37b76e53925fd" name="gaf8d566caff2d679fccd37b76e53925fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf8d566caff2d679fccd37b76e53925fd">&#9670;&#160;</a></span>tpcbox_extent_transfn()</h2>
+<a id="ga5beee5b69e1e025d8bd74eda437339e4" name="ga5beee5b69e1e025d8bd74eda437339e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5beee5b69e1e025d8bd74eda437339e4">&#9670;&#160;</a></span>Stbox_extent_transfn()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * tpcbox_extent_transfn </td>
+          <td class="memname">Datum Stbox_extent_transfn </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structTPCBox.html">TPCBox</a> *&#160;</td>
-          <td class="paramname"><em>state</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Transition function for the extent aggregate over tpcpoint / tpcpatch values. </p>
-<p >The function folds <code>temp's</code> bounding box into <code>state</code>. </p><dl class="section return"><dt>Returns</dt><dd><code>state</code> (mutated) when both inputs are non-NULL and comparable; a freshly-palloc'd <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> when <code>state</code> is NULL and <code>temp</code> is non-NULL; <code>NULL</code> when both are NULL, or when the two boxes name different schemas or hold different dimensions (which raises an error). @csqlfn <a class="el" href="group__mobilitydb__pointcloud__agg_gacc3faad4c945470596ff3b931624fee7.html#gacc3faad4c945470596ff3b931624fee7" title="Transition function for the extent aggregate over tpcpoint / tpcpatch values @sqlfn tpc_extent_transf...">Tpc_extent_transfn()</a> </dd></dl>
+<p>Transition function for extent aggregation of spatiotemporal boxes @sqlfn <a class="el" href="group__meos__geo__agg_ga1d27971bed0c86509ad3f6d7d103b3fc.html#ga1d27971bed0c86509ad3f6d7d103b3fc" title="Transition function for temporal extent aggregate of spatiotemporal boxes.">stbox_extent_transfn()</a> @sqlaggfn extent() </p>
 
 </div>
 </div>

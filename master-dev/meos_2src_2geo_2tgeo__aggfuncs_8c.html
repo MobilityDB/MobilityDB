@@ -91,6 +91,8 @@ $(function() {
 <code>#include &quot;temporal/skiplist.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="temporal__aggfuncs_8h_source.html">temporal/temporal_aggfuncs.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -104,6 +106,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aab224159ad6e57c33c86465df73c3ffd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__aggfuncs_8c_aab224159ad6e57c33c86465df73c3ffd.html#aab224159ad6e57c33c86465df73c3ffd">ensure_geoaggstate_state</a> (const <a class="el" href="structSkipList.html">SkipList</a> *state1, const <a class="el" href="structSkipList.html">SkipList</a> *state2)</td></tr>
 <tr class="memdesc:aab224159ad6e57c33c86465df73c3ffd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check the validity of two temporal geos for aggregation.  <a href="meos_2src_2geo_2tgeo__aggfuncs_8c_aab224159ad6e57c33c86465df73c3ffd.html#aab224159ad6e57c33c86465df73c3ffd">More...</a><br /></td></tr>
 <tr class="separator:aab224159ad6e57c33c86465df73c3ffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d27971bed0c86509ad3f6d7d103b3fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__agg_ga1d27971bed0c86509ad3f6d7d103b3fc.html#ga1d27971bed0c86509ad3f6d7d103b3fc">stbox_extent_transfn</a> (<a class="el" href="structSTBox.html">STBox</a> *state, const <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
+<tr class="memdesc:ga1d27971bed0c86509ad3f6d7d103b3fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for temporal extent aggregate of spatiotemporal boxes.  <a href="group__meos__geo__agg_ga1d27971bed0c86509ad3f6d7d103b3fc.html#ga1d27971bed0c86509ad3f6d7d103b3fc">More...</a><br /></td></tr>
+<tr class="separator:ga1d27971bed0c86509ad3f6d7d103b3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga39ff640a6381dd4507ff63e04adda887"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__agg_ga39ff640a6381dd4507ff63e04adda887.html#ga39ff640a6381dd4507ff63e04adda887">tpoint_tcentroid_finalfn</a> (<a class="el" href="structSkipList.html">SkipList</a> *state)</td></tr>
 <tr class="memdesc:ga39ff640a6381dd4507ff63e04adda887"><td class="mdescLeft">&#160;</td><td class="mdescRight">Final function for temporal centroid aggregation of temporal points.  <a href="group__meos__geo__agg_ga39ff640a6381dd4507ff63e04adda887.html#ga39ff640a6381dd4507ff63e04adda887">More...</a><br /></td></tr>
 <tr class="separator:ga39ff640a6381dd4507ff63e04adda887"><td class="memSeparator" colspan="2">&#160;</td></tr>
