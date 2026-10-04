@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_app_tseq_transfn</title>
+<title>MobilityDB: Geom_from_hexewkb</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__internal__temporal__agg.html">Aggregate functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__geo__base__inout.html">Input and output functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,47 +79,31 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__agg_gabd1fd61ab35d4a9898b266c982206d79.html#gabd1fd61ab35d4a9898b266c982206d79">skiplist_free</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__agg_ga54d2b348a100b98b21a52e6e5e7f5a3c.html#ga54d2b348a100b98b21a52e6e5e7f5a3c">temporal_app_tinst_transfn</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__temporal__agg_ga44c7baa3c6b94ab4528affc0a057aaf5.html#ga44c7baa3c6b94ab4528affc0a057aaf5">temporal_app_tseq_transfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__base__inout_gae609d1164a49c04f3acc807e7c6ce5b1.html#gae609d1164a49c04f3acc807e7c6ce5b1">Geo_as_hexewkb</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__geo__base__inout_ga63b4ccd47883e5f1299c522339fe1247.html#ga63b4ccd47883e5f1299c522339fe1247">Geog_from_hexewkb</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__geo__base__inout_gaf81358c6cbde50d9eec42bd1003e6283.html#gaf81358c6cbde50d9eec42bd1003e6283">Geom_from_hexewkb</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga44c7baa3c6b94ab4528affc0a057aaf5" name="ga44c7baa3c6b94ab4528affc0a057aaf5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga44c7baa3c6b94ab4528affc0a057aaf5">&#9670;&#160;</a></span>temporal_app_tseq_transfn()</h2>
+<a id="gaf81358c6cbde50d9eec42bd1003e6283" name="gaf81358c6cbde50d9eec42bd1003e6283"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf81358c6cbde50d9eec42bd1003e6283">&#9670;&#160;</a></span>Geom_from_hexewkb()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * temporal_app_tseq_transfn </td>
+          <td class="memname">Datum Geom_from_hexewkb </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>state</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Transition function for append temporal sequence aggregate. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, may be <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value to aggregate @csqlfn <a class="el" href="group__mobilitydb__temporal__agg_ga5fb1234d4bfb9c4879114f93ea9bda90.html#ga5fb1234d4bfb9c4879114f93ea9bda90" title="Transition function for append temporal sequence aggregate @sqlfn appendSequenceTransition() @sqlaggf...">Temporal_app_tseq_transfn()</a> </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Return a geometry from its ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation. </p>
+<p >Read through the public MEOS reader, as <a class="el" href="group__mobilitydb__cbuffer__base__inout_ga69f36a9d8d492aa84f1deb68f948ca4b.html#ga69f36a9d8d492aa84f1deb68f948ca4b" title="Return a circular buffer from its ASCII hex-encoded Well-Known Binary (HexWKB) representation @sqlfn ...">Cbuffer_from_hexwkb</a> reads a circular buffer @sqlfn geometryFromHexEWKB() </p>
 
 </div>
 </div>

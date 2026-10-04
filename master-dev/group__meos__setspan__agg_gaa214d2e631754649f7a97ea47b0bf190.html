@@ -138,10 +138,11 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, may be <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> to aggregate, may be <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__setspan__agg_ga848df95c36d98a666603adce145d2153.html#ga848df95c36d98a666603adce145d2153" title="Transition function for extent aggregation of spans @sqlfn span_extent_transfn() @sqlaggfn extent()">Span_extent_transfn()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> to aggregate, may be <code>NULL</code> </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The function is also the combine function of the aggregate, the span to aggregate being the state of another partial aggregation @csqlfn <a class="el" href="group__mobilitydb__setspan__agg_ga848df95c36d98a666603adce145d2153.html#ga848df95c36d98a666603adce145d2153" title="Transition function for extent aggregation of spans @sqlfn span_extent_transfn() @sqlaggfn extent()">Span_extent_transfn()</a>, <a class="el" href="group__mobilitydb__setspan__agg_gaa8ea82d13dc0b2cee0f485a76b1248c2.html#gaa8ea82d13dc0b2cee0f485a76b1248c2" title="Combine function for extent aggregation of spans @sqlfn extent() @sqlaggfn extent()">Span_extent_combinefn()</a> </dd></dl>
 
 </div>
 </div>

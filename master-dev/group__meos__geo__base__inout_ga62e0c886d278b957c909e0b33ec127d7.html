@@ -94,16 +94,16 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gadc06081a5819e5ab5d13b5c276176705.html#gadc06081a5819e5ab5d13b5c276176705">geo_from_geojson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga46d7c4be05f01aa9b0b8a0ae4092fb0f.html#ga46d7c4be05f01aa9b0b8a0ae4092fb0f">geo_from_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga255e9f3301b88d0c843cfea842cb39bc.html#ga255e9f3301b88d0c843cfea842cb39bc">geo_out</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga4b2cb53e5a800db38b00bd835f10348d.html#ga4b2cb53e5a800db38b00bd835f10348d">geog_from_hexewkb</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga9d018d654cdd7447c3ed1282aab10d98.html#ga9d018d654cdd7447c3ed1282aab10d98">geog_from_hexewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga41dc1d3f899a20f992944a6f2b1adbe0.html#ga41dc1d3f899a20f992944a6f2b1adbe0">geog_in</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__inout_ga7c3cdfd89591c4985d1a1e0617bece99.html#ga7c3cdfd89591c4985d1a1e0617bece99">geom_from_hexewkb</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__inout_ga62e0c886d278b957c909e0b33ec127d7.html#ga62e0c886d278b957c909e0b33ec127d7">geom_from_hexewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga30b02b5b5b332e9b6dc48b0f09da77a5.html#ga30b02b5b5b332e9b6dc48b0f09da77a5">geom_in</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga7c3cdfd89591c4985d1a1e0617bece99" name="ga7c3cdfd89591c4985d1a1e0617bece99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7c3cdfd89591c4985d1a1e0617bece99">&#9670;&#160;</a></span>geom_from_hexewkb()</h2>
+<a id="ga62e0c886d278b957c909e0b33ec127d7" name="ga62e0c886d278b957c909e0b33ec127d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga62e0c886d278b957c909e0b33ec127d7">&#9670;&#160;</a></span>geom_from_hexewkb()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -112,22 +112,19 @@ $(function() {
           <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geom_from_hexewkb </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>wkt</em></td><td>)</td>
+          <td class="paramname"><em>hexwkb</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a geometry from its ASCII hex-encoded Well-Known Binary (HexEWKB) representation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a geometry from its ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation. </p>
+<p >The value is read as <a class="el" href="group__meos__geo__base__inout_ga30b02b5b5b332e9b6dc48b0f09da77a5.html#ga30b02b5b5b332e9b6dc48b0f09da77a5" title="Return a geometry from its Well-Known Text (WKT), Well-Known Binary (WKB) or GeoJSON representation.">geom_in</a> reads it, so a HexWKB without an SRID is read as well </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">wkt</td><td>WKT string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hexwkb</td><td>HexEWKB string @csqlfn <a class="el" href="group__mobilitydb__geo__base__inout_gaf81358c6cbde50d9eec42bd1003e6283.html#gaf81358c6cbde50d9eec42bd1003e6283" title="Return a geometry from its ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation.">Geom_from_hexewkb()</a> </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>This is a a stricter version of <a class="el" href="group__meos__geo__base__inout_ga30b02b5b5b332e9b6dc48b0f09da77a5.html#ga30b02b5b5b332e9b6dc48b0f09da77a5" title="Return a geometry from its Well-Known Text (WKT), Well-Known Binary (WKB) or GeoJSON representation.">geom_in</a>, where we refuse to accept (HEX)WKB or EWKT. </dd>
-<dd>
-PostGIS function: <code>LWGEOM_from_text(PG_FUNCTION_ARGS)</code> </dd></dl>
 
 </div>
 </div>
