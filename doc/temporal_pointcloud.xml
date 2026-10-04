@@ -688,9 +688,9 @@ tpcpoint::text → text
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpoint_asMFJSON">
@@ -756,7 +756,7 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex-WKB of its serialized form, which has no decimal places to round. MF-JSON carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
+			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex of its pgPointCloud WKB, the text the type output function of pgPointCloud writes, which has no decimal places to round. MF-JSON carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_constructors">
@@ -773,9 +773,9 @@ tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), tstzspan '[2001-01-01, 2001-01-02]'));
--- [5C000000010000006400…000000@2001-01-01, 5C000000010000006400…000000@2001-01-02]
+-- [0101000000640000…64000000@2001-01-01, 0101000000640000…64000000@2001-01-02]
 </programlisting>
 				</listitem>
 
@@ -1272,7 +1272,7 @@ nearestApproachInstant({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tpcpoint
 SELECT asText(nearestApproachInstant(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]), geometry 'Point Z(5 5 5)'));
--- 5C00000001000000900100009001000090010000000000@2001-01-02
+-- 0101000000900100009001000090010000@2001-01-02
 </programlisting>
 					</listitem>
 
@@ -1743,9 +1743,9 @@ SELECT t,
   point FROM points(tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0),
   pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
 -- ('2024-01-01',
--- '01:0000000000000000000000F03F0000000000000000F03F00000000000000F03F'::pcpoint)
+-- '0101000000640000006400000064000000'::pcpoint)
 -- ('2024-01-01',
--- '01:0000000000000000000000004000000000000000400000000000000040'::pcpoint)
+-- '0101000000C8000000C8000000C8000000'::pcpoint)
 </programlisting>
 				</listitem>
 			</itemizedlist>

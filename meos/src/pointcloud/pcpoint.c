@@ -153,11 +153,61 @@ ensure_same_pcid_pcpoint(const Pcpoint *pt1, const Pcpoint *pt2)
 /*****************************************************************************
  * Input/output functions
  *
- * Text format at the MEOS layer is the ASCII hex encoding of the raw
- * SERIALIZED_POINT varlena bytes. This mirrors how PostGIS geometry is
- * text-represented in MEOS (HexWKB). Structured WKT parsing requires
- * schema resolution and lives in the PG wrapper layer, not here.
+ * The text of a pcpoint is the hex encoding of its pgPointCloud Well-Known
+ * Binary (WKB), the text the type input and output functions of pgPointCloud
+ * read and write: the endian flag, the pcid and the data of the point under
+ * the schema of the pcid. Reading and writing it resolve that schema.
  *****************************************************************************/
+
+/**
+ * @brief Return a pcpoint from its pgPointCloud Well-Known Binary (WKB)
+ * representation, as pgPointCloud's @c pc_point_from_hexwkb reads it
+ * @details The header and the size are tested here, since the library
+ * reading the data ends a standalone process on an error
+ * @param[in] wkb WKB bytes
+ * @param[in] size Number of bytes
+ */
+static Pcpoint *
+pcpoint_from_wkb_bytes(const uint8_t *wkb, size_t size)
+{
+  /* Endian flag and pcid */
+  if (size < 1 + sizeof(uint32_t))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse pcpoint value: too short");
+    return NULL;
+  }
+  if (wkb[0] > 1)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse pcpoint value: invalid endian flag %d", wkb[0]);
+    return NULL;
+  }
+  uint32_t pcid = pc_wkb_get_pcid(wkb);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  if (size - 1 - sizeof(uint32_t) != schema->size)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse pcpoint value: %zu bytes of data where the schema %u "
+      "states %zu", size - 1 - sizeof(uint32_t), pcid, schema->size);
+    return NULL;
+  }
+  PCPOINT *pcpt = pc_point_from_wkb(schema, (uint8_t *) wkb, size);
+  if (! pcpt)
+    return NULL;
+  Pcpoint *result = (Pcpoint *) meos_pc_point_serialize(pcpt);
+  pc_point_free(pcpt);
+  /* Zero the struct-tail padding, as #pcpoint_make does */
+  size_t meaningful = pcpoint_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
 
 /**
  * @brief Parse a pcpoint from its hex-encoded representation in a cursor
@@ -185,29 +235,14 @@ pcpoint_parse(const char **str, bool end)
   }
 
   size_t byte_len = hex_len / 2;
-  /* Minimum viable: varlena header (4 B) + pcid (4 B) = 8 bytes of raw
-   * bytes AFTER the varlena header. Since SET_VARSIZE stores total length
-   * including the 4-byte header, the decoded byte stream is what goes
-   * INTO the pcpoint minus the vl_len_ field. The pgpointcloud on-wire
-   * layout stores the 4-byte size at the start of the blob, so we accept
-   * the decoded bytes directly as the full varlena. */
-  if (byte_len < VARHDRSZ + sizeof(uint32_t))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse %s value: too short", type_str);
-    return NULL;
-  }
-
-  Pcpoint *result = palloc(byte_len);
-  /* parse_hex consumes 2 chars at a time and returns the decoded byte;
-   * we drive it byte-by-byte. PostGIS does no per-call validation, so
-   * a malformed hex digit silently maps to 0 — acceptable for an
-   * already length-validated payload. */
+  uint8_t *wkb = palloc(byte_len);
+  /* The scan above admits hexadecimal digits alone, so each pair decodes */
   for (size_t i = 0; i < byte_len; i++)
-    ((char *) result)[i] = (char) parse_hex((char *) hex_start + 2 * i);
-  /* Overwrite the varlena header to match the decoded byte length (the
-   * on-wire first 4 bytes may use pgpointcloud's own size convention). */
-  SET_VARSIZE(result, byte_len);
+    wkb[i] = parse_hex((char *) hex_start + 2 * i);
+  Pcpoint *result = pcpoint_from_wkb_bytes(wkb, byte_len);
+  pfree(wkb);
+  if (! result)
+    return NULL;
 
   *str = p;
   if (end)
@@ -228,9 +263,8 @@ pcpoint_parse(const char **str, bool end)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpoint from its textual (hex-WKB) representation
+ * @details The text is the one the type input function of pgPointCloud reads
  * @param[in] str String
- * @note PG-side input is provided by pgpointcloud's own @c pcpoint_in,
- *   which we do not redefine.
  */
 Pcpoint *
 pcpoint_hex_in(const char *str)
@@ -243,15 +277,10 @@ pcpoint_hex_in(const char *str)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the textual (hex-WKB) representation of a pcpoint
+ * @details The text is the one the type output function of pgPointCloud
+ * writes, in the byte order of the machine
  * @param[in] pt Point
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
- * @note The bytes past the meaningful prefix are pgpointcloud's struct-tail
- * padding, which its constructor leaves uninitialized (see the file header).
- * They are emitted as zeros so that two pcpoints holding the same point
- * always print the same string. The full @c VARSIZE length is still written:
- * the deserializer checks that the byte count matches
- * @c sizeof(SERIALIZED_POINT) - 1 + schema->size, so dropping the padding
- * would make the output unparseable rather than merely shorter.
  */
 char *
 pcpoint_hex_out(const Pcpoint *pt, int maxdd)
@@ -261,16 +290,26 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  size_t byte_len = VARSIZE(pt);
-  size_t meaningful = pcpoint_meaningful_size(pt);
-  size_t hex_len = byte_len * 2;
-  char *result = palloc(hex_len + 1);
-  size_t i = 0;
-  for (; i < meaningful; i++)
-    deparse_hex(((const uint8_t *) pt)[i], result + 2 * i);
-  for (; i < byte_len; i++)
-    deparse_hex(0, result + 2 * i);
-  result[hex_len] = '\0';
+  uint32_t pcid = pcpoint_get_pcid(pt);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  PCPOINT *pcpt = meos_pc_point_deserialize((const SERIALIZED_POINT *) pt,
+    schema);
+  if (! pcpt)
+    return NULL;
+  size_t size;
+  uint8_t *wkb = pc_point_to_wkb(pcpt, &size);
+  pc_point_free(pcpt);
+  char *result = palloc(2 * size + 1);
+  for (size_t i = 0; i < size; i++)
+    deparse_hex(wkb[i], result + 2 * i);
+  result[2 * size] = '\0';
+  pcfree(wkb);
   return result;
 }
 
@@ -341,8 +380,8 @@ pcpoint_make(uint32_t pcid, const double *values, int count)
   pc_point_free(pcpt);
   /* The bytes past the meaningful prefix are pgpointcloud's struct-tail
    * padding, which the serialization leaves uninitialized. They are zeroed
-   * so that two pcpoints holding the same point hold the same bytes, as
-   * pcpoint_hex_out prints them (see the file header) */
+   * so that two pcpoints holding the same point hold the same bytes, which
+   * the comparison and the hash read (see the file header) */
   size_t meaningful = pcpoint_meaningful_size(result);
   memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
   return result;

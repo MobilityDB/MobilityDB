@@ -425,15 +425,26 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 -------------------------------------------------------------------------------
--- A value whose pcid names no schema
--- The extent of a patch is in its own serialized header, but the reference
--- system that extent is expressed in is the schema's, so a patch naming a
--- pcid no pointcloud_formats row declares reads and writes without one and
--- reports it where a bounding box is asked for.
+-- The text of a pcpatch
+-- A pcpatch is read and written as the hex of its pgPointCloud Well-Known
+-- Binary (WKB), the text the type input and output functions of pgPointCloud
+-- read and write: the endian flag, the pcid, the compression, the number of
+-- points and the data of the points.
 -------------------------------------------------------------------------------
 
-SELECT tpcpatch '4F000000630000000000000002000000000000000000F03F000000000000F03F000000000000F03F0000000000000040000000000000004000000000000000400000000000000000000000000000@2024-01-01';
-SELECT tpcpatch '4F000000630000000000000002000000000000000000F03F000000000000F03F000000000000F03F0000000000000040000000000000004000000000000000400000000000000000000000000000@2024-01-01' &&
-  tpcbox 'TPCBOX(XT(((0,0),(10,10)),[2024-01-01, 2024-01-31]), 99)';
+SELECT tpcpatch '01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01';
+SELECT numPoints(startValue(tpcpatch '01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01'));
+/* Errors */
+SELECT tpcpatch '01010000000000000003000000640000006400000064000000C8000000C8000000C8000000@2024-01-01';
+SELECT tpcpatch '01010000000200000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01';
+
+-------------------------------------------------------------------------------
+-- A value whose pcid names no schema
+-- The data of a pcpatch is laid out by the schema its pcid resolves to, so a
+-- patch naming a pcid no pointcloud_formats row declares is reported when it
+-- is read, as the type input function of pgPointCloud reports it.
+-------------------------------------------------------------------------------
+
+SELECT tpcpatch '01630000000000000002000000000000000000F03F000000000000F03F000000000000F03F000000000000004000000000000000400000000000000040@2024-01-01';
 
 -------------------------------------------------------------------------------

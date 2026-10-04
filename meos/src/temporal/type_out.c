@@ -1576,8 +1576,8 @@ nsegment_to_wkb_size(const Nsegment *ns, uint8_t variant)
  * the note in pointcloud/pcpoint.c): shrinking the length would make @c
  * pcvarlena_from_wkb_state (type_in.c) allocate a varlena pgpointcloud's own
  * point deserializer no longer recognizes.
- * @c pcpoint_to_wkb_buf writes that padding as zeros instead, mirroring
- * @c pcpoint_hex_out, so two byte-equal pcpoints always agree on their
+ * @c pcpoint_to_wkb_buf writes that padding as zeros instead, as the
+ * constructors store it, so two byte-equal pcpoints always agree on their
  * WKB. The schema for the @c pcid is resolved out-of-band (pgpointcloud's
  * @c pointcloud_formats catalog, via the @c meos_pc_schema_fn hook
  * installed at backend startup), so it is not embedded in the WKB. This
@@ -2598,7 +2598,7 @@ opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
  * dimension payload. The trailing bytes past the meaningful prefix are
  * pgpointcloud's struct-tail padding, which its constructor leaves
  * uninitialized (see the note in pointcloud/pcpoint.c). They are written as
- * zeros — mirroring @c pcpoint_hex_out — instead of copied verbatim, so that
+ * zeros, as the constructors store them, instead of copied verbatim, so that
  * two pcpoints holding the same point always produce the same WKB. The full
  * body length is still written, matching what
  * @c pcvarlena_from_wkb_state (type_in.c) needs to rebuild a varlena of

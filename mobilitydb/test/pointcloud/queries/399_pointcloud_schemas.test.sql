@@ -43,9 +43,9 @@ INSERT INTO pointcloud_dimensions
   (90, 3, 'Z', 'double', 1, 0, true, 'Elevation');
 
 -- The coordinates a value decodes to are the ones the schema states. The text
--- form of a value is its stored bytes and reads the same under any schema, so
--- the rendered coordinates are what states that the schema resolved.
-SELECT asMFJSON(tpcpoint '230000005A000000000000000000F03F00000000000000400000000000000840000000@2024-01-01');
+-- of a value is its pgPointCloud WKB, whose data the schema lays out, so the
+-- rendered coordinates are what states that the schema resolved.
+SELECT asMFJSON(tpcpoint '015A000000000000000000F03F00000000000000400000000000000840@2024-01-01');
 
 -- A value is BUILT from the schema the rows state, and not only read: the
 -- constructors resolve the schema the way the readers do, so a schema stated
