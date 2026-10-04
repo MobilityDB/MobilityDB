@@ -96,6 +96,20 @@ SELECT numValues(h3OriginToDirectedEdges(h3index '8a2a1072b59ffff'));
 SELECT h3index '622236750694711295' = h3index '8a2a1072b59ffff';
 
 -------------------------------------------------------------------------------
+-- Text round trip, against the text the h3-pg type reads and writes
+-------------------------------------------------------------------------------
+
+SELECT h3indexFromText('8a2a1072b59ffff');
+SELECT h3indexFromText('0x8A2A1072B59FFFF') = h3index '8a2a1072b59ffff';
+SELECT asText(h3index '831c02fffffffff');
+SELECT asText(h3index '8a2a1072b59ffff') = (h3index '8a2a1072b59ffff')::text;
+SELECT h3indexFromText(asText(h3index '880326b885fffff'))
+       = h3index '880326b885fffff';
+/* Errors */
+SELECT h3indexFromText('xyz');
+SELECT h3indexFromText('12345');
+
+-------------------------------------------------------------------------------
 -- (Hex)WKB round trip
 -- Base WKB carries no embedded SRID; the default WGS84 (4326) is implied,
 -- exactly like the th3index temporal asBinary/asHexWKB surface.

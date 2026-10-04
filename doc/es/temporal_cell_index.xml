@@ -238,8 +238,10 @@ SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(cell) → text
 </programlisting>
-				<para>En la función anterior, <varname>cell</varname> reemplaza <varname>quadbin</varname> o <varname>s2cell</varname>. El texto es el índice hexadecimal de QUADBIN y el token de S2, la forma que emite la función de salida. El tipo <varname>h3index</varname> es el tipo de h3-pg, que proporciona su entrada y salida de texto.</para>
+				<para>En la función anterior, <varname>cell</varname> reemplaza <varname>h3index</varname>, <varname>quadbin</varname> o <varname>s2cell</varname>. El texto es el índice hexadecimal de H3 y QUADBIN y el token de S2, la forma que emite la función de salida; para <varname>h3index</varname>, el tipo de h3-pg, es el texto que escribe la función de salida de h3-pg.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(h3index '831c02fffffffff');
+-- 831c02fffffffff
 SELECT asText(quadbin '48a6227affffffff');
 -- 48a6227affffffff
 SELECT asText(s2cell '47c3c');
@@ -248,13 +250,17 @@ SELECT asText(s2cell '47c3c');
 			</listitem>
 
 			<listitem xml:id="cellFromText">
-				<indexterm significance="normal"><primary><varname>cellFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>h3indexFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>quadbinFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>s2cellFromText</varname></primary></indexterm>
 				<para>Entrada desde la representación de texto de una celda</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cellFromText(text) → cell
 </programlisting>
-				<para>Hay una función por tipo de celda, el nombre de la función tiene como prefijo el nombre del tipo, que es <varname>quadbin</varname> o <varname>s2cell</varname>. La función es la inversa de <varname>asText</varname> y lee las formas que acepta un literal del tipo, tanto de una constante como de una columna <varname>text</varname>.</para>
+				<para>Hay una función por tipo de celda, el nombre de la función tiene como prefijo el nombre del tipo, que es <varname>h3index</varname>, <varname>quadbin</varname> o <varname>s2cell</varname>. La función es la inversa de <varname>asText</varname> y lee las formas que acepta un literal del tipo, tanto de una constante como de una columna <varname>text</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3indexFromText('0x831C02FFFFFFFFF');
+-- 831c02fffffffff
 SELECT quadbinFromText('48a6227affffffff');
 -- 48a6227affffffff
 SELECT quadbinFromText('0x48a6227affffffff');

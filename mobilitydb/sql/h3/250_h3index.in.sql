@@ -132,15 +132,22 @@ CREATE TYPE h3index (
 */
 
 /******************************************************************************
- * WKB and HexWKB input/output
+ * Text, WKB and HexWKB input/output
  *
- * Base-value WKB serialization. An h3index is a geographic cell with the
+ * h3indexFromText and asText read and write the text representation of the
+ * type input and output functions of h3-pg. Base-value WKB serialization:
+ * an h3index is a geographic cell with the
  * constant default SRID WGS84 (EPSG:4326), like a PostGIS geography:
  * asBinary/asHexWKB emit plain WKB without an embedded SRID (a reader
  * assumes 4326), mirroring the th3index temporal surface exactly. This lets
  * a downstream tool with no native spatial extension round-trip a cell
  * value through MEOS alone.
  ******************************************************************************/
+
+CREATE FUNCTION h3indexFromText(text)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'H3index_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION h3indexFromBinary(bytea)
   RETURNS h3index
@@ -150,6 +157,11 @@ CREATE FUNCTION h3indexFromBinary(bytea)
 CREATE FUNCTION h3indexFromHexWKB(text)
   RETURNS h3index
   AS 'MODULE_PATHNAME', 'H3index_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(h3index)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'H3index_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(h3index, endian text DEFAULT '')

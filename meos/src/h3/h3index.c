@@ -635,7 +635,7 @@ h3index_is_valid_input(H3Index index)
  * @ingroup meos_h3_base_inout
  * @brief Parse a string into an H3Index
  * @details See header for the accepted input shapes.
- * @sqlfn h3index_in()
+ * @csqlfn #H3index_from_text()
  */
 #if MEOS
 H3Index
@@ -737,7 +737,7 @@ meos_h3index_in(const char *str)
  * @brief Format an H3Index as its canonical hex string
  * @details The output matches h3-pg's `h3index_out` output: lowercase, no
  * "0x" prefix, no leading zeros.
- * @sqlfn h3index_out()
+ * @csqlfn #H3index_as_text()
  */
 #if MEOS
 char *
