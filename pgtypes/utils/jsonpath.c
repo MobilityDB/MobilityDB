@@ -105,6 +105,12 @@ static int  operationPriority(JsonPathItemType op);
 JsonPath *
 jsonpath_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  if (! str)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonpath_in(str);
 }
 #endif /* MEOS */
@@ -125,6 +131,12 @@ pg_jsonpath_in(const char *str)
 char *
 jsonpath_out(const JsonPath *jp)
 {
+  /* Ensure the validity of the arguments */
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonpath_out(jp);
 }
 #endif /* MEOS */

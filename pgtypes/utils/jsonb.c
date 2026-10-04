@@ -90,6 +90,12 @@ extern int GetDatabaseEncoding(void);
 Jsonb *
 jsonb_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  if (! str)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return jsonb_from_cstring((char *) str, strlen(str), false, NULL);
 }
 #endif /* MEOS */
@@ -108,6 +114,12 @@ pg_jsonb_in(const char *str)
 char *
 jsonb_out(const Jsonb *jb)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_out(jb);
 }
 #endif /* MEOS */
@@ -131,6 +143,12 @@ pg_jsonb_out(const Jsonb *jb)
 Jsonb *
 jsonb_from_text(const text *txt, bool unique_keys)
 {
+  /* Ensure the validity of the arguments */
+  if (! txt)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return jsonb_from_cstring(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     unique_keys, NULL);
 }
@@ -150,6 +168,12 @@ pg_jsonb_from_text(const text *txt, bool unique_keys)
 text *
 jsonb_to_text(const Jsonb *jb)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_to_text(jb);
 }
 
