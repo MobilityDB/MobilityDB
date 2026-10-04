@@ -7,7 +7,9 @@ var searchData=
   ['h3_5fvalidity_5ftest_2ec_4',['h3_validity_test.c',['../h3__validity__test_8c.html',1,'']]],
   ['h3index_2ec_5',['h3index.c',['../meos_2src_2h3_2h3index_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2h3_2h3index_8c.html',1,'(Global Namespace)']]],
   ['h3index_2eh_6',['h3index.h',['../h3index_8h.html',1,'']]],
-  ['h3index_5fops_2ec_7',['h3index_ops.c',['../h3index__ops_8c.html',1,'']]],
-  ['h3index_5fsets_2ec_8',['h3index_sets.c',['../meos_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)']]],
-  ['h3index_5fsets_2eh_9',['h3index_sets.h',['../h3index__sets_8h.html',1,'']]]
+  ['h3index_5fhash_5ftest_2ec_7',['h3index_hash_test.c',['../h3index__hash__test_8c.html',1,'']]],
+  ['h3index_5fmeos_2ec_8',['h3index_meos.c',['../h3index__meos_8c.html',1,'']]],
+  ['h3index_5fops_2ec_9',['h3index_ops.c',['../h3index__ops_8c.html',1,'']]],
+  ['h3index_5fsets_2ec_10',['h3index_sets.c',['../meos_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2h3_2h3index__sets_8c.html',1,'(Global Namespace)']]],
+  ['h3index_5fsets_2eh_11',['h3index_sets.h',['../h3index__sets_8h.html',1,'']]]
 ];

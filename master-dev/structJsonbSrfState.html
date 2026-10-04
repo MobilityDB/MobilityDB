@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: JsonbSrfState Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,43 +68,33 @@ $(function() {
 </div>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="meos_2src_2h3_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
-</div>
 </div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Data Fields</a>  </div>
+  <div class="headertitle"><div class="title">JsonbSrfState Struct Reference</div></div>
+</div><!--header-->
 <div class="contents">
-<table cellspacing="0" cellpadding="0" border="0">
-  <tr>
-   <td valign="top">
-      <div class="navtab">
-        <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2h3_2CMakeLists_8txt_a958c5deeba3392e9f45dcc0a6ddfc4ca.html#a958c5deeba3392e9f45dcc0a6ddfc4ca">set</a></td></tr>
-        </table>
-      </div>
-   </td>
-   <td valign="top" class="mempage">
-<a id="a958c5deeba3392e9f45dcc0a6ddfc4ca" name="a958c5deeba3392e9f45dcc0a6ddfc4ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a958c5deeba3392e9f45dcc0a6ddfc4ca">&#9670;&#160;</a></span>set()</h2>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">set </td>
-          <td>(</td>
-          <td class="paramtype">H3_SRCS h3_generated.c h3index.c h3index_sets.c th3index_ops.c th3index.c th3index_boxops.c th3index_inspection.c th3index_hierarchy.c th3index_latlng.c th3index_edges.c th3index_vertices.c th3index_traversal.c th3index_metrics.c th3index_compops.c h3_geo.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-    </td>
-  </tr>
+<p>State of a set-returning function over the values a JSONB value yields: the values, the keys paired with them when there are any, their number and the next one to return.  
+ <a href="structJsonbSrfState.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Data Fields</h2></td></tr>
+<tr class="memitem:a30cd6c9b597feab3e01e4513fd6cfd68"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structJsonbSrfState_a30cd6c9b597feab3e01e4513fd6cfd68.html#a30cd6c9b597feab3e01e4513fd6cfd68">count</a></td></tr>
+<tr class="separator:a30cd6c9b597feab3e01e4513fd6cfd68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e949aadeea90e9c307b222c262ccf73"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structJsonbSrfState_a9e949aadeea90e9c307b222c262ccf73.html#a9e949aadeea90e9c307b222c262ccf73">i</a></td></tr>
+<tr class="separator:a9e949aadeea90e9c307b222c262ccf73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afce386cd0a4f0128e15779e4f95b88c8"><td class="memItemLeft" align="right" valign="top">Datum *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structJsonbSrfState_afce386cd0a4f0128e15779e4f95b88c8.html#afce386cd0a4f0128e15779e4f95b88c8">keys</a></td></tr>
+<tr class="separator:afce386cd0a4f0128e15779e4f95b88c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12a3e52d0d352824ba2055375513ef80"><td class="memItemLeft" align="right" valign="top">Datum *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structJsonbSrfState_a12a3e52d0d352824ba2055375513ef80.html#a12a3e52d0d352824ba2055375513ef80">values</a></td></tr>
+<tr class="separator:a12a3e52d0d352824ba2055375513ef80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >State of a set-returning function over the values a JSONB value yields: the values, the keys paired with them when there are any, their number and the next one to return. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>mobilitydb/src/json/<a class="el" href="jsonb__jsonfuncs_8c.html">jsonb_jsonfuncs.c</a></li>
+</ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

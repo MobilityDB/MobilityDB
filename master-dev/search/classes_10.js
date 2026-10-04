@@ -1,29 +1,7 @@
 var searchData=
 [
-  ['raquet_0',['Raquet',['../structRaquet.html',1,'']]],
-  ['raquetsamplestate_1',['RaquetSampleState',['../structRaquetSampleState.html',1,'']]],
-  ['rasteranswer_2',['RasterAnswer',['../structRasterAnswer.html',1,'']]],
-  ['rastergridops_3',['RasterGridOps',['../structRasterGridOps.html',1,'']]],
-  ['rasterrun_4',['RasterRun',['../structRasterRun.html',1,'']]],
-  ['rastersamplestate_5',['RasterSampleState',['../structRasterSampleState.html',1,'']]],
-  ['rastervaluegdalctx_6',['RasterValueGdalCtx',['../structRasterValueGdalCtx.html',1,'']]],
-  ['recipe_7',['Recipe',['../structRecipe.html',1,'']]],
-  ['region_5frecord_8',['region_record',['../structregion__record.html',1,'']]],
-  ['relatecomp_9',['RelateComp',['../structRelateComp.html',1,'']]],
-  ['relatectx_10',['RelateCtx',['../structRelateCtx.html',1,'']]],
-  ['relatectxcache_11',['RelateCtxCache',['../structRelateCtxCache.html',1,'']]],
-  ['relatectxcacheentry_12',['RelateCtxCacheEntry',['../structRelateCtxCacheEntry.html',1,'']]],
-  ['relatectxseen_13',['RelateCtxSeen',['../structRelateCtxSeen.html',1,'']]],
-  ['relateedges_14',['RelateEdges',['../structRelateEdges.html',1,'']]],
-  ['relateinterval_15',['RelateInterval',['../structRelateInterval.html',1,'']]],
-  ['relatelinearends_16',['RelateLinearEnds',['../structRelateLinearEnds.html',1,'']]],
-  ['relatemember_17',['RelateMember',['../structRelateMember.html',1,'']]],
-  ['relateoperand_18',['RelateOperand',['../structRelateOperand.html',1,'']]],
-  ['relateoperands_19',['RelateOperands',['../structRelateOperands.html',1,'']]],
-  ['relatequery_20',['RelateQuery',['../structRelateQuery.html',1,'']]],
-  ['reltype_5fcatalog_5fstruct_21',['reltype_catalog_struct',['../structreltype__catalog__struct.html',1,'']]],
-  ['rtree_22',['RTree',['../structRTree.html',1,'']]],
-  ['rtreenncursor_23',['RTreeNNCursor',['../structRTreeNNCursor.html',1,'']]],
-  ['rtreennentry_24',['RTreeNNEntry',['../structRTreeNNEntry.html',1,'']]],
-  ['rtreenode_25',['RTreeNode',['../structRTreeNode.html',1,'']]]
+  ['quadbin_5fbuf_0',['quadbin_buf',['../structquadbin__buf.html',1,'']]],
+  ['quadbin_5ftile_1',['quadbin_tile',['../structquadbin__tile.html',1,'']]],
+  ['quadbinborder_2',['QuadbinBorder',['../structQuadbinBorder.html',1,'']]],
+  ['quadbinsplitstate_3',['QuadbinSplitState',['../structQuadbinSplitState.html',1,'']]]
 ];
