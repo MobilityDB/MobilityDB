@@ -1884,3 +1884,23 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Final function for append temporal instant and append temporal
+ * sequence aggregates
+ * @param[in] state Current aggregate state, may be `NULL`
+ * @return A copy of the state without the extra storage space it keeps for
+ * the values still to append, the state remaining unchanged
+ * @csqlfn #Temporal_append_finalfn()
+ */
+Temporal *
+temporal_append_finalfn(const Temporal *state)
+{
+  /* Null state: return NULL */
+  if (! state)
+    return NULL;
+  return temporal_compact(state);
+}
+
+/*****************************************************************************/

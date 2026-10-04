@@ -3363,6 +3363,15 @@ int main(void)
   printf("%s\n", char_result);
   free(tfloat_result); free(char_result);
 
+  /* Temporal *temporal_append_finalfn(const Temporal *state); */
+  Temporal *app_state = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
+  app_state = temporal_app_tinst_transfn(app_state, tfloatinst2, LINEAR, -1.0, NULL);
+  tfloat_result = temporal_append_finalfn(app_state);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_append_finalfn result\n");
+  printf("%s\n", char_result);
+  free(app_state); free(tfloat_result); free(char_result);
+
   /* SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp); */
   sklist = temporal_tcount_transfn(NULL, tfloat1);
   sklist = temporal_tcount_transfn(sklist, tfloat2);
@@ -3548,6 +3557,18 @@ int main(void)
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
   printf("tint_wsum result\n");
+  printf("%s\n", char_result);
+  free(tint_result); free(char_result);
+
+  /* SkipList *temporal_wcount_transfn(SkipList *state, const Temporal *temp, const Interval *interv); */
+  sklist = temporal_wcount_transfn(NULL, tint1, interv3);
+  sklist = temporal_wcount_transfn(sklist, tint2, interv3);
+  tint_result = temporal_tagg_finalfn(sklist);
+  char_result = tint_out(tint_result);
+  printf("temporal_wcount aggregate with interval = %s\n", interv3_out);
+  printf("%s\n", tint1_out);
+  printf("%s\n", tint2_out);
+  printf("temporal_wcount result\n");
   printf("%s\n", char_result);
   free(tint_result); free(char_result);
 
