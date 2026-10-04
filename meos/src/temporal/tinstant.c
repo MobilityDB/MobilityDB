@@ -439,7 +439,6 @@ tinstant_timestamps(const TInstant *inst, int *count)
  * @param[in] inst Temporal instant
  * @param[out] count Number of values in the output array
  * @post The output parameter @p count is equal to 1
- * @csqlfn #Temporal_instants()
  */
 const TInstant **
 tinstant_insts(const TInstant *inst, int *count)
