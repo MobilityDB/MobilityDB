@@ -367,6 +367,8 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpatch from its hex-WKB representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Pcpatch_from_hexwkb()
  */
 Pcpatch *
 pcpatch_from_hexwkb(const char *hexwkb)
@@ -377,6 +379,8 @@ pcpatch_from_hexwkb(const char *hexwkb)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the hex-WKB representation of a pcpatch
+ * @param[in] pa Patch
+ * @csqlfn #Pcpatch_as_hexwkb()
  */
 char *
 pcpatch_as_hexwkb(const Pcpatch *pa)

@@ -84,6 +84,46 @@ SELECT pointCloudSchemaNDims(1);
 
 		<para>Los tipos estáticos provienen de pgPointCloud. MobilityDB expone las funciones de acceso de coordenadas con conocimiento del esquema necesarias para proyectar los valores de pgPointCloud en el resto del ecosistema de tipos temporales.</para>
 
+		<sect2 xml:id="pcpoint_pcpatch_inout">
+			<title>Entrada y salida</title>
+
+			<para>El texto de un <varname>pcpoint</varname> y de un <varname>pcpatch</varname> es el hexadecimal de su representación binaria conocida (WKB) de pgPointCloud, el texto que leen y escriben las funciones de entrada y salida del tipo de pgPointCloud, y cada motor lo lee y lo escribe con las funciones siguientes.</para>
+
+			<itemizedlist>
+				<listitem xml:id="pcpoint_asHexWKB">
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) de un pcpoint o de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asHexWKB({pcpoint,pcpatch}) → text
+</programlisting>
+					<para>El resultado es el texto que escribe la función de salida del tipo de pgPointCloud, en el orden de bytes de la máquina.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+-- 010100000064000000C80000002C010000
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpointFromHexWKB">
+					<indexterm significance="normal"><primary><varname>pcpointFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>pcpatchFromHexWKB</varname></primary></indexterm>
+					<para>Entrada de un pcpoint o de un pcpatch a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pcpointFromHexWKB(text) → pcpoint
+pcpatchFromHexWKB(text) → pcpatch
+</programlisting>
+					<para>La entrada se lee como la lee la función de entrada del tipo de pgPointCloud, en cualquier orden de bytes, bajo el esquema de su <varname>pcid</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+-- 3
+SELECT numPoints(pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="pcpoint_pcpatch_constructors">
 			<title>Constructores</title>
 

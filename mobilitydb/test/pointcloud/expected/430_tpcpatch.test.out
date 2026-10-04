@@ -850,6 +850,40 @@ SELECT tpcpatch '01010000000200000002000000640000006400000064000000C8000000C8000
 ERROR:  Could not parse pcpatch value: unsupported compression 2
 LINE 1: SELECT tpcpatch '0101000000020000000200000064000000640000006...
                         ^
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+                                  ashexwkb                                  
+----------------------------------------------------------------------------
+ 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000
+(1 row)
+
+SELECT numPoints(pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'));
+ numpoints 
+-----------
+         2
+(1 row)
+
+SELECT pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000') =
+  '01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'::pcpatch;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexWKB(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])) = (PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]))::text;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpatchFromHexWKB(asHexWKB(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]))) = PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]);
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT pcpatchFromHexWKB('01010000000000000003000000640000006400000064000000C8000000C8000000C8000000');
+ERROR:  Could not parse pcpatch value: 24 bytes of data for 3 points of 12 bytes
 SELECT tpcpatch '01630000000000000002000000000000000000F03F000000000000F03F000000000000F03F000000000000004000000000000000400000000000000040@2024-01-01';
 ERROR:  No schema registered for pcid 99
 LINE 1: SELECT tpcpatch '01630000000000000002000000000000000000F03F0...

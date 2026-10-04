@@ -748,6 +748,51 @@ SELECT tpcpoint '010100000064000000C8000000@2024-01-01';
 ERROR:  Could not parse pcpoint value: 8 bytes of data where the schema 1 states 12
 LINE 1: SELECT tpcpoint '010100000064000000C8000000@2024-01-01';
                         ^
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+              ashexwkb              
+------------------------------------
+ 010100000064000000C80000002C010000
+(1 row)
+
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+ getz 
+------
+    3
+(1 row)
+
+SELECT pcpointFromHexWKB('010100000064000000C80000002C010000') =
+  '010100000064000000C80000002C010000'::pcpoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpointFromHexWKB('000000000100000064000000C80000012C') =
+  pcpointFromHexWKB('010100000064000000C80000002C010000');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexWKB(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])) =
+  PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])::text;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT pcpointFromHexWKB('020100000064000000C80000002C010000');
+ERROR:  Could not parse pcpoint value: invalid endian flag 2
+SELECT pcpointFromHexWKB('010100000064000000C8000000');
+ERROR:  Could not parse pcpoint value: 8 bytes of data where the schema 1 states 12
 SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024-01-01';
 ERROR:  No schema registered for pcid 99
 LINE 1: SELECT tpcpoint '0163000000000000000000F03F00000000000000400...

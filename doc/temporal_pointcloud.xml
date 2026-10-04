@@ -85,6 +85,46 @@ SELECT pointCloudSchemaNDims(1);
 
 		<para>The static types come from pgPointCloud. MobilityDB exposes the schema-aware coordinate accessors needed to project pgPointCloud values into the rest of the temporal-types ecosystem.</para>
 
+		<sect2 xml:id="pcpoint_pcpatch_inout">
+			<title>Input and Output</title>
+
+			<para>The text of a <varname>pcpoint</varname> and of a <varname>pcpatch</varname> is the hex of its pgPointCloud Well-Known Binary (WKB), the text the type input and output functions of pgPointCloud read and write, and every engine reads and writes it with the functions below.</para>
+
+			<itemizedlist>
+				<listitem xml:id="pcpoint_asHexWKB">
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asHexWKB({pcpoint,pcpatch}) → text
+</programlisting>
+					<para>The result is the text the type output function of pgPointCloud writes, in the byte order of the machine.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+-- 010100000064000000C80000002C010000
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpointFromHexWKB">
+					<indexterm significance="normal"><primary><varname>pcpointFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>pcpatchFromHexWKB</varname></primary></indexterm>
+					<para>Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pcpointFromHexWKB(text) → pcpoint
+pcpatchFromHexWKB(text) → pcpatch
+</programlisting>
+					<para>The input is read as the type input function of pgPointCloud reads it, in either byte order, under the schema of its <varname>pcid</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+-- 3
+SELECT numPoints(pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="pcpoint_pcpatch_constructors">
 			<title>Constructors</title>
 
