@@ -825,6 +825,70 @@ SELECT asEWKT(geography 'SRID=4326;Point(4.35 50.85)') =
  t
 (1 row)
 
+SELECT asHexEWKB(geometry 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geometry 'SRID=4326;Point(4.35 50.85)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geography 'SRID=4326;Point(4.35 50.85)'::geometry);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)')));
+                     st_asewkt                     
+---------------------------------------------------
+ SRID=3812;LINESTRING(150000 170000,160000 180000)
+(1 row)
+
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'Point(1 1)', 'XDR')));
+ st_asewkt  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT ST_AsEWKT(geographyFromHexEWKB(asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)')));
+          st_asewkt          
+-----------------------------
+ SRID=4326;POINT(4.35 50.85)
+(1 row)
+
+SELECT asHexEWKB(geometry 'SRID=3812;Point(1 2)', 'NDR');
+                     ashexewkb                      
+----------------------------------------------------
+ 0101000020E40E0000000000000000F03F0000000000000040
+(1 row)
+
+SELECT ST_AsEWKT(geographyFromHexEWKB('0101000020E61000006666666666661140CDCCCCCCCC6C4940'));
+          st_asewkt          
+-----------------------------
+ SRID=4326;POINT(4.35 50.85)
+(1 row)
+
+/* Errors */
+SELECT asHexEWKB(geometry 'Point(1 1)', 'ABC');
+ERROR:  Invalid value for endian flag
+SELECT geometryFromHexEWKB('XYZ');
+ERROR:  parse error - invalid geometry
+HINT:  "XY" <-- parse error at position 2 within geometry
 SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2001-01-01', 2));
                     astext                     
 -----------------------------------------------

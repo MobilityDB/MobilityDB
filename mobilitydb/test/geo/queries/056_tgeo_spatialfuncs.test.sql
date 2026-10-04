@@ -318,6 +318,24 @@ SELECT asEWKT(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 2) =
 SELECT asEWKT(geography 'SRID=4326;Point(4.35 50.85)') =
        ST_AsEWKT(geography 'SRID=4326;Point(4.35 50.85)');
 
+-- asHexEWKB(geometry/geography) must equal ST_AsHEXEWKB, and the readers invert it
+SELECT asHexEWKB(geometry 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geometry 'SRID=4326;Point(4.35 50.85)');
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR');
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR');
+SELECT asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geography 'SRID=4326;Point(4.35 50.85)'::geometry);
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)')));
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'Point(1 1)', 'XDR')));
+SELECT ST_AsEWKT(geographyFromHexEWKB(asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)')));
+SELECT asHexEWKB(geometry 'SRID=3812;Point(1 2)', 'NDR');
+SELECT ST_AsEWKT(geographyFromHexEWKB('0101000020E61000006666666666661140CDCCCCCCCC6C4940'));
+/* Errors */
+SELECT asHexEWKB(geometry 'Point(1 1)', 'ABC');
+SELECT geometryFromHexEWKB('XYZ');
+
 --------------------------------------------------------
 
 -- 2D

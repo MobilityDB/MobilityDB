@@ -1001,7 +1001,7 @@
 					<para><link linkend="tspatialFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Input from the Moving Features JSON representation &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
+					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname>, <varname>geometryFromHexEWKB</varname>, <varname>geographyFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
