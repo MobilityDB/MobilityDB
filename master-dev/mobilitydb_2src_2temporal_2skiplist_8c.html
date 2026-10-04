@@ -83,8 +83,8 @@ $(function() {
 <p>Functions for manipulating skiplists.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;temporal/skiplist.h&quot;</code><br />
-<code>#include &lt;executor/spi.h&gt;</code><br />
-<code>#include &lt;libpq/pqformat.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
@@ -92,12 +92,6 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9b9782028cc762aed4d7873f8192f03a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSkipList.html">SkipList</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2skiplist_8c_a9b9782028cc762aed4d7873f8192f03a.html#a9b9782028cc762aed4d7873f8192f03a">aggstate_read</a> (StringInfo buf)</td></tr>
-<tr class="memdesc:a9b9782028cc762aed4d7873f8192f03a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the state value from the buffer.  <a href="mobilitydb_2src_2temporal_2skiplist_8c_a9b9782028cc762aed4d7873f8192f03a.html#a9b9782028cc762aed4d7873f8192f03a">More...</a><br /></td></tr>
-<tr class="separator:a9b9782028cc762aed4d7873f8192f03a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a734681ee0a0ad0eec1fe60dfe72c905e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2skiplist_8c_a734681ee0a0ad0eec1fe60dfe72c905e.html#a734681ee0a0ad0eec1fe60dfe72c905e">aggstate_write</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, StringInfo buf)</td></tr>
-<tr class="memdesc:a734681ee0a0ad0eec1fe60dfe72c905e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the state value into the buffer.  <a href="mobilitydb_2src_2temporal_2skiplist_8c_a734681ee0a0ad0eec1fe60dfe72c905e.html#a734681ee0a0ad0eec1fe60dfe72c905e">More...</a><br /></td></tr>
-<tr class="separator:a734681ee0a0ad0eec1fe60dfe72c905e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8094da2a89c7c623e367b780d318bc2c"><td class="memItemLeft" align="right" valign="top">MemoryContext&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2skiplist_8c_a8094da2a89c7c623e367b780d318bc2c.html#a8094da2a89c7c623e367b780d318bc2c">set_aggregation_context</a> (FunctionCallInfo fcinfo)</td></tr>
 <tr class="memdesc:a8094da2a89c7c623e367b780d318bc2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Switch to the memory context for aggregation.  <a href="mobilitydb_2src_2temporal_2skiplist_8c_a8094da2a89c7c623e367b780d318bc2c.html#a8094da2a89c7c623e367b780d318bc2c">More...</a><br /></td></tr>
 <tr class="separator:a8094da2a89c7c623e367b780d318bc2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
