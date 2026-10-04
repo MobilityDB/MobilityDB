@@ -139,7 +139,7 @@ CREATE FUNCTION tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, 
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -233,7 +233,7 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   FUNCTION 11 stbox_gist_sortsupport(internal);
 
 CREATE FUNCTION tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

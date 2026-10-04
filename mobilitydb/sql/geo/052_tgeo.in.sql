@@ -398,11 +398,11 @@ CREATE FUNCTION endValue(tgeography)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tgeometry, int)
+CREATE FUNCTION valueN(tgeometry, integer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tgeography, int)
+CREATE FUNCTION valueN(tgeography, integer)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

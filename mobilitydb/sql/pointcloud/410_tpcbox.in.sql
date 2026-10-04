@@ -117,14 +117,14 @@ CREATE FUNCTION asHexWKB(tpcbox, endian text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tpcboxX(xmin float8, ymin float8, xmax float8, ymax float8,
+CREATE FUNCTION tpcboxX(xmin float, ymin float, xmax float, ymax float,
     pcid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_2d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcboxZ(xmin float8, ymin float8, zmin float8,
-    xmax float8, ymax float8, zmax float8,
+CREATE FUNCTION tpcboxZ(xmin float, ymin float, zmin float,
+    xmax float, ymax float, zmax float,
     pcid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_3d'
@@ -135,14 +135,14 @@ CREATE FUNCTION tpcboxT(period tstzspan, pcid integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcboxXT(xmin float8, ymin float8, xmax float8, ymax float8,
+CREATE FUNCTION tpcboxXT(xmin float, ymin float, xmax float, ymax float,
     period tstzspan, pcid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcboxZT(xmin float8, ymin float8, zmin float8,
-    xmax float8, ymax float8, zmax float8, period tstzspan,
+CREATE FUNCTION tpcboxZT(xmin float, ymin float, zmin float,
+    xmax float, ymax float, zmax float, period tstzspan,
     pcid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_zt'
@@ -197,22 +197,22 @@ CREATE FUNCTION hasT(tpcbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION xMin(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_xmin'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_xmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION xMax(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_xmax'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_xmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION yMin(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_ymin'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_ymin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION yMax(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_ymax'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_ymax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION zMin(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_zmin'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_zmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION zMax(tpcbox)
-  RETURNS float8 AS 'MODULE_PATHNAME', 'Tpcbox_zmax'
+  RETURNS float AS 'MODULE_PATHNAME', 'Tpcbox_zmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tMin(tpcbox)
   RETURNS timestamptz AS 'MODULE_PATHNAME', 'Tpcbox_tmin'

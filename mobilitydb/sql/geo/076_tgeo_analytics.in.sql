@@ -35,57 +35,57 @@
 /*****************************************************************************/
 -- Affine transforms
 
-CREATE OR REPLACE FUNCTION affine(tgeometry,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8,float8)
+CREATE OR REPLACE FUNCTION affine(tgeometry,float,float,float,float,float,float,float,float,float,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_affine'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION affine(tgeometry,float8,float8,float8,float8,float8,float8)
+CREATE OR REPLACE FUNCTION affine(tgeometry,float,float,float,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_affine_2d'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotate(tgeometry,float8)
+CREATE OR REPLACE FUNCTION rotate(tgeometry,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate_z'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotate(tgeometry,float8,float8,float8)
+CREATE OR REPLACE FUNCTION rotate(tgeometry,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotate(tgeometry,float8,geometry)
+CREATE OR REPLACE FUNCTION rotate(tgeometry,float,geometry)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate_geo'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotateZ(tgeometry,float8)
+CREATE OR REPLACE FUNCTION rotateZ(tgeometry,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate_z'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotateX(tgeometry,float8)
+CREATE OR REPLACE FUNCTION rotateX(tgeometry,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate_x'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION rotateY(tgeometry,float8)
+CREATE OR REPLACE FUNCTION rotateY(tgeometry,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_rotate_y'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION translate(tgeometry,float8,float8,float8)
+CREATE OR REPLACE FUNCTION translate(tgeometry,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_translate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION translate(tgeometry,float8,float8)
+CREATE OR REPLACE FUNCTION translate(tgeometry,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_translate'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION transscale(tgeometry,float8,float8,float8,float8)
+CREATE OR REPLACE FUNCTION transscale(tgeometry,float,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_transscale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -100,12 +100,12 @@ RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_scale_geo'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION scale(tgeometry,float8,float8,float8)
+CREATE OR REPLACE FUNCTION scale(tgeometry,float,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION scale(tgeometry,float8,float8)
+CREATE OR REPLACE FUNCTION scale(tgeometry,float,float)
 RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Tgeo_scale'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

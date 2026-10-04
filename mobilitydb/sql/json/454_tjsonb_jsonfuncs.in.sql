@@ -147,15 +147,15 @@ CREATE FUNCTION tjsonbArrayElementText(tjsonb, integer,
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonArrayElementOpr(ttext, int)
+CREATE FUNCTION tjsonArrayElementOpr(ttext, integer)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonbArrayElementOpr(tjsonb, int)
+CREATE FUNCTION tjsonbArrayElementOpr(tjsonb, integer)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonbArrayElementTextOpr(tjsonb, int)
+CREATE FUNCTION tjsonbArrayElementTextOpr(tjsonb, integer)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

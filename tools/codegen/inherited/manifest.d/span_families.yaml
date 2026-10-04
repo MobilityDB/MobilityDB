@@ -97,7 +97,7 @@ span_families:
   - lit: "\n"
   - {sig: "upperInc({sp})", ret: "boolean", sym: Span_upper_inc}
   - lit: "\n"
-  - {sig: "width({sp})", ret: "int", sym: Numspan_width, only: [int]}
+  - {sig: "width({sp})", ret: "integer", sym: Numspan_width, only: [int]}
   - {sig: "width({sp})", ret: "{v}", sym: Numspan_width, only: [bigint, float]}
   - lit: "\n"
   - {sig: "duration({sp})", ret: "interval", sym: Datespan_duration, only: [date]}
@@ -253,7 +253,7 @@ span_families:
   - lit: "\n"
   - {sig: "upperInc({ss})", ret: "boolean", sym: Spanset_upper_inc}
   - lit: "\n"
-  - {sig: "width({ss}, boundspan boolean DEFAULT FALSE)", ret: "int", sym: Numspanset_width, only: [int]}
+  - {sig: "width({ss}, boundspan boolean DEFAULT FALSE)", ret: "integer", sym: Numspanset_width, only: [int]}
   - {sig: "width({ss}, boundspan boolean DEFAULT FALSE)", ret: "{v}", sym: Numspanset_width, only: [bigint, float]}
   - lit: "\n"
   - {sig: "duration({ss}, boundspan boolean DEFAULT FALSE)", ret: "interval", sym: Datespanset_duration, only: [date]}

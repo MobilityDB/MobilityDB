@@ -38,7 +38,7 @@
  * Bins
  *****************************************************************************/
 
-CREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0,
+CREATE FUNCTION bins(intspan, vsize integer, vorigin integer DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
@@ -69,7 +69,7 @@ CREATE FUNCTION bins(tstzspan, duration interval,
 
 /*****************************************************************************/
 
-CREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0,
+CREATE FUNCTION bins(intspanset, vsize integer, vorigin integer DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
@@ -155,7 +155,7 @@ CREATE FUNCTION timeBins(ttext, duration interval,
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueBins(tint, vsize int, vorigin int DEFAULT 0,
+CREATE FUNCTION valueBins(tint, vsize integer, vorigin integer DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
@@ -246,7 +246,7 @@ CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
  * Boxes
  *****************************************************************************/
 
-CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0,
+CREATE FUNCTION valueBoxes(tint, vsize integer, vorigin integer DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
@@ -281,8 +281,8 @@ CREATE FUNCTION timeBoxes(tfloat, duration interval,
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueTimeBoxes(tint, vsize int, duration interval,
-    vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
+CREATE FUNCTION valueTimeBoxes(tint, vsize integer, duration interval,
+    vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03',
     borderInc boolean DEFAULT TRUE)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'

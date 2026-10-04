@@ -40,7 +40,7 @@ CREATE FUNCTION tcbuffer_gist_consistent(internal, tcbuffer, smallint, oid, inte
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tcbuffer_gist_distance(internal, tcbuffer, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
