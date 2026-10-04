@@ -1,0 +1,10 @@
+GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))
+  other n coll MULTIPOLYGON  : The intersection of two geometries that are not both planar 
+GEOMETRYCOLLECTION(LINESTRING(0 2,4 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))
+  other n coll MULTIPOLYGON  : The intersection of two geometries that are not both planar 
+  coll - other TRIANGLE      : The difference of two geometries that are not both planar an
+GEOMETRYCOLLECTION(POLYGON((0 0,4 0,4 4,0 4,0 0)),POLYGON((0 0,4 0,4 4,0 4,0 0)))
+  other n coll MULTIPOLYGON  : The intersection of two geometries that are not both planar 
+  coll - other TRIANGLE      : The difference of two geometries that are not both planar an
+  coll - other CURVEPOLY     : The difference of two geometries that are not both planar an
+  coll - other MULTISURFACE  : The difference of two geometries that are not both planar an

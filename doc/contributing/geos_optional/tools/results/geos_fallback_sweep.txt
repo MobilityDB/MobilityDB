@@ -1,0 +1,716 @@
+CONTROL positive: unary union on a precision grid reaches the fall-back: yes
+CONTROL negative: geodetic array of lines reaches the fall-back: no (refused otherwise: The union of a geodetic array is answered for positions only)
+intersection flat x flat:   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection Z x Z      :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection Z x flat   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection flat x Z   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   flat x flat:   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   Z x Z      :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   Z x flat   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   flat x Z   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+  REACHES GEOS: array union flat x flat: POINT x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: POINT x MULTISURFACE
+  REACHES GEOS: array union flat x flat: POINT x TIN
+  REACHES GEOS: array union flat x flat: POINT x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTIPOINT x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: MULTIPOINT x MULTISURFACE
+  REACHES GEOS: array union flat x flat: MULTIPOINT x TIN
+  REACHES GEOS: array union flat x flat: MULTIPOINT x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: LINE x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: LINE x MULTISURFACE
+  REACHES GEOS: array union flat x flat: LINE x TIN
+  REACHES GEOS: array union flat x flat: LINE x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTILINE x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: MULTILINE x MULTISURFACE
+  REACHES GEOS: array union flat x flat: MULTILINE x TIN
+  REACHES GEOS: array union flat x flat: MULTILINE x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: POLYGON x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: POLYGON x MULTISURFACE
+  REACHES GEOS: array union flat x flat: POLYGON x TIN
+  REACHES GEOS: array union flat x flat: POLYGON x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x POINT
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x MULTIPOINT
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x LINE
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x MULTILINE
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x POLYGON
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x TRIANGLE
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x CIRCSTRING
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x COMPOUND
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x MULTICURVE
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x CURVEPOLY
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x MULTISURFACE
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x TIN
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTIPOLYGON x COLLECTION
+  REACHES GEOS: array union flat x flat: TRIANGLE x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: TRIANGLE x MULTISURFACE
+  REACHES GEOS: array union flat x flat: TRIANGLE x TIN
+  REACHES GEOS: array union flat x flat: TRIANGLE x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: CIRCSTRING x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: CIRCSTRING x MULTISURFACE
+  REACHES GEOS: array union flat x flat: CIRCSTRING x TIN
+  REACHES GEOS: array union flat x flat: CIRCSTRING x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: COMPOUND x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: COMPOUND x MULTISURFACE
+  REACHES GEOS: array union flat x flat: COMPOUND x TIN
+  REACHES GEOS: array union flat x flat: COMPOUND x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTICURVE x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: MULTICURVE x MULTISURFACE
+  REACHES GEOS: array union flat x flat: MULTICURVE x TIN
+  REACHES GEOS: array union flat x flat: MULTICURVE x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: CURVEPOLY x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: CURVEPOLY x MULTISURFACE
+  REACHES GEOS: array union flat x flat: CURVEPOLY x TIN
+  REACHES GEOS: array union flat x flat: CURVEPOLY x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTISURFACE x POINT
+  REACHES GEOS: array union flat x flat: MULTISURFACE x MULTIPOINT
+  REACHES GEOS: array union flat x flat: MULTISURFACE x LINE
+  REACHES GEOS: array union flat x flat: MULTISURFACE x MULTILINE
+  REACHES GEOS: array union flat x flat: MULTISURFACE x POLYGON
+  REACHES GEOS: array union flat x flat: MULTISURFACE x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: MULTISURFACE x TRIANGLE
+  REACHES GEOS: array union flat x flat: MULTISURFACE x CIRCSTRING
+  REACHES GEOS: array union flat x flat: MULTISURFACE x COMPOUND
+  REACHES GEOS: array union flat x flat: MULTISURFACE x MULTICURVE
+  REACHES GEOS: array union flat x flat: MULTISURFACE x CURVEPOLY
+  REACHES GEOS: array union flat x flat: MULTISURFACE x MULTISURFACE
+  REACHES GEOS: array union flat x flat: MULTISURFACE x TIN
+  REACHES GEOS: array union flat x flat: MULTISURFACE x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: MULTISURFACE x COLLECTION
+  REACHES GEOS: array union flat x flat: TIN x POINT
+  REACHES GEOS: array union flat x flat: TIN x MULTIPOINT
+  REACHES GEOS: array union flat x flat: TIN x LINE
+  REACHES GEOS: array union flat x flat: TIN x MULTILINE
+  REACHES GEOS: array union flat x flat: TIN x POLYGON
+  REACHES GEOS: array union flat x flat: TIN x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: TIN x TRIANGLE
+  REACHES GEOS: array union flat x flat: TIN x CIRCSTRING
+  REACHES GEOS: array union flat x flat: TIN x COMPOUND
+  REACHES GEOS: array union flat x flat: TIN x MULTICURVE
+  REACHES GEOS: array union flat x flat: TIN x CURVEPOLY
+  REACHES GEOS: array union flat x flat: TIN x MULTISURFACE
+  REACHES GEOS: array union flat x flat: TIN x TIN
+  REACHES GEOS: array union flat x flat: TIN x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: TIN x COLLECTION
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x POINT
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x MULTIPOINT
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x LINE
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x MULTILINE
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x POLYGON
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x TRIANGLE
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x CIRCSTRING
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x COMPOUND
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x MULTICURVE
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x CURVEPOLY
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x MULTISURFACE
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x TIN
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x POLYHEDRAL
+  REACHES GEOS: array union flat x flat: POLYHEDRAL x COLLECTION
+  REACHES GEOS: array union flat x flat: COLLECTION x MULTIPOLYGON
+  REACHES GEOS: array union flat x flat: COLLECTION x MULTISURFACE
+  REACHES GEOS: array union flat x flat: COLLECTION x TIN
+  REACHES GEOS: array union flat x flat: COLLECTION x POLYHEDRAL
+array union  flat x flat: 104 of 225 ordered pairs reach the fall-back; other refusals 0
+  REACHES GEOS: array union Z x Z: POINT x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: POINT x MULTISURFACE
+  REACHES GEOS: array union Z x Z: POINT x TIN
+  REACHES GEOS: array union Z x Z: POINT x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTIPOINT x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: MULTIPOINT x MULTISURFACE
+  REACHES GEOS: array union Z x Z: MULTIPOINT x TIN
+  REACHES GEOS: array union Z x Z: MULTIPOINT x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: LINE x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: LINE x MULTISURFACE
+  REACHES GEOS: array union Z x Z: LINE x TIN
+  REACHES GEOS: array union Z x Z: LINE x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTILINE x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: MULTILINE x MULTISURFACE
+  REACHES GEOS: array union Z x Z: MULTILINE x TIN
+  REACHES GEOS: array union Z x Z: MULTILINE x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: POLYGON x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: POLYGON x MULTISURFACE
+  REACHES GEOS: array union Z x Z: POLYGON x TIN
+  REACHES GEOS: array union Z x Z: POLYGON x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x POINT
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x MULTIPOINT
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x LINE
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x MULTILINE
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x POLYGON
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x TRIANGLE
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x CIRCSTRING
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x COMPOUND
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x MULTICURVE
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x CURVEPOLY
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x MULTISURFACE
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x TIN
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTIPOLYGON x COLLECTION
+  REACHES GEOS: array union Z x Z: TRIANGLE x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: TRIANGLE x MULTISURFACE
+  REACHES GEOS: array union Z x Z: TRIANGLE x TIN
+  REACHES GEOS: array union Z x Z: TRIANGLE x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: CIRCSTRING x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: CIRCSTRING x MULTISURFACE
+  REACHES GEOS: array union Z x Z: CIRCSTRING x TIN
+  REACHES GEOS: array union Z x Z: CIRCSTRING x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: COMPOUND x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: COMPOUND x MULTISURFACE
+  REACHES GEOS: array union Z x Z: COMPOUND x TIN
+  REACHES GEOS: array union Z x Z: COMPOUND x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTICURVE x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: MULTICURVE x MULTISURFACE
+  REACHES GEOS: array union Z x Z: MULTICURVE x TIN
+  REACHES GEOS: array union Z x Z: MULTICURVE x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: CURVEPOLY x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: CURVEPOLY x MULTISURFACE
+  REACHES GEOS: array union Z x Z: CURVEPOLY x TIN
+  REACHES GEOS: array union Z x Z: CURVEPOLY x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTISURFACE x POINT
+  REACHES GEOS: array union Z x Z: MULTISURFACE x MULTIPOINT
+  REACHES GEOS: array union Z x Z: MULTISURFACE x LINE
+  REACHES GEOS: array union Z x Z: MULTISURFACE x MULTILINE
+  REACHES GEOS: array union Z x Z: MULTISURFACE x POLYGON
+  REACHES GEOS: array union Z x Z: MULTISURFACE x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: MULTISURFACE x TRIANGLE
+  REACHES GEOS: array union Z x Z: MULTISURFACE x CIRCSTRING
+  REACHES GEOS: array union Z x Z: MULTISURFACE x COMPOUND
+  REACHES GEOS: array union Z x Z: MULTISURFACE x MULTICURVE
+  REACHES GEOS: array union Z x Z: MULTISURFACE x CURVEPOLY
+  REACHES GEOS: array union Z x Z: MULTISURFACE x MULTISURFACE
+  REACHES GEOS: array union Z x Z: MULTISURFACE x TIN
+  REACHES GEOS: array union Z x Z: MULTISURFACE x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: MULTISURFACE x COLLECTION
+  REACHES GEOS: array union Z x Z: TIN x POINT
+  REACHES GEOS: array union Z x Z: TIN x MULTIPOINT
+  REACHES GEOS: array union Z x Z: TIN x LINE
+  REACHES GEOS: array union Z x Z: TIN x MULTILINE
+  REACHES GEOS: array union Z x Z: TIN x POLYGON
+  REACHES GEOS: array union Z x Z: TIN x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: TIN x TRIANGLE
+  REACHES GEOS: array union Z x Z: TIN x CIRCSTRING
+  REACHES GEOS: array union Z x Z: TIN x COMPOUND
+  REACHES GEOS: array union Z x Z: TIN x MULTICURVE
+  REACHES GEOS: array union Z x Z: TIN x CURVEPOLY
+  REACHES GEOS: array union Z x Z: TIN x MULTISURFACE
+  REACHES GEOS: array union Z x Z: TIN x TIN
+  REACHES GEOS: array union Z x Z: TIN x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: TIN x COLLECTION
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x POINT
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x MULTIPOINT
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x LINE
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x MULTILINE
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x POLYGON
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x TRIANGLE
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x CIRCSTRING
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x COMPOUND
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x MULTICURVE
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x CURVEPOLY
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x MULTISURFACE
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x TIN
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x POLYHEDRAL
+  REACHES GEOS: array union Z x Z: POLYHEDRAL x COLLECTION
+  REACHES GEOS: array union Z x Z: COLLECTION x MULTIPOLYGON
+  REACHES GEOS: array union Z x Z: COLLECTION x MULTISURFACE
+  REACHES GEOS: array union Z x Z: COLLECTION x TIN
+  REACHES GEOS: array union Z x Z: COLLECTION x POLYHEDRAL
+array union  Z x Z      : 104 of 225 ordered pairs reach the fall-back; other refusals 0
+  REACHES GEOS: array union Z x flat: POINT x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: POINT x MULTISURFACE
+  REACHES GEOS: array union Z x flat: POINT x TIN
+  REACHES GEOS: array union Z x flat: POINT x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTIPOINT x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: MULTIPOINT x MULTISURFACE
+  REACHES GEOS: array union Z x flat: MULTIPOINT x TIN
+  REACHES GEOS: array union Z x flat: MULTIPOINT x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: LINE x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: LINE x MULTISURFACE
+  REACHES GEOS: array union Z x flat: LINE x TIN
+  REACHES GEOS: array union Z x flat: LINE x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTILINE x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: MULTILINE x MULTISURFACE
+  REACHES GEOS: array union Z x flat: MULTILINE x TIN
+  REACHES GEOS: array union Z x flat: MULTILINE x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: POLYGON x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: POLYGON x MULTISURFACE
+  REACHES GEOS: array union Z x flat: POLYGON x TIN
+  REACHES GEOS: array union Z x flat: POLYGON x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x POINT
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x MULTIPOINT
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x LINE
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x MULTILINE
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x POLYGON
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x TRIANGLE
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x CIRCSTRING
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x COMPOUND
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x MULTICURVE
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x CURVEPOLY
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x MULTISURFACE
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x TIN
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTIPOLYGON x COLLECTION
+  REACHES GEOS: array union Z x flat: TRIANGLE x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: TRIANGLE x MULTISURFACE
+  REACHES GEOS: array union Z x flat: TRIANGLE x TIN
+  REACHES GEOS: array union Z x flat: TRIANGLE x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: CIRCSTRING x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: CIRCSTRING x MULTISURFACE
+  REACHES GEOS: array union Z x flat: CIRCSTRING x TIN
+  REACHES GEOS: array union Z x flat: CIRCSTRING x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: COMPOUND x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: COMPOUND x MULTISURFACE
+  REACHES GEOS: array union Z x flat: COMPOUND x TIN
+  REACHES GEOS: array union Z x flat: COMPOUND x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTICURVE x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: MULTICURVE x MULTISURFACE
+  REACHES GEOS: array union Z x flat: MULTICURVE x TIN
+  REACHES GEOS: array union Z x flat: MULTICURVE x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: CURVEPOLY x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: CURVEPOLY x MULTISURFACE
+  REACHES GEOS: array union Z x flat: CURVEPOLY x TIN
+  REACHES GEOS: array union Z x flat: CURVEPOLY x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTISURFACE x POINT
+  REACHES GEOS: array union Z x flat: MULTISURFACE x MULTIPOINT
+  REACHES GEOS: array union Z x flat: MULTISURFACE x LINE
+  REACHES GEOS: array union Z x flat: MULTISURFACE x MULTILINE
+  REACHES GEOS: array union Z x flat: MULTISURFACE x POLYGON
+  REACHES GEOS: array union Z x flat: MULTISURFACE x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: MULTISURFACE x TRIANGLE
+  REACHES GEOS: array union Z x flat: MULTISURFACE x CIRCSTRING
+  REACHES GEOS: array union Z x flat: MULTISURFACE x COMPOUND
+  REACHES GEOS: array union Z x flat: MULTISURFACE x MULTICURVE
+  REACHES GEOS: array union Z x flat: MULTISURFACE x CURVEPOLY
+  REACHES GEOS: array union Z x flat: MULTISURFACE x MULTISURFACE
+  REACHES GEOS: array union Z x flat: MULTISURFACE x TIN
+  REACHES GEOS: array union Z x flat: MULTISURFACE x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: MULTISURFACE x COLLECTION
+  REACHES GEOS: array union Z x flat: TIN x POINT
+  REACHES GEOS: array union Z x flat: TIN x MULTIPOINT
+  REACHES GEOS: array union Z x flat: TIN x LINE
+  REACHES GEOS: array union Z x flat: TIN x MULTILINE
+  REACHES GEOS: array union Z x flat: TIN x POLYGON
+  REACHES GEOS: array union Z x flat: TIN x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: TIN x TRIANGLE
+  REACHES GEOS: array union Z x flat: TIN x CIRCSTRING
+  REACHES GEOS: array union Z x flat: TIN x COMPOUND
+  REACHES GEOS: array union Z x flat: TIN x MULTICURVE
+  REACHES GEOS: array union Z x flat: TIN x CURVEPOLY
+  REACHES GEOS: array union Z x flat: TIN x MULTISURFACE
+  REACHES GEOS: array union Z x flat: TIN x TIN
+  REACHES GEOS: array union Z x flat: TIN x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: TIN x COLLECTION
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x POINT
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x MULTIPOINT
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x LINE
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x MULTILINE
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x POLYGON
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x TRIANGLE
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x CIRCSTRING
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x COMPOUND
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x MULTICURVE
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x CURVEPOLY
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x MULTISURFACE
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x TIN
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x POLYHEDRAL
+  REACHES GEOS: array union Z x flat: POLYHEDRAL x COLLECTION
+  REACHES GEOS: array union Z x flat: COLLECTION x MULTIPOLYGON
+  REACHES GEOS: array union Z x flat: COLLECTION x MULTISURFACE
+  REACHES GEOS: array union Z x flat: COLLECTION x TIN
+  REACHES GEOS: array union Z x flat: COLLECTION x POLYHEDRAL
+array union  Z x flat   : 104 of 225 ordered pairs reach the fall-back; other refusals 0
+  REACHES GEOS: array union flat x Z: POINT x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: POINT x MULTISURFACE
+  REACHES GEOS: array union flat x Z: POINT x TIN
+  REACHES GEOS: array union flat x Z: POINT x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTIPOINT x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: MULTIPOINT x MULTISURFACE
+  REACHES GEOS: array union flat x Z: MULTIPOINT x TIN
+  REACHES GEOS: array union flat x Z: MULTIPOINT x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: LINE x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: LINE x MULTISURFACE
+  REACHES GEOS: array union flat x Z: LINE x TIN
+  REACHES GEOS: array union flat x Z: LINE x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTILINE x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: MULTILINE x MULTISURFACE
+  REACHES GEOS: array union flat x Z: MULTILINE x TIN
+  REACHES GEOS: array union flat x Z: MULTILINE x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: POLYGON x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: POLYGON x MULTISURFACE
+  REACHES GEOS: array union flat x Z: POLYGON x TIN
+  REACHES GEOS: array union flat x Z: POLYGON x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x POINT
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x MULTIPOINT
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x LINE
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x MULTILINE
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x POLYGON
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x TRIANGLE
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x CIRCSTRING
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x COMPOUND
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x MULTICURVE
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x CURVEPOLY
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x MULTISURFACE
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x TIN
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTIPOLYGON x COLLECTION
+  REACHES GEOS: array union flat x Z: TRIANGLE x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: TRIANGLE x MULTISURFACE
+  REACHES GEOS: array union flat x Z: TRIANGLE x TIN
+  REACHES GEOS: array union flat x Z: TRIANGLE x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: CIRCSTRING x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: CIRCSTRING x MULTISURFACE
+  REACHES GEOS: array union flat x Z: CIRCSTRING x TIN
+  REACHES GEOS: array union flat x Z: CIRCSTRING x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: COMPOUND x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: COMPOUND x MULTISURFACE
+  REACHES GEOS: array union flat x Z: COMPOUND x TIN
+  REACHES GEOS: array union flat x Z: COMPOUND x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTICURVE x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: MULTICURVE x MULTISURFACE
+  REACHES GEOS: array union flat x Z: MULTICURVE x TIN
+  REACHES GEOS: array union flat x Z: MULTICURVE x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: CURVEPOLY x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: CURVEPOLY x MULTISURFACE
+  REACHES GEOS: array union flat x Z: CURVEPOLY x TIN
+  REACHES GEOS: array union flat x Z: CURVEPOLY x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTISURFACE x POINT
+  REACHES GEOS: array union flat x Z: MULTISURFACE x MULTIPOINT
+  REACHES GEOS: array union flat x Z: MULTISURFACE x LINE
+  REACHES GEOS: array union flat x Z: MULTISURFACE x MULTILINE
+  REACHES GEOS: array union flat x Z: MULTISURFACE x POLYGON
+  REACHES GEOS: array union flat x Z: MULTISURFACE x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: MULTISURFACE x TRIANGLE
+  REACHES GEOS: array union flat x Z: MULTISURFACE x CIRCSTRING
+  REACHES GEOS: array union flat x Z: MULTISURFACE x COMPOUND
+  REACHES GEOS: array union flat x Z: MULTISURFACE x MULTICURVE
+  REACHES GEOS: array union flat x Z: MULTISURFACE x CURVEPOLY
+  REACHES GEOS: array union flat x Z: MULTISURFACE x MULTISURFACE
+  REACHES GEOS: array union flat x Z: MULTISURFACE x TIN
+  REACHES GEOS: array union flat x Z: MULTISURFACE x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: MULTISURFACE x COLLECTION
+  REACHES GEOS: array union flat x Z: TIN x POINT
+  REACHES GEOS: array union flat x Z: TIN x MULTIPOINT
+  REACHES GEOS: array union flat x Z: TIN x LINE
+  REACHES GEOS: array union flat x Z: TIN x MULTILINE
+  REACHES GEOS: array union flat x Z: TIN x POLYGON
+  REACHES GEOS: array union flat x Z: TIN x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: TIN x TRIANGLE
+  REACHES GEOS: array union flat x Z: TIN x CIRCSTRING
+  REACHES GEOS: array union flat x Z: TIN x COMPOUND
+  REACHES GEOS: array union flat x Z: TIN x MULTICURVE
+  REACHES GEOS: array union flat x Z: TIN x CURVEPOLY
+  REACHES GEOS: array union flat x Z: TIN x MULTISURFACE
+  REACHES GEOS: array union flat x Z: TIN x TIN
+  REACHES GEOS: array union flat x Z: TIN x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: TIN x COLLECTION
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x POINT
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x MULTIPOINT
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x LINE
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x MULTILINE
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x POLYGON
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x TRIANGLE
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x CIRCSTRING
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x COMPOUND
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x MULTICURVE
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x CURVEPOLY
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x MULTISURFACE
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x TIN
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x POLYHEDRAL
+  REACHES GEOS: array union flat x Z: POLYHEDRAL x COLLECTION
+  REACHES GEOS: array union flat x Z: COLLECTION x MULTIPOLYGON
+  REACHES GEOS: array union flat x Z: COLLECTION x MULTISURFACE
+  REACHES GEOS: array union flat x Z: COLLECTION x TIN
+  REACHES GEOS: array union flat x Z: COLLECTION x POLYHEDRAL
+array union  flat x Z   : 104 of 225 ordered pairs reach the fall-back; other refusals 0
+unary union  flat and Z : 0 of 30 shapes reach the fall-back; other refusals 0
+
+COLLECTIONS OF TWO TYPES
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, POLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POINT, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, MULTIPOLYGON) against the 15 types: intersection 9, difference 4 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, TRIANGLE) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, CURVEPOLY) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POINT, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, MULTISURFACE) against the 15 types: intersection 1, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POINT, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, TIN) against the 15 types: intersection 0, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POINT, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(POINT, POLYHEDRAL) against the 15 types: intersection 1, difference 4 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, POLYGON) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOINT, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, MULTIPOLYGON) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, TRIANGLE) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, CURVEPOLY) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOINT, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, MULTISURFACE) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOINT, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, TIN) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOINT, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, POLYHEDRAL) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, POLYGON) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(LINE, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, MULTIPOLYGON) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, TRIANGLE) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, CURVEPOLY) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(LINE, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, MULTISURFACE) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(LINE, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, TIN) against the 15 types: intersection 0, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(LINE, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, POLYHEDRAL) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, POLYGON) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTILINE, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, MULTIPOLYGON) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, TRIANGLE) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, CURVEPOLY) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTILINE, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, MULTISURFACE) against the 15 types: intersection 3, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTILINE, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, TIN) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTILINE, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, POLYHEDRAL) against the 15 types: intersection 2, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, POINT) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTIPOINT) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, LINE) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTILINE) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, POLYGON) against the 15 types: intersection 1, difference 3 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYGON, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTIPOLYGON) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, TRIANGLE) against the 15 types: intersection 1, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, CIRCSTRING) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, COMPOUND) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTICURVE) against the 15 types: intersection 1, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, CURVEPOLY) against the 15 types: intersection 1, difference 2 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYGON, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTISURFACE) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYGON, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, TIN) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYGON, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, POLYHEDRAL) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, COLLECTION) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, POINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, POINT) against the 15 types: intersection 9, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, MULTIPOINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTIPOINT) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, LINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, LINE) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, MULTILINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTILINE) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, POLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, POLYGON) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTIPOLYGON) against the 15 types: intersection 9, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, TRIANGLE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, TRIANGLE) against the 15 types: intersection 9, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, CIRCSTRING)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, CIRCSTRING) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, COMPOUND)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, COMPOUND) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, MULTICURVE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTICURVE) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, CURVEPOLY)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, CURVEPOLY) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTISURFACE) against the 15 types: intersection 9, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, TIN) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, POLYHEDRAL) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTIPOLYGON, COLLECTION)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, COLLECTION) against the 15 types: intersection 9, difference 8 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, POINT) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTIPOINT) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, LINE) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTILINE) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, POLYGON) against the 15 types: intersection 1, difference 2 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TRIANGLE, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTIPOLYGON) against the 15 types: intersection 9, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, TRIANGLE) against the 15 types: intersection 0, difference 4 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, CIRCSTRING) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, COMPOUND) against the 15 types: intersection 0, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTICURVE) against the 15 types: intersection 1, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, CURVEPOLY) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TRIANGLE, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTISURFACE) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TRIANGLE, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, TIN) against the 15 types: intersection 0, difference 12 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TRIANGLE, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, POLYHEDRAL) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, COLLECTION) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, POLYGON) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CIRCSTRING, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, MULTIPOLYGON) against the 15 types: intersection 9, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, TRIANGLE) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, CURVEPOLY) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CIRCSTRING, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, MULTISURFACE) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CIRCSTRING, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, TIN) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CIRCSTRING, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, POLYHEDRAL) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, POLYGON) against the 15 types: intersection 2, difference 3 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COMPOUND, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, MULTIPOLYGON) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, TRIANGLE) against the 15 types: intersection 0, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, CURVEPOLY) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COMPOUND, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, MULTISURFACE) against the 15 types: intersection 3, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COMPOUND, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, TIN) against the 15 types: intersection 0, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COMPOUND, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, POLYHEDRAL) against the 15 types: intersection 2, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, POLYGON) against the 15 types: intersection 1, difference 3 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTICURVE, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, MULTIPOLYGON) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, TRIANGLE) against the 15 types: intersection 1, difference 3 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, CURVEPOLY) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTICURVE, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, MULTISURFACE) against the 15 types: intersection 2, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTICURVE, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, TIN) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTICURVE, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, POLYHEDRAL) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, POINT) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTIPOINT) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, LINE) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTILINE) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, POLYGON) against the 15 types: intersection 1, difference 2 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CURVEPOLY, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTIPOLYGON) against the 15 types: intersection 9, difference 9 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, TRIANGLE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, CIRCSTRING) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, COMPOUND) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTICURVE) against the 15 types: intersection 3, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, CURVEPOLY) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CURVEPOLY, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTISURFACE) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CURVEPOLY, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, TIN) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(CURVEPOLY, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, POLYHEDRAL) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, COLLECTION) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, POINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, POINT) against the 15 types: intersection 1, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, MULTIPOINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTIPOINT) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, LINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, LINE) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, MULTILINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTILINE) against the 15 types: intersection 3, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, POLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, POLYGON) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTIPOLYGON) against the 15 types: intersection 9, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, TRIANGLE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, TRIANGLE) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, CIRCSTRING)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, CIRCSTRING) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, COMPOUND)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, COMPOUND) against the 15 types: intersection 3, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, MULTICURVE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTICURVE) against the 15 types: intersection 2, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, CURVEPOLY)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, CURVEPOLY) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTISURFACE) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, TIN) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, POLYHEDRAL) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(MULTISURFACE, COLLECTION)
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, COLLECTION) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, POINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, POINT) against the 15 types: intersection 0, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, MULTIPOINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTIPOINT) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, LINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, LINE) against the 15 types: intersection 0, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, MULTILINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTILINE) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, POLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, POLYGON) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTIPOLYGON) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, TRIANGLE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, TRIANGLE) against the 15 types: intersection 0, difference 12 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, CIRCSTRING)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, CIRCSTRING) against the 15 types: intersection 1, difference 6 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, COMPOUND)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, COMPOUND) against the 15 types: intersection 0, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, MULTICURVE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTICURVE) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, CURVEPOLY)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, CURVEPOLY) against the 15 types: intersection 1, difference 9 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTISURFACE) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, TIN) against the 15 types: intersection 0, difference 12 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, POLYHEDRAL) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(TIN, COLLECTION)
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, COLLECTION) against the 15 types: intersection 0, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, POINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, POINT) against the 15 types: intersection 1, difference 4 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, MULTIPOINT)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTIPOINT) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, LINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, LINE) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, MULTILINE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTILINE) against the 15 types: intersection 2, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, POLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, POLYGON) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTIPOLYGON) against the 15 types: intersection 9, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, TRIANGLE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, TRIANGLE) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, CIRCSTRING)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, CIRCSTRING) against the 15 types: intersection 1, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, COMPOUND)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, COMPOUND) against the 15 types: intersection 2, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, MULTICURVE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTICURVE) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, CURVEPOLY)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, CURVEPOLY) against the 15 types: intersection 1, difference 10 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTISURFACE) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, TIN) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, POLYHEDRAL) against the 15 types: intersection 1, difference 11 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(POLYHEDRAL, COLLECTION)
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, COLLECTION) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, POLYGON) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COLLECTION, MULTIPOLYGON)
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, MULTIPOLYGON) against the 15 types: intersection 9, difference 8 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, TRIANGLE) against the 15 types: intersection 0, difference 1 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, CURVEPOLY) against the 15 types: intersection 1, difference 1 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COLLECTION, MULTISURFACE)
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, MULTISURFACE) against the 15 types: intersection 1, difference 8 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COLLECTION, TIN)
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, TIN) against the 15 types: intersection 0, difference 7 of 30 calls each
+  REACHES GEOS: unary union of GEOMETRYCOLLECTION(COLLECTION, POLYHEDRAL)
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, POLYHEDRAL) against the 15 types: intersection 1, difference 8 of 30 calls each
+collections: unary union reaches the fall-back for 104 of 225; intersection 409 and difference 953 of 6750 calls each
+
+GEOMETRIC SPECIAL CASES
+identical arcs                                intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+arcs coinciding over part of one circle       intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+arc reversed on the same circle               intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+lines that share a stretch then fork          intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+overlapping collinear lines                   intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+a line doubling back on itself                intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons sharing an edge                      intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons touching at a corner                 intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons sharing part of an edge              intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+discs tangent at one point                    intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+disc and square sharing an arc chord region   intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygon and the hole it fills                 intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line along a polygon edge                     intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line along an arc boundary                    intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line of zero length                           intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0

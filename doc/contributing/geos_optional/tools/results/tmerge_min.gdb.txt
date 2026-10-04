@@ -1,0 +1,10 @@
+Program received signal SIGSEGV, Segmentation fault.
+#0  ensure_not_empty () from libmeos.so
+#1  tinstant_make () from libmeos.so
+#2  tgeoinst_merge_array_iter () from libmeos.so
+#3  tinstant_merge_array_iter () from libmeos.so
+#4  tinstant_merge_array () from libmeos.so
+#5  tinstant_merge () from libmeos.so
+#6  temporal_merge () from libmeos.so
+#7  try ()
+#8  main ()
