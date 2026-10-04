@@ -105,6 +105,7 @@ Each item is measured; the note named gives the evidence.
    right points and is not a valid OGC polygon; MobilityDB #2959, merged as `42ebd6312b`, writes 8 of them as a shell and
    a hole.
 3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
+   MobilityDB #2977 adds one, which fails where any input reaches a fall-back.
 4. **The buffer is not finished** ([note 6](06-BUFFER.md)). Its answer depends on where the shape
    lies — the same small square buffered by the same distance has the right area at the origin and
    an area a third too small at a projected coordinate such as 6 400 000 m, measured on master by

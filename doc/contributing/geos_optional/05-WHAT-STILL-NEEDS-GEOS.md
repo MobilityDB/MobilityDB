@@ -311,7 +311,7 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
    three surfaces whose order leaves a constructed vertex near another member's edge (merged as
    MobilityDB #2961).
 4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
-   unseen.
+   unseen. MobilityDB #2977 adds it as the job `geos-free` of `meos.yml`.
 
 Only then does the fourth fall-back — the unary union on a precision grid, which no MEOS caller
 asks for and no SQL function exposes — and with it the other three, become dead code that can be
