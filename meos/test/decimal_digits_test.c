@@ -72,16 +72,13 @@
 #include <meos_pose.h>
 
 /* A pcpoint of pcid 1 holding X=1.0 Y=2.0 Z=3.0, and a pcpatch of pcid 1
- * holding the two points (1,1,1) and (2,2,2), in the hex WKB pgPointCloud
- * serializes, the form that carries no schema, as tpointcloud_test reads
- * them */
+ * holding the two points (1,1,1) and (2,2,2), in the hex WKB the type output
+ * functions of pgPointCloud write, as tpointcloud_test reads them */
 #define PCPOINT_HEX \
-  "2300000001000000000000000000F03F0000000000000040000000000000084000" \
-  "0000"
+  "010100000064000000C80000002C010000"
 #define PCPATCH_HEX \
-  "4F000000010000000000000002000000000000000000F03F000000000000F03F00" \
-  "0000000000F03F0000000000000040000000000000004000000000000000400000" \
-  "00000000000000000000000000"
+  "01010000000000000002000000640000006400000064000000C8000000C8000000" \
+  "C8000000"
 
 /* Main program */
 int main(void)
@@ -91,6 +88,15 @@ int main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
+
+  /* The pcpoint and the pcpatch read below name pcid 1, whose schema lays out
+   * their data, so the program registers it as tpointcloud_test does */
+  PCDimensionSpec dims[3] = {
+    { "X", NULL, 1, "int32_t", 0.01, 0, true },
+    { "Y", NULL, 2, "int32_t", 0.01, 0, true },
+    { "Z", NULL, 3, "int32_t", 0.01, 0, true }
+  };
+  assert(meos_pc_schema_register_dims(1, 0, "none", dims, 3));
 
   /* A pcpoint writes the hex its input reads back */
   Pcpoint *pt = pcpoint_from_hexwkb(PCPOINT_HEX);

@@ -8,7 +8,7 @@ INSERT INTO pointcloud_dimensions
   (90, 2, 'Y', 'double', 1, 0, true, 'Northing'),
   (90, 3, 'Z', 'double', 1, 0, true, 'Elevation');
 INSERT 0 3
-SELECT asMFJSON(tpcpoint '230000005A000000000000000000F03F00000000000000400000000000000840000000@2024-01-01');
+SELECT asMFJSON(tpcpoint '015A000000000000000000F03F00000000000000400000000000000840@2024-01-01');
                                                                                                    asmfjson                                                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"type":"MovingPCPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1,2,3]],"values":[{"pcid":90,"pt":[1,2,3]}],"datetimes":["2024-01-01T00:00:00-08:00"],"interpolation":"None"}

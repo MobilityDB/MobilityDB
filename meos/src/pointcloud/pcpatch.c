@@ -48,6 +48,7 @@
 #include <liblwgeom.h>       /* parse_hex, deparse_hex */
 /* pgPointCloud */
 #include "pc_api.h"
+#include "pc_api_internal.h"   /* machine_endian, wkb_get_int32 */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -147,6 +148,120 @@ ensure_same_pcid_pcpatch(const Pcpatch *pa1, const Pcpatch *pa2)
  *****************************************************************************/
 
 /**
+ * @brief Test the pgPointCloud Well-Known Binary (WKB) of a pcpatch against
+ * the schema of its pcid before the library reads it
+ * @details The WKB is the endian flag, the pcid, the compression, the number
+ * of points and the data. An uncompressed patch holds the points one after
+ * another; a dimensional one holds per dimension its compression byte, its
+ * size and its bytes. The library reading the WKB ends a standalone process
+ * on an error and reads a dimensional patch without testing its size, so
+ * each size is tested here. LazPerf is not in the bundled library.
+ * @param[in] wkb WKB bytes
+ * @param[in] size Number of bytes
+ * @param[in] schema Schema of the pcid
+ */
+static bool
+pcpatch_wkb_valid(const uint8_t *wkb, size_t size, const PCSCHEMA *schema)
+{
+  const size_t hdrsz = 1 + 3 * sizeof(uint32_t);
+  int flip = wkb[0] != machine_endian();
+  uint32_t compression = (uint32_t) wkb_get_int32(wkb + 5, flip);
+  uint32_t npoints = (uint32_t) wkb_get_int32(wkb + 9, flip);
+  if (compression == PC_NONE)
+  {
+    if ((size - hdrsz) / schema->size != npoints ||
+        (size - hdrsz) % schema->size != 0)
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse pcpatch value: %zu bytes of data for %u points of "
+        "%zu bytes", size - hdrsz, npoints, schema->size);
+      return false;
+    }
+    return true;
+  }
+  if (compression == PC_DIMENSIONAL)
+  {
+    size_t off = hdrsz;
+    for (uint32_t i = 0; i < schema->ndims; i++)
+    {
+      if (size - off < 1 + sizeof(uint32_t))
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "Could not parse pcpatch value: dimension %u is truncated", i);
+        return false;
+      }
+      uint8_t dimcomp = wkb[off];
+      size_t dimsize = (uint32_t) wkb_get_int32(wkb + off + 1, flip);
+      if (dimcomp > PC_DIM_ZLIB ||
+          dimsize > size - off - 1 - sizeof(uint32_t) ||
+          (dimcomp == PC_DIM_NONE &&
+            dimsize != (size_t) npoints * schema->dims[i]->size))
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "Could not parse pcpatch value: invalid dimension %u", i);
+        return false;
+      }
+      off += 1 + sizeof(uint32_t) + dimsize;
+    }
+    if (off != size)
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse pcpatch value: trailing bytes after the dimensions");
+      return false;
+    }
+    return true;
+  }
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "Could not parse pcpatch value: unsupported compression %u", compression);
+  return false;
+}
+
+/**
+ * @brief Return a pcpatch from its pgPointCloud Well-Known Binary (WKB)
+ * representation, as pgPointCloud's @c pc_patch_from_hexwkb reads it
+ * @param[in] wkb WKB bytes
+ * @param[in] size Number of bytes
+ */
+static Pcpatch *
+pcpatch_from_wkb_bytes(const uint8_t *wkb, size_t size)
+{
+  /* Endian flag, pcid, compression and number of points */
+  if (size < 1 + 3 * sizeof(uint32_t))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse pcpatch value: too short");
+    return NULL;
+  }
+  if (wkb[0] > 1)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse pcpatch value: invalid endian flag %d", wkb[0]);
+    return NULL;
+  }
+  uint32_t pcid = pc_wkb_get_pcid(wkb);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  if (! pcpatch_wkb_valid(wkb, size, schema))
+    return NULL;
+  PCPATCH *pa = pc_patch_from_wkb(schema, (uint8_t *) wkb, size);
+  if (! pa)
+    return NULL;
+  Pcpatch *result = (Pcpatch *) meos_pc_patch_serialize(pa, NULL);
+  pc_patch_free(pa);
+  if (! result)
+    return NULL;
+  /* Zero the reserved tail, as #pcpatch_make does */
+  size_t meaningful = pcpatch_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
+
+/**
  * @brief Parse a pcpatch from its hex-encoded representation in a cursor
  */
 Pcpatch *
@@ -169,19 +284,14 @@ pcpatch_parse(const char **str, bool end)
     return NULL;
   }
   size_t byte_len = hex_len / 2;
-  /* Header minimum: varlena + pcid + compression + npoints + 4 bounds doubles */
-  size_t min_hdr = VARHDRSZ + 3 * sizeof(uint32_t) + 4 * sizeof(double);
-  if (byte_len < min_hdr)
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse %s value: too short", type_str);
-    return NULL;
-  }
-
-  Pcpatch *result = palloc(byte_len);
+  uint8_t *wkb = palloc(byte_len);
+  /* The scan above admits hexadecimal digits alone, so each pair decodes */
   for (size_t i = 0; i < byte_len; i++)
-    ((char *) result)[i] = (char) parse_hex((char *) hex_start + 2 * i);
-  SET_VARSIZE(result, byte_len);
+    wkb[i] = parse_hex((char *) hex_start + 2 * i);
+  Pcpatch *result = pcpatch_from_wkb_bytes(wkb, byte_len);
+  pfree(wkb);
+  if (! result)
+    return NULL;
 
   *str = p;
   if (end)
@@ -202,9 +312,8 @@ pcpatch_parse(const char **str, bool end)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpatch from its textual (hex-WKB) representation
+ * @details The text is the one the type input function of pgPointCloud reads
  * @param[in] str String
- * @note PG-side input is provided by pgpointcloud's own
- *   @c PC_AsBinary / @c pcpatch_in, which we do not redefine.
  */
 Pcpatch *
 pcpatch_hex_in(const char *str)
@@ -217,13 +326,10 @@ pcpatch_hex_in(const char *str)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the textual (hex-WKB) representation of a pcpatch
+ * @details The text is the one the type output function of pgPointCloud
+ * writes, in the compression of the patch and the byte order of the machine
  * @param[in] pa Patch
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
- * @note The bytes past the meaningful prefix are the reserved tail described
- * at the top of this file, which the allocation leaves uninitialized. They
- * are emitted as zeros so that two patches holding the same points always
- * print the same string, keeping the full @c VARSIZE length that the
- * deserializer's size check expects.
  */
 char *
 pcpatch_hex_out(const Pcpatch *pa, int maxdd)
@@ -233,16 +339,28 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  size_t byte_len = VARSIZE(pa);
-  size_t meaningful = pcpatch_meaningful_size(pa);
-  size_t hex_len = byte_len * 2;
-  char *result = palloc(hex_len + 1);
-  size_t i = 0;
-  for (; i < meaningful; i++)
-    deparse_hex(((const uint8_t *) pa)[i], result + 2 * i);
-  for (; i < byte_len; i++)
-    deparse_hex(0, result + 2 * i);
-  result[hex_len] = '\0';
+  uint32_t pcid = pcpatch_get_pcid(pa);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  PCPATCH *patch = meos_pc_patch_deserialize((const SERIALIZED_PATCH *) pa,
+    schema);
+  if (! patch)
+    return NULL;
+  size_t size;
+  uint8_t *wkb = pc_patch_to_wkb(patch, &size);
+  pc_patch_free(patch);
+  if (! wkb)
+    return NULL;
+  char *result = palloc(2 * size + 1);
+  for (size_t i = 0; i < size; i++)
+    deparse_hex(wkb[i], result + 2 * i);
+  result[2 * size] = '\0';
+  pcfree(wkb);
   return result;
 }
 
@@ -394,8 +512,8 @@ pcpatch_make(const Pcpoint **points, int count)
   if (! result)
     return NULL;
   /* Zero the reserved tail described at the top of this file so that two
-   * patches holding the same points hold the same bytes, as pcpatch_hex_out
-   * prints them */
+   * patches holding the same points hold the same bytes, which the
+   * comparison and the hash read */
   size_t meaningful = pcpatch_meaningful_size(result);
   memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
   return result;
@@ -444,8 +562,8 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
  * @brief Return a serialized copy of a point
  * @details The bytes past the meaningful prefix are pgpointcloud's struct-tail
  * padding, which the serialization leaves uninitialized. They are zeroed so
- * that two pcpoints holding the same point hold the same bytes, as
- * @c pcpoint_hex_out prints them
+ * that two pcpoints holding the same point hold the same bytes, which the
+ * comparison and the hash read
  */
 static Pcpoint *
 pcpoint_serialize(const PCPOINT *pcpt)
