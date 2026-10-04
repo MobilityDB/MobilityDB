@@ -89,8 +89,15 @@ Each item is measured; the note named gives the evidence.
    such a value and a collection, `traversedArea` of a rigid geometry built on a polyhedral
    surface, and `merge` of a temporal geometry, which reports the refusal as an error since
    MobilityDB #2946 (§5.7).
-2. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
-3. **The buffer is not finished** ([note 6](06-BUFFER.md)). Its answer depends on where the shape
+2. **Arrays of overlapping surfaces expose three more gaps** ([note 5](05-WHAT-STILL-NEEDS-GEOS.md)
+   §5.8), measured on 1500 random arrays judged by CGAL. Surfaces carrying Z, two of which merge
+   while another stays apart, raise an error in every build, and the default error handler ends
+   the process; MobilityDB #2954 answers them. Three surfaces can reach GEOS in one order and
+   answer in another, because a vertex the union constructs is rounded near another member's
+   edge. And 76 of 1500 answers spell a hole as a shell that touches itself, which covers the
+   right points and is not a valid OGC polygon.
+3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
+4. **The buffer is not finished** ([note 6](06-BUFFER.md)). Its answer depends on where the shape
    lies — the same small square buffered by the same distance has the right area at the origin and
    an area a third too small at a projected coordinate such as 6 400 000 m, measured on master by
    [`tools/square_buffer.c`](tools/square_buffer.c) — and it is between about 2.8 and 4.4 times
@@ -98,13 +105,13 @@ Each item is measured; the note named gives the evidence.
    and measured, not yet proposed as a pull request; it uncovers an older defect in the last stage
    of the buffer, where the boundary pieces are joined into closed rings, and the two are
    repaired in one change.
-4. **The single-sided buffer is refused.** PostGIS offers it (`ST_Buffer` with `side=left` or
+5. **The single-sided buffer is refused.** PostGIS offers it (`ST_Buffer` with `side=left` or
    `side=right`); the committers decided it must answer exactly as PostGIS does
    ([note 4](04-OPERATIONS.md) §4.11).
-5. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
-6. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the stubs are
+6. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
+7. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the stubs are
    deleted, and GEOS stays only as a test reference. The committers decided this on 2026-09-22;
-   item 1 is what stands between that decision and its execution.
+   items 1 and 2 are what stands between that decision and its execution.
 
 The [implementation plan](IMPLEMENTATION-PLAN.md) turns these items into an ordered list of pull
 requests.

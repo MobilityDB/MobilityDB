@@ -231,7 +231,58 @@ geography pairs are the four made only of points and multipoints. The regression
 a case refused in every build, and checks the error and the absence of a value; the same test
 checks that two geography points and two geometry polygons still merge.
 
-## 5.8 What this means
+## 5.8 Arrays of surfaces the native union does not answer
+
+A type sweep runs one representative geometry per type, and the representatives are disjoint. Random
+arrays of overlapping surfaces show three more things. [`tools/gen_corpus.py`](tools/gen_corpus.py)
+writes arrays of two to four polygons, multipolygons, triangles, TINs and polyhedral surfaces on an
+8-by-8 integer grid, so that overlap, a shared edge, a shared corner and disjointness all occur.
+[`tools/explode_corpus.py`](tools/explode_corpus.py) lists every multi-part member part by part, as
+polygons and triangles, so the arrays cover the same point sets without reaching the gap of §5.5;
+the figures below are of those arrays. [`tools/arrunion_head.c`](tools/arrunion_head.c) prints the
+union of each, and [`tools/cgal_aunion.cpp`](tools/cgal_aunion.cpp) judges it with CGAL's exact
+kernel. The answer must cover the point set its members cover, and its faces must not overlap.
+
+**Surfaces carrying Z, two of which merge while another stays apart.** The native union walks the
+boundaries on the plane. A face it rebuilds from that walk carries no Z, while a face it keeps whole
+carries the Z it came with, and `lwcollection_construct` refuses to hold the two together. The union
+raises "lwcollection_construct: mixed dimension geometries: 0/2". Under the default error handler
+the process ends, and in PostgreSQL the query fails. The native code runs before the GEOS code, so
+this happens in every build. Of 1500 arrays of `POLYGON Z` and `TRIANGLE Z`, the union declines 881
+([`tools/results/aunion_z.master_path.txt`](tools/results/aunion_z.master_path.txt)).
+MobilityDB #2954 reads a geometry carrying Z or M as its projection, the way `geom_unary_union`
+already does, and the array union reads the ordinates back onto the answer. With it all 1500 answer,
+the 619 answered before are unchanged byte for byte, CGAL agrees with every answer, and the Z of
+every vertex agrees with the lift rule judged by [`tools/cgal_zlift.cpp`](tools/cgal_zlift.cpp)
+through [`tools/zlift_head.c`](tools/zlift_head.c)
+([`tools/results/aunion_z.areal_plane.txt`](tools/results/aunion_z.areal_plane.txt)).
+
+**Three surfaces, one of whose edges a constructed vertex lies near.** Call the triangles
+T1 = `TRIANGLE((1 3,4 2,8 3,1 3))`, T2 = `TRIANGLE((7 8,3 2,5 1,7 8))` and
+T3 = `TRIANGLE((5 1,5 2,7 8,5 1))`. Any two of them answer, and the three depend on their order:
+
+| Array | Without GEOS |
+|---|---|
+| T3, T2, T1 | answers |
+| T2, T3, T1 | answers |
+| T1, T3, T2 | reaches the fall-back |
+| the union of T1 and T2, then T3 | reaches the fall-back |
+
+The native union merges the members one pair at a time (`buffer_union_components`). The union of T1
+and T2 has a vertex where their edges cross, (5.571428571428571 3). It is rounded to a double, so it
+lies near the line through (5 1) and (7 8) but not on it. T3 has its whole edge on that line, and
+the two boundaries nearly coincide without being collinear. A tolerance moves such a case to another
+scale and does not close it; one arrangement of every member's edges does. In 1500 flat arrays, 3
+decline; [`tools/shrink.py`](tools/shrink.py) reduces them to three or four members each, T1, T2
+and T3 being one of them, and the other two are not traced
+([`tools/results/aunion_flat.master_path.txt`](tools/results/aunion_flat.master_path.txt)).
+
+**A hole spelled as a shell that touches itself.** 76 of the 1500 flat answers write a hole that
+touches the shell as one ring that passes through the same vertex twice. The point set is right:
+CGAL reads the ring as the simple loops it is made of and agrees. The spelling is not a valid OGC
+polygon, which writes such a hole as a ring of its own.
+
+## 5.9 What this means
 
 The four fall-backs cannot be deleted yet. Three of them are reached by ordinary data: a temporal
 geometry valued with a multipolygon, a building footprint stored as a `MULTIPOLYGON`, a 3D model
@@ -242,7 +293,9 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
    in the unary union of a collection alike.
 2. **The overlay of a collection answers** the 409 and 953 calls of §5.5 that remain after that,
    or the sweep is re-run to see how many remain.
-3. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
+3. **The native union answers the arrays of §5.8**: surfaces carrying Z (MobilityDB #2954), and
+   three surfaces whose order leaves a constructed vertex near another member's edge.
+4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
    unseen.
 
 Only then does the fourth fall-back — the unary union on a precision grid, which no MEOS caller
