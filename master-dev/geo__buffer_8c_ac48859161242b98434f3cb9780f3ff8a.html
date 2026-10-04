@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_select_overlay_boundary</title>
+<title>MobilityDB: buffer_classify_piece</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -115,7 +115,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a53cc846bc9be582f0fdb5a92e411845b.html#a53cc846bc9be582f0fdb5a92e411845b">buffer_chain_ring_infos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a014abfd84566f99ccd22b2bda0a22156.html#a014abfd84566f99ccd22b2bda0a22156">buffer_chain_ring_with_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a184073f1dc1613f7e766ff44c323e3d7.html#a184073f1dc1613f7e766ff44c323e3d7">buffer_classify_coincident_piece</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad07da6864a6ae54d171b46bb96e489ea.html#ad07da6864a6ae54d171b46bb96e489ea">buffer_classify_piece</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ac48859161242b98434f3cb9780f3ff8a.html#ac48859161242b98434f3cb9780f3ff8a">buffer_classify_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac1190514d62b6f917ec736f5f444e2db.html#ac1190514d62b6f917ec736f5f444e2db">buffer_classify_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a273488c41e0f6689cea430f495deff12.html#a273488c41e0f6689cea430f495deff12">buffer_collect_arc_arc_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2f5a5eba9d3a7f14d4bb838e5d7b3711.html#a2f5a5eba9d3a7f14d4bb838e5d7b3711">buffer_collect_boundary_intersections</a></td></tr>
@@ -153,6 +153,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a804e90f95a99f3d9cba68d31a02a3f25.html#a804e90f95a99f3d9cba68d31a02a3f25">buffer_line_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15728da7384d2eb369e3a13c4f71a5e4.html#a15728da7384d2eb369e3a13c4f71a5e4">buffer_locator_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adeb17d341c68dd0a66dc944c91bedb1c.html#adeb17d341c68dd0a66dc944c91bedb1c">BUFFER_LOCATOR_INDEX_MIN_PAIRS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2ef6821ce5c333edfd40256a179a1d00.html#a2ef6821ce5c333edfd40256a179a1d00">buffer_locator_locate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a01b3bb60e73f627b1abd9e336d3caa9f.html#a01b3bb60e73f627b1abd9e336d3caa9f">buffer_locator_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac4e0865876d9181ce640766c5195130f.html#ac4e0865876d9181ce640766c5195130f">buffer_locator_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af9af0cf6671ead3eff15a09a35ce6330.html#af9af0cf6671ead3eff15a09a35ce6330">buffer_make_arc</a></td></tr>
@@ -202,6 +203,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa769075729327141bd98598b1e2092b3.html#aa769075729327141bd98598b1e2092b3">buffer_point_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d">buffer_point_edges_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a581c4b350dadd8921099ccf50a195378.html#a581c4b350dadd8921099ccf50a195378">buffer_point_edges_nearer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3550bba4371777f01a7e31bdf773a8b4.html#a3550bba4371777f01a7e31bdf773a8b4">buffer_point_is_node</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad656863bce51b8424c2531eafe287575.html#ad656863bce51b8424c2531eafe287575">buffer_point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae51fba08d848f3e608a839f29d0ac863.html#ae51fba08d848f3e608a839f29d0ac863">buffer_points_equal</a></td></tr>
@@ -226,7 +228,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aab0953bae514f6c772893ec8f3676f2a.html#aab0953bae514f6c772893ec8f3676f2a">buffer_segment_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6525ef468042a5c4adb6f92de3d5bf71.html#a6525ef468042a5c4adb6f92de3d5bf71">buffer_segment_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac853561f4cca9470d2bad993c5f98269.html#ac853561f4cca9470d2bad993c5f98269">buffer_segments_equal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a985d220e4b1226ecc01e99edef9b197d.html#a985d220e4b1226ecc01e99edef9b197d">buffer_select_overlay_boundary</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a262d8877493d2243cf37c6731f26f7de.html#a262d8877493d2243cf37c6731f26f7de">buffer_select_overlay_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a56683c5fe565be713f38722653a65606.html#a56683c5fe565be713f38722653a65606">buffer_shared_geometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3283bce0674a87c6da03660ef8e7760b.html#a3283bce0674a87c6da03660ef8e7760b">buffer_snap_to_curve_end</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abb05d64825776297a73858e1fe57c50d.html#abb05d64825776297a73858e1fe57c50d">buffer_split_arc</a></td></tr>
@@ -283,8 +285,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a985d220e4b1226ecc01e99edef9b197d" name="a985d220e4b1226ecc01e99edef9b197d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a985d220e4b1226ecc01e99edef9b197d">&#9670;&#160;</a></span>buffer_select_overlay_boundary()</h2>
+<a id="ac48859161242b98434f3cb9780f3ff8a" name="ac48859161242b98434f3cb9780f3ff8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac48859161242b98434f3cb9780f3ff8a">&#9670;&#160;</a></span>buffer_classify_piece()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -293,58 +295,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void buffer_select_overlay_boundary </td>
+          <td class="memname">static <a class="el" href="geo__buffer_8c_a7baebb97fc88c074dc65f891dabbf1ec.html#a7baebb97fc88c074dc65f891dabbf1ec">EdgeLocation</a> buffer_classify_piece </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces_a</em>, </td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>piece</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structBufferLocator.html">BufferLocator</a> *&#160;</td>
-          <td class="paramname"><em>loc_b</em>, </td>
+          <td class="paramname"><em>other</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces_b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structBufferLocator.html">BufferLocator</a> *&#160;</td>
-          <td class="paramname"><em>loc_a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">ClipOper</a>&#160;</td>
-          <td class="paramname"><em>oper</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>boundary</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>shared</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>coincident</em>&#160;</td>
+          <td class="paramname"><em>nodes</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -358,6 +324,21 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Classify one split boundary piece with respect to a geometry. </p>
+<p >The representative point is located against the complete other buffer. This is a classification of the boundary itself:</p><ul>
+<li>EXTERIOR -&gt; the piece lies outside the other buffer and may belong to the exterior union boundary.</li>
+<li>INTERIOR -&gt; the piece lies inside the other buffer and must not belong to the exterior union boundary.</li>
+<li>BOUNDARY -&gt; the piece coincides with, or touches, the other boundary. This case is retained for the later coincident-boundary handling.</li>
+</ul>
+<p >The midpoint is a point the overlay constructs, so it reads as ON the other boundary within the rounding of its coordinates, and a piece running at an angle of a rounding away from an edge of the other reads so as well as one running along it. The two are told apart by the ends of the piece. A stretch the two boundaries share is bounded by nodes, since the exact meeting of two segments (<a class="el" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54" title="Return the intersection value obtained by computing the intersection of a line segment defined by two...">linesegm_intersect</a>) reports both ends of their overlap, so a piece lying along the other boundary ends at a node at both ends. An end that is not a node is an input vertex, as every piece is an input edge cut at the nodes alone, and the piece does not cross the other boundary between its ends, so where that vertex stands is where the piece stands: it is located exactly, as <a class="el" href="geo__funcs_8h_a0f831ae49f464bdf64a8fb3536962827.html#a0f831ae49f464bdf64a8fb3536962827" title="Classify a point with respect to an areal geometry.">relate_point_in_area</a> locates an input vertex </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">piece</td><td>Piece </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">other</td><td>Locator of the other geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nodes</td><td>Nodes the boundaries were cut at, as <a class="el" href="structPOINT2D.html">POINT2D</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
