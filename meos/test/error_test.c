@@ -99,6 +99,32 @@ int main(void)
   assert(meos_errno_reset() == failed_errno);
   assert(meos_errno() == 0);
 
+  /* A value is read while an earlier error is still pending, the state a
+   * binding thread is in when it does not reset the error number between
+   * calls: a reader telling its own failure by the error number clears it
+   * first and puts the pending one back, so a value it reads is not refused
+   * for an error raised before, and the pending error stays to be read */
+  assert(tfloat_in("this is not a temporal float") == NULL);
+  int pending = meos_errno();
+  assert(pending != 0);
+  Temporal *tb = tbool_in("t@2001-01-01");
+  printf("tbool_in with an error pending: %s, errno %d\n",
+    tb ? "a value" : "NULL", meos_errno());
+  assert(tb != NULL);
+  assert(meos_errno() == pending);
+  Temporal *th = th3index_in("831c02fffffffff@2001-01-01");
+  printf("th3index_in with an error pending: %s, errno %d\n",
+    th ? "a value" : "NULL", meos_errno());
+  assert(th != NULL);
+  assert(meos_errno() == pending);
+  Temporal *ti = tint_in("1@2001-01-01");
+  printf("tint_in with an error pending: %s, errno %d\n",
+    ti ? "a value" : "NULL", meos_errno());
+  assert(ti != NULL);
+  assert(meos_errno() == pending);
+  free(tb); free(th); free(ti);
+  meos_errno_reset();
+
   /* A function returning an array through a count out parameter leaves that
    * count defined when it rejects its arguments, so a caller reading the count
    * of a failed call sees no elements rather than whatever the variable held.
