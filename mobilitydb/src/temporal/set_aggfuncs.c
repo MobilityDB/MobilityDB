@@ -51,13 +51,20 @@
  * Aggregate functions for set types
  *****************************************************************************/
 
+/**
+ * @brief Type of the values aggregated by a set union, kept in fn_extra
+ */
+typedef struct
+{
+  MeosType basetype;  /**< Base type of the values */
+  bool varlength;     /**< True when the values are of variable length */
+} SetValueType;
+
 PGDLLEXPORT Datum Value_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
- * @brief Transition function for union aggregation of sets
- * @note We simply gather the input values into an array so that the final
- * function can sort and combine them
+ * @brief Transition function for union aggregation of values
  * @sqlfn set_union_transfn()
  * @sqlaggfn setUnion()
  */
@@ -67,20 +74,32 @@ Value_union_transfn(PG_FUNCTION_ARGS)
   MemoryContext aggContext;
   if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Value_union_transfn called in non-aggregate context");
-
-  Oid valueoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  assert(set_basetype(oid_meostype(valueoid)));
-
-  ArrayBuildState *state;
-  if (PG_ARGISNULL(0))
-    state = initArrayResult(valueoid, aggContext, false);
-  else
-    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
-
+  Set *state = PG_ARGISNULL(0) ? NULL : (Set *) PG_GETARG_POINTER(0);
   /* Skip NULLs */
   if (! PG_ARGISNULL(1))
-    accumArrayResult(state, PG_GETARG_DATUM(1), false, valueoid, aggContext);
-
+  {
+    /* The type of the values is read once per query and kept in fn_extra,
+     * as #get_srs_cache_by_srid keeps its SRS */
+    SetValueType *cache = fcinfo->flinfo->fn_extra;
+    if (! cache)
+    {
+      cache = MemoryContextAlloc(fcinfo->flinfo->fn_mcxt, sizeof(SetValueType));
+      cache->basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
+      cache->varlength = basetype_varlength(cache->basetype);
+      fcinfo->flinfo->fn_extra = cache;
+    }
+    assert(set_basetype(cache->basetype));
+    Datum value = PG_GETARG_DATUM(1);
+    /* The state keeps the bytes of the value, so a toasted one is read first;
+     * a value with a 1-byte header is stored with a 4-byte one by the state */
+    if (cache->varlength)
+      value = PointerGetDatum(PG_DETOAST_DATUM_PACKED(value));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = value_union_transfn(state, value, cache->basetype);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (! state)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(state);
 }
 
@@ -89,8 +108,6 @@ PG_FUNCTION_INFO_V1(Set_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of sets
- * @note We simply gather the input values into an array so that the final
- * function can sort and combine them
  * @sqlfn set_union_transfn()
  * @sqlaggfn setUnion()
  */
@@ -100,29 +117,42 @@ Set_union_transfn(PG_FUNCTION_ARGS)
   MemoryContext aggContext;
   if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Set_union_transfn called in non-aggregate context");
-
-  Oid setoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  MeosType settype = oid_meostype(setoid);
-  assert(set_type(settype));
-  MeosType basetype = settype_basetype(settype);
-  Oid baseoid = meostype_oid(basetype);
-
-  ArrayBuildState *state;
-  if (PG_ARGISNULL(0))
-    state = initArrayResult(baseoid, aggContext, false);
-  else
-    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
-
-  /* skip NULLs */
+  Set *state = PG_ARGISNULL(0) ? NULL : (Set *) PG_GETARG_POINTER(0);
+  /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
-    Set *set = PG_GETARG_SET_P(1);
-    Datum *values = set_vals(set);
-    for (int i = 0; i < set->count; i++)
-      accumArrayResult(state, values[i], false, baseoid, aggContext);
-    pfree(values);
+    Set *s = PG_GETARG_SET_P(1);
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = set_union_transfn(state, s);
+    MemoryContextSwitchTo(oldctx);
   }
+  if (! state)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Set_union_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_union_combinefn);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Combine function for union aggregation of sets
+ * @sqlfn set_union_combinefn()
+ * @sqlaggfn setUnion()
+ */
+Datum
+Set_union_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Set_union_combinefn called in non-aggregate context");
+  Set *state1 = PG_ARGISNULL(0) ? NULL : (Set *) PG_GETARG_POINTER(0);
+  Set *state2 = PG_ARGISNULL(1) ? NULL : (Set *) PG_GETARG_POINTER(1);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  Set *result = set_union_combinefn(state1, state2);
+  MemoryContextSwitchTo(oldctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Set_union_finalfn(PG_FUNCTION_ARGS);
@@ -136,41 +166,57 @@ PG_FUNCTION_INFO_V1(Set_union_finalfn);
 Datum
 Set_union_finalfn(PG_FUNCTION_ARGS)
 {
+  /* Return NULL if we had zero inputs, like other aggregates */
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Set *state = (Set *) PG_GETARG_POINTER(0);
+  Set *result = set_union_finalfn(state);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Setstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Setstate_serialize);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Serialize the state of a set union aggregate
+ * @sqlfn setstate_serialize()
+ * @sqlaggfn setUnion()
+ */
+Datum
+Setstate_serialize(PG_FUNCTION_ARGS)
+{
+  Set *state = (Set *) PG_GETARG_POINTER(0);
+  size_t size;
+  uint8_t *wkb = setstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), wkb, size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Setstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Setstate_deserialize);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Deserialize the state of a set union aggregate
+ * @sqlfn setstate_deserialize()
+ * @sqlaggfn setUnion()
+ */
+Datum
+Setstate_deserialize(PG_FUNCTION_ARGS)
+{
   MemoryContext aggContext;
   if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Set_union_finalfn called in non-aggregate context");
-
-  ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
-    (ArrayBuildState *) PG_GETARG_POINTER(0);
-  if (! state)
-    /* This shouldn't be possible, but just in case.... */
-    PG_RETURN_NULL();
-
-  /* Also return NULL if we had zero inputs, like other aggregates */
-  int32 count = state->nelems;
-  if (count == 0)
-    PG_RETURN_NULL();
-
-  Oid setoid = get_fn_expr_rettype(fcinfo->flinfo);
-  MeosType settype = oid_meostype(setoid);
-  MeosType basetype = settype_basetype(settype);
-  bool typbyval = basetype_byvalue(basetype);
-  int16 typlen = meostype_length(basetype);
-
-  Datum *values = palloc0(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
-    values[i] = typlen > 0 ? state->dvalues[i] :
-      PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
-
-  Set *result = set_make_exp(values, count, count, basetype, ORDER);
-
-  /* Free memory */
-  if (typbyval)
-    pfree(values);
-  else
-    pfree_array((void **) values, count);
-
-  PG_RETURN_SET_P(result);
+    elog(ERROR, "Setstate_deserialize called in non-aggregate context");
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  Set *result = setstate_deserialize((uint8_t *) VARDATA(data),
+    VARSIZE(data) - VARHDRSZ);
+  MemoryContextSwitchTo(oldctx);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

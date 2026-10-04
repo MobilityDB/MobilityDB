@@ -156,24 +156,39 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/*
- * The transition and combine functions for span_union are, respectively,
- * PostgreSQL's array_agg_transfn and array_agg_combinefn. Similarly, the
- * combine function for spanset_union is PostgreSQL's array_agg_combinefn.
- * The idea is that all the component spans are simply appened to an array
- * without any processing and thus are not sorted. The final function then
- * extract the spans, sort them, and performs the normalization.
- * Reusing PostgreSQL array function enables us to leverage parallel aggregates
- * (introduced in PostgreSQL version 16) and other built-in optimizations.
+PGDLLEXPORT Datum Span_union_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_union_transfn);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of spans
+ * @sqlfn span_union_transfn()
+ * @sqlaggfn spanUnion()
  */
+Datum
+Span_union_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Span_union_transfn called in non-aggregate context");
+  SpanSet *state = PG_ARGISNULL(0) ? NULL : (SpanSet *) PG_GETARG_POINTER(0);
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Span *s = PG_GETARG_SPAN_P(1);
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = span_union_transfn(state, s);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
 
 PGDLLEXPORT Datum Spanset_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of span sets
- * @note We simply gather the input values into an array so that the final
- * function can sort and combine them
  * @sqlfn spanset_union_transfn()
  * @sqlaggfn spansetUnion()
  */
@@ -183,72 +198,106 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   MemoryContext aggContext;
   if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Spanset_union_transfn called in non-aggregate context");
-
-  Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  MeosType spansettype = oid_meostype(spansetoid);
-  assert(spanset_type(spansettype));
-  MeosType spantype = spansettype_spantype(spansettype);
-  Oid spanoid = meostype_oid(spantype);
-
-  ArrayBuildState *state;
-  if (PG_ARGISNULL(0))
-    state = initArrayResult(spanoid, aggContext, false);
-  else
-    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
-
+  SpanSet *state = PG_ARGISNULL(0) ? NULL : (SpanSet *) PG_GETARG_POINTER(0);
   /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
     SpanSet *ss = PG_GETARG_SPANSET_P(1);
-    for (int i = 0; i < ss->count; i++)
-      accumArrayResult(state, SpanPGetDatum(SPANSET_SP_N(ss, i)), false,
-        spanoid, aggContext);
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = spanset_union_transfn(state, ss);
+    MemoryContextSwitchTo(oldctx);
   }
+  if (! state)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Spanset_union_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_union_combinefn);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Combine function for union aggregation of spans and span sets
+ * @sqlfn spanset_union_combinefn()
+ * @sqlaggfn spanUnion(), spansetUnion()
+ */
+Datum
+Spanset_union_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Spanset_union_combinefn called in non-aggregate context");
+  SpanSet *state1 = PG_ARGISNULL(0) ? NULL : (SpanSet *) PG_GETARG_POINTER(0);
+  SpanSet *state2 = PG_ARGISNULL(1) ? NULL : (SpanSet *) PG_GETARG_POINTER(1);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  SpanSet *result = spanset_union_combinefn(state1, state2);
+  MemoryContextSwitchTo(oldctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /**
  * @ingroup mobilitydb_setspan_agg
- * @brief Final function for union aggregation of spans
- * @note Shared for both spans and span sets
+ * @brief Final function for union aggregation of spans and span sets
  * @sqlfn intspan_union_finalfn(), floatspan_union_finalfn(), ...
  * @sqlaggfn spanUnion(), spansetUnion()
  */
 Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)
 {
-  /* cannot be called directly because of internal-type argument */
-  Assert(AggCheckCallContext(fcinfo, NULL));
-  // MemoryContext aggContext;
-  // if (! AggCheckCallContext(fcinfo, &aggContext))
-    // elog(ERROR, "Span_union_finalfn called in non-aggregate context");
-
-  ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
-    (ArrayBuildState *) PG_GETARG_POINTER(0);
-  if (! state)
-    /* This shouldn't be possible, but just in case.... */
+  /* Return NULL if we had zero inputs, like other aggregates */
+  if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
-
-  /* Also return NULL if we had zero inputs, like other aggregates */
-  int32 count = state->nelems;
-  if (count == 0)
+  SpanSet *state = (SpanSet *) PG_GETARG_POINTER(0);
+  SpanSet *result = spanset_union_finalfn(state);
+  if (! result)
     PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
+}
 
-  Span *spans = palloc0(sizeof(Span) * count);
-  int k = 0;
-  for (int i = 0; i < count; i++)
-  {
-    if (! state->dnulls[i])
-      spans[k++] = *(DatumGetSpanP(state->dvalues[i]));
-  }
+PGDLLEXPORT Datum Spansetstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spansetstate_serialize);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Serialize the state of a span or span set union aggregate
+ * @sqlfn spansetstate_serialize()
+ * @sqlaggfn spanUnion(), spansetUnion()
+ */
+Datum
+Spansetstate_serialize(PG_FUNCTION_ARGS)
+{
+  SpanSet *state = (SpanSet *) PG_GETARG_POINTER(0);
+  size_t size;
+  uint8_t *wkb = spansetstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), wkb, size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
 
-  /* Also return NULL if we had only null inputs */
-  if (k == 0)
-    PG_RETURN_NULL();
-
-  PG_RETURN_SPANSET_P(spanset_make_free(spans, k, NORMALIZE, ORDER));
+PGDLLEXPORT Datum Spansetstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spansetstate_deserialize);
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Deserialize the state of a span or span set union aggregate
+ * @sqlfn spansetstate_deserialize()
+ * @sqlaggfn spanUnion(), spansetUnion()
+ */
+Datum
+Spansetstate_deserialize(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Spansetstate_deserialize called in non-aggregate context");
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  SpanSet *result = spansetstate_deserialize((uint8_t *) VARDATA(data),
+    VARSIZE(data) - VARHDRSZ);
+  MemoryContextSwitchTo(oldctx);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

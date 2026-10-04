@@ -718,6 +718,9 @@ meostype_length(MeosType type)
 {
   if (basetype_byvalue(type))
     return sizeof(Datum);
+  /* The varlena base types read most often come before the type families */
+  if (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY)
+    return -1;
   if (span_type(type))
     return sizeof(Span);
   if (set_type(type) || spanset_type(type) || temporal_type(type))
@@ -728,10 +731,6 @@ meostype_length(MeosType type)
     return sizeof(double3);
   if (type == T_DOUBLE4)
     return sizeof(double4);
-  if (type == T_TEXT)
-    return -1;
-  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
-    return -1;
 #if CBUFFER
   if (type == T_CBUFFER)
     return -1;
