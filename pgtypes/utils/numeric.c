@@ -1871,7 +1871,7 @@ numeric_hash(Numeric num)
 uint64
 numeric_hash_extended(Numeric num, uint64 seed)
 {
-  uint32_t digit_hash;
+  uint64 digit_hash;
   int weight;
   int start_offset;
   int end_offset;
@@ -1909,7 +1909,7 @@ numeric_hash_extended(Numeric num, uint64 seed)
   digit_hash = hash_any_extended((unsigned char *) (NUMERIC_DIGITS(num) +
     start_offset),  hash_len * sizeof(NumericDigit), seed);
 
-  return DatumGetUInt64(digit_hash) ^ weight;
+  return digit_hash ^ weight;
 }
 
 /* ----------------------------------------------------------------------
