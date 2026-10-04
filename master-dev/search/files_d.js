@@ -5,5 +5,6 @@ var searchData=
   ['npoint_5ftest_2ec_2',['npoint_test.c',['../npoint__test_8c.html',1,'']]],
   ['npoint_5fvalidity_5ftest_2ec_3',['npoint_validity_test.c',['../npoint__validity__test_8c.html',1,'']]],
   ['npointset_5fmeos_2ec_4',['npointset_meos.c',['../npointset__meos_8c.html',1,'']]],
-  ['numeric_5ftest_2ec_5',['numeric_test.c',['../numeric__test_8c.html',1,'']]]
+  ['numeric_5fhash_5ftest_2ec_5',['numeric_hash_test.c',['../numeric__hash__test_8c.html',1,'']]],
+  ['numeric_5ftest_2ec_6',['numeric_test.c',['../numeric__test_8c.html',1,'']]]
 ];
