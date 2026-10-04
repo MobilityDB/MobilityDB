@@ -299,11 +299,13 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
 
 1. **The array union answers multi-part members.** A `MULTIPOLYGON`, `MULTISURFACE`, `TIN` or
    `POLYHEDRALSURFACE` member is what every reaching input has in common, in the array union and
-   in the unary union of a collection alike. MobilityDB #2966 reads it face by face, and the
+   in the unary union of a collection alike. MobilityDB #2966, merged as `d40d7a885f`, reads it face by face, and the
    sweep then reads 0 of 225 for both in every Z mode
    ([`tools/results/geos_fallback_sweep.multipart.txt`](tools/results/geos_fallback_sweep.multipart.txt)).
 2. **The overlay of a collection answers** the 409 and 953 calls of §5.5, of which 64 and 24
-   remain with MobilityDB #2966.
+   remain with MobilityDB #2966. MobilityDB #2970 lists a collection member of the array union
+   component by component, and leaves 0 and 24: the difference of pieces whose boundaries run
+   along one another.
 3. **The native union answers the arrays of §5.8**: surfaces carrying Z (merged as MobilityDB #2954), and
    three surfaces whose order leaves a constructed vertex near another member's edge (merged as
    MobilityDB #2961).
