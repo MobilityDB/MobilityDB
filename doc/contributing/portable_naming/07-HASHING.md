@@ -12,7 +12,8 @@
 
 `hash` is a built-in function of Spark 3.5.1 (a Murmur3 hash over any columns) and a keyword
 Flink 2.0.0's parser refuses unquoted. MobilityDB declares `hash` 58 times at master
-`b98cda8d63`, and `hashExtended` (the seeded 64-bit hash) 58 times, one pair per type; `hashExtended` conflicts with
+`b98cda8d63`, and `hashExtended` (the seeded 64-bit hash) 58 times, one pair per type, and G29
+adds the pairs of `h3index` and `jsonb`; `hashExtended` conflicts with
 nothing and moves with `hash` (rule 5).
 
 ## What these functions are
@@ -36,21 +37,25 @@ The rule of family 6 (#2717) for a function of one value: the value's class give
 | `tboxHash`, `stboxHash` | `tbox`, `stbox` | 1 + 1 | 1 + 1 |
 | `temporalHash` | `tbool`, `tint`, `tbigint`, `tfloat`, `ttext`, `tjsonb`, `tgeompoint`, `tgeogpoint`, `tgeometry`, `tgeography`, `tcbuffer`, `tnpoint`, `tpose`, `tposechain`, `trgeometry`, `th3index`, `tquadbin`, `ts2cell`, `tpcpoint`, `tpcpatch` | 20 | 20 |
 | `cbufferHash`, `pcpointHash`, `pcpatchHash`, `poseHash`, `posechainHash`, `quadbinHash`, `raquetHash`, `s2cellHash` | the base type of each name | 8 | 8 |
-| | **Total** | **58** | **58** |
+| `h3indexHash`, `jsonbHash` | `h3index` and `jsonb`, whose type the h3 extension and PostgreSQL provide (G29) | 2 | 2 |
+| | **Total** | **60** | **60** |
 
 `temporalHash` is one integer for the whole temporal value, not a lift of a base-type hash, so it
 takes the template class `temporal`, as `temporalLowerInc` does in family 1.
 
-`h3index` takes no name here: the h3 extension (h3-pg), which MobilityDB requires with H3, provides
-the type, its comparisons and its hash operator class, and `mobilitydb/sql/h3/250_h3index.in.sql`
-keeps its own `hash(h3index)` inside a comment as a reference. The counts read the SQL with its
-comments removed (`f6/live_fns.py`).
+`h3index` and `jsonb` take the name of their base type as every other base type does. The h3
+extension (h3-pg), which MobilityDB requires with H3, provides the type `h3index`, its operators and
+its hash operator class, and PostgreSQL provides `jsonb` with its own; MobilityDB declares `hash`
+and `hashExtended` over both beside the other base types (G29), so an engine with no such
+provider, as Spark and Flink, carries them. The counts read the SQL with its comments removed
+(`f6/live_fns.py`).
 
 ## Checks
 
-Neither engine defines, and neither parser refuses, any of the 28 names (`f7-spark.tsv`,
-`f7-flink.tsv`, Spark's default and ANSI modes); in the same runs `hash` reads as a Spark built-in
-and Flink's parser refuses it. None of the 28 is a MobilityDB SQL name at `b98cda8d63`.
+Neither engine defines, and neither parser refuses, any of the 32 names (`f7-spark.tsv`,
+`f7-flink.tsv`, Spark's default and ANSI modes, the four names of `h3index` and `jsonb` in a run of
+the same `SparkNameCensus` and `FlinkNameCensus`); in the same runs `hash` reads as a Spark
+built-in and Flink's parser refuses it. None of the 32 is a MobilityDB SQL name at `b98cda8d63`.
 
 ## Decision
 
