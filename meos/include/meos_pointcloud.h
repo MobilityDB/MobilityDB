@@ -631,6 +631,8 @@ extern bool same_tpointcloud_tpointcloud(const Temporal *temp1,
 
 extern TPCBox *tpc_extent_transfn(TPCBox *state, const Temporal *temp);
 extern TPCBox *tpcbox_extent_transfn(TPCBox *state, const TPCBox *box);
+extern SkipList *tpcpatch_tdensity_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tpcpatch_tnpoints_transfn(SkipList *state, const Temporal *temp);
 
 /*****************************************************************************
  * tpcpoint spatial predicates
