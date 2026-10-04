@@ -150,7 +150,7 @@ carries over the MobilityDB types (decision 0.5).
 
 | PR | Topic |
 |---|---|
-| A1 | Read `@altsqlfn` into `altSqlName` per SQL signature; MEOS-API branch `catalog/alt-sql-name`, one commit (`parser/altsqlfn.py`): several `@sqlfn` names pair by position, one alternative name reaches every signature, several under one `@sqlfn` name select by the base type of the first argument (a temporal type's `startValue` return type, so `trgeometry` takes `geo`; a set, span or span set through the type registry); over MobilityDB `f9c15d092a` and its installed headers, 513 distinct signatures, the 477 of R9 each with its decided name and the 36 `setMake`, a signature selecting no name or several stopping the catalog |
+| A1 | Read `@altsqlfn` into `altSqlName` per SQL signature; merged, MEOS-API #173 (`e384b86941`) (`parser/altsqlfn.py`): several `@sqlfn` names pair by position, one alternative name reaches every signature, several under one `@sqlfn` name select by the base type of the first argument (a temporal type's `startValue` return type, so `trgeometry` takes `geo`; a set, span or span set through the type registry); over MobilityDB `f9c15d092a` and its installed headers, 513 distinct signatures, the 477 of R9 each with its decided name and the 36 `setMake`, a signature selecting no name or several stopping the catalog |
 | A2 | The portable aliases' class dimension for the topology, route and distance names (as #146 did for positions) |
 | A8 | State, for each topological and position SQL name, the `IndexSearchOp` an index searches for it, with the indexed column on either side (`stboxContains`: `INDEX_CONTAINS`, `INDEX_CONTAINED_BY`); before R2 (0.3) |
 
