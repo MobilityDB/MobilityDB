@@ -314,6 +314,8 @@ geoarr_merge(GSERIALIZED **gsarr, int count)
  * @param[out] newcount Number of values in the output array
  * @pre The number of elements in the array is greater than 1 and the instants
  * are sorted
+ * @note Returns @p NULL and sets @p newcount to 0 when the union of the values
+ * sharing a timestamp is refused, as #geog_array_union refuses one of lines
  */
 TInstant **
 tgeoinst_merge_array_iter(TInstant **instants, int count, int *newcount)
@@ -340,7 +342,14 @@ tgeoinst_merge_array_iter(TInstant **instants, int count, int *newcount)
       gsarr[k] = DatumGetGserializedP(tinstant_value_p(instants[k + i]));
     GSERIALIZED *gs = geoarr_merge(gsarr, ngeos);
     pfree(gsarr);
-    newinstants[count1++] = tinstant_make(PointerGetDatum(gs),
+    /* A refused union has reported its error, and no instant is made of it */
+    if (! gs)
+    {
+      pfree_array((void **) newinstants, count1);
+      *newcount = 0;
+      return NULL;
+    }
+    newinstants[count1++] = tinstant_make_free(PointerGetDatum(gs),
       instants[i]->temptype, instants[i]->t);
     i = j;
   }
@@ -368,7 +377,14 @@ tinstant_merge_array_iter(TInstant **instants, int count, int *newcount)
   TInstant **instants1;
   int count1;
   if (tgeo_type(instants[0]->temptype))
+  {
     instants1 = tgeoinst_merge_array_iter(instants, count, &count1);
+    if (! instants1)
+    {
+      *newcount = 0;
+      return NULL;
+    }
+  }
   else
   {
     instants1 = (TInstant **) instants;
