@@ -3341,6 +3341,28 @@ int main(void)
   printf("%s\n", char_result);
   free(result_agg); free(char_result);
 
+  /* Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt); */
+  tfloat_result = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
+  tfloat_result = temporal_app_tinst_transfn(tfloat_result, tfloatinst2, LINEAR, -1.0, NULL);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_app_tinst aggregate\n");
+  printf("%s\n", tfloatinst1_out);
+  printf("%s\n", tfloatinst2_out);
+  printf("temporal_app_tinst result\n");
+  printf("%s\n", char_result);
+  free(tfloat_result); free(char_result);
+
+  /* Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq); */
+  tfloat_result = temporal_app_tseq_transfn(NULL, tfloatseq1);
+  tfloat_result = temporal_app_tseq_transfn(tfloat_result, tfloatseq2);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_app_tseq aggregate\n");
+  printf("%s\n", tfloatseq1_out);
+  printf("%s\n", tfloatseq2_out);
+  printf("temporal_app_tseq result\n");
+  printf("%s\n", char_result);
+  free(tfloat_result); free(char_result);
+
   /* SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp); */
   sklist = temporal_tcount_transfn(NULL, tfloat1);
   sklist = temporal_tcount_transfn(sklist, tfloat2);

@@ -81,14 +81,10 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
-  if (! s2 && ! s1)
+  Span *result = span_extent_transfn(s1, s2);
+  if (! result)
     PG_RETURN_NULL();
-  if (s1 && ! s2)
-    PG_RETURN_SPAN_P(s1);
-  if (s2 && ! s1)
-    PG_RETURN_SPAN_P(s2);
-  /* Non-strict union */
-  PG_RETURN_SPAN_P(super_union_span_span(s1, s2));
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************/

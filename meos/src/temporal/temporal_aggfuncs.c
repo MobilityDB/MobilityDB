@@ -1782,10 +1782,10 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for append temporal instant aggregate
  * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] inst Temporal value to aggregate
+ * @param[in] inst Temporal instant to aggregate
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance
  * @param[in] maxt Maximum duration, may be `NULL`
@@ -1798,6 +1798,9 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
   /* Null state: create a new temporal sequence with the instant */
   if (! state)
   {
+    /* The constructor ensures the validity of the instant and of the
+     * interpolation, temporal_append_tinstant those of the next instants */
+    VALIDATE_NOT_NULL(inst, NULL);
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
@@ -1816,18 +1819,21 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
  * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] seq Temporal value to aggregate
+ * @param[in] seq Temporal sequence to aggregate
  * @csqlfn #Temporal_app_tseq_transfn()
  */
 Temporal *
 temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 {
-  /* Null state: create a new temporal sequence with the sequence */
+  /* Null state: create a new temporal sequence set with the sequence */
   if (! state)
   {
+    /* The constructor ensures the validity of the sequence,
+     * temporal_append_tsequence those of the next sequences */
+    VALIDATE_NOT_NULL(seq, NULL);
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */

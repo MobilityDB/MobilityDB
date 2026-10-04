@@ -103,7 +103,9 @@ set_extent_transfn(Span *state, const Set *s)
  * @brief Transition function for span extent aggregate of spans
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Span to aggregate, may be `NULL`
- * @csqlfn #Span_extent_transfn()
+ * @note The function is also the combine function of the aggregate, the
+ * span to aggregate being the state of another partial aggregation
+ * @csqlfn #Span_extent_transfn(), #Span_extent_combinefn()
  */
 Span *
 span_extent_transfn(Span *state, const Span *s)

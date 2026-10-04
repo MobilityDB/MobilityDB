@@ -733,6 +733,12 @@ WITH temp(inst) AS (
   SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tfloat '[1@2001-01-01, 2@2001-01-02]')) t(temp);
+ERROR:  Input values must be temporal instants
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tint '1@2001-01-01'), (tint '2@2001-01-02')) t(temp);
+ERROR:  The temporal type cannot have linear interpolation
 WITH temp(inst) AS (
   SELECT tint '1@2001-01-01' UNION
   SELECT tint '2@2001-01-02' UNION
