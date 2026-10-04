@@ -1,44 +1,33 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch15.html" title="Chapter 15. JSON Types in MobilityDB"><link rel="prev" href="ch15s11.html" title="Bounding Box Operations"><link rel="next" href="ch15s13.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s11.html">Prev</a> </td><th width="60%" align="center">Chapter 15. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_comp"></a><a class="indexterm" name="id12835"></a><a class="indexterm" name="id12838"></a><a class="indexterm" name="id12841"></a><a class="indexterm" name="id12844"></a><a class="indexterm" name="id12847"></a><a class="indexterm" name="id12850"></a><p>Traditional comparisons</p><pre class="programlisting">
-tjsonb {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tjsonb → boolean
-</pre><pre class="programlisting">
-SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02),
-  [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
-   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' =
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- true
-SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' &lt;&gt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- false
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch15.html" title="Chapter 15. JSON Types in MobilityDB"><link rel="prev" href="ch15s11.html" title="Restrictions"><link rel="next" href="ch15s13.html" title="Comparisons"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s11.html">Prev</a> </td><th width="60%" align="center">Chapter 15. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_topo"></a><a class="indexterm" name="id13033"></a><a class="indexterm" name="id13036"></a><a class="indexterm" name="id13039"></a><a class="indexterm" name="id13042"></a><a class="indexterm" name="id13045"></a><p>Topological operators</p><pre class="programlisting">
+{tjsonb,tstzspan} {&amp;&amp;, &lt;@#, #@&gt;, ~=, -|-} {tjsonb,tstzspan} → boolean
+</pre><p>The temporal contains and contained operator are marked with a <code class="varname">#</code> to distinguish them from the corresponding JSONB operators.</p><pre class="programlisting">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]' &lt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- false
-</pre></li><li class="listitem"><a name="tjsonb_ever_always"></a><a class="indexterm" name="id12857"></a><a class="indexterm" name="id12860"></a><p>Ever and always comparisons</p><pre class="programlisting">
-{jsonb,tjsonb} {?=, %=} {jsonb,tjsonb} → boolean
-</pre><pre class="programlisting">
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' ?= jsonb '{"vehicleId": 1,
-  "location": "Point(1 1)"}';
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' &amp;&amp;
+  tstzspan '[2001-01-01, 2001-03-01]';
 -- true
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' %= jsonb '{"vehicleId": 1,
-  "location": "Point(1 1)"}';
--- false
-</pre></li><li class="listitem"><a name="tjsonb_tcomp"></a><a class="indexterm" name="id12867"></a><p>Temporal comparisons</p><pre class="programlisting">
-{jsonb,tjsonb} {#=, #&lt;&gt;} {jsonb,tjsonb} → tbool
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' #@&gt;
+  timestamptz '[2001-01-02]'::tstzspan;
+-- true
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' -|-
+  tjsonb '({"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02,
+    {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-03]';
+-- true
+</pre></li><li class="listitem"><a name="tjsonb_pos"></a><a class="indexterm" name="id13054"></a><p>Position operators</p><pre class="programlisting">
+{tjsonb,tstzspan} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tjsonb,tstzspan} → boolean
 </pre><pre class="programlisting">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #= jsonb '{"vehicleId": 1,
-  "location": "Point(1 1)"}';
--- [t@2001-01-01, t@2001-01-03)
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #&lt;&gt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)';
--- [f@2001-01-01, f@2001-01-03)
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s13.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Bounding Box Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Aggregations</td></tr></table></div></body></html>
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' &lt;&lt;# tstzspan '[2001-01-01,
+  2001-03-01]';
+-- false
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]' #&gt;&gt;
+  timestamptz '[2001-01-01]'::tstzspan;
+-- true
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]' #&amp;&gt;
+  tjsonb '[{"vehicleId": 1, "location": "Point(2 2)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-03]';
+-- true
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s13.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Restrictions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Comparisons</td></tr></table></div></body></html>

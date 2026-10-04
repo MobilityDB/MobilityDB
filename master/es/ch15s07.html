@@ -1,13 +1,27 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s06.html" title="Conversiones"><link rel="next" href="ch15s08.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_getValues"></a><a class="indexterm" name="id11920"></a><p>Devuelve los valores</p><pre class="programlisting">
-getValues(tjsonb) → jsonbset
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversiones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s06.html" title="Constructores"><link rel="next" href="ch15s08.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversiones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_conversions"></a>Conversiones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_tstzspan"></a><a class="indexterm" name="id12124"></a><p>Convierte un JSONB temporal a un <code class="varname">tstzspan</code></p><pre class="programlisting">
+tjsonb::tstzspan
 </pre><pre class="programlisting">
-SELECT getValues(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]');
--- {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"}
-</pre></li><li class="listitem"><a name="tjsonb_valueAtTimestamp"></a><a class="indexterm" name="id11927"></a><p>Devuelve el valor en una marca de tiempo</p><pre class="programlisting">
-valueAtTimestamp(tjsonb,timestamptz) → jsonb
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::tstzspan;
+-- [2001-01-01, 2001-01-02]
+</pre></li><li class="listitem"><a name="tjsonb_text"></a><a class="indexterm" name="id12132"></a><p>Convierte entre un JSONB temporal y un texto</p><pre class="programlisting">
+{tjsonb,text}::{text,tjsonb}
 </pre><pre class="programlisting">
-SELECT valueAtTimestamp(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]', '2001-01-02');
--- {"location": "Point(2 2)", "vehicleId": 1}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversiones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>
+SELECT (text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
+SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::text);
+-- text
+</pre></li><li class="listitem"><a name="tjsonb_ttext"></a><a class="indexterm" name="id12139"></a><p>Convierte entre un JSONB temporal y un texto temporal</p><pre class="programlisting">
+{tjsonb,ttext}::{ttext,tjsonb}
+</pre><pre class="programlisting">
+SELECT (ttext '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
+SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::ttext);
+-- ttext
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accesores</td></tr></table></div></body></html>

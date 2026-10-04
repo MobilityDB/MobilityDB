@@ -1,7 +1,39 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Validez de los valores JSONB temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s02.html" title="Valores JSONB temporales"><link rel="next" href="ch15s04.html" title="Entrada y salida"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Validez de los valores JSONB temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_validity"></a>Validez de los valores JSONB temporales</h2></div></div></div><p>Los valores JSONB temporales deben satisfacer las restricciones especificadas en <a class="xref" href="ch04s03.html" title="Validez de los tipos temporales">“Validez de los tipos temporales”</a> para que estén bien definidos. Se genera un error siempre que no se satisfaga alguna de estas restricciones. A continuación se dan ejemplos de valores incorrectos.</p><pre class="programlisting">
--- Null values are not allowed
-SELECT tjsonb 'NULL@2001-01-01 08:05:00';
-SELECT tjsonb 'Point(0 0)@NULL';
--- Base type is not a JSONB
-SELECT tjsonb 'Point(0 0)@2001-01-01 08:05:00';
-</pre><p>A continuación damos las funciones y operadores para JSONB temporal. La mayoría de las funciones y operadores para tipos temporales descritos en los capítulos anteriores pueden aplicarse a los tipos JSONB temporales. Por lo tanto, en las firmas de las funciones dadas anteriormente, la notación <code class="varname">base</code> representa un valor <code class="varname">jsonb</code> y la notación <code class="varname">ttype</code> representa un valor <code class="varname">tjsonb</code>. Para evitar redundancia, solo presentamos a continuación algunos ejemplos de estas funciones y operadores para valores JSONB temporales.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s02.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s04.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Valores JSONB temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Entrada y salida</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Valores JSONB temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s02.html" title="Operaciones sobre conjuntos JSONB"><link rel="next" href="ch15s04.html" title="Validez de los valores JSONB temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Valores JSONB temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_jsonb"></a>Valores JSONB temporales</h2></div></div></div><p>El tipo temporal <code class="varname">tjsonb</code> permite representar la evolución en el tiempo de valores <code class="varname">jsonb</code>. Como todos los tipos temporales, viene en tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores <code class="varname">tjsonb</code> en estos subtipos.</p><pre class="programlisting">
+-- Instant
+SELECT tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+-- "{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01
+SELECT tjsonb '{{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02}';
+/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02} */
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]';
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
+SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02],
+  [{"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
+  {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-04]}';
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02], ["{\"location\": \"Point(2 2)\",
+   \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(3 3)\", \"vehicleId\":
+   1}"@2001-01-04]} */
+</pre><p>Como puede verse arriba, para el subtipo <code class="varname">Instant</code> necesitamos encerrar el valor JSONB entre comillas y escapar las comillas internas; de lo contrario, la llave de apertura del valor JSONB se interpretaría como el comienzo de un subtipo <code class="varname">Sequence</code> con interpolación discreta.</p><p>El tipo <code class="varname">tjsonb</code> acepta modificadores de tipo (o <code class="varname">typmod</code> en la terminología de PostgreSQL) para especificar el subtipo. Los valores posibles para el subtipo son <code class="varname">Instant</code>, <code class="varname">Sequence</code> y <code class="varname">SequenceSet</code>. El argumento es opcional y, si no se especifica para una columna, se permiten valores de cualquier subtipo.</p><pre class="programlisting">
+SELECT tjsonb(Instant) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+-- "{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01
+SELECT tjsonb(Sequence) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+</pre><p>Los valores JSONB temporales de subtipo secuencia o conjunto de secuencias se convierten a una forma normal de modo que valores equivalentes tengan representaciones idénticas. Para ello, los valores de instantes consecutivos se fusionan cuando es posible. Tres valores de instantes consecutivos pueden fusionarse en dos si sus valores JSONB son iguales. Asimismo, dos secuencias consecutivas que son adyacentes y tienen el mismo valor JSONB de final e inicio pueden fusionarse en una sola. A continuación se dan ejemplos de transformación a una forma normal.</p><pre class="programlisting">
+SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]');
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-03] */
+SELECT asText(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03],
+  ({"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-04]}');
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(2 2)\",
+   \"vehicleId\": 1}"@2001-01-04]} */
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s02.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s04.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones sobre conjuntos JSONB </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Validez de los valores JSONB temporales</td></tr></table></div></body></html>
