@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_collect_line_line_intersections</title>
+<title>MobilityDB: buffer_union_arrangement</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -121,7 +121,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2f5a5eba9d3a7f14d4bb838e5d7b3711.html#a2f5a5eba9d3a7f14d4bb838e5d7b3711">buffer_collect_boundary_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa34922fda694a35151085ad9ccc848d.html#aaa34922fda694a35151085ad9ccc848d">buffer_collect_edge_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4af7bb9c11927f8c8903787838f6ab9f.html#a4af7bb9c11927f8c8903787838f6ab9f">buffer_collect_line_arc_intersections</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a9aa7fc166227907f22c71c043125e135.html#a9aa7fc166227907f22c71c043125e135">buffer_collect_line_line_intersections</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9aa7fc166227907f22c71c043125e135.html#a9aa7fc166227907f22c71c043125e135">buffer_collect_line_line_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad1675f9f487ab2da0362c154c162c987.html#ad1675f9f487ab2da0362c154c162c987">buffer_component_extent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab8994696d4b327399bf5417e55d8525f.html#ab8994696d4b327399bf5417e55d8525f">buffer_components_relation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa7aede8ada7a7b7872c9ccd71911d79d.html#aa7aede8ada7a7b7872c9ccd71911d79d">buffer_containment_epsilon</a></td></tr>
@@ -236,7 +236,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7f005f0cc523cf1a017c6c13bd397d9a.html#a7f005f0cc523cf1a017c6c13bd397d9a">buffer_split_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a877f6ffffbeccf2e5c5e6023f7ac6177.html#a877f6ffffbeccf2e5c5e6023f7ac6177">buffer_sweep_edge_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a97d03644edf555b2ac08506acb0c0d80.html#a97d03644edf555b2ac08506acb0c0d80">buffer_triangle_as_poly</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad1b384a770fd04fa72e0f7f57942a9d0.html#ad1b384a770fd04fa72e0f7f57942a9d0">buffer_union_arrangement</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ad1b384a770fd04fa72e0f7f57942a9d0.html#ad1b384a770fd04fa72e0f7f57942a9d0">buffer_union_arrangement</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab2b3f9b9cf5c57d7d9641d8432b1361a.html#ab2b3f9b9cf5c57d7d9641d8432b1361a">buffer_union_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1371febf4b1f4683a44e5f33437514f6.html#a1371febf4b1f4683a44e5f33437514f6">buffer_union_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae155be4d88548e58a02dd16478a8c702.html#ae155be4d88548e58a02dd16478a8c702">buffer_values_equal</a></td></tr>
@@ -283,8 +283,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9aa7fc166227907f22c71c043125e135" name="a9aa7fc166227907f22c71c043125e135"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9aa7fc166227907f22c71c043125e135">&#9670;&#160;</a></span>buffer_collect_line_line_intersections()</h2>
+<a id="ad1b384a770fd04fa72e0f7f57942a9d0" name="ad1b384a770fd04fa72e0f7f57942a9d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1b384a770fd04fa72e0f7f57942a9d0">&#9670;&#160;</a></span>buffer_union_arrangement()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -293,22 +293,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void buffer_collect_line_line_intersections </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_union_arrangement </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>e1</em>, </td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> **&#160;</td>
+          <td class="paramname"><em>surfaces</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>e2</em>, </td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>points</em>&#160;</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -323,7 +323,17 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Collect intersections between two straight buffer edges. </p>
+<p>Return the union of surfaces read in one arrangement of their edges. </p>
+<p ><a class="el" href="geo__buffer_8c_ab2b3f9b9cf5c57d7d9641d8432b1361a.html#ab2b3f9b9cf5c57d7d9641d8432b1361a" title="Merge the buffers of the components of a geometry into their union.">buffer_union_components()</a> merges one surface at a time into the union it accumulates, and that union carries the vertices the merges construct where two boundaries cross. Such a vertex is rounded to a double, so it lies NEAR the edge of another surface rather than on it, and an edge of a later surface running along that one is then neither found to coincide with it nor cut where it should be: the pieces overlap, and the rings they form do not close. Here every node is computed once, from the edges the surfaces carry, as <a class="el" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282" title="Answer a Boolean operation on two areal geometries while preserving circular arcs.">buffer_areal_overlay()</a> computes the nodes of two of them, and every surface's boundary is cut at all of them.</p>
+<p >A piece of one surface bounds the union where it lies outside every other surface, and does not where one of them covers it. A piece lying on the boundary of another surface is placed by the side each interior occupies, as <a class="el" href="geo__buffer_8c_a5fc62c94057739742cdd48e7c656392d.html#a5fc62c94057739742cdd48e7c656392d" title="Resolve coincident pieces belonging to one buffer.">buffer_resolve_coincident_piece()</a> places it for two. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">surfaces</td><td>Surfaces, held in place </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of surfaces, at least two </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The union, or <code>NULL</code> where a node cannot be collected, a shared piece does not resolve, or the pieces kept do not close into rings </dd></dl>
 
 </div>
 </div>
