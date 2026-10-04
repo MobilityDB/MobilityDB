@@ -54,6 +54,17 @@ SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{
 SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
 SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
 
+-- A value that is not NULL is set, as jsonbsetSet sets it
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb) =
+  jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL);
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL, true, 'delete_key');
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], NULL, true, 'delete_key');
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+
 SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
 SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
 

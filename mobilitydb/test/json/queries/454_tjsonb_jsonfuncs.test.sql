@@ -80,6 +80,13 @@ SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02
 SELECT tjsonbInsert(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
 SELECT tjsonbInsert(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb, true);
 SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
+-- A value that is not NULL is set, as tjsonbSet sets it
+SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
+SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb) =
+  tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
+SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], NULL);
+SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
+  {"speed": 20}@2001-01-02]', ARRAY['units'], NULL, true, 'delete_key');
 
 -------------------------------------------------------------------------------
 

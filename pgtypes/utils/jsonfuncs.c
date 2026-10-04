@@ -2825,7 +2825,8 @@ Jsonb *
 pg_jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len,
   const Jsonb *newjb, bool create, const text *handle_null)
 {
-  if (! jb || ! path_elems || ! path_len)
+  /* if the base doc is null, or the path is, return null */
+  if (! jb || (! path_elems && path_len > 0))
     return NULL;
 
   /* could happen if they pass in an explicit NULL */
@@ -2838,7 +2839,7 @@ pg_jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len,
   }
 
   /* if the new value isn't an SQL NULL just call jsonb_set */
-  if (! path_elems)
+  if (newjb)
     return pg_jsonb_set(jb, path_elems, path_len, newjb, create);
 
   char *handle_val = pg_text_to_cstring(handle_null);

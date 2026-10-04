@@ -75,6 +75,45 @@ SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\":
  {"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 30, \"units\": \"km/h\"}"}
 (1 row)
 
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+   jsonbsetsetlax   
+--------------------
+ {"{\"speed\": 5}"}
+(1 row)
+
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb) =
+  jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}"}', ARRAY['speed'], '5'::jsonb);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL);
+    jsonbsetsetlax     
+-----------------------
+ {"{\"speed\": null}"}
+(1 row)
+
+SELECT jsonbsetSetLax(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'], NULL, true, 'delete_key');
+ jsonbsetsetlax 
+----------------
+ {"{}"}
+(1 row)
+
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], NULL, true, 'delete_key');
+             jsonbsetsetlax             
+----------------------------------------
+ {"{\"speed\": 10}", "{\"speed\": 20}"}
+(1 row)
+
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
+  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+                              jsonbsetsetlax                              
+--------------------------------------------------------------------------
+ {"{\"speed\": 10, \"units\": null}", "{\"speed\": 20, \"units\": null}"}
+(1 row)
+
 SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
               jsonbsetinsert              
 ------------------------------------------

@@ -228,10 +228,10 @@ SELECT jsonbset '{"{\"speed\": 10}",
 				<para>Asignación en un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetSet(jsonbset,path text[],val jsonb,create_missing boolean=true) → jsonbset
-jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
-  handle_null text) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],val jsonb,create_missing boolean=true,
+  handle_null text='use_json_null') → jsonbset
 </programlisting>
-				<para>Devuelve el valor <varname>jsonbset</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>jsonbsetSetLax</varname> se comporta de forma idéntica a <varname>jsonbsetSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>Devuelve el valor <varname>jsonbset</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>jsonbsetSetLax</varname> se comporta de forma idéntica a <varname>jsonbsetSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_target'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_target'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
@@ -243,7 +243,7 @@ SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
   '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
 -- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
 SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
-  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+  ARRAY['units'], NULL, true, 'delete_key');
 -- {"{\"speed\": 10}", "{\"speed\": 20}"}
 </programlisting>
 			</listitem>
@@ -1032,9 +1032,9 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tjsonbSet(tjsonb,path text[],val jsonb,create_missing boolean=true) → tjsonb
 tjsonbSetLax(tjsonb,path text[],val jsonb,create_missing boolean=true,
-  handle_null text) → tjsonb
+  handle_null text='use_json_null') → tjsonb
 </programlisting>
-				<para>Devuelve el valor <varname>tjsonb</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>tjsonbSetLax</varname> se comporta de forma idéntica a <varname>tjsonbSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>Devuelve el valor <varname>tjsonb</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>tjsonbSetLax</varname> se comporta de forma idéntica a <varname>tjsonbSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_target'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_target'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
@@ -1048,7 +1048,7 @@ SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 /* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
    \"mi/h\"}"@2001-01-02]} */
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
-  {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+  {"speed": 20}@2001-01-02]', ARRAY['units'], NULL, true, 'delete_key');
 -- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 </programlisting>
 			</listitem>
