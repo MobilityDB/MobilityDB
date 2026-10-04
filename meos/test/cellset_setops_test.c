@@ -115,6 +115,12 @@ int main(void)
   Set *qone = quadbin_to_set(qa);
   Set *qtwo = quadbinset_in("{480fffffffffffff, 48427fffffffffff}");
   CHECK_SETOPS(quadbin, qone, qtwo, qa, qb, intset);
+  /* The union aggregate of the two cells is the set of the two cells */
+  Set *qagg = quadbin_union_transfn(NULL, qa);
+  qagg = quadbin_union_transfn(qagg, qb);
+  qagg = set_union_finalfn(qagg);
+  assert(qagg && set_eq(qagg, qtwo));
+  free(qagg);
   free(qone); free(qtwo);
 
   /* S2 */
@@ -123,6 +129,12 @@ int main(void)
   Set *sone = s2cell_to_set(sa);
   Set *stwo = s2cellset_in("{47c3c3, 54b5c9}");
   CHECK_SETOPS(s2cell, sone, stwo, sa, sb, intset);
+  /* The union aggregate of the two cells is the set of the two cells */
+  Set *sagg = s2cell_union_transfn(NULL, sa);
+  sagg = s2cell_union_transfn(sagg, sb);
+  sagg = set_union_finalfn(sagg);
+  assert(sagg && set_eq(sagg, stwo));
+  free(sagg);
   free(sone); free(stwo);
 
   /* H3: the cells are the values of the set that reads them */
@@ -131,6 +143,13 @@ int main(void)
   assert(hv && count == 2);
   Set *hone = h3index_to_set(hv[0]);
   CHECK_SETOPS(h3index, hone, htwo, hv[0], hv[1], intset);
+  /* The union aggregate of the two cells is the set of the two cells */
+  Set *hagg = h3index_union_transfn(NULL, hv[1]);
+  hagg = h3index_union_transfn(hagg, hv[0]);
+  hagg = set_union_finalfn(hagg);
+  assert(hagg && set_eq(hagg, htwo));
+  free(hagg);
+  printf("the union aggregates of quadbin, S2 and H3 cells answer their sets\n");
   free(hone); free(htwo); free(hv);
 
   free(intset);

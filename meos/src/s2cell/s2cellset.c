@@ -425,3 +425,26 @@ minus_set_s2cell(const Set *s, S2CellId cell)
   VALIDATE_S2CELLSET(s, NULL);
   return minus_set_value(s, S2CellGetDatum(cell));
 }
+
+/*****************************************************************************
+ * Aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_set_setops
+ * @brief Transition function for set union aggregate of S2 cells
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] cell Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+s2cell_union_transfn(Set *state, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_S2CELLSET))
+    return NULL;
+  return value_union_transfn(state, S2CellGetDatum(cell), T_S2CELL);
+}
+
+/*****************************************************************************/

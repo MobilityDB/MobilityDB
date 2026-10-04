@@ -778,3 +778,26 @@ minus_set_h3index(const Set *s, H3Index cell)
   VALIDATE_H3INDEXSET(s, NULL);
   return minus_set_value(s, H3IndexGetDatum(cell));
 }
+
+/*****************************************************************************
+ * Aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_setops
+ * @brief Transition function for set union aggregate of H3 cells
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] cell Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+h3index_union_transfn(Set *state, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_H3INDEXSET))
+    return NULL;
+  return value_union_transfn(state, H3IndexGetDatum(cell), T_H3INDEX);
+}
+
+/*****************************************************************************/

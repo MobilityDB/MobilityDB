@@ -235,6 +235,10 @@ extern Set *minus_set_quadbin(const Set *s, Quadbin cell);
 extern Set *union_quadbin_set(Quadbin cell, const Set *s);
 extern Set *union_set_quadbin(const Set *s, Quadbin cell);
 
+/* Aggregate functions of `quadbinset` */
+
+extern Set *quadbin_union_transfn(Set *state, Quadbin cell);
+
 /*****************************************************************************
  * Temporal `tquadbin` inheritance — PENDING IMPLEMENTATION.
  *
