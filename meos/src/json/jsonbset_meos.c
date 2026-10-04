@@ -49,6 +49,7 @@
  * @brief Transition function for set union aggregate of JSONB values
  * @param[in,out] state Current aggregate state
  * @param[in] jb Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 jsonb_union_transfn(Set *state, const Jsonb *jb)

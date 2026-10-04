@@ -71,6 +71,7 @@
  * @brief Transition function for set union aggregate of integers
  * @param[in,out] state Current aggregate state
  * @param[in] i Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
@@ -87,6 +88,7 @@ int_union_transfn(Set *state, int32 i)
  * @brief Transition function for set union aggregate of big integers
  * @param[in,out] state Current aggregate state
  * @param[in] i Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
@@ -103,6 +105,7 @@ bigint_union_transfn(Set *state, int64 i)
  * @brief Transition function for set union aggregate of floats
  * @param[in,out] state Current aggregate state
  * @param[in] d Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
@@ -119,6 +122,7 @@ float_union_transfn(Set *state, double d)
  * @brief Transition function for set union aggregate of dates
  * @param[in,out] state Current aggregate state
  * @param[in] d Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
@@ -135,6 +139,7 @@ date_union_transfn(Set *state, DateADT d)
  * @brief Transition function for set union aggregate of timestamptz
  * @param[in,out] state Current aggregate state
  * @param[in] t Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
@@ -151,6 +156,7 @@ timestamptz_union_transfn(Set *state, TimestampTz t)
  * @brief Transition function for set union aggregate of texts
  * @param[in,out] state Current aggregate state
  * @param[in] txt Value
+ * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
  */
 Set *
