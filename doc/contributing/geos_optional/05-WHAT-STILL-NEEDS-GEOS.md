@@ -250,7 +250,7 @@ raises "lwcollection_construct: mixed dimension geometries: 0/2". Under the defa
 the process ends, and in PostgreSQL the query fails. The native code runs before the GEOS code, so
 this happens in every build. Of 1500 arrays of `POLYGON Z` and `TRIANGLE Z`, the union declines 881
 ([`tools/results/aunion_z.master_path.txt`](tools/results/aunion_z.master_path.txt)).
-MobilityDB #2954 reads a geometry carrying Z or M as its projection, the way `geom_unary_union`
+MobilityDB #2954, merged as `29f082c762`, reads a geometry carrying Z or M as its projection, the way `geom_unary_union`
 already does, and the array union reads the ordinates back onto the answer. With it all 1500 answer,
 the 619 answered before are unchanged byte for byte, CGAL agrees with every answer, and the Z of
 every vertex agrees with the lift rule judged by [`tools/cgal_zlift.cpp`](tools/cgal_zlift.cpp)
@@ -276,11 +276,20 @@ scale and does not close it; one arrangement of every member's edges does. In 15
 decline; [`tools/shrink.py`](tools/shrink.py) reduces them to three or four members each, T1, T2
 and T3 being one of them, and the other two are not traced
 ([`tools/results/aunion_flat.master_path.txt`](tools/results/aunion_flat.master_path.txt)).
+Traced in a debugger on T1, T3, T2, the selected pieces of the second merge overlap along that line
+and the crossing at y = 3 is computed twice, as 3 and as 3.0000000000000004, so the ring does not
+close. A union that collects every node once over every pair of members, from the edges they carry,
+answers all 1500 arrays, CGAL agreeing with each, and runs only where the pairwise merge declines,
+so the 1497 arrays that merge answers keep its answer (plan step 4).
 
 **A hole spelled as a shell that touches itself.** 76 of the 1500 flat answers write a hole that
 touches the shell as one ring that passes through the same vertex twice. The point set is right:
 CGAL reads the ring as the simple loops it is made of and agrees. The spelling is not a valid OGC
-polygon, which writes such a hole as a ring of its own.
+polygon, which writes such a hole as a ring of its own. The ring walk chooses its way at a node
+several pieces share by the side of each piece the answer lies on, and the overlay records that
+side for a piece two boundaries share by reading eight bytes past it: valgrind reports 49 such
+reads over the unions of 1500 pairs. MobilityDB #2959, merged as `42ebd6312b`, records the side, and 8 of the 76 answers
+then write the hole as a ring of its own; 68 still spell it as a shell touching itself.
 
 ## 5.9 What this means
 
@@ -293,7 +302,7 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
    in the unary union of a collection alike.
 2. **The overlay of a collection answers** the 409 and 953 calls of §5.5 that remain after that,
    or the sweep is re-run to see how many remain.
-3. **The native union answers the arrays of §5.8**: surfaces carrying Z (MobilityDB #2954), and
+3. **The native union answers the arrays of §5.8**: surfaces carrying Z (merged as MobilityDB #2954), and
    three surfaces whose order leaves a constructed vertex near another member's edge.
 4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
    unseen.
