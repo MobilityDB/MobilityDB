@@ -172,9 +172,17 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     }
     case T_BOOL:
     {
+      /* A failed parse is told by the error number, which #meos_errno_reset
+       * clears first, as for T_INT4 */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       bool b = bool_in(str);
       if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = BoolGetDatum(b);
       return true;
     }
@@ -253,9 +261,17 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
 #if H3
     case T_H3INDEX:
     {
+      /* A failed parse is told by the error number, which #meos_errno_reset
+       * clears first, as for T_INT4 */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       H3Index cell = meos_h3index_in(str);
       if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = Int64GetDatum((int64) cell);
       return true;
     }
