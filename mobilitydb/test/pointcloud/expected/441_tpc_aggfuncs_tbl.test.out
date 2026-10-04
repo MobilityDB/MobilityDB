@@ -146,3 +146,26 @@ SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
  
 (1 row)
 
+DROP TABLE IF EXISTS tbl_extent_state;
+NOTICE:  table "tbl_extent_state" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_extent_state AS
+SELECT extent(temp) AS b, extent(temp) AS b0
+FROM (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1) t;
+SELECT 1
+SELECT tpc_extent_transfn(b, (SELECT temp FROM tbl_tpcpoint
+  WHERE temp IS NOT NULL ORDER BY k DESC LIMIT 1)) ~= b0
+FROM tbl_extent_state;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT b ~= b0 FROM tbl_extent_state;
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE tbl_extent_state;
+DROP TABLE

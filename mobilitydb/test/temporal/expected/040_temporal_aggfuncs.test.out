@@ -1140,3 +1140,30 @@ SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
         3000
 (1 row)
 
+DROP TABLE IF EXISTS tbl_extent_state;
+NOTICE:  table "tbl_extent_state" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_extent_state(s tstzspan, s0 tstzspan, b tbox, b0 tbox);
+CREATE TABLE
+INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]',
+  tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
+  tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
+INSERT 0 1
+SELECT temporal_extent_transfn(s, tbool 't@2001-02-01'),
+  temporal_extent_combinefn(s, tstzspan '[2001-03-01, 2001-03-02]'),
+  tnumber_extent_transfn(b, tfloat '100@2001-02-01')
+FROM tbl_extent_state;
+                   temporal_extent_transfn                    |                  temporal_extent_combinefn                   |                               tnumber_extent_transfn                                
+--------------------------------------------------------------+--------------------------------------------------------------+-------------------------------------------------------------------------------------
+ [Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST] | [Mon Jan 01 00:00:00 2001 PST, Fri Mar 02 00:00:00 2001 PST] | TBOXFLOAT XT([1, 100],[Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT s = s0, b = b0 FROM tbl_extent_state;
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+DROP TABLE tbl_extent_state;
+DROP TABLE

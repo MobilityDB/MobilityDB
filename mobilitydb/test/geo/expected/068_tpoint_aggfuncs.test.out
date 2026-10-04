@@ -260,3 +260,26 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
        36900
 (1 row)
 
+DROP TABLE IF EXISTS tbl_extent_state;
+NOTICE:  table "tbl_extent_state" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_extent_state(b stbox, b0 stbox);
+CREATE TABLE
+INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])',
+  stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
+INSERT 0 1
+SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01')
+FROM tbl_extent_state;
+                                 tspatial_extent_transfn                                  
+------------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(100,100)),[Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT b = b0 FROM tbl_extent_state;
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE tbl_extent_state;
+DROP TABLE
