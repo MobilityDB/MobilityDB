@@ -2784,3 +2784,20 @@ SELECT merge(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01') = t
  t
 (1 row)
 
+SELECT extent(temp) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
+  (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]'),
+  (NULL::tcbuffer)) t(temp);
+                                            extent                                            
+----------------------------------------------------------------------------------------------
+ STBOX XT(((0.5,0.5),(3.4,3.4)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
+(1 row)
+
+SELECT extent(temp) = extent(temp::stbox) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
+  (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]')) t(temp);
+ ?column? 
+----------
+ t
+(1 row)
+

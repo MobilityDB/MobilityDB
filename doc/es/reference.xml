@@ -2383,6 +2383,9 @@
 			<title>Agregaciones</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="tcbuffer_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcbuffer_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
 				</listitem>
 				<listitem>

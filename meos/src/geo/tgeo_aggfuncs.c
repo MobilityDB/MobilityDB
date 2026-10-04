@@ -46,6 +46,8 @@
 #include "temporal/skiplist.h"
 #include "temporal/temporal_aggfuncs.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
+#include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -279,6 +281,40 @@ tspatial_extent_transfn(STBox *state, const Temporal *temp)
   STBox b;
   tspatial_set_stbox(temp, &b);
   stbox_expand(&b, state);
+  return state;
+}
+
+/**
+ * @ingroup meos_geo_agg
+ * @brief Transition function for temporal extent aggregate of spatiotemporal
+ * boxes
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] box Spatiotemporal box to aggregate, may be `NULL`
+ * @note The function is also the combine function of the extent aggregates
+ * of spatiotemporal boxes and spatiotemporal values, the box to aggregate
+ * being the state of another partial aggregation
+ * @csqlfn #Stbox_extent_transfn(), #Stbox_extent_combinefn()
+ */
+STBox *
+stbox_extent_transfn(STBox *state, const STBox *box)
+{
+  /* Can't do anything with null inputs */
+  if (! state && ! box)
+    return NULL;
+  /* Null state and non-null box, return a copy of the box */
+  if (! state)
+    return stbox_copy(box);
+  /* Non-null state and null box, return the state */
+  if (! box)
+    return state;
+
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_stbox(state, box) ||
+      ! ensure_same_dimensionality(state->flags, box->flags))
+    return NULL;
+
+  /* Both state and box are not null */
+  stbox_expand(box, state);
   return state;
 }
 

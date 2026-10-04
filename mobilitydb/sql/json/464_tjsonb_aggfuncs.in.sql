@@ -41,7 +41,7 @@ CREATE FUNCTION temporal_extent_transfn(tstzspan, tjsonb)
 CREATE AGGREGATE extent(tjsonb) (
   SFUNC = temporal_extent_transfn,
   STYPE = tstzspan,
-  COMBINEFUNC = temporal_extent_combinefn,
+  COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
 

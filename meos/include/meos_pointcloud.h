@@ -626,6 +626,12 @@ extern bool same_tpointcloud_tpcbox(const Temporal *temp,
   const TPCBox *box);
 extern bool same_tpointcloud_tpointcloud(const Temporal *temp1,
   const Temporal *temp2);
+
+/* Aggregate functions */
+
+extern TPCBox *tpc_extent_transfn(TPCBox *state, const Temporal *temp);
+extern TPCBox *tpcbox_extent_transfn(TPCBox *state, const TPCBox *box);
+
 /*****************************************************************************
  * tpcpoint spatial predicates
  *****************************************************************************/

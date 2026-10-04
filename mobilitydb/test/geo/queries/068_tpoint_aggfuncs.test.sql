@@ -225,7 +225,9 @@ DROP TABLE IF EXISTS tbl_extent_state;
 CREATE TABLE tbl_extent_state(b stbox, b0 stbox);
 INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])',
   stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
-SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01')
+SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01'),
+  stbox_extent_transfn(b, stbox 'STBOX XT(((200, 200),(201, 201)),[2001-03-01, 2001-03-02])'),
+  stbox_extent_combinefn(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
 SELECT b = b0 FROM tbl_extent_state;
 DROP TABLE tbl_extent_state;

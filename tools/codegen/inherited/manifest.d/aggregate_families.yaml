@@ -27,14 +27,12 @@ aggregate_families:
   - fns:
     - {sig: "temporal_extent_transfn(tstzspan, tbool)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "temporal_extent_transfn(tstzspan, ttext)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false}
-    - {sig: "temporal_extent_combinefn(tstzspan, tstzspan)", ret: "tstzspan", sym: "Span_extent_combinefn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tbool) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = temporal_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(ttext) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = temporal_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tbool) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(ttext) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tnumber_extent_transfn(tbox, tint)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "tnumber_extent_transfn(tbox, tbigint)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false}
     - {sig: "tnumber_extent_transfn(tbox, tfloat)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false}
-    - {sig: "tnumber_extent_combinefn(tbox, tbox)", ret: "tbox", sym: "Tbox_extent_combinefn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tint) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tnumber_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tbigint) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tnumber_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tfloat) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tnumber_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tint) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tbigint) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tfloat) (\n  SFUNC = tnumber_extent_transfn,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "taggstate_serialize(internal)", ret: "bytea", sym: "Taggstate_serialize"}
   - lit: "\n"
@@ -268,6 +266,9 @@ aggregate_families:
   blocks:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal circular buffers\n */\n\n"
   - fns:
+    - {sig: "tspatial_extent_transfn(stbox, tcbuffer)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
+  - lit: "\nCREATE AGGREGATE extent(tcbuffer) (\n  SFUNC = tspatial_extent_transfn,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - fns:
     - {sig: "tCountTransition(internal, tcbuffer)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\nCREATE AGGREGATE tCount(tcbuffer) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
   - fns:
@@ -446,7 +447,7 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal JSONB\n */\n\n"
   - fns:
     - {sig: "temporal_extent_transfn(tstzspan, tjsonb)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE extent(tjsonb) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = temporal_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tjsonb) (\n  SFUNC = temporal_extent_transfn,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tjsonb)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
@@ -483,13 +484,14 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for the pgPointCloud temporal types\n */\n\n"
   - fns:
     - {sig: "tpcbox_extent_transfn(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_transfn", strict: false}
+    - {sig: "tpcbox_extent_combinefn(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tpc_extent_transfn(tpcbox, tpcpoint)", ret: "tpcbox", sym: "Tpc_extent_transfn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tpc_extent_transfn(tpcbox, tpcpatch)", ret: "tpcbox", sym: "Tpc_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tpcbox) (\n  SFUNC = tpcbox_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_transfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpoint) (\n  SFUNC = tpc_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_transfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpatch) (\n  SFUNC = tpc_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_transfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Temporal count and window count\n *****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tpcbox) (\n  SFUNC = tpcbox_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpoint) (\n  SFUNC = tpc_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpatch) (\n  SFUNC = tpc_extent_transfn,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Temporal count and window count\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tpcpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
     - {sig: "tCountTransition(internal, tpcpatch)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}

@@ -2391,6 +2391,9 @@
 				<title>Aggregations</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="tcbuffer_extent"><varname>extent</varname></link>: Bounding box extent</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tcbuffer_tCount"><varname>tCount</varname></link>: Temporal count</para>
 					</listitem>
 					<listitem>

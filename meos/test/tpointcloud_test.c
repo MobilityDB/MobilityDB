@@ -138,6 +138,16 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* The extent of two boxes of one schema expands a copy of the first */
+  TPCBox *box2 = tpcbox_in("TPCBOX(XT(((2,2),(5,5)),[2024-01-02,2024-01-03]), 1)");
+  TPCBox *ext = tpcbox_extent_transfn(NULL, box);
+  ext = tpcbox_extent_transfn(ext, box2);
+  assert(ext != NULL);
+  char *ext_out = tpcbox_out(ext, 6);
+  printf("tpcbox_extent_transfn: %s\n", ext_out);
+  assert(meos_errno() == 0);
+  free(ext); free(ext_out); free(box2);
+
   /* With a schema registered, a patch built from its points answers which
    * point stands at a given position */
   PCDimensionSpec dims[3] = {

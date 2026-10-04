@@ -268,11 +268,13 @@ CREATE TABLE
 INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])',
   stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
 INSERT 0 1
-SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01')
+SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01'),
+  stbox_extent_transfn(b, stbox 'STBOX XT(((200, 200),(201, 201)),[2001-03-01, 2001-03-02])'),
+  stbox_extent_combinefn(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
-                                 tspatial_extent_transfn                                  
-------------------------------------------------------------------------------------------
- STBOX XT(((1,1),(100,100)),[Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST])
+                                 tspatial_extent_transfn                                  |                                   stbox_extent_transfn                                   |                                  stbox_extent_combinefn                                  
+------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(100,100)),[Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST]) | STBOX XT(((1,1),(201,201)),[Mon Jan 01 00:00:00 2001 PST, Fri Mar 02 00:00:00 2001 PST]) | STBOX XT(((1,1),(301,301)),[Mon Jan 01 00:00:00 2001 PST, Mon Apr 02 00:00:00 2001 PDT])
 (1 row)
 
 SELECT b = b0 FROM tbl_extent_state;
