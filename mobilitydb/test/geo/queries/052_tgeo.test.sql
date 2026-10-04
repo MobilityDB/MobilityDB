@@ -638,6 +638,8 @@ SELECT asText(merge(ARRAY[tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}']));
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-01-01']));
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-01-01']));
+-- Surfaces at one timestamp whose union holds a hole touching its shell at one point
+SELECT asText(merge(ARRAY [tgeometry 'Polygon((6 2,9 2,9 5,6 5,6 2))@2001-01-01', 'Triangle((0 0,6 2,4 8,0 0))@2001-01-01', 'Triangle((7 8,2 6,8 2,7 8))@2001-01-01', 'Polygon((7 2,8 2,8 3,7 3,7 2))@2001-01-01']), 6);
 
 -- Different values at the same timestamp
 SELECT asText(merge(ARRAY [tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', '{[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06, Point(1 1)@2001-01-07],[Point(1 1)@2001-01-08, Point(1 1)@2001-01-09]}']));

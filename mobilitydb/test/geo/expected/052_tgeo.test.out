@@ -1673,6 +1673,12 @@ SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-0
  POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(merge(ARRAY [tgeometry 'Polygon((6 2,9 2,9 5,6 5,6 2))@2001-01-01', 'Triangle((0 0,6 2,4 8,0 0))@2001-01-01', 'Triangle((7 8,2 6,8 2,7 8))@2001-01-01', 'Polygon((7 2,8 2,8 3,7 3,7 2))@2001-01-01']), 6);
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((7 2,8 2,9 2,9 5,7.5 5,7 8,4.352941 6.941176,4 8,3.25 6.5,2 6,2.75 5.5,0 0,6 2,7 2),(5.428571 3.714286,6 3.333333,6 2,5.428571 3.714286))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(merge(ARRAY [tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', '{[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06, Point(1 1)@2001-01-07],[Point(1 1)@2001-01-08, Point(1 1)@2001-01-09]}']));
 ERROR:  The temporal values have different value at their common timestamp Fri Jan 05 00:00:00 2001 PST
 SELECT asText(merge(ARRAY [tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', '{Point(2 2)@2001-01-02, Point(2 2)@2001-01-03, Point(1 1)@2001-01-04}']));

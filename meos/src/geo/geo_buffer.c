@@ -3287,12 +3287,21 @@ buffer_classify_coincident_piece(const Edge *piece, BufferLocator *owner,
  * @brief Resolve coincident pieces belonging to one buffer
  * @details If the coincident piece is external to the union, it is retained.
  * If it is internal, it is discarded.
- * @note The caller is responsible for preventing the same geometric piece
- * from being inserted twice when processing the second buffer.
+ * A piece kept is added as the walk reads every selected piece, with the side
+ * the answer lies on, as #buffer_add_selected_piece() adds one: where the two
+ * interiors lie on the same side it is that side, and where they lie on
+ * opposite sides, which a difference keeps, it is the side of the first
+ * operand. A piece both boundaries carry is added once.
+ * @param[in] piece Piece of the boundary of @p owner
+ * @param[in] owner,other Locators of the geometry the piece belongs to and of
+ * the one it lies on
+ * @param[in] owner_first True when @p owner is the first operand
+ * @param[in] oper Operation
+ * @param[out] result Selected pieces, an array of @p BufferSelected
  */
 static bool
 buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
-  BufferLocator *other, ClipOper oper, MeosArray *result)
+  BufferLocator *other, bool owner_first, ClipOper oper, MeosArray *result)
 {
   assert(piece); assert(owner); assert(other); assert(result);
   int classification = buffer_classify_coincident_piece(piece, owner, other);
@@ -3314,8 +3323,17 @@ buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
    *   region that is not there.
    */
   bool same_side = (classification == 1);
-  if (same_side == (oper != CL_DIFFERENCE))
-    buffer_pieces_add_unique(result, piece);
+  if (same_side != (oper != CL_DIFFERENCE) ||
+      buffer_piece_array_contains(result, piece))
+    return true;
+  BufferSelected kept;
+  kept.e = *piece;
+  /* 0 = the owner's interior lies LEFT of the piece, 1 = RIGHT */
+  int side = buffer_piece_interior_side(&kept.e, owner);
+  bool owner_left = (side == 0);
+  kept.answer_left = (side == 0 || side == 1) ?
+    (same_side || owner_first ? owner_left : ! owner_left) : false;
+  meos_array_add(result, &kept);
   return true;
 }
 
@@ -3497,7 +3515,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     {
       *coincident = true;
       buffer_pieces_add_unique(bnd_a, piece);
-      if (! buffer_resolve_coincident_piece(piece, loc_a, loc_b, oper,
+      if (! buffer_resolve_coincident_piece(piece, loc_a, loc_b, true, oper,
             result))
         meos_array_add(boundary, piece);
     }
@@ -3516,7 +3534,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
        * only B reports is a curve of B alone, whatever put it here */
       if (buffer_piece_array_contains(bnd_a, piece))
         buffer_pieces_add_unique(shared, piece);
-      if (! buffer_resolve_coincident_piece(piece, loc_b, loc_a, oper,
+      if (! buffer_resolve_coincident_piece(piece, loc_b, loc_a, false, oper,
             result))
         meos_array_add(boundary, piece);
     }
