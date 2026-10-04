@@ -17,7 +17,7 @@
 
 	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a named function as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal values), and for the position operators the prefix of the class compared: <varname>set</varname>, <varname>span</varname> or <varname>spanset</varname> for sets, spans and span sets, and for a box or a temporal value the type of its bounding box, <varname>tbox</varname>, <varname>stbox</varname> or <varname>tpcbox</varname>, a temporal Boolean, text or JSONB value taking <varname>span</varname>, the time span that bounds it.</para>
 
-	<para>The sections below give the named function of every operator, grouped as the chapters of each type group them.</para>
+	<para>The sections below give the named function of every operator, grouped as the chapters of each type group them. <xref linkend="portable_sql_porting"/> states what a query needs besides to run on Spark and Flink.</para>
 
 	<para>For example, the bounding-box overlap <literal>t1.trip &amp;&amp; t2.trip</literal> is written portably as <literal>stboxOverlaps(t1.trip, t2.trip)</literal>, and the temporal-before test <literal>p1.period &lt;&lt;# p2.period</literal> as <literal>spanBefore(p1.period, p2.period)</literal>.</para>
 
@@ -347,5 +347,133 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
+	</sect1>
+	<sect1 xml:id="portable_sql_porting">
+		<title>Porting an Application to Apache Spark and Apache Flink</title>
+
+		<para>The named functions make a query independent of operators. Spark and Flink ask for three more changes, because they differ from PostgreSQL in three ways. They already own some of the names MobilityDB uses: both define <varname>round</varname>, <varname>lower</varname> and <varname>length</varname>, and Flink's parser refuses <varname>set</varname> and <varname>unnest</varname> unquoted; such a name takes a prefix naming the class or base type of its argument (<xref linkend="portable_sql_porting_names"/>). They call no input or output function of a type implicitly, so a literal, a cast and the text of a value become calls the query names (<xref linkend="portable_sql_porting_io"/>). And each engine calls a function returning rows its own way (<xref linkend="portable_sql_porting_rows"/>). The following table summarizes the changes; a function it does not cover keeps its name.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="4*"/>
+				<colspec colnum="2" colname="col2" colwidth="3*"/>
+				<colspec colnum="3" colname="col3" colwidth="3*"/>
+				<thead>
+					<row>
+						<entry>What the query holds</entry>
+						<entry>MobilityDB</entry>
+						<entry>Spark and Flink</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>An operator: its named function, as the sections above give it</entry><entry>trip &amp;&amp; box</entry><entry>stboxOverlaps(trip, box)</entry></row>
+					<row><entry>A name the engine owns, over a value whose base type has the operation: the base type in front</entry><entry>round(speed(trip), 2)</entry><entry>floatRound(speed(trip), 2)</entry></row>
+					<row><entry>A name the engine owns, over another set, span, span set or temporal value: the class in front</entry><entry>lower(timeSpan(trip))</entry><entry>spanLower(timeSpan(trip))</entry></row>
+					<row><entry>A name the engine owns, over a box or a base type: the type in front</entry><entry>round(box, 2)</entry><entry>stboxRound(box, 2)</entry></row>
+					<row><entry>A typed literal: the text constructor of its type</entry><entry>tint '1@2001-01-01'</entry><entry>tintFromText('1@2001-01-01')</entry></row>
+					<row><entry>The text of a value, which PostgreSQL writes through the output function of its type: asText</entry><entry>SELECT speed(trip)</entry><entry>SELECT asText(speed(trip))</entry></row>
+					<row><entry>A cast: the function its entry gives beside it, as tbool::tint is tint(tbool)</entry><entry>flag::tint</entry><entry>tint(flag)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<sect2 xml:id="portable_sql_porting_names">
+			<title>Names the Engines Own</title>
+
+			<para>A name the engine owns takes the prefix of the class or base type of its argument, and functions that belong together take the same prefix: <varname>spanLowerInc</varname> goes with <varname>spanLower</varname>, <varname>geoCumulativeLength</varname> with <varname>geoLength</varname>. Spark and Flink carry one set of names: each registers such a function under its prefixed name alone, so a query written for one runs on the other, and <literal>round(1.23456, 2)</literal> remains the engine's own rounding of a number. The names that change are the following.</para>
+
+			<informaltable frame="all" colsep="1" rowsep="1">
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
+					<colspec colnum="1" colname="col1" colwidth="3*"/>
+					<colspec colnum="2" colname="col2" colwidth="3*"/>
+					<colspec colnum="3" colname="col3" colwidth="4*"/>
+					<thead>
+						<row>
+							<entry>MobilityDB name</entry>
+							<entry>Class of the argument</entry>
+							<entry>Spark and Flink name</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row><entry>lower, upper, initcap</entry><entry>textset, ttext</entry><entry>textLower, textUpper, textInitcap</entry></row>
+						<row><entry>lower, upper, lowerInc, upperInc</entry><entry>span, span set</entry><entry>spanLower, spanUpper, spanLowerInc, spanUpperInc, spansetLower, spansetUpper, spansetLowerInc, spansetUpperInc</entry></row>
+						<row><entry>lowerInc, upperInc</entry><entry>temporal</entry><entry>temporalLowerInc, temporalUpperInc</entry></row>
+						<row><entry>round</entry><entry>float and its set, span, span set and temporal types</entry><entry>floatRound</entry></row>
+						<row><entry></entry><entry>geometry and geography, their sets and temporal types, trgeometry</entry><entry>geoRound</entry></row>
+						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; npoint, npointset, tnpoint; nsegment; pose, poseset, tpose; posechain, posechainset, tposechain; tbox; stbox; tpcbox</entry><entry>cbufferRound, npointRound, nsegmentRound, poseRound, posechainRound, tboxRound, stboxRound, tpcboxRound</entry></row>
+						<row><entry>abs</entry><entry>tint, tbigint, tfloat</entry><entry>intAbs, bigintAbs, floatAbs</entry></row>
+						<row><entry>ceil, floor, degrees, radians, cos, sin, tan, exp, ln, log10</entry><entry>float and its set, span, span set and temporal types</entry><entry>floatCeil, floatFloor, floatDegrees, floatRadians, floatCos, floatSin, floatTan, floatExp, floatLn, floatLog10</entry></row>
+						<row><entry>transform</entry><entry>the sets and temporal types of geometry and geography, trgeometry</entry><entry>geoTransform</entry></row>
+						<row><entry>transformPipeline</entry><entry>geometry and geography, their sets and temporal types, trgeometry</entry><entry>geoTransformPipeline</entry></row>
+						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; pose, poseset, tpose; posechain, posechainset, tposechain; stbox; raster</entry><entry>cbufferTransform, poseTransform, posechainTransform, stboxTransform, rasterTransform, and the …TransformPipeline of each</entry></row>
+						<row><entry>translate, affine, rotate, rotateX, rotateY, rotateZ, scale, transscale</entry><entry>geometry, tgeompoint, tgeometry</entry><entry>geoTranslate, geoAffine, geoRotate, geoRotateX, geoRotateY, geoRotateZ, geoScale, geoTransscale</entry></row>
+						<row><entry>translate, rotate, rotateX, rotateY, rotateZ</entry><entry>tcbuffer; tpose; tposechain</entry><entry>cbufferTranslate, cbufferRotate, cbufferRotateZ; poseTranslate, poseRotate, poseRotateX, poseRotateY, poseRotateZ; the same for posechain (posechainTranslate, …)</entry></row>
+						<row><entry></entry><entry>trgeometry</entry><entry>geoTranslate, geoRotate, geoRotateX, geoRotateY, geoRotateZ</entry></row>
+						<row><entry>length, cumulativeLength</entry><entry>geometry, geography, tgeompoint, tgeogpoint, trgeometry</entry><entry>geoLength, geoCumulativeLength</entry></row>
+						<row><entry></entry><entry>tnpoint</entry><entry>npointLength, npointCumulativeLength</entry></row>
+						<row><entry>hash, hashExtended</entry><entry>set, span, span set, box, temporal, base type</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, and their …HashExtended</entry></row>
+						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
+						<row><entry>merge (the aggregate)</entry><entry>temporal</entry><entry>mergeAgg</entry></row>
+						<row><entry>unnest</entry><entry>set, temporal</entry><entry>setUnnest, temporalUnnest</entry></row>
+						<row><entry>set (the constructor)</entry><entry>any</entry><entry>setMake</entry></row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</sect2>
+
+		<sect2 xml:id="portable_sql_porting_io">
+			<title>Reading and Writing Values</title>
+
+			<para>PostgreSQL reads and writes a value through the four functions its type declares, and calls them implicitly: a typed literal, a cast from text and a text <literal>COPY</literal> go through the input function, the text a client prints through the output function, and a binary <literal>COPY</literal> or a driver in binary mode through the receive and send functions. Spark and Flink call none of them: a value travels as its WKB bytes, and each direction is a function the query names, the inverse of another, as the following table shows.</para>
+
+			<informaltable frame="all" colsep="1" rowsep="1">
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
+					<colspec colnum="1" colname="col1" colwidth="4*"/>
+					<colspec colnum="2" colname="col2" colwidth="2*"/>
+					<colspec colnum="3" colname="col3" colwidth="5*"/>
+					<thead>
+						<row>
+							<entry>What PostgreSQL uses</entry>
+							<entry>Direction</entry>
+							<entry>Spark and Flink</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row><entry>the input function: a typed literal, a cast from text</entry><entry>text to value</entry><entry>ttypeFromText(text), settypeFromText(text), boxFromText(text), …, one per type, prefixed by its name; with an SRID also tspatialFromEWKT(text)</entry></row>
+						<row><entry>the output function: the text a client prints</entry><entry>value to text</entry><entry>asText(value); with an SRID also asEWKT(value)</entry></row>
+						<row><entry>the receive function: binary COPY, a binary driver</entry><entry>binary to value</entry><entry>ttypeFromBinary(bytea), ttypeFromHexWKB(text), and likewise for every other type; with an SRID also tspatialFromEWKB(bytea), tspatialFromHexEWKB(text)</entry></row>
+						<row><entry>the send function</entry><entry>value to binary</entry><entry>asBinary(value), asHexWKB(value); with an SRID also asEWKB(value), asHexEWKB(value)</entry></row>
+						<row><entry>none</entry><entry>MF-JSON</entry><entry>ttypeFromMFJSON(text), asMFJSON(ttype)</entry></row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+
+			<para>Every type has each pair it can state, the <literal>E</literal> forms when its text and binary forms omit the SRID it carries and MF-JSON when it is temporal, the types PostgreSQL reads and writes only through its four functions included: the set, span and span set types of integers, big integers, floats, dates and timestamps, <type>textset</type> and <type>jsonbset</type>, <type>tbox</type> and <type>stbox</type>, <type>tbool</type>, <type>tint</type>, <type>tbigint</type>, <type>tfloat</type> and <type>ttext</type>, and <type>quadbin</type>, <type>s2cell</type>, <type>nsegment</type> and <type>tpcbox</type>. A type whose text is its hex WKB, <type>raquet</type>, reads and writes its text through <varname>raquetFromHexWKB</varname> and <varname>asHexWKB</varname>, as a PostGIS raster through <varname>ST_RastFromHexWKB</varname> and <varname>ST_AsHexWKB</varname>. A box, <type>stbox</type> or <type>tpcbox</type>, writes its SRID in its text and its WKB, so it needs no <literal>E</literal> form. Every WKB output takes the byte order <literal>endian</literal>, and every text output of a value carrying floats or coordinates the precision <literal>maxdecimaldigits</literal>. A column of WKB bytes, a TemporalParquet column for instance, thus enters every engine through the binary constructor of its type, as in <literal>tgeompointFromBinary(col)</literal>.</para>
+		</sect2>
+
+		<sect2 xml:id="portable_sql_porting_rows">
+			<title>Functions Returning Rows</title>
+
+			<para>A function returning a set of rows, such as <varname>timeSplit</varname> or <varname>unnest</varname>, is called as a table function in the <literal>FROM</literal> clause in PostgreSQL. In Flink and in Spark the same function, <varname>unnest</varname> under the names <varname>setUnnest</varname> and <varname>temporalUnnest</varname>, returns an array, one element per row, an array of records when it returns several columns; Flink unfolds it into rows with <literal>CROSS JOIN UNNEST</literal>, and Spark with <literal>LATERAL VIEW explode</literal>, or <literal>inline</literal> for an array of records.</para>
+		</sect2>
+
+		<sect2 xml:id="portable_sql_porting_example">
+			<title>Example</title>
+
+			<para>The query</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT vehicle, round(length(trip)::numeric, 1), lower(timeSpan(trip))
+FROM Trips
+WHERE trip &amp;&amp; stbox 'SRID=3857;STBOX X((0,0),(1000,1000))';
+</programlisting>
+			<para>is written, in Spark and Flink,</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT vehicle, round(geoLength(trip), 1), spanLower(timeSpan(trip))
+FROM Trips
+WHERE stboxOverlaps(trip, stboxFromText('SRID=3857;STBOX X((0,0),(1000,1000))'));
+</programlisting>
+			<para>where <varname>round</varname> of the resulting number is the engine's own.</para>
+		</sect2>
+
 	</sect1>
 </chapter>
