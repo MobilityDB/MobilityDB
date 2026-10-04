@@ -2803,7 +2803,7 @@
 					<para><link linkend="tjsonb_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname>, <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonbFromBinary"><varname>tjsonbFromBinary</varname>, <varname>tjsonbFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
@@ -2983,7 +2983,7 @@
 					<para><link linkend="cell_asText"><varname>asText</varname></link>: Return the text representation of a cell</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="cellFromText"><varname>cellFromText</varname></link>: Input from the text representation of a cell</para>
+					<para><link linkend="cellFromText"><varname>h3indexFromText</varname>, <varname>quadbinFromText</varname>, <varname>s2cellFromText</varname></link>: Input from the text representation of a cell</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a raster or a Raquet tile</para>

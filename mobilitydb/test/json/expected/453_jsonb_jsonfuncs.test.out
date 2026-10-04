@@ -1,3 +1,50 @@
+SELECT jsonbFromText('{"b": [1, 2], "a": null}');
+      jsonbfromtext       
+--------------------------
+ {"a": null, "b": [1, 2]}
+(1 row)
+
+SELECT jsonbFromText('{"a": 1, "a": 2}') = jsonb '{"a": 1, "a": 2}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonbFromText(asText(jsonb '{"a": {"b": "x"}}')) = jsonb '{"a": {"b": "x"}}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonpathFromText('$.a[*] ? (@ > 2)')::text = (jsonpath '$.a[*] ? (@ > 2)')::text;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(jsonpath 'strict $.a[0 to 2].b');
+          astext          
+--------------------------
+ strict $."a"[0 to 2]."b"
+(1 row)
+
+SELECT asText(jsonpath '$."key with space"') = (jsonpath '$."key with space"')::text;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
+       astext        
+---------------------
+ $."a".**{1 to last}
+(1 row)
+
+/* Errors */
+SELECT jsonbFromText('{"a": }');
+ERROR:  invalid input syntax for type json
+SELECT jsonpathFromText('$.a ? (');
+ERROR:  syntax error at end of jsonpath input
 SELECT jsonbArrayLength(jsonb '[1, 2, 3]');
  jsonbarraylength 
 ------------------

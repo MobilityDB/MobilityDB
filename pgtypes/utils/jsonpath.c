@@ -100,6 +100,7 @@ static int  operationPriority(JsonPathItemType op);
  * @brief Return a JSON path from its string representation
  * @param[in] str String
  * @note Derived from PostgreSQL function @p jsonpath_in()
+ * @csqlfn #Jsonpath_from_text()
  */
 #if MEOS
 JsonPath *
@@ -120,6 +121,7 @@ pg_jsonpath_in(const char *str)
  * @brief Return the string representation of a JSON path
  * @param[in] jp JSON path
  * @note Derived from PostgreSQL function @p jsonpath_out()
+ * @csqlfn #Jsonpath_as_text()
  */
 #if MEOS
 char *

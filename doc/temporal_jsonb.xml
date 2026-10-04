@@ -809,12 +809,14 @@ SELECT tjsonb 'Point(0 0)@2001-01-01 08:05:00';
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the Well-Known Text (WKT) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asText({tjsonb,tjsonb[],jsonb}) → {text,text[]}
+asText({tjsonb,tjsonb[],jsonb,jsonpath}) → {text,text[]}
 </programlisting>
-				<para>Over a JSONB value, the function returns the text PostgreSQL writes for the value, as <varname>jsonb::text</varname> does.</para>
+				<para>Over a JSONB value or a JSON path, the function returns the text PostgreSQL writes for the value, as <varname>jsonb::text</varname> and <varname>jsonpath::text</varname> do.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
 -- {"a": "x", "b": {"c": [1, {"d": null}]}}
+SELECT asText(jsonpath 'strict $.a[0 to 2].b');
+-- strict $."a"[0 to 2]."b"
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
@@ -864,11 +866,20 @@ SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
 
 			<listitem xml:id="tjsonbFromText">
 				<indexterm significance="normal"><primary><varname>tjsonbFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonpathFromText</varname></primary></indexterm>
 				<para>Input from the Well-Known Text (WKT) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tjsonbFromText(text) → tjsonb
+jsonbFromText(text) → jsonb
+jsonpathFromText(text) → jsonpath
 </programlisting>
+				<para>A JSONB value and a JSON path are read from the text PostgreSQL reads for them, as <varname>text::jsonb</varname> and <varname>text::jsonpath</varname> do; the functions are the inverse of <varname>asText</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbFromText('{"b": [1, 2], "a": null}');
+-- {"a": null, "b": [1, 2]}
+SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
+-- $."a".**{1 to last}
 SELECT tjsonbFromText(text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":

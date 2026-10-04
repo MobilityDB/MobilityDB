@@ -93,6 +93,72 @@ Jsonb_as_text(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
+PGDLLEXPORT Datum Jsonb_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonb_from_text);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return a JSONB value from its text representation, as
+ * #Quadbin_from_text does for a quadbin
+ * @details The keys of an object need not be unique, as for the type input
+ * function of PostgreSQL
+ * @sqlfn jsonbFromText()
+ */
+Datum
+Jsonb_from_text(PG_FUNCTION_ARGS)
+{
+  /* Input arguments */
+  text *txt = PG_GETARG_TEXT_P(0);
+  /* Compute the result */
+  Jsonb *result = pg_jsonb_from_text(txt, false);
+  /* Clean up and return */
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_JSONB_P(result);
+}
+
+PGDLLEXPORT Datum Jsonpath_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonpath_as_text);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return the text representation of a JSON path, as #Jsonb_as_text
+ * does for a JSONB value
+ * @sqlfn asText()
+ */
+Datum
+Jsonpath_as_text(PG_FUNCTION_ARGS)
+{
+  /* Input arguments */
+  JsonPath *jp = PG_GETARG_JSONPATH_P(0);
+  /* Compute the result */
+  char *str = pg_jsonpath_out(jp);
+  text *result = pg_cstring_to_text(str);
+  /* Clean up and return */
+  pfree(str);
+  PG_FREE_IF_COPY(jp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Jsonpath_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonpath_from_text);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return a JSON path from its text representation, as
+ * #Jsonb_from_text does for a JSONB value
+ * @sqlfn jsonpathFromText()
+ */
+Datum
+Jsonpath_from_text(PG_FUNCTION_ARGS)
+{
+  /* Input arguments */
+  text *txt = PG_GETARG_TEXT_P(0);
+  /* Compute the result */
+  char *str = pg_text_to_cstring(txt);
+  JsonPath *result = pg_jsonpath_in(str);
+  /* Clean up and return */
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_JSONPATH_P(result);
+}
+
 PGDLLEXPORT Datum Tjsonb_as_ttext(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tjsonb_as_ttext);
 /**

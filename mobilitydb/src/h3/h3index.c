@@ -58,9 +58,10 @@
  * corresponding PG wrappers were removed together with their SQL. */
 
 /*****************************************************************************
- * WKB and HexWKB input/output
+ * Text, WKB and HexWKB input/output
  *
- * An h3index is a geographic cell with the constant default SRID WGS84
+ * The text representation is the one the type input and output functions of
+ * h3-pg read and write. An h3index is a geographic cell with the constant default SRID WGS84
  * (EPSG:4326). asBinary/asHexWKB are the SRID-less base WKB (the inherited
  * Temporal<T> surface, like geography ST_AsBinary — the 4326 is implicit);
  * they mirror th3index exactly. The SRID-bearing EWKB form is the
@@ -68,6 +69,43 @@
  * Datum_as_wkb / Datum_as_hexwkb dispatch; the input side calls the MEOS
  * helpers (which accept an absent SRID as 4326, or a present 4326).
  *****************************************************************************/
+
+PGDLLEXPORT Datum H3index_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_as_text);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return the text representation of an h3index
+ * @details Written as #Quadbin_as_text writes a quadbin
+ * @sqlfn asText()
+ */
+Datum
+H3index_as_text(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  char *str = meos_h3index_out(cell);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum H3index_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_from_text);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return an h3index from its text representation
+ * @details Read as #Quadbin_from_text reads a quadbin
+ * @sqlfn h3indexFromText()
+ */
+Datum
+H3index_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  H3Index result = meos_h3index_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_H3INDEX(result);
+}
 
 PGDLLEXPORT Datum H3index_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(H3index_from_wkb);

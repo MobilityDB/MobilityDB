@@ -32,6 +32,20 @@
 -- or operator it names
 -------------------------------------------------------------------------------
 
+-- Text input and output, against the type input and output functions
+SELECT jsonbFromText('{"b": [1, 2], "a": null}');
+SELECT jsonbFromText('{"a": 1, "a": 2}') = jsonb '{"a": 1, "a": 2}';
+SELECT jsonbFromText(asText(jsonb '{"a": {"b": "x"}}')) = jsonb '{"a": {"b": "x"}}';
+SELECT jsonpathFromText('$.a[*] ? (@ > 2)')::text = (jsonpath '$.a[*] ? (@ > 2)')::text;
+SELECT asText(jsonpath 'strict $.a[0 to 2].b');
+SELECT asText(jsonpath '$."key with space"') = (jsonpath '$."key with space"')::text;
+SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
+/* Errors */
+\set VERBOSITY terse
+SELECT jsonbFromText('{"a": }');
+SELECT jsonpathFromText('$.a ? (');
+\set VERBOSITY default
+
 -- Accessors
 SELECT jsonbArrayLength(jsonb '[1, 2, 3]');
 SELECT jsonbObjectField(jsonb '{"a": {"b": 1}}', 'a');

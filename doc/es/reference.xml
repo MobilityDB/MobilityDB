@@ -2794,7 +2794,7 @@
 					<para><link linkend="tjsonb_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
+					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname>, <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonbFromBinary"><varname>tjsonbFromBinary</varname>, <varname>tjsonbFromHexWKB</varname></link>: Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</para>
@@ -2974,7 +2974,7 @@
 					<para><link linkend="cell_asText"><varname>asText</varname></link>: Devuelve la representación de texto de una celda</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="cellFromText"><varname>cellFromText</varname></link>: Entrada desde la representación de texto de una celda</para>
+					<para><link linkend="cellFromText"><varname>h3indexFromText</varname>, <varname>quadbinFromText</varname>, <varname>s2cellFromText</varname></link>: Entrada desde la representación de texto de una celda</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>

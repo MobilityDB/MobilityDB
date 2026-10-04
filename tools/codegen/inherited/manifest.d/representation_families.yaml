@@ -284,8 +284,9 @@ representation_families:
     - FromBinary
     - FromHexWKB
     - FromMFJSON
+  - lit: "CREATE FUNCTION jsonbFromText(text)\n  RETURNS jsonb\n  AS 'MODULE_PATHNAME', 'Jsonb_from_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION jsonpathFromText(text)\n  RETURNS jsonpath\n  AS 'MODULE_PATHNAME', 'Jsonpath_from_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: /*****************************************************************************/
-  - lit: "CREATE FUNCTION asText(jsonb)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonb_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "CREATE FUNCTION asText(jsonb)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonb_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(jsonpath)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonpath_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - asText
   - lit: CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);

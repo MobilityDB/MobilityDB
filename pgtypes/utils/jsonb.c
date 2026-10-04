@@ -126,6 +126,7 @@ pg_jsonb_out(const Jsonb *jb)
  * @ingroup meos_json_base_inout
  * @brief Return a JSONB value from its text representation
  * @note Derived from PostgreSQL function @p jsonb_from_text()
+ * @csqlfn #Jsonb_from_text()
  */
 #if MEOS
 Jsonb *
