@@ -120,17 +120,10 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     (SkipList *) PG_GETARG_POINTER(1);
 
   store_fcinfo(fcinfo);
-  if (! ensure_geoaggstate_state(state1, state2))
-    return PointerGetDatum(NULL);
-
-  struct GeoAggregateState *extra = NULL;
-  if (state1 && state1->extra)
-    extra = state1->extra;
-  if (state2 && state2->extra)
-    extra = state2->extra;
-  assert(extra);
-  datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
-  PG_RETURN_SKIPLIST_P(temporal_tagg_combinefn(state1, state2, func, false));
+  SkipList *result = tpoint_tcentroid_combinefn(state1, state2);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /*****************************************************************************/

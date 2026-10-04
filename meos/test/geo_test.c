@@ -2636,6 +2636,22 @@ int main(void)
   assert(vcoarse != NULL); assert(vfine != NULL);
   printf("the cells a trajectory crosses at resolutions 3 and 6: %d %d\n",
     ncoarse, nfine);
+
+  /* The centroid of two partial aggregates combined is the centroid of one
+   * aggregate over both values */
+  Temporal *tp2 = tgeompoint_in("SRID=4326;[POINT(2.32 48.86)@2001-01-01, "
+    "POINT(2.42 48.91)@2001-01-02]");
+  SkipList *cs1 = tpoint_tcentroid_transfn(NULL, tp);
+  SkipList *cs2 = tpoint_tcentroid_transfn(NULL, tp2);
+  SkipList *csall = tpoint_tcentroid_transfn(NULL, tp);
+  csall = tpoint_tcentroid_transfn(csall, tp2);
+  cs1 = tpoint_tcentroid_combinefn(cs1, cs2);
+  Temporal *ccomb = tpoint_tcentroid_finalfn(cs1);
+  Temporal *call = tpoint_tcentroid_finalfn(csall);
+  assert(ccomb != NULL && call != NULL && temporal_eq(ccomb, call));
+  assert(meos_errno() == 0);
+  printf("tpoint_tcentroid_combinefn answers the centroid of both values\n");
+  free(ccomb); free(call); free(tp2);
   assert(ncoarse == 1); assert(nfine == 3);
   free(vcoarse); free(vfine);
   free(coarse); free(fine); free(tp);
