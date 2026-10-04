@@ -47,6 +47,7 @@
 #include "pointcloud/tpc_boxops.h"
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P, etc. */
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpc_aggfuncs.h"
 #include "geo/geo_funcs.h"          /* ensure_same_dimensionality */
 #include "temporal/temporal.h"
 #include "temporal/skiplist.h"          /* PG_RETURN_SKIPLIST_P macro */
@@ -145,29 +146,6 @@ Tpcbox_extent_combinefn(PG_FUNCTION_ARGS)
  * total are in the cloud at time t".
  *****************************************************************************/
 
-/**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
- * T_TINT where each instant carries the pcpatch's npoints
- */
-static TInstant **
-tpcpatch_transform_tnpoints(const Temporal *temp, int *count_out)
-{
-  /* Easiest correct path: enumerate all instants regardless of subtype.
-   * temporal_num_instants returns total count across instant / sequence
-   * / sequenceset; temporal_instant_n returns the i-th. */
-  int n = temporal_num_instants(temp);
-  TInstant **result = palloc(sizeof(TInstant *) * n);
-  for (int i = 0; i < n; i++)
-  {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
-    Pcpatch *pa = (Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-    int32 npts = (int32) pcpatch_npoints(pa);
-    result[i] = tinstant_make(Int32GetDatum(npts), T_TINT, inst->t);
-  }
-  *count_out = n;
-  return result;
-}
-
 PGDLLEXPORT Datum Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_tnpoints_transfn);
 /**
@@ -214,30 +192,6 @@ Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS)
  * +Infinity for that instant (IEEE 1.0/0.0). Callers can filter with
  * isfinite() / IS NOT NAN if they want to drop those.
  *****************************************************************************/
-
-/**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
- * T_TFLOAT each carrying npoints / (xrange * yrange)
- */
-static TInstant **
-tpcpatch_transform_tdensity(const Temporal *temp, int *count_out)
-{
-  int n = temporal_num_instants(temp);
-  TInstant **result = palloc(sizeof(TInstant *) * n);
-  for (int i = 0; i < n; i++)
-  {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
-    Pcpatch *pa = (Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-    double xrange = pa->bounds[1] - pa->bounds[0];
-    double yrange = pa->bounds[3] - pa->bounds[2];
-    double area = xrange * yrange;
-    double density = (area > 0.0) ? (double) pa->npoints / area
-                                   : (double) pa->npoints / 0.0;
-    result[i] = tinstant_make(Float8GetDatum(density), T_TFLOAT, inst->t);
-  }
-  *count_out = n;
-  return result;
-}
 
 PGDLLEXPORT Datum Tpcpatch_tdensity_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_tdensity_transfn);

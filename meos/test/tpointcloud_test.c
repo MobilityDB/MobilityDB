@@ -202,6 +202,22 @@ int main(void)
   free(first); free(last); free(last_from_end); free(first_from_end);
   free(p1); free(p2); free(p3); free(pa);
 
+  /* The point count and density aggregates sum the patches instant by
+   * instant */
+  SkipList *npstate = tpcpatch_tnpoints_transfn(NULL, tpcpatch);
+  npstate = tpcpatch_tnpoints_transfn(npstate, tpcpatch2);
+  Temporal *np = temporal_tagg_finalfn(npstate);
+  assert(np != NULL);
+  char *np_out = temporal_out(np, 6);
+  printf("tpcpatch_tnpoints_transfn: %s\n", np_out);
+  SkipList *dstate = tpcpatch_tdensity_transfn(NULL, tpcpatch);
+  Temporal *dens = temporal_tagg_finalfn(dstate);
+  assert(dens != NULL);
+  char *dens_out = temporal_out(dens, 6);
+  printf("tpcpatch_tdensity_transfn: %s\n", dens_out);
+  assert(meos_errno() == 0);
+  free(np); free(np_out); free(dens); free(dens_out);
+
   free(tpcpoint); free(tpcpoint2); free(tpcpoint_out);
   free(tpcpatch); free(tpcpatch2); free(tpcpatch_out);
   free(box);
