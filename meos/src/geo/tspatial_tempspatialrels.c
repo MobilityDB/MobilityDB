@@ -1788,7 +1788,12 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */
-  datum_func3 func = geo_dwithin_fn(sync1->flags, sync2->flags);
+  /* A temporal point carries a point at every instant, so the pair is answered
+   * in closed form rather than by the generic any-geometry entry */
+  datum_func3 func = (tpoint_type(sync1->temptype) &&
+      tpoint_type(sync2->temptype)) ?
+    pt_dwithin_fn(sync1->flags, sync2->flags) :
+    geo_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
     Float8GetDatum(dist), func, &tpointsegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);

@@ -199,6 +199,29 @@ datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
+ * @brief Return a Datum true if two 2D points are within a distance
+ * @details A point has neither interior nor boundary, so whether two of them
+ * are within a distance is a question about their four coordinates and that
+ * distance, which #point_within_distance_sign answers EXACTLY: it compares the
+ * squared distance against the square of the distance and never constructs the
+ * distance between the points, a square root being a rounded value that may
+ * not decide an answer. The generic entry #datum_geom_dwithin2d reaches the
+ * same four coordinates through #geom_dwithin2d, which borrows a kept `LWGEOM`
+ * for each operand, walks liblwgeom's recursive distance and then compares a
+ * rounded square root.
+ * @note The relationship holds AT the distance, so the sign 0 -- the points
+ * exactly that far apart -- answers true with -1
+ */
+Datum
+datum_pt_dwithin2d(Datum point1, Datum point2, Datum dist)
+{
+  const POINT2D *p1 = DATUM_POINT2D_P(point1);
+  const POINT2D *p2 = DATUM_POINT2D_P(point2);
+  return BoolGetDatum(point_within_distance_sign(p1->x, p1->y, p2->x, p2->y,
+    DatumGetFloat8(dist)) <= 0);
+}
+
+/**
  * @brief Return a Datum true if two 3D geometries are within a distance
  */
 Datum
@@ -313,6 +336,25 @@ geo_dwithin_fn(int16 flags1, int16 flags2)
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
       &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+}
+
+/**
+ * @brief Select the appropriate dwithin function for two temporal points
+ * @details Mirrors #pt_distance_fn, which makes the same choice for the
+ * distance itself: a planar 2D point pair is answered in closed form from the
+ * two coordinates, while a geodetic pair keeps the spheroid function and a 3D
+ * pair the generic entry, neither having a point twin here
+ * @note We need two parameters to cope with mixed 2D/3D arguments
+ */
+datum_func3
+pt_dwithin_fn(int16 flags1, int16 flags2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
+    return &datum_geog_dwithin;
+  else
+    /* 3D only if both arguments are 3D */
+    return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
+      &datum_geom_dwithin3d : &datum_pt_dwithin2d;
 }
 
 /**
@@ -2328,7 +2370,13 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
       return 0;
   }
 
-  datum_func3 func = geo_dwithin_fn(temp1->flags, temp2->flags);
+  /* A temporal point carries a point at every instant, #tpointinst_make
+   * refusing an empty one and any other type, so the pair is answered in
+   * closed form rather than by the generic any-geometry entry */
+  datum_func3 func = (tpoint_type(temp1->temptype) &&
+      tpoint_type(temp2->temptype)) ?
+    pt_dwithin_fn(temp1->flags, temp2->flags) :
+    geo_dwithin_fn(temp1->flags, temp2->flags);
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
