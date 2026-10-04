@@ -398,15 +398,15 @@ FROM temp;
  t
 (1 row)
 
-SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
- same 
-------
+SELECT npointSame(npoint(1, 0.5), npoint(1, 0.50000001));
+ npointsame 
+------------
  t
 (1 row)
 
-SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
- same 
-------
+SELECT npointSame(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
+ npointsame 
+------------
  f
 (1 row)
 

@@ -708,7 +708,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_same);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if two circular buffers are approximately equal with 
  * respect to an epsilon value
- * @sqlfn same()
+ * @sqlfn cbufferSame()
  * @sqlop @p ~=
  */
 Datum

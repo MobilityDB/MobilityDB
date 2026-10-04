@@ -294,15 +294,15 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5
  f
 (1 row)
 
-SELECT same(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
- same 
-------
+SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ cbuffersame 
+-------------
  t
 (1 row)
 
-SELECT same(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
- same 
-------
+SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ cbuffersame 
+-------------
  f
 (1 row)
 

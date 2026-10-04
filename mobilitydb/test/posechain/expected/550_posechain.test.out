@@ -220,15 +220,15 @@ SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ~= posech
  t
 (1 row)
 
-SELECT same(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))', posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))');
- same 
-------
+SELECT posechainSame(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))', posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))');
+ posechainsame 
+---------------
  t
 (1 row)
 
-SELECT same(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose(Point(0.0000001 0), 0))');
- same 
-------
+SELECT posechainSame(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose(Point(0.0000001 0), 0))');
+ posechainsame 
+---------------
  t
 (1 row)
 
