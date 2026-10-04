@@ -151,6 +151,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup mobilitydb_geo_base_inout Input and output functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Input and output functions for static geometries
+ *
  * @defgroup mobilitydb_geo_base_accessor Accessor functions
  * @ingroup mobilitydb_geo_base
  * @brief Accessor functions for static geometries

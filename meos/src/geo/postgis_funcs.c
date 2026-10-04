@@ -5463,57 +5463,54 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary
- * (HexEWKB) representation
- * @param[in] wkt WKT string
- * @note This is a a stricter version of #geom_in, where we refuse to
- * accept (HEX)WKB or EWKT.
- * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
+ * @brief Return a geometry from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details The value is read as #geom_in reads it, so a HexWKB without an
+ * SRID is read as well
+ * @param[in] hexwkb HexEWKB string
+ * @csqlfn #Geom_from_hexewkb()
  */
 GSERIALIZED *
-geom_from_hexewkb(const char *wkt)
+geom_from_hexewkb(const char *hexwkb)
 {
-  return geom_in(wkt, -1);
+  return geom_in(hexwkb, -1);
 }
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geography from its ASCII hex-encoded Well-Known Binary
- * (HexEWKB) representation
- * @param[in] wkt WKT string
- * @note This is a a stricter version of #geog_in, where we refuse to
- * accept (HEX)WKB or EWKT.
- * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
+ * @brief Return a geography from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details The value is read as #geog_in reads it, so a HexWKB without an
+ * SRID is read as well
+ * @param[in] hexwkb HexEWKB string
+ * @csqlfn #Geog_from_hexewkb()
  */
 GSERIALIZED *
-geog_from_hexewkb(const char *wkt)
+geog_from_hexewkb(const char *hexwkb)
 {
-  return geog_in(wkt, -1);
+  return geog_in(hexwkb, -1);
 }
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
  * representation of a geometry/geography
  * @param[in] gs Geometry/geography
- * @param[in] endian Endianness
+ * @param[in] endian Endian encoding: an empty string (machine endianness),
+ * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
+ * reads it
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
+ * @csqlfn #Geo_as_hexewkb()
  */
 char *
 geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-
-  uint8_t variant = 0;
-  /* If user specified endianness, respect it */
-  if (endian)
-  {
-    if  (! strncmp(endian, "xdr", 3) || ! strncmp(endian, "XDR", 3))
-      variant = variant | WKB_XDR;
-    else
-      variant = variant | WKB_NDR;
-  }
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
   /* Create WKB hex string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_hexwkb_buffer(geom, variant | WKB_EXTENDED);

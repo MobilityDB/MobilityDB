@@ -102,6 +102,15 @@ CREATE FUNCTION tgeogpointFromHexEWKB(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geometryFromHexEWKB(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromHexEWKB(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Output
  *****************************************************************************/
@@ -223,6 +232,15 @@ CREATE FUNCTION asHexEWKB(tgeompoint, endian text DEFAULT '')
 CREATE FUNCTION asHexEWKB(tgeogpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(geometry, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(geography, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

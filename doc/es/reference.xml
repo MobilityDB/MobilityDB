@@ -1001,7 +1001,7 @@
 					<para><link linkend="tspatialFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON) &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname>, <varname>geometryFromHexEWKB</varname>, <varname>geographyFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), desde la representación hexadecimal binaria conocida (HexWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

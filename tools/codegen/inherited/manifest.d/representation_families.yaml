@@ -477,6 +477,7 @@ representation_families:
     - FromEWKB
     - FromHexWKB
     - FromHexEWKB
+  - lit: "CREATE FUNCTION geometryFromHexEWKB(text)\n  RETURNS geometry\n  AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION geographyFromHexEWKB(text)\n  RETURNS geography\n  AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: "/*****************************************************************************\n * Output\n *****************************************************************************/"
   - ops:
     - asText
@@ -493,6 +494,7 @@ representation_families:
       - asHexWKB
     - - lit: "-- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) \u2014\n-- mirrors asEWKB() and is consistent with MobilityDuck asHexEWKB."
       - asHexEWKB
+  - lit: "CREATE FUNCTION asHexEWKB(geometry, endian text DEFAULT '')\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asHexEWKB(geography, endian text DEFAULT '')\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: /*****************************************************************************/
 - family: npoint_base
   file: mobilitydb/sql/npoint/300_npoint.in.sql
