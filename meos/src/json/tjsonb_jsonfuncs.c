@@ -387,9 +387,12 @@ Datum
 datum_jsonb_set_lax(Datum jb, Datum keys, Datum count, Datum newjb,
   Datum create, Datum null_handle)
 {
+  /* The value and the treatment of a NULL value may be NULL */
   return PointerGetDatum(pg_jsonb_set_lax(DatumGetJsonbP(jb),
     (text **) DatumGetPointer(keys), DatumGetInt32(count),
-    DatumGetJsonbP(newjb), DatumGetBool(create), DatumGetTextP(null_handle)));
+    DatumGetPointer(newjb) ? DatumGetJsonbP(newjb) : NULL,
+    DatumGetBool(create),
+    DatumGetPointer(null_handle) ? DatumGetTextP(null_handle) : NULL));
 }
 
 /*****************************************************************************/

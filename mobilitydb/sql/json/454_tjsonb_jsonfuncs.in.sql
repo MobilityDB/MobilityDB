@@ -270,10 +270,10 @@ CREATE FUNCTION tjsonbSet(tjsonb, path text[], val jsonb,
   AS 'MODULE_PATHNAME', 'Tjsonb_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tjsonbSetLax(tjsonb, path text[], val jsonb,
-    create_missing boolean DEFAULT true, handle_null text DEFAULT '')
+    create_missing boolean DEFAULT true, handle_null text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_set_lax'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tjsonbInsert(tjsonb, path text[], val jsonb,
     after boolean DEFAULT false)
