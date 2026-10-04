@@ -397,7 +397,7 @@ var searchData=
   ['buffer_5fpoint_5foffset_394',['buffer_point_offset',['../geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883',1,'geo_buffer.c']]],
   ['buffer_5fpoint_5fon_5farc_395',['buffer_point_on_arc',['../geo__buffer_8c_ad656863bce51b8424c2531eafe287575.html#ad656863bce51b8424c2531eafe287575',1,'geo_buffer.c']]],
   ['buffer_5fpoints_5fequal_396',['buffer_points_equal',['../geo__buffer_8c_ae51fba08d848f3e608a839f29d0ac863.html#ae51fba08d848f3e608a839f29d0ac863',1,'geo_buffer.c']]],
-  ['buffer_5fresolve_5fcoincident_5fpiece_397',['buffer_resolve_coincident_piece',['../geo__buffer_8c_a9e14f1b3e3d6a58037251e63a02c73c3.html#a9e14f1b3e3d6a58037251e63a02c73c3',1,'geo_buffer.c']]],
+  ['buffer_5fresolve_5fcoincident_5fpiece_397',['buffer_resolve_coincident_piece',['../geo__buffer_8c_a5fc62c94057739742cdd48e7c656392d.html#a5fc62c94057739742cdd48e7c656392d',1,'geo_buffer.c']]],
   ['buffer_5freverse_5fring_5fpieces_398',['buffer_reverse_ring_pieces',['../geo__buffer_8c_a6610950a79fd2601cdd56ab8e6bac000.html#a6610950a79fd2601cdd56ab8e6bac000',1,'geo_buffer.c']]],
   ['buffer_5fring_399',['buffer_ring',['../geo__buffer_8c_a321ff20131653adacca8b483f8d38bf0.html#a321ff20131653adacca8b483f8d38bf0',1,'geo_buffer.c']]],
   ['buffer_5fring_5farea_400',['buffer_ring_area',['../geo__buffer_8c_a312be7eb337a61e941cee2c21cb23f26.html#a312be7eb337a61e941cee2c21cb23f26',1,'geo_buffer.c']]],
