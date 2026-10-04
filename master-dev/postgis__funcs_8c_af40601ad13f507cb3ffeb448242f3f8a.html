@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_areal_meeting</title>
+<title>MobilityDB: union_member_pieces</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -153,7 +153,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae526396a025c1acb33c113bd37f7dede.html#ae526396a025c1acb33c113bd37f7dede">geography_centroid_from_wpoints</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab6476731f7d2ca148769eeec3bc843c3.html#ab6476731f7d2ca148769eeec3bc843c3">geography_valid_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gafb9cf6bf0ce902ea68bfa14523e43158.html#gafb9cf6bf0ce902ea68bfa14523e43158">geom_area</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a829622c6159825fba407f79c73b7ab75.html#a829622c6159825fba407f79c73b7ab75">geom_areal_meeting</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a829622c6159825fba407f79c73b7ab75.html#a829622c6159825fba407f79c73b7ab75">geom_areal_meeting</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab0044c0aa7d0e7b3187dade5bbe6ebb7.html#ab0044c0aa7d0e7b3187dade5bbe6ebb7">geom_areal_touching_stretches</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a4066a46461cc6ea897b30f6877399a16.html#a4066a46461cc6ea897b30f6877399a16">geom_array_areal_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ade691ddd1920609e08cbcd1657a2fa75.html#ade691ddd1920609e08cbcd1657a2fa75">geom_array_linear_union</a></td></tr>
@@ -235,14 +235,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a7dbe5b3aaec19dc7673219371720b347.html#a7dbe5b3aaec19dc7673219371720b347">union_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a379d1371a658b1c65277d2582f1eb6cf.html#a379d1371a658b1c65277d2582f1eb6cf">union_lifted</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae2f058a7be86358969793e5efce86a60.html#ae2f058a7be86358969793e5efce86a60">union_member_is_faces</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af40601ad13f507cb3ffeb448242f3f8a.html#af40601ad13f507cb3ffeb448242f3f8a">union_member_pieces</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_af40601ad13f507cb3ffeb448242f3f8a.html#af40601ad13f507cb3ffeb448242f3f8a">union_member_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3527c0f615987d4524a04f7c6aab9f98.html#a3527c0f615987d4524a04f7c6aab9f98">union_piece_on_plane</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a829622c6159825fba407f79c73b7ab75" name="a829622c6159825fba407f79c73b7ab75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a829622c6159825fba407f79c73b7ab75">&#9670;&#160;</a></span>geom_areal_meeting()</h2>
+<a id="af40601ad13f507cb3ffeb448242f3f8a" name="af40601ad13f507cb3ffeb448242f3f8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af40601ad13f507cb3ffeb448242f3f8a">&#9670;&#160;</a></span>union_member_pieces()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -251,16 +251,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geom_areal_meeting </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> ** union_member_pieces </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs1</em>, </td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>gsarr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs2</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>npieces</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -275,15 +281,16 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return what two areal geometries meet along where they share no area, or <code>NULL</code> where they meet in nothing. </p>
-<p >The intersection of two point sets is a point set, and nothing about it promises an area. An engine that assembles regions answers the region, so for a pair meeting at a point or along a curve it answers an empty one &ndash; and "no area" and "nothing" are different sentences.</p>
-<p >Where the two share no area, no part of the first one's boundary reaches the interior of the second: a point of it that did would carry a neighbourhood of the first one's own interior into the second's, which is area they would then share. So the part of that boundary the second geometry covers is exactly the part lying ON its boundary &ndash; the two expressions denote one set &ndash; and it is the SECOND BOUNDARY the clip is asked about, because only that one is answered by the segment kernels alone. Clipping against the second geometry as a SOLID asks additionally where a point falls relative to its interior, a question the kernels answer by locating constructed points, and the answer it gives is not always on either operand. Asking it of the first operand's boundary also keeps the answer running in that operand's own direction </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the members of an array as the pieces the union reads, a multi-surface member listed face by face. </p>
+<p >An empty member carries no points and is left out, and so is an empty face. Every piece is read on the plane, see <a class="el" href="postgis__funcs_8c_a3527c0f615987d4524a04f7c6aab9f98.html#a3527c0f615987d4524a04f7c6aab9f98" title="Return a piece of a union array as the union reads it: on the plane, and as the line its ring traces ...">union_piece_on_plane()</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">npieces</td><td>Number of pieces </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section pre"><dt>Precondition</dt><dd>The two share no area, which is what the caller has just read </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Array of pieces, which the caller owns together with each piece, or <code>NULL</code> where every member is empty </dd></dl>
 
 </div>
 </div>

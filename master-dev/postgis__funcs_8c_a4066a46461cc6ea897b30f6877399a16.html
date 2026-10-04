@@ -234,6 +234,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae5fc8417acf66580345326f08afecac9.html#ae5fc8417acf66580345326f08afecac9">union_collection_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a7dbe5b3aaec19dc7673219371720b347.html#a7dbe5b3aaec19dc7673219371720b347">union_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a379d1371a658b1c65277d2582f1eb6cf.html#a379d1371a658b1c65277d2582f1eb6cf">union_lifted</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae2f058a7be86358969793e5efce86a60.html#ae2f058a7be86358969793e5efce86a60">union_member_is_faces</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af40601ad13f507cb3ffeb448242f3f8a.html#af40601ad13f507cb3ffeb448242f3f8a">union_member_pieces</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3527c0f615987d4524a04f7c6aab9f98.html#a3527c0f615987d4524a04f7c6aab9f98">union_piece_on_plane</a></td></tr>
         </table>
       </div>
    </td>
@@ -273,7 +276,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the union of an array of geometries whose members are all surfaces, read from their boundaries. </p>
-<p >The array is presented to <a class="el" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a" title="Return the union of the areal components of a geometry.">meos_areal_union()</a> as the collection it stands for, so the answer is the one the unary union of that collection gives: a pair whose interiors meet becomes one surface and a pair that only touches stays apart. An empty member carries no area and is left out </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The array is presented to <a class="el" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a" title="Return the union of the areal components of a geometry.">meos_areal_union()</a> as the collection it stands for, so the answer is the one the unary union of that collection gives: a pair whose interiors meet becomes one surface and a pair that only touches stays apart. A multi-surface member is read face by face, see <a class="el" href="postgis__funcs_8c_af40601ad13f507cb3ffeb448242f3f8a.html#af40601ad13f507cb3ffeb448242f3f8a" title="Return the members of an array as the pieces the union reads, a multi-surface member listed face by f...">union_member_pieces()</a>, and an empty member carries no area and is left out </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
