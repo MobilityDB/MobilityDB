@@ -377,7 +377,7 @@
 		<sect2 xml:id="portable_sql_porting_names">
 			<title>Los nombres que poseen los motores</title>
 
-			<para>Un nombre que el motor posee lleva el prefijo de la clase o del tipo base de su argumento, y las funciones que van juntas llevan el mismo prefijo: <varname>spanLowerInc</varname> va con <varname>spanLower</varname>, <varname>geoCumulativeLength</varname> con <varname>geoLength</varname>. Spark resuelve un nombre según los tipos de sus argumentos, como PostgreSQL, por lo que en MobilitySpark la escritura de PostgreSQL funciona también: <literal>round(speed(trip), 2)</literal> redondea el número flotante temporal, mientras que <literal>round(1.23456, 2)</literal> sigue siendo el redondeo propio de Spark de un número. Flink solo acepta el nombre con prefijo. Los nombres que cambian son los siguientes.</para>
+			<para>Un nombre que el motor posee lleva el prefijo de la clase o del tipo base de su argumento, y las funciones que van juntas llevan el mismo prefijo: <varname>spanLowerInc</varname> va con <varname>spanLower</varname>, <varname>geoCumulativeLength</varname> con <varname>geoLength</varname>. Spark y Flink llevan un único conjunto de nombres: cada uno registra tal función solo bajo su nombre con prefijo, de modo que una consulta escrita para uno se ejecuta en el otro, y <literal>round(1.23456, 2)</literal> sigue siendo el redondeo propio del motor de un número. Los nombres que cambian son los siguientes.</para>
 
 			<informaltable frame="all" colsep="1" rowsep="1">
 				<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -400,7 +400,8 @@
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; npoint, npointset, tnpoint; nsegment; pose, poseset, tpose; posechain, posechainset, tposechain; tbox; stbox; tpcbox</entry><entry>cbufferRound, npointRound, nsegmentRound, poseRound, posechainRound, tboxRound, stboxRound, tpcboxRound</entry></row>
 						<row><entry>abs</entry><entry>tint, tbigint, tfloat</entry><entry>intAbs, bigintAbs, floatAbs</entry></row>
 						<row><entry>ceil, floor, degrees, radians, cos, sin, tan, exp, ln, log10</entry><entry>float y sus tipos conjunto, rango, conjunto de rangos y temporal</entry><entry>floatCeil, floatFloor, floatDegrees, floatRadians, floatCos, floatSin, floatTan, floatExp, floatLn, floatLog10</entry></row>
-						<row><entry>transform, transformPipeline</entry><entry>geometría y geografía, sus conjuntos y tipos temporales, trgeometry</entry><entry>geoTransform, geoTransformPipeline</entry></row>
+						<row><entry>transform</entry><entry>los conjuntos y tipos temporales de geometría y geografía, trgeometry</entry><entry>geoTransform</entry></row>
+						<row><entry>transformPipeline</entry><entry>geometría y geografía, sus conjuntos y tipos temporales, trgeometry</entry><entry>geoTransformPipeline</entry></row>
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; pose, poseset, tpose; posechain, posechainset, tposechain; stbox; raster</entry><entry>cbufferTransform, poseTransform, posechainTransform, stboxTransform, rasterTransform, y el …TransformPipeline de cada uno</entry></row>
 						<row><entry>translate, affine, rotate, rotateX, rotateY, rotateZ, scale, transscale</entry><entry>geometry, tgeompoint, tgeometry</entry><entry>geoTranslate, geoAffine, geoRotate, geoRotateX, geoRotateY, geoRotateZ, geoScale, geoTransscale</entry></row>
 						<row><entry>translate, rotate, rotateX, rotateY, rotateZ</entry><entry>tcbuffer; tpose; tposechain</entry><entry>cbufferTranslate, cbufferRotate, cbufferRotateZ; poseTranslate, poseRotate, poseRotateX, poseRotateY, poseRotateZ; lo mismo para posechain (posechainTranslate, …)</entry></row>
@@ -455,7 +456,7 @@
 		<sect2 xml:id="portable_sql_porting_rows">
 			<title>Funciones que devuelven filas</title>
 
-			<para>Una función que devuelve un conjunto de filas, como <varname>setUnnest</varname>, <varname>temporalUnnest</varname> o <varname>timeSplit</varname>, se llama como función de tabla en la cláusula <literal>FROM</literal> en PostgreSQL y en DuckDB. En Flink y en Spark la misma función devuelve un arreglo, un elemento por fila, un arreglo de registros cuando devuelve varias columnas; Flink lo despliega en filas con <literal>CROSS JOIN UNNEST</literal>, y Spark con <literal>LATERAL VIEW explode</literal>, o <literal>inline</literal> para un arreglo de registros.</para>
+			<para>Una función que devuelve un conjunto de filas, como <varname>timeSplit</varname> o <varname>unnest</varname>, se llama como función de tabla en la cláusula <literal>FROM</literal> en PostgreSQL. En Flink y en Spark la misma función, <varname>unnest</varname> bajo los nombres <varname>setUnnest</varname> y <varname>temporalUnnest</varname>, devuelve un arreglo, un elemento por fila, un arreglo de registros cuando devuelve varias columnas; Flink lo despliega en filas con <literal>CROSS JOIN UNNEST</literal>, y Spark con <literal>LATERAL VIEW explode</literal>, o <literal>inline</literal> para un arreglo de registros.</para>
 		</sect2>
 
 		<sect2 xml:id="portable_sql_porting_example">
@@ -467,7 +468,7 @@ SELECT vehicle, round(length(trip)::numeric, 1), lower(timeSpan(trip))
 FROM Trips
 WHERE trip &amp;&amp; stbox 'SRID=3857;STBOX X((0,0),(1000,1000))';
 </programlisting>
-			<para>se escribe, para todos los motores,</para>
+			<para>se escribe, en Spark y Flink,</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT vehicle, round(geoLength(trip), 1), spanLower(timeSpan(trip))
 FROM Trips

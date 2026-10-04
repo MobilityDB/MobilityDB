@@ -91,7 +91,7 @@ emitted (108 `merge` signatures filtered), and the Spark surface calls `register
 
 1. **PostgreSQL and DuckDB keep `insert`, `update` and `merge`**; Flink and Spark take
    `temporalInsert`, `temporalUpdate` and `temporalMerge` through `@altsqlfn` on `Temporal_insert`,
-   `Temporal_update`, `Temporal_merge` and `Temporal_merge_array`. With rule 8, Spark carries both
-   spellings, since it defines none of the three.
+   `Temporal_update`, `Temporal_merge` and `Temporal_merge_array`; Flink and Spark carry these
+   names alone (rule 1).
 2. **The aggregate is `mergeAgg` in Flink and Spark**, with no `@altsqlfn`.
 3. **The function `merge` gains `tpcpoint` and `tpcpatch`**, closing the gap under both names.
