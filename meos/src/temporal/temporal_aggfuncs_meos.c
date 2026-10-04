@@ -765,4 +765,25 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
     &tnumber_transform_wavg);
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal count of temporal values over a
+ * moving window
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value
+ * @param[in] interv Interval
+ * @csqlfn #Temporal_wcount_transfn()
+ */
+SkipList *
+temporal_wcount_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interv)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  return
+  temporal_wagg_transform_transfn(state, temp, interv, &datum_sum_int32,
+    &temporal_transform_wcount);
+}
+
 /*****************************************************************************/
