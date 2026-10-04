@@ -15,9 +15,9 @@ tpcpoint::text → text
 </pre><p><code class="varname">asEWKT</code> antepone el SRID que declara el esquema del <code class="varname">pcid</code>, y escribe solo la forma textual bajo un esquema que no declara ninguno, como el pcid 1 a continuación.</p><pre class="programlisting">
 -- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 </pre></li><li class="listitem"><a name="tpcpoint_asMFJSON"></a><a class="indexterm" name="id15381"></a><a class="indexterm" name="id15384"></a><p>Devuelve la representación JSON de características móviles (MF-JSON) de un tpcpoint y la lee de vuelta; la ida y vuelta es sin pérdida</p><pre class="programlisting">
 asMFJSON(tpcpoint,options integer=0,flags integer=0,maxdecimaldigits integer=15) → text
 tpcpointFromMFJSON(text) → tpcpoint
@@ -51,16 +51,16 @@ FROM (SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) AS t) s;
 SELECT tpcpointFromEWKT('SRID=4326;' ||
   asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)));
 -- ERROR:  The SRID of a pcpoint is the one its schema declares and cannot be set
-</pre></li></ul></div><p><code class="varname">asText</code> no toma un argumento <code class="varname">maxdecimaldigits</code>, ya que un <code class="varname">pcpoint</code> se imprime como el WKB hexadecimal de su forma serializada, que no tiene decimales que redondear. MF-JSON lleva una clave <code class="varname">"bbox"</code> cuando <code class="varname">options</code> es 1, un objeto JSON TPCBox que añade un campo <code class="varname">"pcid"</code> junto al array <code class="varname">"bbox"</code> con forma de stbox estándar.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tpcpoint"></a><a class="indexterm" name="id15449"></a><p>Constructor para puntos de nube de puntos temporales con un valor constante</p><pre class="programlisting">
+</pre></li></ul></div><p><code class="varname">asText</code> no toma un argumento <code class="varname">maxdecimaldigits</code>, ya que un <code class="varname">pcpoint</code> se imprime como el hexadecimal de su WKB de pgPointCloud, el texto que escribe la función de salida del tipo de pgPointCloud, que no tiene decimales que redondear. MF-JSON lleva una clave <code class="varname">"bbox"</code> cuando <code class="varname">options</code> es 1, un objeto JSON TPCBox que añade un campo <code class="varname">"pcid"</code> junto al array <code class="varname">"bbox"</code> con forma de stbox estándar.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tpcpoint"></a><a class="indexterm" name="id15449"></a><p>Constructor para puntos de nube de puntos temporales con un valor constante</p><pre class="programlisting">
 tpcpoint(pcpoint,timestamptz) → tpcpointInst
 tpcpoint(pcpoint,tstzset) → tpcpointDiscSeq
 tpcpoint(pcpoint,tstzspan,interp text='step') → tpcpointContSeq
 tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
 </pre><pre class="programlisting">
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), tstzspan '[2001-01-01, 2001-01-02]'));
--- [5C000000010000006400…000000@2001-01-01, 5C000000010000006400…000000@2001-01-02]
+-- [0101000000640000…64000000@2001-01-01, 0101000000640000…64000000@2001-01-02]
 </pre></li><li class="listitem"><a name="tpcpoint_tpcpointSeq"></a><a class="indexterm" name="id15456"></a><p>Constructor para puntos de nube de puntos temporales de subtipo secuencia</p><pre class="programlisting">
 tpcpointSeq(tpcpointInst[],interp text='step',leftInc boolean=true,
   rightInc boolean=true) → tpcpointSeq
@@ -313,7 +313,7 @@ nearestApproachInstant({geometry,tpcpoint},{geometry,tpcpoint}) → tpcpoint
 SELECT asText(nearestApproachInstant(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]), geometry 'Point Z(5 5 5)'));
--- 5C00000001000000900100009001000090010000000000@2001-01-02
+-- 0101000000900100009001000090010000@2001-01-02
 </pre></li><li class="listitem"><a name="tpcpoint_shortestLine"></a><a class="indexterm" name="id15748"></a><p>Devuelve la línea que une el punto de acercamiento más cercano entre los dos argumentos</p><pre class="programlisting">
 shortestLine({geometry,tpcpoint},{geometry,tpcpoint}) → geometry
 </pre><pre class="programlisting">
