@@ -1184,12 +1184,12 @@ Temporal_sequences(PG_FUNCTION_ARGS)
   int count;
 #if RGEO
   TSequence **sequences = (temp->temptype == T_TRGEOMETRY) ?
-    trgeometry_sequences(temp, &count) : 
-    (TSequence **) temporal_sequences_p(temp, &count);
+    trgeometry_sequences(temp, &count) : temporal_sequences(temp, &count);
 #else
-  const TSequence **sequences = temporal_sequences_p(temp, &count);
+  TSequence **sequences = temporal_sequences(temp, &count);
 #endif /* RGEO */
-  ArrayType *result = temparr_to_array((Temporal **) sequences, count, FREE);
+  ArrayType *result = temparr_to_array((Temporal **) sequences, count,
+    FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1348,12 +1348,12 @@ Temporal_instants(PG_FUNCTION_ARGS)
   int count;
 #if RGEO
   TInstant **instants = (temp->temptype == T_TRGEOMETRY) ?
-    trgeometry_instants(temp, &count) : 
-    (TInstant **) temporal_insts_p(temp, &count);
+    trgeometry_instants(temp, &count) : temporal_instants(temp, &count);
 #else
-  const TInstant **instants = temporal_insts_p(temp, &count);
+  TInstant **instants = temporal_instants(temp, &count);
 #endif /* RGEO */
-  ArrayType *result = temparr_to_array((Temporal **) instants, count, FREE);
+  ArrayType *result = temparr_to_array((Temporal **) instants, count,
+    FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }

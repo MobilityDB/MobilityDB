@@ -1036,7 +1036,6 @@ tsequenceset_sequences_p(const TSequenceSet *ss)
  * @brief Return the array of segments of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_segments()
  */
 TSequence **
 tsequenceset_segments(const TSequenceSet *ss, int *count)

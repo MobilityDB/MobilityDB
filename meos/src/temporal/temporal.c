@@ -2622,7 +2622,6 @@ temporal_sequence_n(const Temporal *temp, int n)
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @errval NULL
- * @csqlfn #Temporal_sequences()
  */
 const TSequence **
 temporal_sequences_p(const Temporal *temp, int *count)
@@ -2656,10 +2655,15 @@ temporal_sequences_p(const Temporal *temp, int *count)
 TSequence **
 temporal_sequences(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(temp, NULL);
   /* We do a casting to avoid allocating a new array of sequences */
   TSequence **sequences = (TSequence **) temporal_sequences_p(temp, count);
+  if (! sequences)
+    return NULL;
   for (int i = 0; i < *count; i ++)
     sequences[i] = tsequence_copy(sequences[i]);
   return sequences;

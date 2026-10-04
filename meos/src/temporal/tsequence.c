@@ -1988,7 +1988,6 @@ tsequence_set_tstzspan(const TSequence *seq, Span *s)
  * sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
- * @csqlfn #Temporal_sequences()
  */
 const TSequence **
 tsequence_seqs(const TSequence *seq, int *count)
@@ -2061,7 +2060,6 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
  * @brief Return the array of segments of a temporal sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
- * @csqlfn #Temporal_segments()
  */
 TSequence **
 tsequence_segments(const TSequence *seq, int *count)
