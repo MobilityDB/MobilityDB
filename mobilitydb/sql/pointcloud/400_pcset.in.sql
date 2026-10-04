@@ -77,22 +77,22 @@ CREATE FUNCTION pointN(pcpatch, integer)
  ******************************************************************************/
 
 CREATE FUNCTION getX(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getY(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getZ(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getDim(pcpoint, text)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_dim'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

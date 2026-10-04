@@ -621,7 +621,7 @@ CREATE FUNCTION upperInc(tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION width(intspanset, boundspan boolean DEFAULT FALSE)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(bigintspanset, boundspan boolean DEFAULT FALSE)

@@ -338,7 +338,7 @@ CREATE FUNCTION endValue(trgeometry)
   AS 'MODULE_PATHNAME', 'Trgeometry_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(trgeometry, int)
+CREATE FUNCTION valueN(trgeometry, integer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

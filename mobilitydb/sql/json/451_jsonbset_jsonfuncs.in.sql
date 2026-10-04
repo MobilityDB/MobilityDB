@@ -112,11 +112,11 @@ CREATE FUNCTION jsonbsetArrayElementText(jsonbset, integer,
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, integer)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, integer)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

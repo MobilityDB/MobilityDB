@@ -43,7 +43,7 @@ CREATE FUNCTION trgeometry_gist_consistent(internal, trgeometry, smallint, oid, 
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trgeometry_gist_distance(internal, trgeometry, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

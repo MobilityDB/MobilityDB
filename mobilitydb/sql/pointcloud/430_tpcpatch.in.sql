@@ -307,7 +307,7 @@ CREATE FUNCTION endValue(tpcpatch)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tpcpatch, int)
+CREATE FUNCTION valueN(tpcpatch, integer)
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
