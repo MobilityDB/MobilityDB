@@ -75,10 +75,13 @@ unset_aggregation_context(MemoryContext ctx)
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
 
-Datum Taggstate_serialize(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum Taggstate_serialize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Taggstate_serialize);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Serialize the state value
+ * @sqlfn taggstate_serialize()
+ * @sqlaggfn merge(), mergeAgg(), tAnd(), tAvg(), tCentroid(), tCount(), tMax(), tMaxAgg(), tMin(), tMinAgg(), tOr(), tSum(), tdensity(), tnpoints(), wAvg(), wCount(), wMax(), wMin(), wSum()
  */
 Datum
 Taggstate_serialize(PG_FUNCTION_ARGS)
@@ -95,10 +98,13 @@ Taggstate_serialize(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
-Datum Taggstate_deserialize(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum Taggstate_deserialize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Taggstate_deserialize);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Deserialize the state value
+ * @sqlfn taggstate_deserialize()
+ * @sqlaggfn merge(), mergeAgg(), tAnd(), tAvg(), tCentroid(), tCount(), tMax(), tMaxAgg(), tMin(), tMinAgg(), tOr(), tSum(), tdensity(), tnpoints(), wAvg(), wCount(), wMax(), wMin(), wSum()
  */
 Datum
 Taggstate_deserialize(PG_FUNCTION_ARGS)
