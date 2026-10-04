@@ -347,6 +347,7 @@ minus_set_pose(const Set *s, const Pose *pose)
  * @brief Transition function for set union aggregate of poses
  * @param[in,out] state Current aggregate state
  * @param[in] pose Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 pose_union_transfn(Set *state, const Pose *pose)

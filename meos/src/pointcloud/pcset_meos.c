@@ -386,6 +386,7 @@ minus_set_pcpoint(const Set *s, const Pcpoint *pt)
  * @brief Transition function for set union aggregate of pcpoint values
  * @param[in,out] state Current aggregate state
  * @param[in] pt Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 pcpoint_union_transfn(Set *state, const Pcpoint *pt)
@@ -672,6 +673,7 @@ minus_set_pcpatch(const Set *s, const Pcpatch *pa)
  * @brief Transition function for set union aggregate of pcpatch values
  * @param[in,out] state Current aggregate state
  * @param[in] pa Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 pcpatch_union_transfn(Set *state, const Pcpatch *pa)
