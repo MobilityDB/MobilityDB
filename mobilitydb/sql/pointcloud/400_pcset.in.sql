@@ -466,19 +466,21 @@ CREATE FUNCTION pcpointset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(pcpoint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpointset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 
@@ -875,19 +877,21 @@ CREATE FUNCTION pcpatchset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(pcpatch) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpatchset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 

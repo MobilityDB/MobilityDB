@@ -821,6 +821,19 @@ CREATE FUNCTION set_union_transfn(internal, tstzset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION set_union_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Set_union_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setstate_serialize(internal)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Setstate_serialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setstate_deserialize(bytea, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Setstate_deserialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- The functions are not STRICT
 CREATE FUNCTION intset_union_finalfn(internal)
   RETURNS intset
@@ -850,110 +863,122 @@ CREATE FUNCTION textset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(integer) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = intset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = bigintset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(float) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = floatset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(text) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = textset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(date) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = dateset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(timestamptz) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE setUnion(intset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = intset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigintset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = bigintset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(floatset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = floatset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(textset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = textset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(dateset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = dateset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(tstzset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 

@@ -199,19 +199,21 @@ CREATE FUNCTION jsonbset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(jsonb) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = jsonbset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(jsonbset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = jsonbset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 

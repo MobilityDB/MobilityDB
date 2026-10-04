@@ -34,6 +34,7 @@ set(TEMPORAL_SOURCES
   meos_error.c
   skiplist.c
   set.c
+  set_aggfuncs.c
   set_ops.c
   span.c
   span_aggfuncs.c
