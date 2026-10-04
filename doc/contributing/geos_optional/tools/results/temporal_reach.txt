@@ -1,0 +1,40 @@
+{MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))@2000-01-01, POLYGON((1 1,5 1,5 5,1 5,1 1))@2000-01-02}  with  POLYGON((0 0,3 0,3 3,0 3,0 0))
+  tgeo_traversed_area      REACHES GEOS: The unary union asked for on a precision grid, and the one of a geomet
+  tgeo_convex_hull         answered
+  tgeo_at_geom             answered
+  tgeo_minus_geom          answered
+  tintersects_tgeo_geo     answered
+  tcontains_geo_tgeo       answered
+  eintersects_tgeo_geo     answered
+{MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))@2000-01-01, POLYGON((1 1,5 1,5 5,1 5,1 1))@2000-01-02}  with  MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))
+  tgeo_traversed_area      REACHES GEOS: The unary union asked for on a precision grid, and the one of a geomet
+  tgeo_convex_hull         answered
+  tgeo_at_geom             answered
+  tgeo_minus_geom          answered
+  tintersects_tgeo_geo     answered
+  tcontains_geo_tgeo       answered
+  eintersects_tgeo_geo     answered
+{GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))@2000-01-01, POLYGON((1 1,5 1,5 5,1 5,1 1))@2000-01-02}  with  POLYGON((0 0,3 0,3 3,0 3,0 0))
+  tgeo_traversed_area      REACHES GEOS: The unary union asked for on a precision grid, and the one of a geomet
+  tgeo_convex_hull         answered
+  tgeo_at_geom             answered
+  tgeo_minus_geom          answered
+  tintersects_tgeo_geo     answered
+  tcontains_geo_tgeo       answered
+  eintersects_tgeo_geo     answered
+{GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))@2000-01-01, POLYGON((1 1,5 1,5 5,1 5,1 1))@2000-01-02}  with  MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))
+  tgeo_traversed_area      REACHES GEOS: The unary union asked for on a precision grid, and the one of a geomet
+  tgeo_convex_hull         answered
+  tgeo_at_geom             answered
+  tgeo_minus_geom          answered
+  tintersects_tgeo_geo     answered
+  tcontains_geo_tgeo       answered
+  eintersects_tgeo_geo     answered
+{POLYGON((0 0,4 0,4 4,0 4,0 0))@2000-01-01, POLYGON((1 1,5 1,5 5,1 5,1 1))@2000-01-02}  with  MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))
+  tgeo_traversed_area      answered
+  tgeo_convex_hull         answered
+  tgeo_at_geom             answered
+  tgeo_minus_geom          answered
+  tintersects_tgeo_geo     answered
+  tcontains_geo_tgeo       answered
+  eintersects_tgeo_geo     answered

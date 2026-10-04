@@ -1,0 +1,2 @@
+# public functions: 3051
+# public functions reaching a target: 134

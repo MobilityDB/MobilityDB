@@ -1,0 +1,20 @@
+GEOMETRYCOLLECTION(POLYGON((0 0,1 0,1 1,0 1,0 0)),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))
+  unary union    -> The unary union asked for on a precision grid, and the one of a geometry none of the native routes reads, are answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  intersection   -> MULTIPOLYGON(((1 1,1 0,0 0,0 1,1 1)),((6 6,6 5,5 5,5 6,6 6)))
+  difference     -> GEOMETRYCOLLECTION EMPTY
+GEOMETRYCOLLECTION(POINT(9 9),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))
+  unary union    -> The unary union asked for on a precision grid, and the one of a geometry none of the native routes reads, are answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  intersection   -> GEOMETRYCOLLECTION(POINT(9 9),POLYGON((6 6,6 5,5 5,5 6,6 6)))
+  difference     -> GEOMETRYCOLLECTION EMPTY
+GEOMETRYCOLLECTION(LINESTRING(0 0,9 9),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)),((7 7,8 7,8 8,7 8,7 7))))
+  unary union    -> The unary union asked for on a precision grid, and the one of a geometry none of the native routes reads, are answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  intersection   -> The intersection of two geometries that are not both planar and polygonal is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  difference     -> GEOMETRYCOLLECTION EMPTY
+GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(POINT(1 1)),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))
+  unary union    -> The unary union asked for on a precision grid, and the one of a geometry none of the native routes reads, are answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  intersection   -> GEOMETRYCOLLECTION(POINT(1 1),POLYGON((6 6,6 5,5 5,5 6,6 6)))
+  difference     -> GEOMETRYCOLLECTION EMPTY
+GEOMETRYCOLLECTION(POINT(1 1),TIN(((0 0,4 0,2 4,0 0))))
+  unary union    -> The unary union asked for on a precision grid, and the one of a geometry none of the native routes reads, are answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+  intersection   -> POLYGON((0 0,4 0,2 4,0 0))
+  difference     -> GEOMETRYCOLLECTION EMPTY

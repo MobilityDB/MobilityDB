@@ -1,0 +1,2 @@
+tgeometry: answered 121, refused 104, unreadable 0, crash 0 of 225 pairs
+tgeography: answered 4, refused 221, unreadable 0, crash 0 of 225 pairs
