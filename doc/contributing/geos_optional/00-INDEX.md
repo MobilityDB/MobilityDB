@@ -88,14 +88,16 @@ Each item is measured; the note named gives the evidence.
    ordinary data are `traversedArea` of a temporal geometry with such a value, `atGeometry` with
    such a value and a collection, `traversedArea` of a rigid geometry built on a polyhedral
    surface, and `merge` of a temporal geometry, which reports the refusal as an error since
-   MobilityDB #2946 (§5.7).
+   MobilityDB #2946 (§5.7). MobilityDB #2966 reads such a member face by face: the array union
+   and the union of a collection then reach GEOS for 0 of 225, and the overlays of a collection
+   for 64 and 24 of 6750.
 2. **Arrays of overlapping surfaces expose three more gaps** ([note 5](05-WHAT-STILL-NEEDS-GEOS.md)
    §5.8), measured on 1500 random arrays judged by CGAL. Surfaces carrying Z, two of which merge
    while another stays apart, raise an error in every build, and the default error handler ends
    the process; MobilityDB #2954, merged as `29f082c762`, answers them. Three surfaces can reach
    GEOS in one order and answer in another, because a vertex the union constructs is rounded near
-   another member's edge; reading every member's edges in one arrangement answers them (plan
-   step 4). And 76 of 1500 answers spell a hole as a shell that touches itself, which covers the
+   another member's edge; reading every member's edges in one arrangement answers them
+   (MobilityDB #2961, merged as `100c77a8d4`). And 76 of 1500 answers spell a hole as a shell that touches itself, which covers the
    right points and is not a valid OGC polygon; MobilityDB #2959, merged as `42ebd6312b`, writes 8 of them as a shell and
    a hole.
 3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).

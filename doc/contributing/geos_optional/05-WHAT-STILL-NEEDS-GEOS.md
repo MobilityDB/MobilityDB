@@ -280,7 +280,7 @@ Traced in a debugger on T1, T3, T2, the selected pieces of the second merge over
 and the crossing at y = 3 is computed twice, as 3 and as 3.0000000000000004, so the ring does not
 close. A union that collects every node once over every pair of members, from the edges they carry,
 answers all 1500 arrays, CGAL agreeing with each, and runs only where the pairwise merge declines,
-so the 1497 arrays that merge answers keep its answer (plan step 4).
+so the 1497 arrays that merge answers keep its answer (MobilityDB #2961, merged as `100c77a8d4`).
 
 **A hole spelled as a shell that touches itself.** 76 of the 1500 flat answers write a hole that
 touches the shell as one ring that passes through the same vertex twice. The point set is right:
@@ -299,11 +299,14 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
 
 1. **The array union answers multi-part members.** A `MULTIPOLYGON`, `MULTISURFACE`, `TIN` or
    `POLYHEDRALSURFACE` member is what every reaching input has in common, in the array union and
-   in the unary union of a collection alike.
-2. **The overlay of a collection answers** the 409 and 953 calls of §5.5 that remain after that,
-   or the sweep is re-run to see how many remain.
+   in the unary union of a collection alike. MobilityDB #2966 reads it face by face, and the
+   sweep then reads 0 of 225 for both in every Z mode
+   ([`tools/results/geos_fallback_sweep.multipart.txt`](tools/results/geos_fallback_sweep.multipart.txt)).
+2. **The overlay of a collection answers** the 409 and 953 calls of §5.5, of which 64 and 24
+   remain with MobilityDB #2966.
 3. **The native union answers the arrays of §5.8**: surfaces carrying Z (merged as MobilityDB #2954), and
-   three surfaces whose order leaves a constructed vertex near another member's edge.
+   three surfaces whose order leaves a constructed vertex near another member's edge (merged as
+   MobilityDB #2961).
 4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
    unseen.
 
