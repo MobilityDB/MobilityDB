@@ -78,6 +78,10 @@ Datum
 Tpc_extent_transfn(PG_FUNCTION_ARGS)
 {
   TPCBox *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (state && ! AggCheckCallContext(fcinfo, NULL))
+    state = tpcbox_copy(state);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   TPCBox *result = tpcbox_extent_transfn(state, temp);
   if (! result)

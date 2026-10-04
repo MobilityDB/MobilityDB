@@ -470,3 +470,28 @@ SELECT span_extent_combinefn(NULL::intspan, NULL::intspan);
  
 (1 row)
 
+DROP TABLE IF EXISTS tbl_extent_state;
+NOTICE:  table "tbl_extent_state" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_extent_state(s intspan, s0 intspan);
+CREATE TABLE
+INSERT INTO tbl_extent_state VALUES (intspan '[1, 3]', intspan '[1, 3]');
+INSERT 0 1
+SELECT span_extent_transfn(s, intspan '[10, 20]'), span_extent_transfn(s, 30),
+  set_extent_transfn(s, intset '{40}'),
+  spanset_extent_transfn(s, intspanset '{[50, 60]}'),
+  span_extent_combinefn(s, intspan '[70, 80]')
+FROM tbl_extent_state;
+ span_extent_transfn | span_extent_transfn | set_extent_transfn | spanset_extent_transfn | span_extent_combinefn 
+---------------------+---------------------+--------------------+------------------------+-----------------------
+ [1, 21)             | [1, 31)             | [1, 41)            | [1, 61)                | [1, 81)
+(1 row)
+
+SELECT s = s0 FROM tbl_extent_state;
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE tbl_extent_state;
+DROP TABLE

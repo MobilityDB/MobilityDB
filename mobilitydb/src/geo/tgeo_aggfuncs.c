@@ -63,6 +63,10 @@ Datum
 Tspatial_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box && ! AggCheckCallContext(fcinfo, NULL))
+    box = stbox_copy(box);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   STBox *result = tspatial_extent_transfn(box, temp);
   if (! result)

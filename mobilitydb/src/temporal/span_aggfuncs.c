@@ -61,6 +61,10 @@ Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (s1 && ! AggCheckCallContext(fcinfo, NULL))
+    s1 = span_copy(s1);
   Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
   Span *result = span_extent_transfn(s1, s2);
   if (! result)
@@ -80,6 +84,10 @@ Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (s1 && ! AggCheckCallContext(fcinfo, NULL))
+    s1 = span_copy(s1);
   Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
   Span *result = span_extent_transfn(s1, s2);
   if (! result)
@@ -107,6 +115,10 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_SPAN_P(s);
   Datum value = PG_GETARG_DATUM(1);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (s && ! AggCheckCallContext(fcinfo, NULL))
+    s = span_copy(s);
   PG_RETURN_SPAN_P(spanbase_extent_transfn(s, value, basetype));
 }
 
@@ -122,6 +134,10 @@ Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (span && ! AggCheckCallContext(fcinfo, NULL))
+    span = span_copy(span);
   Set *set = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
   span = set_extent_transfn(span, set);
   PG_FREE_IF_COPY(set, 1);
@@ -142,6 +158,10 @@ Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (s && ! AggCheckCallContext(fcinfo, NULL))
+    s = span_copy(s);
   SpanSet *ss = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPANSET_P(1);
   s = spanset_extent_transfn(s, ss);
   PG_FREE_IF_COPY(ss, 1);
