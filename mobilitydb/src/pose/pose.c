@@ -925,7 +925,7 @@ PG_FUNCTION_INFO_V1(Pose_same);
  * @ingroup mobilitydb_pose_base_comp
  * @brief Return true if two poses are approximately equal with respect to an
  * epsilon value
- * @sqlfn same()
+ * @sqlfn poseSame()
  * @sqlop @p ~=
  */
 Datum
