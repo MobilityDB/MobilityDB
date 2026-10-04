@@ -36,6 +36,10 @@ CREATE FUNCTION tpcbox_extent_transfn(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tpcbox_extent_combinefn(tpcbox, tpcbox)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_extent_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tpc_extent_transfn(tpcbox, tpcpoint)
   RETURNS tpcbox
@@ -50,21 +54,21 @@ CREATE FUNCTION tpc_extent_transfn(tpcbox, tpcpatch)
 CREATE AGGREGATE extent(tpcbox) (
   SFUNC = tpcbox_extent_transfn,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_transfn,
+  COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpoint) (
   SFUNC = tpc_extent_transfn,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_transfn,
+  COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpatch) (
   SFUNC = tpc_extent_transfn,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_transfn,
+  COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
 );
 

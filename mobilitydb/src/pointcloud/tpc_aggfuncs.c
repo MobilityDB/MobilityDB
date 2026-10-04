@@ -82,8 +82,8 @@ Tpc_extent_transfn(PG_FUNCTION_ARGS)
    * expanded in a copy */
   if (state && ! AggCheckCallContext(fcinfo, NULL))
     state = tpcbox_copy(state);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  TPCBox *result = tpcbox_extent_transfn(state, temp);
+  const Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
+  TPCBox *result = tpc_extent_transfn(state, temp);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);
@@ -94,8 +94,6 @@ PG_FUNCTION_INFO_V1(Tpcbox_extent_transfn);
 /**
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for the extent aggregate over tpcbox values
- * @details The function doubles as the parallel combine function for the
- * temporal variants.
  * @sqlfn tpcbox_extent_transfn()
  * @sqlaggfn extent()
  */
@@ -103,17 +101,38 @@ Datum
 Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   TPCBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
-  TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
-  if (! box1 && ! box2) PG_RETURN_NULL();
-  if (! box1) PG_RETURN_TPCBOX_P(tpcbox_copy(box2));
-  if (! box2) PG_RETURN_TPCBOX_P(tpcbox_copy(box1));
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
+  const TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tpcbox_copy(box1);
+  TPCBox *result = tpcbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  TPCBox *result = tpcbox_copy(box1);
-  tpcbox_expand(box2, result);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_extent_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_extent_combinefn);
+/**
+ * @ingroup mobilitydb_pointcloud_agg
+ * @brief Combine function for the extent aggregates over tpcbox, tpcpoint
+ * and tpcpatch values
+ * @sqlfn tpcbox_extent_combinefn()
+ * @sqlaggfn extent()
+ */
+Datum
+Tpcbox_extent_combinefn(PG_FUNCTION_ARGS)
+{
+  TPCBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
+  const TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tpcbox_copy(box1);
+  TPCBox *result = tpcbox_extent_transfn(box1, box2);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);
 }
 

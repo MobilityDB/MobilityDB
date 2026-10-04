@@ -3562,6 +3562,17 @@ int main(void)
   printf("%s\n", char_result);
   free(tbox_agg); free(char_result);
 
+  /* TBox *tbox_extent_transfn(TBox *state, const TBox *box); */
+  tbox_agg = tbox_extent_transfn(NULL, tbox1);
+  tbox_agg = tbox_extent_transfn(tbox_agg, tbox2);
+  char_result = tbox_out(tbox_agg, 6);
+  printf("tbox_extent aggregate\n");
+  printf("%s\n", tbox1_out);
+  printf("%s\n", tbox2_out);
+  printf("tbox_extent result\n");
+  printf("%s\n", char_result);
+  free(tbox_agg); free(char_result);
+
   /* SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp); */
   sklist = tnumber_tavg_transfn(NULL, tfloat1);
   sklist = tnumber_tavg_transfn(sklist, tfloat2);

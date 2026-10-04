@@ -1072,65 +1072,47 @@ Intersection_tbox_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_extent_transfn);
 /**
- * @brief Transition function for extent aggregation for boxes
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for extent aggregation of temporal boxes
+ * @sqlfn tbox_extent_transfn()
  * @sqlaggfn extent()
  */
 Datum
 Tbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
-
-  /* Can't do anything with null inputs */
-  if (! box1 && ! box2)
+  const TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tbox_copy(box1);
+  TBox *result = tbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  TBox *result = palloc(sizeof(TBox));
-  /* One of the boxes is null, return the other one */
-  if (! box1)
-  {
-    memcpy(result, box2, sizeof(TBox));
-    PG_RETURN_TBOX_P(result);
-  }
-  if (! box2)
-  {
-    memcpy(result, box1, sizeof(TBox));
-    PG_RETURN_TBOX_P(result);
-  }
-
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tbox_tbox(box1, box2) ||
-      ! ensure_same_dimensionality_tbox(box1, box2))
-    PG_RETURN_NULL();
-  memcpy(result, box1, sizeof(TBox));
-  tbox_expand(box2, result);
   PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_extent_combinefn);
 /**
- * @brief Combine function for extent aggregation for temporal boxes
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for extent aggregation of temporal boxes and
+ * temporal numbers
+ * @sqlfn tbox_extent_combinefn()
  * @sqlaggfn extent()
  */
 Datum
 Tbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
-  if (!box1 && !box2)
+  const TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tbox_copy(box1);
+  TBox *result = tbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_TBOX_P(box1);
-  if (!box1 && box2)
-    PG_RETURN_TBOX_P(box2);
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tbox_tbox(box1, box2) ||
-      ! ensure_same_dimensionality_tbox(box1, box2))
-    PG_RETURN_NULL();
-  TBox *result = tbox_copy(box1);
-  tbox_expand(box2, result);
   PG_RETURN_TBOX_P(result);
 }
 

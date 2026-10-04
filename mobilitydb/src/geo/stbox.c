@@ -1594,59 +1594,47 @@ Stbox_quad_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
 /**
+ * @ingroup mobilitydb_geo_agg
  * @brief Transition function for extent aggregation of spatiotemporal boxes
+ * @sqlfn stbox_extent_transfn()
  * @sqlaggfn extent()
  */
 Datum
 Stbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-
-  /* Can't do anything with null inputs */
-  if (! box1 && ! box2)
+  const STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = stbox_copy(box1);
+  STBox *result = stbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  /* One of the boxes is null, return the other one */
-  if (! box1)
-    PG_RETURN_STBOX_P(stbox_copy(box2));
-  if (! box2)
-    PG_RETURN_STBOX_P(stbox_copy(box1));
-
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_stbox_stbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
-    PG_RETURN_NULL();
-  STBox *result = palloc(sizeof(STBox));
-  memcpy(result, box1, sizeof(STBox));
-  stbox_expand(box2, result);
   PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
 /**
+ * @ingroup mobilitydb_geo_agg
  * @brief Combine function for extent aggregation of spatiotemporal boxes
+ * and spatiotemporal values
+ * @sqlfn stbox_extent_combinefn()
  * @sqlaggfn extent()
  */
 Datum
 Stbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-  if (!box1 && !box2)
+  const STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = stbox_copy(box1);
+  STBox *result = stbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_STBOX_P(box1);
-  if (!box1 && box2)
-    PG_RETURN_STBOX_P(box2);
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_stbox_stbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
-    PG_RETURN_NULL();
-  STBox *result = stbox_copy(box1);
-  stbox_expand(box2, result);
   PG_RETURN_STBOX_P(result);
 }
 

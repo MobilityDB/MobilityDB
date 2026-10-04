@@ -3638,6 +3638,18 @@ int main(void)
   assert(stbox_spatial_distance(sb1, sbt) == DBL_MAX);
   assert(meos_errno() != 0);
   meos_errno_reset();
+
+  /* The extent of two boxes expands a copy of the first into the state, and
+   * two boxes of different reference systems are refused */
+  STBox *sbext = stbox_extent_transfn(NULL, sb1);
+  sbext = stbox_extent_transfn(sbext, sb2);
+  char *sbext_txt = stbox_out(sbext, 6);
+  printf("stbox_extent_transfn: %s\n", sbext_txt);
+  assert(meos_errno() == 0);
+  assert(stbox_extent_transfn(sbext, sb3) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  free(sbext); free(sbext_txt);
   free(sb1); free(sb2); free(sb3); free(sbt);
 
   /* A reversed line is a new geometry: the line it reverses keeps its vertex

@@ -934,6 +934,7 @@ extern double mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1, con
 
 extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
 extern SkipList *tpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
+extern STBox *stbox_extent_transfn(STBox *state, const STBox *box);
 extern STBox *tspatial_extent_transfn(STBox *box, const Temporal *temp);
 
 /* Tile functions */

@@ -48,6 +48,7 @@
 #include "temporal/skiplist.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/tbool_ops.h"
 #include "temporal/tinstant.h"
@@ -1774,6 +1775,39 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
   TBox b;
   tnumber_set_tbox(temp, &b);
   tbox_expand(&b, state);
+  return state;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal extent aggregate of temporal boxes
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] box Temporal box to aggregate, may be `NULL`
+ * @note The function is also the combine function of the extent aggregates
+ * of temporal boxes and temporal numbers, the box to aggregate being the
+ * state of another partial aggregation
+ * @csqlfn #Tbox_extent_transfn(), #Tbox_extent_combinefn()
+ */
+TBox *
+tbox_extent_transfn(TBox *state, const TBox *box)
+{
+  /* Can't do anything with null inputs */
+  if (! state && ! box)
+    return NULL;
+  /* Null state and non-null box, return a copy of the box */
+  if (! state)
+    return tbox_copy(box);
+  /* Non-null state and null box, return the state */
+  if (! box)
+    return state;
+
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tbox_tbox(state, box) ||
+      ! ensure_same_dimensionality_tbox(state, box))
+    return NULL;
+
+  /* Both state and box are not null */
+  tbox_expand(box, state);
   return state;
 }
 

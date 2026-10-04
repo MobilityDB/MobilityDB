@@ -2051,6 +2051,7 @@ extern SkipList *tint_tsum_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
+extern TBox *tbox_extent_transfn(TBox *state, const TBox *box);
 extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);

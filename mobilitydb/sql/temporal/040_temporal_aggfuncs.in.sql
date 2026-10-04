@@ -41,21 +41,17 @@ CREATE FUNCTION temporal_extent_transfn(tstzspan, ttext)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_extent_combinefn(tstzspan, tstzspan)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbool) (
   SFUNC = temporal_extent_transfn,
   STYPE = tstzspan,
-  COMBINEFUNC = temporal_extent_combinefn,
+  COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(ttext) (
   SFUNC = temporal_extent_transfn,
   STYPE = tstzspan,
-  COMBINEFUNC = temporal_extent_combinefn,
+  COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
 
@@ -72,27 +68,23 @@ CREATE FUNCTION tnumber_extent_transfn(tbox, tfloat)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tnumber_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tnumber_extent_combinefn(tbox, tbox)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_extent_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tint) (
   SFUNC = tnumber_extent_transfn,
   STYPE = tbox,
-  COMBINEFUNC = tnumber_extent_combinefn,
+  COMBINEFUNC = tbox_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tbigint) (
   SFUNC = tnumber_extent_transfn,
   STYPE = tbox,
-  COMBINEFUNC = tnumber_extent_combinefn,
+  COMBINEFUNC = tbox_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tfloat) (
   SFUNC = tnumber_extent_transfn,
   STYPE = tbox,
-  COMBINEFUNC = tnumber_extent_combinefn,
+  COMBINEFUNC = tbox_extent_combinefn,
   PARALLEL = safe
 );
 

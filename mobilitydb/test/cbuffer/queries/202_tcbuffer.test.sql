@@ -737,3 +737,13 @@ SELECT splitEachNSpans(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(P
 -- A NULL operand of merge returns the other one
 SELECT merge(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', NULL::tcbuffer) = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
 SELECT merge(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01') = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
+
+-- The extent aggregate answers the bounding box of all the values, the one
+-- extent answers over their boxes
+SELECT extent(temp) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
+  (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]'),
+  (NULL::tcbuffer)) t(temp);
+SELECT extent(temp) = extent(temp::stbox) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
+  (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]')) t(temp);
