@@ -90,9 +90,11 @@ Each item is measured; the note named gives the evidence.
    surface, and `merge` of a temporal geometry, which reports the refusal as an error since
    MobilityDB #2946 (§5.7). MobilityDB #2966, merged as `d40d7a885f`, reads such a member face by
    face: the array union and the union of a collection then reach GEOS for 0 of 225, and the
-   overlays of a collection for 64 and 24 of 6750. MobilityDB #2970 reads a collection member of
-   the array union component by component: the intersection of a collection then reaches GEOS for
-   0 of 6750, the difference for 24.
+   overlays of a collection for 64 and 24 of 6750. MobilityDB #2970, merged as `2ce5aea42a`, reads a
+   collection member of the array union component by component: the intersection of a collection
+   then reaches GEOS for 0 of 6750, the difference for 24. MobilityDB #2975 places an overlay piece
+   by an end of it that is not a node, where a rounded vertex left it a rounding away from the
+   other boundary: every count of the sweep then reads 0.
 2. **Arrays of overlapping surfaces expose three more gaps** ([note 5](05-WHAT-STILL-NEEDS-GEOS.md)
    §5.8), measured on 1500 random arrays judged by CGAL. Surfaces carrying Z, two of which merge
    while another stays apart, raise an error in every build, and the default error handler ends
