@@ -6419,9 +6419,10 @@ buffer_triangle_as_poly(const LWTRIANGLE *tri)
  * takes. It is the dissolve the buffer of a geometry of several components
  * already performs, answered for a geometry a caller brings
  * @param[in] geom Geometry
- * @return The union, or @p NULL when the geometry carries something that is
- * not a surface, or when the boundary overlay does not cover the topology of
- * one of the pairs -- a caller that has another way to answer may take it
+ * @return The union, on the plane, or @p NULL when the geometry carries
+ * something that is not a surface, or when the boundary overlay does not cover
+ * the topology of one of the pairs -- a caller that has another way to answer
+ * may take it
  */
 LWGEOM *
 meos_areal_union(const LWGEOM *geom)
@@ -6434,6 +6435,20 @@ meos_areal_union(const LWGEOM *geom)
    * not what this answers */
   if (! buffer_is_areal_geometry(geom))
     return NULL;
+
+  /* The dissolve is a figure of the plane: a face rebuilt from the boundary
+   * walk carries no ordinate, while a face kept whole carries the ones it came
+   * with, and no collection holds the two together. A geometry carrying Z or M
+   * is therefore dissolved as its projection, as #geom_unary_union() reads it,
+   * and a caller holding the ordinates reads them back onto the answer, see
+   * #meos_lift_ordinates() */
+  if (FLAGS_GET_Z(geom->flags) || FLAGS_GET_M(geom->flags))
+  {
+    LWGEOM *plane = lwgeom_force_2d(geom);
+    LWGEOM *result = meos_areal_union(plane);
+    lwgeom_free(plane);
+    return result;
+  }
 
   /* One surface is its own union */
   uint8_t type = geom->type;

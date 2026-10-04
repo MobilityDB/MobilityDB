@@ -604,6 +604,11 @@ SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@200
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}'));
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}'));
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01'));
+-- Surfaces with Z at one timestamp, two overlapping and one apart
+SELECT asText(merge(ARRAY[tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01', 'Polygon Z((1 0 1,3 0 1,3 2 1,1 2 1,1 0 1))@2001-01-01', 'Polygon Z((5 5 1,6 5 1,6 6 1,5 6 1,5 5 1))@2001-01-01']));
+-- Surfaces with Z at one timestamp that overlap at different heights, in both orders
+SELECT asText(merge(tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01', tgeometry 'Polygon Z((1 0 7,3 0 7,3 2 7,1 2 7,1 0 7))@2001-01-01'));
+SELECT asText(merge(tgeometry 'Polygon Z((1 0 7,3 0 7,3 2 7,1 2 7,1 0 7))@2001-01-01', tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01'));
 
 -- Different values at the same timestamp
 SELECT asText(merge(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{Point(2 2)@2001-01-02, Point(2 2)@2001-01-03, Point(1 1)@2001-01-04}'));
