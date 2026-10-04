@@ -1473,9 +1473,6 @@ extern void temporal_skiplist_splice(SkipList *list, void **values, int count, d
 extern void **skiplist_values(SkipList *list);
 extern void **skiplist_keys_values(SkipList *list, void **values);
 
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
-extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
-
 /*****************************************************************************/
 
 /* Tile functions for span and temporal types */

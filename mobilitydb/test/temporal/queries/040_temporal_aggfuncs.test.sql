@@ -407,6 +407,11 @@ WITH temp(inst) AS (
   SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tfloat '[1@2001-01-01, 2@2001-01-02]')) t(temp);
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tint '1@2001-01-01'), (tint '2@2001-01-02')) t(temp);
+
 -------------------------------------------------------------------------------
 -- Interpolation stated
 

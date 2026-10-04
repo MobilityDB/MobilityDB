@@ -2025,6 +2025,8 @@ extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tand_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_combinefn(SkipList *state1, SkipList *state2);
+extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
+extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
