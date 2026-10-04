@@ -1,0 +1,22 @@
+# cgal_aunion over gen_corpus.py 1 1500, multi-part members listed part by part (explode_corpus.py):
+# 1500 flat arrays of POLYGON and TRIANGLE. Build without GEOS at 73e530c8a7, whose code reads such
+# members as master 0bf0dab28c does.
+controls: 0 of 6 wrong
+rings touching themselves at a vertex, read as their loops: 77, in 76 answers
+worst relative gap seen: 4.63e-16 (tolerance 1e-09)
+ORACLE flatx: 1497 of 1500 agree, 3 disagree
+# declined: 3
+# the declining rows:
+TRIANGLE((2 2,6 4,7 3,2 2));TRIANGLE((0 8,4 1,4 4,0 8));TRIANGLE((0 1,5 8,2 3,0 1));TRIANGLE((4 1,2 7,5 6,4 1));TRIANGLE((1 7,1 0,0 0,1 7));TRIANGLE((4 0,4 4,2 8,4 0));TRIANGLE((7 5,0 7,5 3,7 5));POLYGON((0 0,4 0,4 2,0 2,0 0));POLYGON((6 2,8 2,8 4,6 4,6 2));POLYGON((1 6,2 6,2 8,1 8,1 6))
+TRIANGLE((6 6,7 3,5 5,6 6));TRIANGLE((0 7,5 2,3 5,0 7));TRIANGLE((7 7,0 3,6 4,7 7));TRIANGLE((5 2,2 5,6 7,5 2));POLYGON((6 6,10 6,10 10,6 10,6 6),(7 7,7 8,8 8,8 7,7 7));POLYGON((2 6,5 6,5 9,2 9,2 6),(3 7,3 8,4 8,4 7,3 7))
+TRIANGLE((8 4,4 7,0 1,8 4));TRIANGLE((1 2,1 8,4 4,1 2));TRIANGLE((1 3,4 2,8 3,1 3));TRIANGLE((7 8,3 2,5 1,7 8));TRIANGLE((5 1,5 2,7 8,5 1));POLYGON((3 3,7 3,7 4,3 4,3 3));POLYGON((6 5,8 5,8 7,6 7,6 5));POLYGON((1 7,4 7,4 8,1 8,1 7));TRIANGLE((2 6,3 0,3 2,2 6))
+# each reduced by shrink.py to a minimal declining subset:
+TRIANGLE((0 1,5 8,2 3,0 1));TRIANGLE((1 7,1 0,0 0,1 7));TRIANGLE((7 5,0 7,5 3,7 5));POLYGON((1 6,2 6,2 8,1 8,1 6))
+TRIANGLE((0 7,5 2,3 5,0 7));TRIANGLE((7 7,0 3,6 4,7 7));TRIANGLE((5 2,2 5,6 7,5 2))
+TRIANGLE((1 3,4 2,8 3,1 3));TRIANGLE((7 8,3 2,5 1,7 8));TRIANGLE((5 1,5 2,7 8,5 1))
+# T1, T2, T3 of the last subset, in every order shown in note 5 section 5.8:
+TRIANGLE((5 1,5 2,7 8,5 1));TRIANGLE((7 8,3 2,5 1,7 8));TRIANGLE((1 3,4 2,8 3,1 3)) => POLYGON((1 3,3.1818181818181817 2.2727272727272725,3 2,5 1,5.384615384615385 2.3
+TRIANGLE((7 8,3 2,5 1,7 8));TRIANGLE((5 1,5 2,7 8,5 1));TRIANGLE((1 3,4 2,8 3,1 3)) => POLYGON((1 3,3.1818181818181817 2.2727272727272725,3 2,5 1,5.384615384615385 2.3
+TRIANGLE((1 3,4 2,8 3,1 3));TRIANGLE((5 1,5 2,7 8,5 1));TRIANGLE((7 8,3 2,5 1,7 8)) => DECLINED The union of a geodetic array, and of one whose linework coincides over
+union(T1,T2) = POLYGON((7 8,3.6666666666666665 3,1 3,3.1818181818181817 2.2727272727272725,3 2,5 1,5.384615384615385 2.3461538461538463,8 3,5.571428571428571 3,7 8))
+union(T1,T2);T3 => DECLINED The union of a geodetic array, and of one whose linework coincides over

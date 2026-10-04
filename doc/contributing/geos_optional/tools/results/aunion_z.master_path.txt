@@ -1,0 +1,9 @@
+# cgal_aunion over gen_corpus.py 2 1500 z, multi-part members listed part by part (explode_corpus.py):
+# 1500 arrays of POLYGON Z and TRIANGLE Z. Build without GEOS at 73e530c8a7, whose code reads such
+# members as master 0bf0dab28c does (union_member_pieces passes a member that is not a multi-surface unchanged).
+controls: 0 of 6 wrong
+rings touching themselves at a vertex, read as their loops: 11, in 11 answers
+worst relative gap seen: 1.59e-16 (tolerance 1e-09)
+ORACLE zx.before: 619 of 1500 agree, 881 disagree
+# declined: 881
+    881 DECLINED The union of a geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
