@@ -241,6 +241,33 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   return state;
 }
 
+/**
+ * @ingroup meos_geo_agg
+ * @brief Combine function for temporal centroid aggregation of temporal
+ * points
+ * @param[in,out] state1, state2 Current aggregate states, may be `NULL`
+ * @csqlfn #Tpoint_tcentroid_combinefn()
+ */
+SkipList *
+tpoint_tcentroid_combinefn(SkipList *state1, SkipList *state2)
+{
+  /* Can't do anything with null inputs */
+  if (! state1 && ! state2)
+    return NULL;
+  /* Ensure the validity of the arguments */
+  if (! ensure_geoaggstate_state(state1, state2))
+    return NULL;
+
+  const struct GeoAggregateState *extra = NULL;
+  if (state1 && state1->extra)
+    extra = state1->extra;
+  if (state2 && state2->extra)
+    extra = state2->extra;
+  assert(extra);
+  datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
+  return temporal_tagg_combinefn(state1, state2, func, CROSSINGS_NO);
+}
+
 /*****************************************************************************
  * Extent
  *****************************************************************************/
