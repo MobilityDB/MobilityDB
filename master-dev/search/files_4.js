@@ -33,5 +33,6 @@ var searchData=
   ['doxygen_5fmobilitydb_5fpose_2eh_30',['doxygen_mobilitydb_pose.h',['../doxygen__mobilitydb__pose_8h.html',1,'']]],
   ['doxygen_5fmobilitydb_5fquadbin_2eh_31',['doxygen_mobilitydb_quadbin.h',['../doxygen__mobilitydb__quadbin_8h.html',1,'']]],
   ['doxygen_5fmobilitydb_5frgeo_2eh_32',['doxygen_mobilitydb_rgeo.h',['../doxygen__mobilitydb__rgeo_8h.html',1,'']]],
-  ['doxygen_5fmobilitydb_5fs2cell_2eh_33',['doxygen_mobilitydb_s2cell.h',['../doxygen__mobilitydb__s2cell_8h.html',1,'']]]
+  ['doxygen_5fmobilitydb_5fs2cell_2eh_33',['doxygen_mobilitydb_s2cell.h',['../doxygen__mobilitydb__s2cell_8h.html',1,'']]],
+  ['dwithin_5fpoint_5ftest_2ec_34',['dwithin_point_test.c',['../dwithin__point__test_8c.html',1,'']]]
 ];
