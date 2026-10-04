@@ -1647,13 +1647,17 @@ buffer_locator_free(BufferLocator *loc)
  * for every point
  * @param[in,out] loc Locator, whose edges are read on the first call
  * @param[in] x,y Point to locate
+ * @param[in] vertex True if the point is an input vertex, which is on the
+ * boundary exactly where its coordinates say so, rather than a point the
+ * overlay constructs, which is on it within the rounding of its coordinates,
+ * the flag #relate_point_in_area reads
  * @return
  *   0 = interior
  *   1 = boundary
  *   2 = exterior
  */
 static int
-buffer_locator_point(BufferLocator *loc, double x, double y)
+buffer_locator_locate(BufferLocator *loc, double x, double y, bool vertex)
 {
   assert(loc); assert(loc->geom);
   if (! loc->ready)
@@ -1688,7 +1692,19 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
     relate_edges_clear(&loc->re);
     relate_edges_init(&loc->re, loc->edges, loc->re.nedges, true);
   }
-  return relate_point_in_area_index(x, y, &loc->re, false);
+  return relate_point_in_area_index(x, y, &loc->re, vertex);
+}
+
+/**
+ * @brief Return where a point the overlay constructs stands with respect to a
+ * locator's geometry
+ * @details #buffer_locator_locate() for a constructed point, as
+ * #relate_point_on_boundary is asked for one
+ */
+static int
+buffer_locator_point(BufferLocator *loc, double x, double y)
+{
+  return buffer_locator_locate(loc, x, y, false);
 }
 
 /**
@@ -3100,6 +3116,29 @@ buffer_piece_midpoint(const Edge *piece, POINT2D *point)
 }
 
 /**
+ * @brief Return true if a point is one of the nodes the boundaries were cut at
+ * @details Two computations of one node are one node however far apart the
+ * arithmetic leaves them, which is the question #buffer_points_equal asks the
+ * chaining and the one asked here, on the same tolerance
+ * @param[in] nodes Nodes, as #POINT2D
+ * @param[in] point Point
+ */
+static bool
+buffer_point_is_node(const MeosArray *nodes, POINT2D point)
+{
+  assert(nodes);
+  double tol = buffer_node_tolerance(point.x, point.y);
+  for (uint32_t i = 0; i < nodes->count; i++)
+  {
+    const POINT2D *node = (const POINT2D *) meos_array_get_intl(nodes, i);
+    double ntol = Max(tol, buffer_node_tolerance(node->x, node->y));
+    if (fabs(node->x - point.x) <= ntol && fabs(node->y - point.y) <= ntol)
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Classify one split boundary piece with respect to a geometry
  * @details The representative point is located against the complete other
  * buffer. This is a classification of the boundary itself:
@@ -3109,15 +3148,43 @@ buffer_piece_midpoint(const Edge *piece, POINT2D *point)
  *   belong to the exterior union boundary.
  * - BOUNDARY  -> the piece coincides with, or touches, the other boundary.
  *   This case is retained for the later coincident-boundary handling.
+ *
+ * The midpoint is a point the overlay constructs, so it reads as ON the other
+ * boundary within the rounding of its coordinates, and a piece running at an
+ * angle of a rounding away from an edge of the other reads so as well as one
+ * running along it. The two are told apart by the ends of the piece. A stretch
+ * the two boundaries share is bounded by nodes, since the exact meeting of two
+ * segments (#linesegm_intersect) reports both ends of their overlap, so a piece
+ * lying along the other boundary ends at a node at both ends. An end that is
+ * not a node is an input vertex, as every piece is an input edge cut at the
+ * nodes alone, and the piece does not cross the other boundary between its
+ * ends, so where that vertex stands is where the piece stands: it is located
+ * exactly, as #relate_point_in_area locates an input vertex
+ * @param[in] piece Piece
+ * @param[in] other Locator of the other geometry
+ * @param[in] nodes Nodes the boundaries were cut at, as #POINT2D
  */
 static EdgeLocation
-buffer_classify_piece(const Edge *piece, BufferLocator *other)
+buffer_classify_piece(const Edge *piece, BufferLocator *other,
+  const MeosArray *nodes)
 {
-  assert(piece); assert(other);
+  assert(piece); assert(other); assert(nodes);
   POINT2D midpoint;
   if (! buffer_piece_midpoint(piece, &midpoint))
     return BUFFER_PIECE_BOUNDARY;
   int location = buffer_locator_point(other, midpoint.x, midpoint.y);
+  if (location == 1)
+  {
+    POINT2D ends[2] = {{piece->x1, piece->y1}, {piece->x2, piece->y2}};
+    for (int k = 0; k < 2 && location == 1; k++)
+    {
+      if (buffer_point_is_node(nodes, ends[k]))
+        continue;
+      int at_end = buffer_locator_locate(other, ends[k].x, ends[k].y, true);
+      if (at_end != 1)
+        location = at_end;
+    }
+  }
   switch (location)
   {
     case 0:
@@ -3490,10 +3557,12 @@ buffer_add_selected_piece(MeosArray *result, const Edge *piece,
 
 static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
-  const MeosArray *pieces_b, BufferLocator *loc_a, ClipOper oper,
-  MeosArray *result, MeosArray *boundary, MeosArray *shared, bool *coincident)
+  const MeosArray *pieces_b, BufferLocator *loc_a, const MeosArray *nodes,
+  ClipOper oper, MeosArray *result, MeosArray *boundary, MeosArray *shared,
+  bool *coincident)
 {
   assert(pieces_a); assert(loc_b); assert(pieces_b); assert(loc_a);
+  assert(nodes);
   assert(result); assert(boundary); assert(shared); assert(coincident);
   *coincident = false;
   /* The pieces each boundary reports as lying on the other, kept apart so that
@@ -3508,7 +3577,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
     Edge *piece = (Edge *) meos_array_get_intl(pieces_a, i);
-    EdgeLocation location = buffer_classify_piece(piece, loc_b);
+    EdgeLocation location = buffer_classify_piece(piece, loc_b, nodes);
     if (location == keep_a)
       buffer_add_selected_piece(result, piece, loc_a, false);
     else if (location == BUFFER_PIECE_BOUNDARY)
@@ -3524,7 +3593,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   for (uint32_t i = 0; i < pieces_b->count; i++)
   {
     Edge *piece = (Edge *) meos_array_get_intl(pieces_b, i);
-    EdgeLocation location = buffer_classify_piece(piece, loc_a);
+    EdgeLocation location = buffer_classify_piece(piece, loc_a, nodes);
     if (location == keep_b)
       buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE);
     else if (location == BUFFER_PIECE_BOUNDARY)
@@ -4982,8 +5051,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   int points_b = (int) meos_array_count(split_a);
   buffer_locator_make(&loc_a, geom1, points_a);
   buffer_locator_make(&loc_b, geom2, points_b);
-  buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a, oper,
-    selected, boundary, shared, &coincident);
+  buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a,
+    intersections, oper, selected, boundary, shared, &coincident);
   buffer_locator_free(&loc_a);
   buffer_locator_free(&loc_b);
 
@@ -6434,7 +6503,6 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
     }
     meos_array_destroy(raw);
   }
-  meos_array_destroy(intersections);
 
   /* Each surface's edges are read once for the whole selection, which locates
    * a point per piece and up to eight more per coincident piece */
@@ -6459,7 +6527,8 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
       {
         if (j == i)
           continue;
-        EdgeLocation location = buffer_classify_piece(piece, &locs[j]);
+        EdgeLocation location = buffer_classify_piece(piece, &locs[j],
+          intersections);
         if (location == BUFFER_PIECE_INTERIOR)
           covered = true;
         else if (location == BUFFER_PIECE_BOUNDARY && on < 0)
@@ -6482,6 +6551,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
     if (split[i])
       meos_array_destroy(split[i]);
   pfree(split);
+  meos_array_destroy(intersections);
 
   LWGEOM *result = (ok && meos_array_count(selected) > 0) ?
     buffer_make_surfaces_from_pieces(selected, srid) : NULL;

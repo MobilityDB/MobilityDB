@@ -1343,6 +1343,12 @@ SELECT asText(atGeometry(tgeometry 'GeometryCollection(Triangle((4 7,5 2,7 7,4 7
  GEOMETRYCOLLECTION(LINESTRING(0 7,1 7),POLYGON((5 2,5 5,4.4 5,5 2)),POLYGON((8 3,8 1,6 1,6 3,8 3)))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
+                 astext                  
+-----------------------------------------
+ POINT(2 4)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
  astext 
 --------
@@ -1438,6 +1444,12 @@ SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(3 3)@2001-
                                                              astext                                                              
 ---------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Tue Jan 02 00:00:00 2001 PST], [POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((2 4,3.6 0.8,4.4 0.8),CIRCULARSTRING(4.4 0.8,4.498231 3.373673,2 4)))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 /* Errors */
