@@ -458,6 +458,10 @@ SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-0
 SELECT asText(atGeometry(tgeometry '[Point(0 1)@2001-01-01,Point(5 1)@2001-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
 SELECT asText(atGeometry(tgeometry '[Point(0 0)@2001-01-01]', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
 SELECT asText(atGeometry(tgeometry '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02],[Point(0 0)@2001-01-03]}', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
+-- A geometry collection value restricted to a multi-geometry
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(MultiPoint((1 1),(3 3)),Triangle((0 0,4 0,2 4,0 0)))@2001-01-01', geometry 'MultiSurface(CurvePolygon(CircularString(0 2,2 4,4 2,2 0,0 2)),((3 3,4 3,4 4,3 4,3 3)))'), 6);
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(Linestring(0 2,4 2),MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3))))@2001-01-01', geometry 'MultiSurface(CurvePolygon(CircularString(0 2,2 4,4 2,2 0,0 2)),((3 3,4 3,4 4,3 4,3 3)))'), 6);
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(Triangle((4 7,5 2,7 7,4 7)),MultiPolygon(((0 4,1 4,1 7,0 7,0 4)),((6 0,10 0,10 3,6 3,6 0))))@2001-01-01', geometry 'MultiPolygon(((0 7,1 7,1 9,0 9,0 7)),((3 1,5 1,5 5,3 5,3 1)),((6 1,8 1,8 4,6 4,6 1)))'), 6);
 
 -- NULL
 SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
