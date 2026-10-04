@@ -6370,6 +6370,126 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
 }
 
 /**
+ * @brief Return the union of surfaces read in one arrangement of their edges
+ * @details #buffer_union_components() merges one surface at a time into the
+ * union it accumulates, and that union carries the vertices the merges
+ * construct where two boundaries cross. Such a vertex is rounded to a double,
+ * so it lies NEAR the edge of another surface rather than on it, and an edge
+ * of a later surface running along that one is then neither found to coincide
+ * with it nor cut where it should be: the pieces overlap, and the rings they
+ * form do not close. Here every node is computed once, from the edges the
+ * surfaces carry, as #buffer_areal_overlay() computes the nodes of two of
+ * them, and every surface's boundary is cut at all of them.
+ *
+ * A piece of one surface bounds the union where it lies outside every other
+ * surface, and does not where one of them covers it. A piece lying on the
+ * boundary of another surface is placed by the side each interior occupies,
+ * as #buffer_resolve_coincident_piece() places it for two.
+ * @param[in] surfaces Surfaces, held in place
+ * @param[in] count Number of surfaces, at least two
+ * @param[in] srid Spatial reference identifier
+ * @return The union, or @p NULL where a node cannot be collected, a shared
+ * piece does not resolve, or the pieces kept do not close into rings
+ */
+static LWGEOM *
+buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
+{
+  assert(surfaces); assert(count > 1);
+  BufferExtent *extents = palloc(sizeof(BufferExtent) * count);
+  for (uint32_t i = 0; i < count; i++)
+    buffer_component_extent(surfaces[i], &extents[i]);
+
+  /* Every node, collected once over every pair of surfaces whose boundaries
+   * meet */
+  MeosArray *intersections = meos_array_create(sizeof(POINT2D));
+  bool ok = true;
+  for (uint32_t i = 0; i < count && ok; i++)
+    for (uint32_t j = i + 1; j < count && ok; j++)
+    {
+      if (buffer_extents_apart(&extents[i], &extents[j]) ||
+          ! buffer_boundaries_intersect(surfaces[i], surfaces[j]))
+        continue;
+      ok = buffer_collect_boundary_intersections(surfaces[i], surfaces[j],
+        intersections);
+    }
+  pfree(extents);
+  if (! ok)
+  {
+    meos_array_destroy(intersections);
+    return NULL;
+  }
+
+  /* Each boundary cut at every node */
+  MeosArray **split = palloc0(sizeof(MeosArray *) * count);
+  int npieces = 0;
+  for (uint32_t i = 0; i < count && ok; i++)
+  {
+    MeosArray *raw = meos_array_create(sizeof(Edge));
+    split[i] = meos_array_create(sizeof(Edge));
+    ok = buffer_pieces_from_geometry(surfaces[i], raw);
+    if (ok)
+    {
+      buffer_split_pieces(raw, intersections, split[i]);
+      npieces += (int) meos_array_count(split[i]);
+    }
+    meos_array_destroy(raw);
+  }
+  meos_array_destroy(intersections);
+
+  /* Each surface's edges are read once for the whole selection, which locates
+   * a point per piece and up to eight more per coincident piece */
+  MeosArray *selected = meos_array_create(sizeof(BufferSelected));
+  BufferLocator *locs = palloc(sizeof(BufferLocator) * count);
+  /* The locators are made only where every boundary was cut */
+  bool located = ok;
+  if (located)
+    for (uint32_t i = 0; i < count; i++)
+      buffer_locator_make(&locs[i], surfaces[i], npieces);
+  for (uint32_t i = 0; i < count && ok; i++)
+  {
+    int npiece = meos_array_count(split[i]);
+    for (int k = 0; k < npiece && ok; k++)
+    {
+      Edge *piece = (Edge *) meos_array_get_intl(split[i], k);
+      /* A piece another surface covers is interior to the union; one lying on
+       * the boundary of another is placed against the first such surface */
+      bool covered = false;
+      int on = -1;
+      for (uint32_t j = 0; j < count && ! covered; j++)
+      {
+        if (j == i)
+          continue;
+        EdgeLocation location = buffer_classify_piece(piece, &locs[j]);
+        if (location == BUFFER_PIECE_INTERIOR)
+          covered = true;
+        else if (location == BUFFER_PIECE_BOUNDARY && on < 0)
+          on = (int) j;
+      }
+      if (covered)
+        continue;
+      if (on < 0)
+        buffer_add_selected_piece(selected, piece, &locs[i], false);
+      else
+        ok = buffer_resolve_coincident_piece(piece, &locs[i], &locs[on],
+          i < (uint32_t) on, CL_UNION, selected);
+    }
+  }
+  if (located)
+    for (uint32_t i = 0; i < count; i++)
+      buffer_locator_free(&locs[i]);
+  pfree(locs);
+  for (uint32_t i = 0; i < count; i++)
+    if (split[i])
+      meos_array_destroy(split[i]);
+  pfree(split);
+
+  LWGEOM *result = (ok && meos_array_count(selected) > 0) ?
+    buffer_make_surfaces_from_pieces(selected, srid) : NULL;
+  meos_array_destroy(selected);
+  return result;
+}
+
+/**
  * @brief Return whether the overlay reads a geometry as the surfaces it draws
  * @details The engine walks a boundary that bounds area, so what it reads is a
  * surface or a collection of surfaces and nothing besides: a member of any
@@ -6484,6 +6604,12 @@ meos_areal_union(const LWGEOM *geom)
   LWGEOM *result = buffer_union_components(surfaces, coll->ngeoms,
     lwgeom_get_srid(geom));
   pfree(surfaces);
+  /* A merge one surface at a time reads the vertices it constructs, and a
+   * union it does not answer is read once more from the edges the surfaces
+   * carry, in one arrangement */
+  if (! result)
+    result = buffer_union_arrangement(coll->geoms, coll->ngeoms,
+      lwgeom_get_srid(geom));
   if (! result)
     return NULL;
 
