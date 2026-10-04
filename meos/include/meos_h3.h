@@ -298,6 +298,10 @@ extern Set    *minus_set_h3index(const Set *s, H3Index cell);
 extern Set    *union_h3index_set(H3Index cell, const Set *s);
 extern Set    *union_set_h3index(const Set *s, H3Index cell);
 
+/* Aggregate functions of `h3indexset` */
+
+extern Set    *h3index_union_transfn(Set *state, H3Index cell);
+
 /* Grid traversal functions of `h3indexset` */
 
 extern Set    *h3indexset_grid_disk(const Set *cells, int k);

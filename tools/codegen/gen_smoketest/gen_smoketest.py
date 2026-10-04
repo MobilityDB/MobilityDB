@@ -2453,7 +2453,9 @@ def write_test(name, cfg):
         sigm = SIG_RE.match(sig)
         if not sigm:
             continue
-        ret = sigm.group("ret").strip()
+        # A header aligning its names (meos_h3.h) writes `Set    *`, which
+        # reads as `Set *` once its whitespace is collapsed
+        ret = re.sub(r"\s+", " ", sigm.group("ret")).strip()
         fname = sigm.group("name").strip()
         args = parse_args(sigm.group("args"))
         decls.append((fname, ret, args))

@@ -243,6 +243,10 @@ extern Set *minus_set_s2cell(const Set *s, S2CellId cell);
 extern Set *union_s2cell_set(S2CellId cell, const Set *s);
 extern Set *union_set_s2cell(const Set *s, S2CellId cell);
 
+/* Aggregate functions of `s2cellset` */
+
+extern Set *s2cell_union_transfn(Set *state, S2CellId cell);
+
 /*****************************************************************************
  * Temporal `ts2cell` inheritance
  *****************************************************************************/
