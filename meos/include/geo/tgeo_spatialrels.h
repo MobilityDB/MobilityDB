@@ -58,6 +58,7 @@ extern Datum datum_geom_intersects3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_intersects(Datum geog1, Datum geog2);
 extern Datum datum_geom_touches(Datum geom1, Datum geom2);
 extern Datum datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
+extern Datum datum_pt_dwithin2d(Datum point1, Datum point2, Datum dist);
 extern Datum datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
 extern Datum datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 extern Datum datum_geom_relate_pattern(Datum geog1, Datum geog2, Datum p);
@@ -67,6 +68,7 @@ extern datum_func2 geo_disjoint_fn_geo(int16 flags1, uint8_t flags2);
 extern datum_func2 geo_intersects_fn(int16 flags1, int16 flags2);
 extern datum_func2 geo_intersects_fn_geo(int16 flags1, uint8_t flags2);
 extern datum_func3 geo_dwithin_fn(int16 flags1, int16 flags2);
+extern datum_func3 pt_dwithin_fn(int16 flags1, int16 flags2);
 extern datum_func3 geo_dwithin_fn_geo(int16 flags1, uint8_t flags2);
 
 /*****************************************************************************/

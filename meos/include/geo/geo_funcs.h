@@ -170,6 +170,8 @@ extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
 extern double cross_product_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
+extern int point_within_distance_sign_exact(double px, double py, double qx,
+  double qy, double d);
 extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
   const POINT3D *r);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
@@ -436,6 +438,43 @@ dot_product_sign(const POINT3D *p, const POINT3D *q)
   if (dot < - bound)
     return -1;
   return dot_product_sign_exact(p, q);
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of a distance
+ * @details The coordinates and the distance are exact rationals, so the sign
+ * has one answer, and it answers whether the two points are within that
+ * distance without constructing the distance between them: a square root is a
+ * rounded construction, and a rounded value may not decide an answer
+ * (`doc/contributing/distance_design_notes.md`). A filter gives the sign where
+ * the double evaluation carries it, bounding the rounding of two squared
+ * differences and a square summed together, each difference itself rounded.
+ * Where the filter cannot tell, #point_within_distance_sign_exact decides the
+ * same quantity exactly over the input coordinates
+ * @note Exact where no square of a coordinate difference overflows or
+ * underflows. A negative @p d is the caller's to refuse; every caller of this
+ * function validates it at its own entry
+ * @return -1 where the points are nearer than the distance, 1 where they are
+ * farther, 0 exactly where the distance is the one they are apart. A caller
+ * reading a relationship that holds AT the distance takes 0 with -1
+ */
+static inline int
+point_within_distance_sign(double px, double py, double qx, double qy,
+  double d)
+{
+  double h = qx - px, v = qy - py;
+  double hh = h * h, vv = v * v, dd = d * d;
+  double value = (hh + vv) - dd;
+  /* Three roundings reach each squared difference (the difference, its square,
+   * and the sum) and two reach the square of the distance, so five bound the
+   * whole; the second-order term follows the siblings above */
+  double bound = (5.0 + 32.0 * DBL_EPSILON) * DBL_EPSILON * (hh + vv + dd);
+  if (value > bound)
+    return 1;
+  if (value < - bound)
+    return -1;
+  return point_within_distance_sign_exact(px, py, qx, qy, d);
 }
 
 /**
