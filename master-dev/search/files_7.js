@@ -20,8 +20,10 @@ var searchData=
   ['geopose_5ftest_2ec_17',['geopose_test.c',['../geopose__test_8c.html',1,'']]],
   ['geos_5fc_2eh_18',['geos_c.h',['../geos__c_8h.html',1,'']]],
   ['geos_5fclip_2ec_19',['geos_clip.c',['../geos__clip_8c.html',1,'']]],
-  ['geos_5fharvest_2epy_20',['geos_harvest.py',['../geos__harvest_8py.html',1,'']]],
-  ['geoset_5fmeos_2ec_21',['geoset_meos.c',['../geoset__meos_8c.html',1,'']]],
-  ['get_5fsrid_5fways_2ec_22',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]],
-  ['grid_5fsizes_5ftest_2ec_23',['grid_sizes_test.c',['../grid__sizes__test_8c.html',1,'']]]
+  ['geos_5ffallback_5fsweep_2ec_20',['geos_fallback_sweep.c',['../geos__fallback__sweep_8c.html',1,'']]],
+  ['geos_5fgateway_5freach_2ec_21',['geos_gateway_reach.c',['../geos__gateway__reach_8c.html',1,'']]],
+  ['geos_5fharvest_2epy_22',['geos_harvest.py',['../geos__harvest_8py.html',1,'']]],
+  ['geoset_5fmeos_2ec_23',['geoset_meos.c',['../geoset__meos_8c.html',1,'']]],
+  ['get_5fsrid_5fways_2ec_24',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]],
+  ['grid_5fsizes_5ftest_2ec_25',['grid_sizes_test.c',['../grid__sizes__test_8c.html',1,'']]]
 ];
