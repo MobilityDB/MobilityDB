@@ -3444,6 +3444,17 @@
 		<sect2>
 			<title>Nubes de puntos estáticas</title>
 			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de un pcpoint o de un pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Entrada de un pcpoint o de un pcpatch a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>

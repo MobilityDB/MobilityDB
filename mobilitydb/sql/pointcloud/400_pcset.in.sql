@@ -46,6 +46,34 @@
  */
 
 /******************************************************************************
+ * Input and output
+ *
+ * pcpointFromHexWKB, pcpatchFromHexWKB and asHexWKB read and write the hex of
+ * the pgPointCloud Well-Known Binary, the text representation of the type
+ * input and output functions of pgPointCloud.
+ ******************************************************************************/
+
+CREATE FUNCTION pcpointFromHexWKB(text)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpoint_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pcpatchFromHexWKB(text)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Pcpatch_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pcpoint_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpatch)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pcpatch_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * pcid accessor — shared by pcpoint and pcpatch
  ******************************************************************************/
 

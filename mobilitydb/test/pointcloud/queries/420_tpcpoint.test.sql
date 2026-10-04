@@ -393,6 +393,22 @@ SELECT asText(set(ARRAY[PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])])) =
 SELECT tpcpoint '020100000064000000C80000002C010000@2024-01-01';
 SELECT tpcpoint '010100000064000000C8000000@2024-01-01';
 
+-- pcpointFromHexWKB and asHexWKB read and write the text of the type input
+-- and output functions of pgPointCloud
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+SELECT pcpointFromHexWKB('010100000064000000C80000002C010000') =
+  '010100000064000000C80000002C010000'::pcpoint;
+SELECT pcpointFromHexWKB('000000000100000064000000C80000012C') =
+  pcpointFromHexWKB('010100000064000000C80000002C010000');
+SELECT asHexWKB(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])) =
+  PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])::text;
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+/* Errors */
+SELECT pcpointFromHexWKB('020100000064000000C80000002C010000');
+SELECT pcpointFromHexWKB('010100000064000000C8000000');
+
 -------------------------------------------------------------------------------
 -- A value whose pcid names no schema
 -- The data of a pcpoint is laid out by the schema its pcid resolves to, so a

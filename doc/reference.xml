@@ -3453,6 +3453,17 @@
 		<sect2>
 			<title>Static Point Clouds</title>
 			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>

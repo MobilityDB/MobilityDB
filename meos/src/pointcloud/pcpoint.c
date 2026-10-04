@@ -316,6 +316,8 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpoint from its hex-WKB representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Pcpoint_from_hexwkb()
  */
 Pcpoint *
 pcpoint_from_hexwkb(const char *hexwkb)
@@ -326,6 +328,8 @@ pcpoint_from_hexwkb(const char *hexwkb)
 /**
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the hex-WKB representation of a pcpoint
+ * @param[in] pt Point
+ * @csqlfn #Pcpoint_as_hexwkb()
  */
 char *
 pcpoint_as_hexwkb(const Pcpoint *pt)
