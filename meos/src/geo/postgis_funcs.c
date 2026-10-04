@@ -3168,12 +3168,124 @@ union_collection_make(LWGEOM **geoms, uint32_t ngeoms, int32_t srid)
 }
 
 /**
+ * @brief Return whether the union reads a member as the surfaces it lists
+ * @details A multi-surface stands for its faces, and the union of an array is
+ * the union of what its members stand for, so such a member is given to the
+ * arms face by face: the boundary walk of #meos_areal_union() reads a
+ * collection whose components are single surfaces, and a member that is itself
+ * a collection of surfaces is not one. A TIN and a polyhedral surface are
+ * collections of faces too, with Z or without: each face is read on the plane,
+ * where the faces of a surface in space need not bound one region between them
+ * but each bounds its own, as #geom_unary_union() reads them
+ */
+static bool
+union_member_is_faces(const LWGEOM *geom)
+{
+  uint8_t type = geom->type;
+  return type == MULTIPOLYGONTYPE || type == MULTISURFACETYPE ||
+    type == TINTYPE || type == POLYHEDRALSURFACETYPE;
+}
+
+static bool geo_part_bounds_area(const LWGEOM *part);
+
+/**
+ * @brief Return a piece of a union array as the union reads it: on the plane,
+ * and as the line its ring traces where it is a face enclosing no area
+ * @details The arms dissolve the projection of the members and the array union
+ * reads the ordinates back onto the answer, see #union_lifted(), so a piece is
+ * given to them without Z or M, as #geom_unary_union() gives its geometry. The
+ * projection of a face standing upright encloses no area, and a face of no area
+ * is not a region but its own boundary, which #geo_arealess_parts_as_lines()
+ * writes as lines for the unary union
+ * @param[in] piece Piece, owned by this function
+ * @param[in] face True where the piece is a face of a multi-surface
+ */
+static LWGEOM *
+union_piece_on_plane(LWGEOM *piece, bool face)
+{
+  if (FLAGS_GET_Z(piece->flags) || FLAGS_GET_M(piece->flags))
+  {
+    LWGEOM *plane = lwgeom_force_2d(piece);
+    lwgeom_free(piece);
+    piece = plane;
+  }
+  if (! face || (piece->type != POLYGONTYPE && piece->type != TRIANGLETYPE) ||
+      geo_part_bounds_area(piece))
+    return piece;
+  const POINTARRAY *ring = (piece->type == TRIANGLETYPE) ?
+    ((const LWTRIANGLE *) piece)->points : ((const LWPOLY *) piece)->rings[0];
+  LWGEOM *line = lwline_as_lwgeom(lwline_construct(lwgeom_get_srid(piece), NULL,
+    ptarray_clone_deep(ring)));
+  lwgeom_free(piece);
+  return line;
+}
+
+/**
+ * @brief Return the members of an array as the pieces the union reads,
+ * a multi-surface member listed face by face
+ * @details An empty member carries no points and is left out, and so is an
+ * empty face. Every piece is read on the plane, see #union_piece_on_plane()
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @param[out] npieces Number of pieces
+ * @return Array of pieces, which the caller owns together with each piece, or
+ * @p NULL where every member is empty
+ */
+static LWGEOM **
+union_member_pieces(GSERIALIZED **gsarr, int count, uint32_t *npieces)
+{
+  assert(gsarr); assert(npieces);
+  LWGEOM **members = palloc(sizeof(LWGEOM *) * count);
+  uint32_t nmembers = 0, total = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (gserialized_is_empty(gsarr[i]))
+      continue;
+    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+    members[nmembers++] = geom;
+    total += union_member_is_faces(geom) ?
+      ((const LWCOLLECTION *) geom)->ngeoms : 1;
+  }
+  *npieces = 0;
+  if (total == 0)
+  {
+    for (uint32_t i = 0; i < nmembers; i++)
+      lwgeom_free(members[i]);
+    pfree(members);
+    return NULL;
+  }
+  LWGEOM **result = palloc(sizeof(LWGEOM *) * total);
+  for (uint32_t i = 0; i < nmembers; i++)
+  {
+    if (! union_member_is_faces(members[i]))
+    {
+      result[(*npieces)++] = union_piece_on_plane(members[i], false);
+      continue;
+    }
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) members[i];
+    for (uint32_t j = 0; j < coll->ngeoms; j++)
+      if (! lwgeom_is_empty(coll->geoms[j]))
+        result[(*npieces)++] = union_piece_on_plane(
+          lwgeom_clone_deep(coll->geoms[j]), true);
+    lwgeom_free(members[i]);
+  }
+  pfree(members);
+  if (*npieces == 0)
+  {
+    pfree(result);
+    return NULL;
+  }
+  return result;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members are all
  * surfaces, read from their boundaries
  * @details The array is presented to #meos_areal_union() as the collection it
  * stands for, so the answer is the one the unary union of that collection
  * gives: a pair whose interiors meet becomes one surface and a pair that only
- * touches stays apart. An empty member carries no area and is left out
+ * touches stays apart. A multi-surface member is read face by face, see
+ * #union_member_pieces(), and an empty member carries no area and is left out
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @return The union, or @p NULL where a member is not a surface or the
@@ -3184,19 +3296,13 @@ static GSERIALIZED *
 geom_array_areal_union(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
-  int ngeoms = 0;
-  for (int i = 0; i < count; i++)
-    if (! gserialized_is_empty(gsarr[i]))
-      geoms[ngeoms++] = lwgeom_from_gserialized(gsarr[i]);
-  if (ngeoms == 0)
-  {
-    pfree(geoms);
+  uint32_t ngeoms;
+  LWGEOM **geoms = union_member_pieces(gsarr, count, &ngeoms);
+  if (! geoms)
     return NULL;
-  }
   /* #union_collection_make() takes ownership of the array it is given, so
    * geoms must not be freed after this call */
-  LWCOLLECTION *coll = union_collection_make(geoms, (uint32_t) ngeoms,
+  LWCOLLECTION *coll = union_collection_make(geoms, ngeoms,
     gserialized_get_srid(gsarr[0]));
   if (! coll)
     return NULL;
@@ -3342,20 +3448,23 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
   int32_t srid = gserialized_get_srid(gsarr[0]);
-  /* An empty member carries no points and is left out, as it is in both arms */
-  LWGEOM **areal = palloc(sizeof(LWGEOM *) * count);
-  LWGEOM **other = palloc(sizeof(LWGEOM *) * count);
+  /* An empty member carries no points and is left out, as it is in both arms,
+   * and a multi-surface member is read face by face, as the areal arm reads it */
+  uint32_t npieces;
+  LWGEOM **pieces = union_member_pieces(gsarr, count, &npieces);
+  if (! pieces)
+    return NULL;
+  LWGEOM **areal = palloc(sizeof(LWGEOM *) * npieces);
+  LWGEOM **other = palloc(sizeof(LWGEOM *) * npieces);
   uint32_t nareal = 0, nother = 0;
-  for (int i = 0; i < count; i++)
+  for (uint32_t i = 0; i < npieces; i++)
   {
-    if (gserialized_is_empty(gsarr[i]))
-      continue;
-    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
-    if (relate_is_areal(geom))
-      areal[nareal++] = geom;
+    if (relate_is_areal(pieces[i]))
+      areal[nareal++] = pieces[i];
     else
-      other[nother++] = geom;
+      other[nother++] = pieces[i];
   }
+  pfree(pieces);
   /* An array that stays on one side of the boundary is what the two arms
    * already answered, and this one has nothing to add to it */
   if (nareal == 0 || nother == 0)
