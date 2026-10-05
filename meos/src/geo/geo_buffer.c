@@ -7254,8 +7254,10 @@ buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
   /* Parts shown to meet nowhere but at vertices they share, with their
    * interiors apart there and everywhere else, are what a valid multipolygon
    * is: their union bounds exactly what they bound, and is the geometry
-   * itself */
-  if (relate_members_apart(geom))
+   * itself. The showing reads the pairs of parts whose extents meet, which
+   * the union below reads as well and with a whole overlay each, so it is
+   * given whatever work it needs */
+  if (relate_members_apart_within(geom, INT64_MAX))
     return true;
   *dissolved = meos_areal_union(geom);
   return *dissolved != NULL;

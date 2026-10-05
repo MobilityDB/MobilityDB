@@ -9791,47 +9791,95 @@ relate_member_rings_outside(const RelateMember *a, const RelateMember *b,
 }
 
 /**
- * @brief Return true if two members are known to meet nowhere but at vertices
- * they share, with their interiors apart there and everywhere else
- * @details Only the segments within the overlap of the two extents can meet.
- * An end of one segment within the tolerance of the other is a contact the
- * union has to read unless it is a vertex the two carry alike, and a crossing
- * or an edge the two carry alike is one as well
+ * @brief Return true if a segment of one member and a segment of another are
+ * known not to make the two meet but at a vertex they share, with their
+ * interiors apart about it
+ * @details The tests #relate_members_pair_apart() reads each pair of segments
+ * by
  */
 static bool
-relate_members_pair_apart(const RelateMember *a, const RelateMember *b,
-  double tol, int64 *budget)
+relate_segments_apart(const RelateMember *a, uint32_t ra, uint32_t i,
+  const RelateMember *b, uint32_t rb, uint32_t j, double tol)
 {
-  double ox0 = Max(a->xmin, b->xmin) - tol, ox1 = Min(a->xmax, b->xmax) + tol;
-  double oy0 = Max(a->ymin, b->ymin) - tol, oy1 = Min(a->ymax, b->ymax) + tol;
-  /* The segments of the second member within the overlap, gathered once so
-   * that each segment of the first reads those alone */
-  uint32_t nb = 0;
-  for (uint32_t rb = 0; rb < b->nrings; rb++)
-    nb += b->rings[rb]->npoints;
-  uint32_t *segs = palloc(sizeof(uint32_t) * 2 * nb);
-  uint32_t ns = 0;
-  for (uint32_t rb = 0; rb < b->nrings; rb++)
-  {
-    const POINTARRAY *pb = b->rings[rb];
-    for (uint32_t j = 0; j + 1 < pb->npoints; j++)
+  const POINT2D *p = getPoint2d_cp(a->rings[ra], i);
+  const POINT2D *q = getPoint2d_cp(a->rings[ra], i + 1);
+  const POINT2D *r = getPoint2d_cp(b->rings[rb], j);
+  const POINT2D *s = getPoint2d_cp(b->rings[rb], j + 1);
+    bool pr = p->x == r->x && p->y == r->y;
+    bool ps = p->x == s->x && p->y == s->y;
+    bool qr = q->x == r->x && q->y == r->y;
+    bool qs = q->x == s->x && q->y == s->y;
+    /* An edge the two members carry alike */
+    if ((pr && qs) || (ps && qr))
+      return false;
+    if ((! pr && ! ps &&
+          point_on_segment_within(p->x, p->y, r->x, r->y, s->x, s->y, tol)) ||
+        (! qr && ! qs &&
+          point_on_segment_within(q->x, q->y, r->x, r->y, s->x, s->y, tol)) ||
+        (! pr && ! qr &&
+          point_on_segment_within(r->x, r->y, p->x, p->y, q->x, q->y, tol)) ||
+        (! ps && ! qs &&
+          point_on_segment_within(s->x, s->y, p->x, p->y, q->x, q->y, tol)))
+      return false;
+    /* A crossing, each segment's ends strictly on the two sides of the
+     * other */
+    int o1 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, r->x, r->y);
+    int o2 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, s->x, s->y);
+    if (o1 * o2 < 0)
     {
-      const POINT2D *r = getPoint2d_cp(pb, j);
-      const POINT2D *s = getPoint2d_cp(pb, j + 1);
-      if (Max(r->x, s->x) < ox0 || Min(r->x, s->x) > ox1 ||
-          Max(r->y, s->y) < oy0 || Min(r->y, s->y) > oy1 ||
-          (r->x == s->x && r->y == s->y))
-        continue;
-      segs[2 * ns] = rb;
-      segs[2 * ns + 1] = j;
-      ns++;
+      int o3 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y,
+        p->x, p->y);
+      int o4 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y,
+        q->x, q->y);
+      if (o3 * o4 < 0)
+        return false;
     }
-  }
+    /* A vertex the two share ends two segments of each, so it turns up
+     * in four pairs of them, and the wedges about it are the same in
+     * each: they are read in the one pair both segments start at it */
+    if (pr && ! relate_members_wedges_apart(a, ra, i, b, rb, j))
+      return false;
+  return true;
+}
 
-  bool result = false;
-  for (uint32_t ra = 0; ra < a->nrings; ra++)
+/**
+ * @brief A segment of a member read by the sweep of two members
+ */
+typedef struct
+{
+  double xmin, xmax, ymin, ymax; /**< Box of the segment */
+  uint32_t r;                    /**< Ring of the segment */
+  uint32_t i;                    /**< Its first vertex in the ring */
+  bool second;                   /**< True for a segment of the second member */
+} RelateSeg;
+
+/**
+ * @brief Order the segments of a sweep by the left end of their box, then by
+ * member, ring and vertex, which makes the order total
+ */
+static int
+relate_seg_cmp(const void *x, const void *y)
+{
+  const RelateSeg *a = (const RelateSeg *) x, *b = (const RelateSeg *) y;
+  if (a->xmin != b->xmin)
+    return (a->xmin > b->xmin) - (a->xmin < b->xmin);
+  if (a->second != b->second)
+    return (int) a->second - (int) b->second;
+  if (a->r != b->r)
+    return (a->r > b->r) - (a->r < b->r);
+  return (a->i > b->i) - (a->i < b->i);
+}
+
+/**
+ * @brief Add to a sweep the segments of a member within a box
+ */
+static void
+relate_member_segs(const RelateMember *m, bool second, double ox0, double ox1,
+  double oy0, double oy1, RelateSeg *segs, uint32_t *ns)
+{
+  for (uint32_t r = 0; r < m->nrings; r++)
   {
-    const POINTARRAY *pa = a->rings[ra];
+    const POINTARRAY *pa = m->rings[r];
     for (uint32_t i = 0; i + 1 < pa->npoints; i++)
     {
       const POINT2D *p = getPoint2d_cp(pa, i);
@@ -9840,51 +9888,60 @@ relate_members_pair_apart(const RelateMember *a, const RelateMember *b,
           Max(p->y, q->y) < oy0 || Min(p->y, q->y) > oy1 ||
           (p->x == q->x && p->y == q->y))
         continue;
-      for (uint32_t k = 0; k < ns; k++)
-      {
-        if (--(*budget) < 0)
-          goto done;
-        uint32_t rb = segs[2 * k], j = segs[2 * k + 1];
-        const POINT2D *r = getPoint2d_cp(b->rings[rb], j);
-        const POINT2D *s = getPoint2d_cp(b->rings[rb], j + 1);
-        if (Max(p->x, q->x) + tol < Min(r->x, s->x) ||
-            Max(r->x, s->x) + tol < Min(p->x, q->x) ||
-            Max(p->y, q->y) + tol < Min(r->y, s->y) ||
-            Max(r->y, s->y) + tol < Min(p->y, q->y))
-          continue;
-        bool pr = p->x == r->x && p->y == r->y;
-        bool ps = p->x == s->x && p->y == s->y;
-        bool qr = q->x == r->x && q->y == r->y;
-        bool qs = q->x == s->x && q->y == s->y;
-        /* An edge the two members carry alike */
-        if ((pr && qs) || (ps && qr))
-          goto done;
-        if ((! pr && ! ps &&
-              point_on_segment_within(p->x, p->y, r->x, r->y, s->x, s->y, tol)) ||
-            (! qr && ! qs &&
-              point_on_segment_within(q->x, q->y, r->x, r->y, s->x, s->y, tol)) ||
-            (! pr && ! qr &&
-              point_on_segment_within(r->x, r->y, p->x, p->y, q->x, q->y, tol)) ||
-            (! ps && ! qs &&
-              point_on_segment_within(s->x, s->y, p->x, p->y, q->x, q->y, tol)))
-          goto done;
-        /* A crossing, each segment's ends strictly on the two sides of the
-         * other */
-        int o1 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, r->x, r->y);
-        int o2 = cross_product_sign(p->x, p->y, q->x, q->y, p->x, p->y, s->x, s->y);
-        if (o1 * o2 < 0)
-        {
-          int o3 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y, p->x, p->y);
-          int o4 = cross_product_sign(r->x, r->y, s->x, s->y, r->x, r->y, q->x, q->y);
-          if (o3 * o4 < 0)
-            goto done;
-        }
-        /* A vertex the two share ends two segments of each, so it turns up
-         * in four pairs of them, and the wedges about it are the same in
-         * each: they are read in the one pair both segments start at it */
-        if (pr && ! relate_members_wedges_apart(a, ra, i, b, rb, j))
-          goto done;
-      }
+      RelateSeg *g = &segs[(*ns)++];
+      g->xmin = Min(p->x, q->x); g->xmax = Max(p->x, q->x);
+      g->ymin = Min(p->y, q->y); g->ymax = Max(p->y, q->y);
+      g->r = r; g->i = i; g->second = second;
+    }
+  }
+}
+
+/**
+ * @brief Return true if two members are known to meet nowhere but at vertices
+ * they share, with their interiors apart there and everywhere else
+ * @details Only the segments within the overlap of the two extents can meet.
+ * An end of one segment within the tolerance of the other is a contact the
+ * union has to read unless it is a vertex the two carry alike, and a crossing
+ * or an edge the two carry alike is one as well. The segments of both members
+ * within the overlap are swept together by the left end of their box, so only
+ * a segment of each whose boxes meet within the tolerance is read
+ * (#relate_segments_apart); whether every pair passes does not depend on the
+ * order they are read in
+ */
+static bool
+relate_members_pair_apart(const RelateMember *a, const RelateMember *b,
+  double tol, int64 *budget)
+{
+  double ox0 = Max(a->xmin, b->xmin) - tol, ox1 = Min(a->xmax, b->xmax) + tol;
+  double oy0 = Max(a->ymin, b->ymin) - tol, oy1 = Min(a->ymax, b->ymax) + tol;
+  uint32_t na = 0, nb = 0;
+  for (uint32_t r = 0; r < a->nrings; r++)
+    na += a->rings[r]->npoints;
+  for (uint32_t r = 0; r < b->nrings; r++)
+    nb += b->rings[r]->npoints;
+  RelateSeg *segs = palloc(sizeof(RelateSeg) * Max(na + nb, 1u));
+  uint32_t ns = 0;
+  relate_member_segs(a, false, ox0, ox1, oy0, oy1, segs, &ns);
+  relate_member_segs(b, true, ox0, ox1, oy0, oy1, segs, &ns);
+  qsort(segs, ns, sizeof(RelateSeg), relate_seg_cmp);
+
+  bool result = false;
+  for (uint32_t k = 0; k < ns; k++)
+  {
+    for (uint32_t l = k + 1; l < ns; l++)
+    {
+      if (segs[l].xmin > segs[k].xmax + tol)
+        break;
+      if (segs[k].second == segs[l].second ||
+          segs[k].ymax + tol < segs[l].ymin ||
+          segs[l].ymax + tol < segs[k].ymin)
+        continue;
+      if (--(*budget) < 0)
+        goto done;
+      const RelateSeg *ga = segs[k].second ? &segs[l] : &segs[k];
+      const RelateSeg *gb = segs[k].second ? &segs[k] : &segs[l];
+      if (! relate_segments_apart(a, ga->r, ga->i, b, gb->r, gb->i, tol))
+        goto done;
     }
   }
   result = relate_member_rings_outside(a, b, budget) &&
@@ -9958,12 +10015,15 @@ relate_member_read(const LWGEOM *g, RelateMember *c)
  * swept by their extents, so only two whose extents meet are compared, then
  * their segments within the overlap of the extents, the interior wedges about
  * each vertex they share, and one vertex of each ring against the other.
+ * @param[in] geom Collection
+ * @param[in] budget The work it may spend, counted in pairs of segments and
+ * points of rings read, after which it answers false
  * @return False where any of this is not shown: a curved, nested or
- * degenerate member, a contact the tests do not settle, or more work than an
- * index would be worth (#RELATE_INDEX_MIN_PAIRS). The union is then computed
+ * degenerate member, a contact the tests do not settle, or more work than the
+ * budget. The union is then computed
  */
 bool
-relate_members_apart(const LWGEOM *geom)
+relate_members_apart_within(const LWGEOM *geom, int64 budget)
 {
   const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
   RelateMember *m = palloc(sizeof(RelateMember) * Max(col->ngeoms, 1));
@@ -9988,7 +10048,6 @@ relate_members_apart(const LWGEOM *geom)
    * contact the union reads falls outside it */
   double tol = 2.0 * coordinate_tolerance(extent, extent);
   qsort(m, n, sizeof(RelateMember), relate_member_xmin_cmp);
-  int64 budget = RELATE_INDEX_MIN_PAIRS;
   for (int i = 0; i < n; i++)
     for (int j = i + 1; j < n && m[j].xmin <= m[i].xmax + tol; j++)
     {
@@ -10002,6 +10061,18 @@ relate_members_apart(const LWGEOM *geom)
 done:
   pfree(m);
   return result;
+}
+
+/**
+ * @brief Return true if the areal members of a collection are known to meet
+ * nowhere but at vertices they share and to cover no part of one another
+ * @details #relate_members_apart_within(), spending no more than an index
+ * would be worth (#RELATE_INDEX_MIN_PAIRS)
+ */
+bool
+relate_members_apart(const LWGEOM *geom)
+{
+  return relate_members_apart_within(geom, RELATE_INDEX_MIN_PAIRS);
 }
 
 /**

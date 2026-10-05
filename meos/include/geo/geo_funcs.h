@@ -200,6 +200,8 @@ extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool relate_is_areal(const LWGEOM *geom);
 extern bool relate_members_apart(const LWGEOM *geom);
+extern bool relate_members_apart_within(const LWGEOM *geom,
+  int64 budget);
 extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
