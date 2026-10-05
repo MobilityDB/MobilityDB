@@ -1240,6 +1240,23 @@ typedef struct
   uint32_t j;       /**< Position of the second edge */
 } BufferEdgePair;
 
+static BufferEdgePair *buffer_edge_pairs_sort(BufferEdgePair *pairs,
+  uint32_t count, uint32_t n);
+
+/**
+ * @brief Pairs of edges of two sets below which reading every pair costs less
+ * than sweeping them, the rule #BUFFER_LOCATOR_INDEX_MIN_PAIRS states for an
+ * index
+ */
+#define BUFFER_SWEEP_MIN_PAIRS 256
+
+/**
+ * @brief Pieces of two boundaries below which an overlay reads the side of
+ * every piece it keeps rather than of those #buffer_frame_where_read() finds
+ * the walk consults
+ */
+#define BUFFER_FRAME_MIN_PIECES 64
+
 /**
  * @brief Return the pairs of boundary edges whose boxes may meet within the
  * band the meeting test reads, in the order a walk over every pair meets them
@@ -1308,6 +1325,23 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
     pfree(pairs);
     return NULL;
   }
+  *npairs = count;
+  return buffer_edge_pairs_sort(pairs, count, n);
+}
+
+/**
+ * @brief Put pairs of edges in the order a walk over every pair meets them
+ * @details The ordering #buffer_edge_pairs() gives the pairs of one set, read
+ * out of it so that #buffer_edge_pairs_across() gives the same to two
+ * @param[in] pairs Pairs, consumed
+ * @param[in] count Number of pairs, at least one
+ * @param[in] n Number of places the first edge of a pair can take
+ * @return The sorted pairs, to be freed by the caller
+ */
+static BufferEdgePair *
+buffer_edge_pairs_sort(BufferEdgePair *pairs, uint32_t count, uint32_t n)
+{
+  assert(pairs); assert(count > 0);
   /* The pairs are put in the order of the walk by their first edge, counted
    * and placed, then by their second within each first, which a handful of
    * pairs share */
@@ -1336,8 +1370,109 @@ buffer_edge_pairs(const Edge *all, uint32_t n, uint32_t *npairs)
     }
   }
   pfree(pairs); pfree(start); pfree(fill);
-  *npairs = count;
   return sorted;
+}
+
+/**
+ * @brief Return the pairs of one boundary edge of each of two sets whose boxes
+ * may meet, in the order a walk over the first set, and for each of its edges
+ * over the second, meets them
+ * @details The sweep of #buffer_edge_pairs() over the edges of both sets
+ * together, as #buffer_boundaries_intersect() sweeps them, keeping the pairs
+ * that take one edge from each. Where the two sets are small enough that
+ * reading every pair costs less than sorting them, every pair is returned
+ * instead: the caller's own box test decides each pair either way, so the two
+ * routes answer alike
+ * @param[in] a1,a2 Edges of the two sets
+ * @param[out] npairs Number of pairs returned
+ * @return The pairs, the first edge of each a place in @p a1 and the second a
+ * place in @p a2, to be freed by the caller, or @p NULL when there are none
+ */
+static BufferEdgePair *
+buffer_edge_pairs_across(const MeosArray *a1, const MeosArray *a2,
+  uint32_t *npairs)
+{
+  assert(a1); assert(a2); assert(npairs);
+  *npairs = 0;
+  uint32_t n1 = a1->count, n2 = a2->count;
+  const Edge *all1 = (const Edge *) a1->elems;
+  const Edge *all2 = (const Edge *) a2->elems;
+  if (n1 == 0 || n2 == 0)
+    return NULL;
+  uint32_t count = 0;
+  BufferEdgePair *pairs;
+  if ((double) n1 * (double) n2 < BUFFER_SWEEP_MIN_PAIRS)
+  {
+    /* Every pair of boundary edges, in the order of the walk */
+    pairs = palloc(sizeof(BufferEdgePair) * n1 * n2);
+    for (uint32_t i = 0; i < n1; i++)
+    {
+      if (! buffer_is_boundary_edge(&all1[i]))
+        continue;
+      for (uint32_t j = 0; j < n2; j++)
+      {
+        if (! buffer_is_boundary_edge(&all2[j]))
+          continue;
+        pairs[count].i = i;
+        pairs[count].j = j;
+        count++;
+      }
+    }
+    if (count == 0)
+    {
+      pfree(pairs);
+      return NULL;
+    }
+    *npairs = count;
+    return pairs;
+  }
+  uint32_t nsweep = 0;
+  BufferSweepEdge *sweep = palloc(sizeof(BufferSweepEdge) * (n1 + n2));
+  double bandmax = MEOS_GEOM_TOLERANCE;
+  for (uint32_t k = 0; k < n1 + n2; k++)
+  {
+    const Edge *e = (k < n1) ? &all1[k] : &all2[k - n1];
+    if (! buffer_is_boundary_edge(e))
+      continue;
+    sweep[nsweep].xmin = e->xmin; sweep[nsweep].xmax = e->xmax;
+    sweep[nsweep].ymin = e->ymin; sweep[nsweep].ymax = e->ymax;
+    sweep[nsweep].id = k;
+    nsweep++;
+    bandmax = Max(bandmax, e->tol);
+  }
+  buffer_sweep_edge_sort(sweep, nsweep);
+  uint32_t maxpairs = Max(nsweep, 16u);
+  pairs = palloc(sizeof(BufferEdgePair) * maxpairs);
+  for (uint32_t a = 0; a < nsweep; a++)
+  {
+    for (uint32_t b = a + 1; b < nsweep; b++)
+    {
+      if (sweep[a].xmax < sweep[b].xmin - bandmax)
+        break;
+      /* A pair is one edge of each set */
+      if ((sweep[a].id < n1) == (sweep[b].id < n1))
+        continue;
+      if (sweep[a].ymax < sweep[b].ymin - bandmax ||
+          sweep[b].ymax < sweep[a].ymin - bandmax)
+        continue;
+      if (count == maxpairs)
+      {
+        maxpairs *= 2;
+        pairs = repalloc(pairs, sizeof(BufferEdgePair) * maxpairs);
+      }
+      pairs[count].i = Min(sweep[a].id, sweep[b].id);
+      pairs[count].j = Max(sweep[a].id, sweep[b].id) - n1;
+      count++;
+    }
+  }
+  pfree(sweep);
+  if (count == 0)
+  {
+    pfree(pairs);
+    return NULL;
+  }
+  *npairs = count;
+  return buffer_edge_pairs_sort(pairs, count, n1);
 }
 
 /**
@@ -1593,6 +1728,17 @@ typedef struct
   int nlocated;         /**< Points located against it so far */
   bool ready;           /**< True once @p re holds the edges */
 } BufferLocator;
+
+/**
+ * @brief The side of a selected piece the overlay has still to read
+ * @details See #buffer_frame_where_read()
+ */
+typedef struct
+{
+  uint32_t index;       /**< The piece, as its place among the selected */
+  BufferLocator *own;   /**< The geometry the piece bounds */
+  bool inverted;        /**< The answer lies on the side it does not cover */
+} BufferSideAsk;
 
 /**
  * @brief Prepare to locate points against a geometry, reading none of it yet
@@ -3449,50 +3595,49 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
     meos_array_destroy(a1); meos_array_destroy(a2);
     return false;
   }
-  for (uint32_t i = 0; i < a1->count; i++)
+  /* The pairs whose boxes may meet, met in the order of a walk over every
+   * pair, which is the order the nodes are collected in */
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs_across(a1, a2, &npairs);
+  for (uint32_t p = 0; p < npairs; p++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
-    if (! e1 || ! buffer_is_boundary_edge(e1))
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, (int) pairs[p].i);
+    const Edge *e2 = (const Edge *) meos_array_get_intl(a2, (int) pairs[p].j);
+    /* Two edges whose boxes lie apart cannot meet. The band is the one the
+     * meeting test itself works to: each Edge carries the tolerance
+     * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+     * the kernel behind it ask one question. Bounding the reject tighter --
+     * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+     * orders of magnitude smaller -- discards pairs the kernel answers */
+    double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+    if (e1->xmax < e2->xmin - band ||
+        e2->xmax < e1->xmin - band ||
+        e1->ymax < e2->ymin - band ||
+        e2->ymax < e1->ymin - band)
       continue;
-    for (uint32_t j = 0; j < a2->count; j++)
+    /* The existing intersection collectors expect MeosArray, and each
+     * appends to what it is given, so the pair starts from an empty one */
+    meos_array_reset(points);
+
+    if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYSEG)
+      buffer_collect_line_line_intersections(e1, e2, points);
+    else if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYARC)
+      buffer_collect_line_arc_intersections(e1, e2, points);
+    else if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYSEG)
+      buffer_collect_line_arc_intersections(e2, e1, points);
+    else if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYARC)
+      buffer_collect_arc_arc_intersections(e1, e2, points);
+
+    /* Transfer the points to the intersection array */
+    for (uint32_t k = 0; k < points->count; k++)
     {
-      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
-      if (! e2 || ! buffer_is_boundary_edge(e2))
-        continue;
-      /* Two edges whose boxes lie apart cannot meet. The band is the one the
-       * meeting test itself works to: each Edge carries the tolerance
-       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
-       * the kernel behind it ask one question. Bounding the reject tighter --
-       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
-       * orders of magnitude smaller -- discards pairs the kernel answers */
-      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
-      if (e1->xmax < e2->xmin - band ||
-          e2->xmax < e1->xmin - band ||
-          e1->ymax < e2->ymin - band ||
-          e2->ymax < e1->ymin - band)
-        continue;
-      /* The existing intersection collectors expect MeosArray, and each
-       * appends to what it is given, so the pair starts from an empty one */
-      meos_array_reset(points);
-
-      if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYSEG)
-        buffer_collect_line_line_intersections(e1, e2, points);
-      else if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYARC)
-        buffer_collect_line_arc_intersections(e1, e2, points);
-      else if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYSEG)
-        buffer_collect_line_arc_intersections(e2, e1, points);
-      else if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYARC)
-        buffer_collect_arc_arc_intersections(e1, e2, points);
-
-      /* Transfer the points to the intersection array */
-      for (uint32_t k = 0; k < points->count; k++)
-      {
-        const POINT2D *point = (const POINT2D *) meos_array_get_intl(points, k);
-        if (point)
-          buffer_intersections_add(intersections, point->x, point->y);
-      }
+      const POINT2D *point = (const POINT2D *) meos_array_get_intl(points, k);
+      if (point)
+        buffer_intersections_add(intersections, point->x, point->y);
     }
   }
+  if (pairs)
+    pfree(pairs);
   meos_array_destroy(points);
   meos_array_destroy(a1); meos_array_destroy(a2);
   return true;
@@ -3532,7 +3677,22 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * @p result nor @p boundary anything, so this is the only report of it, and it
  * tells a caller that a pair with nothing in @p shared is one whose reported
  * coincidence does not resolve rather than one meeting at nodes
+ * @param[in,out] deferred The sides of the pieces kept in @p result that are
+ * left for #buffer_frame_where_read() to read
  */
+/**
+ * @brief Return whether the answer lies to the left of a selected piece, in
+ * the direction it is stored in
+ * @details See #buffer_add_selected_piece()
+ */
+static bool
+buffer_piece_answer_left(const Edge *piece, BufferLocator *own, bool inverted)
+{
+  int side = buffer_piece_interior_side(piece, own);
+  /* 0 = the geometry's interior lies LEFT of the piece, 1 = RIGHT */
+  return (side == 0 || side == 1) ? ((side == 0) != inverted) : false;
+}
+
 /**
  * @brief Add a selected piece, recording which side of it the answer lies on
  * @details THE CHAINING WALK NEEDS ONE FRAME AND THE PIECES DO NOT CARRY ONE.
@@ -3552,18 +3712,29 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * nodes alone.
  * A side that cannot be read leaves the flag false, and the walk falls back on
  * the ordering by itself, which is what it has to go on today.
+ * @param[in,out] result Selected pieces
+ * @param[in] piece Piece
+ * @param[in] own Locator of the geometry the piece bounds
+ * @param[in] inverted True where the answer lies on the side the geometry does
+ * not cover
+ * @param[in,out] deferred Where non-NULL, the side is not read here but asked
+ * there, for #buffer_frame_where_read() to read where the walk consults it
  */
 static void
 buffer_add_selected_piece(MeosArray *result, const Edge *piece,
-  BufferLocator *own, bool inverted)
+  BufferLocator *own, bool inverted, MeosArray *deferred)
 {
   assert(result); assert(piece); assert(own);
   BufferSelected kept;
   kept.e = *piece;
-  int side = buffer_piece_interior_side(&kept.e, own);
-  /* 0 = the geometry's interior lies LEFT of the piece, 1 = RIGHT */
-  kept.answer_left = (side == 0 || side == 1) ?
-    ((side == 0) != inverted) : false;
+  kept.answer_left = false;
+  if (deferred)
+  {
+    BufferSideAsk ask = { meos_array_count(result), own, inverted };
+    meos_array_add(deferred, &ask);
+  }
+  else
+    kept.answer_left = buffer_piece_answer_left(&kept.e, own, inverted);
   meos_array_add(result, &kept);
 }
 
@@ -3571,7 +3742,7 @@ static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   const MeosArray *pieces_b, BufferLocator *loc_a, const MeosArray *nodes,
   ClipOper oper, MeosArray *result, MeosArray *boundary, MeosArray *shared,
-  bool *coincident)
+  bool *coincident, MeosArray *deferred)
 {
   assert(pieces_a); assert(loc_b); assert(pieces_b); assert(loc_a);
   assert(nodes);
@@ -3591,7 +3762,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     Edge *piece = (Edge *) meos_array_get_intl(pieces_a, i);
     EdgeLocation location = buffer_classify_piece(piece, loc_b, nodes);
     if (location == keep_a)
-      buffer_add_selected_piece(result, piece, loc_a, false);
+      buffer_add_selected_piece(result, piece, loc_a, false, deferred);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -3607,7 +3778,8 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     Edge *piece = (Edge *) meos_array_get_intl(pieces_b, i);
     EdgeLocation location = buffer_classify_piece(piece, loc_a, nodes);
     if (location == keep_b)
-      buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE);
+      buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE,
+        deferred);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -4917,35 +5089,31 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
     return false;
   }
 
+  /* Whether any pair meets does not depend on the order the pairs are met in,
+   * so only the pairs whose boxes may meet are read */
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs_across(a1, a2, &npairs);
   bool point_intersection = false;
-  for (uint32_t i = 0; i < a1->count && ! point_intersection; i++)
+  for (uint32_t p = 0; p < npairs && ! point_intersection; p++)
   {
-    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, i);
-    if (! e1 || ! buffer_is_boundary_edge(e1))
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, (int) pairs[p].i);
+    const Edge *e2 = (const Edge *) meos_array_get_intl(a2, (int) pairs[p].j);
+    /* Two edges whose boxes lie apart cannot meet, read at the band the
+     * meeting test itself works to */
+    double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+    if (e1->xmax < e2->xmin - band ||
+        e2->xmax < e1->xmin - band ||
+        e1->ymax < e2->ymin - band ||
+        e2->ymax < e1->ymin - band)
       continue;
-    for (uint32_t j = 0; j < a2->count; j++)
-    {
-      const Edge *e2 = (const Edge *) meos_array_get_intl(a2, j);
-      if (! e2 || ! buffer_is_boundary_edge(e2))
-        continue;
-      /* Two edges whose boxes lie apart cannot meet, read at the band the
-       * meeting test itself works to */
-      double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
-      if (e1->xmax < e2->xmin - band ||
-          e2->xmax < e1->xmin - band ||
-          e1->ymax < e2->ymin - band ||
-          e2->ymax < e1->ymin - band)
-        continue;
-      int dimension = buffer_boundary_intersection(e1, e2);
-
-      /* A curve the two boundaries share is bounded by two nodes, so it splits
-       * like any other meeting and the stretch between them becomes a piece of
-       * its own for the classification to place */
-      if (dimension >= 0)
-        point_intersection = true;
-    }
+    /* A curve the two boundaries share is bounded by two nodes, so it splits
+     * like any other meeting and the stretch between them becomes a piece of
+     * its own for the classification to place */
+    if (buffer_boundary_intersection(e1, e2) >= 0)
+      point_intersection = true;
   }
-
+  if (pairs)
+    pfree(pairs);
   meos_array_destroy(a1); meos_array_destroy(a2);
   return point_intersection;
 }
@@ -5067,6 +5235,112 @@ buffer_shared_geometry(const MeosArray *pieces, int32_t srid)
 }
 
 /**
+ * @brief Return the root of a piece in a union-find forest, halving the path
+ */
+static uint32_t
+buffer_piece_root(uint32_t *parent, uint32_t i)
+{
+  while (parent[i] != i)
+  {
+    parent[i] = parent[parent[i]];
+    i = parent[i];
+  }
+  return i;
+}
+
+/**
+ * @brief Read the side the answer lies on of the selected pieces the walk
+ * consults it for
+ * @details #buffer_find_connected_piece() reads the side of a piece only to
+ * choose among SEVERAL pieces leaving the node the walk stands on, and the
+ * side of the first piece of a ring only to compare those with. A node where
+ * no more than two piece ends meet offers the walk one piece at most, so a
+ * ring whose every node is such a node is chained the same whatever its sides
+ * read. The pieces are grouped by the nodes they share, as the walk reaches
+ * them through #buffer_node_index_at() and #buffer_points_equal(), and the side
+ * is read for every piece of a group holding a node where more than two ends
+ * meet -- every ring the walk can draw through such a node lies in its group.
+ * Locating two points beside every piece is most of what selecting a boundary
+ * costs, and it is spent where nothing reads it.
+ * @param[in,out] selected Selected pieces, as #BufferSelected
+ * @param[in] deferred The sides #buffer_select_overlay_boundary() left unread
+ */
+static void
+buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
+{
+  assert(selected); assert(deferred);
+  uint32_t count = meos_array_count(selected);
+  if (count == 0 || meos_array_count(deferred) == 0)
+    return;
+  /* The side of a few pieces is read for every one of them, which costs less
+   * than grouping them to find the ones the walk consults */
+  if (count < BUFFER_FRAME_MIN_PIECES)
+  {
+    for (int d = 0; d < meos_array_count(deferred); d++)
+    {
+      const BufferSideAsk *ask =
+        (const BufferSideAsk *) meos_array_get_intl(deferred, d);
+      BufferSelected *sel =
+        (BufferSelected *) meos_array_get_intl(selected, (int) ask->index);
+      sel->answer_left = buffer_piece_answer_left(&sel->e, ask->own,
+        ask->inverted);
+    }
+    return;
+  }
+  BufferNodeIndex ix;
+  buffer_node_index_make(&ix, selected);
+  uint32_t *parent = palloc(sizeof(uint32_t) * count);
+  bool *branching = palloc0(sizeof(bool) * count);
+  for (uint32_t i = 0; i < count; i++)
+    parent[i] = i;
+  for (uint32_t i = 0; i < count; i++)
+  {
+    const Edge *piece = (const Edge *) meos_array_get_intl(selected, i);
+    POINT2D ends[2] = { buffer_piece_start(piece), buffer_piece_end(piece) };
+    for (int k = 0; k < 2; k++)
+    {
+      uint32_t ncand;
+      const uint32_t *cand = buffer_node_index_at(&ix, ends[k], &ncand);
+      uint32_t nends = 0;
+      for (uint32_t c = 0; c < ncand; c++)
+      {
+        const Edge *other =
+          (const Edge *) meos_array_get_intl(selected, cand[c]);
+        uint32_t at = (buffer_points_equal(buffer_piece_start(other), ends[k])
+          ? 1 : 0) + (buffer_points_equal(buffer_piece_end(other), ends[k])
+          ? 1 : 0);
+        if (at == 0)
+          continue;
+        nends += at;
+        uint32_t ri = buffer_piece_root(parent, i);
+        uint32_t rc = buffer_piece_root(parent, cand[c]);
+        if (ri != rc)
+          parent[rc] = ri;
+      }
+      if (nends > 2)
+        branching[i] = true;
+    }
+  }
+  /* A group branches where any of its pieces does */
+  for (uint32_t i = 0; i < count; i++)
+    if (branching[i])
+      branching[buffer_piece_root(parent, i)] = true;
+  for (int d = 0; d < meos_array_count(deferred); d++)
+  {
+    const BufferSideAsk *ask =
+      (const BufferSideAsk *) meos_array_get_intl(deferred, d);
+    if (! branching[buffer_piece_root(parent, ask->index)])
+      continue;
+    BufferSelected *sel =
+      (BufferSelected *) meos_array_get_intl(selected, ask->index);
+    sel->answer_left = buffer_piece_answer_left(&sel->e, ask->own,
+      ask->inverted);
+  }
+  pfree(parent); pfree(branching);
+  buffer_node_index_free(&ix);
+}
+
+/**
  * @brief Answer a Boolean operation on two areal geometries while preserving
  * circular arcs
  * @details One mechanism answers the three operations, and the boundary of the
@@ -5164,8 +5438,15 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   int points_b = (int) meos_array_count(split_a);
   buffer_locator_make(&loc_a, geom1, points_a);
   buffer_locator_make(&loc_b, geom2, points_b);
+  MeosArray *deferred = meos_array_create(sizeof(BufferSideAsk));
   buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a,
-    intersections, oper, selected, boundary, shared, &coincident);
+    intersections, oper, selected, boundary, shared, &coincident, deferred);
+  /* A union of two surfaces that only touch keeps every piece and walks none
+   * of them, so it reads no side */
+  if (! crossing || oper != CL_UNION || meos_array_count(selected) !=
+      meos_array_count(split_a) + meos_array_count(split_b))
+    buffer_frame_where_read(selected, deferred);
+  meos_array_destroy(deferred);
   buffer_locator_free(&loc_a);
   buffer_locator_free(&loc_b);
 
@@ -6672,7 +6953,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
       if (covered)
         continue;
       if (on < 0)
-        buffer_add_selected_piece(selected, piece, &locs[i], false);
+        buffer_add_selected_piece(selected, piece, &locs[i], false, NULL);
       else
         ok = buffer_resolve_coincident_piece(piece, &locs[i], &locs[on],
           i < (uint32_t) on, CL_UNION, selected);
