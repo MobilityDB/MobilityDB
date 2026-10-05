@@ -305,13 +305,13 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
 2. **The overlay of a collection answers** the 409 and 953 calls of §5.5, of which 64 and 24
    remain with MobilityDB #2966. MobilityDB #2970, merged as `2ce5aea42a`, lists a collection member of the array union
    component by component, and leaves 0 and 24: the difference of pieces whose boundaries run
-   along one another. MobilityDB #2975 answers those: the piece a rounded vertex leaves a rounding
+   along one another. MobilityDB #2975, merged as `742cd87b58`, answers those: the piece a rounded vertex leaves a rounding
    away from the other boundary is placed by its end that is not a node, and leaves 0 and 0.
 3. **The native union answers the arrays of §5.8**: surfaces carrying Z (merged as MobilityDB #2954), and
    three surfaces whose order leaves a constructed vertex near another member's edge (merged as
    MobilityDB #2961).
 4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
-   unseen. MobilityDB #2977 adds it as the job `geos-free` of `meos.yml`.
+   unseen. MobilityDB #2977, merged as `4c4457d2ec`, adds it as the job `geos-free` of `meos.yml`.
 
 Only then does the fourth fall-back — the unary union on a precision grid, which no MEOS caller
 asks for and no SQL function exposes — and with it the other three, become dead code that can be
