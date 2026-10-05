@@ -736,7 +736,7 @@ nsegment_from_hexwkb(const char *hexwkb)
  * @param[in] ns Network segment
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Nsegment_as_wkb(), #Nsegment_as_ewkb()
+ * @csqlfn #Nsegment_as_wkb()
  */
 uint8_t *
 nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
@@ -754,7 +754,7 @@ nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
  * @param[in] ns Network segment
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Nsegment_as_hexwkb(), #Nsegment_as_hexewkb()
+ * @csqlfn #Nsegment_as_hexwkb()
  */
 char *
 nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
