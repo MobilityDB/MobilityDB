@@ -16,6 +16,7 @@ var searchData=
   ['point4d_13',['POINT4D',['../structPOINT4D.html',1,'']]],
   ['pointarray_14',['POINTARRAY',['../structPOINTARRAY.html',1,'']]],
   ['polypointmovingedgestate_15',['PolypointMovingEdgeState',['../structPolypointMovingEdgeState.html',1,'']]],
-  ['pose_16',['Pose',['../structPose.html',1,'']]],
-  ['posechain_17',['PoseChain',['../structPoseChain.html',1,'']]]
+  ['polyterm_16',['PolyTerm',['../structPolyTerm.html',1,'']]],
+  ['pose_17',['Pose',['../structPose.html',1,'']]],
+  ['posechain_18',['PoseChain',['../structPoseChain.html',1,'']]]
 ];
