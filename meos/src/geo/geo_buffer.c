@@ -7251,6 +7251,12 @@ buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
   /* One surface shares an edge with nothing */
   if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
     return true;
+  /* Parts shown to meet nowhere but at vertices they share, with their
+   * interiors apart there and everywhere else, are what a valid multipolygon
+   * is: their union bounds exactly what they bound, and is the geometry
+   * itself */
+  if (relate_members_apart(geom))
+    return true;
   *dissolved = meos_areal_union(geom);
   return *dissolved != NULL;
 }

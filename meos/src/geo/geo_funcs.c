@@ -9962,7 +9962,7 @@ relate_member_read(const LWGEOM *g, RelateMember *c)
  * degenerate member, a contact the tests do not settle, or more work than an
  * index would be worth (#RELATE_INDEX_MIN_PAIRS). The union is then computed
  */
-static bool
+bool
 relate_members_apart(const LWGEOM *geom)
 {
   const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
