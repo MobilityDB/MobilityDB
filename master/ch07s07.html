@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s06.html" title="Accessors"><link rel="next" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s06.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_round"></a><a class="indexterm" name="id6291"></a><p>Round the coordinate values to a number of decimal places <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s06.html" title="Accessors"><link rel="next" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s06.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_round"></a><a class="indexterm" name="id6290"></a><p>Round the coordinate values to a number of decimal places <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 round(tspatial,integer=0) → tspatial
@@ -10,7 +10,7 @@ SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
 SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
   2));
 -- LINESTRING(1.12 1.12,2.12 2.12)@2001-01-01
-</pre></li><li class="listitem"><a name="tpoint_makeSimple"></a><a class="indexterm" name="id6312"></a><p>Return an array of fragments of the temporal point which are simple <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpoint_makeSimple"></a><a class="indexterm" name="id6311"></a><p>Return an array of fragments of the temporal point which are simple <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 makeSimple(tpoint) → tgeompoint[]
 </pre><pre class="programlisting">
@@ -30,7 +30,7 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@200
   [Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04]}'));
 /* {"{[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02],
    [POINT Z (1 1 1)@2001-01-03, POINT Z (0 0 0)@2001-01-04]}"} */
-</pre></li><li class="listitem"><a name="tgeo_geoMeasure"></a><a class="indexterm" name="id6326"></a><p>Construct a geometry/geography with M measure from a temporal point and a temporal float <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_geoMeasure"></a><a class="indexterm" name="id6325"></a><p>Construct a geometry/geography with M measure from a temporal point and a temporal float <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 geoMeasure(tpoint,tfloat,segmentize boolean=false) → geo
@@ -55,7 +55,7 @@ SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true)) FROM Temp;
 </pre><p>The following expression is used in QGIS to achieve this. The <code class="varname">scale_linear</code> function transforms the M value of each composing segment to the range [0, 1]. This value is then passed to the <code class="varname">ramp_color</code> function.</p><pre class="programlisting">
 ramp_color('RdYlBu', scale_linear(
     m(start_point(geometry_n($geometry,@geometry_part_num))), 0, 2, 0, 1) )
-</pre><div class="figure-float"><div class="figure"><a name="figspeed"></a><p class="title"><b>Figure 7.3. Visualizing the speed of a moving object using a color ramp in QGIS.</b></p><div class="figure-contents"><div class="mediaobject"><img src="images/speed.png" width="162" alt="Visualizing the speed of a moving object using a color ramp in QGIS."></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="tgeo_affine"></a><a class="indexterm" name="id6363"></a><p>Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre><div class="figure-float"><div class="figure"><a name="figspeed"></a><p class="title"><b>Figure 7.3. Visualizing the speed of a moving object using a color ramp in QGIS.</b></p><div class="figure-contents"><div class="mediaobject"><img src="images/speed.png" width="162" alt="Visualizing the speed of a moving object using a color ramp in QGIS."></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="tgeo_affine"></a><a class="indexterm" name="id6362"></a><p>Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 affine(tgeo,a float,b float,c float,d float,e float,f float,g float,
   h float,i float,xoff float,yoff float,zoff float) → tgeo
@@ -80,7 +80,7 @@ SELECT asEWKT(round(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()),
 SELECT ST_AsEWKT(affine(geometry 'Point(1 2 3)', cos(pi()), -sin(pi()), 0,
   sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0));
 -- POINT(-1 -2 3)
-</pre></li><li class="listitem"><a name="tgeo_rotate"></a><a class="indexterm" name="id6378"></a><p>Return the temporal point rotated counter-clockwise about the origin point</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_rotate"></a><a class="indexterm" name="id6377"></a><p>Return the temporal point rotated counter-clockwise about the origin point</p><pre class="programlisting">
 rotate(tgeo,radians float) → tgeo
 rotate(tgeo,radians float,x0 float,y0 float) → tgeo
 rotate(tgeo,radians float,origin geometry) → tgeo
@@ -104,7 +104,7 @@ SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))),
    LINESTRING(6.25 7.17,8.75 2.83)@2001-01-03] */
 SELECT ST_AsEWKT(rotate(geometry 'Linestring(5 10,5 5)', pi()/6, 5, 10), 2);
 -- LINESTRING(5 10,7.5 5.67)
-</pre></li><li class="listitem"><a name="tgeo_rotateX"></a><a class="indexterm" name="id6387"></a><p>Return a temporal geometry rotated counter-clockwise about the x axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_rotateX"></a><a class="indexterm" name="id6386"></a><p>Return a temporal geometry rotated counter-clockwise about the x axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateX(tgeo,radians float) → tgeo
 rotateX(geometry,radians float) → geometry
@@ -117,7 +117,7 @@ SELECT ST_AsEWKT(round(rotateX(geometry 'Point(1 1)', pi()/2), 6));
 SELECT asEWKT(round(rotateX(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
   pi()/2), 6));
 -- [POINT Z (1 0 1)@2001-01-01, POINT Z (2 0 2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tgeo_rotateY"></a><a class="indexterm" name="id6402"></a><p>Return a temporal geometry rotated counter-clockwise about the y axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_rotateY"></a><a class="indexterm" name="id6401"></a><p>Return a temporal geometry rotated counter-clockwise about the y axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateY(tgeo,radians float) → tgeo
 rotateY(geometry,radians float) → geometry
@@ -127,7 +127,7 @@ SELECT asEWKT(rotateY(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01
 -- [POINT Z (-1 2 -3)@2001-01-01, POINT Z (-1 4 -3)@2001-01-02]
 SELECT ST_AsEWKT(round(rotateY(geometry 'Linestring(1 1,2 2)', pi()/2), 6));
 -- LINESTRING(0 1 -1,0 2 -2)
-</pre></li><li class="listitem"><a name="tgeo_rotateZ"></a><a class="indexterm" name="id6417"></a><p>Return a temporal geometry rotated counter-clockwise about the z axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_rotateZ"></a><a class="indexterm" name="id6416"></a><p>Return a temporal geometry rotated counter-clockwise about the z axis <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateZ(tgeo,radians float) → tgeo
 rotateZ(geometry,radians float) → geometry
@@ -137,7 +137,7 @@ SELECT asEWKT(rotateZ(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@200
 -- [POINT(-1 1)@2001-01-01, LINESTRING(-1 1,-2 2)@2001-01-02]
 SELECT ST_AsEWKT(rotateZ(geometry 'Linestring(1 1,2 2)', pi()/2), 6);
 -- LINESTRING(-1 1,-2 2)
-</pre></li><li class="listitem"><a name="tgeo_scale"></a><a class="indexterm" name="id6432"></a><p>Return a temporal point scaled by given factors <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_scale"></a><a class="indexterm" name="id6431"></a><p>Return a temporal point scaled by given factors <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 scale(tgeo,xfactor float,yfactor float,zfactor float) → tgeo
 scale(tgeo,xfactor float,yfactor float) → tgeo
@@ -163,7 +163,7 @@ SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-
 SELECT ST_AsEWKT(scale(geometry 'Linestring(1 1,2 2)', geometry 'Point(2 2)',
   geometry 'Point(1 1)'));
 -- LINESTRING(1 1,3 3)
-</pre></li><li class="listitem"><a name="tgeo_transscale"></a><a class="indexterm" name="id6447"></a><p>Return a temporal geometry translated by given offsets and then scaled by given factors <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_transscale"></a><a class="indexterm" name="id6446"></a><p>Return a temporal geometry translated by given offsets and then scaled by given factors <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 transscale(tgeo,deltax float,deltay float,xfactor float,yfactor float) → tgeo
 transscale(geometry,deltax float,deltay float,xfactor float,yfactor float) → geometry
@@ -173,7 +173,7 @@ SELECT asEWKT(transscale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 -- [POINT(4 6)@2001-01-01, POINT(6 9)@2001-01-02]
 SELECT ST_AsEWKT(transscale(geometry 'Point(1 1)', 1, 1, 2, 3));
 -- POINT(4 6)
-</pre></li><li class="listitem"><a name="tgeo_translate"></a><a class="indexterm" name="id6462"></a><p>Return a temporal geometry translated by given offsets <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_translate"></a><a class="indexterm" name="id6461"></a><p>Return a temporal geometry translated by given offsets <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 translate(tgeo,deltax float,deltay float) → tgeo
 translate(tgeo,deltax float,deltay float,deltaz float) → tgeo
@@ -190,7 +190,7 @@ SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 10, 20));
 -- POINT(11 21)
 SELECT ST_AsEWKT(translate(geometry 'Point(1 1)', 0, 0, 5));
 -- POINT(1 1 5)
-</pre></li><li class="listitem"><a name="tpoint_asMVTGeom"></a><a class="indexterm" name="id6477"></a><p>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpoint_asMVTGeom"></a><a class="indexterm" name="id6476"></a><p>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 asMVTGeom(tpoint,bounds stbox,extent integer=4096,buffer integer=256,
   clip boolean=true) → (geom,times)
@@ -203,7 +203,7 @@ SELECT ST_AsText((mvt).geom), (mvt).times
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-01-02]',
   stbox 'STBOX X((40,40),(60,60))', clip:=false) AS mvt ) AS t;
 -- LINESTRING(-8192 12288,12288 -8192) | {946681200,946767600}
-</pre></li><li class="listitem"><a name="tgeo_stops"></a><a class="indexterm" name="id6510"></a><p>Extract from a temporal point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_stops"></a><a class="indexterm" name="id6509"></a><p>Extract from a temporal point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 stops(tpoint,maxdist float=0.0,minduration interval='0 minutes') → tpoint

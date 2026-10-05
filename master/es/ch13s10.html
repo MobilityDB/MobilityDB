@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s09.html" title="Accesores"><link rel="next" href="ch13s11.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_subtype"></a><a class="indexterm" name="id9886"></a><a class="indexterm" name="id9889"></a><a class="indexterm" name="id9892"></a><p>Transforma a otro subtipo</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s09.html" title="Accesores"><link rel="next" href="ch13s11.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_subtype"></a><a class="indexterm" name="id9885"></a><a class="indexterm" name="id9888"></a><a class="indexterm" name="id9891"></a><p>Transforma a otro subtipo</p><pre class="programlisting">
 tposeInst(tpose) → tposeInst
 tposeSeq(tpose) → tposeSeq
 tposeSeqSet(tpose) → tposeSeqSet
@@ -9,7 +9,7 @@ SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
 -- [Pose(POINT(1 1),0.5)@2001-01-01]
 SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01'));
 -- {[Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01]}
-</pre></li><li class="listitem"><a name="tpose_setInterp"></a><a class="indexterm" name="id9899"></a><p>Transforma a otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_setInterp"></a><a class="indexterm" name="id9898"></a><p>Transforma a otra interpolación</p><pre class="programlisting">
 setInterp(tpose,interp text) → tpose
 </pre><pre class="programlisting">
 SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
@@ -17,7 +17,7 @@ SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
 SELECT asText(setInterp(tpose '{[Pose(Point Z(1 1 1),1,0,0,0)@2001-01-01],
   [Pose(Point Z(2 2 2),0,0,0,1)@2001-01-02]}', 'discrete'));
 -- {Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,0,0,1)@2001-01-02}
-</pre></li><li class="listitem"><a name="tpose_round"></a><a class="indexterm" name="id9906"></a><p>Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_round"></a><a class="indexterm" name="id9905"></a><p>Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</p><pre class="programlisting">
 round({tpose,tposechain},integer=0) → {tpose,tposechain}
 shiftTime({tpose,tposechain},interval) → {tpose,tposechain}
 </pre><pre class="programlisting">
@@ -30,7 +30,7 @@ SELECT asEWKT(round(tposechain
 SELECT asEWKT(shiftTime(tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01',
   interval '1 day'));
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02
-</pre></li><li class="listitem"><a name="tpose_translate"></a><a class="indexterm" name="id9913"></a><p>Devuelve un valor temporal trasladado por los desplazamientos dados <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpose_translate"></a><a class="indexterm" name="id9912"></a><p>Devuelve un valor temporal trasladado por los desplazamientos dados <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 translate({tpose,tposechain},deltax float,deltay float,deltaz float=0)
   → {tpose,tposechain}
@@ -42,7 +42,7 @@ SELECT asText(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
   Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3), 6);
 /* [Pose(POINT Z (2 3 3),0.988771,0,0,0.149438)@2001-01-01,
    Pose(POINT Z (4 4 3),0.852525,0,0,0.522687)@2001-01-02] */
-</pre></li><li class="listitem"><a name="tpose_rotate"></a><a class="indexterm" name="id9930"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpose_rotate"></a><a class="indexterm" name="id9929"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del origen o de un punto <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotate({tpose,tposechain},angle float) → {tpose,tposechain}
 rotate({tpose,tposechain},angle float,x0 float,y0 float) → {tpose,tposechain}
@@ -54,7 +54,7 @@ SELECT asText(rotate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(Point(2 0)
   PoseChain(Pose(Point(3 2),1.1),Pose(Point(2 0),0.5))@2001-01-02]', 0.7, 1, 1), 6);
 /* [PoseChain(Pose(POINT(1 1),1),Pose(POINT(2 0),0.5))@2001-01-01,
    PoseChain(Pose(POINT(1.885467 3.053278),1.8),Pose(POINT(2 0),0.5))@2001-01-02] */
-</pre></li><li class="listitem"><a name="tpose_rotateX"></a><a class="indexterm" name="id9946"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje x <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpose_rotateX"></a><a class="indexterm" name="id9945"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje x <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateX({tpose,tposechain},angle float) → {tpose,tposechain}
 </pre><p>La rotación saca un valor bidimensional de su plano, por lo que el resultado es tridimensional: cada posición gana la altura que le da la rotación y cada orientación es la rotación compuesta con el ángulo alrededor de la vertical que indica el valor.</p><p>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</p><p>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</p><pre class="programlisting">
@@ -62,7 +62,7 @@ SELECT asText(rotateX(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
   Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
 /* [Pose(POINT Z (1 0.764842 0.644218),0.928825,0.339047,-0.051242,0.140378)@2001-01-01,
    Pose(POINT Z (3 1.529684 1.288435),0.800838,0.292329,-0.179228,0.490998)@2001-01-02] */
-</pre></li><li class="listitem"><a name="tpose_rotateY"></a><a class="indexterm" name="id9963"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje y <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpose_rotateY"></a><a class="indexterm" name="id9962"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje y <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateY({tpose,tposechain},angle float) → {tpose,tposechain}
 </pre><p>La rotación saca un valor bidimensional de su plano, por lo que el resultado es tridimensional: cada posición gana la altura que le da la rotación y cada orientación es la rotación compuesta con el ángulo alrededor de la vertical que indica el valor.</p><p>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</p><p>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</p><pre class="programlisting">
@@ -70,7 +70,7 @@ SELECT asText(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
   Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
 /* [Pose(POINT Z (0.764842 1 -0.644218),0.928825,0.051242,0.339047,0.140378)@2001-01-01,
    Pose(POINT Z (2.294527 2 -1.932653),0.800838,0.179228,0.292329,0.490998)@2001-01-02] */
-</pre></li><li class="listitem"><a name="tpose_rotateZ"></a><a class="indexterm" name="id9980"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpose_rotateZ"></a><a class="indexterm" name="id9979"></a><p>Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 rotateZ({tpose,tposechain},angle float) → {tpose,tposechain}
 </pre><p>La cadena de cada instante mueve su primer eslabón, que se expresa en el marco exterior de la cadena, y conserva los demás.</p><p>El movimiento es una aplicación plana, por lo que un valor geodésico genera un error.</p><pre class="programlisting">

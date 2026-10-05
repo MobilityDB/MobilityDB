@@ -13,7 +13,7 @@ SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 </pre><p>
 		which are obtained by applying the PostgreSQL operator <code class="varname">-&gt;</code> at every element of the JSONB set and to every instant of the temporal JSONB value.
-		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonb_jsonb"></a>JSONB Operations</h2></div></div></div><p>PostgreSQL provides the following operations of JSONB values under its own names and operators. MobilityDB names them as their JSONB set and temporal JSONB counterparts, so that a query calling these names runs unchanged in every engine of the ecosystem (<a class="xref" href="ch18s08.html" title="Base Values Provided by the Host">the section called “Base Values Provided by the Host”</a>). The operators of PostgreSQL keep their symbols.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonb_object_field"></a><a class="indexterm" name="id12175"></a><a class="indexterm" name="id12178"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
+		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonb_jsonb"></a>JSONB Operations</h2></div></div></div><p>PostgreSQL provides the following operations of JSONB values under its own names and operators. MobilityDB names them as their JSONB set and temporal JSONB counterparts, so that a query calling these names runs unchanged in every engine of the ecosystem (<a class="xref" href="ch18s08.html" title="Base Values Provided by the Host">the section called “Base Values Provided by the Host”</a>). The operators of PostgreSQL keep their symbols.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonb_object_field"></a><a class="indexterm" name="id12154"></a><a class="indexterm" name="id12157"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
 jsonbObjectField(jsonb,text) → jsonb
 jsonbObjectFieldText(jsonb,text) → text
 </pre><pre class="programlisting">
@@ -21,7 +21,7 @@ SELECT jsonbObjectField(jsonb '{"a": {"b": 1}}', 'a');
 -- {"b": 1}
 SELECT jsonbObjectFieldText(jsonb '{"a": "x"}', 'a');
 -- x
-</pre></li><li class="listitem"><a name="jsonb_extract_path"></a><a class="indexterm" name="id12185"></a><a class="indexterm" name="id12188"></a><p>Extract a JSON value specified by a path</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_extract_path"></a><a class="indexterm" name="id12164"></a><a class="indexterm" name="id12167"></a><p>Extract a JSON value specified by a path</p><pre class="programlisting">
 jsonbExtractPath(jsonb,path text[]) → jsonb
 jsonbExtractPathText(jsonb,path text[]) → text
 </pre><pre class="programlisting">
@@ -29,7 +29,7 @@ SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']);
 -- 20
 SELECT jsonbExtractPathText(jsonb '{"a": {"b": "z"}}', ARRAY['a', 'b']);
 -- z
-</pre></li><li class="listitem"><a name="jsonb_array_element"></a><a class="indexterm" name="id12195"></a><a class="indexterm" name="id12198"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_array_element"></a><a class="indexterm" name="id12174"></a><a class="indexterm" name="id12177"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
 jsonbArrayElement(jsonb,integer) → jsonb
 jsonbArrayElementText(jsonb,integer) → text
 </pre><p>Elements are numbered from zero, and a negative integer counts from the end of the array.</p><pre class="programlisting">
@@ -39,12 +39,12 @@ SELECT jsonbArrayElement(jsonb '[1, 2, 3]', -1);
 -- 3
 SELECT jsonbArrayElementText(jsonb '["x", "y"]', 0);
 -- x
-</pre></li><li class="listitem"><a name="jsonb_array_length"></a><a class="indexterm" name="id12206"></a><p>Return the number of elements of a JSON array</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_array_length"></a><a class="indexterm" name="id12185"></a><p>Return the number of elements of a JSON array</p><pre class="programlisting">
 jsonbArrayLength(jsonb) → integer
 </pre><pre class="programlisting">
 SELECT jsonbArrayLength(jsonb '[1, 2, 3]');
 -- 3
-</pre></li><li class="listitem"><a name="jsonb_array_elements"></a><a class="indexterm" name="id12213"></a><a class="indexterm" name="id12216"></a><p>Return the elements of a JSON array as rows</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_array_elements"></a><a class="indexterm" name="id12192"></a><a class="indexterm" name="id12195"></a><p>Return the elements of a JSON array as rows</p><pre class="programlisting">
 jsonbArrayElements(jsonb) → setof jsonb
 jsonbArrayElementsText(jsonb) → setof text
 </pre><pre class="programlisting">
@@ -55,7 +55,7 @@ SELECT * FROM jsonbArrayElements(jsonb '[1, "two", {"three": 3}]');
 SELECT * FROM jsonbArrayElementsText(jsonb '[1, "two"]');
 -- 1
 -- two
-</pre></li><li class="listitem"><a name="jsonb_each"></a><a class="indexterm" name="id12223"></a><a class="indexterm" name="id12226"></a><p>Return the fields of a JSON object as rows of a key and a value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_each"></a><a class="indexterm" name="id12202"></a><a class="indexterm" name="id12205"></a><p>Return the fields of a JSON object as rows of a key and a value</p><pre class="programlisting">
 jsonbEach(jsonb) → setof (key text,value jsonb)
 jsonbEachText(jsonb) → setof (key text,value text)
 </pre><pre class="programlisting">
@@ -65,25 +65,25 @@ SELECT * FROM jsonbEach(jsonb '{"a": 1, "b": [2]}') ORDER BY key;
 SELECT * FROM jsonbEachText(jsonb '{"a": 1, "b": "x"}') ORDER BY key;
 -- a | 1
 -- b | x
-</pre></li><li class="listitem"><a name="jsonb_object_keys"></a><a class="indexterm" name="id12233"></a><p>Return the keys of a JSON object as rows</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_object_keys"></a><a class="indexterm" name="id12212"></a><p>Return the keys of a JSON object as rows</p><pre class="programlisting">
 jsonbObjectKeys(jsonb) → setof text
 </pre><pre class="programlisting">
 SELECT * FROM jsonbObjectKeys(jsonb '{"b": 1, "a": 2}') ORDER BY 1;
 -- a
 -- b
-</pre></li><li class="listitem"><a name="jsonb_pretty"></a><a class="indexterm" name="id12240"></a><p>Return the indented text of a JSON value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_pretty"></a><a class="indexterm" name="id12219"></a><p>Return the indented text of a JSON value</p><pre class="programlisting">
 jsonbPretty(jsonb) → text
 </pre><pre class="programlisting">
 SELECT jsonbPretty(jsonb '{"a": 1}');
 -- {
 --     "a": 1
 -- }
-</pre></li><li class="listitem"><a name="jsonb_concat"></a><a class="indexterm" name="id12247"></a><p>Concatenate two JSON values</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_concat"></a><a class="indexterm" name="id12226"></a><p>Concatenate two JSON values</p><pre class="programlisting">
 jsonbConcat(jsonb,jsonb) → jsonb
 </pre><pre class="programlisting">
 SELECT jsonbConcat(jsonb '{"a": 1}', jsonb '{"b": 2}');
 -- {"a": 1, "b": 2}
-</pre></li><li class="listitem"><a name="jsonb_delete"></a><a class="indexterm" name="id12254"></a><a class="indexterm" name="id12257"></a><a class="indexterm" name="id12260"></a><a class="indexterm" name="id12263"></a><p>Delete a key, the keys of an array, an array element or the item at a path from a JSON value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_delete"></a><a class="indexterm" name="id12233"></a><a class="indexterm" name="id12236"></a><a class="indexterm" name="id12239"></a><a class="indexterm" name="id12242"></a><p>Delete a key, the keys of an array, an array element or the item at a path from a JSON value</p><pre class="programlisting">
 jsonbDelete(jsonb,text) → jsonb
 jsonbDeleteArray(jsonb,text[]) → jsonb
 jsonbDeleteIndex(jsonb,integer) → jsonb
@@ -97,7 +97,7 @@ SELECT jsonbDeleteIndex(jsonb '[1, 2, 3]', -1);
 -- [1, 2]
 SELECT jsonbDeletePath(jsonb '{"a": {"b": 1, "c": 2}}', ARRAY['a', 'b']);
 -- {"a": {"c": 2}}
-</pre></li><li class="listitem"><a name="jsonb_exists"></a><a class="indexterm" name="id12270"></a><a class="indexterm" name="id12273"></a><a class="indexterm" name="id12276"></a><p>Does a text, or any or all the texts of an array, exist as a top-level key or array element of a JSON value?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_exists"></a><a class="indexterm" name="id12249"></a><a class="indexterm" name="id12252"></a><a class="indexterm" name="id12255"></a><p>Does a text, or any or all the texts of an array, exist as a top-level key or array element of a JSON value?</p><pre class="programlisting">
 jsonbExists(jsonb,text) → boolean
 jsonbExistsAny(jsonb,text[]) → boolean
 jsonbExistsAll(jsonb,text[]) → boolean
@@ -108,7 +108,7 @@ SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', 'a']);
 -- true
 SELECT jsonbExistsAll(jsonb '{"a": 1}', ARRAY['b', 'a']);
 -- false
-</pre></li><li class="listitem"><a name="jsonb_contains"></a><a class="indexterm" name="id12283"></a><a class="indexterm" name="id12286"></a><p>Does the first JSON value contain, or is it contained in, the second one?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_contains"></a><a class="indexterm" name="id12262"></a><a class="indexterm" name="id12265"></a><p>Does the first JSON value contain, or is it contained in, the second one?</p><pre class="programlisting">
 jsonbContains(jsonb,jsonb) → boolean
 jsonbContained(jsonb,jsonb) → boolean
 </pre><pre class="programlisting">
@@ -116,7 +116,7 @@ SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}');
 -- true
 SELECT jsonbContained(jsonb '{"a": 1}', jsonb '{"a": 1, "b": 2}');
 -- true
-</pre></li><li class="listitem"><a name="jsonb_set"></a><a class="indexterm" name="id12293"></a><a class="indexterm" name="id12296"></a><p>Return a JSON value with the item at a path set to a value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_set"></a><a class="indexterm" name="id12272"></a><a class="indexterm" name="id12275"></a><p>Return a JSON value with the item at a path set to a value</p><pre class="programlisting">
 jsonbSet(jsonb,path text[],val jsonb,create_missing boolean=true) → jsonb
 jsonbSetLax(jsonb,path text[],val jsonb,create_missing boolean=true,
   handle_null text='use_json_null') → jsonb
@@ -129,21 +129,21 @@ SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL);
 -- {"a": null}
 SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'delete_key');
 -- {}
-</pre></li><li class="listitem"><a name="jsonb_insert"></a><a class="indexterm" name="id12311"></a><p>Return a JSON value with a value inserted at a path</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_insert"></a><a class="indexterm" name="id12290"></a><p>Return a JSON value with a value inserted at a path</p><pre class="programlisting">
 jsonbInsert(jsonb,path text[],val jsonb,after boolean=false) → jsonb
 </pre><pre class="programlisting">
 SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2');
 -- [1, 2, 3]
 SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2', true);
 -- [1, 3, 2]
-</pre></li><li class="listitem"><a name="jsonb_strip_nulls"></a><a class="indexterm" name="id12318"></a><p>Return a JSON value without its object fields whose value is null</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_strip_nulls"></a><a class="indexterm" name="id12297"></a><p>Return a JSON value without its object fields whose value is null</p><pre class="programlisting">
 jsonbStripNulls(jsonb,strip_in_arrays boolean=false) → jsonb
 </pre><p>The last argument states whether null array elements are also stripped.</p><pre class="programlisting">
 SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}');
 -- {"b": [1, null]}
 SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}', true);
 -- {"b": [1]}
-</pre></li><li class="listitem"><a name="jsonb_path_exists"></a><a class="indexterm" name="id12326"></a><a class="indexterm" name="id12329"></a><p>Does the JSON path return any item for a JSON value?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_path_exists"></a><a class="indexterm" name="id12305"></a><a class="indexterm" name="id12308"></a><p>Does the JSON path return any item for a JSON value?</p><pre class="programlisting">
 jsonbPathExists(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 jsonbPathExistsTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 </pre><p>The last argument suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors; the result of a suppressed error is NULL. The functions ending in <code class="varname">Tz</code> compare date and time values across time zones.</p><pre class="programlisting">
@@ -151,13 +151,13 @@ SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt; 2)');
 -- true
 SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt; $x)', '{"x": 5}');
 -- false
-</pre></li><li class="listitem"><a name="jsonb_path_match"></a><a class="indexterm" name="id12338"></a><a class="indexterm" name="id12341"></a><p>Return the result of a JSON path predicate check for a JSON value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_path_match"></a><a class="indexterm" name="id12317"></a><a class="indexterm" name="id12320"></a><p>Return the result of a JSON path predicate check for a JSON value</p><pre class="programlisting">
 jsonbPathMatch(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 jsonbPathMatchTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
 </pre><pre class="programlisting">
 SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ &gt; 2))');
 -- true
-</pre></li><li class="listitem"><a name="jsonb_path_query"></a><a class="indexterm" name="id12348"></a><a class="indexterm" name="id12351"></a><a class="indexterm" name="id12354"></a><a class="indexterm" name="id12357"></a><a class="indexterm" name="id12360"></a><a class="indexterm" name="id12363"></a><p>Return the items a JSON path returns for a JSON value, as rows, as a JSON array, or the first one</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_path_query"></a><a class="indexterm" name="id12327"></a><a class="indexterm" name="id12330"></a><a class="indexterm" name="id12333"></a><a class="indexterm" name="id12336"></a><a class="indexterm" name="id12339"></a><a class="indexterm" name="id12342"></a><p>Return the items a JSON path returns for a JSON value, as rows, as a JSON array, or the first one</p><pre class="programlisting">
 jsonbPathQuery(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
 jsonbPathQueryTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
 jsonbPathQueryArray(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
@@ -172,7 +172,7 @@ SELECT jsonbPathQueryArray(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt;= 2)');
 -- [2, 3]
 SELECT jsonbPathQueryFirst(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ &gt;= 2)');
 -- 2
-</pre></li><li class="listitem"><a name="jsonb_comp"></a><a class="indexterm" name="id12370"></a><a class="indexterm" name="id12373"></a><a class="indexterm" name="id12376"></a><a class="indexterm" name="id12379"></a><p>Compare two JSON values, or return the hash value of a JSON value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonb_comp"></a><a class="indexterm" name="id12349"></a><a class="indexterm" name="id12352"></a><a class="indexterm" name="id12355"></a><a class="indexterm" name="id12358"></a><p>Compare two JSON values, or return the hash value of a JSON value</p><pre class="programlisting">
 jsonb {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} jsonb → boolean
 cmp(jsonb,jsonb) → integer
 hash(jsonb) → integer
