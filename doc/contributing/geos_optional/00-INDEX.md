@@ -106,7 +106,7 @@ Each item is measured; the note named gives the evidence.
    a hole.
 3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
    MobilityDB #2977, merged as `4c4457d2ec`, adds one, which fails where any input reaches a
-   fall-back. MobilityDB #2982 decides a line crossing an arc within the rounding of its end by the
+   fall-back. MobilityDB #2982, merged as `4ba7818277`, decides a line crossing an arc within the rounding of its end by the
    side the end stands on, where the arctangent of two platforms' libraries had answered differently.
 4. **The buffer is not finished** ([note 6](06-BUFFER.md)). Its answer depends on where the shape
    lies — the same small square buffered by the same distance has the right area at the origin and
