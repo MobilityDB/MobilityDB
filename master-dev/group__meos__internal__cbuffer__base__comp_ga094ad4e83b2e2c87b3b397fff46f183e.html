@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Comparison functions</title>
+<title>MobilityDB: cbuffer_eq_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -69,24 +68,62 @@ $(function() {
 </div>
 </div>
 
-<div class="header">
-  <div class="summary">
-<a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">Comparison functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__internal.html">Internal API</a> &raquo; <a class="el" href="group__meos__internal__cbuffer.html">Functions for temporal circular buffers</a> &raquo; <a class="el" href="group__meos__internal__cbuffer__base.html">Functions for static circular buffers</a></div></div></div>
-</div><!--header-->
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="group__meos__internal__cbuffer__base__comp.html">Comparison functions</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="contents">
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td valign="top">
+      <div class="navtab">
+        <table>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__base__comp_ga094ad4e83b2e2c87b3b397fff46f183e.html#ga094ad4e83b2e2c87b3b397fff46f183e">cbuffer_eq_intl</a></td></tr>
+        </table>
+      </div>
+   </td>
+   <td valign="top" class="mempage">
+<a id="ga094ad4e83b2e2c87b3b397fff46f183e" name="ga094ad4e83b2e2c87b3b397fff46f183e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga094ad4e83b2e2c87b3b397fff46f183e">&#9670;&#160;</a></span>cbuffer_eq_intl()</h2>
 
-<p>Comparison functions for static circular buffers.  
-<a href="#details">More...</a></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:ga094ad4e83b2e2c87b3b397fff46f183e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__cbuffer__base__comp_ga094ad4e83b2e2c87b3b397fff46f183e.html#ga094ad4e83b2e2c87b3b397fff46f183e">cbuffer_eq_intl</a> (const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb1, const <a class="el" href="structCbuffer.html">Cbuffer</a> *cb2)</td></tr>
-<tr class="memdesc:ga094ad4e83b2e2c87b3b397fff46f183e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first buffer is equal to the second one.  <a href="group__meos__internal__cbuffer__base__comp_ga094ad4e83b2e2c87b3b397fff46f183e.html#ga094ad4e83b2e2c87b3b397fff46f183e">More...</a><br /></td></tr>
-<tr class="separator:ga094ad4e83b2e2c87b3b397fff46f183e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbuffer_eq_intl </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return true if the first buffer is equal to the second one. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb1,cb2</td><td>Circular buffers</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The internal twin of <a class="el" href="group__meos__cbuffer__base__comp_gac93d58688c4b4491a190b0490a4fe68c.html#gac93d58688c4b4491a190b0490a4fe68c" title="Return true if the first buffer is equal to the second one.">cbuffer_eq</a>, for the walks that compare one instant after another: the entry of such a walk establishes the shared reference system once, so comparing it per element answers it again. The condition set is the external form's, asserted rather than tested </p>
+
+</div>
+</div>
+    </td>
+  </tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Comparison functions for static circular buffers. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

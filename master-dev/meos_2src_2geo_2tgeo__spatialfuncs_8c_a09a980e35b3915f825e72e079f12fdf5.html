@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pt_distance_fn</title>
+<title>MobilityDB: datum_point_eq_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_af9e1b2a6ddf8061fb2fe22807dc5c88d.html#af9e1b2a6ddf8061fb2fe22807dc5c88d">datum_geom_distance3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a9aa45ae12acd9b5e64cfc7c68d2b9050.html#a9aa45ae12acd9b5e64cfc7c68d2b9050">datum_point4d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a6dc208a8ec7eb3cfa83a4a70c7cc6bc7.html#a6dc208a8ec7eb3cfa83a4a70c7cc6bc7">datum_point_eq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a09a980e35b3915f825e72e079f12fdf5.html#a09a980e35b3915f825e72e079f12fdf5">datum_point_eq_intl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a09a980e35b3915f825e72e079f12fdf5.html#a09a980e35b3915f825e72e079f12fdf5">datum_point_eq_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_af7ae32ca3be55c22155c6d2e943f5c6b.html#af7ae32ca3be55c22155c6d2e943f5c6b">datum_point_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a2ac8d1b4180ffc12b11841b0c9783b2d.html#a2ac8d1b4180ffc12b11841b0c9783b2d">datum_pt_distance2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a5a1e302df2a9050f52d61a023b976f88.html#a5a1e302df2a9050f52d61a023b976f88">datum_pt_distance3d</a></td></tr>
@@ -130,7 +130,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaa48a6cf834d205bb500b2b0a2814e4bd.html#gaa48a6cf834d205bb500b2b0a2814e4bd">geo_transscale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a8ec42a0bd0bb87e2e76b5bb729dc66c5.html#a8ec42a0bd0bb87e2e76b5bb729dc66c5">geo_values_collect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_ac6e006a3edcf05e6b562cec14aebfc26.html#ac6e006a3edcf05e6b562cec14aebfc26">gserialized_flags</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55">pt_distance_fn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55">pt_distance_fn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a132f147368812769ef1d94f6a2cf4286.html#a132f147368812769ef1d94f6a2cf4286">same_dimensionality_tspatial_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a15b1e78dcb876a64d5854b721948a01e.html#a15b1e78dcb876a64d5854b721948a01e">spatial_flags</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gad4650e1944efd306f8346269d848301b.html#gad4650e1944efd306f8346269d848301b">tgeo_affine</a></td></tr>
@@ -175,23 +175,34 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a452059d6cd813233143056d746806d55" name="a452059d6cd813233143056d746806d55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a452059d6cd813233143056d746806d55">&#9670;&#160;</a></span>pt_distance_fn()</h2>
+<a id="a09a980e35b3915f825e72e079f12fdf5" name="a09a980e35b3915f825e72e079f12fdf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09a980e35b3915f825e72e079f12fdf5">&#9670;&#160;</a></span>datum_point_eq_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> pt_distance_fn </td>
+          <td class="memname">bool datum_point_eq_intl </td>
           <td>(</td>
-          <td class="paramtype">int16&#160;</td>
-          <td class="paramname"><em>flags</em></td><td>)</td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>point1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>point2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Select the appropriate distance function. </p>
+<p>Return true if the points are equal, the caller having established that they share a reference system, a dimensionality and a geodetic flag. </p>
+<p >The internal twin of <a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a6dc208a8ec7eb3cfa83a4a70c7cc6bc7.html#a6dc208a8ec7eb3cfa83a4a70c7cc6bc7" title="Return true if the points are equal.">datum_point_eq</a>, for the walks that compare one instant after another. The entry of such a walk establishes the condition once &ndash; <code>ensure_valid_tgeo_tgeo</code> refuses two temporal points whose SRIDs differ &ndash; so reading the SRID out of both serializations per element pays again for a question already answered. The condition set is the external form's, asserted rather than tested, and <code>NDEBUG</code> removes it from a release build while a debug build checks it </p>
 
 </div>
 </div>
