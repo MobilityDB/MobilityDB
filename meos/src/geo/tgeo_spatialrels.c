@@ -372,6 +372,27 @@ geo_dwithin_fn_geo(int16 flags1, uint8_t flags2)
       &datum_geom_dwithin3d : &datum_geom_dwithin2d;
 }
 
+/**
+ * @brief Select the appropriate dwithin function for a temporal point and a
+ * point
+ * @details The twin of #pt_dwithin_fn for a base point carried by a geometry
+ * rather than by a second temporal point. The choice is the same one: a planar
+ * 2D pair is answered from the four coordinates, while a geodetic pair keeps
+ * the spheroid function and a 3D pair the generic entry, neither having a
+ * point twin here
+ * @note We need two parameters to cope with mixed 2D/3D arguments
+ */
+datum_func3
+pt_dwithin_fn_geo(int16 flags1, uint8_t flags2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
+    return &datum_geog_dwithin;
+  else
+    /* 3D only if both arguments are 3D */
+    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+      &datum_geom_dwithin3d : &datum_pt_dwithin2d;
+}
+
 /*****************************************************************************
  * Generic ever/always spatial relationship functions
  *****************************************************************************/
