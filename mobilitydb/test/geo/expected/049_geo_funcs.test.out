@@ -303,3 +303,138 @@ SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
  t
 (1 row)
 
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE contains(a, b) IS DISTINCT FROM ST_Contains(a, b)) AS contains,
+  count(*) FILTER (WHERE covers(a, b) IS DISTINCT FROM ST_Covers(a, b)) AS covers,
+  count(*) FILTER (WHERE disjoint(a, b) IS DISTINCT FROM ST_Disjoint(a, b)) AS disjoint,
+  count(*) FILTER (WHERE intersects(a, b) IS DISTINCT FROM ST_Intersects(a, b)) AS intersects,
+  count(*) FILTER (WHERE touches(a, b) IS DISTINCT FROM ST_Touches(a, b)) AS touches,
+  count(*) FILTER (WHERE geoEquals(a, b) IS DISTINCT FROM ST_Equals(a, b)) AS equals,
+  count(*) FILTER (WHERE dwithin(a, b, 1.5) IS DISTINCT FROM ST_DWithin(a, b, 1.5)) AS dwithin,
+  count(*) FILTER (WHERE relate(a, b, 'T*****FF*') IS DISTINCT FROM ST_Relate(a, b, 'T*****FF*')) AS relate
+FROM pairs;
+ pairs | contains | covers | disjoint | intersects | touches | equals | dwithin | relate 
+-------+----------+--------+----------+------------+---------+--------+---------+--------
+   121 |        0 |      0 |        0 |          0 |       0 |      0 |       0 |      0
+(1 row)
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) FILTER (WHERE contains(a, b)) AS contains,
+  count(*) FILTER (WHERE covers(a, b)) AS covers,
+  count(*) FILTER (WHERE disjoint(a, b)) AS disjoint,
+  count(*) FILTER (WHERE intersects(a, b)) AS intersects,
+  count(*) FILTER (WHERE touches(a, b)) AS touches,
+  count(*) FILTER (WHERE geoEquals(a, b)) AS equals,
+  count(*) FILTER (WHERE dwithin(a, b, 1.5)) AS dwithin,
+  count(*) FILTER (WHERE relate(a, b, 'T*****FF*')) AS relate
+FROM pairs;
+ contains | covers | disjoint | intersects | touches | equals | dwithin | relate 
+----------+--------+----------+------------+---------+--------+---------+--------
+       15 |     23 |       63 |         58 |      26 |     11 |      72 |     15
+(1 row)
+
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+ geoequals 
+-----------
+ t
+(1 row)
+
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,3 0)');
+ geoequals 
+-----------
+ f
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)'),
+  ST_3DIntersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+ intersects | st_3dintersects 
+------------+-----------------
+ f          | f
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1)'),
+  ST_Intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1)');
+ intersects | st_intersects 
+------------+---------------
+ t          | t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5),
+  ST_3DDWithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
+ dwithin | st_3ddwithin 
+---------+--------------
+ f       | f
+(1 row)
+
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
+ERROR:  The geometry cannot have Z dimension
+SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');
+ERROR:  The geometry cannot have Z dimension
+SELECT touches(geometry 'Point(2 2 1)', geometry 'Point(2 2)');
+ERROR:  The geometry cannot have Z dimension
+SELECT intersects(geometry 'SRID=3857;Point(1 1)', geometry 'SRID=4326;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)'),
+  ST_Intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)');
+ intersects | st_intersects 
+------------+---------------
+ t          | t
+(1 row)
+
+SELECT disjoint(geography 'Point(0 0)', geography 'Point(0 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800),
+  ST_DWithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
+ dwithin | st_dwithin 
+---------+------------
+ t       | t
+(1 row)
+
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false),
+  ST_DWithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
+ dwithin | st_dwithin 
+---------+------------
+ f       | f
+(1 row)
+

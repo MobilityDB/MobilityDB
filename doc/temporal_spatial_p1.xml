@@ -116,11 +116,12 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 
 			<listitem xml:id="geo_relate">
 				<indexterm significance="normal"><primary><varname>relate</varname></primary></indexterm>
-				<para>Return the DE-9IM intersection matrix of two geometries</para>
+				<para>Return the DE-9IM intersection matrix of two geometries or whether it matches a pattern</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 relate(geometry,geometry) → text
+relate(geometry,geometry,text) → boolean
 </programlisting>
-				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members.</para>
+				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members. With a pattern, the function answers whether the matrix matches it, as <varname>ST_Relate</varname> with three arguments does: a character <literal>T</literal> of the pattern matches any of <literal>0</literal>, <literal>1</literal> and <literal>2</literal>, and a character <literal>*</literal> matches anything.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
 -- 1020F1102
@@ -130,6 +131,58 @@ SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
 SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
   geometry 'Point(2 1.9)');
 -- 0F2FF1FF2
+SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)',
+  'T*****FF*');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_spatialrels">
+				<indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>covers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>disjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>touches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoEquals</varname></primary></indexterm>
+				<para>Return true if two geometries satisfy a spatial relationship</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+contains(geometry,geometry) → boolean
+covers(geometry,geometry) → boolean
+touches(geometry,geometry) → boolean
+geoEquals(geometry,geometry) → boolean
+disjoint({geometry,geography},{geometry,geography}) → boolean
+intersects({geometry,geography},{geometry,geography}) → boolean
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname> on the same arguments, without calling GEOS. Over two geometries with Z, <varname>disjoint</varname> and <varname>intersects</varname> are tested in 3D, as <varname>ST_3DIntersects</varname>, and in 2D when one of them has no Z. The containment relationships <varname>contains</varname>, <varname>covers</varname> and <varname>touches</varname> have no 3D form and refuse a geometry with Z. Two geographies intersect on the WGS 84 spheroid, as <varname>ST_Intersects</varname> decides it. The equality of two sets of points is named <varname>geoEquals</varname> in every engine, since PostGIS declares <varname>equals(geometry, geometry)</varname> as a deprecated alias of <varname>ST_Equals</varname>; it reads the points, where the operator <varname>=</varname> compares the vertices.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT contains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)');
+-- true
+SELECT touches(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(4 2)');
+-- true
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+-- false
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_dwithin">
+				<indexterm significance="normal"><primary><varname>dwithin</varname></primary></indexterm>
+				<para>Return true if two geometries are within a distance</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dwithin(geometry,geometry,float) → boolean
+dwithin(geography,geography,float,spheroid boolean=true) → boolean
+</programlisting>
+				<para>Two geometries with Z are measured in 3D, as <varname>ST_3DDWithin</varname>, and in 2D when one of them has no Z. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
+-- false
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
+-- false
 </programlisting>
 			</listitem>
 

@@ -260,8 +260,8 @@ datum_geom_relate_pattern(Datum geom1, Datum geom2, Datum p)
 Datum
 datum_geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geom_touches(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), TOUCHES));
 }
 
 /*****************************************************************************/

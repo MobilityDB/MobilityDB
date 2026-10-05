@@ -972,7 +972,13 @@
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_relate"><varname>relate</varname></link>: Devuelve la matriz de intersección DE-9IM de dos geometrías</para>
+					<para><link linkend="geo_relate"><varname>relate</varname></link>: Devuelve la matriz de intersección DE-9IM de dos geometrías o si coincide con un patrón</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Devuelve verdadero si dos geometrías satisfacen una relación espacial</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Devuelve verdadero si dos geometrías están a una distancia dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>

@@ -55,6 +55,56 @@ CREATE FUNCTION relate(geometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Spatial relationships
+ *****************************************************************************/
+
+CREATE FUNCTION relate(geometry, geometry, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_relate_pattern'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_contains'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION covers(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_covers'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_disjoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_intersects'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION touches(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_touches'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(geometry, geometry, float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_dwithin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geoEquals(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_equals'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION disjoint(geography, geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geog_disjoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(geography, geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geog_intersects'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(geography, geography, float, spheroid boolean DEFAULT true)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geog_dwithin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 
