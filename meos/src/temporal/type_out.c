@@ -61,6 +61,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
+#include "geo/meos_transform.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
@@ -1354,13 +1355,18 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the MF-JSON representation of a temporal value
+ * @details Where @p srs is `NULL`, a spatial value of known SRID states the
+ * short name of its coordinate reference system in `spatial_ref_sys.csv`, as
+ * in `EPSG:3857`, as the PostgreSQL function @p asMFJSON states it from the
+ * table `spatial_ref_sys`
  * @param[in] temp Temporal value
  * @param[in] with_bbox True when the output value has bounding box
  * @param[in] flags Flags
  * @param[in] precision Number of decimal digits, of which at most
  * #OUT_DEFAULT_DECIMAL_DIGITS are written. It is only used when the base type
  * has floating point components, such as tfloat or tgeometry
- * @param[in] srs Spatial reference system, may be `NULL`
+ * @param[in] srs Name of the coordinate reference system, which the output
+ * states in place of the one of the SRID, may be `NULL`
  * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
  */
@@ -1374,6 +1380,22 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
     return NULL;
   if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
     precision = OUT_DEFAULT_DECIMAL_DIGITS;
+
+#if MEOS
+  /* Name the coordinate reference system of a spatial value of known SRID
+   * where the caller names none, as the PostgreSQL function asMFJSON names
+   * it, so that the SRID can be read back from the output */
+  if (! srs && tspatial_type(temp->temptype))
+  {
+    int32_t srid = tspatial_srid(temp);
+    if (srid != SRID_UNKNOWN)
+    {
+      srs = srid_srs(srid, true);
+      if (! srs)
+        return NULL;
+    }
+  }
+#endif /* MEOS */
 
   /* Get bounding box if needed */
   bboxunion *box = NULL, tmp;
