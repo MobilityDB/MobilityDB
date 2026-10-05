@@ -331,11 +331,28 @@ SELECT numValues(set(ARRAY[pcpoint(1, 10.0, 20.0, 30.0),
 asBinary(tpcbox,endian text='') → bytea
 asHexWKB(tpcbox,endian text='') → text
 </programlisting>
-					<para>El resultado es la representación de la <varname>stbox</varname> que abarca la caja seguida de su <varname>pcid</varname>, codificada utilizando la codificación little-endian (NDR) o big-endian (XDR), la codificación de la máquina cuando no se especifica ninguna. Como para una <varname>stbox</varname>, el SRID siempre se escribe.</para>
+					<para>El resultado es la representación de la <varname>stbox</varname> que abarca la caja seguida de su <varname>pcid</varname>, codificada utilizando la codificación little-endian (NDR) o big-endian (XDR), la codificación de la máquina cuando no se especifica ninguna. Como para todo tipo espacial, la representación plana no escribe el SRID, que escriben <varname>asEWKB</varname> y <varname>asHexEWKB</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 1));
 -- 0101000000000000000000000000000024400000000000000000000000000000244001000000
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
+-- 0001000000000000000040240000000000000000000000000000402400000000000000000005
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_asEWKB">
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja de nube de puntos</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKB(tpcbox,endian text='') → bytea
+asHexEWKB(tpcbox,endian text='') → text
+</programlisting>
+					<para>El resultado es la representación que escriben <varname>asBinary</varname> y <varname>asHexWKB</varname> con el SRID de la caja, el que indica el esquema de su <varname>pcid</varname>, como todo tipo espacial escribe su SRID en su representación extendida.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 1));
+-- 0101000000000000000000000000000024400000000000000000000000000000244001000000
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
 -- 0041000010E6000000000000000040240000000000000000000000000000402400000000000000000005
 </programlisting>
 				</listitem>
@@ -348,9 +365,26 @@ SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
 tpcboxFromBinary(bytea) → tpcbox
 tpcboxFromHexWKB(text) → tpcbox
 </programlisting>
+					<para>El SRID del resultado es el que indica el esquema de su <varname>pcid</varname>, que la representación plana no escribe.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 5))));
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromEWKB">
+					<indexterm significance="normal"><primary><varname>tpcboxFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcboxFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada de una caja de nube de puntos desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromEWKB(bytea) → tpcbox
+tpcboxFromHexEWKB(text) → tpcbox
+</programlisting>
 					<para>El SRID que indica la entrada debe ser el que indica el esquema de su <varname>pcid</varname>, cuando ese esquema indica uno.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
+SELECT tpcboxFromHexEWKB(asHexEWKB(tpcboxX(0, 0, 10, 10, 1)));
+-- TPCBOX(X((0,0),(10,10)), 1)
+SELECT tpcboxFromHexEWKB(replace(asHexEWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
 -- ERROR:  Could not parse tpcbox value: The value states SRID 3857 and the schema of pcid 5 states SRID 4326
 </programlisting>
 				</listitem>

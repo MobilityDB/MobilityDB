@@ -620,8 +620,7 @@ npoint_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return the Well-Known Binary (WKB) representation of a circular
- * buffer
+ * @brief Return the Well-Known Binary (WKB) representation of a network point
  * @param[in] np Network point
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
@@ -651,6 +650,44 @@ npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
   VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
     variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a network point
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_as_ewkb()
+ */
+uint8_t *
+npoint_as_ewkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(np), T_NPOINT,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a network point
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_as_hexewkb()
+ */
+char *
+npoint_as_hexewkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
 }
 
 /*****************************************************************************
@@ -726,6 +763,44 @@ nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
   VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
     variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a network segment
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_ewkb()
+ */
+uint8_t *
+nsegment_as_ewkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a network segment
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_hexewkb()
+ */
+char *
+nsegment_as_hexewkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
 }
 
 /*****************************************************************************

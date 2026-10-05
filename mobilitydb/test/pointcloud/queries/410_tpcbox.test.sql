@@ -42,30 +42,34 @@ SELECT 5, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
 -------------------------------------------------------------------------------
 -- Input/output in WKB and HexWKB representation
 --
--- A tpcbox writes the WKB of the stbox it begins with, SRID included, then its
--- pcid; the SRID it states is reconciled with the schema of the pcid, as the
--- text input reconciles it.
+-- A tpcbox writes, as every spatial type does, its plain WKB without the SRID
+-- and its EWKB with it, each that of the stbox it begins with followed by its
+-- pcid; the SRID an EWKB states is reconciled with the schema of the pcid, as
+-- the text input reconciles it.
 -------------------------------------------------------------------------------
 
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 1));
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
-SELECT tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 1)))
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 1));
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
+SELECT asText(tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 5))));
+SELECT tpcboxFromEWKB(asEWKB(tpcboxX(0, 0, 10, 10, 1)))
        = tpcboxX(0, 0, 10, 10, 1);
-SELECT tpcboxFromBinary(asBinary(tpcboxZ(0, 0, 0, 10, 10, 10, 5), 'XDR'))
+SELECT tpcboxFromEWKB(asEWKB(tpcboxZ(0, 0, 0, 10, 10, 10, 5), 'XDR'))
        = tpcboxZ(0, 0, 0, 10, 10, 10, 5);
-SELECT tpcboxFromHexWKB(asHexWKB(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1)))
+SELECT tpcboxFromHexEWKB(asHexEWKB(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1)))
        = tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1);
-SELECT tpcboxFromHexWKB(asHexWKB(tpcboxXT(0, 0, 10, 10,
+SELECT tpcboxFromHexEWKB(asHexEWKB(tpcboxXT(0, 0, 10, 10,
        tstzspan '[2024-01-01, 2024-01-02]', 1), 'XDR'))
        = tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1);
-SELECT tpcboxFromHexWKB(asHexWKB(tpcboxZT(0, 0, 0, 10, 10, 10,
+SELECT tpcboxFromHexEWKB(asHexEWKB(tpcboxZT(0, 0, 0, 10, 10, 10,
        tstzspan '[2024-01-01, 2024-01-02]', 5)))
        = tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 5);
--- The binary send function writes the same WKB
-SELECT tpcbox_send(tpcboxX(0, 0, 10, 10, 5)) = asBinary(tpcboxX(0, 0, 10, 10, 5));
+-- The binary send function writes the EWKB
+SELECT tpcbox_send(tpcboxX(0, 0, 10, 10, 5)) = asEWKB(tpcboxX(0, 0, 10, 10, 5));
 /* Errors */
 -- An SRID the schema of the pcid does not state
-SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
+SELECT tpcboxFromHexEWKB(replace(asHexEWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
 
 -------------------------------------------------------------------------------
 -- Text round trip

@@ -1022,6 +1022,44 @@ pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a pose
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] pose Pose
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pose_as_ewkb()
+ */
+uint8_t *
+pose_as_ewkb(const Pose *pose, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(pose), T_POSE,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a pose
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] pose Pose
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pose_as_hexewkb()
+ */
+char *
+pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(pose), T_POSE,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************
  * Constructors
  *****************************************************************************/

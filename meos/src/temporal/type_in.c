@@ -2989,9 +2989,13 @@ stbox_from_wkb_state(meos_wkb_parse_state *s)
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   stbox_flags_from_wkb_state(s, wkb_flags);
 
-  /* Read the SRID, if necessary */
+  /* Read the SRID, if necessary; a geodetic box writing none is in WGS84
+   * (EPSG:4326), as #temporal_from_wkb_state reads a geodetic value and
+   * #stbox_parse a geodetic box */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
+  else if (s->geodetic)
+    s->srid = SRID_DEFAULT;
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;

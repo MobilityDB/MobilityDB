@@ -51,6 +51,7 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
+#include "temporal/type_inout.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
@@ -246,6 +247,44 @@ spatialset_as_ewkt(const Set *s, int maxdd)
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true);
 }
 
+/**
+ * @ingroup meos_geo_set_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a spatial set
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states, as #set_as_wkb writes the variant it is given
+ * @param[in] s Set
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Spatialset_as_ewkb()
+ */
+uint8_t *
+spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(s), s->settype,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_geo_set_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a spatial set
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states, as #set_as_hexwkb writes the variant it is given
+ * @param[in] s Set
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Spatialset_as_hexewkb()
+ */
+char *
+spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************/
 
 /**
@@ -352,6 +391,44 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
   strcat(result, str2);
   pfree(str2);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a spatiotemporal value
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states, as #temporal_as_wkb writes the variant it is given
+ * @param[in] temp Spatiotemporal value
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tspatial_as_ewkb()
+ */
+uint8_t *
+tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(temp), temp->temptype,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal value
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states, as #temporal_as_hexwkb writes the variant it is given
+ * @param[in] temp Spatiotemporal value
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tspatial_as_hexewkb()
+ */
+char *
+tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
 }
 
 /*****************************************************************************/

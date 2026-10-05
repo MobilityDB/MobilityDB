@@ -795,16 +795,24 @@ representation_families:
   syms:
     FromText: Tpcbox_from_text
     FromBinary: Tpcbox_from_wkb
+    FromEWKB: Tpcbox_from_wkb
     FromHexWKB: Tpcbox_from_hexwkb
+    FromHexEWKB: Tpcbox_from_hexwkb
     asText: Tpcbox_as_text
     asBinary: Tpcbox_as_wkb
+    asEWKB: Tpcbox_as_ewkb
     asHexWKB: Tpcbox_as_hexwkb
+    asHexEWKB: Tpcbox_as_hexewkb
   blocks:
-  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes\n * no EWKT or EWKB form.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its text form, as an stbox does, so it takes no\n * EWKT form; its binary forms are those of every spatial type, the plain WKB\n * without the SRID and the EWKB with it.\n ******************************************************************************/"
   - ops:
     - FromText
     - FromBinary
+    - FromEWKB
     - FromHexWKB
+    - FromHexEWKB
     - asText
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB

@@ -199,6 +199,24 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* With no schema registered a box still writes its plain WKB and its EWKB,
+   * as every spatial type does, and reads either back: reading a value needs
+   * no catalog */
+  size_t wkb_size, ewkb_size;
+  uint8_t *wkb = tpcbox_as_wkb(box, 0, &wkb_size);
+  uint8_t *ewkb = tpcbox_as_ewkb(box, 0, &ewkb_size);
+  assert(wkb != NULL && ewkb != NULL);
+  TPCBox *from_wkb = tpcbox_from_wkb(wkb, wkb_size);
+  TPCBox *from_ewkb = tpcbox_from_wkb(ewkb, ewkb_size);
+  assert(from_wkb != NULL && from_ewkb != NULL);
+  char *from_wkb_out = tpcbox_out(from_wkb, 6);
+  char *from_ewkb_out = tpcbox_out(from_ewkb, 6);
+  printf("tpcbox_as_wkb read back with no schema: %s\n", from_wkb_out);
+  printf("tpcbox_as_ewkb read back with no schema: %s\n", from_ewkb_out);
+  assert(meos_errno() == 0);
+  free(wkb); free(ewkb); free(from_wkb); free(from_ewkb);
+  free(from_wkb_out); free(from_ewkb_out);
+
   /* The extent of two boxes of one schema expands a copy of the first */
   TPCBox *box2 = tpcbox_in("TPCBOX(XT(((2,2),(5,5)),[2024-01-02,2024-01-03]), 1)");
   TPCBox *ext = tpcbox_extent_transfn(NULL, box);

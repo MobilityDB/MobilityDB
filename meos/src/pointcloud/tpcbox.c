@@ -486,6 +486,44 @@ tpcbox_as_hexwkb(const TPCBox *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a point cloud box
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] box Box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tpcbox_as_ewkb()
+ */
+uint8_t *
+tpcbox_as_ewkb(const TPCBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(box), T_TPCBOX,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a point cloud box
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] box Box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tpcbox_as_hexewkb()
+ */
+char *
+tpcbox_as_hexewkb(const TPCBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(box), T_TPCBOX,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************
  * Constructors
  *****************************************************************************/

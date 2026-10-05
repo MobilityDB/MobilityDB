@@ -188,7 +188,23 @@ Datum
 Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  /* A spatiotemporal box always outputs the SRID */
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, false));
+}
+
+PGDLLEXPORT Datum Stbox_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_ewkb);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a
+ * spatiotemporal box
+ * @note It is the WKB representation prefixed with the SRID, as
+ * #Cbuffer_as_ewkb writes that of a circular buffer
+ * @sqlfn asEWKB()
+ */
+Datum
+Stbox_as_ewkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
 }
 
@@ -204,6 +220,23 @@ Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX, false));
+}
+
+PGDLLEXPORT Datum Stbox_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a spatiotemporal box
+ * @note It is the HexWKB representation prefixed with the SRID, as
+ * #Cbuffer_as_hexewkb writes that of a circular buffer
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Stbox_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX, true));
 }
 
@@ -215,7 +248,7 @@ PG_FUNCTION_INFO_V1(Stbox_from_wkb);
  * @ingroup mobilitydb_geo_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation
- * @sqlfn stboxFromBinary()
+ * @sqlfn stboxFromBinary(), stboxFromEWKB()
  */
 Datum
 Stbox_from_wkb(PG_FUNCTION_ARGS)
@@ -233,7 +266,7 @@ PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
  * @ingroup mobilitydb_geo_box_inout
  * @brief Return a spatiotemporal box from its ASCII hex-encoded Well-Known
  * Binary (HexWKB) representation
- * @sqlfn stboxFromHexWKB()
+ * @sqlfn stboxFromHexWKB(), stboxFromHexEWKB()
  */
 Datum
 Stbox_from_hexwkb(PG_FUNCTION_ARGS)

@@ -447,10 +447,16 @@
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="stbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal box</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="stboxFromEWKB"><varname>stboxFromEWKB</varname>, <varname>stboxFromHexEWKB</varname></link>: Input of a spatiotemporal box from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3527,7 +3533,13 @@
 						<para><link linkend="tpcbox_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a point cloud box</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a point cloud box</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcboxFromBinary"><varname>tpcboxFromBinary</varname>, <varname>tpcboxFromHexWKB</varname></link>: Input of a point cloud box from the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromEWKB"><varname>tpcboxFromEWKB</varname>, <varname>tpcboxFromHexEWKB</varname></link>: Input of a point cloud box from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>

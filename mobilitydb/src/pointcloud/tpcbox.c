@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_from_wkb);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
  * @brief Return a TPCBox from its Well-Known Binary (WKB) representation
- * @sqlfn tpcboxFromBinary()
+ * @sqlfn tpcboxFromBinary(), tpcboxFromEWKB()
  */
 Datum
 Tpcbox_from_wkb(PG_FUNCTION_ARGS)
@@ -195,7 +195,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_from_hexwkb);
  * @ingroup mobilitydb_pointcloud_box_inout
  * @brief Return a TPCBox from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn tpcboxFromHexWKB()
+ * @sqlfn tpcboxFromHexWKB(), tpcboxFromHexEWKB()
  */
 Datum
 Tpcbox_from_hexwkb(PG_FUNCTION_ARGS)
@@ -219,7 +219,23 @@ Datum
 Tpcbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  /* A point cloud box always outputs the SRID, as an STBox does */
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TPCBOX, false));
+}
+
+PGDLLEXPORT Datum Tpcbox_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_ewkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a
+ * TPCBox
+ * @note It is the WKB representation prefixed with the SRID, as
+ * #Stbox_as_ewkb writes that of a spatiotemporal box
+ * @sqlfn asEWKB()
+ */
+Datum
+Tpcbox_as_ewkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TPCBOX, true));
 }
 
@@ -233,6 +249,23 @@ PG_FUNCTION_INFO_V1(Tpcbox_as_hexwkb);
  */
 Datum
 Tpcbox_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TPCBOX, false));
+}
+
+PGDLLEXPORT Datum Tpcbox_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_hexewkb);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a TPCBox
+ * @note It is the HexWKB representation prefixed with the SRID, as
+ * #Stbox_as_hexewkb writes that of a spatiotemporal box
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Tpcbox_as_hexewkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TPCBOX, true));

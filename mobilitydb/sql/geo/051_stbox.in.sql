@@ -71,12 +71,20 @@ CREATE FUNCTION stboxFromBinary(bytea)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxFromEWKB(bytea)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxFromText(text)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stboxFromHexWKB(text)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxFromHexEWKB(text)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -90,10 +98,18 @@ CREATE FUNCTION asBinary(stbox, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Stbox_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(stbox, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Stbox_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(stbox, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Stbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(stbox, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Stbox_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

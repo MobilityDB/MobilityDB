@@ -112,7 +112,7 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 asBinary(box,endian text='') → bytea
 asHexWKB(box,endian text='') → text
 </programlisting>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Como para todo tipo espacial, la representación de una <varname>stbox</varname> no escribe su SRID, que escriben <varname>asEWKB</varname> y <varname>asHexEWKB</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
@@ -126,6 +126,23 @@ SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
 -- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stbox_asEWKB">
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja espaciotemporal</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKB(stbox,endian text='') → bytea
+asHexEWKB(stbox,endian text='') → text
+</programlisting>
+					<para>El resultado es la representación que escriben <varname>asBinary</varname> y <varname>asHexWKB</varname> con el SRID de la caja, como todo tipo espacial escribe su SRID en su representación extendida.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- \x0141e40e0000000000000000f03f0000000000000040000000000000f03f0000000000000040
+SELECT asHexEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))', 'XDR');
+-- 004100000EE43FF000000000000040000000000000003FF00000000000004000000000000000
 </programlisting>
 				</listitem>
 
@@ -166,6 +183,23 @@ SELECT tboxFromHexWKB(
 SELECT stboxFromHexWKB(
   '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
 -- STBOX X((1,1),(2,2))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stboxFromEWKB">
+					<indexterm significance="normal"><primary><varname>stboxFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>stboxFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada de una caja espaciotemporal desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stboxFromEWKB(bytea) → stbox
+stboxFromHexEWKB(text) → stbox
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stboxFromEWKB(asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))'));
+-- SRID=3812;STBOX X((1,1),(2,2))
+SELECT stboxFromHexEWKB(
+  '0141E40E0000000000000000F03F0000000000000040000000000000F03F0000000000000040');
+-- SRID=3812;STBOX X((1,1),(2,2))
 </programlisting>
 				</listitem>
 

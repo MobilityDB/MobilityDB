@@ -77,8 +77,9 @@ CREATE TYPE tpcbox (
 /******************************************************************************
  * Text and Well-Known Binary representations
  *
- * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes
- * no EWKT or EWKB form.
+ * A tpcbox writes its SRID in its text form, as an stbox does, so it takes no
+ * EWKT form; its binary forms are those of every spatial type, the plain WKB
+ * without the SRID and the EWKB with it.
  ******************************************************************************/
 
 CREATE FUNCTION tpcboxFromText(text)
@@ -91,7 +92,17 @@ CREATE FUNCTION tpcboxFromBinary(bytea)
   AS 'MODULE_PATHNAME', 'Tpcbox_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tpcboxFromEWKB(bytea)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tpcboxFromHexWKB(text)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcboxFromHexEWKB(text)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -106,9 +117,19 @@ CREATE FUNCTION asBinary(tpcbox, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tpcbox_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asEWKB(tpcbox, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tpcbox_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asHexWKB(tpcbox, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tpcbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(tpcbox, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpcbox_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END tpcbox_base

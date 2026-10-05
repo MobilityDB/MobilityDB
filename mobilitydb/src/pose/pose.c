@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Pose_from_wkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return a pose from its Well-Known Binary (WKB) representation
- * @sqlfn poseFromBinary()
+ * @sqlfn poseFromBinary(), poseFromEWKB()
  */
 Datum
 Pose_from_wkb(PG_FUNCTION_ARGS)
