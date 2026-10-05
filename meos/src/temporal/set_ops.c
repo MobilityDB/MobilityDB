@@ -658,7 +658,7 @@ distance_set_value(const Set *s, Datum value)
   /* A set bounding its elements with a spatiotemporal box has no span, so the
    * subclass answers for that extent */
   if (type_bboxtype(s->settype) == T_STBOX)
-    return distance_spatialset_value(s, value);
+    return distance_spatialset_value(s, value, true);
   Span s1;
   set_set_span(s, &s1);
   return distance_span_value(&s1, value);
@@ -676,7 +676,7 @@ distance_set_set(const Set *s1, const Set *s2)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
   if (type_bboxtype(s1->settype) == T_STBOX)
-    return distance_spatialset_spatialset(s1, s2);
+    return distance_spatialset_spatialset(s1, s2, true);
   Span sp1, sp2;
   set_set_span(s1, &sp1);
   set_set_span(s2, &sp2);

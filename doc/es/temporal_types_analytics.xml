@@ -205,8 +205,13 @@ frechetDistance({tnumber,tgeo},{tnumber,tgeo}) → float
 dynTimeWarpDistance({tnumber,tgeo},{tnumber,tgeo}) → float
 averageHausdorffDistance({tnumber,tgeo},{tnumber,tgeo}) → float
 lcssDistance({tnumber,tgeo},{tnumber,tgeo},float) → float
+hausdorffDistance(tgeogpoint,tgeogpoint,spheroid boolean=true) → float
+frechetDistance(tgeogpoint,tgeogpoint,spheroid boolean=true) → float
+dynTimeWarpDistance(tgeogpoint,tgeogpoint,spheroid boolean=true) → float
+averageHausdorffDistance(tgeogpoint,tgeogpoint,spheroid boolean=true) → float
+lcssDistance(tgeogpoint,tgeogpoint,float,spheroid boolean=true) → float
 </programlisting>
-				<para>La función <varname>lcssDistance</varname> requiere un parámetro adicional que especifica el umbral de distancia por debajo del cual dos valores se consideran coincidentes. Estas funciones tienen una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, las funciones requerien un tiempo considerable para valores temporales con gran número de instantes.</para>
+				<para>La función <varname>lcssDistance</varname> requiere un parámetro adicional que especifica el umbral de distancia por debajo del cual dos valores se consideran coincidentes. Estas funciones tienen una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, las funciones requerien un tiempo considerable para valores temporales con gran número de instantes. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
@@ -216,6 +221,9 @@ SELECT round(hausdorffDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@20
   tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
   Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 1.414214
+SELECT round(frechetDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]',
+  tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+-- 111195.08
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frechetDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -268,8 +276,10 @@ SELECT round(lcssDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 frechetDistancePath({tnumber,tgeo},{tnumber,tgeo}) → {(i,j)}
 dynTimeWarpPath({tnumber,tgeo},{tnumber,tgeo}) → {(i,j)}
+frechetDistancePath(tgeogpoint,tgeogpoint,spheroid boolean=true) → {(i,j)}
+dynTimeWarpPath(tgeogpoint,tgeogpoint,spheroid boolean=true) → {(i,j)}
 </programlisting>
-				<para>El resultado es un conjunto de pares <varname>(i,j)</varname>. Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</para>
+				<para>El resultado es un conjunto de pares <varname>(i,j)</varname>. Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frechetDistancePath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');

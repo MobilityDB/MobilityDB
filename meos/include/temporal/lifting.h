@@ -107,6 +107,8 @@ extern TSequenceSet *tfunc_tsequenceset(const TSequenceSet *ss,
 extern Temporal *tfunc_temporal(const Temporal *temp,
   LiftedFunctionInfo *lfinfo);
 
+extern Datum tfunc_base_base(Datum value1, Datum value2,
+  LiftedFunctionInfo *lfinfo);
 extern TInstant *tfunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo);
 extern TSequence *tfunc_tsequence_base(const TSequence *seq, Datum value,

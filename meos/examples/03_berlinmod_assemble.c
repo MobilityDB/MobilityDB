@@ -234,7 +234,7 @@ int main(void)
     Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
       trips[i].num_instants, true, true, LINEAR, true);
     printf("TripId: %d, Number of input instants: %d, Distance travelled %lf\n",
-      trips[i].tripid, trips[i].num_instants, tpoint_length(trip));
+      trips[i].tripid, trips[i].num_instants, tpoint_length(trip, true));
 
     /* Write line in the CSV file */
     char *date_str = date_out(trips[i].day);

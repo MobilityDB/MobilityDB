@@ -107,15 +107,15 @@ every_entry(double px, double py, double qx, double qy, double d, int expected)
 {
   Temporal *p = still(px, py), *q = still(qx, qy);
   assert(p != NULL && q != NULL);
-  assert(edwithin_tgeo_tgeo(p, q, d) == expected);
-  assert(adwithin_tgeo_tgeo(p, q, d) == expected);
+  assert(edwithin_tgeo_tgeo(p, q, d, true) == expected);
+  assert(adwithin_tgeo_tgeo(p, q, d, true) == expected);
 
   /* The same question with the second point as a geometry */
   char buffer[256];
   snprintf(buffer, sizeof(buffer), "POINT(%.17g %.17g)", qx, qy);
   GSERIALIZED *gs = geom_in(buffer, -1);
   assert(gs != NULL);
-  Temporal *res = tdwithin_tgeo_geo(p, gs, d);
+  Temporal *res = tdwithin_tgeo_geo(p, gs, d, true);
   assert(res != NULL);
   int count;
   bool *values = tbool_values(res, &count);

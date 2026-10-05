@@ -149,9 +149,9 @@ int main(void)
 
         /* Uncomment the desired function to compute */
         // Temporal *rest = tintersects_tgeo_geo(temp, gs, false, false);
-        // Temporal *rest = tdwithin_tgeo_geo(temp, gs, 10, false, false);
+        // Temporal *rest = tdwithin_tgeo_geo(temp, gs, 10, true);
         // Temporal *rest = tcontains_tgeo_geo(temp, gs, false, false);
-        Temporal *rest = tdistance_tgeo_geo(temp, gs);
+        Temporal *rest = tdistance_tgeo_geo(temp, gs, true);
         if (rest)
         {
           /* Get the number of instants of the result */

@@ -444,7 +444,7 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   STBox sbox1, sbox2;
   tpcbox_set_stbox(box1, &sbox1);
   tpcbox_set_stbox(box2, &sbox2);
-  return nad_stbox_stbox(&sbox1, &sbox2);
+  return nad_stbox_stbox(&sbox1, &sbox2, true);
 }
 
 /**
@@ -518,7 +518,7 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
     if (proj2) pfree(proj2);
     return DBL_MAX;
   }
-  double result = nad_tgeo_tgeo(proj1, proj2);
+  double result = nad_tgeo_tgeo(proj1, proj2, true);
   pfree(proj1); pfree(proj2);
   return result;
 }

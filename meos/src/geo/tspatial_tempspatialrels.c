@@ -522,7 +522,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
    * geodetic-capable tdwithin kernel. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
   {
-    Temporal *res = tdwithin_tgeo_geo(temp, gs, 0.0);
+    Temporal *res = tdwithin_tgeo_geo(temp, gs, 0.0, true);
     if (! res || tinter)
       return res;
     Temporal *result = tnot_tbool(res);
@@ -586,7 +586,7 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * base value
  * @param[in] temp Spatiotemporal value
  * @param[in] base Base value
- * @param[in] param Parameter
+ * @param[in] param Parameters of the function, @p numparam of them
  * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
@@ -594,7 +594,7 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  */
 Temporal *
 tspatialrel_tspatial_base(const Temporal *temp, Datum base,
-  Datum param, varfunc func, int numparam, bool invert)
+  const Datum *param, varfunc func, int numparam, bool invert)
 {
   assert(temp); assert(DatumGetPointer(base));
   assert(tspatial_type(temp->temptype));
@@ -603,7 +603,8 @@ tspatialrel_tspatial_base(const Temporal *temp, Datum base,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = func;
   lfinfo.numparam = numparam;
-  lfinfo.param[0] = param;
+  for (int i = 0; i < numparam; i++)
+    lfinfo.param[i] = param[i];
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TBOOL;
@@ -634,7 +635,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
   return tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
-    (Datum) NULL, func, 0, invert);
+    NULL, func, 0, invert);
 }
 
 /*****************************************************************************/
@@ -642,7 +643,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @brief Generic spatiotemporal relationship for two temporal geometries
  * @param[in] temp1,temp2 Temporal geos
- * @param[in] param Parameter
+ * @param[in] param Parameters of the function, @p numparam of them
  * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
@@ -650,7 +651,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  */
 Temporal *
 tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
-  Datum param, varfunc func, int numparam, bool invert)
+  const Datum *param, varfunc func, int numparam, bool invert)
 {
   assert(temp1); assert(temp2); assert(tspatial_type(temp1->temptype));
   assert(tspatial_type(temp2->temptype));
@@ -659,7 +660,8 @@ tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = func;
   lfinfo.numparam = numparam;
-  lfinfo.param[0] = param;
+  for (int i = 0; i < numparam; i++)
+    lfinfo.param[i] = param[i];
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
   lfinfo.invert = invert;
@@ -685,7 +687,7 @@ tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
-  return tspatialrel_tspatial_tspatial(temp1, temp2, (Datum) NULL, func, 0,
+  return tspatialrel_tspatial_tspatial(temp1, temp2, NULL, func, 0,
     INVERT_NO);
 }
 
@@ -755,7 +757,7 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
   else
   /* Temporal geometry case */
   {
-    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), NULL,
       (varfunc) &datum_geom_contains, 0, INVERT);
   }
   return result;
@@ -1019,7 +1021,7 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Temporal geometry, temporal cbuffer case */
   else
   {
-    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), NULL,
       (varfunc) &datum_geom_touches, 0, INVERT_NO);
   }
   return result;
@@ -1286,8 +1288,8 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
  * @brief Return the timestamps at which the segments of two temporal point
  * sequences are within a distance (iterator function)
  * @param[in] seq1,seq2 Temporal points
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1296,15 +1298,15 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
  */
 static int
 tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
-  const TSequence *seq2, Datum dist, datum_func3 func, tpfunc_temp tpfn,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn,
   TSequence **result)
 {
   const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
   if (seq1->count == 1)
   {
-    TInstant *inst = tinstant_make(func(tinstant_value_p(start1),
-      tinstant_value_p(start2), dist), T_TBOOL, start1->t);
+    TInstant *inst = tinstant_make(tfunc_base_base(tinstant_value_p(start1),
+      tinstant_value_p(start2), lfinfo), T_TBOOL, start1->t);
     result[0] = tinstant_to_tsequence_free(inst, STEP);
     return 1;
   }
@@ -1338,8 +1340,8 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
 
     /* Both segments are constant */
     if (datum_eq(sv1, ev1, basetype) && datum_eq(sv2, ev2, basetype))
-      tdwithin_run_add(&run, func(sv1, sv2, dist), lower, upper, lower_inc,
-        upper_inc);
+      tdwithin_run_add(&run, tfunc_base_base(sv1, sv2, lfinfo), lower, upper,
+        lower_inc, upper_inc);
     /* General case */
     else
     {
@@ -1348,14 +1350,15 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tpfn(sv1, sev1, sv2, sev2, dist, lower, upper, &t1, &t2);
+      int solutions = tpfn(sv1, sev1, sv2, sev2, lfinfo->param[0], lower,
+        upper, &t1, &t2);
       bool upper_inc1 = linear1 && linear2 && upper_inc;
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, &run);
       /* Add extra final point if only one segment is linear */
       if (upper_inc && (! linear1 || ! linear2))
       {
-        Datum value = func(ev1, ev2, dist);
+        Datum value = tfunc_base_base(ev1, ev2, lfinfo);
         tdwithin_run_flush(&run);
         tinstant_set(instants[0], value, upper);
         run.result[run.nseqs++] = tinstant_as_tsequence(instants[0], STEP);
@@ -1375,17 +1378,17 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
  * @brief Return the temporal dwithin relationship between two temporal point
  * sequences
  * @param[in] seq1,seq2 Temporal points
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
 tdwithin_tlinearseq_tlinearseq(const TSequence *seq1, const TSequence *seq2,
-  Datum dist, datum_func3 func, tpfunc_temp tpfn)
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
-  int count = tdwithin_tlinearseq_tlinearseq_iter(seq1, seq2, dist, func, tpfn,
+  int count = tdwithin_tlinearseq_tlinearseq_iter(seq1, seq2, lfinfo, tpfn,
     sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -1394,25 +1397,25 @@ tdwithin_tlinearseq_tlinearseq(const TSequence *seq1, const TSequence *seq2,
  * @brief Return the timestamps at which the segments of two temporal point
  * sequence sets are within a distance
  * @param[in] ss1,ss2 Temporal points
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
 tdwithin_tlinearseqset_tlinearseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, Datum dist, datum_func3 func, tpfunc_temp tpfn)
+  const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   /* Singleton sequence set */
   if (ss1->count == 1)
     return tdwithin_tlinearseq_tlinearseq(TSEQUENCESET_SEQ_N(ss1, 0),
-      TSEQUENCESET_SEQ_N(ss2, 0), dist, func, tpfn);
+      TSEQUENCESET_SEQ_N(ss2, 0), lfinfo, tpfn);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss1->totalcount * 4);
   int nseqs = 0;
   for (int i = 0; i < ss1->count; i++)
     nseqs += tdwithin_tlinearseq_tlinearseq_iter(TSEQUENCESET_SEQ_N(ss1, i),
-      TSEQUENCESET_SEQ_N(ss2, i), dist, func, tpfn, &sequences[nseqs]);
+      TSEQUENCESET_SEQ_N(ss2, i), lfinfo, tpfn, &sequences[nseqs]);
   assert(nseqs > 0);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
@@ -1424,24 +1427,24 @@ tdwithin_tlinearseqset_tlinearseqset(const TSequenceSet *ss1,
  * are within a distance (iterator function)
  * @param[in] seq Temporal point
  * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the resulting array
  */
 static int
-tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func, tpfunc_temp tpfn, TSequence **result)
+tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point,
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn, TSequence **result)
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   Datum startvalue = tinstant_value_p(start);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(func(startvalue, point, dist), T_TBOOL,
-      start->t);
+    TInstant *inst = tinstant_make(tfunc_base_base(startvalue, point,
+      lfinfo), T_TBOOL, start->t);
     result[0] = tinstant_to_tsequence_free(inst, STEP);
     return 1;
   }
@@ -1470,15 +1473,16 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
 
     /* Segment is constant or has step interpolation */
     if (datum_eq(startvalue, endvalue, basetype))
-      tdwithin_run_add(&run, func(startvalue, point, dist), lower, upper,
-        lower_inc, upper_inc);
+      tdwithin_run_add(&run, tfunc_base_base(startvalue, point, lfinfo),
+        lower, upper, lower_inc, upper_inc);
     /* General case */
     else
     {
       /* Find the instants t1 and t2 (if any) during which the dwithin
        * function is true */
       TimestampTz t1, t2;
-      int solutions = tpfn(startvalue, endvalue, point, point, dist, lower,
+      int solutions = tpfn(startvalue, endvalue, point, point,
+        lfinfo->param[0], lower,
         upper, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
@@ -1498,16 +1502,16 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
  * are within a distance
  * @param[in] seq Temporal point
  * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  */
 static TSequenceSet *
-tdwithin_tlinearseq_base(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func, tpfunc_temp tpfn)
+tdwithin_tlinearseq_base(const TSequence *seq, Datum point,
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
-  int count = tdwithin_tlinearseq_base_iter(seq, point, dist, func, tpfn,
+  int count = tdwithin_tlinearseq_base_iter(seq, point, lfinfo, tpfn,
     sequences);
   /* We are sure that nseqs > 0 since the point is non-empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -1518,24 +1522,24 @@ tdwithin_tlinearseq_base(const TSequence *seq, Datum point, Datum dist,
  * point are within a distance
  * @param[in] ss Temporal point
  * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  */
 static TSequenceSet *
-tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
-  datum_func3 func, tpfunc_temp tpfn)
+tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point,
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tdwithin_tlinearseq_base(TSEQUENCESET_SEQ_N(ss, 0), point, dist,
-      func, tpfn);
+    return tdwithin_tlinearseq_base(TSEQUENCESET_SEQ_N(ss, 0), point, lfinfo,
+      tpfn);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * 4);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
     nseqs += tdwithin_tlinearseq_base_iter(TSEQUENCESET_SEQ_N(ss, i), point,
-      dist, func, tpfn, &sequences[nseqs]);
+      lfinfo, tpfn, &sequences[nseqs]);
   assert(nseqs > 0);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
@@ -1548,15 +1552,15 @@ tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
  * and a base value are within a distance
  * @param[in] temp Spatiotemporal value
  * @param[in] base Base value
- * @param[in] dist Distance
- * @param[in] func Spatial relationship function to be applied
+ * @param[in] lfinfo Function to be applied and its parameters, the distance
+ * first
  * @param[in] tpfn Turning point function to be applied
  * @csqlfn #Tdwithin_tgeo_geo(), #Tdwithin_tcbuffer_cbuffer(), ...
  * @note The function assumes that all validity tests have been previously done
  */
 Temporal *
-tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
-  datum_func3 func, tpfunc_temp tpfn)
+tdwithin_tspatial_spatial(const Temporal *temp, Datum base,
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   assert(temp); assert(DatumGetPointer(base));
   Temporal *result;
@@ -1566,30 +1570,30 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
     case TINSTANT:
     {
       Datum value = tinstant_value_p((TInstant *) temp);
-      result = (Temporal *) tinstant_make(func(value, base, dist), T_TBOOL,
-        ((TInstant *) temp)->t);
+      result = (Temporal *) tinstant_make(tfunc_base_base(value, base,
+        lfinfo), T_TBOOL, ((TInstant *) temp)->t);
       break;
     }
     case TSEQUENCE:
     {
       if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
         result = (Temporal *) tdwithin_tlinearseq_base((TSequence *) temp,
-            base, dist, func, tpfn);
+            base, lfinfo, tpfn);
       else
       {
-        result = tspatialrel_tspatial_base(temp, base, dist, (varfunc) func, 1,
-          INVERT_NO);
+        result = tspatialrel_tspatial_base(temp, base, lfinfo->param,
+          lfinfo->func, lfinfo->numparam, INVERT_NO);
       }
       break;
     }
     default: /* TSEQUENCESET */
       if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
         result = (Temporal *) tdwithin_tlinearseqset_base(
-          (TSequenceSet *) temp, base, dist, func, tpfn);
+          (TSequenceSet *) temp, base, lfinfo, tpfn);
       else
       {
-        result = tspatialrel_tspatial_base(temp, base, dist, (varfunc) func, 1,
-          INVERT_NO);
+        result = tspatialrel_tspatial_base(temp, base, lfinfo->param,
+          lfinfo->func, lfinfo->numparam, INVERT_NO);
       }
   }
   return result;
@@ -1612,13 +1616,16 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #edwithin_tgeo_geo reads it
  * @csqlfn #Tdwithin_tgeo_geo()
  * @note The function is available for temporal geographies but not for
  * temporal geography points since this requires to compute the solutions of
  * the quadatric equation for each segment of the temporal point
  */
 Temporal *
-tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
+tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments. ensure_valid_tspatial_geo
    * already enforces that the temporal geo and the geometry have the
@@ -1677,14 +1684,14 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
    * rather than the generic any-geometry entry; this is the twin of the choice Tdwithin_tgeo_tgeo
    * makes for two temporal points. The geometry here is never empty, the
    * validity check above returning on an empty one. */
-  datum_func3 func = (tpoint_type(temp->temptype) &&
-      gserialized_get_type(gs) == POINTTYPE) ?
-    pt_dwithin_fn_geo(temp->flags, gs->gflags) :
-    geo_dwithin_fn_geo(temp->flags, gs->gflags);
-  tpfunc_temp tpfn = &tpointsegm_tdwithin_turnpt;
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  geo_dwithin_lfinfo_geo(temp->flags, gs->gflags, dist, spheroid, &lfinfo);
+  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) == POINTTYPE)
+    lfinfo.func = pt_dwithin_fn_geo(temp->flags, gs->gflags);
   /* Call the generic function passing the two functions as arguments */
-  return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs),
-    Float8GetDatum(dist), func, tpfn);
+  return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs), &lfinfo,
+    &tpointsegm_tdwithin_turnpt);
 }
 
 /**
@@ -1694,12 +1701,15 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdwithin_tgeo_geo reads it
  * @csqlfn #Tdwithin_geo_tgeo()
  */
 Temporal *
-tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
+tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
+  bool spheroid)
 {
-  return tdwithin_tgeo_geo(temp, gs, dist);
+  return tdwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
 /*****************************************************************************/
@@ -1711,7 +1721,7 @@ tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
  */
 Temporal *
 tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
-  Datum dist, datum_func3 func, tpfunc_temp tpfn)
+  LiftedFunctionInfo *lfinfo, tpfunc_temp tpfn)
 {
   assert(sync1); assert(sync2);
   Temporal *result;
@@ -1722,8 +1732,8 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
     {
       Datum value1 = tinstant_value_p((TInstant *) sync1);
       Datum value2 = tinstant_value_p((TInstant *) sync2);
-      result = (Temporal *) tinstant_make(func(value1, value2, dist), T_TBOOL,
-        ((TInstant *) sync1)->t);
+      result = (Temporal *) tinstant_make(tfunc_base_base(value1, value2,
+        lfinfo), T_TBOOL, ((TInstant *) sync1)->t);
       break;
     }
     case TSEQUENCE:
@@ -1732,12 +1742,12 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
       interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
       if (interp1 == LINEAR || interp2 == LINEAR)
         result = (Temporal *) tdwithin_tlinearseq_tlinearseq(
-          (TSequence *) sync1, (TSequence *) sync2, dist, func, tpfn);
+          (TSequence *) sync1, (TSequence *) sync2, lfinfo, tpfn);
       else
       {
         /* Both sequences have either discrete or step interpolation */
-        result = tspatialrel_tspatial_tspatial(sync1, sync2, dist,
-          (varfunc) func, 1, INVERT_NO);
+        result = tspatialrel_tspatial_tspatial(sync1, sync2, lfinfo->param,
+          lfinfo->func, lfinfo->numparam, INVERT_NO);
       }
       break;
     }
@@ -1747,12 +1757,12 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
       interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
       if (interp1 == LINEAR || interp2 == LINEAR)
         result = (Temporal *) tdwithin_tlinearseqset_tlinearseqset(
-          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func, tpfn);
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, lfinfo, tpfn);
       else
       {
         /* Both sequence sets have step interpolation */
-        result = tspatialrel_tspatial_tspatial(sync1, sync2, dist,
-          (varfunc) func, 1, INVERT_NO);
+        result = tspatialrel_tspatial_tspatial(sync1, sync2, lfinfo->param,
+          lfinfo->func, lfinfo->numparam, INVERT_NO);
       }
     }
   }
@@ -1774,13 +1784,16 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
  *   lifting infrastructure.
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #edwithin_tgeo_tgeo reads it
  * @csqlfn #Tdwithin_tgeo_tgeo()
  * @note The function is available for temporal geographies but not for
  * temporal geography points since this requires to compute the solutions of
  * the quadatric equation for each pair of segments of the temporal points
  */
 Temporal *
-tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
+tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
@@ -1796,15 +1809,16 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  geo_dwithin_lfinfo(sync1->flags, sync2->flags, dist, spheroid, &lfinfo);
   /* A temporal point carries a point at every instant, so the pair is answered
    * by the exact sign of #point_within_distance_sign rather than by the
    * generic any-geometry entry */
-  datum_func3 func = (tpoint_type(sync1->temptype) &&
-      tpoint_type(sync2->temptype)) ?
-    pt_dwithin_fn(sync1->flags, sync2->flags) :
-    geo_dwithin_fn(sync1->flags, sync2->flags);
-  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
-    Float8GetDatum(dist), func, &tpointsegm_tdwithin_turnpt);
+  if (tpoint_type(sync1->temptype) && tpoint_type(sync2->temptype))
+    lfinfo.func = pt_dwithin_fn(sync1->flags, sync2->flags);
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
+    &tpointsegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);
   return result;
 }

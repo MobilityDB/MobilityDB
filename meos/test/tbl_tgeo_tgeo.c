@@ -141,8 +141,8 @@ int main(void)
 
           /* Compute the function, uncomment the desired function */
           // Temporal *rest = tintersects_tgeo_tgeo(temp1, temp2);
-          Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10);
-          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
+          Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10, true);
+          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2, true);
           if (rest)
           {
             /* Increment the number of non-empty answers found */

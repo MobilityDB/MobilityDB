@@ -1665,6 +1665,7 @@ TGEOMETRY_CONFIG = dict(
         "geog_perimeter":    {0: "geog1"},
         "geog_dwithin":      {0: "geog1", 1: "geog1"},
         "geog_intersects":   {0: "geog1", 1: "geog1"},
+        "geog_disjoint":     {0: "geog1", 1: "geog1"},
         "geog_distance":     {0: "geog1", 1: "geog1"},
         # A tgeometry sequence/sequence-set can never carry LINEAR
         # interpolation (there is no interpolation between polygon values);
@@ -2015,8 +2016,8 @@ TGEOMETRY_CONFIG = dict(
   {
     int t_count = 0;
     SpanSet **t_periods = NULL;
-    int *r = tdwithin_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, 1.0, &t_count,
-      &t_periods);
+    int *r = tdwithin_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, 1.0, true,
+      &t_count, &t_periods);
     printf("tdwithin_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
     if (r) free(r);
     if (t_periods) {

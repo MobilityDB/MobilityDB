@@ -127,3 +127,39 @@ SELECT round(averageHausdorffDistance(
  0.000000
 (1 row)
 
+SELECT round(hausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]')::numeric, 3);
+   round    
+------------
+ 110575.065
+(1 row)
+
+SELECT round(hausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(averageHausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]')::numeric, 3);
+   round   
+-----------
+ 55287.363
+(1 row)
+
+SELECT round(averageHausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false)::numeric, 3);
+   round   
+-----------
+ 55597.540
+(1 row)
+
+SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800, false)::numeric, 6);
+  round   
+----------
+ 1.000000
+(1 row)
+

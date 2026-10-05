@@ -134,8 +134,10 @@ extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *result);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *result);
 extern bool spatial_set_stbox(Datum d, MeosType basetype, STBox *result);
 extern void spatialset_set_stbox(const Set *set, STBox *result);
-extern Datum distance_spatialset_value(const Set *s, Datum value);
-extern Datum distance_spatialset_spatialset(const Set *s1, const Set *s2);
+extern Datum distance_spatialset_value(const Set *s, Datum value,
+  bool spheroid);
+extern Datum distance_spatialset_spatialset(const Set *s1, const Set *s2,
+  bool spheroid);
 extern void stbox_set_box3d(const STBox *box, BOX3D *result);
 extern void stbox_set_gbox(const STBox *box, GBOX *result);
 extern void tstzset_set_stbox(const Set *s, STBox *result);
@@ -301,7 +303,7 @@ extern int geom_meos_coverage(const LWGEOM *geom);
 
 /* Distance functions */
 
-extern double stbox_nad(const STBox *box1, const STBox *box2);
+extern double stbox_nad(const STBox *box1, const STBox *box2, bool spheroid);
 
 /*****************************************************************************
  * Spatial functions for temporal points
@@ -313,16 +315,16 @@ extern int32_t spatial_srid(Datum d, MeosType basetype);
 extern bool spatial_set_srid(Datum d, MeosType basetype, int32_t srid);
 extern int tspatialinst_srid(const TInstant *inst);
 extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
-extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength);
+extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength, bool spheroid);
 extern bool tpointseq_is_simple(const TSequence *seq);
-extern double tpointseq_length(const TSequence *seq);
+extern double tpointseq_length(const TSequence *seq, bool spheroid);
 extern GSERIALIZED *tpointseq_linear_trajectory(const TSequence *seq, bool unary_union);
 extern STBox *tgeoseq_stboxes(const TSequence *seq, int *count);
 extern STBox *tgeoseq_split_n_stboxes(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
-extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
+extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss, bool spheroid);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
-extern double tpointseqset_length(const TSequenceSet *ss);
+extern double tpointseqset_length(const TSequenceSet *ss, bool spheroid);
 extern STBox *tgeoseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox *tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);

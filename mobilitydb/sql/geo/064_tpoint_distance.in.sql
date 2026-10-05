@@ -67,31 +67,43 @@ CREATE OPERATOR <-> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION tDistance(geography(Point), tgeogpoint)
+CREATE FUNCTION tDistance(geography(Point), tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeogpoint, geography(Point))
+CREATE FUNCTION tDistanceOp(geography(Point), tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance(tgeogpoint, geography(Point), spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION tDistanceOp(tgeogpoint, geography(Point))
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance(tgeogpoint, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistanceOp(tgeogpoint, tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tDistanceOp,
   LEFTARG = geography, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tDistanceOp,
   LEFTARG = tgeogpoint, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tDistanceOp,
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );
@@ -113,15 +125,15 @@ CREATE FUNCTION nearestApproachInstant(tgeompoint, tgeompoint)
   AS 'MODULE_PATHNAME', 'NAI_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION nearestApproachInstant(geography, tgeogpoint)
+CREATE FUNCTION nearestApproachInstant(geography, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachInstant(tgeogpoint, geography)
+CREATE FUNCTION nearestApproachInstant(tgeogpoint, geography, spheroid boolean DEFAULT true)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachInstant(tgeogpoint, tgeogpoint)
+CREATE FUNCTION nearestApproachInstant(tgeogpoint, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -150,42 +162,74 @@ CREATE FUNCTION nearestApproachDistance(tgeompoint, stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tgeo_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(stbox, stbox)
+CREATE FUNCTION nearestApproachDistance(stbox, stbox, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_stbox_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistanceOp(stbox, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_stbox_op'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION nearestApproachDistance(geography, tgeogpoint)
+CREATE FUNCTION nearestApproachDistance(geography, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tgeogpoint, geography)
+CREATE FUNCTION nearestApproachDistanceOp(geography, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_geo_tgeo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tgeogpoint, geography, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(stbox, geography)
+CREATE FUNCTION nearestApproachDistanceOp(tgeogpoint, geography)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tgeo_geo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, geography, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_stbox_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(geography, stbox)
+CREATE FUNCTION nearestApproachDistanceOp(stbox, geography)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_geo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(geography, stbox, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_geo_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(stbox, tgeogpoint)
+CREATE FUNCTION nearestApproachDistanceOp(geography, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_geo_stbox_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_stbox_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tgeogpoint, stbox)
+CREATE FUNCTION nearestApproachDistanceOp(stbox, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tgeo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tgeogpoint, stbox, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tgeo_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION nearestApproachDistanceOp(tgeogpoint, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tgeo_stbox_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tgeogpoint, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistanceOp(tgeogpoint, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tgeo_tgeo_op'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR |=| (
@@ -220,7 +264,7 @@ CREATE OPERATOR |=| (
 );
 CREATE OPERATOR |=| (
   LEFTARG = stbox, RIGHTARG = stbox,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
@@ -231,37 +275,37 @@ CREATE OPERATOR |=| (
 
 CREATE OPERATOR |=| (
   LEFTARG = geography, RIGHTARG = tgeogpoint,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = tgeogpoint, RIGHTARG = geography,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = stbox, RIGHTARG = geography,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = geography, RIGHTARG = stbox,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = stbox, RIGHTARG = tgeogpoint,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = tgeogpoint, RIGHTARG = stbox,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = nearestApproachDistance,
+  PROCEDURE = nearestApproachDistanceOp,
   COMMUTATOR = '|=|'
 );
 
@@ -278,15 +322,15 @@ CREATE FUNCTION shortestLine(tgeompoint, tgeompoint)
   AS 'MODULE_PATHNAME', 'Shortestline_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shortestLine(geography, tgeogpoint)
+CREATE FUNCTION shortestLine(geography, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Shortestline_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shortestLine(tgeogpoint, geography)
+CREATE FUNCTION shortestLine(tgeogpoint, geography, spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Shortestline_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shortestLine(tgeogpoint, tgeogpoint)
+CREATE FUNCTION shortestLine(tgeogpoint, tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Shortestline_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

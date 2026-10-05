@@ -390,7 +390,7 @@ int main(void)
       trips[i].num_records, trips[i].num_trip_instants, trips[i].num_SOG_instants);
     if (trips[i].trip)
     {
-      printf(" %15.6lf |", tpointseq_length(trips[i].trip));
+      printf(" %15.6lf |", tpointseq_length(trips[i].trip, true));
     }
     else
       printf("        ---      |");

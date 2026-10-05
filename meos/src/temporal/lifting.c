@@ -769,13 +769,16 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
  * Notice that their base type may be different, for example, tfloat + int
  *****************************************************************************/
 
-/*
- * Apply the variadic function with the optional arguments to the base values
- * taking into account that their type may be different
+/**
+ * @brief Apply the variadic function with the optional arguments to the base
+ * values, taking into account that their type may be different
+ * @details The engines that call a base function directly rather than through
+ * a lift, as the nearest approach and the temporal dwithin do, apply it with
+ * its parameters through this function
  * @note We must cast the function pointer to a fixed-parameter function pointer
  * before calling it. See the note at the beginning of the file.
  */
-static Datum
+Datum
 tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */

@@ -63,7 +63,7 @@ tdistance_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tpoint = tpose_to_tpoint(temp);
-  Temporal *result = tdistance_tgeo_geo((const Temporal *) tpoint, gs);
+  Temporal *result = tdistance_tgeo_geo((const Temporal *) tpoint, gs, true);
   pfree(tpoint);
   return result;
 }
@@ -84,7 +84,7 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
 
   GSERIALIZED *geom = pose_to_point(pose);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  Temporal *result = tdistance_tgeo_geo(tpoint, geom);
+  Temporal *result = tdistance_tgeo_geo(tpoint, geom, true);
   pfree(geom); pfree(tpoint);
   return result;
 }
@@ -104,7 +104,7 @@ tdistance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 
   Temporal *tpoint1 = tpose_to_tpoint(temp1);
   Temporal *tpoint2 = tpose_to_tpoint(temp2);
-  Temporal *result = tdistance_tgeo_tgeo(tpoint1, tpoint2);
+  Temporal *result = tdistance_tgeo_tgeo(tpoint1, tpoint2, true);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -129,7 +129,7 @@ nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tpoint = tpose_to_tpoint(temp);
-  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs, true);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -155,7 +155,7 @@ nai_tpose_pose(const Temporal *temp, const Pose *pose)
 
   GSERIALIZED *geom = pose_to_point(pose);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  TInstant *res = nai_tgeo_geo(tpoint, geom);
+  TInstant *res = nai_tgeo_geo(tpoint, geom, true);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -362,7 +362,7 @@ shortestline_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 
   Temporal *tpoint1 = tpose_to_tpoint(temp1);
   Temporal *tpoint2 = tpose_to_tpoint(temp2);
-  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
+  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2, true);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }

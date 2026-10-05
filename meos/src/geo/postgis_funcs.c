@@ -5178,20 +5178,23 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry or a geography, the one of a
- * geography in meters on the spheroid
+ * geography in meters
  * @details A geometry is measured as #geom_length measures it and a geography
- * as #geog_length measures it on the spheroid, which is the default of the
- * PostGIS function @p ST_Length over a geography
+ * as #geog_length measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Length over a geography chooses, the earth model being an
+ * argument as in #stbox_area
  * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @errval DBL_MAX
  * @csqlfn #Geo_length()
  */
 double
-geo_length(const GSERIALIZED *gs)
+geo_length(const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, DBL_MAX);
-  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, true) :
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, spheroid) :
     geom_length(gs);
 }
 
@@ -5276,18 +5279,39 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if the geographies are disjoint
+ * @details The negation of #geog_intersects, which the temporal disjoint of
+ * two geographies applies at every instant
+ * @param[in] gs1,gs2 Geographies
+ * @param[in] use_spheroid True when using a spheroid
+ * @errval false
+ */
+bool
+geog_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool use_spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
+    return false;
+  return ! geog_dwithin(gs1, gs2, 0.0, use_spheroid);
+}
+
+/**
  * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geographies
  * @param[in] gs1,gs2 Geographies
+ * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_distance_uncached(PG_FUNCTION_ARGS).
- * We set by default both @p tolerance and @p use_spheroid and initialize the
- * spheroid to WGS84
+ * We set by default the @p tolerance and initialize the spheroid to the one
+ * of the SRID, as #geog_dwithin does
  * @note An empty geography has no point to measure from, so the answer is
  * DBL_MAX
  * @errval DBL_MAX
  */
 double
-geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
@@ -5298,7 +5322,6 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return DBL_MAX;
 
   double tolerance = FP_TOLERANCE;
-  bool use_spheroid = true;
 
   /* Initialize spheroid */
   SPHEROID s;

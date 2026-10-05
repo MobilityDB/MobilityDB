@@ -1333,18 +1333,19 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 /**
  * @brief Return the distance between two temporal instants
  * @param[in] inst1,inst2 Temporal instants
- * @param[in] func Distance function
+ * @param[in] lfinfo Distance function of the spatial values and its
+ * parameters, unread for temporal numbers
  */
 double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2,
-  datum_func2 func)
+  LiftedFunctionInfo *lfinfo)
 {
   assert(tnumber_type(inst1->temptype) || tgeo_type_all(inst1->temptype));
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   else if (tgeo_type_all(inst1->temptype))
-    return DatumGetFloat8(func(tinstant_value_p(inst1),
-      tinstant_value_p(inst2)));
+    return DatumGetFloat8(tfunc_base_base(tinstant_value_p(inst1),
+      tinstant_value_p(inst2), lfinfo));
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -1360,21 +1361,25 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @param[out] dist Array keeping the distances
  * @note Only two rows of the full matrix are used
  */
 static double
 tinstarr_similarity1(double *dist, TInstant **instants1, int count1,
-  TInstant **instants2, int count2, SimFunc simfunc)
+  TInstant **instants2, int count2, SimFunc simfunc, bool spheroid)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
     {
       const TInstant *inst1 = instants1[i];
       const TInstant *inst2 = instants2[j];
-      double d = tinstant_distance(inst1, inst2, func);
+      double d = tinstant_distance(inst1, inst2, &lfinfo);
       if (i > 0 && j > 0)
       {
         if (simfunc == FRECHET)
@@ -1427,11 +1432,13 @@ tinstarr_similarity1(double *dist, TInstant **instants1, int count1,
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @note Only two rows of the full matrix are used
  */
 static double
 tinstarr_similarity(TInstant **instants1, int count1, TInstant **instants2,
-  int count2, SimFunc simfunc)
+  int count2, SimFunc simfunc, bool spheroid)
 {
   /* Allocate memory for two rows of the distance matrix */
   double *dist = palloc(sizeof(double) * 2 * count2);
@@ -1440,7 +1447,7 @@ tinstarr_similarity(TInstant **instants1, int count1, TInstant **instants2,
     *(dist + i) = -1.0;
   /* Call the linear_space computation of the similarity distance */
   double result = tinstarr_similarity1(dist, instants1, count1, instants2,
-    count2, simfunc);
+    count2, simfunc, spheroid);
   /* Free memory */
   pfree(dist);
   return result;
@@ -1450,10 +1457,12 @@ tinstarr_similarity(TInstant **instants1, int count1, TInstant **instants2,
  * @brief Return the similarity distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  */
 double
 temporal_similarity(const Temporal *temp1, const Temporal *temp2,
-  SimFunc simfunc)
+  SimFunc simfunc, bool spheroid)
 {
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
@@ -1463,9 +1472,9 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   result = count1 > count2 ?
     tinstarr_similarity((TInstant **) instants1, count1,
-      (TInstant **) instants2, count2, simfunc) :
+      (TInstant **) instants2, count2, simfunc, spheroid) :
     tinstarr_similarity((TInstant **) instants2, count2,
-      (TInstant **) instants1, count1, simfunc);
+      (TInstant **) instants1, count1, simfunc, spheroid);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1475,32 +1484,38 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @errval DBL_MAX
  * @csqlfn #Temporal_frechet_distance()
  */
 double
-temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
+temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return DBL_MAX;
-  return temporal_similarity(temp1, temp2, FRECHET);
+  return temporal_similarity(temp1, temp2, FRECHET, spheroid);
 }
 
 /**
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @errval DBL_MAX
  * @csqlfn #Temporal_dyntimewarp_distance()
  */
 double
-temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
+temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return DBL_MAX;
-  return temporal_similarity(temp1, temp2, DYNTIMEWARP);
+  return temporal_similarity(temp1, temp2, DYNTIMEWARP, spheroid);
 }
 
 /*****************************************************************************
@@ -1615,24 +1630,30 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
  * @param[in] instants1,instants2 Instants of the temporal values
  * @param[in] count1,count2 Number of instants of the temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @param[out] dist Matrix keeping the distances
  */
 static void
 tinstarr_similarity_matrix1(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, SimFunc simfunc, double *dist)
+  TInstant **instants2, int count2, SimFunc simfunc, bool spheroid,
+  double *dist)
 {
   /* The flags are needed to select the spatial distance function */
   MeosType temptype = instants1[0]->temptype;
-  datum_func2 func = tgeo_type(temptype) ?
-    geo_distance_fn(instants1[0]->flags) : ( tpoint_type(temptype) ?
-    pt_distance_fn(instants1[0]->flags) : NULL );
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  if (tgeo_type(temptype))
+    geo_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+  else if (tpoint_type(temptype))
+    pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
     {
       const TInstant *inst1 = instants1[i];
       const TInstant *inst2 = instants2[j];
-      double d = tinstant_distance(inst1, inst2, func);
+      double d = tinstant_distance(inst1, inst2, &lfinfo);
       if (i > 0 && j > 0)
       {
         if (simfunc == FRECHET)
@@ -1684,11 +1705,14 @@ tinstarr_similarity_matrix1(TInstant **instants1, int count1,
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @param[out] count Number of elements in the resulting array
  */
 static Match *
 tinstarr_similarity_matrix(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, SimFunc simfunc, int *count)
+  TInstant **instants2, int count2, SimFunc simfunc, bool spheroid,
+  int *count)
 {
   /* Allocate memory for dist */
   double *dist = palloc(sizeof(double) * count1 * count2);
@@ -1697,7 +1721,7 @@ tinstarr_similarity_matrix(TInstant **instants1, int count1,
     *(dist + i) = -1.0;
   /* Call the iterative computation of the similarity distance */
   tinstarr_similarity_matrix1(instants1, count1, instants2, count2, simfunc,
-    dist);
+    spheroid, dist);
   /* Compute the path */
   Match *result = tinstarr_similarity_path(dist, count1, count2, count);
   /* Free memory */
@@ -1714,7 +1738,7 @@ tinstarr_similarity_matrix(TInstant **instants1, int count1,
  */
 Match *
 temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
-  int *count, SimFunc simfunc)
+  int *count, SimFunc simfunc, bool spheroid)
 {
   assert(temp1); assert(temp2); assert(count);
   assert(temp1->temptype == temp2->temptype);
@@ -1723,9 +1747,9 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   Match *result = count1 > count2 ?
     tinstarr_similarity_matrix((TInstant **) instants1, count1,
-      (TInstant **) instants2, count2, simfunc, count) :
+      (TInstant **) instants2, count2, simfunc, spheroid, count) :
     tinstarr_similarity_matrix((TInstant **) instants2, count2,
-      (TInstant **) instants1, count1, simfunc, count);
+      (TInstant **) instants1, count1, simfunc, spheroid, count);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1735,11 +1759,14 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @param[out] count Number of elements of the output array
  * @csqlfn #Temporal_frechet_path()
  */
 Match *
-temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
+temporal_frechet_path(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1747,19 +1774,21 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
-  return temporal_similarity_path(temp1, temp2, count, FRECHET);
+  return temporal_similarity_path(temp1, temp2, count, FRECHET, spheroid);
 }
 
 /**
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @param[out] count Number of elements of the output array
  * @csqlfn #Temporal_dyntimewarp_path()
  */
 Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
-  int *count)
+  bool spheroid, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
@@ -1767,7 +1796,8 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
-  return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
+  return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP,
+    spheroid);
 }
 
 /*****************************************************************************
@@ -1778,12 +1808,16 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  * @brief Return the discrete Hausdorff distance between two temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  */
 static double
 tinstarr_hausdorff_distance(TInstant **instants1, int count1,
-  TInstant **instants2, int count2)
+  TInstant **instants2, int count2, bool spheroid)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
   const TInstant *inst1, *inst2;
   double cmax = 0.0, cmin;
   double d;
@@ -1795,7 +1829,7 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
     for (j = 0; j < count2; j++)
     {
       inst2 = instants2[j];
-      d = tinstant_distance(inst1, inst2, func);
+      d = tinstant_distance(inst1, inst2, &lfinfo);
       if (d < cmin)
         cmin = d;
       if (cmin < cmax)
@@ -1811,7 +1845,7 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
     for (i = 0; i < count1; i++)
     {
       inst1 = instants1[i];
-      d = tinstant_distance(inst1, inst2, func);
+      d = tinstant_distance(inst1, inst2, &lfinfo);
       if (d < cmin)
         cmin = d;
       if (cmin < cmax)
@@ -1827,11 +1861,14 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Hausdorf distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @errval DBL_MAX
  * @csqlfn #Temporal_hausdorff_distance()
  */
 double
-temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
+temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
@@ -1842,7 +1879,7 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   result = tinstarr_hausdorff_distance((TInstant **) instants1, count1,
-    (TInstant **) instants2, count2);
+    (TInstant **) instants2, count2, spheroid);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1863,7 +1900,9 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 TSequence *
 tsequence_simplify_min_dist(const TSequence *seq, double dist)
 {
-  datum_func2 func = pt_distance_fn(seq->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(seq->flags, true, &lfinfo);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -1874,7 +1913,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    double d = tinstant_distance(inst1, inst2, func);
+    double d = tinstant_distance(inst1, inst2, &lfinfo);
     if (d > dist)
     {
       /* Add instant to output sequence */
@@ -2684,12 +2723,16 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
  * other array.
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  */
 static double
 tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2)
+  const TInstant **instants2, int count2, bool spheroid)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
   const TInstant *inst1, *inst2;
   double sum1 = 0.0, sum2 = 0.0;
   double cmin, d;
@@ -2701,7 +2744,7 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
     for (j = 0; j < count2; j++)
     {
       inst2 = instants2[j];
-      d = tinstant_distance(inst1, inst2, func);
+      d = tinstant_distance(inst1, inst2, &lfinfo);
       if (d < cmin)
         cmin = d;
     }
@@ -2714,7 +2757,7 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
     for (i = 0; i < count1; i++)
     {
       inst1 = instants1[i];
-      d = tinstant_distance(inst1, inst2, func);
+      d = tinstant_distance(inst1, inst2, &lfinfo);
       if (d < cmin)
         cmin = d;
     }
@@ -2727,12 +2770,14 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the average Hausdorff distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @errval DBL_MAX
  * @csqlfn #Temporal_average_hausdorff_distance()
  */
 double
 temporal_average_hausdorff_distance(const Temporal *temp1,
-  const Temporal *temp2)
+  const Temporal *temp2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
@@ -2742,7 +2787,7 @@ temporal_average_hausdorff_distance(const Temporal *temp1,
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   double result = tinstarr_average_hausdorff_distance(instants1, count1,
-    instants2, count2);
+    instants2, count2, spheroid);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -2761,19 +2806,23 @@ temporal_average_hausdorff_distance(const Temporal *temp1,
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] epsilon Maximum distance for two instants to match
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  */
 static double
 tinstarr_lcss_distance(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, double epsilon)
+  const TInstant **instants2, int count2, double epsilon, bool spheroid)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
   int *prev = palloc0(sizeof(int) * (count2 + 1));
   int *curr = palloc0(sizeof(int) * (count2 + 1));
   for (int i = 1; i <= count1; i++)
   {
     for (int j = 1; j <= count2; j++)
     {
-      double d = tinstant_distance(instants1[i - 1], instants2[j - 1], func);
+      double d = tinstant_distance(instants1[i - 1], instants2[j - 1], &lfinfo);
       if (d <= epsilon)
         curr[j] = prev[j - 1] + 1;
       else
@@ -2794,12 +2843,14 @@ tinstarr_lcss_distance(const TInstant **instants1, int count1,
  * temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] epsilon Maximum distance for two instants to match
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for temporal geographies only, as in #stbox_area
  * @errval DBL_MAX
  * @csqlfn #Temporal_lcss_distance()
  */
 double
 temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2,
-  double epsilon)
+  double epsilon, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (epsilon < 0 || ! ensure_valid_temporal_temporal(temp1, temp2))
@@ -2809,8 +2860,10 @@ temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   double result = count1 > count2 ?
-    tinstarr_lcss_distance(instants1, count1, instants2, count2, epsilon) :
-    tinstarr_lcss_distance(instants2, count2, instants1, count1, epsilon);
+    tinstarr_lcss_distance(instants1, count1, instants2, count2, epsilon,
+      spheroid) :
+    tinstarr_lcss_distance(instants2, count2, instants1, count1, epsilon,
+      spheroid);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;

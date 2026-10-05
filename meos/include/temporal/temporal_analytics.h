@@ -59,9 +59,9 @@ typedef struct
 /*****************************************************************************/
 
 extern double temporal_similarity(const Temporal *temp1, const Temporal *temp2,
-  SimFunc simfunc);
+  SimFunc simfunc, bool spheroid);
 extern Match *temporal_similarity_path(const Temporal *temp1,
-  const Temporal *temp2, int *count, SimFunc simfunc);
+  const Temporal *temp2, int *count, SimFunc simfunc, bool spheroid);
 
 /*****************************************************************************/
 

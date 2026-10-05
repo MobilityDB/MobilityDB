@@ -1978,7 +1978,8 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
     bool split = false;
     if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
     {
-      double dist = datum_distance(value1, value, basetype, seq->flags);
+      double dist = datum_distance(value1, value, basetype, seq->flags,
+        true);
       if (dist > maxdist)
         split = true;
     }

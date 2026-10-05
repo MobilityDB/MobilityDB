@@ -3753,7 +3753,7 @@ int main(void)
   GSERIALIZED *lgeom = geom_in("Linestring(0 0,3 4)", -1);
   GSERIALIZED *lgeog = geog_in("Linestring(0 0,0 1)", -1);
   assert(lgeom != NULL && lgeog != NULL);
-  double glen = geo_length(lgeom), gglen = geo_length(lgeog);
+  double glen = geo_length(lgeom, true), gglen = geo_length(lgeog, true);
   printf("geo_length: geometry %.17g, geography %.17g\n", glen, gglen);
   assert(glen == 5.0 && glen == geom_length(lgeom));
   assert(gglen == geog_length(lgeog, true));

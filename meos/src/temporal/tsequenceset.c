@@ -171,18 +171,18 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
  * @param[in] value1,value2 Values
  * @param[in] type Type of the values
  * @param[in] flags Flags
+ * @param[in] spheroid True when measuring two geographies on the spheroid,
+ * false on the sphere, as #datum_pt_distance reads it
  * @errval DBL_MAX
  */
 double
-datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
+datum_distance(Datum value1, Datum value2, MeosType type, int16 flags,
+  bool spheroid)
 {
   if (tnumber_basetype(type))
     return distance_value_value_double(value1, value2, type);
   if (geo_basetype(type))
-  {
-    datum_func2 point_distance = pt_distance_fn(flags);
-    return DatumGetFloat8(point_distance(value1, value2));
-  }
+    return DatumGetFloat8(datum_pt_distance(value1, value2, flags, spheroid));
 #if NPOINT
   if (type == T_NPOINT)
     return DatumGetFloat8(datum_npoint_distance(value1, value2));
@@ -505,7 +505,7 @@ ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
     Datum value2 = tinstant_value_p(instants[i]);
     if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
     {
-      double dist = datum_distance(value1, value2, basetype, flags);
+      double dist = datum_distance(value1, value2, basetype, flags, true);
       if (dist > maxdist)
         split = true;
     }

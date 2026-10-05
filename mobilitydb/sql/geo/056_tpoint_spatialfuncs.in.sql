@@ -218,7 +218,7 @@ CREATE FUNCTION length(tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION length(tgeogpoint)
+CREATE FUNCTION length(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -226,7 +226,7 @@ CREATE FUNCTION length(geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION length(geography)
+CREATE FUNCTION length(geography, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -235,7 +235,7 @@ CREATE FUNCTION cumulativeLength(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cumulativeLength(tgeogpoint)
+CREATE FUNCTION cumulativeLength(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -249,7 +249,7 @@ CREATE FUNCTION speed(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION speed(tgeogpoint)
+CREATE FUNCTION speed(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

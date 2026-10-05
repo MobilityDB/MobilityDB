@@ -133,3 +133,12 @@ SELECT round(averageHausdorffDistance(
   tgeogpoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')::numeric, 6);
 
 -------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(hausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]')::numeric, 3);
+SELECT round(hausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false)::numeric, 3);
+SELECT round(averageHausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]')::numeric, 3);
+SELECT round(averageHausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false)::numeric, 3);
+-- Within 110800 m both pairs of consecutive meridian points match on the spheroid, only the shared point on the sphere
+SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800)::numeric, 6);
+SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800, false)::numeric, 6);

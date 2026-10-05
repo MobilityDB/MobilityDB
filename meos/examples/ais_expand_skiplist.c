@@ -440,7 +440,7 @@ int main(void)
       rec->num_records, rec->num_trip_instants, rec->num_SOG_instants);
     if (rec->trip)
     {
-      printf(" %15.6lf |", tpointseq_length(rec->trip));
+      printf(" %15.6lf |", tpointseq_length(rec->trip, true));
     }
     else
       printf("        ---      |");

@@ -196,13 +196,15 @@ datum2_geom_centroid(Datum geo)
 }
 
 /**
- * @brief Return the centroid of a geography
+ * @brief Return the centroid of a geography on the spheroid or on the sphere
+ * @details The geography twin of #datum2_geom_centroid, which takes the model
+ * of the earth as the parameter of the lift
  */
 Datum
-datum2_geog_centroid(Datum geo)
+datum2_geog_centroid(Datum geo, Datum spheroid)
 {
   return GserializedPGetDatum(geog_centroid(DatumGetGserializedP(geo),
-    BoolGetDatum(false)));
+    DatumGetBool(spheroid)));
 }
 
 /*****************************************************************************
@@ -211,28 +213,92 @@ datum2_geog_centroid(Datum geo)
 
 /**
  * @brief Select the appropriate distance function
+ * @details The distance of two geographies takes the model of the earth as a
+ * parameter, which the distance of two geometries does not, so the function
+ * is applied through #geo_distance_lfinfo
  */
-datum_func2
+varfunc
 geo_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &datum_geog_distance;
+    return (varfunc) &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &datum_geom_distance3d : &datum_geom_distance2d;
+      (varfunc) &datum_geom_distance3d : (varfunc) &datum_geom_distance2d;
 }
 
 /**
- * @brief Select the appropriate distance function
+ * @brief Select the appropriate distance function for two points
+ * @details As #geo_distance_fn, applied through #pt_distance_lfinfo
  */
-datum_func2
+varfunc
 pt_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &datum_geog_distance;
+    return (varfunc) &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &datum_pt_distance3d : &datum_pt_distance2d;
+      (varfunc) &datum_pt_distance3d : (varfunc) &datum_pt_distance2d;
+}
+
+/**
+ * @brief Set in a lifted structure the distance function selected by
+ * #geo_distance_fn and its parameters: none for two geometries, the model of
+ * the earth for two geographies
+ * @param[in] flags Flags of the spatial values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @param[out] lfinfo Lifted structure
+ */
+void
+geo_distance_lfinfo(int16 flags, bool spheroid, LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = geo_distance_fn(flags);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags) ? 1 : 0;
+  lfinfo->param[0] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Set in a lifted structure the distance function selected by
+ * #pt_distance_fn and its parameters, as #geo_distance_lfinfo does
+ */
+void
+pt_distance_lfinfo(int16 flags, bool spheroid, LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = pt_distance_fn(flags);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags) ? 1 : 0;
+  lfinfo->param[0] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Return the distance between two spatial values with the function
+ * #geo_distance_lfinfo sets and its parameters, for a caller applying it
+ * directly rather than through a lift
+ * @param[in] value1,value2 Spatial values
+ * @param[in] flags Flags of the spatial values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ */
+Datum
+datum_geo_distance(Datum value1, Datum value2, int16 flags, bool spheroid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  geo_distance_lfinfo(flags, spheroid, &lfinfo);
+  return tfunc_base_base(value1, value2, &lfinfo);
+}
+
+/**
+ * @brief Return the distance between two points with the function
+ * #pt_distance_lfinfo sets and its parameters, as #datum_geo_distance does
+ */
+Datum
+datum_pt_distance(Datum value1, Datum value2, int16 flags, bool spheroid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(flags, spheroid, &lfinfo);
+  return tfunc_base_base(value1, value2, &lfinfo);
 }
 
 /**
@@ -257,13 +323,16 @@ datum_geom_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Return the distance between the two geographies
+ * @brief Return the distance between the two geographies on the spheroid or
+ * on the sphere
+ * @details The geography twin of #datum_geom_distance2d, which takes the
+ * model of the earth as the parameter of the lift
  */
 Datum
-datum_geog_distance(Datum geog1, Datum geog2)
+datum_geog_distance(Datum geog1, Datum geog2, Datum spheroid)
 {
   return Float8GetDatum(geog_distance(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2)));
+    DatumGetGserializedP(geog2), DatumGetBool(spheroid)));
 }
 
 /**
@@ -582,6 +651,24 @@ ensure_same_geodetic_set_geo(const Set *s, const GSERIALIZED *gs)
       "Operation on mixed planar and geodetic coordinates");
     return false;
   }
+  return true;
+}
+
+/**
+ * @brief Return true if a set and a geometry/geography are valid for set
+ * operations
+ * @param[in] s Set
+ * @param[in] gs Value
+ */
+bool
+ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_not_empty(gs) ||
+      ! ensure_same_srid(spatialset_srid(s), geo_srid(gs)) ||
+      ! ensure_same_geodetic_set_geo(s, gs))
+    return false;
   return true;
 }
 
@@ -2034,10 +2121,12 @@ tgeo_traversed_area(const Temporal *temp, bool unary_union)
  * @ingroup meos_geo_accessor
  * @brief Return the centroid of a temporal geo as a temporal point
  * @param[in] temp Temporal geo
+ * @param[in] spheroid True when computing the centroid of a temporal
+ * geography on the spheroid, false on the sphere, as #geog_centroid reads it
  * @csqlfn #Tgeo_centroid()
  */
 Temporal *
-tgeo_centroid(const Temporal *temp)
+tgeo_centroid(const Temporal *temp, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
@@ -2045,8 +2134,16 @@ tgeo_centroid(const Temporal *temp)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) 
-    (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
+  /* The centroid of a geography takes the model of the earth as the
+   * parameter of the lift, that of a geometry none */
+  if (geodetic)
+  {
+    lfinfo.func = (varfunc) &datum2_geog_centroid;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = BoolGetDatum(spheroid);
+  }
+  else
+    lfinfo.func = (varfunc) &datum2_geom_centroid;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   /* Centroid is affine in vertex positions: linear input -> linear output */

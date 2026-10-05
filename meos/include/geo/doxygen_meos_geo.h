@@ -195,6 +195,10 @@
  * @defgroup meos_geo_set_setops Set operations
  * @ingroup meos_geo_set
  * @brief Set operations for geometry sets
+ *
+ * @defgroup meos_geo_set_dist Distance functions
+ * @ingroup meos_geo_set
+ * @brief Distance functions for spatial sets
  */
 
 /*****************************************************************************/

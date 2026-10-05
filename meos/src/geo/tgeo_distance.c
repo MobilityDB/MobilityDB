@@ -1541,16 +1541,135 @@ dist_geom_build_rtree(const Edge *segs, int n)
  *****************************************************************************/
 
 /**
+ * @brief Model of the earth and circle tree of the static geography a
+ * temporal geography measures its nearest approach to
+ */
+typedef struct
+{
+  SPHEROID s;          /**< Spheroid, or sphere when its axes are equal */
+  CIRC_NODE *tree;     /**< Circle tree of the static geography */
+} DistEarth;
+
+/**
+ * @brief Set the circle tree leaf of a geography edge, or of a point when the
+ * edge has no length, without allocating it
+ * @details The fields are those #circ_node_leaf_new and
+ * #circ_node_leaf_point_new set
+ */
+static void
+circ_leaf_set(const POINT2D *p1, const POINT2D *p2, CIRC_NODE *node)
+{
+  GEOGRAPHIC_POINT g1, g2;
+  geographic_point_init(p1->x, p1->y, &g1);
+  geographic_point_init(p2->x, p2->y, &g2);
+  node->p1 = (POINT2D *) p1;
+  node->p2 = (POINT2D *) p2;
+  node->num_nodes = 0;
+  node->nodes = NULL;
+  node->edge_num = 0;
+  node->d = 0.0;
+  node->pt_outside.x = node->pt_outside.y = 0.0;
+  double diameter = sphere_distance(&g1, &g2);
+  if (FP_EQUALS(diameter, 0.0))
+  {
+    node->p2 = node->p1;
+    node->center = g1;
+    node->radius = 0.0;
+    node->geom_type = POINTTYPE;
+    return;
+  }
+  POINT3D q1, q2, c;
+  geog2cart(&g1, &q1);
+  geog2cart(&g2, &q2);
+  vector_sum(&q1, &q2, &c);
+  normalize(&c);
+  cart2geog(&c, &node->center);
+  node->radius = diameter / 2.0;
+  node->geom_type = LINETYPE;
+}
+
+/**
+ * @brief Return the distance between an edge of a temporal geography point
+ * and a geography, and the location in the edge of its closest point as a
+ * fraction of the length of the edge
+ * @details The closest points are located on the sphere and their distance is
+ * measured on the model of the earth, as #lw_distance_fraction does for a
+ * geography, over a leaf set by #circ_leaf_set
+ * A distance on the spheroid is at least b^2/a times the angle on the sphere
+ * between the same points, since the length element of the spheroid is at
+ * least its smallest radius of curvature b^2/a times the one of the unit
+ * sphere, so an edge whose bound reaches @p bound returns that bound without
+ * measuring on the spheroid.
+ * @param[in] p1,p2 Ends of the edge, equal for a point
+ * @param[in] earth Model of the earth and circle tree of the geography
+ * @param[in] bound Running minimum of the distance
+ * @param[out] fraction Location of the closest point, may be NULL, set when
+ * the result is below @p bound
+ */
+static double
+geog_edge_distance_fraction(const POINT2D *p1, const POINT2D *p2,
+  const DistEarth *earth, double bound, double *fraction)
+{
+  CIRC_NODE leaf;
+  circ_leaf_set(p1, p2, &leaf);
+  /* The angle on the sphere below which the edge can be nearer than @p bound
+   * seeds the traversal, which prunes every node farther than it */
+  const SPHEROID *s = &earth->s;
+  double scale = (s->a == s->b) ? s->radius : s->b * s->b / s->a;
+  double seed = Min(bound / scale, FLT_MAX);
+  double min_dist = seed, max_dist = seed;
+  GEOGRAPHIC_POINT closest1, closest2;
+  circ_tree_distance_tree_internal(&leaf, earth->tree, FP_TOLERANCE,
+    &min_dist, &max_dist, &closest1, &closest2);
+  if (min_dist >= seed && seed < FLT_MAX)
+  {
+    if (fraction)
+      *fraction = 0.0;
+    return bound;
+  }
+  /* A sphere has a == b, as #ptarray_distance_spheroid reads it */
+  double angle = sphere_distance(&closest1, &closest2);
+  double result;
+  if (s->a == s->b)
+    result = s->radius * angle;
+  else
+  {
+    result = s->b * s->b / s->a * angle;
+    if (result < bound)
+      result = spheroid_distance(&closest1, &closest2, s);
+  }
+  if (fraction)
+  {
+    if (leaf.geom_type == POINTTYPE || result >= bound)
+      *fraction = 0.0;
+    else
+    {
+      GEOGRAPHIC_EDGE e;
+      GEOGRAPHIC_POINT proj;
+      geographic_point_init(p1->x, p1->y, &(e.start));
+      geographic_point_init(p2->x, p2->y, &(e.end));
+      edge_distance_to_point(&e, &closest1, &proj);
+      *fraction = sphere_distance(&(e.start), &proj) /
+        sphere_distance(&(e.start), &(e.end));
+    }
+  }
+  return result;
+}
+
+/**
  * @brief Return the distance between two geometries
  * @details When the first geometry is a segment it also computes a value
  * between 0 and 1 that represents the location in the segment of the closest
  * point to the second geometry, as a fraction of total segment length.
+ * For geographies the closest points are located on the sphere and their
+ * distance is measured on the model of the earth @p earth, as
+ * #lwgeom_distance_spheroid measures it
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
  */
 static double
 lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
-  double *fraction)
+  const DistEarth *earth, double *fraction)
 {
   double result;
   if (FLAGS_GET_GEODETIC(geom1->flags))
@@ -1559,11 +1678,15 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
     double max_dist = FLT_MAX;
     GEOGRAPHIC_POINT closest1, closest2;
     GEOGRAPHIC_EDGE e;
-    const CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(geom1);
-    const CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(geom2);
-    circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
+    assert(earth); assert(earth->tree);
+    CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(geom1);
+    circ_tree_distance_tree_internal(circ_tree1, earth->tree, FP_TOLERANCE,
       &min_dist, &max_dist, &closest1, &closest2);
-    result = sphere_distance(&closest1, &closest2);
+    circ_tree_free(circ_tree1);
+    /* A sphere has a == b, as #ptarray_distance_spheroid reads it */
+    const SPHEROID *s = &earth->s;
+    result = (s->a == s->b) ? s->radius * sphere_distance(&closest1, &closest2) :
+      spheroid_distance(&closest1, &closest2, s);
     if (fraction)
     {
       assert(geom1->type == LINETYPE);
@@ -1854,10 +1977,12 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Tdistance_tgeo_geo() #Tdistance_geo_tgeo()
  */
 Temporal *
-tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -1893,8 +2018,10 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
    * pair of points, whose distance #point_distance_exact answers as the double
    * nearest the exact distance. The generic entry reaches the same coordinates
    * through a recursive walk that ends in a rounded formula. */
-  lfinfo.func = (varfunc) (tpoint_type(temp->temptype) ?
-    pt_distance_fn(temp->flags) : geo_distance_fn(temp->flags));
+  if (tpoint_type(temp->temptype))
+    pt_distance_lfinfo(temp->flags, spheroid, &lfinfo);
+  else
+    geo_distance_lfinfo(temp->flags, spheroid, &lfinfo);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
@@ -1909,10 +2036,13 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_geo_dist
  * @brief Return the temporal distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
  * @csqlfn #Tdistance_tgeo_tgeo()
  */
 Temporal *
-tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
@@ -1926,9 +2056,10 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   /* Two temporal points carry a point each at every instant, so the pair is a
    * pair of points, answered by #point_distance_exact through the point entry,
    * as #Tdwithin_tgeo_tgeo chooses the point entry for the same operands */
-  lfinfo.func = (varfunc) (tpoint_type(temp1->temptype) &&
-    tpoint_type(temp2->temptype) ? pt_distance_fn(temp1->flags) :
-    geo_distance_fn(temp1->flags));
+  if (tpoint_type(temp1->temptype) && tpoint_type(temp2->temptype))
+    pt_distance_lfinfo(temp1->flags, spheroid, &lfinfo);
+  else
+    geo_distance_lfinfo(temp1->flags, spheroid, &lfinfo);
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
@@ -1985,7 +2116,8 @@ tpointseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
  * period of two linear temporal point sequences, updating the running minimum
  * @param[in] seq1,seq2 Temporal sequences with linear interpolation
  * @param[in] inter Overlapping period of the two sequences
- * @param[in] func Base value distance function
+ * @param[in] lfinfo Base value distance function and its parameters, applied
+ * through #tfunc_base_base
  * @param[in] turnpt Per-segment distance turning-point function
  * @param[in] seglb Per-segment distance lower-bound function
  * @param[in] curmin Current minimum distance, or infinity at the beginning
@@ -1994,8 +2126,8 @@ tpointseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
  */
 static double
 nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
-  const Span *inter, datum_func2 func, tpfunc_temp turnpt, seglb_func seglb,
-  double curmin, TimestampTz *tmin)
+  const Span *inter, LiftedFunctionInfo *lfinfo, tpfunc_temp turnpt,
+  seglb_func seglb, double curmin, TimestampTz *tmin)
 {
   MeosType temptype = seq1->temptype;
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -2070,7 +2202,7 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
           prev1->t, inst1->t, tpt1);
         Datum v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
           prev1->t, inst1->t, tpt1);
-        double d = DatumGetFloat8(func(v1, v2));
+        double d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
         if (d < curmin) { curmin = d; *tmin = tpt1; }
         pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
         /* Account for the second turning point if any */
@@ -2080,7 +2212,7 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
             prev1->t, inst1->t, tpt2);
           v2 = tsegment_value_at_timestamptz(start2, end2, temptype,
             prev1->t, inst1->t, tpt2);
-          d = DatumGetFloat8(func(v1, v2));
+          d = DatumGetFloat8(tfunc_base_base(v1, v2, lfinfo));
           if (d < curmin) { curmin = d; *tmin = tpt2; }
           pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
         }
@@ -2090,8 +2222,8 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
      * leading to it cannot beat the running minimum */
     if (lb < curmin)
     {
-      double d = DatumGetFloat8(func(tinstant_value_p(inst1),
-        tinstant_value_p(inst2)));
+      double d = DatumGetFloat8(tfunc_base_base(tinstant_value_p(inst1),
+        tinstant_value_p(inst2), lfinfo));
       if (d < curmin) { curmin = d; *tmin = inst1->t; }
     }
     ninsts++;
@@ -2111,7 +2243,8 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
  * temporal values and the timestamp achieving it
  * @param[in] temp1,temp2 Temporal values with linear interpolation and equal
  * subtype (both #TSEQUENCE or both #TSEQUENCESET)
- * @param[in] func Base value distance function
+ * @param[in] lfinfo Base value distance function and its parameters, as
+ * #nad_tcontseq_tcontseq_sync applies them
  * @param[in] turnpt Per-segment distance turning-point function
  * @param[in] seglb Per-segment distance lower-bound function
  * @param[out] tmin Timestamp achieving the minimum (set only when the result
@@ -2122,7 +2255,8 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
  */
 double
 nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
-  datum_func2 func, tpfunc_temp turnpt, seglb_func seglb, TimestampTz *tmin)
+  LiftedFunctionInfo *lfinfo, tpfunc_temp turnpt, seglb_func seglb,
+  TimestampTz *tmin)
 {
   /* Both TSEQUENCE */
   if (temp1->subtype == TSEQUENCE)
@@ -2132,7 +2266,7 @@ nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
         &((TSequence *) temp2)->period, &inter))
       return DBL_MAX;
     return nad_tcontseq_tcontseq_sync((TSequence *) temp1,
-      (TSequence *) temp2, &inter, func, turnpt, seglb, DBL_MAX, tmin);
+      (TSequence *) temp2, &inter, lfinfo, turnpt, seglb, DBL_MAX, tmin);
   }
   /* Both TSEQUENCESET: walk the overlapping component sequences */
   const TSequenceSet *ss1 = (const TSequenceSet *) temp1;
@@ -2145,7 +2279,7 @@ nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, j);
     Span inter;
     if (inter_span_span(&seq1->period, &seq2->period, &inter))
-      result = nad_tcontseq_tcontseq_sync(seq1, seq2, &inter, func, turnpt,
+      result = nad_tcontseq_tcontseq_sync(seq1, seq2, &inter, lfinfo, turnpt,
         seglb, result, tmin);
     int cmp = timestamptz_cmp_internal(
       DatumGetTimestampTz(seq1->period.upper),
@@ -2190,6 +2324,8 @@ nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
  * @details This is an iterator function.
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
+ * @param[in] earth Model of the earth and circle tree of a geography, NULL
+ * for a geometry
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
@@ -2198,20 +2334,29 @@ nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
  */
 static double
 nai_tgeoseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
-  double mindist, const TInstant **result)
+  const DistEarth *earth, double mindist, const TInstant **result)
 {
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
-    LWGEOM *point = lwgeom_from_gserialized(gs);
-    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
+    double dist;
+    if (earth && tpoint_type(seq->temptype))
+    {
+      const POINT2D *p = DATUM_POINT2D_P(tinstant_value_p(inst));
+      dist = geog_edge_distance_fraction(p, p, earth, mindist, NULL);
+    }
+    else
+    {
+      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
+      LWGEOM *point = lwgeom_from_gserialized(gs);
+      dist = lw_distance_fraction(point, geo, DIST_MIN, earth, NULL);
+      lwgeom_free(point);
+    }
     if (dist < mindist)
     {
       mindist = dist;
       *result = inst;
     }
-    lwgeom_free(point);
   }
   return mindist;
 }
@@ -2221,12 +2366,15 @@ nai_tgeoseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * point with step interpolation and a geometry/geography
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
+ * @param[in] earth Model of the earth and circle tree of a geography, NULL
+ * for a geometry
  */
 static TInstant *
-nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
+nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo,
+  const DistEarth *earth)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
-  nai_tgeoseq_discstep_geo_iter(seq, geo, DBL_MAX, &inst);
+  nai_tgeoseq_discstep_geo_iter(seq, geo, earth, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }
 
@@ -2235,15 +2383,18 @@ nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
  * point with step interpolation and a geometry/geography
  * @param[in] ss Temporal geo
  * @param[in] geo Geometry/geography
+ * @param[in] earth Model of the earth and circle tree of a geography, NULL
+ * for a geometry
  */
 static TInstant *
-nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
+nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo,
+  const DistEarth *earth)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
     mindist = nai_tgeoseq_discstep_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
-      mindist, &inst);
+      earth, mindist, &inst);
   assert(inst);
   return tinstant_copy(inst);
 }
@@ -2259,32 +2410,42 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
  * @details The temporal point sequence has linear interpolation.
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
+ * @param[in] earth Model of the earth and circle tree of a geography, NULL
+ * for a geometry
+ * @param[in] bound Running minimum of the distance, which a geography edge
+ * that cannot be nearer returns without measuring on the spheroid
  * @param[out] t Timestamp
  */
 static double
 nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
-  const LWGEOM *geo, TimestampTz *t)
+  const LWGEOM *geo, const DistEarth *earth, double bound, TimestampTz *t)
 {
   Datum value1 = tinstant_value_p(inst1);
   Datum value2 = tinstant_value_p(inst2);
   double dist;
   double fraction;
 
+  /* Geography: the edge as a leaf against the circle tree of the geography */
+  if (earth)
+    dist = geog_edge_distance_fraction(DATUM_POINT2D_P(value1),
+      DATUM_POINT2D_P(value2), earth, bound, &fraction);
   /* Constant segment */
-  if (datum_point_eq(value1, value2))
+  else if (datum_point_eq(value1, value2))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value1);
     LWGEOM *point = lwgeom_from_gserialized(gs);
-    dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
+    dist = lw_distance_fraction(point, geo, DIST_MIN, earth, NULL);
     lwgeom_free(point);
     *t = inst1->t;
     return dist;
   }
-
   /* The trajectory is a line */
-  LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  dist = lw_distance_fraction(line, geo, DIST_MIN, &fraction);
-  lwgeom_free(line);
+  else
+  {
+    LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
+    dist = lw_distance_fraction(line, geo, DIST_MIN, earth, &fraction);
+    lwgeom_free(line);
+  }
 
   if (fabsl(fraction) < MEOS_EPSILON)
     *t = inst1->t;
@@ -2305,12 +2466,14 @@ nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  * iterator function.
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
+ * @param[in] earth Model of the earth and circle tree of a geography, NULL
+ * for a geometry
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
  * @param[out] t Timestamp
  */
 static double
 nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
-  double mindist, TimestampTz *t)
+  const DistEarth *earth, double mindist, TimestampTz *t)
 {
   double dist;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -2321,7 +2484,7 @@ nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
     Datum value1 = tinstant_value_p(inst1);
     GSERIALIZED *gs = DatumGetGserializedP(value1);
     LWGEOM *point = lwgeom_from_gserialized(gs);
-    dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
+    dist = lw_distance_fraction(point, geo, DIST_MIN, earth, NULL);
     if (dist < mindist)
     {
       mindist = dist;
@@ -2336,7 +2499,8 @@ nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
     for (int i = 0; i < seq->count - 1; i++)
     {
       const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-      dist = nai_tpointsegm_linear_geo1(inst1, inst2, geo, &t1);
+      dist = nai_tpointsegm_linear_geo1(inst1, inst2, geo, earth, mindist,
+        &t1);
       if (dist < mindist)
       {
         mindist = dist;
@@ -2355,10 +2519,11 @@ nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * point with linear interpolation and a geometry (iterator function)
  */
 static TInstant *
-nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
+nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo,
+  const DistEarth *earth)
 {
   TimestampTz t;
-  nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
+  nai_tpointseq_linear_geo_iter(seq, geo, earth, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamptz(seq, t, false, &value);
@@ -2370,7 +2535,8 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
  * point with linear interpolation and a geometry
  */
 static TInstant *
-nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
+nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo,
+  const DistEarth *earth)
 {
   TimestampTz t = 0; /* make compiler quiet */
   double mindist = DBL_MAX;
@@ -2378,7 +2544,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   {
     TimestampTz t1;
     double dist = nai_tpointseq_linear_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
-      mindist, &t1);
+      earth, mindist, &t1);
     if (dist < mindist)
     {
       mindist = dist;
@@ -2678,10 +2844,12 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * a geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
  * @csqlfn #NAI_tgeo_geo() #NAI_geo_tgeo()
  */
 TInstant *
-nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -2704,7 +2872,22 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     }
   }
 
+  /* A temporal geography locates the closest points of each segment on the
+   * sphere and compares their distances on the model of the earth, as
+   * #lwgeom_distance_spheroid measures a geography distance, with the circle
+   * tree of the geography built once for every segment */
   LWGEOM *geo = lwgeom_from_gserialized(gs);
+  DistEarth earth;
+  const DistEarth *sp = NULL;
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  {
+    spheroid_init_from_srid(gserialized_get_srid(gs), &earth.s);
+    if (! spheroid)
+      earth.s.a = earth.s.b = earth.s.radius;
+    earth.tree = lwgeom_calculate_circ_tree(geo);
+    sp = &earth;
+  }
+
   TInstant *result;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2714,14 +2897,16 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       break;
     case TSEQUENCE:
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseq_linear_geo((TSequence *) temp, geo) :
-        nai_tgeoseq_discstep_geo((TSequence *) temp, geo);
+        nai_tpointseq_linear_geo((TSequence *) temp, geo, sp) :
+        nai_tgeoseq_discstep_geo((TSequence *) temp, geo, sp);
       break;
     default: /* TSEQUENCESET */
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
-        nai_tgeoseqset_step_geo((TSequenceSet *) temp, geo);
+        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo, sp) :
+        nai_tgeoseqset_step_geo((TSequenceSet *) temp, geo, sp);
   }
+  if (sp)
+    circ_tree_free(earth.tree);
   lwgeom_free(geo);
   return result;
 }
@@ -2730,10 +2915,12 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdistance_tgeo_tgeo reads it
  * @csqlfn #NAI_tgeo_tgeo()
  */
 TInstant *
-nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
@@ -2750,7 +2937,10 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
     TimestampTz t;
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
-    if (nad_tcont_tcont_sync(temp1, temp2, pt_distance_fn(temp1->flags),
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    pt_distance_lfinfo(temp1->flags, spheroid, &lfinfo);
+    if (nad_tcont_tcont_sync(temp1, temp2, &lfinfo,
       &tpointsegm_distance_turnpt, lb, &t) != DBL_MAX)
     {
       /* The closest point may be at an exclusive bound => 3rd arg = false */
@@ -2763,7 +2953,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
   /* Compute the temporal distance, it may be NULL if the points do not
    * intersect on time */
-  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2, spheroid);
   if (dist == NULL)
     return NULL;
 
@@ -2786,11 +2976,13 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * and a geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
  * @csqlfn #NAD_tgeo_geo() #NAD_geo_tgeo()
  * @errval DBL_MAX
  */
 double
-nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
@@ -2810,12 +3002,11 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       return result;
   }
 
-  datum_func2 func = geo_distance_fn(temp->flags);
-  GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
+  GSERIALIZED *traj = tpoint_type(temp->temptype) ?
     tpoint_trajectory(temp, UNARY_UNION_NO) :
     tgeo_traversed_area(temp, UNARY_UNION_NO);
-  double result = DatumGetFloat8(
-    func(PointerGetDatum(traj), PointerGetDatum(gs)));
+  double result = DatumGetFloat8(datum_geo_distance(PointerGetDatum(traj),
+    PointerGetDatum(gs), temp->flags, spheroid));
   pfree(traj);
   return result;
 }
@@ -2826,11 +3017,13 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a geometry/geography
  * @param[in] box Spatiotemporal box/geography
  * @param[in] gs Geometry
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geodetic boxes only, as #stbox_area reads it
  * @csqlfn #NAD_stbox_geo() #NAD_geo_stbox()
  * @errval DBL_MAX
  */
 double
-nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
+nad_stbox_geo(const STBox *box, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
@@ -2838,26 +3031,29 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
       ! ensure_same_spatial_dimensionality_stbox_geo(box, gs))
     return DBL_MAX;
 
-  datum_func2 func = geo_distance_fn(box->flags);
   Datum geo = PointerGetDatum(stbox_geo(box));
-  double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
+  double result = DatumGetFloat8(datum_geo_distance(geo, PointerGetDatum(gs),
+    box->flags, spheroid));
   pfree(DatumGetPointer(geo));
   return result;
 }
 
-static double stbox_spatial_dist(const STBox *box1, const STBox *box2);
+static double stbox_spatial_dist(const STBox *box1, const STBox *box2,
+  bool spheroid);
 
 /**
  * @ingroup meos_internal_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geodetic boxes only, as #stbox_area reads it
  * @return If the time frames do not intersect return infinity
  * @pre The boxes are comparable, both carry a spatial extent, and they have
  * the same spatial dimensionality
  */
 double
-stbox_nad(const STBox *box1, const STBox *box2)
+stbox_nad(const STBox *box1, const STBox *box2, bool spheroid)
 {
   assert(box1); assert(box2);
   assert(ensure_valid_stbox_stbox(box1, box2));
@@ -2872,7 +3068,7 @@ stbox_nad(const STBox *box1, const STBox *box2)
 
   /* The nearest approach distance is the spatial-only distance between the
    * boxes (time already tested above) */
-  return stbox_spatial_dist(box1, box2);
+  return stbox_spatial_dist(box1, box2, spheroid);
 }
 
 /**
@@ -2880,6 +3076,8 @@ stbox_nad(const STBox *box1, const STBox *box2)
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geodetic boxes only, as #stbox_nad reads it
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
@@ -2887,7 +3085,7 @@ stbox_nad(const STBox *box1, const STBox *box2)
  * @csqlfn #NAD_stbox_stbox()
  */
 double
-nad_stbox_stbox(const STBox *box1, const STBox *box2)
+nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_stbox_stbox(box1, box2) ||
@@ -2895,7 +3093,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
     return DBL_MAX;
-  return stbox_nad(box1, box2);
+  return stbox_nad(box1, box2, spheroid);
 }
 
 /**
@@ -2904,6 +3102,8 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * and a spatiotemporal box
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #nad_tgeo_geo reads it
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
@@ -2911,7 +3111,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * @csqlfn #NAD_tgeo_stbox() #NAD_stbox_tgeo()
  */
 double
-nad_tgeo_stbox(const Temporal *temp, const STBox *box)
+nad_tgeo_stbox(const Temporal *temp, const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, DBL_MAX);  VALIDATE_NOT_NULL(box, DBL_MAX);
@@ -2935,15 +3135,14 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
       return DBL_MAX;
   }
 
-  /* Select the distance function to be applied */
-  datum_func2 func = geo_distance_fn(box->flags);
   /* Convert the stbox to a geometry */
   Datum geo = PointerGetDatum(stbox_geo(box));
   /* Compute the result */
-  Datum traj = tpoint_type(temp1->temptype) ? 
+  Datum traj = tpoint_type(temp1->temptype) ?
     PointerGetDatum(tpoint_trajectory(temp1, UNARY_UNION_NO)) :
     PointerGetDatum(tgeo_traversed_area(temp1, UNARY_UNION_NO));
-  double result = DatumGetFloat8(func(traj, geo));
+  double result = DatumGetFloat8(datum_geo_distance(traj, geo, box->flags,
+    spheroid));
 
   pfree(DatumGetPointer(traj));
   pfree(DatumGetPointer(geo));
@@ -2956,6 +3155,8 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
  * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdistance_tgeo_tgeo reads it
  * @csqlfn #NAD_tgeo_tgeo()
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
@@ -2963,7 +3164,7 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
  * @errval DBL_MAX
  */
 double
-nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, DBL_MAX); VALIDATE_TGEO(temp2, DBL_MAX);
@@ -2982,13 +3183,16 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
     TimestampTz t;
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
-    double d = nad_tcont_tcont_sync(temp1, temp2,
-      pt_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, lb, &t);
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    pt_distance_lfinfo(temp1->flags, spheroid, &lfinfo);
+    double d = nad_tcont_tcont_sync(temp1, temp2, &lfinfo,
+      &tpointsegm_distance_turnpt, lb, &t);
     if (d != DBL_MAX)
       return d;
   }
 
-  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2, spheroid);
   if (dist == NULL)
     return DBL_MAX;
 
@@ -3039,10 +3243,15 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * temporal geo and a geometry/geography
  * @param[in] temp Temporal value
  * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #nad_tgeo_geo reads it
  * @csqlfn #Shortestline_tgeo_geo() #Shortestline_geo_tgeo()
+ * @note The shortest line of two geographies is the one of
+ * #geography_shortestline_internal on the model of the earth @p spheroid
  */
 GSERIALIZED *
-shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -3064,17 +3273,25 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       return line;
   }
 
-  GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
+  /* A temporal geography joins the geography from its value at the nearest
+   * approach instant, as #shortestline_tgeo_tgeo does, so the line measures
+   * the nearest approach distance on the same model of the earth */
+  if (geodetic)
+  {
+    TInstant *inst = nai_tgeo_geo(temp, gs, spheroid);
+    if (! inst)
+      return NULL;
+    GSERIALIZED *result = geography_shortestline_internal(
+      DatumGetGserializedP(tinstant_value_p(inst)), gs, spheroid);
+    pfree(inst);
+    return result;
+  }
+
+  GSERIALIZED *traj = tpoint_type(temp->temptype) ?
     tpoint_trajectory(temp, UNARY_UNION_NO) :
     tgeo_traversed_area(temp, UNARY_UNION_NO);
-  GSERIALIZED *result;
-  if (geodetic)
-    result = geography_shortestline_internal(traj, gs, true);
-  else
-  {
-    result = MEOS_FLAGS_GET_Z(temp->flags) ?
-      geom_shortestline3d(traj, gs) : geom_shortestline2d(traj, gs);
-  }
+  GSERIALIZED *result = MEOS_FLAGS_GET_Z(temp->flags) ?
+    geom_shortestline3d(traj, gs) : geom_shortestline2d(traj, gs);
   pfree(traj);
   return result;
 }
@@ -3084,10 +3301,13 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the line connecting the nearest approach point between two
  * temporal geos
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #nad_tgeo_tgeo reads it
  * @csqlfn #Shortestline_tgeo_tgeo()
  */
 GSERIALIZED *
-shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
@@ -3107,14 +3327,17 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   {
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
-    fast = nad_tcont_tcont_sync(temp1, temp2, pt_distance_fn(temp1->flags),
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    pt_distance_lfinfo(temp1->flags, spheroid, &lfinfo);
+    fast = nad_tcont_tcont_sync(temp1, temp2, &lfinfo,
       &tpointsegm_distance_turnpt, lb, &tmin) != DBL_MAX;
   }
 
   Temporal *dist = NULL;
   if (! fast)
   {
-    dist = tdistance_tgeo_tgeo(temp1, temp2);
+    dist = tdistance_tgeo_tgeo(temp1, temp2, spheroid);
     if (dist == NULL)
       return NULL;
     tmin = temporal_min_inst_p(dist)->t;
@@ -3140,7 +3363,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
    * shortest line between the two of them, over the dispatch
    * #shortestline_tgeo_geo makes for the same pair of arguments */
   else if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
-    result = geography_shortestline_internal(gs1, gs2, true);
+    result = geography_shortestline_internal(gs1, gs2, spheroid);
   else
     result = MEOS_FLAGS_GET_Z(temp1->flags) ?
       geom_shortestline3d(gs1, gs2) : geom_shortestline2d(gs1, gs2);
@@ -3158,10 +3381,12 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[in] spheroid True when measuring two geodetic boxes on the
+ * spheroid, false on the sphere, as #stbox_nad reads it
  * @pre The boxes are comparable and both carry a spatial extent
  */
 static double
-stbox_spatial_dist(const STBox *box1, const STBox *box2)
+stbox_spatial_dist(const STBox *box1, const STBox *box2, bool spheroid)
 {
   assert(box1); assert(box2);
   assert(ensure_valid_stbox_stbox(box1, box2));
@@ -3195,15 +3420,16 @@ stbox_spatial_dist(const STBox *box1, const STBox *box2)
     return sqrt(dx * dx + dy * dy + dz * dz);
   }
 
-  /* Spatial extents disjoint, geodetic input → distance on the spheroid.
-   * Drop the time component of each box before serialising to geometry. */
-  datum_func2 func = geo_distance_fn(box1->flags);
+  /* Spatial extents disjoint, geodetic input → distance on the spheroid or
+   * on the sphere. Drop the time component of each box before serialising
+   * to geometry. */
   STBox b1 = *box1, b2 = *box2;
   MEOS_FLAGS_SET_T(b1.flags, false);
   MEOS_FLAGS_SET_T(b2.flags, false);
   Datum g1 = PointerGetDatum(stbox_geo(&b1));
   Datum g2 = PointerGetDatum(stbox_geo(&b2));
-  double result = DatumGetFloat8(func(g1, g2));
+  double result = DatumGetFloat8(datum_geo_distance(g1, g2, box1->flags,
+    spheroid));
   pfree(DatumGetPointer(g1));
   pfree(DatumGetPointer(g2));
   return result;
@@ -3224,7 +3450,7 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return DBL_MAX;
-  return stbox_spatial_dist(box1, box2);
+  return stbox_spatial_dist(box1, box2, true);
 }
 
 /*****************************************************************************
@@ -3456,7 +3682,8 @@ tspatialarr_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
     {
       pairs[k].i = i;
       pairs[k].j = j;
-      pairs[k].bd = geodetic ? 0.0 : stbox_spatial_dist(&bb1[i], &bb2[j]);
+      pairs[k].bd = geodetic ? 0.0 :
+        stbox_spatial_dist(&bb1[i], &bb2[j], true);
       k++;
     }
   qsort(pairs, npairs, sizeof(TspatialarrPair), tspatialarr_pair_cmp);
@@ -3479,13 +3706,15 @@ tspatialarr_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
  * @param[in] arr1,arr2 Arrays of temporal geos (each element must be
  *   non-NULL and share SRID / dimensionality with the rest)
  * @param[in] count1,count2 Array lengths (must be > 0)
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only, as in #stbox_area
  * @return Minimum spatial distance; DBL_MAX on validation failure or on
  *   any empty input array.
  * @csqlfn #Mindistance_tgeoarr_tgeoarr()
  */
 double
 mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
-  const Temporal **arr2, int count2)
+  const Temporal **arr2, int count2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(arr1, DBL_MAX); VALIDATE_NOT_NULL(arr2, DBL_MAX);
@@ -3568,7 +3797,7 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
           tpoint_trajectory(arr2[j], UNARY_UNION_NO) :
           tgeo_traversed_area(arr2[j], UNARY_UNION_NO);
       d = MEOS_FLAGS_GET_GEODETIC(flags) ?
-        geog_distance(traj1[i], traj2[j]) :
+        geog_distance(traj1[i], traj2[j], spheroid) :
         (MEOS_FLAGS_GET_Z(flags) ?
           geom_distance3d(traj1[i], traj2[j]) :
           geom_distance2d(traj1[i], traj2[j]));

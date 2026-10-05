@@ -225,7 +225,10 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 				<para>Devuelve la distancia más pequeña que haya existido &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geo,tgeo,stbox} |=| {geo,tgeo,stbox} → float
+nearestApproachDistance({geography,tgeog,stbox},{geography,tgeog,stbox},
+  spheroid boolean=true) → float
 </programlisting>
+				<para>Para geografías, el operador calcula en el esferoide WGS 84, y la función <varname>nearestApproachDistance</varname> calcula en la esfera, más rápido, si su último argumento es falso.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tgeompoint '[Point(0 0)@2001-01-02, Point(1 1)@2001-01-04,
   Point(0 0)@2001-01-06)' |=| geometry 'Linestring(2 2,2 1,3 1)';
@@ -240,6 +243,13 @@ SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
 SELECT tgeometry '(Point(1 1)@2001-01-01,
   Linestring(3 1,1 1)@2001-01-03]' |=| geometry 'Linestring(1 3,2 2,3 3)';
 -- 1
+SELECT round((tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]' |=|
+  geography 'Point(0 0)')::numeric, 3);
+-- 110574.389
+SELECT round(nearestApproachDistance(
+  tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', false)::numeric, 3);
+-- 111195.080
 </programlisting>
 				<para>El operador <varname>|=|</varname> se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST o SP-GIST (ver la <xref linkend="ttype_indexing" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<para>Cuando un argumento es una caja espaciotemporal que lleva un período, la distancia se mide desde la parte del valor temporal que está dentro de ese período, y el resultado es <varname>NULL</varname> cuando ninguna parte de él lo está. Una caja que no lleva período mide el valor temporal entero.</para>
@@ -257,8 +267,9 @@ SELECT ST_DistanceCPA(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01
 				<para>Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachInstant({geo,tgeo},{geo,tgeo}) → tgeo
+nearestApproachInstant({geography,tgeog},{geography,tgeog},spheroid boolean=true) → tgeog
 </programlisting>
-				<para>La función sólo devuelve el primer instante que encuentre si hay más de uno. El instante resultante puede tener un límite exclusivo.</para>
+				<para>La función sólo devuelve el primer instante que encuentre si hay más de uno. El instante resultante puede tener un límite exclusivo. Para geografías, los puntos más cercanos de cada segmento se localizan en la esfera y sus distancias se comparan en el esferoide WGS 84 por defecto, como la función <varname>ST_Distance</varname> de PostGIS mide una distancia entre geografías. Si el último argumento es falso, se comparan en la esfera.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(nearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
   Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
@@ -273,6 +284,12 @@ SELECT asText(nearestApproachInstant(tgeometry
   '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
   '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
 -- LINESTRING Z (0 0 0,1 1 1)@2001-01-02
+SELECT asText(nearestApproachInstant(tgeogpoint '{Point(0 1)@2001-01-01,
+  Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
+-- POINT(0 1)@2001-01-01
+SELECT asText(nearestApproachInstant(tgeogpoint '{Point(0 1)@2001-01-01,
+  Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));
+-- POINT(0.998 0)@2001-01-02
 </programlisting>
 				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS sólo proporciona la marca de tiempo como se muestra a continuación.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -289,13 +306,18 @@ SELECT to_timestamp(ST_ClosestPointOfApproach( tgeompoint '[Point(0 0 0)@2001-01
 				<para>Devuelve la distancia espacial mínima entre dos conjuntos de geometrías temporales, ignorando el tiempo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minDistance(tgeo[],tgeo[]) → float
+minDistance(tgeog[],tgeog[],spheroid boolean=true) → float
 </programlisting>
-				<para>La distancia se mide entre las trayectorias descartando el tiempo, igual a <varname>ST_Distance</varname> de la trayectoria de cada argumento, y el resultado es el mínimo sobre todos los pares tomados de los dos conjuntos. Por lo tanto, dos valores que siguen el mismo camino en momentos distintos están a distancia cero. La cantidad sincronizada en el tiempo, que compara dos argumentos solo en los instantes que comparten, es <link linkend="tgeo_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>. Un solo par es el caso de un elemento.</para>
+				<para>La distancia se mide entre las trayectorias descartando el tiempo, igual a <varname>ST_Distance</varname> de la trayectoria de cada argumento, y el resultado es el mínimo sobre todos los pares tomados de los dos conjuntos. Por lo tanto, dos valores que siguen el mismo camino en momentos distintos están a distancia cero. La cantidad sincronizada en el tiempo, que compara dos argumentos solo en los instantes que comparten, es <link linkend="tgeo_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>. Un solo par es el caso de un elemento. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minDistance(ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
   ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
 -- 0
+SELECT round(minDistance(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint 'Point(0 0)@2001-01-01'], false)::numeric, 3);
+-- 111195.080
 </programlisting>
 			</listitem>
 
@@ -326,8 +348,10 @@ tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer,periods tstzspa
 tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
+eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
+aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
 </programlisting>
-				<para>Cada función resuelve el producto cruzado podado de los dos arreglos de entrada en una sola llamada y devuelve los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares que cumplen la relación. Las funciones con prefijo <varname>e</varname> devuelven los pares para los que la relación se cumple alguna vez, las funciones con prefijo <varname>a</varname> los pares para los que se cumple siempre, y las funciones con prefijo <varname>t</varname> devuelven además los períodos durante los cuales se cumple. La caja espaciotemporal de cada entrada se usa como prefiltro de caja envolvente, de modo que la relación exacta se calcula solo sobre los pares candidatos que sobreviven, y los pares cuyas extensiones temporales no se solapan se excluyen, igual que en las relaciones escalares. Las funciones están definidas para puntos temporales y geometrías temporales tanto en el caso planar como en el geodésico, excepto la relación de toca, que está definida solo para geometrías planares. Los índices se relacionan con las identidades originales mediante un <varname>array_agg(identidad ORDER BY ...)</varname> paralelo.</para>
+				<para>Cada función resuelve el producto cruzado podado de los dos arreglos de entrada en una sola llamada y devuelve los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares que cumplen la relación. Las funciones con prefijo <varname>e</varname> devuelven los pares para los que la relación se cumple alguna vez, las funciones con prefijo <varname>a</varname> los pares para los que se cumple siempre, y las funciones con prefijo <varname>t</varname> devuelven además los períodos durante los cuales se cumple. La caja espaciotemporal de cada entrada se usa como prefiltro de caja envolvente, de modo que la relación exacta se calcula solo sobre los pares candidatos que sobreviven, y los pares cuyas extensiones temporales no se solapan se excluyen, igual que en las relaciones escalares. Las funciones están definidas para puntos temporales y geometrías temporales tanto en el caso planar como en el geodésico, excepto la relación de toca, que está definida solo para geometrías planares. Los índices se relacionan con las identidades originales mediante un <varname>array_agg(identidad ORDER BY ...)</varname> paralelo. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT i, j FROM eDwithinPairs(
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
@@ -350,8 +374,9 @@ SELECT i, j FROM aDisjointPairs(
 				<para>Devuelve la línea que conecta el punto de aproximación más cercano &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shortestLine({geo,tgeo},{geo,tgeo}) → geo
+shortestLine({geography,tgeog},{geography,tgeog},spheroid boolean=true) → geography
 </programlisting>
-				<para>La función sólo devolverá la primera línea que encuentre si hay más de una.</para>
+				<para>La función sólo devolverá la primera línea que encuentre si hay más de una. Para geografías, la línea une los puntos del instante de máxima aproximación, que decide el esferoide WGS 84 por defecto y la esfera si el último argumento es falso.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01, Point(3 1)@2001-01-03]',
   geometry 'Linestring(1 3,2 2,3 3)'));
@@ -363,6 +388,12 @@ SELECT ST_AsText(shortestLine(tgeometry
   '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
   '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
 -- LINESTRING Z (0 0 0,2 0 0)
+SELECT ST_AsText(shortestLine(tgeogpoint '{Point(0 1)@2001-01-01,
+  Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
+-- LINESTRING(0 1,0 0)
+SELECT ST_AsText(shortestLine(tgeogpoint '{Point(0 1)@2001-01-01,
+  Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));
+-- LINESTRING(0.998 0,0 0)
 </programlisting>
 				<para>La función <varname>shortestLine</varname> se puede utilizar para obtener el resultado proporcionado por la función PostGIS <varname>ST_CPAWithin</varname> cuando ambos argumentos son trayectorias como se muestra a continuación.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -390,7 +421,9 @@ SELECT ST_CPAWithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-0
 				<para>Devuelve la distancia temporal &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geo,tgeo} &lt;-&gt; {geo,tgeo} → tfloat
+tDistance({geography,tgeog},{geography,tgeog},spheroid boolean=true) → tfloat
 </programlisting>
+				<para>Para geografías, el operador calcula en el esferoide WGS 84, y la función <varname>tDistance</varname> calcula en la esfera, más rápido, si su último argumento es falso.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)' &lt;-&gt;
   geometry 'Point(0 1)';
@@ -404,6 +437,12 @@ SELECT tgeompoint '[Point(0 1)@2001-01-01, Point(0 0)@2001-01-03)' &lt;-&gt;
 SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02]' &lt;-&gt;
   tgeometry '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-02)';
 -- Interp=Step;[1@2001-01-01, 1@2001-01-02]
+SELECT round(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]' &lt;-&gt;
+  geography 'Point(0 0)', 3);
+-- [110574.389@2001-01-01, 221149.453@2001-01-02]
+SELECT round(tDistance(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', false), 3);
+-- [111195.08@2001-01-01, 222390.159@2001-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -484,13 +523,22 @@ SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
+eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
+aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
 </programlisting>
+					<para>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
 -- true
 SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
+-- false
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', 110800);
+-- true
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', 110800, false);
 -- false
 </programlisting>
 				</listitem>

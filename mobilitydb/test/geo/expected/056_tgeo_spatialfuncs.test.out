@@ -1704,3 +1704,15 @@ FROM temp;
  t
 (1 row)
 
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}'), 6);
+                         astext                          
+---------------------------------------------------------
+ {POINT(0.250806 0.750847)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);
+                         astext                          
+---------------------------------------------------------
+ {POINT(0.249967 0.750007)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
