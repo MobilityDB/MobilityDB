@@ -103,7 +103,8 @@ Each item is measured; the note named gives the evidence.
    another member's edge; reading every member's edges in one arrangement answers them
    (MobilityDB #2961, merged as `100c77a8d4`). And 76 of 1500 answers spell a hole as a shell that touches itself, which covers the
    right points and is not a valid OGC polygon; MobilityDB #2959, merged as `42ebd6312b`, writes 8 of them as a shell and
-   a hole.
+   a hole. MobilityDB #2985 splits a ring the walk closes through a node twice into the loops it
+   is made of, and no answer then holds a ring touching itself.
 3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
    MobilityDB #2977, merged as `4c4457d2ec`, adds one, which fails where any input reaches a
    fall-back. MobilityDB #2982, merged as `4ba7818277`, decides a line crossing an arc within the rounding of its end by the
