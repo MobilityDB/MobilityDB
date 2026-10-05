@@ -6431,10 +6431,32 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
     pfree(merged);
     return result;
   }
-  /* lwcollection_construct() takes ownership of the geometry array, so merged
-   * must NOT be freed after this call */
-  LWCOLLECTION *result = lwcollection_construct(MULTISURFACETYPE, srid, NULL,
-    nmerged, merged);
+  /* The merge of two surfaces can answer several, where their boundaries meet
+   * without their interiors overlapping along part of them, so a member may
+   * itself be a collection of surfaces. The collection lists the surfaces
+   * every member holds, as #buffer_outer_without_filled_holes() builds one.
+   * It is built as a GEOMETRYCOLLECTION, which holds a TRIANGLE beside a curve
+   * polygon where a MULTISURFACE refuses one, and #meos_areal_union() names
+   * the collection after the surfaces it holds */
+  LWCOLLECTION *result = lwcollection_construct_empty(COLLECTIONTYPE, srid,
+    0, 0);
+  for (uint32_t k = 0; k < nmerged; k++)
+  {
+    uint8_t type = merged[k]->type;
+    if (type == MULTISURFACETYPE || type == MULTIPOLYGONTYPE)
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) merged[k];
+      for (uint32_t m = 0; m < col->ngeoms; m++)
+        lwcollection_add_lwgeom(result, lwgeom_clone_deep(col->geoms[m]));
+      lwgeom_free(merged[k]);
+    }
+    else
+      lwcollection_add_lwgeom(result, merged[k]);
+  }
+  pfree(merged);
+  /* Every member is a surface, so the collection is the multisurface a caller
+   * reads it as */
+  result->type = MULTISURFACETYPE;
   return lwcollection_as_lwgeom(result);
 }
 
