@@ -189,7 +189,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 7 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
+**State.** Commits 1 to 8 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -221,6 +221,13 @@ geometry of the dimension of a boundary. `points(geometry)` and `geoPoints(geome
 name of their MEOS functions: the public `geo_points` answers the MultiPoint of `ST_Points`, the
 meaning of `geoPoints`, while its siblings `tpose_points`, `tcbuffer_points` and
 `trgeometry_points` answer the set of the distinct points, the meaning of `points`.
+Commit 8 (`251786d436`): `collect(geometry[])` (Spark and Flink `geoCollect`) and
+`makeLine(geometry[])` over `geo_collect_garray` and `geo_makeline_garray`, and the casts
+`geomset::geometry` and `geogset::geography` over the new MEOS `geoset_to_geo`, each answering as
+`ST_Collect` and `ST_MakeLine` on seven arrays; `geo_collect_garray` answers an array of one
+element with its collection of one element, as `ST_Collect` does, the internal `geoarr_collect`
+keeping the single value of a trajectory, and `geo_makeline_garray` frees every geometry it read
+when the SRIDs differ and raises an array without a point or a line as a notice.
 Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 8
-to 10.
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 9
+and 10.
