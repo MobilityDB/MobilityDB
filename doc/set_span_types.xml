@@ -516,6 +516,28 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00, 2001-01-01 08
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geoset_convert">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geography</varname></primary></indexterm>
+				<para>Convert a geo set into the collection of its values</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geomset::geometry
+geogset::geography
+geometry(geomset) → geometry
+geography(geogset) → geography
+</programlisting>
+				<para>The collection takes its type from the types of the values alone, as the PostGIS function <varname>ST_Collect</varname> builds it from them, so a set of points, a set of one point included, answers a multipoint.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry);
+-- MULTIPOINT((1 1),(2 2))
+SELECT ST_AsText(geomset '{"Point(1 1)"}'::geometry);
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="span_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>

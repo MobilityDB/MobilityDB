@@ -409,3 +409,28 @@ SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
 SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Constructors
+-- A collection takes its type from the types of the geometries alone, as
+-- ST_Collect gives it, a single point included, and a line joins the points
+-- and lines of an array, as ST_MakeLine joins them; an empty array answers NULL
+-------------------------------------------------------------------------------
+
+WITH a(arr) AS (VALUES
+  (ARRAY[geometry 'Point(1 1)']),
+  (ARRAY[geometry 'Linestring(0 0,1 1)']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1 1)']),
+  (ARRAY[geometry 'MultiPoint(1 1,2 2)']),
+  (ARRAY[geometry 'Polygon((0 0,1 0,1 1,0 0))', geometry 'Polygon((2 2,3 2,3 3,2 2))']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)', geometry 'Linestring(2 2,3 0)']))
+SELECT ST_AsText(collect(arr)), ST_AsText(ST_Collect(arr)) = ST_AsText(collect(arr)) AS collect_agrees,
+  ST_AsText(makeLine(arr)) IS NOT DISTINCT FROM ST_AsText(ST_MakeLine(arr)) AS makeline_agrees
+FROM a;
+SELECT collect(ARRAY[]::geometry[]) IS NULL, makeLine(ARRAY[]::geometry[]) IS NULL;
+/* Errors */
+SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point(2 2)', geometry 'SRID=3812;Point(3 3)']);
+SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
+
+-------------------------------------------------------------------------------

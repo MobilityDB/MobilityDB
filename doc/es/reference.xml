@@ -238,6 +238,9 @@
 					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convierte un valor de conjunto en un valor de conjunto de rangos</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geoset_convert"><varname>::</varname>, <varname>geometry</varname>, <varname>geography</varname></link>: Convierte un conjunto geo en la colección de sus valores</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convierte un valor de rango a un valor de conjunto de rangos</para>
 				</listitem>
 				<listitem>
@@ -991,6 +994,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Devuelve la colección de un arreglo de geometrías o la línea que las une</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>

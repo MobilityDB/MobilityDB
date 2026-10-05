@@ -661,7 +661,7 @@ cbufferarr_to_geom(const Cbuffer **cbarr, int count)
     }
     geoms[i] = cbuffer_to_geom(cbarr[i]);
   }
-  GSERIALIZED *result = geo_collect_garray(geoms, count);
+  GSERIALIZED *result = geoarr_collect(geoms, count);
   pfree_array((void **) geoms, count);
   return result;
 }

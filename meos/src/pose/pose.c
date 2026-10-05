@@ -1343,7 +1343,7 @@ posearr_points(Pose **posearr, int count)
     }
     geoms[i] = pose_to_point(posearr[i]);
   }
-  GSERIALIZED *result = geo_collect_garray(geoms, count);
+  GSERIALIZED *result = geoarr_collect(geoms, count);
   pfree_array((void **) geoms, count);
   return result;
 }

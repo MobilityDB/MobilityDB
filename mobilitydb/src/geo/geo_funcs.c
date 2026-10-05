@@ -643,6 +643,64 @@ Line_locate_point(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Constructors
+ *****************************************************************************/
+
+/**
+ * @brief Return the geometry the function builds from an array of geometries,
+ * or NULL for an empty array, as the PostGIS functions answer it
+ */
+static Datum
+Geoarr_construct(FunctionCallInfo fcinfo,
+  GSERIALIZED * (*func)(GSERIALIZED **, int))
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  Datum *datumarr = datumarr_extract(array, &count);
+  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+    gsarr[i] = (GSERIALIZED *) PG_DETOAST_DATUM(datumarr[i]);
+  GSERIALIZED *result = func(gsarr, count);
+  pfree(gsarr); pfree(datumarr);
+  PG_FREE_IF_COPY(array, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_collect_garray(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_collect_garray);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the collection of an array of geometries
+ * @sqlfn collect()
+ * @altsqlfn geoCollect()
+ */
+Datum
+Geo_collect_garray(PG_FUNCTION_ARGS)
+{
+  return Geoarr_construct(fcinfo, &geo_collect_garray);
+}
+
+PGDLLEXPORT Datum Geo_makeline_garray(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_makeline_garray);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the line joining an array of points or lines
+ * @sqlfn makeLine()
+ */
+Datum
+Geo_makeline_garray(PG_FUNCTION_ARGS)
+{
+  return Geoarr_construct(fcinfo, &geo_makeline_garray);
+}
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

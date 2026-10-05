@@ -1552,6 +1552,7 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
  * @param[in] gsarr Array of geometries/geographies
  * @param[in] nelems Number of elements in the array
  * @note PostGIS function: @p LWGEOM_collect_garray(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_collect_garray()
  */
 GSERIALIZED *
 geo_collect_garray(GSERIALIZED **gsarr, int nelems)
@@ -1560,10 +1561,6 @@ geo_collect_garray(GSERIALIZED **gsarr, int nelems)
   VALIDATE_NOT_NULL(gsarr, NULL);
   if (! ensure_positive(nelems))
     return NULL;
-
-  /* Singleton array */
-  if (nelems == 1)
-    return geo_copy(gsarr[0]);
 
   uint32 outtype = 0;
   int count = 0;
@@ -1638,12 +1635,30 @@ geo_collect_garray(GSERIALIZED **gsarr, int nelems)
 }
 
 /**
+ * @ingroup meos_internal_geo_base_spatial
+ * @brief Return the one geometry of an array of a single element, and the
+ * collection of the elements otherwise
+ * @details The trajectories, the traversed areas and the conversions of an
+ * array answer a single value as it is, where #geo_collect_garray collects it
+ * into a collection of one element, as PostGIS @p ST_Collect does
+ * @param[in] gsarr Array of geometries/geographies
+ * @param[in] count Number of elements in the array
+ */
+GSERIALIZED *
+geoarr_collect(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 0);
+  return count == 1 ? geo_copy(gsarr[0]) : geo_collect_garray(gsarr, count);
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return a line from an array of geometries/geographies
  * @details Array elements that are not points or linestrings are discarded
  * @param[in] gsarr Array of geometries/geographies
  * @param[in] count Number of elements in the array
  * @note PostGIS function: @p LWGEOM_makeline_garray(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_makeline_garray()
  */
 GSERIALIZED *
 geo_makeline_garray(GSERIALIZED **gsarr, int count)
@@ -1675,7 +1690,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
       if (! ensure_same_srid(srid, geoms[ngeoms - 1]->srid))
       {
         for (int j = 0; j < ngeoms; j++)
-          lwgeom_free(geoms[i]);
+          lwgeom_free(geoms[j]);
         pfree(geoms);
         return NULL;
       }
@@ -1685,11 +1700,9 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   /* Return null on 0-points input array */
   if (ngeoms == 0)
   {
-    /* TODO: should we return LINESTRING EMPTY here ? */
-    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(NOTICE, MEOS_ERR_INVALID_ARG_VALUE,
       "No points or linestrings in input array");
-    for (int i = 0; i < ngeoms; i++)
-      lwgeom_free(geoms[i]);
+    pfree(geoms);
     return NULL;
   }
   LWGEOM *outlwg = (LWGEOM *) lwline_from_lwgeom_array(srid, ngeoms, geoms);

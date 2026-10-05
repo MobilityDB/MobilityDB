@@ -627,6 +627,28 @@ spatialset_to_stbox(const Set *s)
   return result;
 }
 
+/**
+ * @ingroup meos_geo_set_conversion
+ * @brief Convert a geo set into the collection of its values
+ * @details The collection is the one #geo_collect_garray builds, whose type
+ * follows from the types of the values alone, as PostGIS @p ST_Collect builds
+ * it, so a set of points, a set of one point included, answers a multipoint
+ * @param[in] s Set
+ * @csqlfn #Geoset_to_geo()
+ */
+GSERIALIZED *
+geoset_to_geo(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s, NULL);
+  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * s->count);
+  for (int i = 0; i < s->count; i++)
+    gsarr[i] = DatumGetGserializedP(SET_VAL_N(s, i));
+  GSERIALIZED *result = geo_collect_garray(gsarr, s->count);
+  pfree(gsarr);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**

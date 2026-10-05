@@ -201,6 +201,19 @@ CREATE FUNCTION lineLocatePoint(geometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Constructors
+ *****************************************************************************/
+
+CREATE FUNCTION collect(geometry[])
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_collect_garray'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION makeLine(geometry[])
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_makeline_garray'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

@@ -499,6 +499,7 @@ extern Set *geoset_make(GSERIALIZED **values, int count);
 /* Conversion functions */
 
 extern Set *geo_to_set(const GSERIALIZED *gs);
+extern GSERIALIZED *geoset_to_geo(const Set *s);
 
 /* Accessor functions */
 

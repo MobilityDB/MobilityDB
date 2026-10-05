@@ -212,3 +212,12 @@ SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Poin
 SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Point(0 0)', false)::numeric, 3);
 SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}')::numeric, 3);
 SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}', false)::numeric, 3);
+
+-- A geo set casts to the collection of its values, as ST_Collect builds it from
+-- them, a set of one point answering a multipoint
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Point(2 2)"}'));
+SELECT ST_AsText(geomset '{"Point(1 1)"}'::geometry);
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
+SELECT ST_AsText(geography(geogset '{"Point(1 1)", "Point(2 2)"}'));
+SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry) =
+  ST_AsText(ST_Collect(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));

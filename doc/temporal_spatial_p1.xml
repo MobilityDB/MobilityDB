@@ -289,6 +289,25 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_constructors">
+				<indexterm significance="normal"><primary><varname>collect</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>makeLine</varname></primary></indexterm>
+				<para>Return the collection of an array of geometries or the line joining them</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+collect(geometry[]) → geometry
+makeLine(geometry[]) → geometry
+</programlisting>
+				<para>A collection takes its type from the types of the geometries alone, as the PostGIS function <varname>ST_Collect</varname> gives it, so an array of one point answers a multipoint, and a line joins the points and lines of the array in their order, as <varname>ST_MakeLine</varname> joins them. An empty array answers <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)']));
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1 1)']));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
+-- LINESTRING(1 1,2 2)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Return the region two geometries share</para>
