@@ -859,54 +859,18 @@ SELECT ST_AsText(shortestLine(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_similarity">
 		<title>Similitud</title>
 
-		<para>Las funciones de similitud comparan dos geometrías rígidas temporales a través de sus trayectorias del centroide.</para>
+		<para>Una geometría rígida temporal no tiene una distancia de similitud propia. Comparar dos poses combina una diferencia de posiciones con una diferencia de orientaciones, lo que requiere una longitud que una pose no tiene, y las distancias que admite un cuerpo rígido, como la distancia de Hausdorff de las formas ubicadas, el mayor desplazamiento de un punto del cuerpo o el área de su diferencia simétrica, ordenan los pares de valores de manera distinta. Las trayectorias de los puntos de referencia de dos geometrías rígidas temporales, los orígenes de sus marcos locales, se comparan con las funciones de similitud de los puntos temporales sobre su conversión a <varname>tgeompoint</varname>.</para>
 
 		<itemizedlist>
-			<listitem xml:id="trgeometry_similarityDistance">
-				<indexterm significance="normal"><primary><varname>hausdorffDistance</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
-				<para>Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta, o la distancia de deformación dinámica del tiempo (Dynamic Time Warp) entre dos geometrías rígidas temporales</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-hausdorffDistance(trgeometry,trgeometry) → float
-frechetDistance(trgeometry,trgeometry) → float
-dynTimeWarpDistance(trgeometry,trgeometry) → float
-</programlisting>
+			<listitem>
+				<para>Compara las trayectorias de los puntos de referencia de dos geometrías rígidas temporales</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(frechetDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-03]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 2),0)@2001-01-03]'), 6);
+SELECT round(frechetDistance(
+  tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-03]'),
+  tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 2),0)@2001-01-03]')), 6);
 -- 2.828427
-SELECT round(hausdorffDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-03]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 2),0)@2001-01-03]'), 6);
--- 2
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="trgeometry_similarityPath">
-				<indexterm significance="normal"><primary><varname>frechetDistancePath</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
-				<para>Devuelve los pares de correspondencia entre dos geometrías rígidas temporales con respecto a la distancia de Fréchet discreta o a la distancia de deformación dinámica del tiempo (Dynamic Time Warp), como un conjunto de pares de índices de instante <varname>(i,j)</varname></para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-frechetDistancePath(trgeometry,trgeometry) → {(i,j)}
-dynTimeWarpPath(trgeometry,trgeometry) → {(i,j)}
-</programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT frechetDistancePath(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(20 0), 0.0)@2001-01-02]');
--- (0,0)
--- (1,1)
-SELECT dynTimeWarpPath(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(20 0), 0.0)@2001-01-02]');
--- (0,0)
--- (1,1)
 </programlisting>
 			</listitem>
 		</itemizedlist>

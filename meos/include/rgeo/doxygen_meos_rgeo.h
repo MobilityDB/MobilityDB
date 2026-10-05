@@ -84,10 +84,6 @@
  * @ingroup meos_rgeo
  * @brief Tile functions for temporal rigid geometries
  *
- * @defgroup meos_rgeo_analytics_similarity Similarity functions
- * @ingroup meos_rgeo
- * @brief Similarity functions for temporal rigid geometries
- *
  * @defgroup meos_rgeo_bbox Bounding box functions
  * @ingroup meos_rgeo
  * @brief Bounding box functions for temporal rigid geometries

@@ -115,8 +115,4 @@
  * @defgroup mobilitydb_rgeo_tile Tile functions
  * @ingroup mobilitydb_rgeo
  * @brief Tile functions for temporal rigid geometries
- *
- * @defgroup mobilitydb_rgeo_analytics_similarity Similarity functions
- * @ingroup mobilitydb_rgeo
- * @brief Similarity functions for temporal rigid geometries
  */

@@ -2590,17 +2590,6 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Similitud</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="trgeometry_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta, o la distancia de deformación dinámica del tiempo (Dynamic Time Warp) entre dos geometrías rígidas temporales</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Devuelve los pares de correspondencia entre dos geometrías rígidas temporales con respecto a la distancia de Fréchet discreta o a la distancia de deformación dinámica del tiempo (Dynamic Time Warp), como un conjunto de pares de índices de instante <varname>(i,j)</varname></para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
 			<title>Operaciones de caja delimitadora</title>
 			<itemizedlist>
 				<listitem>
