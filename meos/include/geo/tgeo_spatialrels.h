@@ -70,6 +70,7 @@ extern datum_func2 geo_intersects_fn_geo(int16 flags1, uint8_t flags2);
 extern datum_func3 geo_dwithin_fn(int16 flags1, int16 flags2);
 extern datum_func3 pt_dwithin_fn(int16 flags1, int16 flags2);
 extern datum_func3 geo_dwithin_fn_geo(int16 flags1, uint8_t flags2);
+extern datum_func3 pt_dwithin_fn_geo(int16 flags1, uint8_t flags2);
 
 /*****************************************************************************/
 
