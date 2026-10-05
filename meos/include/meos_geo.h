@@ -476,7 +476,9 @@ extern Set *geogset_in(const char *str);
 extern Set *geomset_in(const char *str);
 extern char *spatialset_out(const Set *s, int maxdd);
 extern char *spatialset_as_text(const Set *set, int maxdd);
+extern uint8_t *spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out);
 extern char *spatialset_as_ewkt(const Set *set, int maxdd);
+extern char *spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out);
 
 /* Constructor functions */
 
@@ -518,6 +520,8 @@ extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
 
 /* Input/output functions */
 
+extern uint8_t *stbox_as_ewkb(const STBox *box, uint8_t variant, size_t *size_out);
+extern char *stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern char *stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern uint8_t *stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern STBox *stbox_from_hexwkb(const char *hexwkb);
@@ -641,7 +645,9 @@ extern Temporal *tgeometry_from_mfjson(const char *str);
 extern Temporal *tgeometry_in(const char *str);
 extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
+extern uint8_t *tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
+extern char *tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd);
 
 /* Constructor functions */

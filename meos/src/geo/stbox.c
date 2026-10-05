@@ -349,6 +349,44 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
+/**
+ * @ingroup meos_geo_box_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a spatiotemporal box
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] box Spatiotemporal box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Stbox_as_ewkb()
+ */
+uint8_t *
+stbox_as_ewkb(const STBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(box), T_STBOX,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_geo_box_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal box
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] box Spatiotemporal box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Stbox_as_hexewkb()
+ */
+char *
+stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

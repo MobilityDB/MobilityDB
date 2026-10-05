@@ -447,10 +447,16 @@
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="stbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja espaciotemporal</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Entrada desde la representación de texto conocido (WKT)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="stboxFromEWKB"><varname>stboxFromEWKB</varname>, <varname>stboxFromHexEWKB</varname></link>: Entrada de una caja espaciotemporal desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3518,7 +3524,13 @@
 						<para><link linkend="tpcbox_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB) de una caja de nube de puntos</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja de nube de puntos</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcboxFromBinary"><varname>tpcboxFromBinary</varname>, <varname>tpcboxFromHexWKB</varname></link>: Entrada de una caja de nube de puntos desde la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromEWKB"><varname>tpcboxFromEWKB</varname>, <varname>tpcboxFromHexEWKB</varname></link>: Entrada de una caja de nube de puntos desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (WKT)</para>

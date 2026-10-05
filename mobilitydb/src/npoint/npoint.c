@@ -221,7 +221,7 @@ PG_FUNCTION_INFO_V1(Npoint_from_wkb);
  * @ingroup mobilitydb_npoint_base_inout
  * @brief Return a network point from its Well-Known Binary (WKB)
  * representation
- * @sqlfn npointFromBinary()
+ * @sqlfn npointFromBinary(), npointFromEWKB()
  */
 Datum
 Npoint_from_wkb(PG_FUNCTION_ARGS)

@@ -351,6 +351,8 @@ extern Set *pcpatch_union_transfn(Set *state, const Pcpatch *pa);
 
 /* Input and output */
 
+extern uint8_t *tpcbox_as_ewkb(const TPCBox *box, uint8_t variant, size_t *size_out);
+extern char *tpcbox_as_hexewkb(const TPCBox *box, uint8_t variant, size_t *size_out);
 extern char *tpcbox_as_hexwkb(const TPCBox *box, uint8_t variant, size_t *size_out);
 extern uint8_t *tpcbox_as_wkb(const TPCBox *box, uint8_t variant, size_t *size_out);
 extern TPCBox *tpcbox_from_hexwkb(const char *hexwkb);

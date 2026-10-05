@@ -89,8 +89,11 @@ SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)
 SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
 SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
 
-SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
-SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
+SELECT stboxFromEWKB(asEWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
+SELECT stboxFromHexEWKB(asHexEWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
+
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromEWKB(asEWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexEWKB(asHexEWKB(b)) <> b;
 
 SELECT stboxFromText('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbox;

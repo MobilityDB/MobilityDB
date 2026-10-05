@@ -216,7 +216,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_from_wkb);
  * @ingroup mobilitydb_cbuffer_base_inout
  * @brief Return a circular buffer from its Well-Known Binary (WKB)
  * representation
- * @sqlfn cbufferFromBinary()
+ * @sqlfn cbufferFromBinary(), cbufferFromEWKB()
  */
 Datum
 Cbuffer_from_wkb(PG_FUNCTION_ARGS)

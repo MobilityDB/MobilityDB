@@ -507,7 +507,10 @@ TSpatial<T> family inherits them, those whose SRID is derived rather than set
 (`tnpoint` from the `ways` network, `tpcpoint`/`tpcpatch` from the schema of their
 `pcid`) included: a family whose temporal types are in the `tspatial` class and that
 carries a plain form carries its `E` twin, which `generate.py --validate` enforces
-(`repr_missing_e_twins`). Conventions to reproduce verbatim:
+(`repr_missing_e_twins`). A box writes and reads its binary forms as every spatial type
+does: `tpcbox_base` carries `asEWKB`, `asHexEWKB`, `FromEWKB` and `FromHexEWKB` beside
+the plain WKB that omits the SRID, and no EWKT, its text writing the SRID. Conventions
+to reproduce verbatim:
 `maxdecimaldigits integer DEFAULT 15` on float/coordinate-bearing types only;
 `endian text DEFAULT ''` on `asBinary`/`asHexWKB`; the value argument unnamed on
 every representation function, `asMFJSON(<temp>, options integer DEFAULT 0, …)`

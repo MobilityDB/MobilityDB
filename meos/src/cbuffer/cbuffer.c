@@ -464,6 +464,44 @@ cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
+/**
+ * @ingroup meos_cbuffer_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a circular buffer
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] cb Circular buffer
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Cbuffer_as_ewkb()
+ */
+uint8_t *
+cbuffer_as_ewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(cb), T_CBUFFER,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_cbuffer_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a circular buffer
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] cb Circular buffer
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Cbuffer_as_hexewkb()
+ */
+char *
+cbuffer_as_hexewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(cb), T_CBUFFER,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
