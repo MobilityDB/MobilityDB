@@ -126,6 +126,8 @@ jobs:
           ./tbl_tcbuffer_geometry
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos -lm
           ./tbl_tcbuffer_tcbuffer
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cbuffer_exact_test cbuffer_exact_test.c -L/usr/local/lib -lmeos -lm
+          ./cbuffer_exact_test
           # The DE-9IM harness reaches the engine through the public geom_relate,
           # so it builds against the installed library like every program here
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o relate_diff relate_diff.c -L/usr/local/lib -lmeos -lm

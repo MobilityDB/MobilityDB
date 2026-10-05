@@ -172,6 +172,31 @@ extern double cross_product_exact(double ax, double ay, double bx, double by,
 extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
 extern int point_within_distance_sign_exact(double px, double py, double qx,
   double qy, double d);
+
+/* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
+ * with the double nearest to it and a bound on the error of that double */
+#define EXACT_SUM_MAXTERMS 4
+typedef struct
+{
+  double e[EXACT_SUM_MAXTERMS];  /**< Components, increasing in magnitude */
+  int n;                         /**< Number of components */
+  double approx;                 /**< Double nearest to the sum */
+  double err;                    /**< Bound on the error of approx */
+} ExactSum;
+
+/* A term of a polynomial in exact sums: a coefficient, exactly representable,
+ * times the product of up to POLY_TERM_MAXDEG exact sums given by index */
+#define POLY_TERM_MAXDEG 4
+typedef struct
+{
+  double coef;                   /**< Coefficient */
+  int deg;                       /**< Number of factors */
+  int sum[POLY_TERM_MAXDEG];     /**< Indices of the exact sums multiplied */
+} PolyTerm;
+
+extern void exact_sum_set(ExactSum *sum, const double *terms, int nterms);
+extern int polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+  int nterms);
 extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
   const POINT3D *r);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);

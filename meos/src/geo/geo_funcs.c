@@ -1005,6 +1005,168 @@ expansion_product(int elen, const double *e, int flen, const double *f,
   return hlen;
 }
 
+/*****************************************************************************
+ * The sign of a polynomial in exact sums of doubles
+ *****************************************************************************/
+
+/**
+ * @brief Compress an expansion into one of the same value with fewer
+ * components, and return its length
+ * @details The components are summed from the largest down and then from the
+ * smallest up, each rounding error kept (Shewchuk's Compress), so the result
+ * is again an expansion whose last component carries the sign of the whole
+ * @param[out] h Room for elen components, distinct from @p e
+ */
+static int
+compress_expansion(int elen, const double *e, double *h)
+{
+  int bottom = elen - 1;
+  double q = e[bottom];
+  for (int i = elen - 2; i >= 0; i--)
+  {
+    double qnew, err;
+    two_sum(q, e[i], &qnew, &err);
+    if (err != 0.0)
+    {
+      h[bottom--] = qnew;
+      q = err;
+    }
+    else
+      q = qnew;
+  }
+  h[bottom] = q;
+  int top = 0;
+  for (int i = bottom + 1; i < elen; i++)
+  {
+    double qnew, err;
+    two_sum(h[i], q, &qnew, &err);
+    if (err != 0.0)
+      h[top++] = err;
+    q = qnew;
+  }
+  h[top++] = q;
+  return top;
+}
+
+/**
+ * @brief Set an exact sum to the sum of doubles
+ * @details The sum is held exactly as an expansion (#grow_expansion), with the
+ * double nearest to it and a bound on the error of that double, which the
+ * filter of #polynomial_sign_exact reads
+ * @param[out] sum Exact sum
+ * @param[in] terms Doubles to add, a subtraction given as a negated term
+ * @param[in] nterms Number of terms, at most EXACT_SUM_MAXTERMS
+ */
+void
+exact_sum_set(ExactSum *sum, const double *terms, int nterms)
+{
+  assert(nterms > 0 && nterms <= EXACT_SUM_MAXTERMS);
+  double buf[EXACT_SUM_MAXTERMS + 1];
+  int len = 0;
+  for (int i = 0; i < nterms; i++)
+  {
+    len = grow_expansion(len, sum->e, terms[i], buf);
+    memcpy(sum->e, buf, (size_t) len * sizeof(double));
+  }
+  sum->n = len;
+  double approx = 0.0, mag = 0.0;
+  for (int i = 0; i < len; i++)
+  {
+    approx += sum->e[i];
+    mag += fabs(sum->e[i]);
+  }
+  sum->approx = approx;
+  sum->err = len * DBL_EPSILON * mag;
+  return;
+}
+
+/**
+ * @brief Return the sign of a polynomial in exact sums, computed exactly
+ * @details The polynomial is first evaluated in doubles together with a bound
+ * on the error of every operation, each rounding contributing at most
+ * DBL_EPSILON times its result; where the value exceeds the bound its sign is
+ * the exact one. Otherwise every term is formed as an expansion, the product
+ * of its coefficient and of its exact sums (#expansion_product), the terms are
+ * added (#expansion_sum), and the expansions are compressed as they grow; the
+ * last component of the total carries the exact sign
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0, or 1
+ * @note Exact where no product of the components overflows or underflows
+ */
+int
+polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  /* Filter: the value in doubles and a bound on its error */
+  double val = 0.0, err = 0.0;
+  for (int i = 0; i < nterms; i++)
+  {
+    double v = terms[i].coef, e = 0.0;
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      double nv = v * s->approx;
+      e = fabs(v) * s->err + fabs(s->approx) * e + e * s->err +
+        DBL_EPSILON * fabs(nv);
+      v = nv;
+    }
+    double nval = val + v;
+    err += e + DBL_EPSILON * fabs(nval);
+    val = nval;
+  }
+  /* The bound itself is computed in doubles, hence the margin; the absolute
+   * term covers a product that underflows */
+  double bound = err * (1.0 + 1e-6) + DBL_MIN;
+  if (isfinite(val) && isfinite(bound) && fabs(val) > bound)
+    return (val > 0.0) ? 1 : -1;
+
+  /* Exact evaluation */
+  int tlen = 0;
+  double *total = NULL;
+  for (int i = 0; i < nterms; i++)
+  {
+    /* The term, starting from its coefficient */
+    int plen = 1;
+    double *prod = palloc(sizeof(double));
+    prod[0] = terms[i].coef;
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      int cap = 2 * plen * s->n;
+      double *h = palloc(sizeof(double) * cap);
+      double *tmp = palloc(sizeof(double) * cap);
+      double *part = palloc(sizeof(double) * 2 * plen);
+      int hlen = expansion_product(plen, prod, s->n, s->e, h, tmp, part);
+      pfree(prod); pfree(part);
+      prod = tmp;
+      plen = compress_expansion(hlen, h, prod);
+      pfree(h);
+    }
+    /* Add the term to the total */
+    if (! total)
+    {
+      total = prod;
+      tlen = plen;
+    }
+    else
+    {
+      int cap = tlen + plen;
+      double *h = palloc(sizeof(double) * cap);
+      double *tmp = palloc(sizeof(double) * cap);
+      int hlen = expansion_sum(tlen, total, plen, prod, h, tmp);
+      pfree(total); pfree(prod);
+      total = tmp;
+      tlen = compress_expansion(hlen, h, total);
+      pfree(h);
+    }
+  }
+  double last = total ? total[tlen - 1] : 0.0;
+  if (total)
+    pfree(total);
+  return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+}
+
 /**
  * @brief Return the sign of the dot product of two vectors, computed exactly
  * @details Each product of two coordinates is its rounded value plus its
