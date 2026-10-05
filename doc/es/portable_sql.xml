@@ -482,6 +482,7 @@
 						<row><entry>length, cumulativeLength</entry><entry>geometría, geografía, tgeompoint, tgeogpoint, trgeometry</entry><entry>geoLength, geoCumulativeLength</entry></row>
 						<row><entry></entry><entry>tnpoint</entry><entry>npointLength, npointCumulativeLength</entry></row>
 						<row><entry>contains, covers, disjoint, intersects, touches, dwithin, relate</entry><entry>geometría, geografía</entry><entry>geoContains, geoCovers, geoDisjoint, geoIntersects, geoTouches, geoDwithin, geoRelate</entry></row>
+						<row><entry>reverse</entry><entry>geometría</entry><entry>geoReverse</entry></row>
 						<row><entry>hash, hashExtended</entry><entry>conjunto, rango, conjunto de rangos, cuadro delimitador, temporal, tipo base</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, y sus …HashExtended</entry></row>
 						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
 						<row><entry>merge (el agregado)</entry><entry>temporal</entry><entry>mergeAgg</entry></row>

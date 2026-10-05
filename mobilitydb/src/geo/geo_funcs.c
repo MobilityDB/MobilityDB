@@ -487,6 +487,162 @@ Geom_max_distance(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Accessors
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geom_boundary(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_boundary);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the boundary of a geometry
+ * @sqlfn boundary()
+ */
+Datum
+Geom_boundary(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geom_boundary(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_reverse(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_reverse);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return a geometry with the order of its vertices reversed
+ * @sqlfn reverse()
+ * @altsqlfn geoReverse()
+ */
+Datum
+Geo_reverse(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geo_reverse(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_num_geos(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_num_geos);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the number of geometries composing a geometry
+ * @sqlfn numGeometries()
+ */
+Datum
+Geo_num_geos(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int result = geo_num_geos(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Geo_geo_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_geo_n);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the n-th geometry composing a geometry, counting from 1
+ * @sqlfn geometryN()
+ */
+Datum
+Geo_geo_n(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int n = PG_GETARG_INT32(1);
+  GSERIALIZED *result = geo_geo_n(gs, n);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_num_points(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_num_points);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the number of points of a geometry
+ * @sqlfn numPoints()
+ */
+Datum
+Geo_num_points(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int result = geo_num_points(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************
+ * Lines
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Line_interpolate_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Line_interpolate_point);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the point of a line at a fraction of its length
+ * @sqlfn lineInterpolatePoint()
+ */
+Datum
+Line_interpolate_point(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double fraction = PG_GETARG_FLOAT8(1);
+  GSERIALIZED *result = line_interpolate_point(gs, fraction, false);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Line_substring(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Line_substring);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the part of a line between two fractions of its length
+ * @sqlfn lineSubstring()
+ */
+Datum
+Line_substring(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double from = PG_GETARG_FLOAT8(1);
+  double to = PG_GETARG_FLOAT8(2);
+  GSERIALIZED *result = line_substring(gs, from, to);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Line_locate_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Line_locate_point);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the fraction of the length of a line at which it comes
+ * closest to a point
+ * @sqlfn lineLocatePoint()
+ */
+Datum
+Line_locate_point(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  double result = line_locate_point(gs1, gs2);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (result < 0.0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

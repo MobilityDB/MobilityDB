@@ -987,6 +987,12 @@
 					<para><link linkend="geo_distances"><varname>distance</varname>, <varname>shortestLine</varname>, <varname>maxDistance</varname></link>: Return the distance, the line joining the closest points, or the maximum distance of two geometries or geographies</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Return the boundary, the reversal or the parts of a geometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>

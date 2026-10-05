@@ -346,3 +346,66 @@ SELECT ST_AsText(round(shortestLine(geography 'Point(0 0)', geography 'Linestrin
   ST_AsText(round(ST_ShortestLine(geography 'Point(0 0)', geography 'Linestring(1 -1,1 1)')::geometry, 6));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Accessors and lines
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same geometries as above, the number of points as ST_NPoints, and the
+-- line functions on an open line, a closed line and a line repeating a vertex
+-------------------------------------------------------------------------------
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty'))
+SELECT
+  count(*) FILTER (WHERE ST_AsEWKT(boundary(geom)) IS DISTINCT FROM ST_AsEWKT(ST_Boundary(geom))) AS boundary,
+  count(*) FILTER (WHERE ST_AsEWKT(reverse(geom)) IS DISTINCT FROM ST_AsEWKT(ST_Reverse(geom))) AS reverse,
+  count(*) FILTER (WHERE numGeometries(geom) IS DISTINCT FROM ST_NumGeometries(geom)) AS numgeometries,
+  count(*) FILTER (WHERE ST_AsEWKT(geometryN(geom, 1)) IS DISTINCT FROM ST_AsEWKT(ST_GeometryN(geom, 1))) AS geometryn1,
+  count(*) FILTER (WHERE ST_AsEWKT(geometryN(geom, 2)) IS DISTINCT FROM ST_AsEWKT(ST_GeometryN(geom, 2))) AS geometryn2,
+  count(*) FILTER (WHERE numPoints(geom) IS DISTINCT FROM ST_NPoints(geom)) AS numpoints
+FROM g;
+
+WITH l(line) AS (VALUES
+  (geometry 'Linestring(0 0,4 0,4 3)'),
+  (geometry 'Linestring(0 0,2 0,2 2,0 2,0 0)'),
+  (geometry 'Linestring(0 0,1 1,1 1,3 3)')),
+f(x) AS (VALUES (0.0), (0.25), (0.5), (0.8), (1.0)),
+p(pt) AS (VALUES (geometry 'Point(1 1)'), (geometry 'Point(4 4)'), (geometry 'Point(-1 0)'))
+SELECT
+  (SELECT count(*) FROM l, f WHERE ST_AsText(round(lineInterpolatePoint(line, x), 9)) IS DISTINCT FROM
+     ST_AsText(round(ST_LineInterpolatePoint(line, x), 9))) AS interpolate,
+  (SELECT count(*) FROM l, f a, f b WHERE a.x <= b.x AND ST_AsText(round(lineSubstring(line, a.x, b.x), 9)) IS DISTINCT FROM
+     ST_AsText(round(ST_LineSubstring(line, a.x, b.x), 9))) AS substring,
+  (SELECT count(*) FROM l, p WHERE round(lineLocatePoint(line, pt)::numeric, 9) IS DISTINCT FROM
+     round(ST_LineLocatePoint(line, pt)::numeric, 9)) AS locate;
+
+-- The boundary of an empty geometry is the empty geometry of the dimension of
+-- a boundary, as ST_Boundary answers it; ST_Boundary refuses a compound curve
+-- and a multisurface, whose boundaries are answered here alone
+WITH e(geom) AS (VALUES (geometry 'Point empty'), (geometry 'Linestring empty'),
+  (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'))
+SELECT ST_AsText(geom), ST_AsText(boundary(geom)), ST_AsText(ST_Boundary(geom)) FROM e;
+SELECT ST_AsText(boundary(geometry 'CompoundCurve empty'));
+SELECT ST_AsText(boundary(geometry 'MultiSurface empty'));
+
+-- The answers above are not empty: the boundary of the square, the second
+-- point of the multipoint, a point at a quarter of the open line and the part
+-- of it between a quarter and four fifths of its length
+SELECT ST_AsText(boundary(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
+SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
+SELECT ST_AsText(lineInterpolatePoint(geometry 'Linestring(0 0,4 0,4 3)', 0.25));
+SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
+SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
+
+-------------------------------------------------------------------------------
