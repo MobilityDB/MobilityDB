@@ -238,6 +238,9 @@
 					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convert a set value to a span set value</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geoset_convert"><varname>::</varname>, <varname>geometry</varname>, <varname>geography</varname></link>: Convert a geo set into the collection of its values</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convert a span value to a span set value</para>
 				</listitem>
 				<listitem>
@@ -991,6 +994,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Return the collection of an array of geometries or the line joining them</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>

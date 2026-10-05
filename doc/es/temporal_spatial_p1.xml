@@ -289,6 +289,25 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_constructors">
+				<indexterm significance="normal"><primary><varname>collect</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>makeLine</varname></primary></indexterm>
+				<para>Devuelve la colección de un arreglo de geometrías o la línea que las une</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+collect(geometry[]) → geometry
+makeLine(geometry[]) → geometry
+</programlisting>
+				<para>Una colección toma su tipo únicamente de los tipos de las geometrías, como lo da la función de PostGIS <varname>ST_Collect</varname>, de modo que un arreglo de un punto devuelve un multipunto, y una línea une los puntos y las líneas del arreglo en su orden, como los une <varname>ST_MakeLine</varname>. Un arreglo vacío devuelve <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)']));
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1 1)']));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
+-- LINESTRING(1 1,2 2)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Devuelve la región que dos geometrías comparten</para>

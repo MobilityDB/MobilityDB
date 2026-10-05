@@ -259,6 +259,23 @@ Spatialset_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(result);
 }
 
+PGDLLEXPORT Datum Geoset_to_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_to_geo);
+/**
+ * @ingroup mobilitydb_geo_set_conversion
+ * @brief Convert a geo set into the collection of its values
+ * @sqlfn geometry(), geography()
+ * @sqlop @p ::
+ */
+Datum
+Geoset_to_geo(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  GSERIALIZED *result = geoset_to_geo(set);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 /*****************************************************************************
  * Spatial reference system functions for spatial sets
  *****************************************************************************/

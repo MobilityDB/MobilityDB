@@ -675,3 +675,38 @@ SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)'
                1
 (1 row)
 
+WITH a(arr) AS (VALUES
+  (ARRAY[geometry 'Point(1 1)']),
+  (ARRAY[geometry 'Linestring(0 0,1 1)']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1 1)']),
+  (ARRAY[geometry 'MultiPoint(1 1,2 2)']),
+  (ARRAY[geometry 'Polygon((0 0,1 0,1 1,0 0))', geometry 'Polygon((2 2,3 2,3 3,2 2))']),
+  (ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)', geometry 'Linestring(2 2,3 0)']))
+SELECT ST_AsText(collect(arr)), ST_AsText(ST_Collect(arr)) = ST_AsText(collect(arr)) AS collect_agrees,
+  ST_AsText(makeLine(arr)) IS NOT DISTINCT FROM ST_AsText(ST_MakeLine(arr)) AS makeline_agrees
+FROM a;
+NOTICE:  No points or linestrings in input array
+NOTICE:  No points or linestrings in input array
+                           st_astext                           | collect_agrees | makeline_agrees 
+---------------------------------------------------------------+----------------+-----------------
+ MULTIPOINT((1 1))                                             | t              | t
+ MULTILINESTRING((0 0,1 1))                                    | t              | t
+ MULTIPOINT((1 1),(2 2))                                       | t              | t
+ GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))            | t              | t
+ GEOMETRYCOLLECTION(MULTIPOINT((1 1),(2 2)))                   | t              | t
+ MULTIPOLYGON(((0 0,1 0,1 1,0 0)),((2 2,3 2,3 3,2 2)))         | t              | t
+ GEOMETRYCOLLECTION(POINT(1 1),POINT(2 2),LINESTRING(2 2,3 0)) | t              | t
+(7 rows)
+
+SELECT collect(ARRAY[]::geometry[]) IS NULL, makeLine(ARRAY[]::geometry[]) IS NULL;
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+/* Errors */
+SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point(2 2)', geometry 'SRID=3812;Point(3 3)']);
+ERROR:  Operation on mixed SRID
+SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
+ERROR:  Operation on mixed SRID

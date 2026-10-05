@@ -678,8 +678,8 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
   if (npoints > 0 && nlines > 0)
   {
     GSERIALIZED *gsarr[2];
-    gsarr[0] = geo_collect_garray(points, npoints);
-    gsarr[1] = geo_collect_garray(lines, nlines);
+    gsarr[0] = geoarr_collect(points, npoints);
+    gsarr[1] = geoarr_collect(lines, nlines);
     result = geo_collect_garray(gsarr, 2);
   }
   else if (npoints > 1)

@@ -2515,6 +2515,10 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
   - lit: "\n"
+  - {sig: "{v}({vs})", ret: "{v}", sym: Geoset_to_geo}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS {v}) WITH FUNCTION {v}({vs});"}
+  - lit: "\n"
 
 - family: poseset_conversions
   file: mobilitydb/sql/pose/101_poseset.in.sql

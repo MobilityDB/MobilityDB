@@ -489,7 +489,7 @@ tcbufferseq_traversed_area(const TSequence *seq, bool unary_union)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  GSERIALIZED *res = geo_collect_garray(geoms, newcount);
+  GSERIALIZED *res = geoarr_collect(geoms, newcount);
   if (unary_union)
   {
     result = geom_unary_union(res, -1);
@@ -578,7 +578,7 @@ tcbufferseqset_traversed_area(const TSequenceSet *ss, bool unary_union)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  GSERIALIZED *res = geo_collect_garray(geoms, newcount);
+  GSERIALIZED *res = geoarr_collect(geoms, newcount);
   if (unary_union)
   {
     result = geom_unary_union(res, -1);

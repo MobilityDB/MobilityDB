@@ -2075,7 +2075,7 @@ geo_values_collect(const Temporal *temp, bool unary_union)
   GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
   for (int i = 0; i < count; i++)
     gsarr[i] = DatumGetGserializedP(values[i]);
-  GSERIALIZED *res = geo_collect_garray(gsarr, count);
+  GSERIALIZED *res = geoarr_collect(gsarr, count);
   pfree(values); pfree(gsarr);
   if (! unary_union)
     return res;
