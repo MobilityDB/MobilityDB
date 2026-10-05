@@ -92,8 +92,8 @@ Each item is measured; the note named gives the evidence.
    face: the array union and the union of a collection then reach GEOS for 0 of 225, and the
    overlays of a collection for 64 and 24 of 6750. MobilityDB #2970, merged as `2ce5aea42a`, reads a
    collection member of the array union component by component: the intersection of a collection
-   then reaches GEOS for 0 of 6750, the difference for 24. MobilityDB #2975 places an overlay piece
-   by an end of it that is not a node, where a rounded vertex left it a rounding away from the
+   then reaches GEOS for 0 of 6750, the difference for 24. MobilityDB #2975, merged as `742cd87b58`, places an
+   overlay piece by an end of it that is not a node, where a rounded vertex left it a rounding away from the
    other boundary: every count of the sweep then reads 0.
 2. **Arrays of overlapping surfaces expose three more gaps** ([note 5](05-WHAT-STILL-NEEDS-GEOS.md)
    §5.8), measured on 1500 random arrays judged by CGAL. Surfaces carrying Z, two of which merge
@@ -105,7 +105,9 @@ Each item is measured; the note named gives the evidence.
    right points and is not a valid OGC polygon; MobilityDB #2959, merged as `42ebd6312b`, writes 8 of them as a shell and
    a hole.
 3. **No continuous-integration job builds without GEOS**, so any of this can grow unseen (§5.2).
-   MobilityDB #2977 adds one, which fails where any input reaches a fall-back.
+   MobilityDB #2977, merged as `4c4457d2ec`, adds one, which fails where any input reaches a
+   fall-back. MobilityDB #2982 decides a line crossing an arc within the rounding of its end by the
+   side the end stands on, where the arctangent of two platforms' libraries had answered differently.
 4. **The buffer is not finished** ([note 6](06-BUFFER.md)). Its answer depends on where the shape
    lies — the same small square buffered by the same distance has the right area at the origin and
    an area a third too small at a projected coordinate such as 6 400 000 m, measured on master by
