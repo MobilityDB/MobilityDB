@@ -817,6 +817,53 @@ point_on_arc(double px, double py, const Edge *e)
 }
 
 /**
+ * @brief Return whether a line crosses an arc at a point within the rounding
+ * of an end of the arc
+ * @details Such a crossing is a point the arithmetic constructs, and whether
+ * its angle falls inside the span of the arc is then decided by the last bit
+ * of an arctangent, which the mathematical libraries of two platforms round
+ * differently. The end of the arc is an input vertex, so the side of the line
+ * it stands on is a sign decided exactly (#cross_product_sign), and the arc
+ * leaves that end along the tangent of its circle there: the line is crossed
+ * next to the end exactly where the arc, leaving it, moves toward the line.
+ * The tangent is read in the double the centre gives, and the side it turns
+ * to is a sign that holds wherever the line crosses the circle rather than
+ * touching it, read against the magnitudes of the two products it is the
+ * difference of, which do not vanish
+ * @param[in] ax,ay Coordinates of a point of the line
+ * @param[in] rx,ry Direction of the line
+ * @param[in] e Arc edge
+ * @param[in] at_start True for the start of the arc, false for its end
+ * @return 1 where the line crosses the arc next to that end, 0 where it does
+ * not, -1 where the end lies on the line or the line runs along the arc there,
+ * which this does not decide
+ */
+static inline int
+arcsegm_end_crossing(double ax, double ay, double rx, double ry, const Edge *e,
+  bool at_start)
+{
+  double sx = at_start ? e->x1 : e->x2, sy = at_start ? e->y1 : e->y2;
+  int side = cross_product_sign(ax, ay, ax + rx, ay + ry, ax, ay, sx, sy);
+  if (side == 0)
+    return -1;
+  /* The tangent in the sense the arc is traversed, turned around at its end,
+   * where the arc is left by walking it backwards */
+  double tx = - (sy - e->cy), ty = sx - e->cx;
+  if (! e->ccw)
+  {
+    tx = - tx; ty = - ty;
+  }
+  if (! at_start)
+  {
+    tx = - tx; ty = - ty;
+  }
+  double turn = rx * ty - ry * tx;
+  if (fabs(turn) <= 4.0 * DBL_EPSILON * (fabs(rx * ty) + fabs(ry * tx)))
+    return -1;
+  return ((turn > 0.0) != (side > 0)) ? 1 : 0;
+}
+
+/**
  * @brief Return the trajectory parameters at which a trajectory segment
  * intersects an arc edge
  * @details Solves |A + t*R - C|^2 = r^2 for the trajectory parameter t in
@@ -882,7 +929,15 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
     if (t < 0) t = 0;
     if (t > 1) t = 1;
     double px = ax + t * rx, py = ay + t * ry;
-    if (arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
+    /* A crossing within the rounding of an end of the arc is decided by the
+     * side that end stands on, where that decides it */
+    int at_end = -1;
+    if (fabs(px - e->x1) <= e->tol && fabs(py - e->y1) <= e->tol)
+      at_end = arcsegm_end_crossing(ax, ay, rx, ry, e, true);
+    else if (fabs(px - e->x2) <= e->tol && fabs(py - e->y2) <= e->tol)
+      at_end = arcsegm_end_crossing(ax, ay, rx, ry, e, false);
+    if (at_end >= 0 ? at_end == 1 :
+        arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
       out[n++] = t;
   }
   return n;

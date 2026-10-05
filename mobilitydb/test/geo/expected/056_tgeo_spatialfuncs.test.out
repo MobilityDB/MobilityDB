@@ -1349,6 +1349,12 @@ SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 
  POINT(2 4)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8),CircularString(3.6 0.8,3.8973665961010275 1.367544467966324,4 2),CircularString(4 2,3.414213562373095 3.414213562373095,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
+                 astext                  
+-----------------------------------------
+ POINT(2 4)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
  astext 
 --------
