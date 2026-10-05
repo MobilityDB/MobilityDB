@@ -697,7 +697,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
 /* Structure of an expandable arrays used in particular to avoid parsing twice
  * a MEOS value input in text format */
 
-#define MEOS_ARRAY_INITIAL_SIZE 256
+#define MEOS_ARRAY_INITIAL_SIZE 16
 
 /**
  * @brief Structure of an expandable arrays used in particular to avoid parsing
