@@ -198,6 +198,10 @@
  *   @ingroup meos_pointcloud_bbox
  *   @brief Topological functions for temporal point clouds
  *
+ *   @defgroup meos_pointcloud_bbox_pos Position functions
+ *   @ingroup meos_pointcloud_bbox
+ *   @brief Position functions for temporal point clouds
+ *
  * @defgroup meos_pointcloud_agg Aggregate functions
  * @ingroup meos_pointcloud
  * @brief Aggregate functions for temporal pgpointcloud types

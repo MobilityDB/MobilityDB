@@ -627,6 +627,120 @@ extern bool same_tpointcloud_tpcbox(const Temporal *temp,
 extern bool same_tpointcloud_tpointcloud(const Temporal *temp1,
   const Temporal *temp2);
 
+/* Bounding box position functions */
+
+extern bool left_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool left_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool left_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overleft_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overleft_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overleft_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool right_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool right_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool right_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overright_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overright_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overright_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool below_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool below_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool below_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overbelow_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overbelow_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overbelow_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool above_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool above_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool above_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overabove_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overabove_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overabove_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool front_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool front_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool front_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overfront_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overfront_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overfront_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool back_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool back_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool back_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overback_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overback_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overback_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool before_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool before_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool before_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overbefore_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overbefore_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overbefore_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool after_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool after_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool after_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overafter_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overafter_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overafter_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
 /* Aggregate functions */
 
 extern TPCBox *tpc_extent_transfn(TPCBox *state, const Temporal *temp);
