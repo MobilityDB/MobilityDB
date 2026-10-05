@@ -100,6 +100,7 @@ static const Case C[] = {
   {"discs tangent at one point", "CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,0 0))", "CURVEPOLYGON(CIRCULARSTRING(2 0,3 1,4 0,3 -1,2 0))"},
   {"disc and square sharing an arc chord region", "CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,0 0))", "POLYGON((1 -2,3 -2,3 2,1 2,1 -2))"},
   {"polygon and the hole it fills", "POLYGON((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1))", "POLYGON((1 1,3 1,3 3,1 3,1 1))"},
+  {"a centimetre triangle at projected coordinates", "POLYGON((593909.1750097702 6218274.6089919759,593909.16701386357 6218274.5990193365,593909.18297354609 6218274.6090548495,593909.1750097702 6218274.6089919759))", "POLYGON((593910 6218270,593911 6218270,593911 6218271,593910 6218271,593910 6218270))"},
   {"line along a polygon edge", "LINESTRING(0 0,1 0)", "POLYGON((0 0,1 0,1 1,0 1,0 0))"},
   {"line along an arc boundary", "CIRCULARSTRING(0 0,1 1,2 0)", "CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,0 0))"},
   {"line of zero length", "LINESTRING(1 1,1 1)", "LINESTRING(0 0,2 2)"},

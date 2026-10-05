@@ -4766,25 +4766,27 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
  * @brief Compute the signed area contribution of a straight buffer piece
  * @details The contribution is one half of the line integral
  *   x dy - y dx
- * along the segment.
+ * along the segment, taken about the point (x0, y0)
  */
 static double
-buffer_segment_signed_area(const Edge *piece)
+buffer_segment_signed_area(const Edge *piece, double x0, double y0)
 {
   assert(piece);
   assert(piece->etype == EDGE_POLYSEG);
-  return 0.5 * (piece->x1 * piece->y2 - piece->x2 * piece->y1);
+  return 0.5 * ((piece->x1 - x0) * (piece->y2 - y0) -
+    (piece->x2 - x0) * (piece->y1 - y0));
 }
 
 /**
  * @brief Compute the signed area contribution of a circular buffer arc
  * @details The arc contribution is obtained from the line integral
  *   1/2 * integral(x dy - y dx)
- * along the directed circular arc. The sign of the angular sweep follows
- * the traversal direction: positive for CCW and negative for CW.
+ * along the directed circular arc, taken about the point (x0, y0). The sign
+ * of the angular sweep follows the traversal direction: positive for CCW and
+ * negative for CW.
  */
 static double
-buffer_arc_signed_area(const Edge *piece)
+buffer_arc_signed_area(const Edge *piece, double x0, double y0)
 {
   assert(piece); assert(piece->etype == EDGE_POLYARC);
   double theta1 = piece->theta0;
@@ -4801,9 +4803,9 @@ buffer_arc_signed_area(const Edge *piece)
    *   r*cx*sin(theta)
    * - r*cy*cos(theta)
    * + r^2*theta */
-  double contribution = piece->radius * piece->cx * 
-      (sin(theta2) - sin(theta1)) +
-    piece->radius * piece->cy * (cos(theta1) - cos(theta2)) +
+  double cx = piece->cx - x0, cy = piece->cy - y0;
+  double contribution = piece->radius * cx * (sin(theta2) - sin(theta1)) +
+    piece->radius * cy * (cos(theta1) - cos(theta2)) +
     piece->radius * piece->radius * delta;
   return 0.5 * contribution;
 }
@@ -4813,21 +4815,30 @@ buffer_arc_signed_area(const Edge *piece)
  * @details The ring may contain both straight segments and exact circular
  * arcs. A positive value means counter-clockwise traversal and a negative
  * value means clockwise traversal.
+ * The integral is taken about the start of the first piece, as
+ * #ptarray_signed_area takes it about the first point: over a closed ring it
+ * is the same about any point, and about the origin each term carries the
+ * square of a coordinate, so at projected coordinates the area of a small ring
+ * is lost in their difference
  */
 static double
 buffer_ring_signed_area(const MeosArray *pieces)
 {
   assert(pieces);
   double area = 0.0;
+  if (pieces->count == 0)
+    return area;
+  const Edge *first = (const Edge *) meos_array_get_intl(pieces, 0);
+  double x0 = first->x1, y0 = first->y1;
   for (uint32_t i = 0; i < pieces->count; i++)
   {
     const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
     if (! piece)
       continue;
     if (piece->etype == EDGE_POLYSEG)
-      area += buffer_segment_signed_area(piece);
+      area += buffer_segment_signed_area(piece, x0, y0);
     else if (piece->etype == EDGE_POLYARC)
-      area += buffer_arc_signed_area(piece);
+      area += buffer_arc_signed_area(piece, x0, y0);
   }
   return area;
 }
