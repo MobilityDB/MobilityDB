@@ -3946,6 +3946,91 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, BufferNodeIndex *ix,
 }
 
 /**
+ * @brief Add a chained ring to the rings, as the simple loops it is made of
+ * @details A walk that passes a node twice closes a ring touching itself
+ * there, which bounds the right points and is not a ring OGC admits: two
+ * surfaces touching at a point, or a hole touching its shell, are each two
+ * rings. The walk is read back piece by piece, and a piece ending on a node
+ * it passed already closes the loop drawn since that node, which is taken out
+ * as a ring of its own. The containment the rings are classified by then
+ * makes a loop inside another a hole and a loop beside it a shell. A ring
+ * that never returns to a node is one loop and is added as it was chained
+ * @param[in] ring Chained ring, owned by the rings or freed here
+ * @param[in] ordered Its pieces in the order chained, owned likewise
+ * @param[in] srid Spatial reference identifier
+ * @param[out] rings Rings, as #BufferRingInfo
+ */
+static void
+buffer_rings_add_loops(LWCOMPOUND *ring, MeosArray *ordered, int32_t srid,
+  MeosArray *rings)
+{
+  assert(ring); assert(ordered); assert(rings);
+  uint32_t n = ordered->count;
+  /* The node each piece starts on, and the stack of the pieces not yet
+   * closed into a loop, whose first node is nodes[0] */
+  POINT2D *nodes = palloc(sizeof(POINT2D) * (n + 1));
+  uint32_t *stack = palloc(sizeof(uint32_t) * (n + 1));
+  uint32_t depth = 0, nloops = 0;
+  MeosArray **loops = palloc(sizeof(MeosArray *) * (n + 1));
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const BufferSelected *sel =
+      (const BufferSelected *) meos_array_get_intl(ordered, i);
+    if (depth == 0)
+      nodes[0] = buffer_piece_start(&sel->e);
+    stack[depth++] = i;
+    POINT2D end = buffer_piece_end(&sel->e);
+    for (uint32_t k = 0; k < depth; k++)
+    {
+      if (! buffer_points_equal(nodes[k], end))
+        continue;
+      /* The pieces from the one starting on node k close a loop */
+      MeosArray *loop = meos_array_create(sizeof(BufferSelected));
+      for (uint32_t m = k; m < depth; m++)
+        meos_array_add(loop,
+          meos_array_get_intl(ordered, stack[m]));
+      loops[nloops++] = loop;
+      depth = k;
+      break;
+    }
+    if (depth > 0)
+      nodes[depth] = end;
+  }
+  /* A ring returning to no node but its start is the one loop chained */
+  if (nloops == 1 && depth == 0)
+  {
+    meos_array_destroy(loops[0]);
+    BufferRingInfo info;
+    memset(&info, 0, sizeof(BufferRingInfo));
+    info.ring = ring;
+    info.pieces = ordered;
+    info.parent = -1;
+    info.shell = -1;
+    meos_array_add(rings, &info);
+  }
+  else
+  {
+    lwgeom_free(lwcompound_as_lwgeom(ring));
+    meos_array_destroy(ordered);
+    for (uint32_t l = 0; l < nloops; l++)
+    {
+      LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
+      for (uint32_t m = 0; m < loops[l]->count; m++)
+        buffer_append_piece_to_curve(curve, srid,
+          &((const BufferSelected *) meos_array_get_intl(loops[l], m))->e);
+      BufferRingInfo info;
+      memset(&info, 0, sizeof(BufferRingInfo));
+      info.ring = curve;
+      info.pieces = loops[l];
+      info.parent = -1;
+      info.shell = -1;
+      meos_array_add(rings, &info);
+    }
+  }
+  pfree(loops); pfree(stack); pfree(nodes);
+}
+
+/**
  * @brief Chain all selected boundary pieces into closed rings
  * @details The resulting BufferRingInfo objects retain both the geometric
  * ring and the ordered boundary pieces used to construct it.
@@ -4003,14 +4088,7 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
       return false;
     }
     used_count = new_used_count;
-    BufferRingInfo info;
-    memset(&info, 0, sizeof(BufferRingInfo));
-    info.ring = ring;
-    info.pieces = ordered;
-    info.parent = -1;
-    info.depth = 0;
-    info.shell = -1;
-    meos_array_add(rings, &info);
+    buffer_rings_add_loops(ring, ordered, srid, rings);
   }
   pfree(used); buffer_node_index_free(&ix);
   return used_count == pieces->count;
