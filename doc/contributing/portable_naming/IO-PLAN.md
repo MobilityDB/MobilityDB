@@ -47,10 +47,11 @@ commented reference, and h3-pg provides its four functions.
    | `<type>_send(<type>)` | value → binary | `asBinary(<type>)`, `asHexWKB(<type>)`; with an SRID also `asEWKB(<type>)`, `asHexEWKB(<type>)` | `*_as_wkb`, `*_as_hexwkb` |
    | none | MF-JSON → value, value → MF-JSON | `<type>FromMFJSON(text)`, `asMFJSON(<type>)` for a temporal type | `*_from_mfjson`, `temporal_as_mfjson` |
 
-   The `E` forms carry the SRID, as PostGIS `ST_AsEWKT` and `ST_AsEWKB` do. A box writes its
-   SRID in its plain forms: `stbox_out` and `tpcbox_out` write `SRID=n;` ("matching the sibling
-   (GEOD)STBOX text form"), and `Stbox_as_wkb` writes the extended form ("A spatiotemporal box
-   always outputs the SRID"), so `stbox` and `tpcbox` take no `E` form. A set or a temporal
+   The `E` forms carry the SRID, as PostGIS `ST_AsEWKT` and `ST_AsEWKB` do, and every type
+   carrying an SRID behaves alike in binary: `asBinary` and `asHexWKB` write PostGIS-compatible
+   plain WKB, `asEWKB` and `asHexEWKB` its SRID (G40), the boxes `stbox` and `tpcbox` included.
+   A box writes its SRID in its text form: `stbox_out` and `tpcbox_out` write `SRID=n;`
+   ("matching the sibling (GEOD)STBOX text form"). A set or a temporal
    value carries its SRID in its bounding box, from which `spatialset_as_ewkt` and
    `tspatial_as_ewkt` write it for every spatial set and temporal type; a base value writes the
    SRID it stores (`cbuffer_as_ewkt`, `pose_as_ewkt`, `posechain_as_ewkt`, `geo_as_ewkt`) or the
