@@ -39,6 +39,7 @@ extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 extern void srid_check_latlong(int32_t srid);
 extern int srid_is_latlong(int32_t srid);
 extern int srid_builtin_ellipsoid(int32_t srid, double *a, double *rf);
+extern const char *srid_srs(int32_t srid, bool short_crs);
 
 /**
  * Builtin SRID values

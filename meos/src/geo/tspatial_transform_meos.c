@@ -69,6 +69,8 @@ typedef struct struct_PROJSRSCacheItem
   int32_t srid_to;
   uint64_t hits;
   LWPROJ *projection;
+  char *authtext; /* auth_name:auth_srid of srid_from, NULL if it has none */
+  char *urn;      /* urn:ogc:def:crs:auth_name::auth_srid of srid_from */
 } PROJSRSCacheItem;
 
 /* PROJ 4 lookup transaction cache methods */
@@ -199,6 +201,10 @@ meos_finalize_projsrs(void)
   {
     if (cache->MEOSPROJSRSCache[i].projection)
       PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
+    if (cache->MEOSPROJSRSCache[i].authtext)
+      pfree(cache->MEOSPROJSRSCache[i].authtext);
+    if (cache->MEOSPROJSRSCache[i].urn)
+      pfree(cache->MEOSPROJSRSCache[i].urn);
   }
   pfree(cache);
   MEOS_PROJ_CACHE = NULL;
@@ -210,6 +216,26 @@ meos_finalize_projsrs(void)
  *****************************************************************************/
 
 /**
+ * @brief Get the entry of a pair of SRIDs from the PROJ cache
+ * @errval NULL
+ */
+static PROJSRSCacheItem *
+GetItemFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
+  int32_t srid_to)
+{
+  for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
+  {
+    if (cache->MEOSPROJSRSCache[i].srid_from == srid_from &&
+        cache->MEOSPROJSRSCache[i].srid_to == srid_to)
+    {
+      cache->MEOSPROJSRSCache[i].hits++;
+      return &cache->MEOSPROJSRSCache[i];
+    }
+  }
+  return NULL;
+}
+
+/**
  * @brief Get a PROJ structure from the PROJ cache
  * @errval NULL
  */
@@ -217,17 +243,8 @@ static LWPROJ *
 GetProjectionFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
   int32_t srid_to)
 {
-  uint32_t i;
-  for (i = 0; i < cache->PROJSRSCacheCount; i++)
-  {
-    if (cache->MEOSPROJSRSCache[i].srid_from == srid_from &&
-        cache->MEOSPROJSRSCache[i].srid_to == srid_to)
-    {
-      cache->MEOSPROJSRSCache[i].hits++;
-      return cache->MEOSPROJSRSCache[i].projection;
-    }
-  }
-  return NULL;
+  PROJSRSCacheItem *item = GetItemFromPROJCache(cache, srid_from, srid_to);
+  return item ? item->projection : NULL;
 }
 
 #if ! MEOS
@@ -634,6 +651,12 @@ DeleteFromMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, uint32_t position)
   /* Call PROJSRSDestroyPJ to free the PROJ objects memory */
   PROJSRSDestroyPJ(PROJCache->MEOSPROJSRSCache[position].projection);
   PROJCache->MEOSPROJSRSCache[position].projection = NULL;
+  if (PROJCache->MEOSPROJSRSCache[position].authtext)
+    pfree(PROJCache->MEOSPROJSRSCache[position].authtext);
+  PROJCache->MEOSPROJSRSCache[position].authtext = NULL;
+  if (PROJCache->MEOSPROJSRSCache[position].urn)
+    pfree(PROJCache->MEOSPROJSRSCache[position].urn);
+  PROJCache->MEOSPROJSRSCache[position].urn = NULL;
   PROJCache->MEOSPROJSRSCache[position].srid_from = SRID_UNKNOWN;
   PROJCache->MEOSPROJSRSCache[position].srid_to = SRID_UNKNOWN;
 }
@@ -724,14 +747,30 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
     PROJCache->PROJSRSCacheCount++;
   }
 
-  /* Free the projection strings */
+  /* Keep the authority of the source SRID and its OGC URN, the short and the
+   * long names of its coordinate reference system in GeoJSON and MF-JSON, and
+   * free the other strings */
+  char *authtext = from_strs.authtext;
+  from_strs.authtext = NULL;
   pjstrs_pfree(&from_strs);
   pjstrs_pfree(&to_strs);
+  char *urn = NULL;
+  const char *colon = authtext ? strchr(authtext, ':') : NULL;
+  if (colon)
+  {
+    /* The long name separates the authority from its code by two colons */
+    size_t len = strlen(authtext) + sizeof("urn:ogc:def:crs::");
+    urn = palloc(len);
+    snprintf(urn, len, "urn:ogc:def:crs:%.*s::%s", (int) (colon - authtext),
+      authtext, colon + 1);
+  }
 
   /* Store everything in new cache entry */
   PROJCache->MEOSPROJSRSCache[cache_position].srid_from = srid_from;
   PROJCache->MEOSPROJSRSCache[cache_position].srid_to = srid_to;
   PROJCache->MEOSPROJSRSCache[cache_position].projection = projection;
+  PROJCache->MEOSPROJSRSCache[cache_position].authtext = authtext;
+  PROJCache->MEOSPROJSRSCache[cache_position].urn = urn;
   PROJCache->MEOSPROJSRSCache[cache_position].hits = hits;
 
   return projection;
@@ -786,6 +825,38 @@ spheroid_init_from_srid(int32_t srid, SPHEROID *s)
     return LW_FAILURE;
   spheroid_init(s, pj->source_semi_major_metre, pj->source_semi_minor_metre);
   return LW_SUCCESS;
+}
+
+/**
+ * @brief Return the name of the coordinate reference system of an SRID, as
+ * the GeoJSON and MF-JSON representations state it
+ * @details The short name is the authority and its code, as in `EPSG:3857`,
+ * and the long one is the OGC URN, as in `urn:ogc:def:crs:EPSG::3857`, the
+ * two names the PostgreSQL extension reads from the table `spatial_ref_sys`.
+ * Both are read from `spatial_ref_sys.csv` together with the projection of
+ * the SRID onto itself and kept with it in the PROJ cache, so the file is read
+ * once per SRID
+ * @param[in] srid SRID
+ * @param[in] short_crs True for the short name, false for the long one
+ * @return The name, owned by the PROJ cache and valid until the cache stores
+ * another projection, or @p NULL with an error where the SRID has no
+ * authority in `spatial_ref_sys.csv`
+ */
+const char *
+srid_srs(int32_t srid, bool short_crs)
+{
+  MEOSPROJSRSCache *cache = GetMEOSPROJSRSCache();
+  if (! cache)
+    return NULL;
+  const PROJSRSCacheItem *item = GetItemFromPROJCache(cache, srid, srid);
+  LWPROJ *pj;
+  if (! item && lwproj_lookup(srid, srid, &pj) == LW_SUCCESS)
+    item = GetItemFromPROJCache(cache, srid, srid);
+  const char *result = ! item ? NULL : short_crs ? item->authtext : item->urn;
+  if (! result)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "SRID %d unknown in spatial_ref_sys", srid);
+  return result;
 }
 #endif /* MEOS */
 

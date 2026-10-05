@@ -5809,10 +5809,18 @@ geo_from_geojson(const char *geojson)
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return the GeoJSON representation of a geometry/geography
+ * @details The option is the sum of 1 for the bounding box, 2 for the short
+ * name of the coordinate reference system, as in `EPSG:3857`, 4 for its long
+ * name, as in `urn:ogc:def:crs:EPSG::3857`, and 8 for the short name of any
+ * system but WGS 84. Where @p srs is `NULL`, the name is the one of the SRID
+ * of the value in `spatial_ref_sys.csv`, as PostGIS names it from the table
+ * `spatial_ref_sys`, and a value of unknown SRID states no system
  * @param[in] gs Geometry/geography
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
- * @param[in] srs Spatial reference system, may be `NULL`
+ * @param[in] srs Name of the coordinate reference system, which the output
+ * states in place of the one of the SRID, may be `NULL`
+ * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
 char *
@@ -5832,6 +5840,24 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
    * 8 = guess if CRS is needed (default)
    */
   int output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
+
+#if MEOS
+  /* Name the coordinate reference system the options ask for, as PostGIS
+   * function LWGEOM_asGeoJson names it, where the caller names none */
+  if (! srs)
+  {
+    int32_t srid = gserialized_get_srid(gs);
+    bool short_crs = (option & 2) ||
+      ((option & 8) && srid != WGS84_SRID && srid != SRID_UNKNOWN);
+    bool long_crs = (option & 4);
+    if (srid != SRID_UNKNOWN && (short_crs || long_crs))
+    {
+      srs = srid_srs(srid, ! long_crs);
+      if (! srs)
+        return NULL;
+    }
+  }
+#endif /* MEOS */
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);
