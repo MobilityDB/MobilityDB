@@ -189,7 +189,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 6 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
+**State.** Commits 1 to 7 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -207,13 +207,20 @@ Commit 5 (`1dce32c9b0`): the relationships as item 5 states them, 121 ordered pa
 geometries answering as `ST_Contains`, `ST_Covers`, `ST_Disjoint`, `ST_Intersects`, `ST_Touches`,
 `ST_Equals`, `ST_DWithin` and `ST_Relate` on every pair, each relationship holding for 11 to 72
 of them, the manual in English and Spanish and the `geoX` row of the portable dialect chapter.
-Commit 6 (`b603dcd510`): the measures and distances as item 6 states them over the new MEOS
+Commit 6 (`17c5b36edd`): the measures and distances as item 6 states them over the new MEOS
 `geo_area`, `geo_perimeter`, `geo_centroid`, `geo_distance`, `geo_shortestline`,
 `geom_max_distance`, `geom_max_distance3d` and `geog_shortestline`, each answering as its PostGIS
 function on the eleven geometries and their 121 pairs; on the sphere the area of a geography is
 the one its great circles bound (the square of one degree at the equator 12364031798.518 square
 meters, its spherical excess 12364031798.470), where `ST_Area` over a geography on the sphere
-answers 0.67 percent less.
+answers 0.67 percent less. Commit 7 (`9e642687fb`): `boundary`, `reverse` (Spark and Flink
+`geoReverse`), `numGeometries`, `geometryN`, `numPoints`, `lineInterpolatePoint`,
+`lineSubstring` and `lineLocatePoint` over a geometry, each answering as its PostGIS function on
+the eleven geometries and on three lines, the boundary of an empty geometry being the empty
+geometry of the dimension of a boundary. `points(geometry)` and `geoPoints(geometry)` wait on the
+name of their MEOS functions: the public `geo_points` answers the MultiPoint of `ST_Points`, the
+meaning of `geoPoints`, while its siblings `tpose_points`, `tcbuffer_points` and
+`trgeometry_points` answer the set of the distinct points, the meaning of `points`.
 Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 7
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 8
 to 10.
