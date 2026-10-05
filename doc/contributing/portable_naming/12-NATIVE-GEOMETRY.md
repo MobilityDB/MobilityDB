@@ -151,14 +151,20 @@ Spanish:
    the turning points of the temporal dwithin (`tpointsegm_tdwithin_turnpt`) on the same rule.
 3. **The binary lifts carry their parameters** (decision 8): `tfunc_base_base` and `lfunc_base`
    dispatch `numparam` up to `MAX_PARAMS` in every build.
-4. **The earth model** (decisions 7 and 10): the geography kernels take the spheroid last,
-   `geog_distance` and `geo_length` as an argument, the direct dwithin calls of the temporal dwithin
-   and its turning point passing it after the distance, `geog_disjoint`, the centroid lift on the
-   spheroid; the geography operations and their lifts in SQL take `spheroid boolean DEFAULT true`,
-   each wrapper reading it as `bool spheroid = true; if (PG_NARGS() > k) spheroid =
+4. **The earth model** (decisions 7 and 10): every MEOS function measuring a geography takes the
+   spheroid last -- the temporal distance, the nearest approach distance and instant, the shortest
+   line, the ever, always and temporal dwithin with their array forms, `mindistance_tgeoarr_tgeoarr`,
+   the length, cumulative length and speed of a temporal point, the centroid of a temporal
+   geography, `geo_length`, the geo set distances and the five similarity distances -- and
+   `geog_disjoint` joins `geog_intersects`; the geography overloads in SQL take `spheroid boolean
+   DEFAULT true`, each wrapper reading it as `bool spheroid = true; if (PG_NARGS() > k) spheroid =
    PG_GETARG_BOOL(k);` and calling the public function by name, the form from which the MEOS-API
-   catalog derives the value a signature omitting it passes; `<->` and `|=|` over geography call
-   `tDistanceOp` and `nearestApproachDistanceOp`.
+   catalog derives the value a signature omitting it passes; `<->`, `|=|` and the set `<->` over
+   geography call `tDistanceOp`, `nearestApproachDistanceOp` and `setDistanceOp`. A temporal
+   geography locates the closest points of each segment on the sphere and compares them on the
+   model of the earth, as `lwgeom_distance_spheroid` measures a geography, and `shortestLine` joins
+   the geography from the value at that instant, so the line measures the nearest approach
+   distance.
 5. **The relationships**: `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`,
    `equals`, `relate(geometry, geometry, text)` over geometry, `intersects`, `disjoint`, `dwithin`
    over geography, the containment family refusing Z; the six `cbuffer_*` relationships as
@@ -177,17 +183,21 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 3 are on the branch, not pushed. Commit 1: `datum_eq` compares two
-geometries and two geographies exactly, and `049_geo_equality.test.sql` answers structurally
-throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new `geom_disjoint` measure in 3D
-only when both geometries have Z, the new `geom_distance` and `geom_shortestline` refuse a 3D and
-a 2D geometry, and the turning points of the temporal dwithin follow the same rule, so a 3D and a
+**State.** Commits 1 to 4 are on the branch, rebased on master `270106028b`, not pushed. Commit 1:
+`datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
+answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
+`geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
+`geom_shortestline` refuse a 3D and a 2D geometry, the turning points of the temporal dwithin
+follow the same rule, and `datum_eq` answers that a 3D and a 2D point are not equal, so a 3D and a
 2D temporal point answer the same in either order and two parallel 3D points are measured in 3D.
-Commit 3: `lfunc_base` and `tfunc_base_base` pass up to five parameters in every build. The whole
-pg_regress suite passes on PostgreSQL 18 after each. Commit 4 is in the worktree, not committed:
-its C layer builds without a warning in both builds and the 69 MEOS test programs pass; the ever
-and always dwithin wrappers come from the generator's `dwithin` shape with the manifest key
-`spheroid: 3`; the SQL of the 24 geography overloads no operator calls, the four geography
-`DwithinPairs`, and `length(geography)` take the argument. Left: the 18 operator signatures and
-their `…Op` procedures (decision 10), the tests against PostGIS on both models, the manual
-entries.
+Commit 3: `lfunc_base` and `tfunc_base_base` pass up to five parameters in every build. Commit 4
+(`41ad59e2bc`): the earth model as item 4 states it, every geography overload tested on the
+spheroid and on the sphere (one degree of meridian at the equator reads 110574.389 m and
+111195.08 m), the manual in English and Spanish with the notation `tgeog`; the nearest approach
+walk builds the circle tree of the geography once, seeds its traversal with the running minimum and
+measures on the spheroid only an edge that can beat it, and `shortestLine` over a temporal
+geography point of 2000 instants takes 0.58, 0.62 and 0.98 of the time of the trajectory path.
+The pg_regress suite passes on PostgreSQL 18 with the coverage job's assertions, and the strict-ci
+receipt is written for `41ad59e2bc`. Left before the push: the cppcheck, smoke and Windows
+receipts, and the CGAL oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the
+peer. Then commits 5 to 10.
