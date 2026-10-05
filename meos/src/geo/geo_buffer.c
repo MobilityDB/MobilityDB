@@ -1374,12 +1374,14 @@ buffer_edge_pairs_sort(BufferEdgePair *pairs, uint32_t count, uint32_t n)
 }
 
 /**
- * @brief Return the pairs of one boundary edge of each of two sets whose boxes
- * may meet, in the order a walk over the first set, and for each of its edges
- * over the second, meets them
+ * @brief Return the pairs of one edge of each of two sets whose boxes may
+ * meet, in the order a walk over the first set, and for each of its edges over
+ * the second, meets them
  * @details The sweep of #buffer_edge_pairs() over the edges of both sets
  * together, as #buffer_boundaries_intersect() sweeps them, keeping the pairs
- * that take one edge from each. Where the two sets are small enough that
+ * that take one edge from each. Every edge is swept, whatever its type, so
+ * that one sweep serves the callers that read every pair and those that read
+ * the pairs of boundary edges alone. Where the two sets are small enough that
  * reading every pair costs less than sorting them, every pair is returned
  * instead: the caller's own box test decides each pair either way, so the two
  * routes answer alike
@@ -1403,26 +1405,15 @@ buffer_edge_pairs_across(const MeosArray *a1, const MeosArray *a2,
   BufferEdgePair *pairs;
   if ((double) n1 * (double) n2 < BUFFER_SWEEP_MIN_PAIRS)
   {
-    /* Every pair of boundary edges, in the order of the walk */
+    /* Every pair, in the order of the walk */
     pairs = palloc(sizeof(BufferEdgePair) * n1 * n2);
     for (uint32_t i = 0; i < n1; i++)
-    {
-      if (! buffer_is_boundary_edge(&all1[i]))
-        continue;
       for (uint32_t j = 0; j < n2; j++)
       {
-        if (! buffer_is_boundary_edge(&all2[j]))
-          continue;
         pairs[count].i = i;
         pairs[count].j = j;
         count++;
       }
-    }
-    if (count == 0)
-    {
-      pfree(pairs);
-      return NULL;
-    }
     *npairs = count;
     return pairs;
   }
@@ -1432,8 +1423,6 @@ buffer_edge_pairs_across(const MeosArray *a1, const MeosArray *a2,
   for (uint32_t k = 0; k < n1 + n2; k++)
   {
     const Edge *e = (k < n1) ? &all1[k] : &all2[k - n1];
-    if (! buffer_is_boundary_edge(e))
-      continue;
     sweep[nsweep].xmin = e->xmin; sweep[nsweep].xmax = e->xmax;
     sweep[nsweep].ymin = e->ymin; sweep[nsweep].ymax = e->ymax;
     sweep[nsweep].id = k;
@@ -1473,6 +1462,37 @@ buffer_edge_pairs_across(const MeosArray *a1, const MeosArray *a2,
   }
   *npairs = count;
   return buffer_edge_pairs_sort(pairs, count, n1);
+}
+
+/**
+ * @brief Return true if any pair of edges of two sets meets
+ * @details #buffer_boundaries_intersect() over the pairs
+ * #buffer_edge_pairs_across() returns, which holds every pair whose boxes may
+ * meet, so the two answer alike
+ * @param[in] a1,a2 Edges of the two sets
+ * @param[in] pairs,npairs The pairs
+ */
+static bool
+buffer_pairs_meet(const MeosArray *a1, const MeosArray *a2,
+  const BufferEdgePair *pairs, uint32_t npairs)
+{
+  assert(a1); assert(a2);
+  for (uint32_t p = 0; p < npairs; p++)
+  {
+    const Edge *e1 = (const Edge *) meos_array_get_intl(a1, (int) pairs[p].i);
+    const Edge *e2 = (const Edge *) meos_array_get_intl(a2, (int) pairs[p].j);
+    /* The band the meeting test itself works to, as
+     * #buffer_boundaries_intersect() reads it */
+    double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+    if (e1->xmax < e2->xmin - band ||
+        e2->xmax < e1->xmin - band ||
+        e1->ymax < e2->ymin - band ||
+        e2->ymax < e1->ymin - band)
+      continue;
+    if (buffer_edges_intersect(e1, e2))
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -1722,6 +1742,7 @@ typedef struct
 {
   const LWGEOM *geom;   /**< The geometry points are located against */
   MeosArray *arr;       /**< Its edges, NULL until the first point asks */
+  bool borrowed;        /**< True where @p arr is the caller's, not freed */
   Edge **edges;         /**< Pointers into @p arr, in its order */
   RelateEdges re;       /**< The edges and what reading them selectively needs */
   int npoints;          /**< Points the caller expects to locate against it */
@@ -1755,10 +1776,32 @@ buffer_locator_make(BufferLocator *loc, const LWGEOM *geom, int npoints)
   assert(loc); assert(geom);
   loc->geom = geom;
   loc->arr = NULL;
+  loc->borrowed = false;
   loc->edges = NULL;
   loc->npoints = npoints;
   loc->nlocated = 0;
   loc->ready = false;
+}
+
+/**
+ * @brief Prepare to locate points against a geometry whose edges the caller
+ * has already extracted
+ * @details #buffer_locator_make(), reading @p edges where it would otherwise
+ * extract them, and leaving them to the caller
+ * @param[out] loc Locator to prepare
+ * @param[in] geom Geometry points are located against
+ * @param[in] edges Its edges, as #geom_extract_edges() gives them, which must
+ * outlive the locator
+ * @param[in] npoints How many points the caller expects to locate against it
+ */
+static void
+buffer_locator_make_edges(BufferLocator *loc, const LWGEOM *geom,
+  MeosArray *edges, int npoints)
+{
+  assert(edges);
+  buffer_locator_make(loc, geom, npoints);
+  loc->arr = edges;
+  loc->borrowed = true;
 }
 
 /**
@@ -1779,11 +1822,9 @@ buffer_locator_free(BufferLocator *loc)
     pfree(loc->edges);
     loc->edges = NULL;
   }
-  if (loc->arr)
-  {
+  if (loc->arr && ! loc->borrowed)
     meos_array_destroy(loc->arr);
-    loc->arr = NULL;
-  }
+  loc->arr = NULL;
 }
 
 /**
@@ -1808,7 +1849,8 @@ buffer_locator_locate(BufferLocator *loc, double x, double y, bool vertex)
   assert(loc); assert(loc->geom);
   if (! loc->ready)
   {
-    loc->arr = geom_extract_edges(loc->geom);
+    if (! loc->arr)
+      loc->arr = geom_extract_edges(loc->geom);
     int nedges = (int) loc->arr->count;
     if (nedges > 0)
     {
@@ -3186,16 +3228,15 @@ buffer_piece_from_edge(const Edge *edge, Edge *piece)
 }
 
 /**
- * @brief Collect the boundary pieces of an areal geometry
+ * @brief Collect the boundary pieces an edge set draws
  * @details See #buffer_piece_from_edge()
+ * @param[in] edges Edges, as #geom_extract_edges() gives them
+ * @param[in,out] pieces Pieces
  */
 static bool
-buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
+buffer_pieces_from_edges(const MeosArray *edges, MeosArray *pieces)
 {
-  assert(geom); assert(pieces);
-  MeosArray *edges = geom_extract_edges(geom);
-  if (! edges)
-    return false;
+  assert(edges); assert(pieces);
   for (uint32_t i = 0; i < edges->count; i++)
   {
     const Edge *edge = (const Edge *) meos_array_get_intl(edges, i);
@@ -3205,8 +3246,21 @@ buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
     buffer_piece_from_edge(edge, &piece);
     meos_array_add(pieces, &piece);
   }
-  meos_array_destroy(edges);
   return meos_array_count(pieces) > 0;
+}
+
+/**
+ * @brief Collect the boundary pieces of an areal geometry
+ * @details #buffer_pieces_from_edges() over its edges
+ */
+static bool
+buffer_pieces_from_geometry(const LWGEOM *geom, MeosArray *pieces)
+{
+  assert(geom); assert(pieces);
+  MeosArray *edges = geom_extract_edges(geom);
+  bool result = buffer_pieces_from_edges(edges, pieces);
+  meos_array_destroy(edges);
+  return result;
 }
 
 /**
@@ -3563,8 +3617,8 @@ buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
 }
 
 /**
- * @brief Collect all exact boundary intersection nodes into the intersection
- * array
+ * @brief Collect the exact intersection nodes of two edge sets, read over the
+ * pairs of their edges whose boxes may meet, into the intersection array
  * @details The existing low-level intersection routines operate on MeosArray,
  * so the points of one edge pair are collected into a scratch array and
  * transferred. That array is built ONCE for the whole walk and reset per pair:
@@ -3572,33 +3626,22 @@ buffer_resolve_coincident_piece(Edge *piece, BufferLocator *owner,
  * per-pair while its storage is not, and #meos_array_create would otherwise
  * allocate MEOS_ARRAY_INITIAL_SIZE slots and free them again for every one of
  * the n*m pairs.
+ * @param[in] a1,a2 Edges of the two sets
+ * @param[in] pairs,npairs The pairs #buffer_edge_pairs_across() returns
+ * @param[in,out] intersections Nodes
  */
 static bool
-buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
-  MeosArray *intersections)
+buffer_pairs_collect(const MeosArray *a1, const MeosArray *a2,
+  const BufferEdgePair *pairs, uint32_t npairs, MeosArray *intersections)
 {
-  assert(geom1); assert(geom2); assert(intersections);
-  MeosArray *a1 = geom_extract_edges(geom1);
-  MeosArray *a2 = geom_extract_edges(geom2);
-  if (! a1 || ! a2)
-  {
-    if (a1)
-      meos_array_destroy(a1);
-    if (a2)
-      meos_array_destroy(a2);
-    return false;
-  }
+  assert(a1); assert(a2); assert(intersections);
   /* The scratch array the collectors write into, reused across the walk */
   MeosArray *points = meos_array_create(sizeof(POINT2D));
   if (! points)
-  {
-    meos_array_destroy(a1); meos_array_destroy(a2);
     return false;
-  }
-  /* The pairs whose boxes may meet, met in the order of a walk over every
-   * pair, which is the order the nodes are collected in */
-  uint32_t npairs;
-  BufferEdgePair *pairs = buffer_edge_pairs_across(a1, a2, &npairs);
+  /* The pairs whose boxes may meet are met in the order of a walk over every
+   * pair, which is the order the nodes are collected in. A pair holding an
+   * edge that bounds no surface is one no collector below reads */
   for (uint32_t p = 0; p < npairs; p++)
   {
     const Edge *e1 = (const Edge *) meos_array_get_intl(a1, (int) pairs[p].i);
@@ -3636,11 +3679,30 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
         buffer_intersections_add(intersections, point->x, point->y);
     }
   }
+  meos_array_destroy(points);
+  return true;
+}
+
+/**
+ * @brief Collect all exact boundary intersection nodes of two geometries into
+ * the intersection array
+ * @details #buffer_pairs_collect() over the pairs of their edges
+ * #buffer_edge_pairs_across() returns
+ */
+static bool
+buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
+  MeosArray *intersections)
+{
+  assert(geom1); assert(geom2); assert(intersections);
+  MeosArray *a1 = geom_extract_edges(geom1);
+  MeosArray *a2 = geom_extract_edges(geom2);
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs_across(a1, a2, &npairs);
+  bool result = buffer_pairs_collect(a1, a2, pairs, npairs, intersections);
   if (pairs)
     pfree(pairs);
-  meos_array_destroy(points);
   meos_array_destroy(a1); meos_array_destroy(a2);
-  return true;
+  return result;
 }
 
 /*****************************************************************************
@@ -5060,8 +5122,8 @@ buffer_make_surfaces_from_pieces(const MeosArray *pieces, int32_t srid)
  *****************************************************************************/
 
 /**
- * @brief Determine whether two buffer boundaries meet at nodes the overlay can
- * split them at
+ * @brief Determine whether two edge sets meet at nodes the overlay can split
+ * them at
  * @details Two boundaries meet either at isolated POINTS or along a CURVE, and
  * both give the overlay something to work with: a point is a node, and a
  * coincident stretch is bounded by two of them, which
@@ -5073,31 +5135,24 @@ buffer_make_surfaces_from_pieces(const MeosArray *pieces, int32_t srid)
  * A point-touch without interior overlap answers true here as well; it is the
  * boundary SELECTION that leaves such a pair as two surfaces, because every
  * piece of both boundaries survives it.
+ * @param[in] a1,a2 Edges of the two boundaries
+ * @param[in] pairs,npairs The pairs #buffer_edge_pairs_across() returns
  */
 static bool
-buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
+buffer_pairs_cross(const MeosArray *a1, const MeosArray *a2,
+  const BufferEdgePair *pairs, uint32_t npairs)
 {
-  assert(geom1); assert(geom2);
-  MeosArray *a1 = geom_extract_edges(geom1);
-  MeosArray *a2 = geom_extract_edges(geom2);
-  if (! a1 || ! a2)
-  {
-    if (a1)
-      meos_array_destroy(a1);
-    if (a2)
-      meos_array_destroy(a2);
-    return false;
-  }
-
+  assert(a1); assert(a2);
   /* Whether any pair meets does not depend on the order the pairs are met in,
-   * so only the pairs whose boxes may meet are read */
-  uint32_t npairs;
-  BufferEdgePair *pairs = buffer_edge_pairs_across(a1, a2, &npairs);
+   * so only the pairs whose boxes may meet are read, and of those only the
+   * pairs of two boundary edges */
   bool point_intersection = false;
   for (uint32_t p = 0; p < npairs && ! point_intersection; p++)
   {
     const Edge *e1 = (const Edge *) meos_array_get_intl(a1, (int) pairs[p].i);
     const Edge *e2 = (const Edge *) meos_array_get_intl(a2, (int) pairs[p].j);
+    if (! buffer_is_boundary_edge(e1) || ! buffer_is_boundary_edge(e2))
+      continue;
     /* Two edges whose boxes lie apart cannot meet, read at the band the
      * meeting test itself works to */
     double band = Max(Max(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
@@ -5112,9 +5167,6 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
     if (buffer_boundary_intersection(e1, e2) >= 0)
       point_intersection = true;
   }
-  if (pairs)
-    pfree(pairs);
-  meos_array_destroy(a1); meos_array_destroy(a2);
   return point_intersection;
 }
 
@@ -5378,43 +5430,53 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
 {
   assert(geom1); assert(geom2); assert(touching);
   *touching = false;
-  bool crossing = buffer_boundaries_intersect(geom1, geom2);
+  /* Each operand's edges are extracted once, and the pairs of them whose
+   * boxes may meet are swept once, for every question below that reads them:
+   * whether the boundaries meet, whether they cross, where, the pieces they
+   * are cut into and the locators the pieces are placed by */
+  MeosArray *edges_a = geom_extract_edges(geom1);
+  MeosArray *edges_b = geom_extract_edges(geom2);
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs_across(edges_a, edges_b, &npairs);
+  bool crossing = buffer_pairs_meet(edges_a, edges_b, pairs, npairs);
 
   /* A point intersection by itself does not imply an overlapping union
    * boundary. In particular, two buffers may merely touch at one point.
    * Such components should remain separate surfaces. */
-  if (crossing && ! buffer_boundaries_cross(geom1, geom2))
+  if (crossing && ! buffer_pairs_cross(edges_a, edges_b, pairs, npairs))
+  {
+    if (pairs)
+      pfree(pairs);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
     return NULL;
+  }
 
   /* Collect the exact intersection nodes. Boundaries that stay apart have
    * none, and the split below then leaves every piece whole */
   MeosArray *intersections = meos_array_create(sizeof(POINT2D));
-  if (crossing)
+  bool collected = ! crossing || buffer_pairs_collect(edges_a, edges_b,
+    pairs, npairs, intersections);
+  if (pairs)
+    pfree(pairs);
+  /* A boundary intersection reported with no discrete node is a
+   * coincident/overlapping-boundary case, deferred to the next topology
+   * layer */
+  if (! collected || (crossing && meos_array_count(intersections) == 0))
   {
-    if (! buffer_collect_boundary_intersections(geom1, geom2, intersections))
-    {
-      meos_array_destroy(intersections);
-      return NULL;
-    }
-
-    /* A boundary intersection was reported, but there are no discrete
-     * nodes. This indicates a coincident/overlapping-boundary case.
-     * Defer it to the next topology layer. */
-    if (meos_array_count(intersections) == 0)
-    {
-      meos_array_destroy(intersections);
-      return NULL;
-    }
+    meos_array_destroy(intersections);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
+    return NULL;
   }
 
   /* Extract and split both complete boundaries */
   MeosArray *raw_a = meos_array_create(sizeof(Edge));
   MeosArray *raw_b = meos_array_create(sizeof(Edge));
-  if (! buffer_pieces_from_geometry(geom1, raw_a) ||
-      ! buffer_pieces_from_geometry(geom2, raw_b))
+  if (! buffer_pieces_from_edges(edges_a, raw_a) ||
+      ! buffer_pieces_from_edges(edges_b, raw_b))
   {
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
     meos_array_destroy(intersections);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
     return NULL;
   }
 
@@ -5436,8 +5498,8 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * coincident piece asks up to eight more of both */
   int points_a = (int) meos_array_count(split_b);
   int points_b = (int) meos_array_count(split_a);
-  buffer_locator_make(&loc_a, geom1, points_a);
-  buffer_locator_make(&loc_b, geom2, points_b);
+  buffer_locator_make_edges(&loc_a, geom1, edges_a, points_a);
+  buffer_locator_make_edges(&loc_b, geom2, edges_b, points_b);
   MeosArray *deferred = meos_array_create(sizeof(BufferSideAsk));
   buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a,
     intersections, oper, selected, boundary, shared, &coincident, deferred);
@@ -5475,6 +5537,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
     meos_array_destroy(intersections);
     return NULL;
   }
@@ -5486,6 +5549,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
     meos_array_destroy(intersections);
     return NULL;
   }
@@ -5536,6 +5600,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
+    meos_array_destroy(edges_a); meos_array_destroy(edges_b);
     meos_array_destroy(intersections);
     return meeting;
   }
@@ -5556,6 +5621,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   meos_array_destroy(shared);
   meos_array_destroy(split_a); meos_array_destroy(split_b);
   meos_array_destroy(raw_a); meos_array_destroy(raw_b);
+  meos_array_destroy(edges_a); meos_array_destroy(edges_b);
   meos_array_destroy(intersections);
   return result;
 }
