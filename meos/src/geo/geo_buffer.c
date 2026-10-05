@@ -4256,26 +4256,33 @@ buffer_ring_representative_point(LWCOMPOUND *ring, int32_t srid,
 }
 
 /**
- * @brief Test whether one boundary ring contains another ring
- * @details The representative point of the inner ring is tested against
- * the areal region bounded by the outer ring. The boundary is excluded
- * from the interior test.
+ * @brief Return the area one boundary ring bounds, as a curve polygon of its
+ * own holding a copy of the ring
  */
-static bool
-buffer_ring_contains_ring(const BufferRingInfo *outer,
-  const BufferRingInfo *inner, int32_t srid)
+static LWGEOM *
+buffer_ring_polygon(const BufferRingInfo *outer, int32_t srid)
 {
-  assert(outer); assert(inner);
+  assert(outer);
   LWCOMPOUND *ring_copy = (LWCOMPOUND *) lwgeom_clone(
     lwcompound_as_lwgeom(outer->ring));
   if (! ring_copy)
-    return false;
-  LWGEOM *polygon = buffer_make_single_ring_polygon(ring_copy, srid);
-  if (! polygon)
-    return false;
-  bool result = buffer_areal_contains_point(polygon, inner->x, inner->y);
-  lwgeom_free(polygon);
-  return result;
+    return NULL;
+  return buffer_make_single_ring_polygon(ring_copy, srid);
+}
+
+/**
+ * @brief Test whether one boundary ring contains another ring
+ * @details The representative point of the inner ring is tested against
+ * the areal region bounded by the outer ring. The boundary is excluded
+ * from the interior test, as #buffer_areal_contains_point() excludes it
+ * @param[in,out] outer Locator over #buffer_ring_polygon() of the outer ring
+ * @param[in] inner Inner ring
+ */
+static bool
+buffer_ring_contains_ring(BufferLocator *outer, const BufferRingInfo *inner)
+{
+  assert(outer); assert(inner);
+  return buffer_locator_point(outer, inner->x, inner->y) == 0;
 }
 
 /**
@@ -4402,15 +4409,25 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
    * contains[i * count + j] means that ring i strictly contains
    * the representative point of ring j. */
   bool *contains = palloc0(sizeof(bool) * count * count);
-  for (uint32_t i = 0; i < count; i++)
+  /* A ring alone is asked nothing */
+  for (uint32_t i = 0; i < count && count > 1; i++)
   {
+    /* Ring i is asked about the point of every other ring, so the area it
+     * bounds is read into one locator for all of them rather than extracted
+     * again for each */
+    LWGEOM *polygon = buffer_ring_polygon(&info[i], srid);
+    if (! polygon)
+      continue;
+    BufferLocator loc;
+    buffer_locator_make(&loc, polygon, (int) count - 1);
     for (uint32_t j = 0; j < count; j++)
     {
       if (i == j)
         continue;
-      contains[i * count + j] = buffer_ring_contains_ring(&info[i], &info[j],
-        srid);
+      contains[i * count + j] = buffer_ring_contains_ring(&loc, &info[j]);
     }
+    buffer_locator_free(&loc);
+    lwgeom_free(polygon);
   }
 
   /* Determine the immediate parent.
