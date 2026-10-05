@@ -1192,6 +1192,60 @@ geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @ingroup meos_geo_base_dist
+ * @brief Return the maximum distance between two geometries in 3D
+ * @details The maximum distance is the distance between the two points, one
+ * on each geometry, that are farthest from each other
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
+ * @note A geometry carrying a circular arc is not supported, since the
+ * underlying computation implements the maximum only for straight edges, so
+ * the answer is DBL_MAX
+ * @note An empty geometry has no farthest point, so the answer is DBL_MAX
+ * @errval DBL_MAX
+ */
+double
+geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return DBL_MAX;
+
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  double maxdist = (lwgeom_has_arc(geom1) || lwgeom_has_arc(geom2)) ?
+    DBL_MAX : lwgeom_maxdistance3d(geom1, geom2);
+  lwgeom_free(geom1);
+  lwgeom_free(geom2);
+  return maxdist;
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the maximum distance between two geometries
+ * @details The maximum distance is measured in 3D when the geometries have Z
+ * and in 2D otherwise, refusing geometries of different dimensions, as
+ * #geom_distance measures the distance; this is PostGIS @p ST_3DMaxDistance
+ * when both have Z and @p ST_MaxDistance otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p ST_MaxDistance(PG_FUNCTION_ARGS),
+ * @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
+ * @errval DBL_MAX
+ * @csqlfn #Geom_max_distance()
+ */
+double
+geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_max_distance3d(gs1, gs2) : geom_max_distance2d(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_dist
  * @brief Return the 3D distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
@@ -5222,6 +5276,118 @@ geo_length(const GSERIALIZED *gs, bool spheroid)
   VALIDATE_NOT_NULL(gs, DBL_MAX);
   return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, spheroid) :
     geom_length(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the area of a geometry or a geography, the one of a geography in square meters
+ * @details A geometry is measured as #geom_area measures it and a geography
+ * as #geog_area measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Area over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_area()
+ */
+double
+geo_area(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_area(gs, spheroid) :
+    geom_area(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the perimeter of a geometry or a geography, the one of a geography in meters
+ * @details A geometry is measured as #geom_perimeter measures it and a geography
+ * as #geog_perimeter measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Perimeter over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_perimeter()
+ */
+double
+geo_perimeter(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_perimeter(gs, spheroid) :
+    geom_perimeter(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the centroid of a geometry or a geography
+ * @details A geometry is measured as #geom_centroid measures it and a geography
+ * as #geog_centroid measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Centroid over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval NULL
+ * @csqlfn #Geo_centroid()
+ */
+GSERIALIZED *
+geo_centroid(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_centroid(gs, spheroid) :
+    geom_centroid(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the distance of two geometries or two geographies
+ * @details Two geometries are measured as #geom_distance measures them and two
+ * geographies as #geog_distance measures them, on the spheroid or on the sphere as
+ * the PostGIS function @p ST_Distance over geographies chooses, the earth model
+ * being an argument as in #geo_length
+ * @param[in] gs1,gs2 Geometries or geographies
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_distance()
+ */
+double
+geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_GEODETIC(gs1->gflags) ? geog_distance(gs1, gs2, spheroid) :
+    geom_distance(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the shortest line of two geometries or two geographies
+ * @details Two geometries are measured as #geom_shortestline measures them and two
+ * geographies as #geog_shortestline measures them, on the spheroid or on the sphere as
+ * the PostGIS function @p ST_ShortestLine over geographies chooses, the earth model
+ * being an argument as in #geo_length
+ * @param[in] gs1,gs2 Geometries or geographies
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval NULL
+ * @csqlfn #Geo_shortestline()
+ */
+GSERIALIZED *
+geo_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2))
+    return NULL;
+  return FLAGS_GET_GEODETIC(gs1->gflags) ? geog_shortestline(gs1, gs2, spheroid) :
+    geom_shortestline(gs1, gs2);
 }
 
 /**

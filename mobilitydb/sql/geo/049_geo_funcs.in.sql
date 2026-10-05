@@ -105,6 +105,60 @@ CREATE FUNCTION dwithin(geography, geography, float, spheroid boolean DEFAULT tr
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Measures
+ *****************************************************************************/
+
+CREATE FUNCTION area(geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION area(geography, spheroid boolean DEFAULT true)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION perimeter(geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_perimeter'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION perimeter(geography, spheroid boolean DEFAULT true)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_perimeter'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION centroid(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION centroid(geography, spheroid boolean DEFAULT true)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geo_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Distances
+ *****************************************************************************/
+
+CREATE FUNCTION distance(geometry, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(geography, geography, spheroid boolean DEFAULT true)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geo_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine(geometry, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_shortestline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine(geography, geography, spheroid boolean DEFAULT true)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geo_shortestline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION maxDistance(geometry, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geom_max_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

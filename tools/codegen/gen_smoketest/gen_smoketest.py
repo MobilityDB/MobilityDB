@@ -1667,6 +1667,7 @@ TGEOMETRY_CONFIG = dict(
         "geog_intersects":   {0: "geog1", 1: "geog1"},
         "geog_disjoint":     {0: "geog1", 1: "geog1"},
         "geog_distance":     {0: "geog1", 1: "geog1"},
+        "geog_shortestline": {0: "geog1", 1: "geog1"},
         # A tgeometry sequence/sequence-set can never carry LINEAR
         # interpolation (there is no interpolation between polygon values);
         # force the interp arg to STEP instead of the arg_map's LINEAR default.

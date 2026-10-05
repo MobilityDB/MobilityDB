@@ -261,3 +261,88 @@ SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false),
   ST_DWithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Measures and distances
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same geometries as the relationships above, the measures on each and the
+-- distances on every ordered pair, compared to nine decimals
+-------------------------------------------------------------------------------
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT
+  (SELECT count(*) FROM g WHERE round(area(geom)::numeric, 9) IS DISTINCT FROM round(ST_Area(geom)::numeric, 9)) AS area,
+  (SELECT count(*) FROM g WHERE round(perimeter(geom)::numeric, 9) IS DISTINCT FROM round(ST_Perimeter(geom)::numeric, 9)) AS perimeter,
+  (SELECT count(*) FROM g WHERE ST_AsText(round(centroid(geom), 9)) IS DISTINCT FROM ST_AsText(round(ST_Centroid(geom), 9))) AS centroid,
+  (SELECT count(*) FROM pairs WHERE round(distance(a, b)::numeric, 9) IS DISTINCT FROM round(ST_Distance(a, b)::numeric, 9)) AS distance,
+  (SELECT count(*) FROM pairs WHERE round(maxDistance(a, b)::numeric, 9) IS DISTINCT FROM round(ST_MaxDistance(a, b)::numeric, 9)) AS maxdistance,
+  (SELECT count(*) FROM pairs WHERE round(ST_Length(shortestLine(a, b))::numeric, 9) IS DISTINCT FROM round(ST_Length(ST_ShortestLine(a, b))::numeric, 9)) AS shortestline;
+
+-- The measures above are not all zero: the total of each over the same values
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT
+  (SELECT round(sum(area(geom))::numeric, 6) FROM g) AS area,
+  (SELECT round(sum(perimeter(geom))::numeric, 6) FROM g) AS perimeter,
+  (SELECT round(sum(distance(a, b))::numeric, 6) FROM pairs) AS distance,
+  (SELECT round(sum(maxDistance(a, b))::numeric, 6) FROM pairs) AS maxdistance;
+
+-- Two geometries with Z are measured in 3D, as the PostGIS functions with the
+-- prefix ST_3D, and a geometry with Z and one without are refused
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)'),
+  ST_3DDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)');
+SELECT round(maxDistance(geometry 'Linestring(0 0 0,1 0 0)', geometry 'Point(0 0 2)')::numeric, 6),
+  round(ST_3DMaxDistance(geometry 'Linestring(0 0 0,1 0 0)', geometry 'Point(0 0 2)')::numeric, 6);
+SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)', geometry 'Linestring(1 -1 1,1 1 1)'));
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
+SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
+
+-- A geography is measured on the spheroid by default and on the sphere when
+-- the last argument is false, as the PostGIS functions over geographies
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
+  round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
+-- On the sphere the area is the one the great circles bound, R^2 times the sum
+-- of the angles less (n - 2) pi, 12364031798 square meters for this square
+-- on the sphere of radius 6371008.7714 m; ST_Area over a geography on the
+-- sphere answers an approximation of it, 0.67 percent smaller here
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric),
+  round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
+SELECT round(perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3),
+  round(ST_Perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3);
+SELECT round(perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric, 3),
+  round(ST_Perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric, 3);
+SELECT ST_AsText(round(centroid(geography 'Linestring(0 0,0 10,10 10)')::geometry, 6)),
+  ST_AsText(round(ST_Centroid(geography 'Linestring(0 0,0 10,10 10)')::geometry, 6));
+SELECT ST_AsText(round(centroid(geography 'Linestring(0 0,0 10,10 10)', false)::geometry, 6)),
+  ST_AsText(round(ST_Centroid(geography 'Linestring(0 0,0 10,10 10)', false)::geometry, 6));
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)')::numeric, 3),
+  round(ST_Distance(geography 'Point(0 0)', geography 'Point(0 1)')::numeric, 3);
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3),
+  round(ST_Distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3);
+SELECT ST_AsText(round(shortestLine(geography 'Point(0 0)', geography 'Linestring(1 -1,1 1)')::geometry, 6)),
+  ST_AsText(round(ST_ShortestLine(geography 'Point(0 0)', geography 'Linestring(1 -1,1 1)')::geometry, 6));
+
+-------------------------------------------------------------------------------

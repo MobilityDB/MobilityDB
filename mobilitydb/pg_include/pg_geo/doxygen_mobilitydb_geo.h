@@ -174,6 +174,10 @@
  * @defgroup mobilitydb_geo_base_rel Spatial relationship functions
  * @ingroup mobilitydb_geo_base
  * @brief Spatial relationship functions for static geometries
+ *
+ * @defgroup mobilitydb_geo_base_dist Distance functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Distance functions for static geometries
  */
 
 /*****************************************************************************/
