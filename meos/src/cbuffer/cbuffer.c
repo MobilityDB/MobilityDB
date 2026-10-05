@@ -1128,6 +1128,35 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  *****************************************************************************/
 
 /**
+ * @brief Return the sign of the squared distance between the centres of two
+ * circular buffers less the square of a length, computed exactly
+ * @details The length is the sum of the doubles given; with a non-negative
+ * length the sign states whether the centres are nearer than, at, or farther
+ * than it, which is how the relationships below read the discs, on the
+ * doubles they hold and without constructing any distance. The sign is
+ * filtered and then exact, as #cross_product_sign_exact decides an
+ * orientation, through #polynomial_sign_exact
+ * @param[in] cb1,cb2 Circular buffers
+ * @param[in] lterms,nterms Doubles whose sum is the length
+ */
+static int
+cbuffer_gap_sign(const Cbuffer *cb1, const Cbuffer *cb2, const double *lterms,
+  int nterms)
+{
+  /* Exact sums: the differences of the coordinates and the length */
+  ExactSum sums[3];
+  double t[2];
+  t[0] = cb1->x; t[1] = - cb2->x;
+  exact_sum_set(&sums[0], t, 2);
+  t[0] = cb1->y; t[1] = - cb2->y;
+  exact_sum_set(&sums[1], t, 2);
+  exact_sum_set(&sums[2], lterms, nterms);
+  static const PolyTerm gap[3] = {
+    {1.0, 2, {0, 0, 0, 0}}, {1.0, 2, {1, 1, 0, 0}}, {-1.0, 2, {2, 2, 0, 0}}};
+  return polynomial_sign_exact(sums, gap, 3);
+}
+
+/**
  * @ingroup meos_internal_cbuffer_base_rel
  * @brief Return true if the first circular buffer contains the second one
  * @param[in] cb1,cb2 Circular buffers
@@ -1145,13 +1174,13 @@ cbuffer_contains(const Cbuffer *cb1, const Cbuffer *cb2)
    * at its centre, whose interior is the point itself: it is contained in a
    * disk of a strictly positive radius when it lies strictly inside, and in a
    * disk of a zero radius when the two coincide */
-  double dist = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
-  if (dist + cb2->radius > cb1->radius)
+  if (! cbuffer_covers(cb1, cb2))
     return 0;
   if (cb2->radius > 0)
     return 1;
-  return (cb1->radius > 0) ? (dist < cb1->radius ? 1 : 0) :
-    (dist == 0 ? 1 : 0);
+  if (cb1->radius > 0)
+    return (cbuffer_gap_sign(cb1, cb2, &cb1->radius, 1) < 0) ? 1 : 0;
+  return (cb1->x == cb2->x && cb1->y == cb2->y) ? 1 : 0;
 }
 
 /**
@@ -1166,9 +1195,12 @@ cbuffer_covers(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* The disk (pt2, r2) is covered by the disk (pt1, r1) exactly when its
    * farthest point from pt1, at distance dist(pt1, pt2) + r2, lies inside or on
-   * the boundary of (pt1, r1) */
-  double dist = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
-  return (dist + cb2->radius <= cb1->radius) ? 1 : 0;
+   * the boundary of (pt1, r1), that is when r1 - r2 is not negative and the
+   * centres are no farther apart than it */
+  const double l[2] = {cb1->radius, - cb2->radius};
+  if (cb1->radius < cb2->radius)
+    return 0;
+  return (cbuffer_gap_sign(cb1, cb2, l, 2) <= 0) ? 1 : 0;
 }
 
 /**
@@ -1194,8 +1226,8 @@ cbuffer_disjoint(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 cbuffer_intersects(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  double dist = cbuffer_distance(cb1, cb2);
-  return (dist == 0) ? 1 : 0;
+  /* Within distance zero, read exactly by #cbuffer_dwithin */
+  return cbuffer_dwithin(cb1, cb2, 0.0);
 }
 
 /**
@@ -1208,8 +1240,10 @@ cbuffer_intersects(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  double dist1 = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
-  return (dist1 == cb1->radius + cb2->radius) ? 1 : 0;
+  /* The centres stand exactly the sum of the radii apart, read by
+   * #cbuffer_gap_sign */
+  const double l[2] = {cb1->radius, cb2->radius};
+  return (cbuffer_gap_sign(cb1, cb2, l, 2) == 0) ? 1 : 0;
 }
 
 /**
@@ -1223,8 +1257,11 @@ cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 cbuffer_dwithin(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
 {
-  double dist1 = cbuffer_distance(cb1, cb2);
-  return (dist1 <= dist) ? 1 : 0;
+  /* The discs are within the distance when their centres are no farther
+   * apart than the sum of the radii and the distance, read by
+   * #cbuffer_gap_sign */
+  const double l[3] = {cb1->radius, cb2->radius, dist};
+  return (cbuffer_gap_sign(cb1, cb2, l, 3) <= 0) ? 1 : 0;
 }
 
 
