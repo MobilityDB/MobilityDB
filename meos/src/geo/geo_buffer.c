@@ -2182,19 +2182,31 @@ buffer_pieces_equal(const Edge *a, const Edge *b)
 }
 
 /**
- * @brief Return true if a piece is already present in an array
+ * @brief Return the piece of an array equal to a given one, in the direction
+ * the array holds it, or @p NULL where the array holds none
+ * @details The walk #buffer_piece_array_contains reads, returning the piece it
+ * finds, which #buffer_pieces_add_unique compares by #buffer_pieces_equal too
  */
-static bool
-buffer_piece_array_contains(const MeosArray *pieces, const Edge *piece)
+static const Edge *
+buffer_piece_array_find(const MeosArray *pieces, const Edge *piece)
 {
   assert(pieces); assert(piece);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
     const Edge *piece_i = (Edge *) meos_array_get_intl(pieces, i);
     if (buffer_pieces_equal(piece_i, piece))
-      return true;
+      return piece_i;
   }
-  return false;
+  return NULL;
+}
+
+/**
+ * @brief Return true if a piece is already present in an array
+ */
+static bool
+buffer_piece_array_contains(const MeosArray *pieces, const Edge *piece)
+{
+  return buffer_piece_array_find(pieces, piece) != NULL;
 }
 
 /**
@@ -3600,9 +3612,15 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     {
       *coincident = true;
       /* A piece of B that A reports too is one curve the two run along; one
-       * only B reports is a curve of B alone, whatever put it here */
-      if (buffer_piece_array_contains(bnd_a, piece))
-        buffer_pieces_add_unique(shared, piece);
+       * only B reports is a curve of B alone, whatever put it here. The curve
+       * the two share is read off the first one's boundary, so it is A's
+       * piece, in A's direction, that is kept */
+      const Edge *mine = buffer_piece_array_find(bnd_a, piece);
+      if (mine)
+      {
+        Edge kept = *mine;
+        buffer_pieces_add_unique(shared, &kept);
+      }
       if (! buffer_resolve_coincident_piece(piece, loc_b, loc_a, false, oper,
             result))
         meos_array_add(boundary, piece);
