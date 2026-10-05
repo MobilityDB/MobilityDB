@@ -1250,10 +1250,11 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
           cxmin, cymin, cxmax, cymax) >= thr2)
           continue;
         /* The same lower bound read on the exact centre segment instead of its
-         * box, which rejects the survivors the box levels leave. It pays only
-         * for a moving disc against a straight edge: with a zero radius the box
-         * levels are already exact on this bound. */
-        if (! (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) && rmax > 0.0 &&
+         * box, which rejects the survivors the box levels leave. A box bounds a
+         * diagonal segment loosely, so the two levels differ at every radius,
+         * the zero radius included: there the centre segment is the unit itself
+         * and the bound it gives is the unit's exact distance to the edge. */
+        if (! (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, ed, thr2))
           continue;
       }
@@ -1337,9 +1338,9 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
           cxmin, cymin, cxmax, cymax) >= thr2)
           continue;
         /* The same lower bound read on the exact centre segment instead of its
-         * box, which rejects the survivors the box levels leave. It pays only
-         * for a moving disc against a straight edge. */
-        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) && rmax > 0.0 &&
+         * box, which rejects the survivors the box levels leave, at every radius
+         * including zero. */
+        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
@@ -1441,9 +1442,9 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
           cxmin, cymin, cxmax, cymax) >= thr2)
           continue;
         /* The same lower bound read on the exact centre segment instead of its
-         * box, which rejects the survivors the box levels leave. It pays only
-         * for a moving disc against a straight edge. */
-        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) && rmax > 0.0 &&
+         * box, which rejects the survivors the box levels leave, at every radius
+         * including zero. */
+        if (! (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) &&
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
