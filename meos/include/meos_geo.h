@@ -368,7 +368,10 @@ extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 
 extern bool geo_is_empty(const GSERIALIZED *gs);
 extern bool geo_is_unitary(const GSERIALIZED *gs);
+extern double geo_area(const GSERIALIZED *gs, bool spheroid);
+extern GSERIALIZED *geo_centroid(const GSERIALIZED *gs, bool spheroid);
 extern double geo_length(const GSERIALIZED *gs, bool spheroid);
+extern double geo_perimeter(const GSERIALIZED *gs, bool spheroid);
 extern const char *geo_typename(int type);
 extern double geog_area(const GSERIALIZED *gs, bool use_spheroid);
 extern GSERIALIZED *geog_centroid(const GSERIALIZED *gs, bool use_spheroid);
@@ -459,10 +462,15 @@ extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *cou
 
 /* Distance functions */
 
+extern double geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid);
+extern GSERIALIZED *geo_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid);
 extern double geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2, bool use_spheroid);
+extern GSERIALIZED *geog_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern double geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 /* Comparison functions */

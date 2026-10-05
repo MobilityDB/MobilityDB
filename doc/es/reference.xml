@@ -981,6 +981,12 @@
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Devuelve verdadero si dos geometrías están a una distancia dada</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_measures"><varname>area</varname>, <varname>perimeter</varname>, <varname>centroid</varname></link>: Devuelve el área, el perímetro o el centroide de una geometría o una geografía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_distances"><varname>distance</varname>, <varname>shortestLine</varname>, <varname>maxDistance</varname></link>: Devuelve la distancia, la línea que une los puntos más cercanos o la distancia máxima de dos geometrías o geografías</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>

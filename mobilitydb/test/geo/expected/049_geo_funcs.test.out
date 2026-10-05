@@ -438,3 +438,138 @@ SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false),
  f       | f
 (1 row)
 
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT
+  (SELECT count(*) FROM g WHERE round(area(geom)::numeric, 9) IS DISTINCT FROM round(ST_Area(geom)::numeric, 9)) AS area,
+  (SELECT count(*) FROM g WHERE round(perimeter(geom)::numeric, 9) IS DISTINCT FROM round(ST_Perimeter(geom)::numeric, 9)) AS perimeter,
+  (SELECT count(*) FROM g WHERE ST_AsText(round(centroid(geom), 9)) IS DISTINCT FROM ST_AsText(round(ST_Centroid(geom), 9))) AS centroid,
+  (SELECT count(*) FROM pairs WHERE round(distance(a, b)::numeric, 9) IS DISTINCT FROM round(ST_Distance(a, b)::numeric, 9)) AS distance,
+  (SELECT count(*) FROM pairs WHERE round(maxDistance(a, b)::numeric, 9) IS DISTINCT FROM round(ST_MaxDistance(a, b)::numeric, 9)) AS maxdistance,
+  (SELECT count(*) FROM pairs WHERE round(ST_Length(shortestLine(a, b))::numeric, 9) IS DISTINCT FROM round(ST_Length(ST_ShortestLine(a, b))::numeric, 9)) AS shortestline;
+ area | perimeter | centroid | distance | maxdistance | shortestline 
+------+-----------+----------+----------+-------------+--------------
+    0 |         0 |        0 |        0 |           0 |            0
+(1 row)
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT
+  (SELECT round(sum(area(geom))::numeric, 6) FROM g) AS area,
+  (SELECT round(sum(perimeter(geom))::numeric, 6) FROM g) AS perimeter,
+  (SELECT round(sum(distance(a, b))::numeric, 6) FROM pairs) AS distance,
+  (SELECT round(sum(maxDistance(a, b))::numeric, 6) FROM pairs) AS maxdistance;
+   area    | perimeter | distance  | maxdistance 
+-----------+-----------+-----------+-------------
+ 41.000000 | 48.000000 | 94.302994 |  489.147389
+(1 row)
+
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)'),
+  ST_3DDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)');
+ distance | st_3ddistance 
+----------+---------------
+       13 |            13
+(1 row)
+
+SELECT round(maxDistance(geometry 'Linestring(0 0 0,1 0 0)', geometry 'Point(0 0 2)')::numeric, 6),
+  round(ST_3DMaxDistance(geometry 'Linestring(0 0 0,1 0 0)', geometry 'Point(0 0 2)')::numeric, 6);
+  round   |  round   
+----------+----------
+ 2.236068 | 2.236068
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)', geometry 'Linestring(1 -1 1,1 1 1)'));
+         st_astext          
+----------------------------
+ LINESTRING Z (0 0 0,1 0 1)
+(1 row)
+
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
+ERROR:  Operation on mixed 2D/3D dimensions
+SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
+ERROR:  Operation on mixed 2D/3D dimensions
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
+  round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
+    round    |    round    
+-------------+-------------
+ 12308778361 | 12308778361
+(1 row)
+
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric),
+  round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
+    round    |    round    
+-------------+-------------
+ 12364031799 | 12281281067
+(1 row)
+
+SELECT round(perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3),
+  round(ST_Perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3);
+   round    |   round    
+------------+------------
+ 443770.917 | 443770.917
+(1 row)
+
+SELECT round(perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric, 3),
+  round(ST_Perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric, 3);
+   round    |   round    
+------------+------------
+ 444763.383 | 444763.383
+(1 row)
+
+SELECT ST_AsText(round(centroid(geography 'Linestring(0 0,0 10,10 10)')::geometry, 6)),
+  ST_AsText(round(ST_Centroid(geography 'Linestring(0 0,0 10,10 10)')::geometry, 6));
+        st_astext         |        st_astext         
+--------------------------+--------------------------
+ POINT(2.474826 7.515051) | POINT(2.474826 7.515051)
+(1 row)
+
+SELECT ST_AsText(round(centroid(geography 'Linestring(0 0,0 10,10 10)', false)::geometry, 6)),
+  ST_AsText(round(ST_Centroid(geography 'Linestring(0 0,0 10,10 10)', false)::geometry, 6));
+        st_astext         |        st_astext         
+--------------------------+--------------------------
+ POINT(2.466426 7.506579) | POINT(2.466426 7.506579)
+(1 row)
+
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)')::numeric, 3),
+  round(ST_Distance(geography 'Point(0 0)', geography 'Point(0 1)')::numeric, 3);
+   round    |   round    
+------------+------------
+ 110574.389 | 110574.389
+(1 row)
+
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3),
+  round(ST_Distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3);
+   round    |   round    
+------------+------------
+ 111195.080 | 111195.080
+(1 row)
+
+SELECT ST_AsText(round(shortestLine(geography 'Point(0 0)', geography 'Linestring(1 -1,1 1)')::geometry, 6)),
+  ST_AsText(round(ST_ShortestLine(geography 'Point(0 0)', geography 'Linestring(1 -1,1 1)')::geometry, 6));
+      st_astext      |      st_astext      
+---------------------+---------------------
+ LINESTRING(0 0,1 0) | LINESTRING(0 0,1 0)
+(1 row)
+

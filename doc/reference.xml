@@ -981,6 +981,12 @@
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Return true if two geometries are within a distance</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_measures"><varname>area</varname>, <varname>perimeter</varname>, <varname>centroid</varname></link>: Return the area, the perimeter or the centroid of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_distances"><varname>distance</varname>, <varname>shortestLine</varname>, <varname>maxDistance</varname></link>: Return the distance, the line joining the closest points, or the maximum distance of two geometries or geographies</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>

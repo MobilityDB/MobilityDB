@@ -3235,6 +3235,28 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   return result;
 }
 
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the line connecting the closest points of two geographies
+ * @details The closest points are located on the sphere, as PostGIS
+ * @p ST_ShortestLine over geographies locates them, the earth model setting
+ * the tolerance of the search
+ * @param[in] gs1,gs2 Geographies
+ * @param[in] use_spheroid True when using the spheroid, false the sphere
+ * @note PostGIS function: @p ST_ShortestLine(geography, geography, boolean)
+ * @note An empty geography has no point to join, so the answer is NULL
+ * @errval NULL
+ */
+GSERIALIZED *
+geog_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool use_spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
+    return NULL;
+  return geography_shortestline_internal(gs1, gs2, use_spheroid);
+}
+
 /*****************************************************************************/
 
 /**

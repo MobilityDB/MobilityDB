@@ -32,6 +32,8 @@
  * @brief Functions on geometries answered without calling GEOS
  */
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
@@ -338,6 +340,150 @@ Geom_relate_pattern(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs2, 1);
   PG_FREE_IF_COPY(pattern, 2);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Measures
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geo_area(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_area);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the area of a geometry or a geography, the one of a
+ * geography in square meters on the earth model of the optional second argument
+ * @sqlfn area()
+ */
+Datum
+Geo_area(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  double result = geo_area(gs, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Geo_perimeter(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_perimeter);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the perimeter of a geometry or a geography, the one of a
+ * geography in meters on the earth model of the optional second argument
+ * @sqlfn perimeter()
+ */
+Datum
+Geo_perimeter(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  double result = geo_perimeter(gs, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Geo_centroid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_centroid);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return the centroid of a geometry or a geography, the one of a
+ * geography on the earth model of the optional second argument
+ * @sqlfn centroid()
+ */
+Datum
+Geo_centroid(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  GSERIALIZED *result = geo_centroid(gs, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
+ * Distances
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geo_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_distance);
+/**
+ * @ingroup mobilitydb_geo_base_dist
+ * @brief Return the distance between two geometries or two geographies, the
+ * one of geographies in meters on the earth model of the optional third
+ * argument
+ * @sqlfn distance()
+ */
+Datum
+Geo_distance(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  double result = geo_distance(gs1, gs2, spheroid);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Geo_shortestline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_shortestline);
+/**
+ * @ingroup mobilitydb_geo_base_dist
+ * @brief Return the line connecting the closest points of two geometries or
+ * two geographies, the one of geographies on the earth model of the optional
+ * third argument
+ * @sqlfn shortestLine()
+ */
+Datum
+Geo_shortestline(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  GSERIALIZED *result = geo_shortestline(gs1, gs2, spheroid);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geom_max_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_max_distance);
+/**
+ * @ingroup mobilitydb_geo_base_dist
+ * @brief Return the maximum distance between two geometries
+ * @sqlfn maxDistance()
+ */
+Datum
+Geom_max_distance(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  double result = geom_max_distance(gs1, gs2);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************

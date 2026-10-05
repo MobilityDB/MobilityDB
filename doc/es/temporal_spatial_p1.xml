@@ -186,6 +186,59 @@ SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_measures">
+				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Devuelve el área, el perímetro o el centroide de una geometría o una geografía</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+area(geometry) → float
+area(geography,spheroid boolean=true) → float
+perimeter(geometry) → float
+perimeter(geography,spheroid boolean=true) → float
+centroid(geometry) → geometry
+centroid(geography,spheroid boolean=true) → geography
+</programlisting>
+				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname>, sin llamar a GEOS. Una geografía se mide en metros cuadrados o en metros sobre el esferoide WGS 84 por defecto, y sobre la esfera, un cálculo más rápido, si el último argumento es falso. Sobre la esfera, el área es la que delimitan los círculos máximos que unen los vértices, que <varname>ST_Area</varname> sobre una geografía en la esfera aproxima: para el cuadrado de un grado en el ecuador a continuación, la aproximación es un 0,67 por ciento menor.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT area(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
+-- 16
+SELECT ST_AsText(centroid(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- POINT(2 2)
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
+-- 12308778361
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
+-- 12364031799
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_distances">
+				<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>maxDistance</varname></primary></indexterm>
+				<para>Devuelve la distancia, la línea que une los puntos más cercanos o la distancia máxima de dos geometrías o geografías</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+distance(geometry,geometry) → float
+distance(geography,geography,spheroid boolean=true) → float
+shortestLine(geometry,geometry) → geometry
+shortestLine(geography,geography,spheroid boolean=true) → geography
+maxDistance(geometry,geometry) → float
+</programlisting>
+				<para>Dos geometrías con Z se miden en 3D, como las funciones de PostGIS con el prefijo <varname>ST_3D</varname>, y una geometría con Z y otra sin ella se rechazan. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido. La línea más corta de dos geografías une sus puntos más cercanos sobre la esfera, como los une <varname>ST_ShortestLine</varname> sobre geografías.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)');
+-- 13
+SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)',
+  geometry 'Linestring(1 -1 1,1 1 1)'));
+-- LINESTRING Z (0 0 0,1 0 1)
+SELECT round(maxDistance(geometry 'Linestring(0 0 0,1 0 0)',
+  geometry 'Point(0 0 2)')::numeric, 6);
+-- 2.236068
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3);
+-- 111195.080
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Devuelve la región que dos geometrías comparten</para>
