@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: cross_product_exact</title>
+<title>MobilityDB: arcsegm_end_crossing</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,7 +96,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a630c1baab285148ff0eec1e257ab7876.html#a630c1baab285148ff0eec1e257ab7876">arcarc_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af1a2c874e33b7d1c58d560670942596e.html#af1a2c874e33b7d1c58d560670942596e">arcarc_intersect_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24">arcsegm_cross</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac91b0c958fa197cf011c29ccbabbb875.html#ac91b0c958fa197cf011c29ccbabbb875">arcsegm_end_crossing</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ac91b0c958fa197cf011c29ccbabbb875.html#ac91b0c958fa197cf011c29ccbabbb875">arcsegm_end_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a">arcsegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a29b3d5684039030d4bf4802d9fa2005a.html#a29b3d5684039030d4bf4802d9fa2005a">build_edge_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
@@ -104,7 +104,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac05338182d224ac5bb402bef0287ff8e.html#ac05338182d224ac5bb402bef0287ff8e">coordinate_rounding</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a27db8b42fe2f974d5db3d3e21fa10f1f.html#a27db8b42fe2f974d5db3d3e21fa10f1f">cross_product_exact</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a27db8b42fe2f974d5db3d3e21fa10f1f.html#a27db8b42fe2f974d5db3d3e21fa10f1f">cross_product_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393">cross_product_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af7aa6df0ab605f3926301b439af379de.html#af7aa6df0ab605f3926301b439af379de">cross_product_sign_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
@@ -202,14 +202,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a27db8b42fe2f974d5db3d3e21fa10f1f" name="a27db8b42fe2f974d5db3d3e21fa10f1f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27db8b42fe2f974d5db3d3e21fa10f1f">&#9670;&#160;</a></span>cross_product_exact()</h2>
+<a id="ac91b0c958fa197cf011c29ccbabbb875" name="ac91b0c958fa197cf011c29ccbabbb875"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac91b0c958fa197cf011c29ccbabbb875">&#9670;&#160;</a></span>arcsegm_end_crossing()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double cross_product_exact </td>
+          <td class="memname">static int arcsegm_end_crossing </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>ax</em>, </td>
@@ -224,37 +227,25 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>bx</em>, </td>
+          <td class="paramname"><em>rx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>by</em>, </td>
+          <td class="paramname"><em>ry</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cx</em>, </td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dy</em>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>at_start</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -262,11 +253,24 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the cross product of the vectors B - A and D - C, computed exactly and rounded once. </p>
-<p >The cross product of rounded differences carries an error of the order of a rounding of each of its two products, so where the vectors are nearly parallel and the products nearly cancel, it keeps none of its relative precision. The exact expansion of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_af7aa6df0ab605f3926301b439af379de.html#af7aa6df0ab605f3926301b439af379de" title="Return the sign of the cross product of the vectors B - A and D - C, decided exactly.">cross_product_sign_exact</a>, summed from its smallest component up, keeps it, however small the cross product is against the coordinates </p><dl class="section note"><dt>Note</dt><dd>Exact where no product of coordinate differences overflows or underflows </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>The cross product, 0 exactly where the vectors are parallel </dd></dl>
+<p>Return whether a line crosses an arc at a point within the rounding of an end of the arc. </p>
+<p >Such a crossing is a point the arithmetic constructs, and whether its angle falls inside the span of the arc is then decided by the last bit of an arctangent, which the mathematical libraries of two platforms round differently. The end of the arc is an input vertex, so the side of the line it stands on is a sign decided exactly (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>), and the arc leaves that end along the tangent of its circle there: the line is crossed next to the end exactly where the arc, leaving it, moves toward the line. The tangent is read in the double the centre gives, and the side it turns to is a sign that holds wherever the line crosses the circle rather than touching it, read against the magnitudes of the two products it is the difference of, which do not vanish </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay</td><td>Coordinates of a point of the line </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>Direction of the line </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">e</td><td>Arc edge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">at_start</td><td>True for the start of the arc, false for its end </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>1 where the line crosses the arc next to that end, 0 where it does not, -1 where the end lies on the line or the line runs along the arc there, which this does not decide </dd></dl>
 
 </div>
 </div>
