@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_chain_ring_infos</title>
+<title>MobilityDB: buffer_rings_add_loops</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -112,7 +112,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a071488d74402e9996c288e16842ac778.html#a071488d74402e9996c288e16842ac778">buffer_build_ring_from_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aff47038aebaf33df7987dc13884848de.html#aff47038aebaf33df7987dc13884848de">buffer_build_surfaces_from_classified_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15ad0eb19ed1ce81dfc12fd543ab1e93.html#a15ad0eb19ed1ce81dfc12fd543ab1e93">buffer_build_surfaces_from_rings</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a53cc846bc9be582f0fdb5a92e411845b.html#a53cc846bc9be582f0fdb5a92e411845b">buffer_chain_ring_infos</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a53cc846bc9be582f0fdb5a92e411845b.html#a53cc846bc9be582f0fdb5a92e411845b">buffer_chain_ring_infos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a014abfd84566f99ccd22b2bda0a22156.html#a014abfd84566f99ccd22b2bda0a22156">buffer_chain_ring_with_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a184073f1dc1613f7e766ff44c323e3d7.html#a184073f1dc1613f7e766ff44c323e3d7">buffer_classify_coincident_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac48859161242b98434f3cb9780f3ff8a.html#ac48859161242b98434f3cb9780f3ff8a">buffer_classify_piece</a></td></tr>
@@ -225,7 +225,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aacde408480594b8bc5e3b15d8a2817f2.html#aacde408480594b8bc5e3b15d8a2817f2">buffer_ring_resolve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a94a8f21c8501dbb8493905b0927e44c0.html#a94a8f21c8501dbb8493905b0927e44c0">buffer_ring_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad37ca9fc5fb5cdf220b642d4b404fe54.html#ad37ca9fc5fb5cdf220b642d4b404fe54">buffer_ring_weld</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a78dccd7bf1f52d1d639406a855e00709.html#a78dccd7bf1f52d1d639406a855e00709">buffer_rings_add_loops</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a78dccd7bf1f52d1d639406a855e00709.html#a78dccd7bf1f52d1d639406a855e00709">buffer_rings_add_loops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aab0953bae514f6c772893ec8f3676f2a.html#aab0953bae514f6c772893ec8f3676f2a">buffer_segment_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6525ef468042a5c4adb6f92de3d5bf71.html#a6525ef468042a5c4adb6f92de3d5bf71">buffer_segment_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac853561f4cca9470d2bad993c5f98269.html#ac853561f4cca9470d2bad993c5f98269">buffer_segments_equal</a></td></tr>
@@ -286,8 +286,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a53cc846bc9be582f0fdb5a92e411845b" name="a53cc846bc9be582f0fdb5a92e411845b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a53cc846bc9be582f0fdb5a92e411845b">&#9670;&#160;</a></span>buffer_chain_ring_infos()</h2>
+<a id="a78dccd7bf1f52d1d639406a855e00709" name="a78dccd7bf1f52d1d639406a855e00709"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78dccd7bf1f52d1d639406a855e00709">&#9670;&#160;</a></span>buffer_rings_add_loops()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -296,10 +296,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_chain_ring_infos </td>
+          <td class="memname">static void buffer_rings_add_loops </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces</em>, </td>
+          <td class="paramtype"><a class="el" href="structLWCOMPOUND.html">LWCOMPOUND</a> *&#160;</td>
+          <td class="paramname"><em>ring</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>ordered</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -326,8 +332,16 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Chain all selected boundary pieces into closed rings. </p>
-<p >The resulting <a class="el" href="structBufferRingInfo.html" title="Topological classification of a closed buffer boundary ring.">BufferRingInfo</a> objects retain both the geometric ring and the ordered boundary pieces used to construct it. </p>
+<p>Add a chained ring to the rings, as the simple loops it is made of. </p>
+<p >A walk that passes a node twice closes a ring touching itself there, which bounds the right points and is not a ring OGC admits: two surfaces touching at a point, or a hole touching its shell, are each two rings. The walk is read back piece by piece, and a piece ending on a node it passed already closes the loop drawn since that node, which is taken out as a ring of its own. The containment the rings are classified by then makes a loop inside another a hole and a loop beside it a shell. A ring that never returns to a node is one loop and is added as it was chained </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ring</td><td>Chained ring, owned by the rings or freed here </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ordered</td><td>Its pieces in the order chained, owned likewise </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">rings</td><td>Rings, as <a class="el" href="structBufferRingInfo.html" title="Topological classification of a closed buffer boundary ring.">BufferRingInfo</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
