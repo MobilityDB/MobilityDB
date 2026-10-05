@@ -159,6 +159,48 @@ CREATE FUNCTION maxDistance(geometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Accessors
+ *****************************************************************************/
+
+CREATE FUNCTION boundary(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_boundary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION reverse(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_reverse'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numGeometries(geometry)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_num_geos'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geometryN(geometry, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_geo_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numPoints(geometry)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_num_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Lines
+ *****************************************************************************/
+
+CREATE FUNCTION lineInterpolatePoint(geometry, float)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Line_interpolate_point'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lineSubstring(geometry, float, float)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Line_substring'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lineLocatePoint(geometry, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Line_locate_point'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

@@ -987,6 +987,12 @@
 					<para><link linkend="geo_distances"><varname>distance</varname>, <varname>shortestLine</varname>, <varname>maxDistance</varname></link>: Devuelve la distancia, la línea que une los puntos más cercanos o la distancia máxima de dos geometrías o geografías</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Devuelve la frontera, la inversión o las partes de una geometría</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>

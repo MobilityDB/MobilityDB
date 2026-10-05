@@ -239,6 +239,56 @@ SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::nu
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_accessors">
+				<indexterm significance="normal"><primary><varname>boundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>reverse</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numGeometries</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometryN</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
+				<para>Return the boundary, the reversal or the parts of a geometry</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+boundary(geometry) → geometry
+reverse(geometry) → geometry
+numGeometries(geometry) → integer
+geometryN(geometry,integer) → geometry
+numPoints(geometry) → integer
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, <varname>numPoints</varname> counting every vertex as <varname>ST_NPoints</varname> does and <varname>geometryN</varname> counting from 1. The boundary of an empty geometry is the empty geometry of the dimension of a boundary. The boundary of a compound curve is its two end points, or empty when it closes, and the boundary of a multisurface is the boundaries of its members; <varname>ST_Boundary</varname> refuses both.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(boundary(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- LINESTRING(0 0,4 0,4 4,0 4,0 0)
+SELECT ST_AsText(reverse(geometry 'Linestring(0 0,4 0,4 3)'));
+-- LINESTRING(4 3,4 0,0 0)
+SELECT numGeometries(geometry 'MultiPoint(1 1,5 5)');
+-- 2
+SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
+-- POINT(5 5)
+SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_lines">
+				<indexterm significance="normal"><primary><varname>lineInterpolatePoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>lineSubstring</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>lineLocatePoint</varname></primary></indexterm>
+				<para>Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+lineInterpolatePoint(geometry,float) → geometry
+lineSubstring(geometry,float,float) → geometry
+lineLocatePoint(geometry,geometry) → float
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, a fraction being a share of the length of the line between 0 and 1.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(lineInterpolatePoint(geometry 'Linestring(0 0,4 0,4 3)', 0.25));
+-- POINT(1.75 0)
+SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
+-- LINESTRING(1.75 0,4 0,4 1.6)
+SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
+-- 1
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Return the region two geometries share</para>

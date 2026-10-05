@@ -1014,13 +1014,14 @@ lwmsurface_boundary(const LWGEOM *geom)
  * @brief Return the boundary of a geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p boundary(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_boundary()
  */
 GSERIALIZED *
 geom_boundary(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (gserialized_is_empty(gs) || ! ensure_not_geodetic_geo(gs))
+  if (! ensure_not_geodetic_geo(gs))
     return NULL;
 
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
@@ -1456,6 +1457,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @brief Reverse vertex order of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_reverse(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_reverse()
  */
 GSERIALIZED *
 geo_reverse(const GSERIALIZED *gs)
@@ -1753,8 +1755,9 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
- * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_NPoints(PG_FUNCTION_ARGS)
  * @errval -1
+ * @csqlfn #Geo_num_points()
  */
 int
 geo_num_points(const GSERIALIZED *gs)
@@ -1774,6 +1777,7 @@ geo_num_points(const GSERIALIZED *gs)
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
  * @errval -1
+ * @csqlfn #Geo_num_geos()
  */
 int
 geo_num_geos(const GSERIALIZED *gs)
@@ -1802,6 +1806,7 @@ geo_num_geos(const GSERIALIZED *gs)
  * @param[in] gs Geometry/geography
  * @param[in] n Number (1-based)
  * @note PostGIS function: @p LWGEOM_geometryn_collection(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_geo_n()
  */
 GSERIALIZED *
 geo_geo_n(const GSERIALIZED *gs, int n)
@@ -6410,6 +6415,7 @@ lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
  * is located
  * @param[in] repeat True when obtaining several points
  * @note PostGIS function: @p LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
+ * @csqlfn #Line_interpolate_point()
  */
 GSERIALIZED *
 line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
@@ -6446,6 +6452,7 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
  * @param[in] from,to Values in [0,1] representing the fractional locations
  * where the subline starts and ends
  * @note PostGIS function: @p LWGEOM_line_substring(PG_FUNCTION_ARGS)
+ * @csqlfn #Line_substring()
  */
 GSERIALIZED *
 line_substring(const GSERIALIZED *gs, double from, double to)
@@ -6888,6 +6895,7 @@ geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
  * @param[in] gs1 Line
  * @param[in] gs2 Point
  * @errval -1.0
+ * @csqlfn #Line_locate_point()
  */
 double
 line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
