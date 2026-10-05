@@ -96,7 +96,10 @@ $(function() {
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &quot;temporal/skiplist.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="temporal__aggfuncs_8h_source.html">temporal/temporal_aggfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pcpatch_8h_source.html">pointcloud/pcpatch.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tpc__aggfuncs_8h_source.html">pointcloud/tpc_aggfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -124,6 +127,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gaff54382093bb9ebf98a76407b88f5231"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__accessor_gaff54382093bb9ebf98a76407b88f5231.html#gaff54382093bb9ebf98a76407b88f5231">tpcpatch_start_value</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:gaff54382093bb9ebf98a76407b88f5231"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the start value of a temporal pgpointcloud patch.  <a href="group__meos__pointcloud__accessor_gaff54382093bb9ebf98a76407b88f5231.html#gaff54382093bb9ebf98a76407b88f5231">More...</a><br /></td></tr>
 <tr class="separator:gaff54382093bb9ebf98a76407b88f5231"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga363272f29de746a22925afe1732fe84d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSkipList.html">SkipList</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__agg_ga363272f29de746a22925afe1732fe84d.html#ga363272f29de746a22925afe1732fe84d">tpcpatch_tdensity_transfn</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga363272f29de746a22925afe1732fe84d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for the temporal sum of the density of temporal pgpointcloud patches.  <a href="group__meos__pointcloud__agg_ga363272f29de746a22925afe1732fe84d.html#ga363272f29de746a22925afe1732fe84d">More...</a><br /></td></tr>
+<tr class="separator:ga363272f29de746a22925afe1732fe84d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e5e022c3d62eb8eaa32b5f26e3e10f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSkipList.html">SkipList</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__agg_ga8e5e022c3d62eb8eaa32b5f26e3e10f1.html#ga8e5e022c3d62eb8eaa32b5f26e3e10f1">tpcpatch_tnpoints_transfn</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga8e5e022c3d62eb8eaa32b5f26e3e10f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for the temporal sum of the number of points of temporal pgpointcloud patches.  <a href="group__meos__pointcloud__agg_ga8e5e022c3d62eb8eaa32b5f26e3e10f1.html#ga8e5e022c3d62eb8eaa32b5f26e3e10f1">More...</a><br /></td></tr>
+<tr class="separator:ga8e5e022c3d62eb8eaa32b5f26e3e10f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2236d449efe969646c325880318ddb76"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSpanSet.html">SpanSet</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__transf_ga2236d449efe969646c325880318ddb76.html#ga2236d449efe969646c325880318ddb76">tpcpatch_unnest</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="structPcpatch.html">Pcpatch</a> ***values, int *count)</td></tr>
 <tr class="memdesc:ga2236d449efe969646c325880318ddb76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distinct values of a temporal pgpointcloud patch, each with the span set on which it is taken.  <a href="group__meos__pointcloud__transf_ga2236d449efe969646c325880318ddb76.html#ga2236d449efe969646c325880318ddb76">More...</a><br /></td></tr>
 <tr class="separator:ga2236d449efe969646c325880318ddb76"><td class="memSeparator" colspan="2">&#160;</td></tr>

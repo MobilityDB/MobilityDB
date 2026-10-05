@@ -90,6 +90,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="tpc__boxops_8h_source.html">pointcloud/tpc_boxops.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tpcbox_8h_source.html">pointcloud/tpcbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pcpatch_8h_source.html">pointcloud/pcpatch.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tpc__aggfuncs_8h_source.html">pointcloud/tpc_aggfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;temporal/skiplist.h&quot;</code><br />
@@ -118,12 +119,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga34a9789b93b111d327a295860e85408f"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__agg_ga34a9789b93b111d327a295860e85408f.html#ga34a9789b93b111d327a295860e85408f">Tpcpatch_tnpoints_transfn</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga34a9789b93b111d327a295860e85408f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for tnpoints(tpcpatch) — temporal running sum of per-instant pcpatch-&gt;npoints @sqlfn tnpoints_transfn() @sqlaggfn tnpoints()  <a href="group__mobilitydb__pointcloud__agg_ga34a9789b93b111d327a295860e85408f.html#ga34a9789b93b111d327a295860e85408f">More...</a><br /></td></tr>
 <tr class="separator:ga34a9789b93b111d327a295860e85408f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2bc823f05efd1afb0e2bb05c6527c5e6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTInstant.html">TInstant</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpc__aggfuncs_8c_a2bc823f05efd1afb0e2bb05c6527c5e6.html#a2bc823f05efd1afb0e2bb05c6527c5e6">tpcpatch_transform_tdensity</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int *count_out)</td></tr>
-<tr class="memdesc:a2bc823f05efd1afb0e2bb05c6527c5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Walk a <a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> of tpcpatch and return an array of TInstants over T_TFLOAT each carrying npoints / (xrange * yrange)  <a href="tpc__aggfuncs_8c_a2bc823f05efd1afb0e2bb05c6527c5e6.html#a2bc823f05efd1afb0e2bb05c6527c5e6">More...</a><br /></td></tr>
-<tr class="separator:a2bc823f05efd1afb0e2bb05c6527c5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2aa5af533b122aeb678511fccaa6552"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTInstant.html">TInstant</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpc__aggfuncs_8c_af2aa5af533b122aeb678511fccaa6552.html#af2aa5af533b122aeb678511fccaa6552">tpcpatch_transform_tnpoints</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int *count_out)</td></tr>
-<tr class="memdesc:af2aa5af533b122aeb678511fccaa6552"><td class="mdescLeft">&#160;</td><td class="mdescRight">Walk a <a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> of tpcpatch and return an array of TInstants over T_TINT where each instant carries the pcpatch's npoints.  <a href="tpc__aggfuncs_8c_af2aa5af533b122aeb678511fccaa6552.html#af2aa5af533b122aeb678511fccaa6552">More...</a><br /></td></tr>
-<tr class="separator:af2aa5af533b122aeb678511fccaa6552"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Extent aggregate of the temporal pgpointcloud types. </p>
