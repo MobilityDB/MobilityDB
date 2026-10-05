@@ -292,7 +292,7 @@ reads over the unions of 1500 pairs. MobilityDB #2959, merged as `42ebd6312b`, r
 then write the hole as a ring of its own; 68 still spell it as a shell touching itself.
 No choice of turn at the node answers both cases the walk meets: two surfaces touching at a point
 need the walk to keep to the face it traces, a hole touching its shell needs it to leave that face.
-MobilityDB #2985 reads each chained ring back and takes out the loop closed at every node it passes
+MobilityDB #2985, merged as `867fda8438`, reads each chained ring back and takes out the loop closed at every node it passes
 twice, and the containment the rings are classified by makes each loop a shell or a hole: the answers
 holding a ring touching itself go from 69 and 16 of 1500, flat and with Z, to 0, and CGAL agrees with
 every answer.
