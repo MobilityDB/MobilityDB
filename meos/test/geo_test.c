@@ -1152,6 +1152,31 @@ int main(void)
   free(coll_geo_a); free(coll_geo_b);
   meos_errno_reset();
 
+  /* Two polygons crossing where no grid holds the crossing: the edge from
+   * (0 0) to (3 1) leaves the unit square at (1, 1/3), and both overlays carry
+   * that vertex as the double nearest 1/3, which an overlay rounding its
+   * vertices to a grid of 1e-7 answers as 0.3333333 */
+  GSERIALIZED *third_sq = geom_in("POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
+  GSERIALIZED *third_tr = geom_in("POLYGON((0 0,3 1,0 1,0 0))", -1);
+  assert(third_sq != NULL);
+  assert(third_tr != NULL);
+  GSERIALIZED *third_inter = geom_intersection2d(third_sq, third_tr);
+  GSERIALIZED *third_diff = geom_difference2d(third_sq, third_tr);
+  assert(third_inter != NULL);
+  assert(third_diff != NULL);
+  char *third_inter_wkt = geo_as_text(third_inter, 17);
+  char *third_diff_wkt = geo_as_text(third_diff, 17);
+  printf("geom_intersection2d(the unit square, a triangle leaving it at "
+    "(1, 1/3)): %s\n", third_inter_wkt);
+  printf("geom_difference2d(the unit square, the same triangle): %s\n",
+    third_diff_wkt);
+  assert(strstr(third_inter_wkt, "1 0.3333333333333333") != NULL);
+  assert(strstr(third_diff_wkt, "1 0.3333333333333333") != NULL);
+  free(third_inter_wkt); free(third_diff_wkt);
+  free(third_inter); free(third_diff);
+  free(third_sq); free(third_tr);
+  meos_errno_reset();
+
   /* A subject drawing NOTHING has nothing for a clip to take, whatever the
    * clip draws. The rule above answers a region unchanged where the clip is of
    * lower dimension, and an empty subject reaches it the same way: it keeps
@@ -3264,7 +3289,8 @@ int main(void)
    * SAY. Two half discs glued along their diameter meet along the whole of
    * it, and the nodes bounding that stretch are its two ENDS -- they state
    * where the meeting begins and ends, never what it draws. What draws it is
-   * the piece of boundary both carry, so that piece is the answer */
+   * the piece of boundary both carry, so that piece is the answer, read off
+   * the first one's boundary as two polygons' meeting is below */
   GSERIALIZED *hd1 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
     "CIRCULARSTRING(-2 0,0 2,2 0),(2 0,-2 0)))", -1);
   GSERIALIZED *hd2 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
@@ -3275,7 +3301,7 @@ int main(void)
   assert(hdi != NULL);
   char *hdw = geo_as_text(hdi, 6);
   printf("two half discs sharing their diameter answer: %s\n", hdw);
-  assert(strcmp(hdw, "LINESTRING(-2 0,2 0)") == 0);
+  assert(strcmp(hdw, "LINESTRING(2 0,-2 0)") == 0);
   free(hdw); free(hdi); free(hd1); free(hd2);
   meos_errno_reset();
   /* AND THE STRETCH KEEPS THE CIRCLE IT IS AN ARC OF. The disc and the lune
@@ -3321,7 +3347,7 @@ int main(void)
     /* two squares meeting along an edge share the edge they meet along ... */
     "LINESTRING(2 0,2 2)",
     /* ... and neither takes any area from the other */
-    "POLYGON((2 2,2 0,0 0,0 2,2 2))",
+    "POLYGON((0 0,2 0,2 2,0 2,0 0))",
   };
   for (int i = 0; i < 3; i++)
   {
@@ -3379,9 +3405,9 @@ int main(void)
     /* boxes that meet over shapes that do not is still nothing */
     "POLYGON EMPTY",
     /* one region inside another shares that region, which has area */
-    "POLYGON((3 3,3 1,1 1,1 3,3 3))",
+    "POLYGON((1 1,3 1,3 3,1 3,1 1))",
     /* and two overlapping squares share the region they overlap in */
-    "POLYGON((4 4,4 0,2 0,2 4,4 4))",
+    "POLYGON((2 0,4 0,4 4,2 4,2 0))",
   };
   for (int i = 0; i < 8; i++)
   {

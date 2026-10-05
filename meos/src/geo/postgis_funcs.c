@@ -61,7 +61,6 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/type_util.h"
-#include "geo/geo_poly_clip.h"  /* clip_poly_poly fast-path for polygon ∩/− polygon */
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -3054,9 +3053,9 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
 
 /**
  * @brief Return @c true iff @p gs is a 2D POLYGON or MULTIPOLYGON
- * @internal Used by #geom_intersection2d / #geom_difference2d to decide
- * whether to fast-path through the Clipper2-backed @c clip_poly_poly.
- * Geography and 3D inputs fall through to the GEOS path
+ * @internal Used by #geom_intersection2d to decide whether the region two
+ * operands share is answered with the stretches they touch along outside it.
+ * A geography and a geometry carrying Z are not, and answer false
  */
 static bool
 geo_is_planar_polygonal(const GSERIALIZED *gs)
@@ -3281,58 +3280,6 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return what two areal geometries meet along where they share no area,
- * or @c NULL where they meet in nothing
- * @details The intersection of two point sets is a point set, and nothing
- * about it promises an area. An engine that assembles regions answers the
- * region, so for a pair meeting at a point or along a curve it answers an
- * empty one -- and "no area" and "nothing" are different sentences.
- *
- * Where the two share no area, no part of the first one's boundary reaches
- * the interior of the second: a point of it that did would carry a
- * neighbourhood of the first one's own interior into the second's, which is
- * area they would then share. So the part of that boundary the second
- * geometry covers is exactly the part lying ON its boundary -- the two
- * expressions denote one set -- and it is the SECOND BOUNDARY the clip is
- * asked about, because only that one is answered by the segment kernels
- * alone. Clipping against the second geometry as a SOLID asks additionally
- * where a point falls relative to its interior, a question the kernels answer
- * by locating constructed points, and the answer it gives is not always on
- * either operand. Asking it of the first operand's boundary also keeps the
- * answer running in that operand's own direction
- * @param[in] gs1,gs2 Geometries
- * @pre The two share no area, which is what the caller has just read
- */
-static GSERIALIZED *
-geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  assert(gs1); assert(gs2);
-  /* Two geometries whose bounding boxes lie apart meet nowhere, which spares
-   * an ordinary spatial join a boundary of its own for every pair it rejects */
-  GBOX box1, box2;
-  memset(&box1, 0, sizeof(GBOX));
-  memset(&box2, 0, sizeof(GBOX));
-  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2)
-      && gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
-    return NULL;
-
-  GSERIALIZED *bound1 = geom_boundary(gs1);
-  GSERIALIZED *bound2 = bound1 ? geom_boundary(gs2) : NULL;
-  GSERIALIZED *result = (bound1 && bound2 && geo_clip_subject(bound1) &&
-    geo_meos_coverage(bound2) == 1) ?
-    geo_clip_linear_geom(bound1, bound2, true) : NULL;
-  if (bound1) pfree(bound1);
-  if (bound2) pfree(bound2);
-  /* A meeting of nothing is the empty region the caller already holds */
-  if (result && geo_is_empty(result))
-  {
-    pfree(result);
-    result = NULL;
-  }
-  return result;
-}
-
-/**
  * @brief Return true if a geometry is one built of parts, which the overlay
  * can answer a part at a time
  * @details Every one of these is an @p LWCOLLECTION under the type tag, so the
@@ -3553,13 +3500,13 @@ geo_has_ordinates(const GSERIALIZED *gs)
 static LWGEOM *geo_arealess_parts_as_lines(const LWGEOM *geom);
 
 static GSERIALIZED *geom_intersection2d_route(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2, bool fastpath);
+  const GSERIALIZED *gs2);
 static GSERIALIZED *geom_difference2d_route(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2, bool fastpath);
+  const GSERIALIZED *gs2);
 
 static GSERIALIZED *
 geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  GSERIALIZED *(*overlay)(const GSERIALIZED *, const GSERIALIZED *, bool))
+  GSERIALIZED *(*overlay)(const GSERIALIZED *, const GSERIALIZED *))
 {
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
@@ -3568,7 +3515,7 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   GSERIALIZED *gsplane1 = geo_serialize(plane1);
   GSERIALIZED *gsplane2 = geo_serialize(plane2);
   lwgeom_free(plane1); lwgeom_free(plane2);
-  GSERIALIZED *flat = overlay(gsplane1, gsplane2, false);
+  GSERIALIZED *flat = overlay(gsplane1, gsplane2);
   pfree(gsplane1); pfree(gsplane2);
   if (! flat)
   {
@@ -3607,10 +3554,11 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @note PostGIS function: @p ST_Intersection(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
  *
- * When both inputs are 2D POLYGON / MULTIPOLYGON the call routes through
- * the Clipper2-backed #clip_poly_poly, and where that answers a region of no
- * area #geom_areal_meeting answers what the two meet along. Other type
- * combinations fall through to PostGIS's GEOS-backed
+ * Surfaces are answered by the native areal overlay, which computes the
+ * vertices it builds from the doubles the operands hold, without rounding them
+ * onto a grid; two polygons sharing a region and touching along a stretch
+ * outside it are answered with both. Other type combinations the native
+ * routes do not answer fall through to PostGIS's GEOS-backed
  * @c lwgeom_intersection_prec.
  */
 GSERIALIZED *
@@ -3625,56 +3573,16 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
     return geo_overlay_lifted(gs1, gs2, geom_intersection2d_route);
 
-  return geom_intersection2d_route(gs1, gs2, true);
+  return geom_intersection2d_route(gs1, gs2);
 }
 
 /**
  * @brief Return the intersection of two planar geometries
  * @param[in] gs1,gs2 Geometries
- * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
  */
 static GSERIALIZED *
-geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  bool fastpath)
+geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Clipper2 fast-path for 2D polygonal inputs. The PROJECTION of a pair
-   * carrying ordinates skips it: Clipper2 quantises the vertices it builds
-   * onto a grid of 1e-7, which leaves them off the edges of the geometries
-   * the ordinates are read from, so the answer would carry none of them */
-  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
-  {
-    GSERIALIZED *result = clip_poly_poly(gs1, gs2, CL_INTERSECTION);
-    /* The region two surfaces share is empty where they meet without
-     * overlapping, and what they meet along is still theirs in common */
-    if (result && geo_is_empty(result))
-    {
-      GSERIALIZED *meeting = geom_areal_meeting(gs1, gs2);
-      if (meeting)
-      {
-        pfree(result);
-        return meeting;
-      }
-    }
-    /* Two surfaces can share a region AND touch along a stretch outside it,
-     * and the region states only the first half */
-    else if (result)
-    {
-      GSERIALIZED *beside = geom_areal_touching_stretches(gs1, gs2);
-      if (beside)
-      {
-        GSERIALIZED *parts[2] = { result, beside };
-        GSERIALIZED *both = geo_collect_garray(parts, 2);
-        pfree(beside);
-        if (both)
-        {
-          pfree(result);
-          return both;
-        }
-      }
-    }
-    return result;
-  }
-
   /* The points of a point set that the other geometry covers ARE the
    * intersection, whatever the other geometry draws */
   if (geo_is_point_set(gs1))
@@ -3707,8 +3615,8 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     GSERIALIZED *written = geo_serialize(lines);
     lwgeom_free(lines);
     GSERIALIZED *result = i ?
-      geom_intersection2d_route(gs1, written, fastpath) :
-      geom_intersection2d_route(written, gs2, fastpath);
+      geom_intersection2d_route(gs1, written) :
+      geom_intersection2d_route(written, gs2);
     pfree(written);
     return result;
   }
@@ -3727,6 +3635,24 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     if (lwresult)
       lwgeom_free(lwresult);
     lwgeom_free(geom1); lwgeom_free(geom2);
+    /* Two polygons can share a region AND touch along a stretch outside it,
+     * and the region states only the first half */
+    if (result && ! geo_is_empty(result) && geo_is_planar_areal(result) &&
+        geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
+    {
+      GSERIALIZED *beside = geom_areal_touching_stretches(gs1, gs2);
+      if (beside)
+      {
+        GSERIALIZED *parts[2] = { result, beside };
+        GSERIALIZED *both = geo_collect_garray(parts, 2);
+        pfree(beside);
+        if (both)
+        {
+          pfree(result);
+          return both;
+        }
+      }
+    }
     if (result)
       return result;
   }
@@ -3787,23 +3713,16 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
     return geo_overlay_lifted(gs1, gs2, geom_difference2d_route);
 
-  return geom_difference2d_route(gs1, gs2, true);
+  return geom_difference2d_route(gs1, gs2);
 }
 
 /**
  * @brief Return the difference of two planar geometries
  * @param[in] gs1,gs2 Geometries
- * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
  */
 static GSERIALIZED *
-geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  bool fastpath)
+geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Clipper2 fast-path for 2D polygonal inputs, which the projection of a
-   * pair carrying ordinates skips, as #geom_intersection2d_route states */
-  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
-    return clip_poly_poly(gs1, gs2, CL_DIFFERENCE);
-
   /* Difference takes the FIRST operand apart, so only its own kind decides */
   if (geo_is_point_set(gs1))
     return geo_points_covered(gs1, gs2, false);
@@ -3824,7 +3743,7 @@ geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     {
       GSERIALIZED *written = geo_serialize(lines);
       lwgeom_free(lines);
-      GSERIALIZED *result = geom_difference2d_route(written, gs2, fastpath);
+      GSERIALIZED *result = geom_difference2d_route(written, gs2);
       pfree(written);
       return result;
     }
