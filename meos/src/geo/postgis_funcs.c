@@ -1357,6 +1357,7 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] tolerance Tolerance
  * @note PostGIS functions: @p LWGEOM_dwithin(PG_FUNCTION_ARGS),
  * @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_dwithin()
  */
 bool
 geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
@@ -2159,6 +2160,7 @@ geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
  * @p ST_3DIntersects(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_intersects()
  */
 bool
 geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -2177,6 +2179,7 @@ geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * at every instant
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Disjoint(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_disjoint()
  */
 bool
 geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -2191,11 +2194,18 @@ geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry contains the second one
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS functions: @p contains(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_contains()
  */
 bool
 geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
 
@@ -2203,11 +2213,18 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return true if the two geometries intersect on a border
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS function: @p touches(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_touches()
  */
 bool
 geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, TOUCHES);
 }
 
@@ -2215,11 +2232,18 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry covers the second one
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS function: @p ST_Covers(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_covers()
  */
 bool
 geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, COVERS);
 }
 
@@ -2300,6 +2324,7 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * a linearization would put in its place, and an empty operand meets nothing
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
  * Note also the the pattern may be modified in the function
+ * @csqlfn #Geom_relate_pattern()
  */
 bool
 geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
@@ -4452,6 +4477,7 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * circular arc is met on its own circle rather than on the chords a
  * linearization would put in its place
  * @note PostGIS function: @p ST_Equals(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_equals()
  */
 int
 geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -5206,6 +5232,7 @@ geo_length(const GSERIALIZED *gs, bool spheroid)
  * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_dwithin_uncached(PG_FUNCTION_ARGS)
  * where we use the WGS84 spheroid
+ * @csqlfn #Geog_dwithin()
  */
 bool
 geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
@@ -5270,6 +5297,7 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
  * @param[in] gs1,gs2 Geographies
  * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_intersects(PG_FUNCTION_ARGS)
+ * @csqlfn #Geog_intersects()
  */
 bool
 geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
@@ -5286,6 +5314,7 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] gs1,gs2 Geographies
  * @param[in] use_spheroid True when using a spheroid
  * @errval false
+ * @csqlfn #Geog_disjoint()
  */
 bool
 geog_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2,

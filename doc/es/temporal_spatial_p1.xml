@@ -116,11 +116,12 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 
 			<listitem xml:id="geo_relate">
 				<indexterm significance="normal"><primary><varname>relate</varname></primary></indexterm>
-				<para>Devuelve la matriz de intersección DE-9IM de dos geometrías</para>
+				<para>Devuelve la matriz de intersección DE-9IM de dos geometrías o si coincide con un patrón</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 relate(geometry,geometry) → text
+relate(geometry,geometry,text) → boolean
 </programlisting>
-				<para>La matriz indica, para cada par formado por el interior, la frontera y el exterior de la primera geometría y de la segunda, la dimensión de lo que comparten: <literal>F</literal> cuando no comparten nada, <literal>0</literal>, <literal>1</literal> o <literal>2</literal> cuando comparten puntos, una curva o un área. Un arco circular se lee sobre su propio círculo y no sobre una cadena de segmentos que lo aproxima, y el interior y la frontera de una colección de geometrías son los de la unión de sus miembros.</para>
+				<para>La matriz indica, para cada par formado por el interior, la frontera y el exterior de la primera geometría y de la segunda, la dimensión de lo que comparten: <literal>F</literal> cuando no comparten nada, <literal>0</literal>, <literal>1</literal> o <literal>2</literal> cuando comparten puntos, una curva o un área. Un arco circular se lee sobre su propio círculo y no sobre una cadena de segmentos que lo aproxima, y el interior y la frontera de una colección de geometrías son los de la unión de sus miembros. Con un patrón, la función responde si la matriz coincide con él, como lo hace <varname>ST_Relate</varname> con tres argumentos: un carácter <literal>T</literal> del patrón coincide con cualquiera de <literal>0</literal>, <literal>1</literal> y <literal>2</literal>, y un carácter <literal>*</literal> coincide con cualquier cosa.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
 -- 1020F1102
@@ -130,6 +131,58 @@ SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
 SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
   geometry 'Point(2 1.9)');
 -- 0F2FF1FF2
+SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)',
+  'T*****FF*');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_spatialrels">
+				<indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>covers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>disjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>touches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoEquals</varname></primary></indexterm>
+				<para>Devuelve verdadero si dos geometrías satisfacen una relación espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+contains(geometry,geometry) → boolean
+covers(geometry,geometry) → boolean
+touches(geometry,geometry) → boolean
+geoEquals(geometry,geometry) → boolean
+disjoint({geometry,geography},{geometry,geography}) → boolean
+intersects({geometry,geography},{geometry,geography}) → boolean
+</programlisting>
+				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname> sobre los mismos argumentos, sin llamar a GEOS. Sobre dos geometrías con Z, <varname>disjoint</varname> e <varname>intersects</varname> se evalúan en 3D, como <varname>ST_3DIntersects</varname>, y en 2D cuando una de ellas no tiene Z. Las relaciones de contención <varname>contains</varname>, <varname>covers</varname> y <varname>touches</varname> no tienen forma 3D y rechazan una geometría con Z. Dos geografías se intersecan sobre el esferoide WGS 84, como lo decide <varname>ST_Intersects</varname>. La igualdad de dos conjuntos de puntos se llama <varname>geoEquals</varname> en todos los motores, ya que PostGIS declara <varname>equals(geometry, geometry)</varname> como un alias obsoleto de <varname>ST_Equals</varname>; lee los puntos, mientras que el operador <varname>=</varname> compara los vértices.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT contains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)');
+-- true
+SELECT touches(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(4 2)');
+-- true
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+-- false
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_dwithin">
+				<indexterm significance="normal"><primary><varname>dwithin</varname></primary></indexterm>
+				<para>Devuelve verdadero si dos geometrías están a una distancia dada</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dwithin(geometry,geometry,float) → boolean
+dwithin(geography,geography,float,spheroid boolean=true) → boolean
+</programlisting>
+				<para>Dos geometrías con Z se miden en 3D, como <varname>ST_3DDWithin</varname>, y en 2D cuando una de ellas no tiene Z. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
+-- false
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
+-- false
 </programlisting>
 			</listitem>
 

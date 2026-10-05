@@ -166,3 +166,98 @@ SELECT relate(geometry 'Polyhedralsurface Z (
 SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Spatial relationships
+-- Each answers as the PostGIS function of the same name with the prefix ST_ on
+-- the same pair, read in both orders: a point inside, on the boundary of and
+-- outside a square, a line crossing it, a square inside it, a square sharing an
+-- edge, an edge of it, a multipoint across it, a square overlapping it and an
+-- empty geometry
+-------------------------------------------------------------------------------
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) AS pairs,
+  count(*) FILTER (WHERE contains(a, b) IS DISTINCT FROM ST_Contains(a, b)) AS contains,
+  count(*) FILTER (WHERE covers(a, b) IS DISTINCT FROM ST_Covers(a, b)) AS covers,
+  count(*) FILTER (WHERE disjoint(a, b) IS DISTINCT FROM ST_Disjoint(a, b)) AS disjoint,
+  count(*) FILTER (WHERE intersects(a, b) IS DISTINCT FROM ST_Intersects(a, b)) AS intersects,
+  count(*) FILTER (WHERE touches(a, b) IS DISTINCT FROM ST_Touches(a, b)) AS touches,
+  count(*) FILTER (WHERE geoEquals(a, b) IS DISTINCT FROM ST_Equals(a, b)) AS equals,
+  count(*) FILTER (WHERE dwithin(a, b, 1.5) IS DISTINCT FROM ST_DWithin(a, b, 1.5)) AS dwithin,
+  count(*) FILTER (WHERE relate(a, b, 'T*****FF*') IS DISTINCT FROM ST_Relate(a, b, 'T*****FF*')) AS relate
+FROM pairs;
+
+-- How many of the pairs each relationship holds for, so that agreement is not
+-- the agreement of two functions answering false throughout
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty')),
+pairs AS (SELECT a.geom AS a, b.geom AS b FROM g a, g b)
+SELECT count(*) FILTER (WHERE contains(a, b)) AS contains,
+  count(*) FILTER (WHERE covers(a, b)) AS covers,
+  count(*) FILTER (WHERE disjoint(a, b)) AS disjoint,
+  count(*) FILTER (WHERE intersects(a, b)) AS intersects,
+  count(*) FILTER (WHERE touches(a, b)) AS touches,
+  count(*) FILTER (WHERE geoEquals(a, b)) AS equals,
+  count(*) FILTER (WHERE dwithin(a, b, 1.5)) AS dwithin,
+  count(*) FILTER (WHERE relate(a, b, 'T*****FF*')) AS relate
+FROM pairs;
+
+-- Equality reads the points, so two lines with different vertices are equal
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,3 0)');
+
+-- A relationship over two geometries with Z is tested in 3D, as the PostGIS
+-- functions with the prefix ST_3D; over a geometry with Z and one without, in 2D
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)'),
+  ST_3DIntersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1)'),
+  ST_Intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1)');
+SELECT disjoint(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5),
+  ST_3DDWithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+
+-- The containment family has no 3D form, so a geometry with Z is refused
+SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
+SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');
+SELECT touches(geometry 'Point(2 2 1)', geometry 'Point(2 2)');
+
+-- Two geometries in different reference systems are refused
+SELECT intersects(geometry 'SRID=3857;Point(1 1)', geometry 'SRID=4326;Point(1 1)');
+
+-- A geography intersects as ST_Intersects, and is within a distance on the
+-- spheroid by default and on the sphere when the last argument is false: one
+-- degree of meridian at the equator measures 110574 m on the spheroid and
+-- 111195 m on the sphere
+SELECT intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)'),
+  ST_Intersects(geography 'Linestring(0 0,2 2)', geography 'Linestring(0 2,2 0)');
+SELECT disjoint(geography 'Point(0 0)', geography 'Point(0 1)');
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800),
+  ST_DWithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false),
+  ST_DWithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
+
+-------------------------------------------------------------------------------
