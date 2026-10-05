@@ -131,6 +131,28 @@ datum_point_eq(Datum point1, Datum point2)
 
 
 /**
+ * @brief Return true if the points are equal, the caller having established
+ * that they share a reference system, a dimensionality and a geodetic flag
+ * @details The internal twin of #datum_point_eq, for the walks that compare one
+ * instant after another. The entry of such a walk establishes the condition
+ * once -- `ensure_valid_tgeo_tgeo` refuses two temporal points whose SRIDs
+ * differ -- so reading the SRID out of both serializations per element pays
+ * again for a question already answered. The condition set is the external
+ * form's, asserted rather than tested, and `NDEBUG` removes it from a release
+ * build while a debug build checks it
+ */
+bool
+datum_point_eq_intl(Datum point1, Datum point2)
+{
+  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  return geopoint_eq(gs1, gs2);
+}
+
+/**
  * @brief Return true if the points are equal taking into account floating 
  * point imprecision
  */

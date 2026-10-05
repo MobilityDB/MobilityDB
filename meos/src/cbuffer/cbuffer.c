@@ -1401,6 +1401,23 @@ cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
 }
 
 /**
+ * @ingroup meos_internal_cbuffer_base_comp
+ * @brief Return true if the first buffer is equal to the second one
+ * @param[in] cb1,cb2 Circular buffers
+ * @details The internal twin of #cbuffer_eq, for the walks that compare one
+ * instant after another: the entry of such a walk establishes the shared
+ * reference system once, so comparing it per element answers it again. The
+ * condition set is the external form's, asserted rather than tested
+ */
+bool
+cbuffer_eq_intl(const Cbuffer *cb1, const Cbuffer *cb2)
+{
+  assert(cb1); assert(cb2); assert(cb1->srid == cb2->srid);
+  return float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
+    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+}
+
+/**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is not equal to the second one
  * @param[in] cb1,cb2 Circular buffers
