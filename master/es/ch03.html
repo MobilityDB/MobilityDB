@@ -47,7 +47,7 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 </pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2874"></a><a class="indexterm" name="id2877"></a><p>Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 asBinary(box,endian text='') → bytea
 asHexWKB(box,endian text='') → text
-</pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Como para todo tipo espacial, la representación de una <code class="varname">stbox</code> no escribe su SRID, que escriben <code class="varname">asEWKB</code> y <code class="varname">asHexEWKB</code>.</p><pre class="programlisting">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
@@ -60,14 +60,22 @@ SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
 -- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
-</pre></li><li class="listitem"><a name="boxFromText"></a><a class="indexterm" name="id2885"></a><p>Entrada desde la representación de texto conocido (WKT)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="stbox_asEWKB"></a><a class="indexterm" name="id2888"></a><a class="indexterm" name="id2891"></a><p>Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja espaciotemporal</p><pre class="programlisting">
+asEWKB(stbox,endian text='') → bytea
+asHexEWKB(stbox,endian text='') → text
+</pre><p>El resultado es la representación que escriben <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> con el SRID de la caja, como todo tipo espacial escribe su SRID en su representación extendida.</p><pre class="programlisting">
+SELECT asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- \x0141e40e0000000000000000f03f0000000000000040000000000000f03f0000000000000040
+SELECT asHexEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))', 'XDR');
+-- 004100000EE43FF000000000000040000000000000003FF00000000000004000000000000000
+</pre></li><li class="listitem"><a name="boxFromText"></a><a class="indexterm" name="id2901"></a><p>Entrada desde la representación de texto conocido (WKT)</p><pre class="programlisting">
 boxFromText(text) → box
 </pre><p>En la función anterior, <code class="varname">box</code> reemplaza cualquier tipo de cuadro delimitador, a saber, <code class="varname">tbox</code> o <code class="varname">stbox</code>. La función es la inversa de <code class="varname">asText</code>: lee el texto en el que se escribe un literal del tipo, tanto de una constante como de una columna <code class="varname">text</code>, incluido el SRID de un cuadro delimitador espaciotemporal.</p><pre class="programlisting">
 SELECT tboxFromText('TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 -- TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])
 SELECT stboxFromText('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
 -- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
-</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2898"></a><a class="indexterm" name="id2901"></a><p>Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2914"></a><a class="indexterm" name="id2917"></a><p>Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 boxFromBinary(bytea) → box
 boxFromHexWKB(text) → box
 </pre><p>En las funciones anteriores, <code class="varname">box</code> reemplaza cualquier tipo de cuadro delimitador, a saber, <code class="varname">tbox</code> o <code class="varname">stbox</code>.</p><pre class="programlisting">
@@ -83,4 +91,13 @@ SELECT tboxFromHexWKB(
 SELECT stboxFromHexWKB(
   '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
 -- STBOX X((1,1),(2,2))
+</pre></li><li class="listitem"><a name="stboxFromEWKB"></a><a class="indexterm" name="id2928"></a><a class="indexterm" name="id2931"></a><p>Entrada de una caja espaciotemporal desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</p><pre class="programlisting">
+stboxFromEWKB(bytea) → stbox
+stboxFromHexEWKB(text) → stbox
+</pre><pre class="programlisting">
+SELECT stboxFromEWKB(asEWKB(stbox 'SRID=3812;STBOX X((1,1),(2,2))'));
+-- SRID=3812;STBOX X((1,1),(2,2))
+SELECT stboxFromHexEWKB(
+  '0141E40E0000000000000000F03F0000000000000040000000000000F03F0000000000000040');
+-- SRID=3812;STBOX X((1,1),(2,2))
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s12.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch03s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>
