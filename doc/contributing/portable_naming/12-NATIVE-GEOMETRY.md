@@ -62,7 +62,7 @@ master already declares `distance`, `shortestLine`, `area`, `perimeter`, `centro
 
 | # | Question | Decided |
 |---|---|---|
-| 1 | `equals(geometry, geometry)`? | yes, over `geo_equals`, the point-set equality read from the DE-9IM matrix (`ST_Equals`); Spark and Flink `geoEquals`; beside the structural `=` |
+| 1 | `equals(geometry, geometry)`? | yes, over `geo_equals`, the point-set equality read from the DE-9IM matrix (`ST_Equals`), as `geoEquals` in every engine, PostgreSQL included: PostGIS 3.6.3 declares `equals(geometry, geometry)` as a deprecated alias of `ST_Equals`, so the name is taken as `geoUnion` takes the name the keyword `union` holds; beside the structural `=` |
 | 2 | The shape of the clustering functions | MEOS's array shape in every engine: `clusterKMeans(geometry[], k)` and `clusterDBSCAN(geometry[], eps, minpoints)` return `integer[]`, `clusterIntersecting(geometry[])` and `clusterWithin(geometry[], d)` return `geometry[]`; a PostgreSQL window form can be added later without a rename |
 | 3 | `points(geometry)` | the two-layer rule: `points(geometry)` returns a `geomset`, `geoPoints(geometry)` the MultiPoint of `ST_Points` |
 | 4 | From a set of points back to a geometry | `geometry(geomset)` and `geography(geogset)` over a new MEOS `geoset_to_geo` (`geoset_values`, then `geo_collect_garray`), through an explicit `CREATE CAST`; the shape follows `ST_Collect` from the element types alone, a one-element point set giving a MULTIPOINT |
@@ -166,9 +166,12 @@ Spanish:
    the geography from the value at that instant, so the line measures the nearest approach
    distance.
 5. **The relationships**: `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`,
-   `equals`, `relate(geometry, geometry, text)` over geometry, `intersects`, `disjoint`, `dwithin`
-   over geography, the containment family refusing Z; the six `cbuffer_*` relationships as
-   `contains` ... `dwithin` over `cbuffer` (Spark and Flink `cbufferContains` ...).
+   `relate(geometry, geometry, text)` and `geoEquals` over geometry, `intersects`, `disjoint` and
+   `dwithin` over geography, the containment family refusing Z, Spark and Flink taking `geoX`. The
+   six static relationships of two circular buffers are `cbufferContains` ... `cbufferDwithin` in
+   every engine, the name MobilityDB #2988 gives them as every base type of MobilityDB prefixes its
+   own static functions with its class; a function over `geometry` or `geography`, a PostGIS type,
+   takes the plain name in PostgreSQL, as `relate`, `convexHull` and `isSimple` do.
 6. **The distances and measures**: `distance`, `shortestLine`, `maxDistance`, `area`, `perimeter`,
    `centroid` over geometry and geography.
 7. **The accessors and the lines**: `boundary`, `reverse`, `numGeometries`, `geometryN`,
@@ -183,7 +186,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 4 are on the branch, rebased on master `270106028b`, not pushed. Commit 1:
+**State.** Commits 1 to 5 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -191,13 +194,16 @@ answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and
 follow the same rule, and `datum_eq` answers that a 3D and a 2D point are not equal, so a 3D and a
 2D temporal point answer the same in either order and two parallel 3D points are measured in 3D.
 Commit 3: `lfunc_base` and `tfunc_base_base` pass up to five parameters in every build. Commit 4
-(`41ad59e2bc`): the earth model as item 4 states it, every geography overload tested on the
+(`2bc017b18a`): the earth model as item 4 states it, every geography overload tested on the
 spheroid and on the sphere (one degree of meridian at the equator reads 110574.389 m and
 111195.08 m), the manual in English and Spanish with the notation `tgeog`; the nearest approach
 walk builds the circle tree of the geography once, seeds its traversal with the running minimum and
 measures on the spheroid only an edge that can beat it, and `shortestLine` over a temporal
 geography point of 2000 instants takes 0.58, 0.62 and 0.98 of the time of the trajectory path.
-The pg_regress suite passes on PostgreSQL 18 with the coverage job's assertions, and the strict-ci
-receipt is written for `41ad59e2bc`. Left before the push: the cppcheck, smoke and Windows
-receipts, and the CGAL oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the
-peer. Then commits 5 to 10.
+Commit 5 (`1dce32c9b0`): the relationships as item 5 states them, 121 ordered pairs of eleven
+geometries answering as `ST_Contains`, `ST_Covers`, `ST_Disjoint`, `ST_Intersects`, `ST_Touches`,
+`ST_Equals`, `ST_DWithin` and `ST_Relate` on every pair, each relationship holding for 11 to 72
+of them, the manual in English and Spanish and the `geoX` row of the portable dialect chapter.
+Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 6
+to 10.
