@@ -464,6 +464,8 @@ SELECT asText(atGeometry(tgeometry 'GeometryCollection(Linestring(0 2,4 2),Multi
 SELECT asText(atGeometry(tgeometry 'GeometryCollection(Triangle((4 7,5 2,7 7,4 7)),MultiPolygon(((0 4,1 4,1 7,0 7,0 4)),((6 0,10 0,10 3,6 3,6 0))))@2001-01-01', geometry 'MultiPolygon(((0 7,1 7,1 9,0 9,0 7)),((3 1,5 1,5 5,3 5,3 1)),((6 1,8 1,8 4,6 4,6 1)))'), 6);
 -- A curved surface whose vertex lies a rounding away from an edge of the geometry
 SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
+-- A curved surface whose arc starts a rounding away from an edge of the geometry
+SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8),CircularString(3.6 0.8,3.8973665961010275 1.367544467966324,4 2),CircularString(4 2,3.414213562373095 3.414213562373095,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
 
 -- NULL
 SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
