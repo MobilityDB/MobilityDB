@@ -116,6 +116,67 @@ int main(void)
   Temporal *tpcpatch2 = temporal_in(tpcpatch_out, T_TPCPATCH);
   assert(tpcpatch2 != NULL && temporal_eq(tpcpatch, tpcpatch2));
 
+  /* The point (1,2,3) is to the left of, below, in front of and before a box
+   * spanning 5 to 6 on each axis at a later time, the box answers the
+   * converse, and the point only does not extend past itself */
+  TPCBox *far = tpcbox_in("TPCBOX(ZT(((5,5,5),(6,6,6)),"
+    "[2030-01-01,2030-01-02]), 1)");
+  assert(far != NULL);
+  struct {
+    const char *op;
+    bool (*box_temp)(const TPCBox *, const Temporal *);
+    bool (*temp_box)(const Temporal *, const TPCBox *);
+    bool (*temp_temp)(const Temporal *, const Temporal *);
+    bool point_first, self;
+  } posops[] = {
+    { "left", left_tpcbox_tpointcloud, left_tpointcloud_tpcbox,
+      left_tpointcloud_tpointcloud, true, false },
+    { "overleft", overleft_tpcbox_tpointcloud, overleft_tpointcloud_tpcbox,
+      overleft_tpointcloud_tpointcloud, true, true },
+    { "right", right_tpcbox_tpointcloud, right_tpointcloud_tpcbox,
+      right_tpointcloud_tpointcloud, false, false },
+    { "overright", overright_tpcbox_tpointcloud, overright_tpointcloud_tpcbox,
+      overright_tpointcloud_tpointcloud, false, true },
+    { "below", below_tpcbox_tpointcloud, below_tpointcloud_tpcbox,
+      below_tpointcloud_tpointcloud, true, false },
+    { "overbelow", overbelow_tpcbox_tpointcloud, overbelow_tpointcloud_tpcbox,
+      overbelow_tpointcloud_tpointcloud, true, true },
+    { "above", above_tpcbox_tpointcloud, above_tpointcloud_tpcbox,
+      above_tpointcloud_tpointcloud, false, false },
+    { "overabove", overabove_tpcbox_tpointcloud, overabove_tpointcloud_tpcbox,
+      overabove_tpointcloud_tpointcloud, false, true },
+    { "front", front_tpcbox_tpointcloud, front_tpointcloud_tpcbox,
+      front_tpointcloud_tpointcloud, true, false },
+    { "overfront", overfront_tpcbox_tpointcloud, overfront_tpointcloud_tpcbox,
+      overfront_tpointcloud_tpointcloud, true, true },
+    { "back", back_tpcbox_tpointcloud, back_tpointcloud_tpcbox,
+      back_tpointcloud_tpointcloud, false, false },
+    { "overback", overback_tpcbox_tpointcloud, overback_tpointcloud_tpcbox,
+      overback_tpointcloud_tpointcloud, false, true },
+    { "before", before_tpcbox_tpointcloud, before_tpointcloud_tpcbox,
+      before_tpointcloud_tpointcloud, true, false },
+    { "overbefore", overbefore_tpcbox_tpointcloud,
+      overbefore_tpointcloud_tpcbox, overbefore_tpointcloud_tpointcloud,
+      true, true },
+    { "after", after_tpcbox_tpointcloud, after_tpointcloud_tpcbox,
+      after_tpointcloud_tpointcloud, false, false },
+    { "overafter", overafter_tpcbox_tpointcloud, overafter_tpointcloud_tpcbox,
+      overafter_tpointcloud_tpointcloud, false, true },
+  };
+  for (size_t i = 0; i < sizeof(posops) / sizeof(posops[0]); i++)
+  {
+    bool temp_box = posops[i].temp_box(tpcpoint, far);
+    bool box_temp = posops[i].box_temp(far, tpcpoint);
+    bool temp_temp = posops[i].temp_temp(tpcpoint, tpcpoint);
+    printf("%s: point-box %d, box-point %d, point-point %d\n", posops[i].op,
+      temp_box, box_temp, temp_temp);
+    assert(temp_box == posops[i].point_first);
+    assert(box_temp == ! posops[i].point_first);
+    assert(temp_temp == posops[i].self);
+    assert(meos_errno() == 0);
+  }
+  free(far);
+
   /* The schema is cleared again, the state a value read earlier meets when
    * its schema is gone */
   meos_pc_schema_clear();
