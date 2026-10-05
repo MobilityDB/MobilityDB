@@ -286,7 +286,10 @@ datum_eq(Datum l, Datum r, MeosType type)
        * preserve the exact semantics of geo_equals */
       if (gserialized_get_type(gs1) == POINTTYPE &&
           gserialized_get_type(gs2) == POINTTYPE)
-        return datum_point_eq(l, r);
+        /* This walk compares one element after another and its entry has
+         * established the shared reference system, so the internal twin
+         * asserts what the external form tests */
+        return datum_point_eq_intl(l, r);
       else
         return geo_equals(gs1, gs2);
     }
@@ -302,7 +305,9 @@ datum_eq(Datum l, Datum r, MeosType type)
     }
 #if CBUFFER
     case T_CBUFFER:
-      return cbuffer_eq(DatumGetCbufferP(l), DatumGetCbufferP(r));
+      /* As above, the internal twin asserts the shared reference system the
+       * entry of the walk has established */
+      return cbuffer_eq_intl(DatumGetCbufferP(l), DatumGetCbufferP(r));
 #endif
 #if JSON
     case T_JSONB:
