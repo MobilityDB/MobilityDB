@@ -139,9 +139,9 @@ pred_array(Pred p, const Temporal **a1, int c1, const Temporal **a2, int c2,
   switch (p)
   {
     case P_EDWITHIN:
-      return edwithin_tgeoarr_tgeoarr(a1, c1, a2, c2, DIST, count);
+      return edwithin_tgeoarr_tgeoarr(a1, c1, a2, c2, DIST, true, count);
     case P_ADWITHIN:
-      return adwithin_tgeoarr_tgeoarr(a1, c1, a2, c2, DIST, count);
+      return adwithin_tgeoarr_tgeoarr(a1, c1, a2, c2, DIST, true, count);
     case P_EINTERSECTS:
       return eintersects_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
     case P_AINTERSECTS:
@@ -162,8 +162,8 @@ pred_scalar(Pred p, const Temporal *t1, const Temporal *t2)
 {
   switch (p)
   {
-    case P_EDWITHIN:    return edwithin_tgeo_tgeo(t1, t2, DIST);
-    case P_ADWITHIN:    return adwithin_tgeo_tgeo(t1, t2, DIST);
+    case P_EDWITHIN:    return edwithin_tgeo_tgeo(t1, t2, DIST, true);
+    case P_ADWITHIN:    return adwithin_tgeo_tgeo(t1, t2, DIST, true);
     case P_EINTERSECTS: return eintersects_tgeo_tgeo(t1, t2);
     case P_AINTERSECTS: return aintersects_tgeo_tgeo(t1, t2);
     case P_ETOUCHES:    return etouches_tgeo_tgeo(t1, t2);

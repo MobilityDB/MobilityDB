@@ -104,3 +104,11 @@ SELECT i, j FROM aDisjointPairs(
   ARRAY[tgeompoint '[Point(5 5)@2001-03-01, Point(5 10)@2001-03-02]']) ORDER BY i, j;
 
 -------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(minDistance(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'])::numeric, 3);
+SELECT round(minDistance(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], false)::numeric, 3);
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800) ORDER BY i, j;
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false) ORDER BY i, j;
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800) ORDER BY i, j;
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false) ORDER BY i, j;

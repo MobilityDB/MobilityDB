@@ -126,7 +126,7 @@ int main(void)
 
   /* Print information about the sequence */
   printf("\nNumber of instants: %d, Distance : %lf\n",
-    temporal_num_instants(seq), tpoint_length(seq));
+    temporal_num_instants(seq), tpoint_length(seq, true));
 
   /* Free memory */
   free(seq); free(oneday);

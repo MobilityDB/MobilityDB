@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include "geo/geo_funcs.h"
+#include "temporal/lifting.h"
 #include "temporal/temporal.h"
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
@@ -69,15 +70,23 @@ extern bool datum_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_eq(Datum point1, Datum point2);
 extern Datum datum2_point_ne(Datum point1, Datum point2);
 extern Datum datum2_geom_centroid(Datum geo);
-extern Datum datum2_geog_centroid(Datum geo);
+extern Datum datum2_geog_centroid(Datum geo, Datum spheroid);
 
 /* Generic functions */
 
-extern datum_func2 geo_distance_fn(int16 flags);
-extern datum_func2 pt_distance_fn(int16 flags);
+extern varfunc geo_distance_fn(int16 flags);
+extern varfunc pt_distance_fn(int16 flags);
+extern void geo_distance_lfinfo(int16 flags, bool spheroid,
+  LiftedFunctionInfo *lfinfo);
+extern void pt_distance_lfinfo(int16 flags, bool spheroid,
+  LiftedFunctionInfo *lfinfo);
+extern Datum datum_geo_distance(Datum value1, Datum value2, int16 flags,
+  bool spheroid);
+extern Datum datum_pt_distance(Datum value1, Datum value2, int16 flags,
+  bool spheroid);
 extern Datum datum_geom_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
-extern Datum datum_geog_distance(Datum geog1, Datum geog2);
+extern Datum datum_geog_distance(Datum geog1, Datum geog2, Datum spheroid);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
 extern int16 spatial_flags(Datum d, MeosType basetype);
@@ -91,6 +100,7 @@ extern bool ensure_same_geodetic_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_same_geodetic_set_geo(const Set *s,
   const GSERIALIZED *gs);
+extern bool ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs);
 extern bool same_dimensionality_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_same_dimensionality_tspatial_geo(const Temporal *temp,

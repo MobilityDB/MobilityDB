@@ -2152,10 +2152,12 @@ tpointseq_length_3d(const TSequence *seq)
  * @ingroup meos_internal_geo_accessor
  * @brief Return the length traversed by a temporal point sequence
  * @param[in] seq Temporal sequence
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @csqlfn #Tpoint_length()
  */
 double
-tpointseq_length(const TSequence *seq)
+tpointseq_length(const TSequence *seq, bool spheroid)
 {
   assert(seq); assert(tpoint_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -2173,7 +2175,7 @@ tpointseq_length(const TSequence *seq)
      * apply the unary union function to remove redundant part of the geometry,
      * e.g., when the temporal point traverses a line segment more than once */
     GSERIALIZED *traj = tpointseq_linear_trajectory(seq, UNARY_UNION_NO);
-    double result = geog_length(traj, true);
+    double result = geog_length(traj, spheroid);
     pfree(traj);
     return result;
   }
@@ -2183,16 +2185,18 @@ tpointseq_length(const TSequence *seq)
  * @ingroup meos_internal_geo_accessor
  * @brief Return the length traversed by a temporal point sequence set
  * @param[in] ss Temporal sequence set
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @csqlfn #Tpoint_length()
  */
 double
-tpointseqset_length(const TSequenceSet *ss)
+tpointseqset_length(const TSequenceSet *ss, bool spheroid)
 {
   assert(ss); assert(tpoint_type(ss->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   double result = 0.0;
   for (int i = 0; i < ss->count; i++)
-    result += tpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
+    result += tpointseq_length(TSEQUENCESET_SEQ_N(ss, i), spheroid);
   return result;
 }
 
@@ -2200,11 +2204,13 @@ tpointseqset_length(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the length traversed by a temporal point sequence (set)
  * @param[in] temp Temporal point
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @errval DBL_MAX
  * @csqlfn #Tpoint_length()
  */
 double
-tpoint_length(const Temporal *temp)
+tpoint_length(const Temporal *temp, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, DBL_MAX);
@@ -2213,22 +2219,41 @@ tpoint_length(const Temporal *temp)
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return 0.0;
   else if (temp->subtype == TSEQUENCE)
-    return tpointseq_length((TSequence *) temp);
+    return tpointseq_length((TSequence *) temp, spheroid);
   else /* TSEQUENCESET */
-    return tpointseqset_length((TSequenceSet *) temp);
+    return tpointseqset_length((TSequenceSet *) temp, spheroid);
 }
 
 /**
  * @ingroup meos_geo_accessor
  * @brief Return the speed of a temporal point sequence (set)
  * @param[in] temp Temporal point
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
+ * @details The derivative of the cumulative length, dispatched on the subtype
+ * as #temporal_derivative dispatches it, with the model of the earth
  * @errval NULL
  * @csqlfn #Tpoint_speed()
  */
 Temporal *
-tpoint_speed(const Temporal *temp)
+tpoint_speed(const Temporal *temp, bool spheroid)
 {
-  return temporal_derivative(temp);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINT(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tsequence_derivative((TSequence *) temp, spheroid);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_derivative((TSequenceSet *) temp,
+        spheroid);
+  }
 }
 
 /*****************************************************************************/
@@ -2238,11 +2263,14 @@ tpoint_speed(const Temporal *temp)
  * @brief Return the cumulative length traversed by a temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[in] prevlength Previous length to be added to the current sequence
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @pre The sequence has linear interpolation
  * @csqlfn #Tpoint_cumulative_length()
  */
 TSequence *
-tpointseq_cumulative_length(const TSequence *seq, double prevlength)
+tpointseq_cumulative_length(const TSequence *seq, double prevlength,
+  bool spheroid)
 {
   assert(seq); assert(tpoint_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -2257,7 +2285,6 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   double length = prevlength;
@@ -2267,7 +2294,8 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value_p(inst2);
     if (! datum_point_eq(value1, value2))
-      length += DatumGetFloat8(func(value1, value2));
+      length += DatumGetFloat8(datum_pt_distance(value1, value2, seq->flags,
+        spheroid));
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
     value1 = value2;
   }
@@ -2280,10 +2308,12 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
  * @brief Return the cumulative length traversed by a temporal point sequence
  * set
  * @param[in] ss Temporal sequence set
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @csqlfn #Tpoint_cumulative_length()
  */
 TSequenceSet *
-tpointseqset_cumulative_length(const TSequenceSet *ss)
+tpointseqset_cumulative_length(const TSequenceSet *ss, bool spheroid)
 {
   assert(ss); assert(tpoint_type(ss->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
@@ -2292,7 +2322,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     sequences[i] = tpointseq_cumulative_length(TSEQUENCESET_SEQ_N(ss, i),
-      length);
+      length, spheroid);
     /* sequences[i] may have less sequences than composing sequence due to
      * normalization */
     const TInstant *end = TSEQUENCE_INST_N(sequences[i], sequences[i]->count - 1);
@@ -2305,11 +2335,13 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the cumulative length traversed by a temporal point
  * @param[in] temp Temporal point
+ * @param[in] spheroid True when measuring a temporal geography point on the
+ * spheroid, false on the sphere, as #geog_length reads it
  * @errval NULL
  * @csqlfn #Tpoint_cumulative_length()
  */
 Temporal *
-tpoint_cumulative_length(const Temporal *temp)
+tpoint_cumulative_length(const Temporal *temp, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
@@ -2318,9 +2350,11 @@ tpoint_cumulative_length(const Temporal *temp)
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
-    return (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
+    return (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0,
+      spheroid);
   else /* TSEQUENCESET */
-    return (Temporal *) tpointseqset_cumulative_length((TSequenceSet *) temp);
+    return (Temporal *) tpointseqset_cumulative_length((TSequenceSet *) temp,
+      spheroid);
 }
 
 /*****************************************************************************

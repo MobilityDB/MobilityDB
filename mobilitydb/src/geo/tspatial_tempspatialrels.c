@@ -420,7 +420,18 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tgeo);
 Datum
 Tdwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_tgeo);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  Temporal *result = tdwithin_geo_tgeo(gs, temp, dist, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_tgeo_geo(PG_FUNCTION_ARGS);
@@ -434,7 +445,18 @@ PG_FUNCTION_INFO_V1(Tdwithin_tgeo_geo);
 Datum
 Tdwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tdwithin_tspatial_geo(fcinfo, &tdwithin_tgeo_geo);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  Temporal *result = tdwithin_tgeo_geo(temp, gs, dist, spheroid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -450,7 +472,18 @@ PG_FUNCTION_INFO_V1(Tdwithin_tgeo_tgeo);
 Datum
 Tdwithin_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tdwithin_tspatial_tspatial(fcinfo, &tdwithin_tgeo_tgeo);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  Temporal *result = tdwithin_tgeo_tgeo(temp1, temp2, dist, spheroid);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

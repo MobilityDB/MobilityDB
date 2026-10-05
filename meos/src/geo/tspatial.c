@@ -52,6 +52,7 @@
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
 #include "temporal/type_inout.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
@@ -528,38 +529,84 @@ spatialset_set_stbox(const Set *s, STBox *result)
  * @brief Return the distance between a spatial set and a value
  * @param[in] s Spatial set
  * @param[in] value Value
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @details A set answers the distance of the extent that bounds it, which for
  * a spatial set is its spatiotemporal box where for a span set it is its
  * bounding span: the gaps between the elements are not boundaries of the set.
  * @errval DBL_MAX
  */
 Datum
-distance_spatialset_value(const Set *s, Datum value)
+distance_spatialset_value(const Set *s, Datum value, bool spheroid)
 {
   assert(s); assert(type_bboxtype(s->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s, &box1);
   if (! spatial_set_stbox(value, s->basetype, &box2))
     return Float8GetDatum(DBL_MAX);
-  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2, spheroid));
 }
 
 /**
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spatial sets
  * @param[in] s1,s2 Spatial sets
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @details Each set answers for the extent that bounds it, as above.
  * @errval DBL_MAX
  */
 Datum
-distance_spatialset_spatialset(const Set *s1, const Set *s2)
+distance_spatialset_spatialset(const Set *s1, const Set *s2, bool spheroid)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
   assert(type_bboxtype(s1->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s1, &box1);
   spatialset_set_stbox(s2, &box2);
-  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2, spheroid));
+}
+
+/**
+ * @ingroup meos_geo_set_dist
+ * @brief Return the distance between a geo set and a geometry/geography,
+ * as #distance_set_float does for a float set
+ * @param[in] s Set
+ * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only, as in #stbox_area
+ * @errval DBL_MAX
+ * @csqlfn #Distance_geoset_geo(), #Distance_geo_geoset()
+ */
+double
+distance_set_geo(const Set *s, const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geoset_geo(s, gs))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_spatialset_value(s, PointerGetDatum(gs),
+    spheroid));
+}
+
+/**
+ * @ingroup meos_geo_set_dist
+ * @brief Return the distance between two geo sets, as
+ * #distance_floatset_floatset does for two float sets
+ * @param[in] s1,s2 Sets
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only, as in #stbox_area
+ * @errval DBL_MAX
+ * @csqlfn #Distance_geoset_geoset()
+ */
+double
+distance_geoset_geoset(const Set *s1, const Set *s2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s1, DBL_MAX); VALIDATE_GEOSET(s2, DBL_MAX);
+  if (! ensure_valid_set_set(s1, s2) ||
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_spatialset_spatialset(s1, s2, spheroid));
 }
 
 /*****************************************************************************/

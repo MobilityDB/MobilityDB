@@ -63,6 +63,10 @@
  *   @ingroup mobilitydb_geo_set
  *   @brief Spatial reference system functions for geometry sets
  *
+ *   @defgroup mobilitydb_geo_set_dist Distance functions
+ *   @ingroup mobilitydb_geo_set
+ *   @brief Distance functions for geometry sets
+ *
  * @defgroup mobilitydb_geo_box Functions for spatiotemporal boxes
  * @ingroup mobilitydb_geo
  * @brief Functions for spatiotemporal boxes

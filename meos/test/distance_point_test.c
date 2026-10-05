@@ -149,7 +149,7 @@ every_entry(double px, double py, double qx, double qy, double expected)
   assert(p != NULL && q != NULL);
 
   /* two temporal points */
-  Temporal *dist = tdistance_tgeo_tgeo(p, q);
+  Temporal *dist = tdistance_tgeo_tgeo(p, q, true);
   assert(dist != NULL);
   int count;
   double *values = tfloat_values(dist, &count);
@@ -163,7 +163,7 @@ every_entry(double px, double py, double qx, double qy, double expected)
   snprintf(buffer, sizeof(buffer), "POINT(%.17g %.17g)", qx, qy);
   GSERIALIZED *gs = geom_in(buffer, -1);
   assert(gs != NULL);
-  Temporal *dist2 = tdistance_tgeo_geo(p, gs);
+  Temporal *dist2 = tdistance_tgeo_geo(p, gs, true);
   assert(dist2 != NULL);
   values = tfloat_values(dist2, &count);
   assert(count == 1);
@@ -173,12 +173,12 @@ every_entry(double px, double py, double qx, double qy, double expected)
 
   /* the nearest approach of two temporal points, and of a temporal point and a
    * geometry, which neither operand moving makes the distance itself */
-  assert(nad_tgeo_tgeo(p, q) == expected);
-  assert(nad_tgeo_geo(p, gs) == expected);
+  assert(nad_tgeo_tgeo(p, q, true) == expected);
+  assert(nad_tgeo_geo(p, gs, true) == expected);
 
   /* the shortest line of a resting point to a point runs from the one to the
    * other, however near or far apart they stand */
-  GSERIALIZED *line = shortestline_tgeo_geo(p, gs);
+  GSERIALIZED *line = shortestline_tgeo_geo(p, gs, true);
   assert(line != NULL);
   GSERIALIZED *start = line_point_n(line, 1), *end = line_point_n(line, 2);
   assert(point_at(start, px, py) && point_at(end, qx, qy));
@@ -219,7 +219,7 @@ every_entry3d(const double *p3, const double *q3, double expected)
   Temporal *q = still3d(q3[0], q3[1], q3[2]);
   assert(p != NULL && q != NULL);
 
-  Temporal *dist = tdistance_tgeo_tgeo(p, q);
+  Temporal *dist = tdistance_tgeo_tgeo(p, q, true);
   assert(dist != NULL);
   int count;
   double *values = tfloat_values(dist, &count);
@@ -233,7 +233,7 @@ every_entry3d(const double *p3, const double *q3, double expected)
     q3[1], q3[2]);
   GSERIALIZED *gs = geom_in(buffer, -1);
   assert(gs != NULL);
-  Temporal *dist2 = tdistance_tgeo_geo(p, gs);
+  Temporal *dist2 = tdistance_tgeo_geo(p, gs, true);
   assert(dist2 != NULL);
   values = tfloat_values(dist2, &count);
   assert(count == 1);
@@ -241,7 +241,7 @@ every_entry3d(const double *p3, const double *q3, double expected)
   free(values);
   free(dist2);
 
-  assert(nad_tgeo_tgeo(p, q) == expected);
+  assert(nad_tgeo_tgeo(p, q, true) == expected);
 
   free(gs);
   free(p);
@@ -322,8 +322,8 @@ int main(void)
     Temporal *p = still(0, 0);
     GSERIALIZED *gs = geom_in(buffer, -1);
     assert(p != NULL && gs != NULL);
-    assert(nad_tgeo_geo(p, gs) == multi[i][1]);
-    GSERIALIZED *line = shortestline_tgeo_geo(p, gs);
+    assert(nad_tgeo_geo(p, gs, true) == multi[i][1]);
+    GSERIALIZED *line = shortestline_tgeo_geo(p, gs, true);
     assert(line != NULL);
     GSERIALIZED *end = line_point_n(line, 2);
     assert(point_at(end, multi[i][1], 0));

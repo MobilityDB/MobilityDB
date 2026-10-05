@@ -935,7 +935,6 @@ alphanumset_type(MeosType type)
     type == T_JSONBSET);
 }
 
-#if MEOS
 /**
  * @brief Return true if the type is a geo set type
  */
@@ -957,7 +956,6 @@ ensure_geoset_type(MeosType type)
     "The set value must be a geo set");
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a spatial set type

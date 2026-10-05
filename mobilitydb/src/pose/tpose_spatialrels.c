@@ -137,7 +137,7 @@ Edwithin_geo_tpose(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  int result = ea_dwithin_tgeo_geo(tpoint, gs, dist, EVER);
+  int result = ea_dwithin_tgeo_geo(tpoint, gs, dist, true, EVER);
   pfree(tpoint);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -161,7 +161,7 @@ Edwithin_tpose_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  int result = ea_dwithin_tgeo_geo(tpoint, gs, dist, EVER);
+  int result = ea_dwithin_tgeo_geo(tpoint, gs, dist, true, EVER);
   pfree(tpoint);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -185,7 +185,7 @@ Edwithin_tpose_tpose(PG_FUNCTION_ARGS)
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tpoint1 = tpose_to_tpoint(temp1);
   Temporal *tpoint2 = tpose_to_tpoint(temp2);
-  int result = ea_dwithin_tgeo_tgeo(tpoint1, tpoint2, dist, EVER);
+  int result = ea_dwithin_tgeo_tgeo(tpoint1, tpoint2, dist, true, EVER);
   pfree(tpoint1); pfree(tpoint2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

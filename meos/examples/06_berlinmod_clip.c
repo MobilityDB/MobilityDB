@@ -367,7 +367,7 @@ int main(void)
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     /* Compute the total distance */
-    double d = tpoint_length(trip_rec.trip) / 1000;
+    double d = tpoint_length(trip_rec.trip, true) / 1000;
     /* Add to the vehicle total and the column total */
     distance[trip_rec.vehid - 1][0] += d;
     distance[NUM_VEHICLES][0] += d;
@@ -378,7 +378,7 @@ int main(void)
       if (atgeom)
       {
         /* Compute the length of the trip projected to the commune */
-        d = tpoint_length(atgeom) / 1000;
+        d = tpoint_length(atgeom, true) / 1000;
         /* Add to the cell */
         distance[trip_rec.vehid - 1][i + 1] += d;
         /* Add to the row total, the commune total, and inside total */
@@ -393,7 +393,7 @@ int main(void)
       brussels_region.geom, NULL);
     if (minusgeom)
     {
-      d = tpoint_length(minusgeom) / 1000;
+      d = tpoint_length(minusgeom, true) / 1000;
       /* Add to the row */
       distance[trip_rec.vehid - 1][NUM_COMMUNES + 2] += d;
       /* Add to the column total */

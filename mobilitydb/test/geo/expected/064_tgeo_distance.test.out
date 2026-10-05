@@ -3897,3 +3897,207 @@ SELECT minDistance(ARRAY[]::tgeometry[], ARRAY[tgeometry 'Point(0 0)@2001-01-01'
 SELECT minDistance(ARRAY[tgeometry 'Point(0 0)@2001-01-01'],
                    ARRAY[tgeometry 'SRID=4326;Point(0 0)@2001-01-01']);
 ERROR:  Operation on mixed SRID
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'), 3);
+                                       round                                        
+------------------------------------------------------------------------------------
+ {110574.389@Mon Jan 01 00:00:00 2001 PST, 221149.453@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false), 3);
+                                       round                                       
+-----------------------------------------------------------------------------------
+ {111195.08@Mon Jan 01 00:00:00 2001 PST, 222390.159@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(tDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'), 3);
+                                       round                                        
+------------------------------------------------------------------------------------
+ {110574.389@Mon Jan 01 00:00:00 2001 PST, 221149.453@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(tDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false), 3);
+                                       round                                       
+-----------------------------------------------------------------------------------
+ {111195.08@Mon Jan 01 00:00:00 2001 PST, 222390.159@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'), 3);
+                                       round                                        
+------------------------------------------------------------------------------------
+ {110574.389@Mon Jan 01 00:00:00 2001 PST, 221149.453@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false), 3);
+                                       round                                       
+-----------------------------------------------------------------------------------
+ {111195.08@Mon Jan 01 00:00:00 2001 PST, 222390.159@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(nearestApproachDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(nearestApproachDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT asText(nearestApproachInstant(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false), 6);
+        st_astext        
+-------------------------
+ LINESTRING(0.998 0,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}'), 6);
+      st_astext      
+---------------------
+ LINESTRING(0 1,0 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', false), 6);
+        st_astext        
+-------------------------
+ LINESTRING(0.998 0,0 0)
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
+                 astext                  
+-----------------------------------------
+ POINT(0 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));
+                   astext                    
+---------------------------------------------
+ POINT(0.998 0)@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+

@@ -70,7 +70,7 @@ check(const char *place, const char *wkt, double expected)
     "[%s@2001-01-01, %s@2001-01-02]", place, place);
   Temporal *temp = tgeompoint_in(tpoint);
   GSERIALIZED *gs = geom_in(wkt, -1);
-  double d = nad_tgeo_geo(temp, gs);
+  double d = nad_tgeo_geo(temp, gs, true);
   bool ok = fabs(d - expected) <= TOLERANCE;
   printf("  %-26s %-58s %.12g %s\n", place, wkt, d, ok ? "OK" : "FAIL");
   if (! ok)
@@ -93,7 +93,7 @@ check_rel(const char *place, const char *wkt, double expected)
     "[%s@2001-01-01, %s@2001-01-02]", place, place);
   Temporal *temp = tgeompoint_in(tpoint);
   GSERIALIZED *gs = geom_in(wkt, -1);
-  double d = nad_tgeo_geo(temp, gs);
+  double d = nad_tgeo_geo(temp, gs, true);
   bool ok = fabs(d - expected) <= 1e-9 * expected;
   printf("  %.17g %s\n", d, ok ? "OK" : "FAIL");
   if (! ok)

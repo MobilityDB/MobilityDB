@@ -204,3 +204,11 @@ SELECT round(setDistance(geography 'Point(1 1)', geogset '{"Point(1 1)", "Point(
 SELECT round(setDistance(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Point(1 1)')::numeric, 6);
 
 -------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}')::numeric, 3);
+SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}', false)::numeric, 3);
+SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Point(0 0)')::numeric, 3);
+SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Point(0 0)', false)::numeric, 3);
+SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}')::numeric, 3);
+SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}', false)::numeric, 3);

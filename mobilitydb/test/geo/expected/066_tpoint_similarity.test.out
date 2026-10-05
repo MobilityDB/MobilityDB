@@ -1790,3 +1790,41 @@ SELECT COUNT(*) FROM Temp;
      5
 (1 row)
 
+SELECT round(frechetDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+   round    
+------------
+ 110575.065
+(1 row)
+
+SELECT round(frechetDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+   round   
+-----------
+ 111195.08
+(1 row)
+
+SELECT round(dynTimeWarpDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+   round    
+------------
+ 221149.453
+(1 row)
+
+SELECT round(dynTimeWarpDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+   round    
+------------
+ 222390.159
+(1 row)
+
+SELECT frechetDistancePath(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false);
+ frechetdistancepath 
+---------------------
+ (0,0)
+ (1,1)
+(2 rows)
+
+SELECT dynTimeWarpPath(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false);
+ dyntimewarppath 
+-----------------
+ (0,0)
+ (1,1)
+(2 rows)
+

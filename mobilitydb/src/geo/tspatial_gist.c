@@ -303,7 +303,7 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   if (! tspatial_gist_get_stbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  double distance = nad_stbox_stbox(key, &query);
+  double distance = nad_stbox_stbox(key, &query, true);
   if (distance < 0)
     PG_RETURN_FLOAT8(DBL_MAX);
 

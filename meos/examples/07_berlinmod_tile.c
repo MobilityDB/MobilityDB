@@ -165,7 +165,7 @@ int main(void)
 
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
-    Temporal *speed = tpoint_speed(trip);
+    Temporal *speed = tpoint_speed(trip, true);
     Temporal *split;
     Interval *dur1, *dur2;
 
@@ -177,7 +177,7 @@ int main(void)
       if (split)
       {
         trip_splits[k].count++;
-        trip_splits[k].distance += tpoint_length(split) / 1e3;
+        trip_splits[k].distance += tpoint_length(split, true) / 1e3;
         dur1 = temporal_duration(split, false);
         dur2 = add_interval_interval(dur1, &trip_splits[k].duration);
         memcpy(&trip_splits[k].duration, dur2, sizeof(Interval));

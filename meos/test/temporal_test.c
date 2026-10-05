@@ -3747,12 +3747,12 @@ int main(void)
   /* Similarity functions for temporal types */
   printf("****************************************************************\n");
 
-  /* double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_dyntimewarp_distance(tfloat1, tfloat2);
+  /* double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_dyntimewarp_distance(tfloat1, tfloat2, true);
   printf("temporal_dyntimewarp_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
-  /* Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count); */
-  matches = temporal_dyntimewarp_path(tfloat1, tfloat2, &count);
+  /* Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count); */
+  matches = temporal_dyntimewarp_path(tfloat1, tfloat2, true, &count);
   printf("temporal_dyntimewarp_path(%s, %s): {", tfloat1_out, tfloat2_out);
   for (int i = 0; i < count; i++)
   {
@@ -3764,12 +3764,12 @@ int main(void)
   }
   free(matches);
 
-  /* double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_frechet_distance(tfloat1, tfloat2);
+  /* double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_frechet_distance(tfloat1, tfloat2, true);
   printf("temporal_frechet_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
-  /* Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count); */
-  matches = temporal_frechet_path(tfloat1, tfloat2, &count);
+  /* Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count); */
+  matches = temporal_frechet_path(tfloat1, tfloat2, true, &count);
   printf("temporal_frechet_path(%s, %s): {", tfloat1_out, tfloat2_out);
   for (int i = 0; i < count; i++)
   {
@@ -3781,8 +3781,8 @@ int main(void)
   }
   free(matches);
 
-  /* double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_hausdorff_distance(tfloat1, tfloat2);
+  /* double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_hausdorff_distance(tfloat1, tfloat2, true);
   printf("temporal_hausdorff_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
   /*****************************************************************************/

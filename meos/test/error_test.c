@@ -166,14 +166,14 @@ int main(void)
   assert(num != NULL);
   meos_errno_reset();
   /* the two values must share a type, so a temporal float is rejected */
-  assert(temporal_frechet_path(num, good, &count) == NULL);
+  assert(temporal_frechet_path(num, good, true, &count) == NULL);
   printf("temporal_frechet_path(mixed types): NULL, count %d, errno %d\n",
     count, meos_errno());
   assert(count == 0);
 
   /* A NULL count is itself rejected, rather than written through */
   meos_errno_reset();
-  assert(temporal_frechet_path(num, num, NULL) == NULL);
+  assert(temporal_frechet_path(num, num, true, NULL) == NULL);
   printf("temporal_frechet_path(count NULL): NULL, errno %d\n", meos_errno());
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
 

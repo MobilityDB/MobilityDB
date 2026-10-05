@@ -221,6 +221,10 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 			</listitem>
 
 			<listitem>
+				<para><varname>tgeog</varname> represents a temporal geography type, that is, <varname>tgeography</varname> or <varname>tgeogpoint</varname>,</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>tpoint</varname> represents a temporal point type, that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>,</para>
 			</listitem>
 
@@ -546,7 +550,9 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 				<para>Return the centroid as a temporal point &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 centroid(tgeo) → tpoint
+centroid(tgeography,spheroid boolean=true) → tgeogpoint
 </programlisting>
+				<para>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-02,
   Polygon((1 1,4 4,7 1,1 1))@2001-01-03]'));
@@ -554,6 +560,8 @@ SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@20
 SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2001-01-01,
   Polygon((1 1,4 4,7 1,1 1))@2001-01-02]'),6);
 -- Interp=Step;[POINT(4 2.001727)@2001-01-01, POINT(4 2.001727)@2001-01-02]
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);
+-- {POINT(0.249967 0.750007)@2001-01-01}
 </programlisting>
 			</listitem>
 
@@ -615,8 +623,9 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tpoint) → float
 length(geo) → float
+length({geography,tgeogpoint},spheroid boolean=true) → float
 </programlisting>
-				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does.</para>
+				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
 -- 1.73205080756888
@@ -630,6 +639,9 @@ SELECT length(geometry 'Linestring(0 0,3 4)');
 -- 5
 SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
 -- 3521.188745
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 3);
+-- 111195.08
 </programlisting>
 			</listitem>
 
@@ -638,7 +650,9 @@ SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
 				<para>Return the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cumulativeLength(tpoint) → tfloatSeq
+cumulativeLength(tgeogpoint,spheroid boolean=true) → tfloatSeq
 </programlisting>
+				<para>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}'), 6);
@@ -647,6 +661,9 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@20
 SELECT cumulativeLength(tgeompoint 'Interp=Step;
   [Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- Interp=Step;[0@2001-01-01, 0@2001-01-03]
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 3);
+-- [0@2001-01-01, 111195.08@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -655,8 +672,9 @@ SELECT cumulativeLength(tgeompoint 'Interp=Step;
 				<para>Return the speed of the temporal point in units per second &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 speed(tpoint) → tfloatSeqSet
+speed(tgeogpoint,spheroid boolean=true) → tfloatSeqSet
 </programlisting>
-				<para>The temporal point must have linear interpolation</para>
+				<para>The temporal point must have linear interpolation. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}') * 3600 * 24;
@@ -665,6 +683,9 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;
   [Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 6);
+-- Interp=Step;[1.28698@2001-01-01, 1.28698@2001-01-02]
 </programlisting>
 			</listitem>
 

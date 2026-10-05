@@ -140,7 +140,7 @@ CREATE FUNCTION centroid(tgeometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_centroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION centroid(tgeography)
+CREATE FUNCTION centroid(tgeography, spheroid boolean DEFAULT true)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeo_centroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

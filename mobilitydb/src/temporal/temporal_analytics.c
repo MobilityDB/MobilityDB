@@ -171,9 +171,13 @@ Temporal_tsample(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic similarity function between two temporal values
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] simfunc Similarity function
+ * @param[in] spheroid True when measuring temporal geographies on the
+ * spheroid, false on the sphere
  */
-Datum
-Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
+static Datum
+Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc, bool spheroid)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -184,16 +188,20 @@ Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
   switch (simfunc)
   {
     case HAUSDORFF:
-      result = temporal_hausdorff_distance(temp1, temp2);
+      result = temporal_hausdorff_distance(temp1, temp2, spheroid);
       break;
     case AVERAGEHAUSDORFF:
-      result = temporal_average_hausdorff_distance(temp1, temp2);
+      result = temporal_average_hausdorff_distance(temp1, temp2, spheroid);
       break;
     case LCSS:
-      result = temporal_lcss_distance(temp1, temp2, PG_GETARG_FLOAT8(2));
+      result = temporal_lcss_distance(temp1, temp2, PG_GETARG_FLOAT8(2),
+        spheroid);
       break;
-    default:
-      result = temporal_similarity(temp1, temp2, simfunc);
+    case FRECHET:
+      result = temporal_frechet_distance(temp1, temp2, spheroid);
+      break;
+    default: /* DYNTIMEWARP */
+      result = temporal_dyntimewarp_distance(temp1, temp2, spheroid);
   }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -212,7 +220,10 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity(fcinfo, FRECHET);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity(fcinfo, FRECHET, spheroid);
 }
 
 PGDLLEXPORT Datum Temporal_dyntimewarp_distance(PG_FUNCTION_ARGS);
@@ -226,7 +237,10 @@ PG_FUNCTION_INFO_V1(Temporal_dyntimewarp_distance);
 Datum
 Temporal_dyntimewarp_distance(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity(fcinfo, DYNTIMEWARP);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity(fcinfo, DYNTIMEWARP, spheroid);
 }
 
 PGDLLEXPORT Datum Temporal_hausdorff_distance(PG_FUNCTION_ARGS);
@@ -239,7 +253,10 @@ PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 Datum
 Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity(fcinfo, HAUSDORFF);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity(fcinfo, HAUSDORFF, spheroid);
 }
 
 /*****************************************************************************
@@ -290,9 +307,14 @@ similarity_path_state_next(SimilarityPathState *state)
 
 /**
  * @brief Compute the similarity path between two temporal values
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[in] spheroid True when measuring temporal geographies on the
+ * spheroid, false on the sphere
  */
-Datum
-Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
+static Datum
+Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc,
+  bool spheroid)
 {
   FuncCallContext *funcctx;
 
@@ -313,8 +335,9 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
       store_fcinfo(fcinfo);
     /* Compute the path */
     int count;
-    Match *path = temporal_similarity_path(temp1, temp2, &count,
-      simfunc);
+    Match *path = (simfunc == FRECHET) ?
+      temporal_frechet_path(temp1, temp2, spheroid, &count) :
+      temporal_dyntimewarp_path(temp1, temp2, spheroid, &count);
     /* Create function state */
     funcctx->user_fctx = similarity_path_state_make(path, count);
     /* Build a tuple description for the function output */
@@ -363,7 +386,10 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity_path(fcinfo, FRECHET);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity_path(fcinfo, FRECHET, spheroid);
 }
 
 PGDLLEXPORT Datum Temporal_dyntimewarp_path(PG_FUNCTION_ARGS);
@@ -376,7 +402,10 @@ PG_FUNCTION_INFO_V1(Temporal_dyntimewarp_path);
 Datum
 Temporal_dyntimewarp_path(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity_path(fcinfo, DYNTIMEWARP);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity_path(fcinfo, DYNTIMEWARP, spheroid);
 }
 
 /*****************************************************************************/
@@ -494,7 +523,10 @@ PG_FUNCTION_INFO_V1(Temporal_average_hausdorff_distance);
 Datum
 Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity(fcinfo, AVERAGEHAUSDORFF);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  return Temporal_similarity(fcinfo, AVERAGEHAUSDORFF, spheroid);
 }
 
 PGDLLEXPORT Datum Temporal_lcss_distance(PG_FUNCTION_ARGS);
@@ -508,5 +540,8 @@ PG_FUNCTION_INFO_V1(Temporal_lcss_distance);
 Datum
 Temporal_lcss_distance(PG_FUNCTION_ARGS)
 {
-  return Temporal_similarity(fcinfo, LCSS);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  return Temporal_similarity(fcinfo, LCSS, spheroid);
 }

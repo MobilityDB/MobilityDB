@@ -2091,13 +2091,13 @@ extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration
 
 /* Similarity functions for temporal types */
 
-extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
-extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
-extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
-extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
-extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
-extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
-extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon);
+extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count);
+extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count);
+extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon, bool spheroid);
 
 /*****************************************************************************/
 

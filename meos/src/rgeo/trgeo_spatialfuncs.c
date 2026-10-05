@@ -946,7 +946,7 @@ trgeometry_length(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, DBL_MAX);
 
   Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  double result = tpoint_length(tpoint);
+  double result = tpoint_length(tpoint, true);
   pfree(tpoint);
   return result;
 }
@@ -965,7 +965,7 @@ trgeometry_cumulative_length(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  Temporal *result = tpoint_cumulative_length(tpoint);
+  Temporal *result = tpoint_cumulative_length(tpoint, true);
   pfree(tpoint);
   return result;
 }

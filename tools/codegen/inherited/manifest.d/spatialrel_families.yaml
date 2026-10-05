@@ -49,26 +49,42 @@ spatialrel_families:
           tgeo_geo:  "a temporal geometry and a geometry/geography {word} intersect"
           tgeo_tgeo: "two temporal geometries {word} intersect"
 
-  # dwithin's geo/tgeo core: only the two mixed directions are mechanical (the
-  # tgeo_tgeo direction has a bespoke distance-carrying dispatcher + a different
-  # @ingroup, so it stays hand-written). Both directions share the single MEOS
-  # kernel ea_dwithin_tgeo_geo (the dispatcher fixes the argument order), and the
-  # dispatcher is the distance-aware EA_dwithin_* rather than EA_spatialrel_*.
+  # dwithin of the temporal geos (dwithin: true selects render_dwithin): each
+  # direction has a local static dispatcher calling the public e/a functions by
+  # name, and reads the earth model from argument 3 when the geography overload
+  # states it (`spheroid: 3`), the spheroid otherwise.
   - family:    geo_ea_dwithin
     file:      mobilitydb/src/geo/tgeo_spatialrels.c
     reference: true
-    predicates:
-      - rel: dwithin
-        Rel: Dwithin
-        banner: "Ever/always dwithin (for both geometry and geography)\n * The function only accepts points and not arbitrary geometries/geographies"
-        directions: [geo_tgeo, tgeo_geo]
-        meos_fixed: ea_dwithin_tgeo_geo
-        disp:
-          geo_tgeo: EA_dwithin_geo_tspatial
-          tgeo_geo: EA_dwithin_tspatial_geo
-        briefs:
-          geo_tgeo:  "a geometry/geography and a temporal geometry are {word} within a distance"
-          tgeo_geo:  "a temporal geometry and a geometry/geography are {word} within a distance"
+    dwithin:   true
+    ingroup:   mobilitydb_geo_rel_ever
+    banner:    "Ever/always dwithin (for both geometry and geography)\n * The function only accepts points and not arbitrary geometries/geographies"
+    order:     [geo_tgeo, tgeo_geo, tgeo_tgeo]
+    directions:
+      geo_tgeo:
+        noun:     "a geometry/geography and a temporal geometry"
+        kernel:   geo_tgeo
+        kargs:    "gs, temp, dist, spheroid"
+        spheroid: 3
+        args:
+          - {type: "GSERIALIZED *", var: gs,   pos: 0}
+          - {type: "Temporal *",    var: temp, pos: 1}
+      tgeo_geo:
+        noun:     "a temporal geometry and a geometry/geography"
+        kernel:   tgeo_geo
+        kargs:    "temp, gs, dist, spheroid"
+        spheroid: 3
+        args:
+          - {type: "Temporal *",    var: temp, pos: 0}
+          - {type: "GSERIALIZED *", var: gs,   pos: 1}
+      tgeo_tgeo:
+        noun:     "two temporal geometries"
+        kernel:   tgeo_tgeo
+        kargs:    "temp1, temp2, dist, spheroid"
+        spheroid: 3
+        args:
+          - {type: "Temporal *", var: temp1, pos: 0}
+          - {type: "Temporal *", var: temp2, pos: 1}
 
   # tcbuffer carries the fuller 5-direction shape (it adds the base-value cbuffer
   # directions on top of geo/temporal), its own @ingroup, and its own dispatcher

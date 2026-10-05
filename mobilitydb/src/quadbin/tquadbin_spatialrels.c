@@ -137,7 +137,7 @@ Edwithin_geo_tquadbin(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, EVER);
+  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, true, EVER);
   pfree(tgeo);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -161,7 +161,7 @@ Edwithin_tquadbin_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, EVER);
+  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, true, EVER);
   pfree(tgeo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -185,7 +185,7 @@ Edwithin_tquadbin_tquadbin(PG_FUNCTION_ARGS)
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo1 = tcellindex_cell_to_boundary(temp1);
   Temporal *tgeo2 = tcellindex_cell_to_boundary(temp2);
-  int result = ea_dwithin_tgeo_tgeo(tgeo1, tgeo2, dist, EVER);
+  int result = ea_dwithin_tgeo_tgeo(tgeo1, tgeo2, dist, true, EVER);
   pfree(tgeo1); pfree(tgeo2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

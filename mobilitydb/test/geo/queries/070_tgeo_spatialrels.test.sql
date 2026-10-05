@@ -572,3 +572,13 @@ SELECT eDwithin(tgeography 'SRID=4283;Point(1 1)@2001-01-01', tgeography 'Point(
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800, false);
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800);
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800, false);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);

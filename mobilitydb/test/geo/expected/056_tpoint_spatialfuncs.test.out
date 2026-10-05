@@ -4151,3 +4151,51 @@ SELECT ST_AsText(transformPipeline(geography 'SRID=4326;POINT(2 49)',
  t
 (1 row)
 
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+   round    
+------------
+ 110575.065
+(1 row)
+
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+   round   
+-----------
+ 111195.08
+(1 row)
+
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+                                   round                                   
+---------------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 110575.065@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+                                  round                                   
+--------------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 111195.08@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 6);
+                                           round                                            
+--------------------------------------------------------------------------------------------
+ Interp=Step;[1.279804@Mon Jan 01 00:00:00 2001 PST, 1.279804@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 6);
+                                          round                                           
+------------------------------------------------------------------------------------------
+ Interp=Step;[1.28698@Mon Jan 01 00:00:00 2001 PST, 1.28698@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(length(geography 'Linestring(0 1,0 2)')::numeric, 3);
+   round    
+------------
+ 110575.065
+(1 row)
+
+SELECT round(length(geography 'Linestring(0 1,0 2)', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+

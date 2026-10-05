@@ -588,3 +588,10 @@ WITH Temp AS (
 SELECT COUNT(*) FROM Temp;
 
 --------------------------------------------------------
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(frechetDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+SELECT round(frechetDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+SELECT round(dynTimeWarpDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+SELECT round(dynTimeWarpDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+SELECT frechetDistancePath(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false);
+SELECT dynTimeWarpPath(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false);

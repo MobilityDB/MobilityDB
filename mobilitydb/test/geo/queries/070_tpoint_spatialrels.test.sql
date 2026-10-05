@@ -621,3 +621,13 @@ SELECT aDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]',
 SELECT aDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 6)@2001-01-01, Point(2 1 6)@2001-01-03]', 6.1);
 
 -------------------------------------------------------------------------------
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Point(0 0)', 110800);
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Point(0 0)', 110800, false);
+SELECT eDwithin(geography 'Point(0 0)', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800);
+SELECT eDwithin(geography 'Point(0 0)', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800, false);
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800);
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800, false);
+SELECT aDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800);
+SELECT aDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800, false);

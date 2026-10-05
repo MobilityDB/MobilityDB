@@ -40,7 +40,7 @@ CREATE FUNCTION minDistance(tgeompoint[], tgeompoint[])
   AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minDistance(tgeogpoint[], tgeogpoint[])
+CREATE FUNCTION minDistance(tgeogpoint[], tgeogpoint[], spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -82,13 +82,13 @@ CREATE FUNCTION aDisjointPairs(tgeompoint[], tgeompoint[],
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDwithinPairs(tgeogpoint[], tgeogpoint[], dist float,
-    OUT i integer, OUT j integer)
+    spheroid boolean DEFAULT true, OUT i integer, OUT j integer)
   RETURNS setof record
   AS 'MODULE_PATHNAME', 'Edwithin_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aDwithinPairs(tgeogpoint[], tgeogpoint[], dist float,
-    OUT i integer, OUT j integer)
+    spheroid boolean DEFAULT true, OUT i integer, OUT j integer)
   RETURNS setof record
   AS 'MODULE_PATHNAME', 'Adwithin_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
