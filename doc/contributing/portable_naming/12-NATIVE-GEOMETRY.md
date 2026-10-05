@@ -173,7 +173,10 @@ Spanish:
    own static functions with its class; a function over `geometry` or `geography`, a PostGIS type,
    takes the plain name in PostgreSQL, as `relate`, `convexHull` and `isSimple` do.
 6. **The distances and measures**: `distance`, `shortestLine`, `maxDistance`, `area`, `perimeter`,
-   `centroid` over geometry and geography.
+   `centroid` over geometry and geography, under the same names in Spark and Flink, which define
+   and reserve none of the six (the name probe of both engines: of the names of commits 6 to 10,
+   Spark defines `reverse` and `transform` and Flink `reverse` and `collect`, and neither parser
+   refuses any).
 7. **The accessors and the lines**: `boundary`, `reverse`, `numGeometries`, `geometryN`,
    `numPoints`, `points` (`geomset`), `geoPoints`, `lineInterpolatePoint`, `lineSubstring`,
    `lineLocatePoint`.
@@ -186,7 +189,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 5 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
+**State.** Commits 1 to 6 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -204,6 +207,13 @@ Commit 5 (`1dce32c9b0`): the relationships as item 5 states them, 121 ordered pa
 geometries answering as `ST_Contains`, `ST_Covers`, `ST_Disjoint`, `ST_Intersects`, `ST_Touches`,
 `ST_Equals`, `ST_DWithin` and `ST_Relate` on every pair, each relationship holding for 11 to 72
 of them, the manual in English and Spanish and the `geoX` row of the portable dialect chapter.
+Commit 6 (`b603dcd510`): the measures and distances as item 6 states them over the new MEOS
+`geo_area`, `geo_perimeter`, `geo_centroid`, `geo_distance`, `geo_shortestline`,
+`geom_max_distance`, `geom_max_distance3d` and `geog_shortestline`, each answering as its PostGIS
+function on the eleven geometries and their 121 pairs; on the sphere the area of a geography is
+the one its great circles bound (the square of one degree at the equator 12364031798.518 square
+meters, its spherical excess 12364031798.470), where `ST_Area` over a geography on the sphere
+answers 0.67 percent less.
 Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 6
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 7
 to 10.
