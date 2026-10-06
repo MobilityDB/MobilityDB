@@ -906,6 +906,36 @@ tgeography_to_tgeometry(const Temporal *temp)
   return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
 }
 
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a temporal geography point from a temporal geometry point
+ * @param[in] temp Temporal point
+ * @errval NULL
+ * @csqlfn #Tgeompoint_to_tgeogpoint()
+ */
+Temporal *
+tgeompoint_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL);
+  return tgeom_tgeog(temp, TGEOM_TO_TGEOG);
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a temporal geometry point from a temporal geography point
+ * @param[in] temp Temporal point
+ * @errval NULL
+ * @csqlfn #Tgeogpoint_to_tgeompoint()
+ */
+Temporal *
+tgeogpoint_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL);
+  return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
+}
+
 /*****************************************************************************/
 
 /**

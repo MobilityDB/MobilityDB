@@ -673,6 +673,8 @@ extern Temporal *tgeogpoint_to_tgeography(const Temporal *temp);
 extern Temporal *tgeography_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tgeography_to_tgeometry(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeography(const Temporal *temp);
+extern Temporal *tgeogpoint_to_tgeompoint(const Temporal *temp);
+extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeometry(const Temporal *temp);
 extern bool tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
