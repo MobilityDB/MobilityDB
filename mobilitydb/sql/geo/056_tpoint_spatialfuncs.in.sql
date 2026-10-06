@@ -149,11 +149,11 @@ CREATE FUNCTION transformGK(geometry)
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tgeometry_to_tgeography'
+  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tgeogpoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeography_to_tgeometry'
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);

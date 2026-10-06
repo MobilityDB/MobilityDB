@@ -1632,6 +1632,10 @@ TGEOMETRY_CONFIG = dict(
         "tgeography_to_tgeometry":  {0: "tgeog1"},
         "tgeography_to_tgeogpoint": {0: "tgeog_point1"},
         "tgeogpoint_to_tgeography": {0: "tgeogpoint_step1"},
+        # The point conversions keep the interpolation, so they take LINEAR
+        # lon/lat temporal points.
+        "tgeompoint_to_tgeogpoint": {0: "tgeompoint_geod1"},
+        "tgeogpoint_to_tgeompoint": {0: "tgeogpoint_lin1"},
         # The geog_* surface needs real lon/lat literals: every canned
         # geometry above is planar (SRID 5676) and is refused with "Only
         # lon/lat coordinate systems are supported".
@@ -1936,6 +1940,10 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   Temporal *tgeogpoint_step1 = tgeogpoint_in(
     "Interp=Step;[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  Temporal *tgeompoint_geod1 = tgeompoint_in(
+    "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  Temporal *tgeogpoint_lin1 = tgeogpoint_in(
+    "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   /* Input arrays for the array-of-geometry / array-of-temporal-geo
    * constructors and relationship family below. */
   GSERIALIZED *garr_g1 = geom_in("SRID=5676;Point(0 0)", -1);
@@ -2036,6 +2044,8 @@ TGEOMETRY_CONFIG = dict(
   if (tgeog1) free(tgeog1);
   if (tgeog_point1) free(tgeog_point1);
   if (tgeogpoint_step1) free(tgeogpoint_step1);
+  if (tgeompoint_geod1) free(tgeompoint_geod1);
+  if (tgeogpoint_lin1) free(tgeogpoint_lin1);
   free(stbox_wkb1);
   free(geo_wkb1);
   if (tgeoarr_tp1) free(tgeoarr_tp1);
