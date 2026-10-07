@@ -150,13 +150,13 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the MF-JSON representation of a temporal value. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >Where <code>srs</code> is <code>NULL</code>, a spatial value of known SRID states the short name of its coordinate reference system in <code>spatial_ref_sys.csv</code>, as in <code>EPSG:3857</code>, as the PostgreSQL function <code>asMFJSON</code> states it from the table <code>spatial_ref_sys</code> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">with_bbox</td><td>True when the output value has bounding box </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>Flags </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">precision</td><td>Number of decimal digits, of which at most <a class="el" href="type__inout_8h_a28e7bebfef9609f69d1a63575a8dd923.html#a28e7bebfef9609f69d1a63575a8dd923">OUT_DEFAULT_DECIMAL_DIGITS</a> are written. It is only used when the base type has floating point components, such as tfloat or tgeometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srs</td><td>Spatial reference system, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srs</td><td>Name of the coordinate reference system, which the output states in place of the one of the SRID, may be <code>NULL</code> </td></tr>
   </table>
   </dd>
 </dl>
