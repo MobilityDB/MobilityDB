@@ -4649,6 +4649,7 @@ geog_serialize(LWGEOM *lwgeom)
  * @param[in] gs Geometry/geography
  * @param[in] srid_to Target SRID
  * @note PostGIS function: @p transform(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_transform()
  */
 GSERIALIZED *
 geo_transform(const GSERIALIZED *gs, int32_t srid_to)
@@ -4670,6 +4671,10 @@ geo_transform(const GSERIALIZED *gs, int32_t srid_to)
       "geo_transform: Input geometry has unknown (%d) SRID", SRID_UNKNOWN);
     return NULL;
   }
+  /* A geography is transformed only into a lon/lat coordinate system, as a
+   * geometry cast into a geography is */
+  if (FLAGS_GET_GEODETIC(gs->gflags) && ! ensure_srid_is_latlong(srid_to))
+    return NULL;
 
   /* Input SRID and output SRID are equal, noop */
   if (srid_from == srid_to)
@@ -4726,7 +4731,11 @@ geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
   /* The SRID may be SRID_UNKNOWN: the pipeline string itself states the
    * destination coordinate reference system, as for
-   * #tspatial_transform_pipeline */
+   * #tspatial_transform_pipeline. A geography is transformed only into a
+   * lon/lat coordinate system */
+  if (FLAGS_GET_GEODETIC(gs->gflags) && srid != SRID_UNKNOWN &&
+      ! ensure_srid_is_latlong(srid))
+    return NULL;
 
   GSERIALIZED *gs1 = geo_copy(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs1);
@@ -5917,6 +5926,7 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
  * @param[in] gs Geometry/geography
  * @param[in] precision Maximum number of decimal digits
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
+ * @sqlfn asText()
  */
 char *
 geo_as_text(const GSERIALIZED *gs, int precision)
@@ -5937,6 +5947,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
  * @note This is a a stricter version of #geom_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asEWKT(PG_FUNCTION_ARGS)
+ * @sqlfn asEWKT()
  */
 char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision)
@@ -6044,29 +6055,27 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @ingroup meos_geo_base_inout
  * @brief Return the Extended Well-Known Binary (EWKB) representation of a
  * geometry/geography
+ * @details The byte order is read as #geo_as_hexewkb reads it: `NDR` or `XDR`
+ * in any case, and the order of the machine for `NULL` or an empty string
  * @param[in] gs Geometry/geography
- * @param[in] endian Endianness
+ * @param[in] endian Byte order, may be `NULL`
  * @param[out] size Size of result
+ * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
+ * @sqlfn asEWKB()
  */
 uint8_t *
 geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size, NULL); *size = 0;
   VALIDATE_NOT_NULL(gs, NULL);
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
 
-  uint8_t variant = 0;
-
-  /* If user specified endianness, respect it */
-  if (endian)
-  {
-    if (! strncmp(endian, "xdr", 3) || ! strncmp(endian, "XDR", 3))
-      variant = variant | WKB_XDR;
-    else
-      variant = variant | WKB_NDR;
-  }
-
-  /* Create WKB hex string */
+  /* Create the WKB string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
 
@@ -6131,6 +6140,7 @@ geo_from_geojson(const char *geojson)
  * states in place of the one of the SRID, may be `NULL`
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
+ * @sqlfn asGeoJSON()
  */
 char *
 geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
