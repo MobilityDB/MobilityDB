@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: WGS84_F</title>
+<title>MobilityDB: pose_frame_coords</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -122,7 +122,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">pose_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">pose_enu_to_ecef_quaternion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__comp_ga0fe8fdbd64815816a0e7c5fc49f2850d.html#ga0fe8fdbd64815816a0e7c5fc49f2850d">pose_eq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a0da1809b9875109918b11a212550463a.html#a0da1809b9875109918b11a212550463a">pose_frame_coords</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_a0da1809b9875109918b11a212550463a.html#a0da1809b9875109918b11a212550463a">pose_frame_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a40fab753aeca2caa35e90b40a194f372.html#a40fab753aeca2caa35e90b40a194f372">pose_frame_enu</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_abff8687b244c620efbf2f23159fe0240.html#abff8687b244c620efbf2f23159fe0240">POSE_FRAME_STEP</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga3ef39685c3d97cabb68d239f6de3be82.html#ga3ef39685c3d97cabb68d239f6de3be82">pose_from_hexwkb</a></td></tr>
@@ -180,24 +180,81 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a641de21e545b9c6327cfc3f2526d499b.html#a641de21e545b9c6327cfc3f2526d499b">posesegm_locate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a1b1165ad9a2c5ed16bdf824ec8b2c4ab.html#a1b1165ad9a2c5ed16bdf824ec8b2c4ab">quaternion_rotate_vector</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_aa09b7cbfbfc67364d373c1a238784a8f.html#aa09b7cbfbfc67364d373c1a238784a8f">WGS84_A</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_ae90bd6b6a77238cf3358909bedb5ea9b.html#ae90bd6b6a77238cf3358909bedb5ea9b">WGS84_F</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_ae90bd6b6a77238cf3358909bedb5ea9b.html#ae90bd6b6a77238cf3358909bedb5ea9b">WGS84_F</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae90bd6b6a77238cf3358909bedb5ea9b" name="ae90bd6b6a77238cf3358909bedb5ea9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae90bd6b6a77238cf3358909bedb5ea9b">&#9670;&#160;</a></span>WGS84_F</h2>
+<a id="a0da1809b9875109918b11a212550463a" name="a0da1809b9875109918b11a212550463a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0da1809b9875109918b11a212550463a">&#9670;&#160;</a></span>pose_frame_coords()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define WGS84_F&#160;&#160;&#160;(1.0 / 298.257223563)</td>
+          <td class="memname">static void pose_frame_coords </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSPHEROID.html">SPHEROID</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>enu</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>hasz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Flattening of the WGS-84 ellipsoid. </p>
+<p>Write in the last argument a position in the axes of the frame in which a reference system writes orientations. </p>
+<p >For a geographic system these are its geocentric coordinates along the East-North-Up axes returned by <a class="el" href="meos_2src_2pose_2pose_8c_a40fab753aeca2caa35e90b40a194f372.html#a40fab753aeca2caa35e90b40a194f372" title="Return true when a reference system is geographic, writing in the last arguments its ellipsoid and th...">pose_frame_enu</a>, for any other system its coordinates </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geo</td><td>True when the system is geographic </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Ellipsoid of a geographic system </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">enu</td><td>East-North-Up axes of a geographic system </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">coords</td><td>Coordinates of the position </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hasz</td><td>True when the position has a Z coordinate </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">m</td><td>Position in the axes of the frame </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

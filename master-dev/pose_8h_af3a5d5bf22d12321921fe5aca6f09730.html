@@ -90,12 +90,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a38778bf0b89768508802e72e938992b1.html#a38778bf0b89768508802e72e938992b1">datum_pose_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_afdba1299a0759707e856f27db9a05755.html#afdba1299a0759707e856f27db9a05755">datum_pose_yaw</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a2c1fdb9ba7f48d9850b7825010cf8e53.html#a2c1fdb9ba7f48d9850b7825010cf8e53">DatumGetPoseP</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose_8h_ac8a860f90682dcfc0c7e0c3acfd9b110.html#ac8a860f90682dcfc0c7e0c3acfd9b110">ecef_to_geodetic</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose_8h_ab2fc658b1a98c49c0ce53044196450fc.html#ab2fc658b1a98c49c0ce53044196450fc">ecef_to_geodetic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_aa84b1ce1d873e3c4f6b944020179e542.html#aa84b1ce1d873e3c4f6b944020179e542">ensure_valid_pose_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_ac5f6b1c6a5c598265a9cbe4a6f39bc88.html#ac5f6b1c6a5c598265a9cbe4a6f39bc88">ensure_valid_pose_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a0ad2b5ad5f0686dfe9e939d62d8c621e.html#a0ad2b5ad5f0686dfe9e939d62d8c621e">ensure_valid_pose_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_af06a2c8fd49fad041912887bb67761c3.html#af06a2c8fd49fad041912887bb67761c3">ensure_valid_poseset_pose</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose_8h_a9992a8c74e84f28924703e3999295b4d.html#a9992a8c74e84f28924703e3999295b4d">geodetic_to_ecef</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose_8h_af9195911a26fc0c4f2022ac16fe377c1.html#af9195911a26fc0c4f2022ac16fe377c1">geodetic_to_ecef</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a69460d82eff572c817d6acf8f6173ac6.html#a69460d82eff572c817d6acf8f6173ac6">lwgeom_apply_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a9627d704424d0de29e93eb544844027d.html#a9627d704424d0de29e93eb544844027d">PG_GETARG_POSE_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a2d9dff6c94b9bf99dacc7e24ed16b836.html#a2d9dff6c94b9bf99dacc7e24ed16b836">PG_RETURN_POSE_P</a></td></tr>
@@ -158,6 +158,16 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a pose transformed to another SRID. </p>
+<p >The position is transformed and the orientation is written in the frame of the target system at the transformed position by <a class="el" href="meos_2src_2pose_2pose_8c_a917f4227bc27ac44264a2772be2a4d14.html#a917f4227bc27ac44264a2772be2a4d14" title="Write in the result the orientation of a pose in the frame of the reference system that its position ...">pose_orientation_transf_pj</a>. An orientation whose source or target frame is not known, as the one of a pipeline without a target SRID, is kept. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid_to</td><td>Target SRID, may be <code>SRID_UNKNOWN</code> for pipeline transformation </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pj</td><td>Information about the transformation </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

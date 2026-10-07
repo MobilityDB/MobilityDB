@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spatialbase_as_text</title>
+<title>MobilityDB: point4d_transf_pj</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,38 +79,38 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a63b3e331e0c569499387e01e479e7b63.html#a63b3e331e0c569499387e01e479e7b63">point4d_transf_pj</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a63b3e331e0c569499387e01e479e7b63.html#a63b3e331e0c569499387e01e479e7b63">point4d_transf_pj</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a91e819f940fb1e1681f80dbfc4891f71.html#a91e819f940fb1e1681f80dbfc4891f71">point_transf_pj</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__inout_gadbf8ad2ea851b96b086a25be7ce257cb.html#gadbf8ad2ea851b96b086a25be7ce257cb">spatialarr_wkt_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a4511ca1dc681a6b3424ee9f660a5e46d.html#a4511ca1dc681a6b3424ee9f660a5e46d">spatialbase_as_ewkt</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a16f9a47394c6e9f974074a4d7dd4ba60.html#a16f9a47394c6e9f974074a4d7dd4ba60">spatialbase_as_text</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2include_2geo_2tspatial_8h_a16f9a47394c6e9f974074a4d7dd4ba60.html#a16f9a47394c6e9f974074a4d7dd4ba60">spatialbase_as_text</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a16f9a47394c6e9f974074a4d7dd4ba60" name="a16f9a47394c6e9f974074a4d7dd4ba60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16f9a47394c6e9f974074a4d7dd4ba60">&#9670;&#160;</a></span>spatialbase_as_text()</h2>
+<a id="a63b3e331e0c569499387e01e479e7b63" name="a63b3e331e0c569499387e01e479e7b63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63b3e331e0c569499387e01e479e7b63">&#9670;&#160;</a></span>point4d_transf_pj()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * spatialbase_as_text </td>
+          <td class="memname">bool point4d_transf_pj </td>
           <td>(</td>
-          <td class="paramtype">Datum&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
+          <td class="paramtype"><a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>has_z</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxdd</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structLWPROJ.html">LWPROJ</a> *&#160;</td>
+          <td class="paramname"><em>pj</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -119,9 +119,6 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Return the string representation of a base value. </p>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
 
 </div>
 </div>
