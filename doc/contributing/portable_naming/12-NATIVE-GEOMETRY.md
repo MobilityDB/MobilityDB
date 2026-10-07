@@ -182,20 +182,25 @@ Spanish:
    `lineLocatePoint`.
 8. **The constructors and the casts**: `collect(geometry[])`, `makeLine(geometry[])`,
    `geometry(geomset)`, `geography(geogset)` (decision 4).
-9. **The output and the transformation over MEOS**: `asText`, `asEWKB`, `asGeoJSON` over
-   geometry and geography; `transform` and `asEWKT` rebound from PostGIS to MEOS. It rests on
-   its own PR, branch `fix/meos-geojson-crs-from-srid`: in the MEOS library, `geo_as_geojson`
-   and `temporal_as_mfjson` name the reference system of the SRID of the value when the caller
-   names none, through the internal `srid_srs`, which reads it from `spatial_ref_sys.csv` into the
-   PROJ cache, so `asGeoJSON` and `asMFJSON` state it in Spark, Flink and DuckDB as PostgreSQL
-   states it; the PostgreSQL extension keeps the name it reads from the table `spatial_ref_sys`.
-   JMEOS then hands MEOS the CSV as MobilityDuck does, and the three bindings advance their pin.
+9. **The output and the transformation**: `asText`, `asEWKB`, `asGeoJSON` over geometry and
+   geography beside `asEWKT`, as SQL functions calling `ST_AsText`, `ST_AsEWKB` and
+   `ST_AsGeoJSON` in PostgreSQL, the PostGIS path being the faster one there (`asEWKT` over MEOS
+   measured 12 percent slower, `transform` over a geometry 5 percent); the MEOS writers carry
+   these names as their own `@sqlfn`, the form of a surface PostgreSQL registers through a host
+   extension, so Spark, Flink and DuckDB publish them over MEOS. `transform` over a geography
+   calls MEOS (`Geo_transform`, Spark and Flink `geoTransform`), 1.7 times faster than the cast
+   through `ST_Transform`, and MEOS transforms a geography only into a lon/lat system. It rests on
+   PR #2993 (merged): in the MEOS library, `geo_as_geojson` and `temporal_as_mfjson` name the
+   reference system of the SRID of the value when the caller names none, through the internal
+   `srid_srs`, which reads it from `spatial_ref_sys.csv` into the PROJ cache; the PostgreSQL
+   extension keeps the name it reads from the table `spatial_ref_sys`. JMEOS then hands MEOS the
+   CSV as MobilityDuck does, and the three bindings advance their pin.
 10. **The clustering** (decision 2).
 
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 8 are on the branch, rebased on master `72d6566b01`, not pushed. Commit 1:
+**State.** Commits 1 to 9 are on the branch, rebased on master `d76ba94472`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -203,23 +208,23 @@ answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and
 follow the same rule, and `datum_eq` answers that a 3D and a 2D point are not equal, so a 3D and a
 2D temporal point answer the same in either order and two parallel 3D points are measured in 3D.
 Commit 3: `lfunc_base` and `tfunc_base_base` pass up to five parameters in every build. Commit 4
-(`2bc017b18a`): the earth model as item 4 states it, every geography overload tested on the
+(`cdd4d975c6`): the earth model as item 4 states it, every geography overload tested on the
 spheroid and on the sphere (one degree of meridian at the equator reads 110574.389 m and
 111195.08 m), the manual in English and Spanish with the notation `tgeog`; the nearest approach
 walk builds the circle tree of the geography once, seeds its traversal with the running minimum and
 measures on the spheroid only an edge that can beat it, and `shortestLine` over a temporal
 geography point of 2000 instants takes 0.58, 0.62 and 0.98 of the time of the trajectory path.
-Commit 5 (`1dce32c9b0`): the relationships as item 5 states them, 121 ordered pairs of eleven
+Commit 5 (`2984acf092`): the relationships as item 5 states them, 121 ordered pairs of eleven
 geometries answering as `ST_Contains`, `ST_Covers`, `ST_Disjoint`, `ST_Intersects`, `ST_Touches`,
 `ST_Equals`, `ST_DWithin` and `ST_Relate` on every pair, each relationship holding for 11 to 72
 of them, the manual in English and Spanish and the `geoX` row of the portable dialect chapter.
-Commit 6 (`17c5b36edd`): the measures and distances as item 6 states them over the new MEOS
+Commit 6 (`559dd09750`): the measures and distances as item 6 states them over the new MEOS
 `geo_area`, `geo_perimeter`, `geo_centroid`, `geo_distance`, `geo_shortestline`,
 `geom_max_distance`, `geom_max_distance3d` and `geog_shortestline`, each answering as its PostGIS
 function on the eleven geometries and their 121 pairs; on the sphere the area of a geography is
 the one its great circles bound (the square of one degree at the equator 12364031798.518 square
 meters, its spherical excess 12364031798.470), where `ST_Area` over a geography on the sphere
-answers 0.67 percent less. Commit 7 (`9e642687fb`): `boundary`, `reverse` (Spark and Flink
+answers 0.67 percent less. Commit 7 (`d1fa001292`): `boundary`, `reverse` (Spark and Flink
 `geoReverse`), `numGeometries`, `geometryN`, `numPoints`, `lineInterpolatePoint`,
 `lineSubstring` and `lineLocatePoint` over a geometry, each answering as its PostGIS function on
 the eleven geometries and on three lines, the boundary of an empty geometry being the empty
@@ -227,13 +232,17 @@ geometry of the dimension of a boundary. `points(geometry)` and `geoPoints(geome
 name of their MEOS functions: the public `geo_points` answers the MultiPoint of `ST_Points`, the
 meaning of `geoPoints`, while its siblings `tpose_points`, `tcbuffer_points` and
 `trgeometry_points` answer the set of the distinct points, the meaning of `points`.
-Commit 8 (`251786d436`): `collect(geometry[])` (Spark and Flink `geoCollect`) and
+Commit 8 (`0f53433146`): `collect(geometry[])` (Spark and Flink `geoCollect`) and
 `makeLine(geometry[])` over `geo_collect_garray` and `geo_makeline_garray`, and the casts
 `geomset::geometry` and `geogset::geography` over the new MEOS `geoset_to_geo`, each answering as
 `ST_Collect` and `ST_MakeLine` on seven arrays; `geo_collect_garray` answers an array of one
 element with its collection of one element, as `ST_Collect` does, the internal `geoarr_collect`
 keeping the single value of a trajectory, and `geo_makeline_garray` frees every geometry it read
 when the SRIDs differ and raises an array without a point or a line as a notice.
+Commit 9 (`5281445d67`, on master `d76ba94472`): the output names and the transformation as
+item 9 states them, each writer answering as its PostGIS function on fifteen geometries and four
+geographies, `transform` byte for byte as `ST_Transform` on eight geometries and a geography, and
+`meos/test/geo_transform_test.c` stating the refusals of a geography into a projected system and
+of a byte order no decoder reads.
 Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commits 9
-and 10.
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commit 10.
