@@ -54,7 +54,8 @@ SELECT asEWKT(round(transform(tpose
 -- A same-SRID transformation is a no-op
 SELECT asEWKT(transform(tpose
   'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2001-01-01', 4326));
--- A 2D pose angle is intrinsic to its projection and is passed through
+-- A 2D pose angle turns by the meridian convergence of the projection at the
+-- position, -0.007111 degrees in EPSG:3812 at 4.35E 50.85N
 SELECT asEWKT(round(transform(tpose
   'SRID=4326;Pose(Point(4.35 50.85), 1)@2001-01-01', 3812), 6));
 -- An unknown source SRID is an error

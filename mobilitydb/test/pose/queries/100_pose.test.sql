@@ -220,6 +220,30 @@ SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(0 45 0), 1, 0, 0, 
   round(degrees(roll(transform(pose 'SRID=4326;Pose(Point(0 45 0), 1, 0, 0, 0)', 4978)))::numeric, 6) AS roll;
 -- Same-SRID transform is a no-op.
 SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4326));
+-- Any other pair of systems turns the orientation by the angle between the
+-- axes of the two frames at the position. In a projection that angle is the
+-- meridian convergence: 2.122300 degrees in UTM zone 32 at 12E 45N, the
+-- value that PROJ's proj_factors states, in two and in three dimensions,
+-- where a level body stays level.
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45),0)', 32632)))::numeric, 6);
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS yaw,
+  round(degrees(pitch(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS pitch,
+  round(degrees(roll(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS roll;
+-- In the polar stereographic projection the convergence is the longitude
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(90 85),0)', 32661)))::numeric, 6);
+-- The way back restores the orientation
+SELECT asEWKT(transform(transform(pose 'SRID=4326;Pose(Point(12 45),0.5)', 32632), 4326), 6);
+-- A projection that does not preserve angles carries the direction that the
+-- body faces: a body facing North in the equal-area projection of Europe
+-- faces its grid North turned by the convergence, 12.7626 degrees at 25E 60N.
+-- The answer is read to four decimals since it lies half a unit from the
+-- sixth, where the noise of the measurement decides the digit
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(25 60),1.5707963267948966)', 3035)))::numeric, 4);
+-- The three-dimensional geographic system of WGS-84 has the frame of 4326
+SELECT asEWKT(round(transform(pose 'SRID=4979;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- At the antimeridian the images of the two sides of the position fall at the
+-- two ends of the map, and the orientation is read on the side of the position
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(180 0),0)', 3857)))::numeric, 6);
 
 -- applyPose — body↔world rigid transform via the pose's (R, p).
 -- Identity pose: body geometry passes through unchanged.
