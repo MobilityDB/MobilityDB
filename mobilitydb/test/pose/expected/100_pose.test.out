@@ -444,6 +444,50 @@ SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4326))
  SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
 (1 row)
 
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45),0)', 32632)))::numeric, 6);
+  round   
+----------
+ 2.122300
+(1 row)
+
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS yaw,
+  round(degrees(pitch(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS pitch,
+  round(degrees(roll(transform(pose 'SRID=4326;Pose(Point(12 45 0), 1, 0, 0, 0)', 32632)))::numeric, 6) AS roll;
+   yaw    |  pitch   |   roll   
+----------+----------+----------
+ 2.122300 | 0.000000 | 0.000000
+(1 row)
+
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(90 85),0)', 32661)))::numeric, 6);
+   round   
+-----------
+ 90.000000
+(1 row)
+
+SELECT asEWKT(transform(transform(pose 'SRID=4326;Pose(Point(12 45),0.5)', 32632), 4326), 6);
+              asewkt              
+----------------------------------
+ SRID=4326;Pose(POINT(12 45),0.5)
+(1 row)
+
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(25 60),1.5707963267948966)', 3035)))::numeric, 4);
+  round   
+----------
+ 102.7626
+(1 row)
+
+SELECT asEWKT(round(transform(pose 'SRID=4979;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+                        asewkt                         
+-------------------------------------------------------
+ SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)
+(1 row)
+
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(180 0),0)', 3857)))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
 SELECT ST_AsText(applyPose(ST_Point(1,2), pose 'Pose(Point(0 0), 0)'));
  st_astext  
 ------------

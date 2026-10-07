@@ -541,21 +541,18 @@ srid_is_latlong(int32_t srid)
 
 #if CBUFFER || POSE
 /**
- * @brief Transform the point to another SRID
- * @param[in] gs Point
- * @param[in] srid_to SRID
+ * @brief Transform the coordinates of a point with a transformation
+ * @param[in,out] p Coordinates, transformed in place
+ * @param[in] has_z True when the point has a Z coordinate
  * @param[in] pj Information about the transformation
- * @note This function MODIFIES the input point in the first argument
- * @note Derived from PostGIS version 3.4.0 function ptarray_transform(),
- * file `lwgeom_transform.c`
+ * @note The single-point case of the PostGIS version 3.4.0 function
+ * #ptarray_transform, file `lwgeom_transform.c`
  */
 bool
-point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
+point4d_transf_pj(POINT4D *p, bool has_z, const LWPROJ *pj)
 {
-  assert(gs); assert(pj);
-  int has_z = FLAGS_GET_Z(gs->gflags);
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
-  double *pa_double = (double *) (GS_POINT_PTR(gs));
+  assert(p); assert(pj);
+  double *pa_double = (double *) p;
   PJ_DIRECTION direction = pj->pipeline_is_forward ? PJ_FWD : PJ_INV;
 
   /* Convert to radians if necessary */
@@ -593,7 +590,24 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   /* Convert radians to degrees if necessary */
   if (proj_angular_output(pj->pj, direction))
     to_dec(p);
+  return true;
+}
 
+/**
+ * @brief Transform the point to another SRID
+ * @param[in] gs Point
+ * @param[in] srid_to SRID
+ * @param[in] pj Information about the transformation
+ * @note This function MODIFIES the input point in the first argument; its
+ * coordinates are transformed by #point4d_transf_pj
+ */
+bool
+point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
+{
+  assert(gs); assert(pj);
+  if (! point4d_transf_pj((POINT4D *) GS_POINT_PTR(gs),
+      FLAGS_GET_Z(gs->gflags), pj))
+    return false;
   gserialized_set_srid(gs, srid_to);
   return true;
 }

@@ -121,7 +121,7 @@ SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChai
 SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2001-01-01');
 SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 3812));
 SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
-SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 6));
 
 -------------------------------------------------------------------------------
 -- Restrictions
