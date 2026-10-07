@@ -118,8 +118,8 @@ typedef struct
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LEN_SRS_RECORD 5120
-/* Location of the spatial_ref_sys.csv file */
-char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
+/* Location of the spatial_ref_sys.csv file, the one the build installs */
+char *SPATIAL_REF_SYS_CSV = MEOS_DATAROOTDIR "/spatial_ref_sys.csv";
 
 /**
  * @ingroup meos_setup

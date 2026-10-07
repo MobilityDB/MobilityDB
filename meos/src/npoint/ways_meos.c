@@ -54,11 +54,11 @@
 /* Maximum length in characters of a geometry string in the input data */
 #define MAX_LEN_GEOM 100001
 
-/* Default location of the ways CSV file. Overridable at run time with
- * `meos_set_ways_csv()`, mirroring `meos_set_spatial_ref_sys_csv()`. This
- * lets MEOS embedders (which cannot rely on a fixed install prefix) point
- * at a deployment-specific network file. */
-char *WAYS_CSV = "/usr/local/share/ways1000.csv";
+/* Default location of the ways CSV file, the one the build installs.
+ * Overridable at run time with `meos_set_ways_csv()`, mirroring
+ * `meos_set_spatial_ref_sys_csv()`, so that a MEOS embedder points at a
+ * deployment-specific network file. */
+char *WAYS_CSV = MEOS_DATAROOTDIR "/ways1000.csv";
 
 /**
  * @ingroup meos_setup

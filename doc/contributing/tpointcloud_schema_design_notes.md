@@ -174,8 +174,9 @@ these two front ends, which is the strongest argument that a third should not in
 | point cloud schemas | `pointcloud_schemas` / `pointcloud_dimensions` | a vendored document |
 
 `ways_meos.c` states the second row in the code itself, in the comment on its default ways path — the entry is described there as
-`meos_set_ways_csv()`, *"mirroring `meos_set_spatial_ref_sys_csv()`"*, each holding a default path
-(`/usr/local/share/ways1000.csv`, `/usr/local/share/spatial_ref_sys.csv`) that the entry overrides.
+`meos_set_ways_csv()`, *"mirroring `meos_set_spatial_ref_sys_csv()`"*, each holding a default path,
+the `ways1000.csv` and `spatial_ref_sys.csv` the build installs into its data directory, that the
+entry overrides.
 
 ⛔ **THE TWO FRONT ENDS DESYNCHRONISE, AND THAT IS ACCEPTED RATHER THAN REPAIRED.** A vendored
 `spatial_ref_sys.csv` is a snapshot; the PostGIS table is whatever the database holds. Nothing

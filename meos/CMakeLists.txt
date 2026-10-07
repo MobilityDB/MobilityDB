@@ -57,6 +57,9 @@ endif()
 
 if(MEOS)
   include(GNUInstallDirs)
+  # The directory the data files of MEOS are installed into below, where the
+  # library reads them unless the host names another file
+  add_compile_definitions(MEOS_DATAROOTDIR="${CMAKE_INSTALL_FULL_DATAROOTDIR}")
 endif()
 
 #-----------------------------------------
