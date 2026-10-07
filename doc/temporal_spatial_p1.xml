@@ -308,6 +308,50 @@ SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_output">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asGeoJSON</varname></primary></indexterm>
+				<para>Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asText({geometry,geography},maxdecimaldigits integer=15) → text
+asEWKT({geometry,geography},maxdecimaldigits integer=15) → text
+asEWKB({geometry,geography},endian text='') → bytea
+asGeoJSON(geometry,maxdecimaldigits integer=9,options integer=8) → text
+asGeoJSON(geography,maxdecimaldigits integer=9,options integer=0) → text
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>. The GeoJSON states the coordinate reference system its options ask for, the sum of 1 for the bounding box, 2 for the short name of the system, as in <varname>EPSG:3857</varname>, 4 for its long name, and 8 for the short name of any system but WGS 84, which is the default for a geometry; a geography takes no option by default.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(geometry 'SRID=3857;Point(1.123456789 2)', 3);
+-- POINT(1.123 2)
+SELECT asEWKT(geometry 'SRID=3857;Point(1 2)');
+-- SRID=3857;POINT(1 2)
+SELECT asEWKB(geometry 'Point(1 1)', 'XDR');
+-- \x00000000013ff00000000000003ff0000000000000
+SELECT asGeoJSON(geometry 'SRID=3857;Point(1 2)');
+-- {"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2]}
+SELECT asGeoJSON(geometry 'SRID=4326;Point(1 2)');
+-- {"type":"Point","coordinates":[1,2]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<para>Transform a geometry or a geography to a spatial reference identifier</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(geometry,integer) → geometry
+transform(geography,integer) → geography
+</programlisting>
+				<para>A geometry is transformed as the PostGIS function <varname>ST_Transform</varname> transforms it. A geography is transformed only into a coordinate system of longitude and latitude, as the cast of a geometry into a geography requires.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
+-- SRID=3857;POINT(484239.78 6594803.23)
+SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
+-- ERROR:  Only lon/lat coordinate systems are supported
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Return the region two geometries share</para>

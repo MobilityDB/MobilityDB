@@ -728,10 +728,14 @@ spatialset_transf_pj(const Set *s, int32_t srid_to, const LWPROJ *pj)
 Set *
 spatialset_transform(const Set *s, int32_t srid_to)
 {
-  int32_t srid_from = spatialset_srid(s);
   /* Ensure the validity of the arguments */
   VALIDATE_SPATIALSET(s, NULL);
+  int32_t srid_from = spatialset_srid(s);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
+    return NULL;
+  /* A geography is transformed only into a lon/lat coordinate system, as a
+   * geometry cast into a geography is */
+  if (MEOS_FLAGS_GET_GEODETIC(s->flags) && ! ensure_srid_is_latlong(srid_to))
     return NULL;
 
   /* Input and output SRIDs are equal, noop */
@@ -761,10 +765,13 @@ Set *
 spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
   int32_t srid, bool is_forward)
 {
-  int32_t srid_from = spatialset_srid(s);
   /* Ensure the validity of the arguments */
   VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  int32_t srid_from = spatialset_srid(s);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid))
+    return NULL;
+  /* A geography is transformed only into a lon/lat coordinate system */
+  if (MEOS_FLAGS_GET_GEODETIC(s->flags) && ! ensure_srid_is_latlong(srid))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */

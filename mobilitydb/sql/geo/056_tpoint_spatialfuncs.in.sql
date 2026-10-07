@@ -61,10 +61,12 @@ CREATE FUNCTION transform(geometry, integer)
   RETURNS geometry
   AS 'SELECT @extschema@.ST_Transform($1, $2)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+-- A geography is transformed by MEOS, which refuses a coordinate system other
+-- than lon/lat as the cast of a geometry into a geography refuses it
 CREATE FUNCTION transform(geography, integer)
   RETURNS geography
-  AS 'SELECT @extschema@.ST_Transform($1::geometry, $2)::geography'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

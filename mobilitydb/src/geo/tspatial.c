@@ -382,6 +382,25 @@ Tspatial_transform_pipeline(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Geo_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_transform);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry or a geography transformed to an SRID
+ * @details A geography is transformed only into a lon/lat coordinate system
+ * @sqlfn transform()
+ * @altsqlfn geoTransform()
+ */
+Datum
+Geo_transform(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32_t srid = PG_GETARG_INT32(1);
+  GSERIALIZED *result = geo_transform(gs, srid);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 PGDLLEXPORT Datum Geo_transform_pipeline(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_transform_pipeline);
 /**

@@ -710,3 +710,141 @@ SELECT makeLine(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=4326;Point
 ERROR:  Operation on mixed SRID
 SELECT collect(ARRAY[geometry 'SRID=4326;Point(1 1)', geometry 'SRID=3812;Point(3 3)']);
 ERROR:  Operation on mixed SRID
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (3, geometry 'Point(4 2)'),
+  (4, geometry 'Point(5 5)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (6, geometry 'Polygon((1 1,2 1,2 2,1 2,1 1))'),
+  (7, geometry 'Polygon((4 0,6 0,6 4,4 4,4 0))'),
+  (8, geometry 'Linestring(0 0,4 0)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (10, geometry 'Polygon((2 2,6 2,6 6,2 6,2 2))'),
+  (11, geometry 'Point empty'),
+  (12, geometry 'Linestring Z(1.123456789 2.5 3,4 5.25 6)'),
+  (13, geometry 'CircularString(0 0,1 1,2 0)'),
+  (14, geometry 'SRID=3857;Point(1.123456789 2)'),
+  (15, geometry 'SRID=4326;Linestring(1 1,2 2)'))
+SELECT
+  count(*) FILTER (WHERE asText(geom) IS DISTINCT FROM ST_AsText(geom)) AS astext,
+  count(*) FILTER (WHERE asText(geom, 3) IS DISTINCT FROM ST_AsText(geom, 3)) AS astext3,
+  count(*) FILTER (WHERE asEWKT(geom) IS DISTINCT FROM ST_AsEWKT(geom)) AS asewkt,
+  count(*) FILTER (WHERE asEWKT(geom, 3) IS DISTINCT FROM ST_AsEWKT(geom, 3)) AS asewkt3,
+  count(*) FILTER (WHERE asEWKB(geom) IS DISTINCT FROM ST_AsEWKB(geom)) AS asewkb,
+  count(*) FILTER (WHERE asEWKB(geom, 'XDR') IS DISTINCT FROM ST_AsEWKB(geom, 'XDR')) AS asewkbxdr,
+  count(*) FILTER (WHERE asEWKB(geom, 'NDR') IS DISTINCT FROM ST_AsEWKB(geom, 'NDR')) AS asewkbndr
+FROM g;
+ astext | astext3 | asewkt | asewkt3 | asewkb | asewkbxdr | asewkbndr 
+--------+---------+--------+---------+--------+-----------+-----------
+      0 |       0 |      0 |       0 |      0 |         0 |         0
+(1 row)
+
+/* The GeoJSON of the same geometries but the arc, which GeoJSON cannot state */
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
+  (2, geometry 'Point(2 2)'),
+  (5, geometry 'Linestring(2 2,6 2)'),
+  (9, geometry 'MultiPoint(1 1,5 5)'),
+  (11, geometry 'Point empty'),
+  (12, geometry 'Linestring Z(1.123456789 2.5 3,4 5.25 6)'),
+  (14, geometry 'SRID=3857;Point(1.123456789 2)'),
+  (15, geometry 'SRID=4326;Linestring(1 1,2 2)'))
+SELECT
+  count(*) FILTER (WHERE asGeoJSON(geom) IS DISTINCT FROM ST_AsGeoJSON(geom)) AS asgeojson,
+  count(*) FILTER (WHERE asGeoJSON(geom, 4, 0) IS DISTINCT FROM ST_AsGeoJSON(geom, 4, 0)) AS asgeojson0,
+  count(*) FILTER (WHERE asGeoJSON(geom, 9, 1) IS DISTINCT FROM ST_AsGeoJSON(geom, 9, 1)) AS asgeojson1,
+  count(*) FILTER (WHERE asGeoJSON(geom, 9, 2) IS DISTINCT FROM ST_AsGeoJSON(geom, 9, 2)) AS asgeojson2,
+  count(*) FILTER (WHERE asGeoJSON(geom, 9, 4) IS DISTINCT FROM ST_AsGeoJSON(geom, 9, 4)) AS asgeojson4,
+  count(*) FILTER (WHERE asGeoJSON(geom, 9, 7) IS DISTINCT FROM ST_AsGeoJSON(geom, 9, 7)) AS asgeojson7
+FROM g;
+ asgeojson | asgeojson0 | asgeojson1 | asgeojson2 | asgeojson4 | asgeojson7 
+-----------+------------+------------+------------+------------+------------
+         0 |          0 |          0 |          0 |          0 |          0
+(1 row)
+
+/* The GeoJSON names the system the options ask for */
+SELECT asGeoJSON(geometry 'SRID=3857;Point(1 2)');
+                                          asgeojson                                           
+----------------------------------------------------------------------------------------------
+ {"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2]}
+(1 row)
+
+SELECT asGeoJSON(geometry 'SRID=3857;Point(1 2)', 9, 4);
+                                                   asgeojson                                                   
+---------------------------------------------------------------------------------------------------------------
+ {"type":"Point","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::3857"}},"coordinates":[1,2]}
+(1 row)
+
+SELECT asGeoJSON(geometry 'SRID=4326;Point(1 2)');
+              asgeojson               
+--------------------------------------
+ {"type":"Point","coordinates":[1,2]}
+(1 row)
+
+SELECT asGeoJSON(geometry 'SRID=4326;Point(1 2)', 9, 2);
+                                          asgeojson                                           
+----------------------------------------------------------------------------------------------
+ {"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[1,2]}
+(1 row)
+
+/* Geographies */
+WITH g(geog) AS (VALUES
+  (geography 'Point(4.35 50.85)'),
+  (geography 'Linestring(4.35 50.85,2.35 48.85)'),
+  (geography 'SRID=4269;Polygon((0 0,1 0,1 1,0 1,0 0))'),
+  (geography 'Point empty'))
+SELECT
+  count(*) FILTER (WHERE asText(geog) IS DISTINCT FROM ST_AsText(geog)) AS astext,
+  count(*) FILTER (WHERE asEWKT(geog) IS DISTINCT FROM ST_AsEWKT(geog)) AS asewkt,
+  count(*) FILTER (WHERE asEWKB(geog) IS DISTINCT FROM ST_AsEWKB(geog::geometry)) AS asewkb,
+  count(*) FILTER (WHERE asGeoJSON(geog) IS DISTINCT FROM ST_AsGeoJSON(geog)) AS asgeojson,
+  count(*) FILTER (WHERE asGeoJSON(geog, 9, 1) IS DISTINCT FROM ST_AsGeoJSON(geog, 9, 1)) AS asgeojson1
+FROM g;
+ astext | asewkt | asewkb | asgeojson | asgeojson1 
+--------+--------+--------+-----------+------------
+      0 |      0 |      0 |         0 |          0
+(1 row)
+
+/* The transformation of a geometry and of a geography, byte for byte */
+WITH g(geom, srid) AS (VALUES
+  (geometry 'SRID=4326;Point(4.35 50.85)', 3857),
+  (geometry 'SRID=4326;Point(4.35 50.85)', 3812),
+  (geometry 'SRID=4326;Linestring(4.35 50.85,2.35 48.85)', 2154),
+  (geometry 'SRID=4326;Polygon((4 50,5 50,5 51,4 51,4 50))', 32631),
+  (geometry 'SRID=3857;Point(484245.3 6594434.7)', 4326),
+  (geometry 'SRID=4326;Point Z(4.35 50.85 100)', 4978),
+  (geometry 'SRID=4326;Point(4.35 50.85)', 4326),
+  (geometry 'SRID=4326;Point empty', 3857))
+SELECT count(*) FILTER (WHERE ST_AsEWKB(transform(geom, srid)) IS DISTINCT FROM
+  ST_AsEWKB(ST_Transform(geom, srid))) AS transform
+FROM g;
+ transform 
+-----------
+         0
+(1 row)
+
+SELECT asEWKB(transform(geography 'Point(4.35 50.85)', 4269)) =
+  ST_AsEWKB(ST_Transform(geometry 'SRID=4326;Point(4.35 50.85)', 4269));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
+                asewkt                 
+---------------------------------------
+ SRID=3857;POINT(484239.78 6594803.23)
+(1 row)
+
+/* Errors */
+SELECT transform(geography 'Point(4.35 50.85)', 3857);
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT transform(geogset '{"Point(4.35 50.85)"}', 3857);
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT transform(geometry 'Point(1 1)', 3857);
+ERROR:  ST_Transform: Input geometry has unknown (0) SRID
+CONTEXT:  SQL function "transform" statement 1
+SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
+ERROR:  lwgeom_to_geojson: 'CircularString' geometry type not supported
+CONTEXT:  SQL function "asgeojson" statement 1

@@ -484,6 +484,7 @@
 						<row><entry>contains, covers, disjoint, intersects, touches, dwithin, relate</entry><entry>geometry, geography</entry><entry>geoContains, geoCovers, geoDisjoint, geoIntersects, geoTouches, geoDwithin, geoRelate</entry></row>
 						<row><entry>reverse</entry><entry>geometry</entry><entry>geoReverse</entry></row>
 						<row><entry>collect</entry><entry>geometry[]</entry><entry>geoCollect</entry></row>
+						<row><entry>transform</entry><entry>geometry, geography</entry><entry>geoTransform</entry></row>
 						<row><entry>hash, hashExtended</entry><entry>set, span, span set, box, temporal, base type</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, and their …HashExtended</entry></row>
 						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
 						<row><entry>merge (the aggregate)</entry><entry>temporal</entry><entry>mergeAgg</entry></row>

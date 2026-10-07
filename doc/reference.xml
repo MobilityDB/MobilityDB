@@ -999,6 +999,12 @@
 					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Return the collection of an array of geometries or the line joining them</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_transform"><varname>transform</varname></link>: Transform a geometry or a geography to a spatial reference identifier</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>
