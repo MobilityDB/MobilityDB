@@ -53,9 +53,8 @@
 /* Maximum length in characters of a geometry string in the input data */
 #define MAX_LEN_GEOM 100001
 
-/* Location of the ways CSV file */
-// #define WAYS_CSV "/usr/local/share/ways.csv"
-#define WAYS_CSV "/usr/local/share/ways1000.csv"
+/* Location of the ways CSV file, the one the build installs */
+#define WAYS_CSV MEOS_DATAROOTDIR "/ways1000.csv"
 
 /**
  * @brief Structure to represent a record in the ways CSV file
