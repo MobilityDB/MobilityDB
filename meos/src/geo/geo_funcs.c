@@ -1204,59 +1204,6 @@ dot_product_sign_exact(const POINT3D *p, const POINT3D *q)
 }
 
 /**
- * @brief Return the sign of the squared distance between two points less the
- * square of a distance, computed exactly
- * @details Expanding the two squared differences over the input coordinates
- * leaves a sum of seven products of coordinates and none of a rounded
- * difference:
- * @code
- *   (qx - px)^2 + (qy - py)^2 - d^2
- *     = qx*qx - 2*qx*px + px*px + qy*qy - 2*qy*py + py*py - d*d
- * @endcode
- * Each product is its rounded value plus its error (#two_product), doubling
- * and negating a pair of doubles is exact, and the seven are added into one
- * expansion whose last component carries the sign of the whole.
- * #point_within_distance_sign calls it where its filter cannot tell
- * @note Exact where no product of a coordinate with a coordinate overflows or
- * underflows
- * @return -1 where the points are nearer than the distance, 1 where they are
- * farther, 0 exactly where the distance is the one they are apart
- */
-int
-point_within_distance_sign_exact(double px, double py, double qx, double qy,
-  double d)
-{
-  /* The seven products, each as a factor and the two coordinates it multiplies */
-  const double factor[7] = {1.0, -2.0, 1.0, 1.0, -2.0, 1.0, -1.0};
-  const double left[7] = {qx, qx, px, qy, qy, py, d};
-  const double right[7] = {qx, px, px, qy, py, py, d};
-  double buf1[16], buf2[16], *cur = buf1, *nxt = buf2;
-  int len = 0;
-  for (int k = 0; k < 7; k++)
-  {
-    double x, y;
-    two_product(left[k], right[k], &x, &y);
-    /* A factor of 1, -1 or -2 scales both components exactly */
-    x *= factor[k];
-    y *= factor[k];
-    if (y != 0.0)
-    {
-      len = grow_expansion(len, cur, y, nxt);
-      double *swap = cur; cur = nxt; nxt = swap;
-    }
-    if (x != 0.0)
-    {
-      len = grow_expansion(len, cur, x, nxt);
-      double *swap = cur; cur = nxt; nxt = swap;
-    }
-  }
-  if (len == 0)
-    return 0;
-  double top = cur[len - 1];
-  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
-}
-
-/**
  * @brief Return 2^k, for k from -1022 to 1023, the normal doubles that are
  * powers of two
  * @details Multiplying by it is exact wherever the product neither overflows
@@ -1669,6 +1616,54 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     }
     return c;
   }
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of a distance, computed exactly
+ * @details The coordinate differences are held exactly as their rounded values
+ * and the errors of that rounding, and they and the distance are scaled by the
+ * power of two that brings the largest difference into [1, 2), which is exact
+ * (#point_distance_diffs, #point_distance_scale), so the squares neither
+ * overflow nor underflow where the points and the distance are doubles. The
+ * sign is then that of #point_distance_square_sign_exact with the distance as
+ * the one term. The distance is below twice the largest difference, so a
+ * distance of at least that is not reached, and a distance whose scaled value
+ * underflows is far below the squared distance. #point_within_distance_sign
+ * calls it where its filter cannot tell
+ * @note Exact where, after the scaling, no product of a coordinate difference
+ * or of its rounding error underflows: the other difference and the rounding
+ * errors are zero or within a factor 2^480 of the largest
+ * @return -1 where the points are nearer than the distance, 1 where they are
+ * farther, 0 exactly where the distance is the one they are apart
+ */
+int
+point_within_distance_sign_exact(double px, double py, double qx, double qy,
+  double d)
+{
+  const double p[2] = {px, py}, q[2] = {qx, qy};
+  double dd[2], e[2], maxd;
+  int status = point_distance_diffs(p, q, 2, dd, e, &maxd);
+  /* A difference beyond the largest double puts the points farther apart
+   * than any finite distance */
+  if (status == 2)
+    return isinf(d) ? -1 : 1;
+  if (status == 1)
+    return 1;
+  if (maxd == 0.0)
+    return (d > 0.0) ? -1 : 0;
+  if (d >= 2.0 * maxd)
+    return -1;
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  for (int i = 0; i < 2; i++)
+  {
+    dd[i] = dd[i] * f1 * f2;
+    e[i] = e[i] * f1 * f2;
+  }
+  double ds = d * f1 * f2;
+  return point_distance_square_sign_exact(dd, e, 2, &ds, 1);
 }
 
 /**
