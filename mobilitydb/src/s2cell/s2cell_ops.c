@@ -399,6 +399,27 @@ Ever_eq_s2cellset_ts2cell(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(r == 1);
 }
 
+PGDLLEXPORT Datum Ever_eq_ts2cell_s2cellset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_ts2cell_s2cellset);
+/**
+ * @ingroup mobilitydb_s2cell_comp_ever
+ * @brief Return true if a temporal S2 cell ever takes a cell of an S2 cell set
+ * @sqlfn eEqual()
+ * @sqlop @p ?=
+ */
+Datum
+Ever_eq_ts2cell_s2cellset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *cells = PG_GETARG_SET_P(1);
+  int r = ever_eq_ts2cell_s2cellset(temp, cells);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(cells, 1);
+  if (r < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(r == 1);
+}
+
 PGDLLEXPORT Datum S2cell_cell_to_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_cell_to_point);
 /**

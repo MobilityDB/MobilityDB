@@ -519,4 +519,24 @@ ever_eq_quadbinset_tquadbin(const Set *cells, const Temporal *tqb)
   return tcellindex_ever_in_set(tqb, cells) ? 1 : 0;
 }
 
+/**
+ * @ingroup meos_quadbin
+ * @brief Return true if a temporal QUADBIN cell ever takes a cell of a QUADBIN
+ * cell set
+ * @details Returns 1 if any cell of @p cells appears among the values of
+ * @p tqb, 0 if none does, and -1 on error. Read with #geo_to_quadbin_set it is
+ * the spatial prefilter of the exact `eIntersects`: the cover holds every cell
+ * the geometry meets, so a trajectory the test drops meets no cell of it
+ * @param[in] tqb Temporal QUADBIN cell
+ * @param[in] cells Set of QUADBIN cells
+ * @csqlfn #Ever_eq_tquadbin_quadbinset()
+ */
+int
+ever_eq_tquadbin_quadbinset(const Temporal *tqb, const Set *cells)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TQUADBIN(tqb, -1); VALIDATE_QUADBINSET(cells, -1);
+  return tcellindex_ever_in_set(tqb, cells) ? 1 : 0;
+}
+
 /*****************************************************************************/

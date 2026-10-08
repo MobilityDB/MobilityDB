@@ -526,4 +526,23 @@ ever_eq_s2cellset_ts2cell(const Set *cells, const Temporal *temp)
   return tcellindex_ever_in_set(temp, cells) ? 1 : 0;
 }
 
+/**
+ * @ingroup meos_s2cell
+ * @brief Return true if a temporal S2 cell ever takes a cell of an S2 cell set
+ * @details Returns 1 if any cell of @p cells appears among the values of
+ * @p temp, 0 if none does, and -1 on error. Read with #geo_to_s2cell_set it
+ * is the spatial prefilter of the exact `eIntersects`: the cover holds every
+ * cell the geography meets, so a trajectory the test drops meets no cell of it
+ * @param[in] temp Temporal S2 cell
+ * @param[in] cells Set of S2 cells
+ * @csqlfn #Ever_eq_ts2cell_s2cellset()
+ */
+int
+ever_eq_ts2cell_s2cellset(const Temporal *temp, const Set *cells)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TS2CELL(temp, -1); VALIDATE_S2CELLSET(cells, -1);
+  return tcellindex_ever_in_set(temp, cells) ? 1 : 0;
+}
+
 /*****************************************************************************/

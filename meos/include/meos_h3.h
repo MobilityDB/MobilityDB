@@ -316,6 +316,7 @@ extern STBox  *h3index_timestamptz_to_stbox(H3Index cell, TimestampTz t);
 extern STBox  *h3index_tstzspan_to_stbox(H3Index cell, const Span *s);
 extern int     ever_eq_h3indexset_th3index(const Set *cells,
                                                   const Temporal *th3idx);
+extern int ever_eq_th3index_h3indexset(const Temporal *th3idx, const Set *cells);
 
 /*****************************************************************************
  * Directed edges

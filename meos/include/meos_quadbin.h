@@ -181,6 +181,7 @@ extern Set *geo_to_quadbin_set(const GSERIALIZED *gs, int32 resolution);
 extern GSERIALIZED *quadbin_cell_to_geompoint(Quadbin cell);
 extern GSERIALIZED *quadbin_cell_to_geom(Quadbin cell);
 extern int ever_eq_quadbinset_tquadbin(const Set *cells, const Temporal *tqb);
+extern int ever_eq_tquadbin_quadbinset(const Temporal *tqb, const Set *cells);
 
 /* Bounding box */
 
