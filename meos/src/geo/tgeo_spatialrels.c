@@ -1615,7 +1615,7 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_tgeo_geo()
+ * @csqlfn #Eintersects_tgeo_geo(), #Eintersects_tpose_geo()
  */
 int
 eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1643,7 +1643,7 @@ aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_geo_tgeo()
+ * @csqlfn #Eintersects_geo_tgeo(), #Eintersects_geo_tpose()
  */
 int
 eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -1696,7 +1696,7 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @brief Return 1 if the temporal geos ever intersect, 0 if not, and
  * -1 on error or if the temporal geos do not intersect in time
  * @param[in] temp1,temp2 Temporal geos
- * @csqlfn #Eintersects_tgeo_tgeo()
+ * @csqlfn #Eintersects_tgeo_tgeo(), #Eintersects_tpose_tpose()
  */
 int
 eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
@@ -2186,7 +2186,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] dist Distance
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
- * @csqlfn #Edwithin_tgeo_geo()
+ * @csqlfn #Edwithin_tgeo_geo(), #Edwithin_tpose_geo()
  */
 int
 edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -2222,7 +2222,7 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] dist Distance
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
- * @csqlfn #Edwithin_geo_tgeo()
+ * @csqlfn #Edwithin_geo_tgeo(), #Edwithin_geo_tpose()
  */
 int
 edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
@@ -2497,7 +2497,7 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @param[in] dist Distance
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
- * @csqlfn #Edwithin_tgeo_tgeo()
+ * @csqlfn #Edwithin_tgeo_tgeo(), #Edwithin_tpose_tpose()
  */
 int
 edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
