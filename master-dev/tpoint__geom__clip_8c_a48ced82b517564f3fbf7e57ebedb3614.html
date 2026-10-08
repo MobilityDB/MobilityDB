@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: point_in_polygon_index_into</title>
+<title>MobilityDB: point_in_polygon_impl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -119,9 +119,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b">point_geom_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a42eb5b0c915dfc50f4aa4bbe51a2924d.html#a42eb5b0c915dfc50f4aa4bbe51a2924d">point_geom_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae7c91e5a99b7df93f9790a2948c8987b.html#ae7c91e5a99b7df93f9790a2948c8987b">point_in_polygon_impl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a48ced82b517564f3fbf7e57ebedb3614.html#a48ced82b517564f3fbf7e57ebedb3614">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a985c62dd869e9935acafa55887f60a0b.html#a985c62dd869e9935acafa55887f60a0b">point_in_polygon_index_into</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a06aca1beddc0a8c1f092fbd1c8180d09.html#a06aca1beddc0a8c1f092fbd1c8180d09">point_in_polygon_index_into</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a8742b88b1b621335b33e37389deea9b5.html#a8742b88b1b621335b33e37389deea9b5">point_in_polygon_index_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a57fdfe5ada50d7d5ba5b1585540ca98d.html#a57fdfe5ada50d7d5ba5b1585540ca98d">point_in_polygon_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
@@ -149,14 +149,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a985c62dd869e9935acafa55887f60a0b" name="a985c62dd869e9935acafa55887f60a0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a985c62dd869e9935acafa55887f60a0b">&#9670;&#160;</a></span>point_in_polygon_index_into()</h2>
+<a id="a48ced82b517564f3fbf7e57ebedb3614" name="a48ced82b517564f3fbf7e57ebedb3614"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48ced82b517564f3fbf7e57ebedb3614">&#9670;&#160;</a></span>point_in_polygon_impl()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int point_in_polygon_index_into </td>
+          <td class="memname">static pg_attribute_always_inline int point_in_polygon_impl </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>x</em>, </td>
@@ -207,7 +210,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>vertex</em>&#160;</td>
+          <td class="paramname"><em>vertex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structEdgeIndex.html">EdgeIndex</a> *&#160;</td>
+          <td class="paramname"><em>index</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -215,18 +224,24 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return true if a point is located in a polygon, reading the edges the ray from it can meet out of an index into an array the caller owns. </p>
-<p >The answer is the one <a class="el" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80" title="Return true if a point is located in a polygon, reading the edges the ray from it can meet out of an ...">point_in_polygon_index</a> gives, or <a class="el" href="tpoint__geom__clip_8c_a8742b88b1b621335b33e37389deea9b5.html#a8742b88b1b621335b33e37389deea9b5" title="Return true if an input vertex is located in a polygon, reading the edges the ray from it can meet ou...">point_in_polygon_index_vertex</a> for an input vertex. A caller asking many points of one index holds one array for all of them, made and released with the index </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if a point is located in a polygon. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">x,y</td><td>Point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges the index is built over, in its own order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges of the polygon </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Greatest x the edges reach, which bounds the ray </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">reach</td><td>Widest distance at which an end of an edge is read as lying on the ray, which makes the answer the one the scan gives: the widest rounding of an edge, or of the radius of an arc, the edges carry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vertex</td><td>True if the point is an input vertex </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reach</td><td>Widest distance at which an end of an edge is read as lying on the ray, 0 for a caller that reads the index along the ray alone </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the index search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vertex</td><td>True if the point is an input vertex, which lies on an edge, and on either side of the crossing of a ray cast at its own height, exactly where its coordinates say so </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>Index over the boxes of the edges read in place of <code>rtree</code>, which is then <code>NULL</code>, or <code>NULL</code> </td></tr>
   </table>
   </dd>
 </dl>

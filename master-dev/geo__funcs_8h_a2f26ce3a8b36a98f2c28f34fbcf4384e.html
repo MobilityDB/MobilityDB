@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: point_in_polygon_index_into</title>
+<title>MobilityDB: edge_index_free</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,6 +110,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad237e8e79bc09d4d72539940bc00c4dd.html#ad237e8e79bc09d4d72539940bc00c4dd">dot_product_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aca65096078c0850c0376b5b56a9af7d9.html#aca65096078c0850c0376b5b56a9af7d9">dot_product_sign_exact</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a2f26ce3a8b36a98f2c28f34fbcf4384e.html#a2f26ce3a8b36a98f2c28f34fbcf4384e">edge_index_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa3afd22bae4ee21607ce7d48a28b3bea.html#aa3afd22bae4ee21607ce7d48a28b3bea">edge_index_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad437891663192c0541c052e14a28f43e.html#ad437891663192c0541c052e14a28f43e">edge_index_query</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af4428992fd22684ae6c47800270ee44f.html#af4428992fd22684ae6c47800270ee44f">edge_set_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af425fbcbb2a57f8435255f3563737fbd.html#af425fbcbb2a57f8435255f3563737fbd">ensure_circle_type</a></td></tr>
@@ -174,7 +177,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aec1db803901eeec489462f2ee1c6e7e4.html#aec1db803901eeec489462f2ee1c6e7e4">point_distance_offset_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a985c62dd869e9935acafa55887f60a0b.html#a985c62dd869e9935acafa55887f60a0b">point_in_polygon_index_into</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a06aca1beddc0a8c1f092fbd1c8180d09.html#a06aca1beddc0a8c1f092fbd1c8180d09">point_in_polygon_index_into</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8742b88b1b621335b33e37389deea9b5.html#a8742b88b1b621335b33e37389deea9b5">point_in_polygon_index_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a57fdfe5ada50d7d5ba5b1585540ca98d.html#a57fdfe5ada50d7d5ba5b1585540ca98d">point_in_polygon_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
@@ -208,87 +211,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a985c62dd869e9935acafa55887f60a0b" name="a985c62dd869e9935acafa55887f60a0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a985c62dd869e9935acafa55887f60a0b">&#9670;&#160;</a></span>point_in_polygon_index_into()</h2>
+<a id="a2f26ce3a8b36a98f2c28f34fbcf4384e" name="a2f26ce3a8b36a98f2c28f34fbcf4384e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f26ce3a8b36a98f2c28f34fbcf4384e">&#9670;&#160;</a></span>edge_index_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int point_in_polygon_index_into </td>
+          <td class="memname">void edge_index_free </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"><a class="el" href="structEdgeIndex.html">EdgeIndex</a> *&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
-          <td class="paramname"><em>edges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nedges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
-          <td class="paramname"><em>rtree</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>xmax</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>reach</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>results</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>vertex</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a point is located in a polygon, reading the edges the ray from it can meet out of an index into an array the caller owns. </p>
-<p >The answer is the one <a class="el" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80" title="Return true if a point is located in a polygon, reading the edges the ray from it can meet out of an ...">point_in_polygon_index</a> gives, or <a class="el" href="tpoint__geom__clip_8c_a8742b88b1b621335b33e37389deea9b5.html#a8742b88b1b621335b33e37389deea9b5" title="Return true if an input vertex is located in a polygon, reading the edges the ray from it can meet ou...">point_in_polygon_index_vertex</a> for an input vertex. A caller asking many points of one index holds one array for all of them, made and released with the index </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x,y</td><td>Point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges the index is built over, in its own order </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Greatest x the edges reach, which bounds the ray </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">reach</td><td>Widest distance at which an end of an edge is read as lying on the ray, which makes the answer the one the scan gives: the widest rounding of an edge, or of the radius of an arc, the edges carry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vertex</td><td>True if the point is an input vertex </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Release an index over the boxes of an edge array. </p>
 
 </div>
 </div>

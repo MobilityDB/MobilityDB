@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: RelateCtx::index</title>
+<title>MobilityDB: RelateOperand::index</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structRelateCtx.html">RelateCtx</a></li>  </ul>
+<li class="navelem"><a class="el" href="structRelateOperand.html">RelateOperand</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,25 +79,27 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="structRelateCtx_a7e5f88baa3d653c81c555cf74cd2d0f2.html#a7e5f88baa3d653c81c555cf74cd2d0f2">index</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structRelateCtx_afc8640daa7ab7dff0000d31bf8b9c0b5.html#afc8640daa7ab7dff0000d31bf8b9c0b5">op</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb">arr</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRelateOperand_ae8ecfd5386b5791d2952ed27cb835f54.html#ae8ecfd5386b5791d2952ed27cb835f54">geom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structRelateOperand_acf28bb0b0c6a3805ef3b55a0aeb9450b.html#acf28bb0b0c6a3805ef3b55a0aeb9450b">index</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRelateOperand_abe7cf00a84244424c725d7dcbaf617ce.html#abe7cf00a84244424c725d7dcbaf617ce">own</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7e5f88baa3d653c81c555cf74cd2d0f2" name="a7e5f88baa3d653c81c555cf74cd2d0f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e5f88baa3d653c81c555cf74cd2d0f2">&#9670;&#160;</a></span>index</h2>
+<a id="acf28bb0b0c6a3805ef3b55a0aeb9450b" name="acf28bb0b0c6a3805ef3b55a0aeb9450b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf28bb0b0c6a3805ef3b55a0aeb9450b">&#9670;&#160;</a></span>index</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structRTree.html">RTree</a>* RelateCtx::index</td>
+          <td class="memname"><a class="el" href="structEdgeIndex.html">EdgeIndex</a>** RelateOperand::index</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Index over the edges <a class="el" href="structRelateCtx_afc8640daa7ab7dff0000d31bf8b9c0b5.html#afc8640daa7ab7dff0000d31bf8b9c0b5" title="The geometry and the edges it draws.">op</a> reads, built by the first call that needs it and kept with them. </p>
+<p>Where the index over <a class="el" href="structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb" title="Edges its interior and boundary are read from.">arr</a> is kept for the calls that follow, NULL for an operand read for one call, which indexes by the size of the pair. </p>
 
 </div>
 </div>
