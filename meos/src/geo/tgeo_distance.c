@@ -330,6 +330,33 @@ dist_poly_seg_raycross(const Edge *s, double x, double y,
 }
 
 /**
+ * @brief Minimum of [ dist(c, p) - r(t) ] for t in [0,1], where the centre c
+ * rests and p is a point, writing in the last argument the t that attains it
+ * @details The radius is largest at the end it grows to, where the minimum
+ * lies. Where the disc stands clear of the point, the value is the distance
+ * less that radius as #point_distance_offset_exact answers it, the double
+ * nearest the exact one. Where it reaches the point, the value is the distance
+ * as #point_distance_exact answers it less the radius, which is not positive:
+ * the radius is a double, so a distance no greater than it rounds to no more
+ * than it, and the callers read how far below zero it is to rank overlaps.
+ * The squared distance that the quadratic of #dist_minfun reads leaves the
+ * range of a double long before the distance does: it is infinite for two
+ * points 1e200 apart and zero for two points 1e-200 apart.
+ */
+static double
+dist_rest_point(double cx, double cy, double r1, double r2, double px,
+  double py, double *argt)
+{
+  bool grows = r2 > r1;
+  if (argt)
+    *argt = grows ? 1.0 : 0.0;
+  double r = grows ? r2 : r1;
+  const double c[2] = {cx, cy}, p[2] = {px, py};
+  double clear = point_distance_offset_exact(c, p, 2, r);
+  return (clear > 0.0) ? clear : point_distance_exact(c, p, 2) - r;
+}
+
+/**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
@@ -342,6 +369,10 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
   const double ux = bx - ax, uy = by - ay;
   const double l2 = ux * ux + uy * uy;
+
+  /* A centre at rest and a point, a degenerate edge, are a pair of points */
+  if (dcx == 0.0 && dcy == 0.0 && ax == bx && ay == by)
+    return dist_rest_point(cx1, cy1, r1, r2, ax, ay, NULL);
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -695,6 +726,9 @@ dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
   const double ux = bx - ax, uy = by - ay;
   const double l2 = ux * ux + uy * uy;
+  /* A centre at rest and a point, a degenerate edge, are a pair of points */
+  if (dcx == 0.0 && dcy == 0.0 && ax == bx && ay == by)
+    return dist_rest_point(cx1, cy1, r1, r2, ax, ay, out_t);
   if (l2 <= 1e-24)
   {
     double A = dcx * dcx + dcy * dcy;
@@ -1164,12 +1198,21 @@ box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
  * The threshold is squared because every distance it is compared against is a
  * squared one, and it is computed here rather than at each test because it
  * changes only when the running minimum does.
+ *
+ * A squared threshold decides a prune only when it is a normal double. One
+ * that underflows reads zero, and a squared distance that underflows reads
+ * zero too, so a point at a tiny distance would prune a nearer one; one that
+ * overflows reads infinity, as does every squared distance beyond it. Such a
+ * threshold is NaN, against which every comparison is false, so nothing is
+ * pruned and the exact solve answers, as #dist_rest_point does for a pair of
+ * points.
  */
 static inline double
 dist_unit_thr2(double best, double rmax)
 {
   double thr = best + rmax;
-  return thr * thr;
+  double thr2 = thr * thr;
+  return (thr2 >= DBL_MIN && thr2 <= DBL_MAX) ? thr2 : NAN;
 }
 
 /**
@@ -1359,11 +1402,16 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         else
           dist_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
         double vx = qx - ccx, vy = qy - ccy;
-        double vl = sqrt(vx * vx + vy * vy);
+        /* The distance of the centre to its closest point, as
+         * #dist_geom_closest_on_arc reads it, defined wherever the coordinates
+         * are */
+        double vl = hypot(vx, vy);
         double pxp, pyp;
-        if (vl <= MEOS_GEOM_TOLERANCE || m <= 0.0)
+        if (vl == 0.0 || m <= 0.0)
         {
-          /* Overlap or centre on the edge: degenerate line at the contact */
+          /* Overlap or centre on the edge: degenerate line at the contact. A
+           * unit at a positive distance starts its line on its boundary, at
+           * the centre itself for a point, however near the edge it lies */
           pxp = qx; pyp = qy;
         }
         else
@@ -1840,7 +1888,13 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) geo_distance_fn(temp->flags);
+  /* A temporal point carries a point at every instant and the geometry here is
+   * a point too, the test above returning on any other type, so the pair is a
+   * pair of points, whose distance #point_distance_exact answers as the double
+   * nearest the exact distance. The generic entry reaches the same coordinates
+   * through a recursive walk that ends in a rounded formula. */
+  lfinfo.func = (varfunc) (tpoint_type(temp->temptype) ?
+    pt_distance_fn(temp->flags) : geo_distance_fn(temp->flags));
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
@@ -1869,7 +1923,12 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) geo_distance_fn(temp1->flags);
+  /* Two temporal points carry a point each at every instant, so the pair is a
+   * pair of points, answered by #point_distance_exact through the point entry,
+   * as #Tdwithin_tgeo_tgeo chooses the point entry for the same operands */
+  lfinfo.func = (varfunc) (tpoint_type(temp1->temptype) &&
+    tpoint_type(temp2->temptype) ? pt_distance_fn(temp1->flags) :
+    geo_distance_fn(temp1->flags));
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
@@ -2691,7 +2750,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
     TimestampTz t;
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
-    if (nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
+    if (nad_tcont_tcont_sync(temp1, temp2, pt_distance_fn(temp1->flags),
       &tpointsegm_distance_turnpt, lb, &t) != DBL_MAX)
     {
       /* The closest point may be at an exclusive bound => 3rd arg = false */
@@ -2924,7 +2983,7 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
     double d = nad_tcont_tcont_sync(temp1, temp2,
-      geo_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, lb, &t);
+      pt_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, lb, &t);
     if (d != DBL_MAX)
       return d;
   }
@@ -3048,7 +3107,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   {
     seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
       &tpointseg_distance_lb;
-    fast = nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
+    fast = nad_tcont_tcont_sync(temp1, temp2, pt_distance_fn(temp1->flags),
       &tpointsegm_distance_turnpt, lb, &tmin) != DBL_MAX;
   }
 
