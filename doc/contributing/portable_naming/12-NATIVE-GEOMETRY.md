@@ -193,8 +193,10 @@ Spanish:
    PR #2993 (merged): in the MEOS library, `geo_as_geojson` and `temporal_as_mfjson` name the
    reference system of the SRID of the value when the caller names none, through the internal
    `srid_srs`, which reads it from `spatial_ref_sys.csv` into the PROJ cache; the PostgreSQL
-   extension keeps the name it reads from the table `spatial_ref_sys`. JMEOS then hands MEOS the
-   CSV as MobilityDuck does, and the three bindings advance their pin.
+   extension keeps the name it reads from the table `spatial_ref_sys`. The library reads the CSV
+   from the directory its build installs it into, branch `fix/meos-data-files-from-install-dir`,
+   so a JVM binding loading an installed MEOS finds it under any prefix, as MobilityDuck finds the
+   copy it embeds; Spark, Flink and DuckDB then advance their pin.
 10. **The clustering** (decision 2).
 
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
