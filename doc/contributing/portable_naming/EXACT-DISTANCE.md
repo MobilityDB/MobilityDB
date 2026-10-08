@@ -34,7 +34,7 @@ the judge accepts.
 
 ## What is measured
 
-Measured on MobilityDB master `bc5713429c` and on the head `8628016beb` of #2992.
+Measured on MobilityDB master `bc5713429c` and on master `4d55aaf18d`, which holds #2992.
 
 | Distance | Input | Answer | The exact answer |
 |---|---|---|---|
@@ -69,7 +69,7 @@ reviewer reads each one alone.
 
 | PR | Topic | What it changes | Branch, state |
 |---|---|---|---|
-| ED1 | The distance of a point pair is the nearest double | `point_distance_exact` and `point_distance_offset_exact` in `geo_funcs.c`; the point entries; the five point-pair sites of `tgeo_distance.c`; `dist_rest_point`, `dist_unit_thr2` and the shortest-line collapse of the swept-disc engine; the witness `meos/test/distance_point_test.c` | `fix/temporal-distance-of-a-point-pair-reads-the-point-kernel`, MobilityDB #2992, open |
+| ED1 | The distance of a point pair is the nearest double | `point_distance_exact` and `point_distance_offset_exact` in `geo_funcs.c`; the point entries; the five point-pair sites of `tgeo_distance.c`; `dist_rest_point`, `dist_unit_thr2` and the shortest-line collapse of the swept-disc engine; the witness `meos/test/distance_point_test.c` | MobilityDB #2992, merged as `0cedc36e81` and `4d55aaf18d` |
 | ED2 | `dwithin` of a point pair over the whole domain | the exact fallback of `point_within_distance_sign` reads the scaled differences of `point_distance_square_expansion` with the bound as the one term, so coordinates near 1e155 decide as ordinary ones; the `dwithin` comments that call the sign a closed form | `fix/point-dwithin-reads-the-scaled-expansion`, after ED1 |
 | ED4 | A point or a circular buffer at rest against a segment | `point_segment_distance_offset_exact`: the foot of the perpendicular is a rational parameter on the input segment, the squared distance to it a rational, so the distance is the nearest double by the same midpoint comparison; `dist_segm_edge_mindist`, `dist_segm_edge_dt` and the shortest line read it | `fix/point-segment-distance-is-the-nearest-double`, after ED2 |
 | ED3 | A moving point against a segment | `dist_moving_segment`: the path of a moving point over one segment of its sequence and a straight edge meet or not by exact orientations (`linesegm_intersect`), and two segments that do not meet are nearest at an end of one of them, so the distance is the least of four ED4 distances; `dist_segm_edge_mindist` and `dist_segm_edge_dt` read it for a radius of 0. The prunes of the walk stay as they are: the census answers the same with and without them | `fix/moving-point-segment-distance-is-the-nearest-double`, after ED4 |
