@@ -268,24 +268,29 @@ datum_geog_distance(Datum geog1, Datum geog2)
 
 /**
  * @brief Return the 2D distance between the two geometry points
+ * @details The distance of two points is a question about their coordinates,
+ * answered by #point_distance_exact as the double nearest the exact distance
  */
 Datum
 datum_pt_distance2d(Datum geom1, Datum geom2)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(geom1);
   const POINT2D *p2 = DATUM_POINT2D_P(geom2);
-  return Float8GetDatum(distance2d_pt_pt(p1, p2));
+  const double a[2] = {p1->x, p1->y}, b[2] = {p2->x, p2->y};
+  return Float8GetDatum(point_distance_exact(a, b, 2));
 }
 
 /**
  * @brief Return the 3D distance between the two geometry points
+ * @details Answered by #point_distance_exact, as #datum_pt_distance2d is
  */
 Datum
 datum_pt_distance3d(Datum geom1, Datum geom2)
 {
   const POINT3DZ *p1 = DATUM_POINT3DZ_P(geom1);
   const POINT3DZ *p2 = DATUM_POINT3DZ_P(geom2);
-  return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
+  const double a[3] = {p1->x, p1->y, p1->z}, b[3] = {p2->x, p2->y, p2->z};
+  return Float8GetDatum(point_distance_exact(a, b, 3));
 }
 
 /*****************************************************************************/

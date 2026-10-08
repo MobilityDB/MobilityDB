@@ -1257,6 +1257,421 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
 }
 
 /**
+ * @brief Return 2^k, for k from -1022 to 1023, the normal doubles that are
+ * powers of two
+ * @details Multiplying by it is exact wherever the product neither overflows
+ * nor underflows, as #ldexp is, and costs a multiplication
+ */
+static inline double
+pow2_double(int k)
+{
+  assert(k >= -1022 && k <= 1023);
+  uint64_t bits = (uint64_t) (k + 1023) << 52;
+  double result;
+  memcpy(&result, &bits, sizeof(result));
+  return result;
+}
+
+/**
+ * @brief Return in an expansion the squared distance between two points less
+ * the square of a sum of up to three doubles, computed exactly, and its length
+ * @details The squared distance is the sum over the coordinates of
+ * `(d + e)^2 = d*d + 2*d*e + e*e`, where `d + e` is a coordinate difference
+ * held exactly as its rounded value and the error of that rounding, and the
+ * square of the sum is the sum of the squares of its terms and of twice the
+ * product of each pair of them. Each product is its rounded value plus its
+ * error (#two_product), doubling and negating a pair of doubles is exact, and
+ * the terms are added into one expansion (#grow_expansion), held in increasing
+ * order of magnitude, whose last component carries the sign of the whole
+ * @param[in] d,e Coordinate differences and the errors of their rounding
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] t,nt Terms of the sum and their number, at most 3
+ * @param[in] buf1,buf2 Room for 40 components each
+ * @param[out] result The buffer holding the expansion
+ * @note Exact where no product overflows or underflows
+ */
+static int
+point_distance_square_expansion(const double *d, const double *e, int ndims,
+  const double *t, int nt, double *buf1, double *buf2, const double **result)
+{
+  assert(nt >= 1 && nt <= 3);
+  /* The products, each as two factors and an exact multiplier */
+  double left[15], right[15], factor[15];
+  int n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    left[n] = d[i]; right[n] = d[i]; factor[n++] = 1.0;
+    left[n] = d[i]; right[n] = e[i]; factor[n++] = 2.0;
+    left[n] = e[i]; right[n] = e[i]; factor[n++] = 1.0;
+  }
+  for (int i = 0; i < nt; i++)
+  {
+    left[n] = t[i]; right[n] = t[i]; factor[n++] = -1.0;
+    for (int j = i + 1; j < nt; j++)
+    {
+      left[n] = t[i]; right[n] = t[j]; factor[n++] = -2.0;
+    }
+  }
+  double *cur = buf1, *nxt = buf2;
+  int len = 0;
+  for (int j = 0; j < n; j++)
+  {
+    if (left[j] == 0.0 || right[j] == 0.0)
+      continue;
+    double x, y;
+    two_product(left[j], right[j], &x, &y);
+    /* A multiplier of 1, -1, 2 or -2 scales both components exactly */
+    x *= factor[j];
+    y *= factor[j];
+    if (y != 0.0)
+    {
+      len = grow_expansion(len, cur, y, nxt);
+      double *swap = cur; cur = nxt; nxt = swap;
+    }
+    len = grow_expansion(len, cur, x, nxt);
+    double *swap = cur; cur = nxt; nxt = swap;
+  }
+  *result = cur;
+  return len;
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of a sum of up to three doubles, computed exactly
+ * @details The sign of the last component of
+ * #point_distance_square_expansion. #point_distance_midpoint_sign calls it
+ * where its filter cannot tell, and #point_distance_offset_exact for every
+ * side it decides
+ * @note Exact where no product overflows or underflows
+ */
+static int
+point_distance_square_sign_exact(const double *d, const double *e, int ndims,
+  const double *t, int nt)
+{
+  double buf1[40], buf2[40];
+  const double *ex;
+  int len = point_distance_square_expansion(d, e, ndims, t, nt, buf1, buf2,
+    &ex);
+  if (len == 0)
+    return 0;
+  double top = ex[len - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of `m + h`
+ * @details The squared distance less `m*m` arrives as the double @p dm and a
+ * bound @p dmerr on its error, which #point_distance_exact forms once for a
+ * candidate `m` and both of its midpoints. Less `2*m*h + h*h`, with the
+ * rounding of those two products and of the subtraction added to the bound,
+ * the value gives the sign wherever it stands clear of the bound. Where it
+ * does not, which a tie always is, #point_distance_square_sign_exact decides
+ * the same quantity over the coordinate differences
+ */
+static inline int
+point_distance_midpoint_sign(const double *d, const double *e, int ndims,
+  double m, double h, double dm, double dmerr)
+{
+  double mh = 2.0 * m * h, hh = h * h;
+  double value = dm - (mh + hh);
+  double bound = dmerr + 4.0 * DBL_EPSILON * (fabs(mh) + hh + fabs(value)) +
+    DBL_MIN;
+  if (value > bound)
+    return 1;
+  if (value < - bound)
+    return -1;
+  const double t[2] = {m, h};
+  return point_distance_square_sign_exact(d, e, ndims, t, 2);
+}
+
+/**
+ * @brief Set the coordinate differences of two points, each as its rounded
+ * value and the error of that rounding (#two_diff), and the largest of them
+ * @return 0, or 1 where a difference is NaN, or 2 where one rounds to
+ * infinity, which exceeds the largest double by at least half a unit in its
+ * last place, and so does the distance
+ */
+static inline int
+point_distance_diffs(const double *p, const double *q, int ndims, double *d,
+  double *e, double *maxd)
+{
+  *maxd = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    two_diff(q[i], p[i], &d[i], &e[i]);
+    if (isnan(d[i]))
+      return 1;
+    if (isinf(d[i]))
+      return 2;
+    if (fabs(d[i]) > *maxd)
+      *maxd = fabs(d[i]);
+  }
+  return 0;
+}
+
+/**
+ * @brief Set the power of two 2^k that brings a positive double into [1, 2),
+ * as two factors that are each a normal double and so is each inverse, and
+ * the two factors of 2^-k
+ * @details Multiplying by them is exact wherever the product neither
+ * overflows nor underflows, as #ldexp is
+ */
+static inline void
+point_distance_scale(double maxd, int *k, double *f1, double *f2, double *g1,
+  double *g2)
+{
+  uint64_t maxbits;
+  memcpy(&maxbits, &maxd, sizeof(maxbits));
+  int maxexp = (int) ((maxbits >> 52) & 0x7FF);
+  /* The exponent field of a normal double; a subnormal one asks #ilogb */
+  *k = maxexp ? 1023 - maxexp : - ilogb(maxd);
+  int k1 = (*k > 1022 || *k < -1022) ? *k / 2 : *k;
+  *f1 = pow2_double(k1);
+  *f2 = pow2_double(*k - k1);
+  *g1 = pow2_double(- k1);
+  *g2 = pow2_double(k1 - *k);
+  return;
+}
+
+/**
+ * @brief Return the distance between two points, computed exactly and rounded
+ * once
+ * @details The distance is the square root of the sum of the squared
+ * coordinate differences, an exact rational of the coordinates, and the answer
+ * is the double nearest that root, a tie going to the double whose last bit is
+ * even. No root of a rounded value decides it. A double `c` is the nearest
+ * exactly when the squared distance lies between the squares of the midpoints
+ * from `c` to its two neighbours, and a midpoint of two doubles and its square
+ * are exact, so #point_distance_midpoint_sign decides each side on the input
+ * coordinates. The root of the rounded sum gives the first candidate, and the
+ * candidate moves to a neighbour while the squared distance lies beyond a
+ * midpoint.
+ *
+ * The squared distance less the square of the candidate is formed once per
+ * candidate from pieces that are exact or tiny: the squares of the differences
+ * and the square of the candidate are their rounded values plus their errors
+ * (#two_product), the rounded squares are summed exactly (#two_sum), and the
+ * two large terms that remain nearly cancel, so their difference is exact
+ * wherever one is within a factor of two of the other (Sterbenz). Everything
+ * else is far below a unit in the last place of the candidate, so the bound
+ * on its rounding leaves the filter of #point_distance_midpoint_sign to decide
+ * all but the squared distances lying within about 2^-40 of a unit in the last
+ * place from a midpoint.
+ *
+ * Every value is first scaled by the power of two that brings the largest
+ * coordinate difference into [1, 2), which is exact, so the squares neither
+ * overflow nor underflow where the distance itself is a double: two points
+ * 1e200 or 1e-200 apart are answered like two points a metre apart, and a
+ * distance beyond the largest double is infinity.
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @note Correctly rounded where, after the scaling, no product of a coordinate
+ * difference or of its rounding error underflows: the coordinate differences
+ * other than the largest, and the rounding errors of all of them, are zero or
+ * within a factor 2^480 of the largest
+ */
+double
+point_distance_exact(const double *p, const double *q, int ndims)
+{
+  assert(ndims == 2 || ndims == 3);
+  double d[3], e[3], maxd;
+  int status = point_distance_diffs(p, q, ndims, d, e, &maxd);
+  if (status)
+    return (status == 1) ? NAN : INFINITY;
+  if (maxd == 0.0)
+    return 0.0;
+
+  /* Scale by 2^k, exactly, and take the first candidate */
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  double sum = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    d[i] = d[i] * f1 * f2;
+    e[i] = e[i] * f1 * f2;
+    sum += d[i] * d[i];
+  }
+  double c = sqrt(sum) * g1 * g2;
+  if (isinf(c))
+    c = DBL_MAX;
+
+  /* Move the candidate to the nearest double */
+  while (true)
+  {
+    uint64_t bits;
+    memcpy(&bits, &c, sizeof(bits));
+    bool even = (bits & 1) == 0;
+    double cs = c * f1 * f2;
+    /* The squared distance less cs*cs, and a bound on its error */
+    double s = 0.0, lo = 0.0, lomag = 0.0;
+    for (int i = 0; i < ndims; i++)
+    {
+      double x, y, t;
+      two_product(d[i], d[i], &x, &y);
+      two_sum(s, x, &s, &t);
+      double de = 2.0 * d[i] * e[i], ee = e[i] * e[i];
+      lo += (t + y) + (de + ee);
+      lomag += fabs(t) + fabs(y) + fabs(de) + ee;
+    }
+    double x, y;
+    two_product(cs, cs, &x, &y);
+    lo -= y;
+    lomag += fabs(y);
+    double hi = s - x;
+    bool hiexact = (s >= 0.5 * x && s <= 2.0 * x);
+    double dm = hi + lo;
+    double dmerr = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
+      16.0 * DBL_EPSILON * lomag + DBL_EPSILON * fabs(dm);
+    /* The neighbours of a non-negative finite double are the next bit
+     * patterns, the one after the largest double being infinity. Half the gap
+     * to the upper neighbour is scaled with the rest; past the largest double
+     * it is half the gap below it, 2^970 */
+    uint64_t upbits = bits + 1;
+    double up;
+    memcpy(&up, &upbits, sizeof(up));
+    double hu = isinf(up) ? ldexp(1.0, 970 + k) : (up - c) * f1 * f2 / 2.0;
+    int su = point_distance_midpoint_sign(d, e, ndims, cs, hu, dm, dmerr);
+    if (su > 0 || (su == 0 && ! even))
+    {
+      if (isinf(up))
+        return INFINITY;
+      c = up;
+      continue;
+    }
+    if (c > 0.0)
+    {
+      uint64_t downbits = bits - 1;
+      double down;
+      memcpy(&down, &downbits, sizeof(down));
+      double hd = (c - down) * f1 * f2 / 2.0;
+      int sd = point_distance_midpoint_sign(d, e, ndims, cs, - hd, dm,
+        dmerr);
+      if (sd < 0 || (sd == 0 && ! even))
+      {
+        c = down;
+        continue;
+      }
+    }
+    return c;
+  }
+}
+
+/**
+ * @brief Return the distance between two points less a radius, computed
+ * exactly and rounded once, or 0 where the points are no farther apart than
+ * the radius
+ * @details This is the distance of a circular buffer to a point. With `S` the
+ * squared distance and `r` the radius, the answer is the double nearest
+ * `sqrt(S) - r`, a tie going to the double whose last bit is even, and a
+ * double `c` is that one exactly when `S` lies between the squares of `r` plus
+ * the midpoints from `c` to its two neighbours, each the square of a sum of
+ * three doubles, so #point_distance_square_sign_exact decides each side on the
+ * input coordinates. Subtracting the radius from the rounded distance rounds
+ * twice, and where the distance barely exceeds the radius the subtraction
+ * cancels, so its error is many units in the last place of the answer.
+ *
+ * Whether the points are farther apart than the radius is the sign of
+ * `S - r^2`, decided exactly first. The first candidate is that difference,
+ * summed from its exact expansion, over `sqrt(S) + r`, which keeps its
+ * relative precision however much the two cancel, and it moves to a neighbour
+ * while `S` lies beyond a midpoint. The values are scaled as in
+ * #point_distance_exact, and a radius of at least twice the largest
+ * coordinate difference exceeds the distance outright.
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative
+ * @note Correctly rounded where, after the scaling, no product of a coordinate
+ * difference, of its rounding error, of the radius or of the answer underflows:
+ * each of them is zero or within a factor 2^480 of the largest difference
+ */
+double
+point_distance_offset_exact(const double *p, const double *q, int ndims,
+  double r)
+{
+  assert(ndims == 2 || ndims == 3);
+  assert(r >= 0.0);
+  if (r == 0.0)
+    return point_distance_exact(p, q, ndims);
+  double d[3], e[3], maxd;
+  int status = point_distance_diffs(p, q, ndims, d, e, &maxd);
+  if (status)
+    return (status == 1) ? NAN : INFINITY;
+  /* The distance is below sqrt(3) times the largest difference, and below
+   * twice it however the difference rounded */
+  if (r >= 2.0 * maxd)
+    return 0.0;
+
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  double sum = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    d[i] = d[i] * f1 * f2;
+    e[i] = e[i] * f1 * f2;
+    sum += d[i] * d[i];
+  }
+  double rs = r * f1 * f2;
+
+  /* No farther apart than the radius: S - r^2 is not positive */
+  double buf1[40], buf2[40];
+  const double *ex;
+  int len = point_distance_square_expansion(d, e, ndims, &rs, 1, buf1, buf2,
+    &ex);
+  if (len == 0 || ex[len - 1] <= 0.0)
+    return 0.0;
+  /* The first candidate, (S - r^2) / (sqrt(S) + r), the difference summed
+   * from its smallest component up */
+  double diff = 0.0;
+  for (int i = 0; i < len; i++)
+    diff += ex[i];
+  double c = diff / (sqrt(sum) + rs) * g1 * g2;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+
+  /* Move the candidate to the nearest double */
+  while (true)
+  {
+    uint64_t bits;
+    memcpy(&bits, &c, sizeof(bits));
+    bool even = (bits & 1) == 0;
+    double cs = c * f1 * f2;
+    uint64_t upbits = bits + 1;
+    double up;
+    memcpy(&up, &upbits, sizeof(up));
+    double hu = isinf(up) ? ldexp(1.0, 970 + k) : (up - c) * f1 * f2 / 2.0;
+    const double tu[3] = {rs, cs, hu};
+    int su = point_distance_square_sign_exact(d, e, ndims, tu, 3);
+    if (su > 0 || (su == 0 && ! even))
+    {
+      if (isinf(up))
+        return INFINITY;
+      c = up;
+      continue;
+    }
+    if (c > 0.0)
+    {
+      uint64_t downbits = bits - 1;
+      double down;
+      memcpy(&down, &downbits, sizeof(down));
+      double hd = (c - down) * f1 * f2 / 2.0;
+      const double td[3] = {rs, cs, - hd};
+      int sd = point_distance_square_sign_exact(d, e, ndims, td, 3);
+      if (sd < 0 || (sd == 0 && ! even))
+      {
+        c = down;
+        continue;
+      }
+    }
+    return c;
+  }
+}
+
+/**
  * @brief Return the sign of the triple product `<p, q x r>` of three vectors,
  * computed exactly
  * @details The triple product is the determinant of the three vectors, a sum
