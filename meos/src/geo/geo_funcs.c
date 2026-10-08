@@ -2114,6 +2114,186 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
 }
 
 /**
+ * @brief Return true where the distance of a point to the interior of a
+ * segment, less a radius, lies beyond the upper midpoint of a double
+ * @details With `w` the point less the segment's start and `u` the segment,
+ * the squared distance to the line is `(w x u)^2 / (u . u)`, so the distance
+ * less `r` lies beyond `c + h`, the midpoint from `c` to its upper neighbour,
+ * exactly when `(w x u)^2 - (r + c + h)^2 (u . u)` is positive, a polynomial
+ * in exact sums of doubles that #polynomial_sign_exact decides. A tie is
+ * beyond when the last bit of `c` is odd, so the double nearest the distance,
+ * a tie going to the even one, is the smallest for which this is false
+ * @param[in] sums Exact sums: the two coordinates of `w`, the two of `u`
+ * @param[in] r,c,h Scaled radius, candidate and half gap to its upper neighbour
+ * @param[in] odd Whether the last bit of the candidate is odd
+ */
+static bool
+point_segment_beyond(ExactSum *sums, double r, double c, double h, bool odd)
+{
+  const double m[3] = {r, c, h};
+  exact_sum_set(&sums[4], m, 3);
+  /* (wx uy - wy ux)^2 - (r + c + h)^2 (ux ux + uy uy) */
+  static const PolyTerm terms[5] = {
+    { 1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 3, 1, 2}}, { 1.0, 4, {1, 1, 2, 2}},
+    {-1.0, 4, {4, 4, 2, 2}}, {-1.0, 4, {4, 4, 3, 3}}};
+  int sign = polynomial_sign_exact(sums, terms, 5);
+  return sign > 0 || (sign == 0 && odd);
+}
+
+/**
+ * @brief Return the distance of a point to a segment less a radius, computed
+ * exactly and rounded once, or 0 where the point is no farther from the
+ * segment than the radius
+ * @details With `w` the point less the segment's start `a` and `u` the segment
+ * `b - a`, the nearest point of the segment is the foot of the perpendicular
+ * at the parameter `(w . u) / (u . u)` where it lies in [0, 1], and an end
+ * otherwise. Which one is decided by the signs of `w . u` and of
+ * `w . u - u . u`, exactly (#polynomial_sign_exact), and an end is a pair of
+ * points (#point_distance_offset_exact). For the foot, the squared distance is
+ * the rational `(w x u)^2 / (u . u)`, and the answer is the smallest double
+ * whose upper midpoint the distance less the radius does not pass
+ * (#point_segment_beyond), so no root of a rounded value decides it. A
+ * galloping search from the rounded quotient finds it in a few exact signs
+ * however much the distance and the radius cancel. The differences and the
+ * radius are scaled by the power of two that brings the largest difference
+ * into [1, 2), which is exact, as #point_distance_exact scales them
+ * @param[in] p,a,b The point and the two ends of the segment, two coordinates
+ * each
+ * @param[in] r Radius, not negative
+ * @note Correctly rounded where, after the scaling, no product of the exact
+ * sums underflows: the differences, their rounding errors, the radius and the
+ * answer are zero or within a factor 2^240 of the largest difference
+ */
+double
+point_segment_distance_offset_exact(const double *p, const double *a,
+  const double *b, double r)
+{
+  assert(r >= 0.0);
+  double dw[2], ew[2], du[2], eu[2], maxw, maxu;
+  int sw = point_distance_diffs(a, p, 2, dw, ew, &maxw);
+  int su = point_distance_diffs(a, b, 2, du, eu, &maxu);
+  if (sw == 1 || su == 1)
+    return NAN;
+  /* A degenerate segment is a point, exactly */
+  if (du[0] == 0.0 && du[1] == 0.0)
+    return point_distance_offset_exact(p, a, 2, r);
+  /* A difference beyond the largest double: a quarter of every value is
+   * exact and its differences are doubles, so solve there and scale back */
+  if (sw == 2 || su == 2)
+  {
+    const double p4[2] = {p[0] / 4.0, p[1] / 4.0};
+    const double a4[2] = {a[0] / 4.0, a[1] / 4.0};
+    const double b4[2] = {b[0] / 4.0, b[1] / 4.0};
+    return point_segment_distance_offset_exact(p4, a4, b4, r / 4.0) * 4.0;
+  }
+  double maxd = (maxw > maxu) ? maxw : maxu;
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  ExactSum sums[5];
+  double t[2];
+  for (int i = 0; i < 2; i++)
+  {
+    t[0] = dw[i] * f1 * f2; t[1] = ew[i] * f1 * f2;
+    exact_sum_set(&sums[i], t, 2);
+    t[0] = du[i] * f1 * f2; t[1] = eu[i] * f1 * f2;
+    exact_sum_set(&sums[2 + i], t, 2);
+  }
+  /* Beyond the ends of the segment the nearest point is an end */
+  static const PolyTerm dot[2] = {{1.0, 2, {0, 2, 0, 0}},
+    {1.0, 2, {1, 3, 0, 0}}};
+  static const PolyTerm dotlen[4] = {{1.0, 2, {0, 2, 0, 0}},
+    {1.0, 2, {1, 3, 0, 0}}, {-1.0, 2, {2, 2, 0, 0}}, {-1.0, 2, {3, 3, 0, 0}}};
+  if (polynomial_sign_exact(sums, dot, 2) <= 0)
+    return point_distance_offset_exact(p, a, 2, r);
+  if (polynomial_sign_exact(sums, dotlen, 4) >= 0)
+    return point_distance_offset_exact(p, b, 2, r);
+  /* The distance to the line is below that to the start, which is below
+   * twice the largest difference */
+  if (r >= 2.0 * maxw)
+    return 0.0;
+  double rs = r * f1 * f2;
+
+  /* First candidate, from the rounded cross product over the rounded length */
+  double wx = sums[0].approx, wy = sums[1].approx;
+  double ux = sums[2].approx, uy = sums[3].approx;
+  double c = (fabs(wx * uy - wy * ux) / sqrt(ux * ux + uy * uy) - rs) * g1 *
+    g2;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+
+  /* The answer is the smallest bit pattern that is not beyond: gallop from the
+   * candidate to bracket it, then halve the bracket */
+#define PSD_BEYOND(bb, res) \
+  do { \
+    double cc, nn; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nn, &b2, sizeof(nn)); \
+    double hh = isinf(nn) ? ldexp(1.0, 970 + k) : (nn - cc) * f1 * f2 / 2.0; \
+    (res) = point_segment_beyond(sums, rs, cc * f1 * f2, hh, (b1 & 1) != 0); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  PSD_BEYOND(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (true)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      PSD_BEYOND(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+        return 0.0;
+      lo = (hi > step) ? hi - step : 0;
+      PSD_BEYOND(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      if (lo == 0)
+        return 0.0;
+      step *= 2;
+    }
+  }
+  /* lo is beyond, hi is not, and the answer is the least not beyond */
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    PSD_BEYOND(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef PSD_BEYOND
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return result;
+}
+
+/**
  * @brief Return the sign of the triple product `<p, q x r>` of three vectors,
  * computed exactly
  * @details The triple product is the determinant of the three vectors, a sum
