@@ -2278,6 +2278,165 @@ gserialized_is_poly(const GSERIALIZED* gs)
 }
 
 /**
+ * @brief Return the side of a point relative to a segment, as the PostGIS
+ * function @p itree_segment_side computes it
+ */
+static inline double
+pip_segment_side(const POINT2D *seg1, const POINT2D *seg2,
+  const POINT2D *point)
+{
+  return ((seg2->x - seg1->x) * (point->y - seg1->y) -
+    (point->x - seg1->x) * (seg2->y - seg1->y));
+}
+
+/**
+ * @brief Return 1 if a point on the line of a segment lies within its
+ * bounds, as the PostGIS function @p itree_point_on_segment tests it
+ */
+static inline int
+pip_point_on_segment(const POINT2D *seg1, const POINT2D *seg2,
+  const POINT2D *point)
+{
+  double maxX = FP_MAX(seg1->x, seg2->x);
+  double maxY = FP_MAX(seg1->y, seg2->y);
+  double minX = FP_MIN(seg1->x, seg2->x);
+  double minY = FP_MIN(seg1->y, seg2->y);
+  return point->x >= minX && point->x <= maxX &&
+    point->y >= minY && point->y <= maxY;
+}
+
+/**
+ * @brief Return the location of a point relative to a ring, as the interval
+ * tree of PostGIS locates it
+ * @details The tree tests each segment of nonzero length and finite
+ * coordinates whose range of y covers the one of the point, a segment
+ * outside that range contributing neither a boundary nor a winding; the
+ * segments are tested here in turn with the same arithmetic, so the location
+ * is the one of the tree, which a single location does not pay for building
+ */
+static IntervalTreeResult
+pip_point_in_ring(const POINTARRAY *pa, const POINT2D *pt)
+{
+  int winding_number = 0;
+  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  {
+    const POINT2D *seg1 = getPoint2d_cp(pa, i);
+    const POINT2D *seg2 = getPoint2d_cp(pa, i + 1);
+    /* A segment of zero length or of a nonfinite coordinate is not indexed */
+    if ((seg1->x == seg2->x && seg1->y == seg2->y) ||
+        ! (isfinite(seg1->x) && isfinite(seg1->y) && isfinite(seg2->x) &&
+           isfinite(seg2->y)))
+      continue;
+    if (! FP_CONTAINS_INCL(FP_MIN(seg1->y, seg2->y), pt->y,
+          FP_MAX(seg1->y, seg2->y)))
+      continue;
+    double side = pip_segment_side(seg1, seg2, pt);
+    /* A point on the boundary of a ring is not contained */
+    if (side == 0.0 && pip_point_on_segment(seg1, seg2, pt) == 1)
+      return ITREE_BOUNDARY;
+    if ((seg1->y <= pt->y) && (pt->y < seg2->y) && (side > 0))
+      winding_number++;
+    else if ((seg2->y <= pt->y) && (pt->y < seg1->y) && (side < 0))
+      winding_number--;
+  }
+  return (winding_number == 0) ? ITREE_OUTSIDE : ITREE_INSIDE;
+}
+
+/**
+ * @brief Return in the last argument the location of a point relative to the
+ * (multi)polygon, read on its serialized form, as the PostGIS function
+ * @p itree_point_in_multipolygon locates it
+ * @return False where a ring has fewer than 4 points, on which the interval
+ * tree raises an error
+ */
+static bool
+pip_point_in_mpoly(const GSERIALIZED *gpoly, const POINT2D *pt,
+  IntervalTreeResult *result)
+{
+  lwflags_t flags = gserialized_get_lwflags(gpoly);
+  FLAGS_SET_BBOX(flags, 0);
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *p = gs_geometry_ptr(gpoly);
+  uint32_t type, npolys;
+  memcpy(&type, p, 4);
+  if (type == POLYGONTYPE)
+    npolys = 1;
+  else
+  {
+    memcpy(&npolys, p + 4, 4);
+    p += 8;
+  }
+  /* The interval tree is built on every ring before any is tested */
+  const uint8_t *q = p;
+  for (uint32_t k = 0; k < npolys; k++)
+  {
+    uint32_t nrings;
+    memcpy(&nrings, q + 4, 4);
+    const uint8_t *counts = q + 8;
+    size_t npoints = 0;
+    for (uint32_t r = 0; r < nrings; r++)
+    {
+      uint32_t n;
+      memcpy(&n, counts + 4 * r, 4);
+      if (n < 4)
+        return false;
+      npoints += n;
+    }
+    q = counts + 4 * nrings + ((nrings % 2) ? 4 : 0) + npoints * ptsize;
+  }
+
+  POINTARRAY pa;
+  pa.flags = flags;
+  for (uint32_t k = 0; k < npolys; k++)
+  {
+    uint32_t nrings;
+    memcpy(&nrings, p + 4, 4);
+    const uint8_t *counts = p + 8;
+    const uint8_t *pts = counts + 4 * nrings + ((nrings % 2) ? 4 : 0);
+    /* An empty polygon contains nothing */
+    bool done = false;
+    for (uint32_t r = 0; r < nrings; r++)
+    {
+      uint32_t n;
+      memcpy(&n, counts + 4 * r, 4);
+      if (! done)
+      {
+        pa.npoints = pa.maxpoints = n;
+        pa.serialized_pointlist = (uint8_t *) pts;
+        IntervalTreeResult loc = pip_point_in_ring(&pa, pt);
+        /* The boundary of any ring is a hard stop */
+        if (loc == ITREE_BOUNDARY)
+        {
+          *result = ITREE_BOUNDARY;
+          return true;
+        }
+        if (r == 0)
+        {
+          /* Outside the exterior ring, the holes are not read */
+          if (loc == ITREE_OUTSIDE)
+            done = true;
+        }
+        /* Inside a hole, the point is outside this polygon */
+        else if (loc == ITREE_INSIDE)
+          done = true;
+      }
+      pts += n * ptsize;
+    }
+    /* Inside the exterior ring and outside every hole */
+    if (nrings > 0 && ! done)
+    {
+      *result = ITREE_INSIDE;
+      return true;
+    }
+    p = pts;
+  }
+  *result = ITREE_OUTSIDE;
+  return true;
+}
+
+/**
  * @brief Return -1, 0, or 1 depending on whether a (multi)point is completely
  * outside, on the boundary, or completely inside a (multi)polygon
  * @details The function selects the polygon and the point out of the pair
@@ -2298,6 +2457,24 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     rel == TOUCHES);
   const GSERIALIZED *gpoly = gserialized_is_poly(gs1) ? gs1 : gs2;
   const GSERIALIZED *gpoint = gserialized_is_point(gs1) ? gs1 : gs2;
+  /* A single point is located on the serialized polygon, read in place */
+  if (gserialized_get_type(gpoint) == POINTTYPE)
+  {
+    IntervalTreeResult loc = ITREE_OUTSIDE;
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gpoint);
+    /* An empty or a nonfinite point is within nothing */
+    bool located = gserialized_is_empty(gpoint) ||
+      ! (isfinite(pt->x) && isfinite(pt->y)) ||
+      pip_point_in_mpoly(gpoly, pt, &loc);
+    if (located)
+    {
+      if (rel == INTERSECTS || rel == COVERS)
+        return loc != ITREE_OUTSIDE;
+      if (rel == CONTAINS)
+        return loc == ITREE_INSIDE;
+      return loc == ITREE_BOUNDARY;
+    }
+  }
   LWGEOM *poly = lwgeom_from_gserialized(gpoly);
   LWGEOM *point = lwgeom_from_gserialized(gpoint);
   IntervalTree *itree = itree_from_lwgeom(poly);
