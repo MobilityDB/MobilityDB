@@ -1673,8 +1673,8 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
    * 2D/3D planar dwithin otherwise, mirroring how Tdistance_tgeo_geo selects
    * its distance function. A temporal point against a point geometry carries a
    * point pair at every instant, whose distance is a question about the four
-   * coordinates, so it takes the closed form rather than the generic
-   * any-geometry entry; this is the twin of the choice Tdwithin_tgeo_tgeo
+   * coordinates, so it takes the exact sign of #point_within_distance_sign
+   * rather than the generic any-geometry entry; this is the twin of the choice Tdwithin_tgeo_tgeo
    * makes for two temporal points. The geometry here is never empty, the
    * validity check above returning on an empty one. */
   datum_func3 func = (tpoint_type(temp->temptype) &&
@@ -1797,7 +1797,8 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */
   /* A temporal point carries a point at every instant, so the pair is answered
-   * in closed form rather than by the generic any-geometry entry */
+   * by the exact sign of #point_within_distance_sign rather than by the
+   * generic any-geometry entry */
   datum_func3 func = (tpoint_type(sync1->temptype) &&
       tpoint_type(sync2->temptype)) ?
     pt_dwithin_fn(sync1->flags, sync2->flags) :

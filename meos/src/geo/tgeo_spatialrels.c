@@ -341,9 +341,10 @@ geo_dwithin_fn(int16 flags1, int16 flags2)
 /**
  * @brief Select the appropriate dwithin function for two temporal points
  * @details Mirrors #pt_distance_fn, which makes the same choice for the
- * distance itself: a planar 2D point pair is answered in closed form from the
- * two coordinates, while a geodetic pair keeps the spheroid function and a 3D
- * pair the generic entry, neither having a point twin here
+ * distance itself: a planar 2D point pair is answered by the exact sign of
+ * #point_within_distance_sign on the two coordinates, while a geodetic pair
+ * keeps the spheroid function and a 3D pair the generic entry, neither having
+ * a point twin here
  * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func3
@@ -2392,8 +2393,9 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   }
 
   /* A temporal point carries a point at every instant, #tpointinst_make
-   * refusing an empty one and any other type, so the pair is answered in
-   * closed form rather than by the generic any-geometry entry */
+   * refusing an empty one and any other type, so the pair is answered by the
+   * exact sign of #point_within_distance_sign rather than by the generic
+   * any-geometry entry */
   datum_func3 func = (tpoint_type(temp1->temptype) &&
       tpoint_type(temp2->temptype)) ?
     pt_dwithin_fn(temp1->flags, temp2->flags) :

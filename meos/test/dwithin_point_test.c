@@ -93,7 +93,14 @@ still(double x, double y)
  * expected answer: both quantifiers over two temporal points, which agree
  * because the distance never changes, and the temporal relationship of a
  * temporal point against the second point as a geometry, which answers one
- * value over the whole period for the same reason
+ * value over the whole period for the same reason.
+ *
+ * The third part carries the scales where the squares leave the range of a
+ * double: the 3-4-5 triangle at 2^-1000 to 2^-550 and 2^550 to 2^1000, whose
+ * squares underflow to zero or overflow to infinity, and two points near 1e155
+ * one unit in the last place apart, whose coordinates square to infinity
+ * while their difference does not. Each is asked at its distance, below it and
+ * above it, and the answers follow from the integers as in the first part
  */
 static void
 every_entry(double px, double py, double qx, double qy, double d, int expected)
@@ -168,8 +175,27 @@ int main(void)
     asked += 2;
   }
 
-  printf("%d distances answered exactly by three entries, 61 scales and 4 "
-    "pairs a double square root gets wrong\n", asked);
+  /* Where the squares leave the range of a double */
+  for (int exponent = -1000; exponent <= 1000; exponent += 50)
+  {
+    if (exponent > -550 && exponent < 550)
+      continue;
+    double s = ldexp(1.0, exponent);
+    every_entry(0, 0, 3 * s, 4 * s, 5 * s, 1);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, INFINITY), 1);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, 0.0), 0);
+    asked += 3;
+  }
+  /* Two points one unit in the last place of 1e155 apart, 2^462 */
+  double big = 1e155, next = nextafter(big, INFINITY);
+  every_entry(big, 0, next, 0, 0x1p+462, 1);
+  every_entry(big, 0, next, 0, nextafter(0x1p+462, INFINITY), 1);
+  every_entry(big, 0, next, 0, nextafter(0x1p+462, 0.0), 0);
+  asked += 3;
+
+  printf("%d distances answered exactly by three entries, 61 scales, 4 "
+    "pairs a double square root gets wrong and 20 scales and 1 pair whose "
+    "squares leave the range of a double\n", asked);
 
   /* Finalize MEOS */
   meos_finalize();
