@@ -650,6 +650,22 @@ Line_locate_point(PG_FUNCTION_ARGS)
  * @brief Return the geometry the function builds from an array of geometries,
  * or NULL for an empty array, as the PostGIS functions answer it
  */
+/**
+ * @brief Return the geometries of an array and their number
+ * @details The elements of an array are stored detoasted, as
+ * #cbufferarr_extract reads them, so the pointers the deconstruction returns
+ * are the geometries themselves, read with the length, the passing and the
+ * alignment of a geometry rather than looked up in the catalog
+ */
+static GSERIALIZED **
+geoarr_read(ArrayType *array, int *count)
+{
+  GSERIALIZED **result;
+  deconstruct_array(array, array->elemtype, -1, false, TYPALIGN_DOUBLE,
+    (Datum **) &result, NULL, count);
+  return result;
+}
+
 static Datum
 Geoarr_construct(FunctionCallInfo fcinfo,
   GSERIALIZED * (*func)(GSERIALIZED **, int))
@@ -661,12 +677,9 @@ Geoarr_construct(FunctionCallInfo fcinfo,
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_NULL();
   }
-  Datum *datumarr = datumarr_extract(array, &count);
-  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
-  for (int i = 0; i < count; i++)
-    gsarr[i] = (GSERIALIZED *) PG_DETOAST_DATUM(datumarr[i]);
+  GSERIALIZED **gsarr = geoarr_read(array, &count);
   GSERIALIZED *result = func(gsarr, count);
-  pfree(gsarr); pfree(datumarr);
+  pfree(gsarr);
   PG_FREE_IF_COPY(array, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -746,6 +759,182 @@ Geom_buffer(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
+ * Clustering
+ *****************************************************************************/
+
+/**
+ * @brief Return the array of the cluster numbers of the geometries, NULL where
+ * the flag of a geometry states so
+ */
+static ArrayType *
+clusterids_to_array(const int32 *ids, const bool *isnull, int count)
+{
+  Datum *values = palloc(sizeof(Datum) * count);
+  bool *nulls = palloc(sizeof(bool) * count);
+  for (int i = 0; i < count; i++)
+  {
+    nulls[i] = isnull && isnull[i];
+    values[i] = Int32GetDatum(nulls[i] ? 0 : ids[i]);
+  }
+  int dims[1] = {count};
+  int lbs[1] = {1};
+  ArrayType *result = construct_md_array(values, nulls, 1, dims, lbs,
+    INT4OID, 4, true, TYPALIGN_INT);
+  pfree(values); pfree(nulls);
+  return result;
+}
+
+/**
+ * @brief Return an array of geometry collections as an array of geometries
+ */
+static ArrayType *
+geocolls_to_array(GSERIALIZED **gsarr, int count)
+{
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = PointerGetDatum(gsarr[i]);
+  ArrayType *result = datumarr_to_array(values, count, T_GEOMETRY);
+  for (int i = 0; i < count; i++)
+    pfree(gsarr[i]);
+  pfree(values); pfree(gsarr);
+  return result;
+}
+
+PGDLLEXPORT Datum Geo_cluster_kmeans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_cluster_kmeans);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the number of the cluster the k-means algorithm assigns to
+ * each geometry of an array, -1 for an empty geometry, as PostGIS function
+ * @p ST_ClusterKMeans answers it
+ * @sqlfn clusterKMeans()
+ */
+Datum
+Geo_cluster_kmeans(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  int32 k = PG_GETARG_INT32(1);
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  GSERIALIZED **gsarr = geoarr_read(array, &count);
+  int nids;
+  int *ids = geo_cluster_kmeans((const GSERIALIZED **) gsarr,
+    (uint32_t) count, (uint32_t) k, &nids);
+  pfree(gsarr);
+  PG_FREE_IF_COPY(array, 0);
+  if (! ids)
+    PG_RETURN_NULL();
+  ArrayType *result = clusterids_to_array(ids, NULL, nids);
+  pfree(ids);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_cluster_dbscan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_cluster_dbscan);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the number of the cluster the DBSCAN algorithm assigns to
+ * each geometry of an array, NULL for a geometry it assigns to none, as
+ * PostGIS function @p ST_ClusterDBSCAN answers it
+ * @sqlfn clusterDBSCAN()
+ */
+Datum
+Geo_cluster_dbscan(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  double tolerance = PG_GETARG_FLOAT8(1);
+  int32 minpoints = PG_GETARG_INT32(2);
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  GSERIALIZED **gsarr = geoarr_read(array, &count);
+  int nids;
+  uint32_t *ids = geo_cluster_dbscan((const GSERIALIZED **) gsarr,
+    (uint32_t) count, tolerance, minpoints, &nids);
+  pfree(gsarr);
+  PG_FREE_IF_COPY(array, 0);
+  if (! ids)
+    PG_RETURN_NULL();
+  /* A noise point carries the number UINT32_MAX */
+  int32 *ids32 = palloc(sizeof(int32) * nids);
+  bool *isnull = palloc(sizeof(bool) * nids);
+  for (int i = 0; i < nids; i++)
+  {
+    isnull[i] = (ids[i] == UINT32_MAX);
+    ids32[i] = isnull[i] ? 0 : (int32) ids[i];
+  }
+  ArrayType *result = clusterids_to_array(ids32, isnull, nids);
+  pfree(ids); pfree(ids32); pfree(isnull);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_cluster_intersecting(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_cluster_intersecting);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the geometry collections of the geometries of an array that
+ * intersect, directly or through others of the array
+ * @sqlfn clusterIntersecting()
+ */
+Datum
+Geo_cluster_intersecting(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  GSERIALIZED **gsarr = geoarr_read(array, &count);
+  int ncolls;
+  GSERIALIZED **colls = geo_cluster_intersecting((const GSERIALIZED **) gsarr,
+    (uint32_t) count, &ncolls);
+  pfree(gsarr);
+  PG_FREE_IF_COPY(array, 0);
+  if (! colls)
+    PG_RETURN_NULL();
+  PG_RETURN_ARRAYTYPE_P(geocolls_to_array(colls, ncolls));
+}
+
+PGDLLEXPORT Datum Geo_cluster_within(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_cluster_within);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the geometry collections of the geometries of an array that
+ * lie within a distance, directly or through others of the array
+ * @sqlfn clusterWithin()
+ */
+Datum
+Geo_cluster_within(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  double tolerance = PG_GETARG_FLOAT8(1);
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  GSERIALIZED **gsarr = geoarr_read(array, &count);
+  int ncolls;
+  GSERIALIZED **colls = geo_cluster_within((const GSERIALIZED **) gsarr,
+    (uint32_t) count, tolerance, &ncolls);
+  pfree(gsarr);
+  PG_FREE_IF_COPY(array, 0);
+  if (! colls)
+    PG_RETURN_NULL();
+  PG_RETURN_ARRAYTYPE_P(geocolls_to_array(colls, ncolls));
 }
 
 /*****************************************************************************/

@@ -352,6 +352,32 @@ SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_clustering">
+				<indexterm significance="normal"><primary><varname>clusterKMeans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterDBSCAN</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterIntersecting</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterWithin</varname></primary></indexterm>
+				<para>Return the clusters of an array of geometries</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+clusterKMeans(geometry[],k integer) → integer[]
+clusterDBSCAN(geometry[],eps float,minpoints integer) → integer[]
+clusterIntersecting(geometry[]) → geometry[]
+clusterWithin(geometry[],distance float) → geometry[]
+</programlisting>
+				<para><varname>clusterKMeans</varname> and <varname>clusterDBSCAN</varname> return the number of the cluster of each geometry, in the order of the array, as the PostGIS window functions <varname>ST_ClusterKMeans</varname> and <varname>ST_ClusterDBSCAN</varname> number them over the rows in that order: an empty geometry is in the cluster -1 of k-means, and a geometry DBSCAN places in no cluster has the number <varname>NULL</varname>. <varname>clusterIntersecting</varname> and <varname>clusterWithin</varname> return a geometry collection per cluster, as the PostGIS aggregates <varname>ST_ClusterIntersecting</varname> and <varname>ST_ClusterWithin</varname> return them. An empty array answers <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT clusterKMeans(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 2);
+-- {1,1,1,1,0}
+SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 1.5, 2);
+-- {0,0,1,1,NULL}
+SELECT array_length(clusterWithin(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 2), 1);
+-- 3
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_intersection">
 				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
 				<para>Return the region two geometries share</para>

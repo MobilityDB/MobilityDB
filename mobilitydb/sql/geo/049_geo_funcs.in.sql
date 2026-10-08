@@ -214,6 +214,27 @@ CREATE FUNCTION makeLine(geometry[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Clustering
+ *****************************************************************************/
+
+CREATE FUNCTION clusterKMeans(geometry[], k integer)
+  RETURNS integer[]
+  AS 'MODULE_PATHNAME', 'Geo_cluster_kmeans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION clusterDBSCAN(geometry[], eps float, minpoints integer)
+  RETURNS integer[]
+  AS 'MODULE_PATHNAME', 'Geo_cluster_dbscan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION clusterIntersecting(geometry[])
+  RETURNS geometry[]
+  AS 'MODULE_PATHNAME', 'Geo_cluster_intersecting'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION clusterWithin(geometry[], distance float)
+  RETURNS geometry[]
+  AS 'MODULE_PATHNAME', 'Geo_cluster_within'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 
