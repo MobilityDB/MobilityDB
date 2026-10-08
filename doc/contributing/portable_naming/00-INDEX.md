@@ -149,6 +149,10 @@ The operations that read a geodetic box as something other than the longitude/la
 the manual defines, measured, and the pull requests that correct them, deferred while the target is
 the Spark and Flink surfaces: [Geodetic boxes](GEODETIC-BOXES.md).
 
+Every distance MEOS computes, measured against the double nearest the exact distance, the oracle
+that judges it, and the pull requests that make each one answer that double:
+[Exact distance](EXACT-DISTANCE.md).
+
 The user side of families 1–7 and rules 8–9, as Docbook XML for the manual: the manual chapters this pull request changes.
 
 The pull requests that carry it all, the MobilityDB gaps first as the prerequisite of the
