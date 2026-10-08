@@ -2157,11 +2157,13 @@ tgeo_centroid(const Temporal *temp, bool spheroid)
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the k-means algorithm
+ * @details An empty geometry is assigned to no cluster, its number being -1
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_kmeans()
  */
 int *
 geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
@@ -2207,12 +2209,15 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the DBSCAN algorithm
+ * @details A geometry the algorithm assigns to no cluster, a noise point, has
+ * the number @p UINT32_MAX
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
  * @param[in] minpoints Minimum number of points
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterDBSCAN(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_dbscan()
  */
 uint32_t *
 geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
@@ -2285,6 +2290,7 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
  * @param[in] ngeoms Number of elements in the input array
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterIntersectingWin(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_intersecting()
  */
 GSERIALIZED ** 
 geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
@@ -2345,6 +2351,7 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
  * @param[in] tolerance Tolerance
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterWithin(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_within()
  */
 GSERIALIZED **
 geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,

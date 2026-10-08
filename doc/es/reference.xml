@@ -1005,6 +1005,9 @@
 					<para><link linkend="geo_transform"><varname>transform</varname></link>: Transforma una geometría o una geografía a un identificador de referencia espacial</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_clustering"><varname>clusterKMeans</varname>, <varname>clusterDBSCAN</varname>, <varname>clusterIntersecting</varname>, <varname>clusterWithin</varname></link>: Devuelve los grupos de un arreglo de geometrías</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>

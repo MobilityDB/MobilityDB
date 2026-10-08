@@ -529,3 +529,40 @@ SELECT transform(geometry 'Point(1 1)', 3857);
 SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Clustering
+-- The array forms answer as the PostGIS window functions ST_ClusterKMeans and
+-- ST_ClusterDBSCAN over the rows in the order of the array, and as the
+-- aggregates ST_ClusterIntersecting and ST_ClusterWithin, an empty geometry
+-- answering -1 in k-means and a noise point NULL in DBSCAN
+-------------------------------------------------------------------------------
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Point(0 0)'), (2, geometry 'Point(1 0)'), (3, geometry 'Point(0 1)'),
+  (4, geometry 'Point(10 10)'), (5, geometry 'Point(11 10)'), (6, geometry 'Point(10 11)'),
+  (7, geometry 'Point(20 0)'), (8, geometry 'Linestring(21 0,22 1)'),
+  (9, geometry 'Polygon((30 30,31 30,31 31,30 31,30 30))'), (10, geometry 'Point empty'))
+SELECT
+  (SELECT clusterKMeans(array_agg(geom ORDER BY id), 3) FROM g) AS kmeans,
+  (SELECT array_agg(c ORDER BY id) FROM (SELECT id, ST_ClusterKMeans(geom, 3) OVER (ORDER BY id) AS c FROM g) t) AS st_kmeans,
+  (SELECT clusterDBSCAN(array_agg(geom ORDER BY id), 1.5, 2) FROM g) AS dbscan,
+  (SELECT array_agg(c ORDER BY id) FROM (SELECT id, ST_ClusterDBSCAN(geom, 1.5, 2) OVER (ORDER BY id) AS c FROM g) t) AS st_dbscan;
+
+WITH g(id, geom) AS (VALUES
+  (1, geometry 'Linestring(0 0,1 1)'), (2, geometry 'Linestring(1 1,2 0)'),
+  (3, geometry 'Point(5 5)'), (4, geometry 'Polygon((4 4,6 4,6 6,4 6,4 4))'),
+  (5, geometry 'Point(10 10)'))
+SELECT
+  (SELECT array_agg(ST_AsText(c)) FROM unnest((SELECT clusterIntersecting(array_agg(geom ORDER BY id)) FROM g)) c) AS intersecting,
+  (SELECT array_agg(ST_AsText(c)) FROM unnest((SELECT ST_ClusterIntersecting(geom ORDER BY id) FROM g)) c) AS st_intersecting,
+  (SELECT array_agg(ST_AsText(c)) FROM unnest((SELECT clusterWithin(array_agg(geom ORDER BY id), 4) FROM g)) c) AS within,
+  (SELECT array_agg(ST_AsText(c)) FROM unnest((SELECT ST_ClusterWithin(geom, 4 ORDER BY id) FROM g)) c) AS st_within;
+
+SELECT clusterKMeans(ARRAY[]::geometry[], 1) IS NULL, clusterIntersecting(ARRAY[]::geometry[]) IS NULL;
+/* Errors */
+SELECT clusterKMeans(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 1)'], 3);
+SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)'], -1, 2);
+SELECT clusterWithin(ARRAY[geometry 'SRID=4326;Point(0 0)', geometry 'SRID=3812;Point(1 1)'], 1);
+
+-------------------------------------------------------------------------------
