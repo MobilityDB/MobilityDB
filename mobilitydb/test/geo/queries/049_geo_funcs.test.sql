@@ -563,6 +563,36 @@ SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- A point is located on the serialized form of a (multi)polygon, as the
+-- interval tree of PostGIS locates it: inside, on the boundary of a ring, in a
+-- hole, in a polygon lying in the hole of another, on a repeated vertex, and an
+-- empty point, against every relationship that asks for the location
+-------------------------------------------------------------------------------
+
+WITH g(a, b) AS (VALUES
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.5 1.5)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1 1.5)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(3 3)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(4 2)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(5 5)'),
+  (geometry 'MultiPolygon(((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1)),((1.5 1.5,2.5 1.5,2.5 2.5,1.5 1.5)))', geometry 'Point(2.4 1.6)'),
+  (geometry 'MultiPolygon(((0 0,4 0,4 4,0 4,0 0),(1 1,3 1,3 3,1 3,1 1)),((1.5 1.5,2.5 1.5,2.5 2.5,1.5 1.5)))', geometry 'Point(1.2 2.8)'),
+  (geometry 'Polygon((0 0,4 0,4 0,4 4,0 4,0 0))', geometry 'Point(4 0)'),
+  (geometry 'Polygon((0 0,4 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 0)'),
+  (geometry 'MultiPolygon(EMPTY,((0 0,4 0,4 4,0 0)))', geometry 'Point(3 1)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 0))', geometry 'Point empty'))
+SELECT
+  count(*) FILTER (WHERE contains(a, b) IS DISTINCT FROM ST_Contains(a, b)) AS contains,
+  count(*) FILTER (WHERE covers(a, b) IS DISTINCT FROM ST_Covers(a, b)) AS covers,
+  count(*) FILTER (WHERE intersects(a, b) IS DISTINCT FROM ST_Intersects(a, b)) AS intersects,
+  count(*) FILTER (WHERE intersects(b, a) IS DISTINCT FROM ST_Intersects(b, a)) AS intersects_ba,
+  count(*) FILTER (WHERE touches(a, b) IS DISTINCT FROM ST_Touches(a, b)) AS touches,
+  count(*) FILTER (WHERE touches(b, a) IS DISTINCT FROM ST_Touches(b, a)) AS touches_ba,
+  count(*) FILTER (WHERE ST_Contains(a, b)) AS n_contains,
+  count(*) FILTER (WHERE ST_Touches(a, b)) AS n_touches
+FROM g;
+
+-------------------------------------------------------------------------------
 -- Clustering
 -- The array forms answer as the PostGIS window functions ST_ClusterKMeans and
 -- ST_ClusterDBSCAN over the rows in the order of the array, and as the
