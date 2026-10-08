@@ -1754,11 +1754,35 @@ typedef struct
  * @brief The side of a selected piece the overlay has still to read
  * @details See #buffer_frame_where_read()
  */
+/**
+ * @brief The rings an operand's boundary edges draw, for reading the side of
+ * their pieces once per ring
+ * @details See #buffer_ring_answer_side()
+ */
+typedef struct
+{
+  const MeosArray *edges;  /**< The operand's edges, as extracted */
+  uint32_t *bnd;           /**< Places in @p edges of its boundary edges, in
+                                the order they are extracted */
+  int32_t *start;          /**< First boundary edge of each ring */
+  int32_t *end;            /**< One past the last boundary edge of each ring */
+  int8_t *simple;          /**< Each ring shown simple (1), not shown (0), or
+                                not yet read (-1) */
+  int8_t *side;            /**< The side the operand's interior lies on of
+                                each ring's pieces, 0 left and 1 right, or -1
+                                where it is not read */
+  int32_t *nasks;          /**< Sides each ring has to read */
+  int nrings;              /**< Number of rings */
+} BufferOperandRings;
+
 typedef struct
 {
   uint32_t index;       /**< The piece, as its place among the selected */
   BufferLocator *own;   /**< The geometry the piece bounds */
   bool inverted;        /**< The answer lies on the side it does not cover */
+  BufferOperandRings *rings; /**< The rings of that geometry, or NULL */
+  int32_t ring;         /**< The ring the piece is cut from, -1 where it is not
+                             known */
 } BufferSideAsk;
 
 /**
@@ -3781,10 +3805,13 @@ buffer_piece_answer_left(const Edge *piece, BufferLocator *own, bool inverted)
  * not cover
  * @param[in,out] deferred Where non-NULL, the side is not read here but asked
  * there, for #buffer_frame_where_read() to read where the walk consults it
+ * @param[in,out] rings The rings of the geometry the piece bounds, or NULL
+ * @param[in] ring The ring the piece is cut from, -1 where it is not known
  */
 static void
 buffer_add_selected_piece(MeosArray *result, const Edge *piece,
-  BufferLocator *own, bool inverted, MeosArray *deferred)
+  BufferLocator *own, bool inverted, MeosArray *deferred,
+  BufferOperandRings *rings, int32_t ring)
 {
   assert(result); assert(piece); assert(own);
   BufferSelected kept;
@@ -3792,7 +3819,8 @@ buffer_add_selected_piece(MeosArray *result, const Edge *piece,
   kept.answer_left = false;
   if (deferred)
   {
-    BufferSideAsk ask = { meos_array_count(result), own, inverted };
+    BufferSideAsk ask = { meos_array_count(result), own, inverted, rings,
+      ring };
     meos_array_add(deferred, &ask);
   }
   else
@@ -3804,7 +3832,8 @@ static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   const MeosArray *pieces_b, BufferLocator *loc_a, const MeosArray *nodes,
   ClipOper oper, MeosArray *result, MeosArray *boundary, MeosArray *shared,
-  bool *coincident, MeosArray *deferred)
+  bool *coincident, MeosArray *deferred, BufferOperandRings *rings_a,
+  const int32_t *ring_a, BufferOperandRings *rings_b, const int32_t *ring_b)
 {
   assert(pieces_a); assert(loc_b); assert(pieces_b); assert(loc_a);
   assert(nodes);
@@ -3824,7 +3853,8 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     Edge *piece = (Edge *) meos_array_get_intl(pieces_a, i);
     EdgeLocation location = buffer_classify_piece(piece, loc_b, nodes);
     if (location == keep_a)
-      buffer_add_selected_piece(result, piece, loc_a, false, deferred);
+      buffer_add_selected_piece(result, piece, loc_a, false, deferred,
+        rings_a, ring_a ? ring_a[i] : -1);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -3841,7 +3871,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     EdgeLocation location = buffer_classify_piece(piece, loc_a, nodes);
     if (location == keep_b)
       buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE,
-        deferred);
+        deferred, rings_b, ring_b ? ring_b[i] : -1);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -5312,6 +5342,214 @@ buffer_piece_root(uint32_t *parent, uint32_t i)
 }
 
 /**
+ * @brief Read the rings an operand's boundary edges draw
+ * @details The extraction gives the edges of a ring one after the other, each
+ * starting where the one before it ends, and the ring closes at the edge
+ * ending where its first edge starts, so the rings are read off the edges in
+ * order. A run of edges that breaks off before it closes is a ring this does
+ * not read, and is marked as not shown simple
+ * @param[out] r Rings to fill in
+ * @param[in] edges The operand's edges, as #geom_extract_edges() gives them
+ */
+static void
+buffer_operand_rings_make(BufferOperandRings *r, const MeosArray *edges)
+{
+  assert(r); assert(edges);
+  int n = (int) edges->count;
+  r->edges = edges;
+  r->bnd = palloc(sizeof(uint32_t) * Max(n, 1));
+  int nb = 0;
+  for (int i = 0; i < n; i++)
+    if (buffer_is_boundary_edge((const Edge *) meos_array_get_intl(edges, i)))
+      r->bnd[nb++] = (uint32_t) i;
+  r->start = palloc(sizeof(int32_t) * Max(nb, 1));
+  r->end = palloc(sizeof(int32_t) * Max(nb, 1));
+  r->simple = palloc(sizeof(int8_t) * Max(nb, 1));
+  r->side = palloc(sizeof(int8_t) * Max(nb, 1));
+  r->nasks = palloc0(sizeof(int32_t) * Max(nb, 1));
+  r->nrings = 0;
+  int k = 0;
+  while (k < nb)
+  {
+    const Edge *first = (const Edge *) meos_array_get_intl(edges,
+      (int) r->bnd[k]);
+    int j = k;
+    bool closed = false;
+    while (j < nb)
+    {
+      const Edge *e = (const Edge *) meos_array_get_intl(edges,
+        (int) r->bnd[j]);
+      j++;
+      if (e->x2 == first->x1 && e->y2 == first->y1)
+      {
+        closed = true;
+        break;
+      }
+      if (j == nb)
+        break;
+      const Edge *next = (const Edge *) meos_array_get_intl(edges,
+        (int) r->bnd[j]);
+      if (next->x1 != e->x2 || next->y1 != e->y2)
+        break;
+    }
+    r->start[r->nrings] = k;
+    r->end[r->nrings] = j;
+    r->simple[r->nrings] = closed ? -1 : 0;
+    r->side[r->nrings] = -1;
+    r->nrings++;
+    k = j;
+  }
+  return;
+}
+
+/**
+ * @brief Release the rings of an operand
+ */
+static void
+buffer_operand_rings_free(BufferOperandRings *r)
+{
+  assert(r);
+  pfree(r->bnd); pfree(r->start); pfree(r->end); pfree(r->simple);
+  pfree(r->side); pfree(r->nasks);
+  return;
+}
+
+/**
+ * @brief Return the ring each piece of an operand is cut from
+ * @details The pieces are the boundary edges cut at the nodes, in the order of
+ * the edges, so a ring's pieces follow one another as its edges do and the
+ * last of them ends where its first starts. The rings are read off the pieces
+ * as #buffer_operand_rings_make() reads them off the edges; where the two do
+ * not count the same rings, no piece is given one
+ * @param[in] r Rings of the operand
+ * @param[in] pieces Its pieces
+ * @return The ring of each piece, -1 where it is not known, to be freed by the
+ * caller
+ */
+static int32_t *
+buffer_pieces_rings(const BufferOperandRings *r, const MeosArray *pieces)
+{
+  assert(r); assert(pieces);
+  int n = (int) pieces->count;
+  int32_t *ring = palloc(sizeof(int32_t) * Max(n, 1));
+  int nr = 0, k = 0;
+  while (k < n && nr < r->nrings)
+  {
+    const Edge *first = (const Edge *) meos_array_get_intl(pieces, k);
+    int j = k;
+    while (j < n)
+    {
+      const Edge *e = (const Edge *) meos_array_get_intl(pieces, j);
+      ring[j++] = nr;
+      if (e->x2 == first->x1 && e->y2 == first->y1)
+        break;
+      if (j == n)
+        break;
+      const Edge *next = (const Edge *) meos_array_get_intl(pieces, j);
+      if (next->x1 != e->x2 || next->y1 != e->y2)
+        break;
+    }
+    nr++;
+    k = j;
+  }
+  if (k < n || nr != r->nrings)
+    for (int i = 0; i < n; i++)
+      ring[i] = -1;
+  return ring;
+}
+
+/**
+ * @brief Return true if a ring of an operand is shown simple: its edges are
+ * straight segments, no two of them meet but two that follow one another, and
+ * those only at the vertex they share
+ * @details The segments are read in pairs whose boxes meet
+ * (#buffer_edge_pairs), and each pair by #linesegm_intersect, whose verdict on
+ * the four input vertices is exact. A ring carrying an arc, or a segment of no
+ * length, is not shown simple
+ */
+static bool
+buffer_ring_simple(const BufferOperandRings *r, int ring)
+{
+  assert(r); assert(ring >= 0 && ring < r->nrings);
+  int m = r->end[ring] - r->start[ring];
+  if (m < 3)
+    return false;
+  Edge *ring_edges = palloc(sizeof(Edge) * m);
+  for (int i = 0; i < m; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get_intl(r->edges,
+      (int) r->bnd[r->start[ring] + i]);
+    if (e->etype != EDGE_POLYSEG || (e->x1 == e->x2 && e->y1 == e->y2))
+    {
+      pfree(ring_edges);
+      return false;
+    }
+    ring_edges[i] = *e;
+  }
+  uint32_t npairs;
+  BufferEdgePair *pairs = buffer_edge_pairs(ring_edges, (uint32_t) m,
+    &npairs);
+  bool result = true;
+  for (uint32_t p = 0; p < npairs && result; p++)
+  {
+    uint32_t i = pairs[p].i, j = pairs[p].j;
+    const Edge *a = &ring_edges[i], *b = &ring_edges[j];
+    IntersectResult meet = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
+      b->x1, b->y1, b->x2, b->y2);
+    if (meet.type == INTERSECT_NONE)
+      continue;
+    /* Two edges following one another share their vertex and nothing more */
+    bool adjacent = (j == i + 1) || (i == 0 && j == (uint32_t) m - 1);
+    if (! adjacent || meet.type == INTERSECT_OVERLAP)
+      result = false;
+  }
+  if (pairs)
+    pfree(pairs);
+  pfree(ring_edges);
+  return result;
+}
+
+/**
+ * @brief Return whether the answer lies to the left of a selected piece, read
+ * once for the ring the piece is cut from where that ring is shown simple
+ * @details Along a ring that does not meet itself the interior of the
+ * geometry lies on one side of every piece, read in the direction the ring
+ * runs, so the side read off one of its pieces by
+ * #buffer_piece_interior_side() is the side of all of them. A ring not shown
+ * simple, as one crossing itself whose interior changes side where it
+ * crosses, has the side of each piece read on its own, and so has a ring with
+ * so few pieces to read that showing it simple costs more
+ * @param[in] ask The piece's ask
+ * @param[in] piece The piece
+ */
+static bool
+buffer_ask_answer_left(const BufferSideAsk *ask, const Edge *piece)
+{
+  BufferOperandRings *r = ask->rings;
+  int ring = ask->ring;
+  /* Showing a ring simple sweeps its edges, which repays the two points
+   * located beside each piece only where the ring has several to read */
+  if (r && ring >= 0 && r->nasks[ring] >= 2 &&
+      (int64) r->nasks[ring] * 32 >= (int64) (r->end[ring] - r->start[ring]))
+  {
+    if (r->simple[ring] < 0)
+      r->simple[ring] = buffer_ring_simple(r, ring) ? 1 : 0;
+    if (r->simple[ring] == 1)
+    {
+      if (r->side[ring] < 0)
+      {
+        int side = buffer_piece_interior_side(piece, ask->own);
+        if (side != 0 && side != 1)
+          return false;
+        r->side[ring] = (int8_t) side;
+      }
+      return (r->side[ring] == 0) != ask->inverted;
+    }
+  }
+  return buffer_piece_answer_left(piece, ask->own, ask->inverted);
+}
+
+/**
  * @brief Read the side the answer lies on of the selected pieces the walk
  * consults it for
  * @details #buffer_find_connected_piece() reads the side of a piece only to
@@ -5343,10 +5581,16 @@ buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
     {
       const BufferSideAsk *ask =
         (const BufferSideAsk *) meos_array_get_intl(deferred, d);
+      if (ask->rings && ask->ring >= 0)
+        ask->rings->nasks[ask->ring]++;
+    }
+    for (int d = 0; d < meos_array_count(deferred); d++)
+    {
+      const BufferSideAsk *ask =
+        (const BufferSideAsk *) meos_array_get_intl(deferred, d);
       BufferSelected *sel =
         (BufferSelected *) meos_array_get_intl(selected, (int) ask->index);
-      sel->answer_left = buffer_piece_answer_left(&sel->e, ask->own,
-        ask->inverted);
+      sel->answer_left = buffer_ask_answer_left(ask, &sel->e);
     }
     return;
   }
@@ -5392,12 +5636,19 @@ buffer_frame_where_read(MeosArray *selected, const MeosArray *deferred)
   {
     const BufferSideAsk *ask =
       (const BufferSideAsk *) meos_array_get_intl(deferred, d);
+    if (branching[buffer_piece_root(parent, ask->index)] && ask->rings &&
+        ask->ring >= 0)
+      ask->rings->nasks[ask->ring]++;
+  }
+  for (int d = 0; d < meos_array_count(deferred); d++)
+  {
+    const BufferSideAsk *ask =
+      (const BufferSideAsk *) meos_array_get_intl(deferred, d);
     if (! branching[buffer_piece_root(parent, ask->index)])
       continue;
     BufferSelected *sel =
       (BufferSelected *) meos_array_get_intl(selected, ask->index);
-    sel->answer_left = buffer_piece_answer_left(&sel->e, ask->own,
-      ask->inverted);
+    sel->answer_left = buffer_ask_answer_left(ask, &sel->e);
   }
   pfree(parent); pfree(branching);
   buffer_node_index_free(&ix);
@@ -5512,14 +5763,34 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   buffer_locator_make_edges(&loc_a, geom1, edges_a, points_a);
   buffer_locator_make_edges(&loc_b, geom2, edges_b, points_b);
   MeosArray *deferred = meos_array_create(sizeof(BufferSideAsk));
+  /* The rings each boundary draws, so that the side of a ring shown simple is
+   * read once for all the pieces cut from it (#buffer_ask_answer_left) */
+  /* A few pieces have their sides read one by one, which costs less than
+   * reading the rings they are cut from */
+  bool by_ring = points_a + points_b >= BUFFER_FRAME_MIN_PIECES;
+  BufferOperandRings rings_a, rings_b;
+  int32_t *ring_a = NULL, *ring_b = NULL;
+  if (by_ring)
+  {
+    buffer_operand_rings_make(&rings_a, edges_a);
+    buffer_operand_rings_make(&rings_b, edges_b);
+    ring_a = buffer_pieces_rings(&rings_a, split_a);
+    ring_b = buffer_pieces_rings(&rings_b, split_b);
+  }
   buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a,
-    intersections, oper, selected, boundary, shared, &coincident, deferred);
+    intersections, oper, selected, boundary, shared, &coincident, deferred,
+    by_ring ? &rings_a : NULL, ring_a, by_ring ? &rings_b : NULL, ring_b);
   /* A union of two surfaces that only touch keeps every piece and walks none
    * of them, so it reads no side */
   if (! crossing || oper != CL_UNION || meos_array_count(selected) !=
       meos_array_count(split_a) + meos_array_count(split_b))
     buffer_frame_where_read(selected, deferred);
   meos_array_destroy(deferred);
+  if (by_ring)
+  {
+    pfree(ring_a); pfree(ring_b);
+    buffer_operand_rings_free(&rings_a); buffer_operand_rings_free(&rings_b);
+  }
   buffer_locator_free(&loc_a);
   buffer_locator_free(&loc_b);
 
@@ -7030,7 +7301,8 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
       if (covered)
         continue;
       if (on < 0)
-        buffer_add_selected_piece(selected, piece, &locs[i], false, NULL);
+        buffer_add_selected_piece(selected, piece, &locs[i], false, NULL,
+          NULL, -1);
       else
         ok = buffer_resolve_coincident_piece(piece, &locs[i], &locs[on],
           i < (uint32_t) on, CL_UNION, selected);
