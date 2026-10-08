@@ -51,6 +51,13 @@ trajectories, two *patterns* — questions written as the nine cells of the matr
 (the interiors meet and nothing of the second lies outside the first) 0.152. **Faster than GEOS on every
 cell.**
 
+**Speed, stated in #2997, merged as `4f784e1240`.** The engine reads the edges a box meets, and
+those the ray cast from a point can cross, out of a sorted index (`EdgeIndex`, `edge_index_query`)
+rather than an R-tree built for every edge array, and the index answers the same edges as the R-tree
+for every query box. Each of the sixteen relationship cells, eight questions on areal pairs and the
+same eight on `geo_pairs`, reads at most GEOS's own instructions: from 0.02 for equality to 0.84 for
+touching.
+
 **Left.** Nothing.
 
 ## 4.2 Point in polygon — never used GEOS
