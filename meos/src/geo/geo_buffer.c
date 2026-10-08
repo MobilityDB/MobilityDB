@@ -4483,35 +4483,18 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
 }
 
 /**
- * @brief Construct a temporary CURVEPOLYGON containing one ring
- * @details The returned geometry owns the supplied ring.
- */
-static LWGEOM *
-buffer_make_single_ring_polygon(LWCOMPOUND *ring, int32_t srid)
-{
-  assert(ring);
-  LWCURVEPOLY *polygon = lwcurvepoly_construct_empty(srid, 0, 0);
-  if (! polygon)
-    return NULL;
-  buffer_curvepoly_add_ring(polygon, ring);
-  return lwcurvepoly_as_lwgeom(polygon);
-}
-
-/**
- * @brief Find a point strictly inside a closed boundary ring
- * @details A candidate point is generated close to the midpoint of a
- * boundary edge and displaced toward the interior. The candidate is
- * verified with the existing strict point-in-areal test.
- *
- * The displacement is progressively reduced if the initial candidate
- * is not suitable. This is important for narrow buffer regions where a
- * fixed displacement could cross the opposite boundary.
+ * @brief Find a point strictly inside a closed boundary ring, reading the
+ * edges of the area it bounds
+ * @details #buffer_ring_find_interior_point(), for a caller that holds the
+ * edges #buffer_ring_edges() reads off the ring
+ * @param[in] arr Edges of the area the ring bounds
+ * @param[out] x,y Point found
  */
 static bool
-buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
-  double *x, double *y)
+buffer_ring_find_interior_point_edges(const MeosArray *arr, double *x,
+  double *y)
 {
-  assert(ring); assert(x); assert(y);
+  assert(arr); assert(x); assert(y);
   /* Each candidate is read off a piece of the ring and located against the
    * area the ring bounds, and that area carries the SAME pieces: a curve
    * polygon whose one ring is this one. Its edges answer both questions, so
@@ -4519,18 +4502,8 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
    * The displacement a candidate stands at is taken along the piece's own
    * geometry, which an edge carries whichever of the two types the extraction
    * tags it with, and which is why the walk below reads both */
-  LWCOMPOUND *copy = (LWCOMPOUND *) lwgeom_clone(lwcompound_as_lwgeom(ring));
-  LWGEOM *polygon = buffer_make_single_ring_polygon(copy, srid);
-  if (! polygon)
+  if (arr->count == 0)
     return false;
-  MeosArray *arr = geom_extract_edges(polygon);
-  if (! arr || arr->count == 0)
-  {
-    if (arr)
-      meos_array_destroy(arr);
-    lwgeom_free(polygon);
-    return false;
-  }
   int npedges = (int) arr->count;
   Edge **pedges = palloc(sizeof(Edge *) * Max(npedges, 1));
   for (int e = 0; e < npedges; e++)
@@ -4600,16 +4573,61 @@ buffer_ring_find_interior_point(const LWCOMPOUND *ring, int32_t srid,
         {
           *x = cx;
           *y = cy;
-          pfree(pedges); lwgeom_free(polygon);
-          meos_array_destroy(arr);
+          pfree(pedges);
           return true;
         }
       }
     }
   }
-  pfree(pedges); lwgeom_free(polygon);
-  meos_array_destroy(arr);
+  pfree(pedges);
   return false;
+}
+
+/**
+ * @brief Return the edges of the area a closed boundary ring bounds
+ * @details The edges of a curve polygon whose one ring is this one, welded as
+ * #buffer_curvepoly_add_ring() welds the ring it adds, read off a polygon
+ * that borrows the ring rather than one holding a copy of it: a copy shares
+ * the points of the ring (#ptarray_clone), so welding it welds the ring, and
+ * the edges are read off the same points either way
+ * @param[in,out] ring Ring, welded here
+ * @param[in] srid Spatial reference identifier
+ */
+static MeosArray *
+buffer_ring_edges(LWCOMPOUND *ring, int32_t srid)
+{
+  assert(ring);
+  buffer_ring_weld(ring);
+  LWGEOM *member = lwcompound_as_lwgeom(ring);
+  LWCURVEPOLY polygon;
+  memset(&polygon, 0, sizeof(LWCURVEPOLY));
+  polygon.type = CURVEPOLYTYPE;
+  polygon.srid = srid;
+  polygon.flags = lwflags(0, 0, 0);
+  polygon.rings = &member;
+  polygon.nrings = polygon.maxrings = 1;
+  return geom_extract_edges(lwcurvepoly_as_lwgeom(&polygon));
+}
+
+/**
+ * @brief Find a point strictly inside a closed boundary ring
+ * @details A candidate point is generated close to the midpoint of a
+ * boundary edge and displaced toward the interior. The candidate is
+ * verified with the existing strict point-in-areal test.
+ *
+ * The displacement is progressively reduced if the initial candidate
+ * is not suitable. This is important for narrow buffer regions where a
+ * fixed displacement could cross the opposite boundary.
+ */
+static bool
+buffer_ring_find_interior_point(LWCOMPOUND *ring, int32_t srid,
+  double *x, double *y)
+{
+  assert(ring); assert(x); assert(y);
+  MeosArray *arr = buffer_ring_edges(ring, srid);
+  bool result = buffer_ring_find_interior_point_edges(arr, x, y);
+  meos_array_destroy(arr);
+  return result;
 }
 
 /**
@@ -4626,26 +4644,11 @@ buffer_ring_representative_point(LWCOMPOUND *ring, int32_t srid,
 }
 
 /**
- * @brief Return the area one boundary ring bounds, as a curve polygon of its
- * own holding a copy of the ring
- */
-static LWGEOM *
-buffer_ring_polygon(const BufferRingInfo *outer, int32_t srid)
-{
-  assert(outer);
-  LWCOMPOUND *ring_copy = (LWCOMPOUND *) lwgeom_clone(
-    lwcompound_as_lwgeom(outer->ring));
-  if (! ring_copy)
-    return NULL;
-  return buffer_make_single_ring_polygon(ring_copy, srid);
-}
-
-/**
  * @brief Test whether one boundary ring contains another ring
  * @details The representative point of the inner ring is tested against
  * the areal region bounded by the outer ring. The boundary is excluded
  * from the interior test, as #buffer_areal_contains_point() excludes it
- * @param[in,out] outer Locator over #buffer_ring_polygon() of the outer ring
+ * @param[in,out] outer Locator over #buffer_ring_edges() of the outer ring
  * @param[in] inner Inner ring
  */
 static bool
@@ -4715,6 +4718,24 @@ buffer_ring_infos_free(BufferRingInfo *infos, uint32_t count)
 }
 
 /**
+ * @brief Release the edges of the rings a classification under construction
+ * reads, as #buffer_ring_infos_free() releases the rings
+ * @param[in] edges Edges of each ring, NULL where a ring has none, owned by
+ * this function
+ * @param[in] count Number of rings
+ */
+static void
+buffer_ring_edges_free(MeosArray **edges, uint32_t count)
+{
+  assert(edges);
+  for (uint32_t i = 0; i < count; i++)
+    if (edges[i])
+      meos_array_destroy(edges[i]);
+  pfree(edges);
+  return;
+}
+
+/**
  * @brief Build the containment hierarchy of closed boundary rings
  * @details For every ring, the immediate containing ring is identified
  * using the containment relation between rings. No ring orientation or
@@ -4736,6 +4757,9 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
   if (count == 0)
     return true;
   BufferRingInfo *info = palloc0(sizeof(BufferRingInfo) * count);
+  /* The edges of the area each ring bounds, read once for its interior point
+   * and for the points of the other rings located against it */
+  MeosArray **edges = palloc0(sizeof(MeosArray *) * count);
 
   /* Initialize the ring information and compute one representative
    * point strictly inside every ring */
@@ -4746,6 +4770,7 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
       (BufferRingInfo *) meos_array_get_intl(rings, i);
     if (! ring_info || ! ring_info->ring || ! ring_info->pieces)
     {
+      buffer_ring_edges_free(edges, kept);
       buffer_ring_infos_free(info, kept);
       return false;
     }
@@ -4759,9 +4784,14 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
      * Such a ring contributes no surface and no hole, so it is dropped and
      * the rest of the classification stands. Refusing it instead loses the
      * whole buffer over a ring that bounds nothing */
-    if (! buffer_ring_representative_point(info[kept].ring, srid,
-        &info[kept].x, &info[kept].y))
+    edges[kept] = buffer_ring_edges(info[kept].ring, srid);
+    if (! buffer_ring_find_interior_point_edges(edges[kept], &info[kept].x,
+        &info[kept].y))
+    {
+      meos_array_destroy(edges[kept]);
+      edges[kept] = NULL;
       continue;
+    }
     /* The ring and its pieces are held by the classification from here, and
      * the chain they are taken from gives them up: one owner releases them */
     ring_info->ring = NULL;
@@ -4771,7 +4801,7 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
   count = kept;
   if (count == 0)
   {
-    pfree(info);
+    pfree(edges); pfree(info);
     return true;
   }
 
@@ -4785,11 +4815,9 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
     /* Ring i is asked about the point of every other ring, so the area it
      * bounds is read into one locator for all of them rather than extracted
      * again for each */
-    LWGEOM *polygon = buffer_ring_polygon(&info[i], srid);
-    if (! polygon)
-      continue;
     BufferLocator loc;
-    buffer_locator_make(&loc, polygon, (int) count - 1);
+    buffer_locator_make_edges(&loc, lwcompound_as_lwgeom(info[i].ring),
+      edges[i], (int) count - 1);
     for (uint32_t j = 0; j < count; j++)
     {
       if (i == j)
@@ -4797,8 +4825,8 @@ buffer_classify_rings(MeosArray *rings, int32_t srid,
       contains[i * count + j] = buffer_ring_contains_ring(&loc, &info[j]);
     }
     buffer_locator_free(&loc);
-    lwgeom_free(polygon);
   }
+  buffer_ring_edges_free(edges, count);
 
   /* Determine the immediate parent.
    * Candidate j contains ring i. It is the immediate parent if there
