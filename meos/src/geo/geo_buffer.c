@@ -51,6 +51,7 @@
 #include "geo/geo_poly_clip.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Data structures
@@ -7371,6 +7372,9 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
   MeosArray *intersections = meos_array_create(sizeof(POINT2D));
   bool ok = true;
   for (uint32_t i = 0; i < count && ok; i++)
+  {
+    /* The union of many surfaces is long, so it can be stopped between two */
+    meos_check_for_interrupts();
     for (uint32_t j = i + 1; j < count && ok; j++)
     {
       if (buffer_extents_apart(&extents[i], &extents[j]) ||
@@ -7379,6 +7383,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
       ok = buffer_collect_boundary_intersections(surfaces[i], surfaces[j],
         intersections);
     }
+  }
   pfree(extents);
   if (! ok)
   {
@@ -7391,6 +7396,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
   int npieces = 0;
   for (uint32_t i = 0; i < count && ok; i++)
   {
+    meos_check_for_interrupts();
     MeosArray *raw = meos_array_create(sizeof(Edge));
     split[i] = meos_array_create(sizeof(Edge));
     ok = buffer_pieces_from_geometry(surfaces[i], raw);
@@ -7413,6 +7419,7 @@ buffer_union_arrangement(LWGEOM **surfaces, uint32_t count, int32_t srid)
       buffer_locator_make(&locs[i], surfaces[i], npieces);
   for (uint32_t i = 0; i < count && ok; i++)
   {
+    meos_check_for_interrupts();
     int npiece = meos_array_count(split[i]);
     for (int k = 0; k < npiece && ok; k++)
     {
