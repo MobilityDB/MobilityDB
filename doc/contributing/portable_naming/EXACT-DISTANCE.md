@@ -53,9 +53,10 @@ Measured on MobilityDB master `bc5713429c` and on the head `1360d90ab5` of #2992
 | `point_distance_offset_exact` (`dist_rest_point`) | the double nearest the distance less a radius | yes, #2992 |
 | `tdistance_tgeo_tgeo`, `tdistance_tgeo_geo` at their instants, the synchronous `nad`/`nai`/`shortestline` of two temporal points | the point entries | yes at the instants, #2992 |
 | the turning points and the minimum between two instants of a moving pair (`tpointsegm_distance_turnpt`, `nad_tcont_tcont_sync`) | a constructed instant and the distance there | not judged |
-| `point_within_distance_sign` and its exact fallback (`edwithin`, `tdwithin` of points) | the sign of the squared distance less the square of the bound | where no product of the coordinates overflows or underflows |
-| the swept-disc engine against a segment or an arc (`dist_segm_edge_mindist`, `dist_segm_arc_mindist`, `dist_minfun`) | a constructed foot and a rounded quadratic | no |
-| the prunes of the swept-disc engine (`dist_seg_seg_dist2`, `box2d_distance_sqr` against `dist_unit_thr2`) | a rounded lower bound compared with the square of the running minimum | not measured: a bound rounded above the exact one may drop the nearest edge |
+| `point_within_distance_sign` and its exact fallback (`edwithin`, `tdwithin` of points) | the sign of the squared distance less the square of the bound | where no product of the coordinates overflows or underflows; at every scale with ED2 |
+| `point_segment_distance_offset_exact` (`dist_rest_segment`) | the double nearest the distance of a point to a segment less a radius, 2D | yes with ED4, where the scaled values are within a factor 2^240 of the largest difference |
+| the swept-disc engine against a segment or an arc (`dist_segm_edge_mindist`, `dist_segm_arc_mindist`, `dist_minfun`) | a constructed foot and a rounded quadratic | no for a moving centre; a centre at rest reads `dist_rest_segment` with ED4 |
+| the prunes of the swept-disc engine (`dist_seg_seg_dist2`, `box2d_distance_sqr` against `dist_unit_thr2`) | a rounded lower bound compared with the square of the running minimum | no: over a census of 6060 rows (60 AIS trips, and lines, multipoints and point pairs whose candidates differ by 0 to 3 units in the last place), 96 answers move when the prunes are removed, all of them parallel edges a few units in the last place apart |
 | `geo_distance_fn` for every other pair of geometries (liblwgeom) | liblwgeom's walk | no |
 | the geodetic distances (`datum_geog_distance`) | the spheroid by iteration | the exact answer needs its own definition |
 
@@ -64,11 +65,43 @@ Measured on MobilityDB master `bc5713429c` and on the head `1360d90ab5` of #2992
 | PR | Topic | What it changes | Branch, state |
 |---|---|---|---|
 | ED1 | The distance of a point pair is the nearest double | `point_distance_exact` and `point_distance_offset_exact` in `geo_funcs.c`; the point entries; the five point-pair sites of `tgeo_distance.c`; `dist_rest_point`, `dist_unit_thr2` and the shortest-line collapse of the swept-disc engine; the witness `meos/test/distance_point_test.c` | `fix/temporal-distance-of-a-point-pair-reads-the-point-kernel`, MobilityDB #2992, open |
-| ED2 | `dwithin` of a point pair over the whole domain | the exact fallback of `point_within_distance_sign` reads the scaled differences of `point_distance_square_expansion` with the bound as the one term, so coordinates near 1e155 decide as ordinary ones; the `dwithin` comments that call the sign a closed form | after ED1 |
-| ED3 | The prunes of the swept-disc engine | first a census: the engine with and without each prune over the corpora, every answer that moves recorded; then a lower bound that is never above the exact one, or a prune that asks a sign | after ED1 |
-| ED4 | A point against a segment, and a segment against a segment | the foot of the perpendicular is a rational parameter on the input segment, the squared distance to it a rational, so the distance is the nearest double by the same midpoint comparison; `dist_segm_edge_mindist` and the shortest line read it | after ED3 |
+| ED2 | `dwithin` of a point pair over the whole domain | the exact fallback of `point_within_distance_sign` reads the scaled differences of `point_distance_square_expansion` with the bound as the one term, so coordinates near 1e155 decide as ordinary ones; the `dwithin` comments that call the sign a closed form | `fix/point-dwithin-reads-the-scaled-expansion`, after ED1 |
+| ED4 | A point or a circular buffer at rest against a segment | `point_segment_distance_offset_exact`: the foot of the perpendicular is a rational parameter on the input segment, the squared distance to it a rational, so the distance is the nearest double by the same midpoint comparison; `dist_segm_edge_mindist`, `dist_segm_edge_dt` and the shortest line read it | `fix/point-segment-distance-is-the-nearest-double`, after ED2 |
+| ED3 | The prunes of the swept-disc engine | the census of the table above compares the engine with and without each prune; its 96 moved answers rank edges whose distances are rounded, so the sound prune reads the ED4 distances: a lower bound that exceeds the running minimum by more than the rounding of both, or a prune that asks a sign, after which the census answers the same with and without the prunes | after ED4 |
 | ED5 | Two moving points between their instants | the squared distance of two linearly moving points is a quadratic in time with rational coefficients, its minimum at a rational instant and of a rational value, so the nearest approach is the nearest double of its root and the instant is decided on the rational; a judge by exact rational interpolation, as the one for `tdwithin` | after ED1 |
-| ED6 | The cost | a filter for `point_distance_offset_exact` as `point_distance_exact` has; the circular buffer benchmark run after the correctness of ED1 to ED5, never as a way of deciding it | after ED5 |
+| ED7 | Every finite double | an exact integer stage behind the expansion kernels: a double is an integer times a power of two, so the squares and products of the kernels are exact in a fixed width of about 4200 bits, with no new dependency, and the domains of 2^480 and 2^240 become every finite input; reached only where the expansion cannot decide | after ED4 |
+| ED8 | A segment against a segment, and segments in 3D | two segments meet or not by exact orientations, and where they do not their distance is the least of the four distances of an end to the other segment, each the ED4 kernel; the same kernel in 3D, whose cross product has three components | after ED7 |
+| ED9 | The points and instants the engine constructs | the end of a shortest line is a rational point, each coordinate rounded to its nearest double from the exact quotient, so the judge's band becomes the nearest double; the instant at which a `dwithin` begins or ends is a root of a quadratic with rational coefficients, decided by exact signs as ED4 decides a distance, then converted by MEOS's dating convention | after ED5 |
+| ED6 | The cost | a filter for `point_distance_offset_exact` and `point_segment_distance_offset_exact` as `point_distance_exact` has; the circular buffer benchmark run after the correctness of ED1 to ED5 and ED7 to ED9, never as a way of deciding it | last |
 
 The geodetic distances are not in the plan: an exact answer on the spheroid needs a definition
 first, which the [geodetic boxes](GEODETIC-BOXES.md) share.
+
+## What other libraries reach, and what it leaves
+
+The exact answer is reached the way the exact geometry libraries reach it: a floating-point filter
+that decides most rows, and an exact stage for the rest.
+
+| Library | What it answers exactly | What it gives this plan |
+|---|---|---|
+| CGAL, exact kernel with lazy evaluation | predicates and constructions on rationals, after an interval filter | the oracle, and the shape of every kernel; its exact stage, a rational of any size, has no domain, which ED7 reaches with integers |
+| Shewchuk's adaptive predicates, Geogram's predicate construction kit | signs of polynomials of the coordinates by expansions of doubles | the arithmetic of ED1 to ED4; an expansion fails only where a product underflows, the limit ED7 removes |
+| Indirect predicates (Attene) | predicates on a point given by its construction, such as a foot or an intersection, without rounding it | the design for ED3, ED5 and ED8: distances to a constructed point are compared on its construction |
+| CORE, LEDA's `real` | the sign of an expression with square roots, by separation bounds | needed only to compare or round a sum of distances, such as a length; no single distance needs it |
+| S2 Geometry | the sign of a comparison of distances on the sphere, in double, then long double, then an exact float | the shape of an exact `dwithin` sign on the sphere, should the geodetic boxes define one |
+| GeographicLib (Karney) | the spheroid geodesic to about 15 nanometres, not correctly rounded | the practical bound for a distance on the spheroid |
+| MPFR, CORE-MATH | correctly rounded transcendental functions, by raising the precision until the rounding is decided | the only route to a correctly rounded geodetic distance, and the controls of the judges |
+
+GEOS, JTS and Boost.Geometry compute distances in floating point, and none of them answers the
+nearest double.
+
+What this leaves outside the exact answer:
+
+- a distance on the spheroid, whose value is transcendental in the coordinates: GeographicLib's
+  accuracy is what the plan states for it, not the nearest double;
+- the instant MEOS returns: a timestamp is a whole number of microseconds, and a crossing is dated
+  by truncation, a convention of the tree that ED9 keeps;
+- a sum of distances, such as the length of a trajectory, which rounds once per term.
+
+Every other limit of ED1 to ED5 is a property of the kernels, not of the question: the scaled
+domains (ED7), the segment pairs and 3D (ED8), and the constructed points and instants (ED9).
