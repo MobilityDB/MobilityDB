@@ -2617,13 +2617,17 @@ buffer_node_index_make(BufferNodeIndex *ix, const MeosArray *pieces)
  * @brief Build the node index of the intersections a boundary is split at
  * @param[out] ix Index to build
  * @param[in] points Intersection points, whose own order the index reports back
+ * @param[in] scale Largest coordinate of a point the index is asked at, zero
+ * where it is only read over boxes. The cell is sized from it as well as from
+ * the points held, as #buffer_node_index_make sizes it from every end it
+ * holds, so that no tolerance a point asked reads is wider than a cell either
  */
 static void
-buffer_node_index_nodes(BufferNodeIndex *ix, const MeosArray *points)
+buffer_node_index_nodes(BufferNodeIndex *ix, const MeosArray *points,
+  double scale)
 {
   assert(ix); assert(points);
   uint32_t n = points->count;
-  double scale = 0.0;
   for (uint32_t i = 0; i < n; i++)
   {
     const POINT2D *p = (const POINT2D *) meos_array_get_intl(points, i);
@@ -3300,7 +3304,7 @@ buffer_split_pieces(const MeosArray *pieces, const MeosArray *intersections,
   /* Every piece is split at the same intersections, so they are indexed once
    * for all of them rather than scanned once per piece */
   BufferNodeIndex ix;
-  buffer_node_index_nodes(&ix, intersections);
+  buffer_node_index_nodes(&ix, intersections, 0.0);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
     const Edge *piece = (const Edge *) meos_array_get_intl(pieces, i);
@@ -3828,6 +3832,90 @@ buffer_add_selected_piece(MeosArray *result, const Edge *piece,
   meos_array_add(result, &kept);
 }
 
+/**
+ * @brief Return true if a point is one of the nodes the boundaries were cut
+ * at, read out of a node index of them
+ * @details #buffer_point_is_node, asking only the nodes the index gathers,
+ * which are every node the test can accept where the index was sized from
+ * the point as well (#buffer_node_index_nodes)
+ * @param[in,out] ix Node index of @p nodes
+ * @param[in] nodes Nodes, as #POINT2D
+ * @param[in] point Point
+ */
+static bool
+buffer_node_index_holds(BufferNodeIndex *ix, const MeosArray *nodes,
+  POINT2D point)
+{
+  assert(ix); assert(nodes);
+  uint32_t ncand;
+  const uint32_t *cand = buffer_node_index_at(ix, point, &ncand);
+  for (uint32_t c = 0; c < ncand; c++)
+  {
+    if (buffer_points_equal(
+          *(const POINT2D *) meos_array_get_intl(nodes, (int) cand[c]), point))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return the largest coordinate the ends of some pieces carry
+ */
+static double
+buffer_pieces_scale(const MeosArray *pieces)
+{
+  assert(pieces);
+  double scale = 0.0;
+  for (uint32_t i = 0; i < pieces->count; i++)
+  {
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, (int) i);
+    scale = Max(scale, Max(Max(fabs(piece->x1), fabs(piece->y1)),
+      Max(fabs(piece->x2), fabs(piece->y2))));
+  }
+  return scale;
+}
+
+/**
+ * @brief Classify the pieces of one boundary with respect to the other
+ * geometry, in their order
+ * @details A piece does not cross the other boundary between its ends, since
+ * the boundaries were cut at every point they meet, so two pieces meeting at
+ * a point that is not a node, where the other boundary does not pass, stand
+ * on the same side of it: the first one's interior or exterior is the
+ * second's. A piece starting where the one before it ends takes its location
+ * there, and every other piece is located by #buffer_classify_piece, as is
+ * every piece where @p ix is NULL. A piece lying on the other boundary ends at
+ * nodes at both ends, and so does not take the location of the one before it
+ * @param[in] pieces Pieces of the boundary
+ * @param[in] other Locator of the other geometry
+ * @param[in] nodes Nodes the boundaries were cut at, as #POINT2D
+ * @param[in,out] ix Node index of @p nodes, sized from the pieces as well, or
+ * NULL
+ * @param[out] locations Location of each piece
+ */
+static void
+buffer_classify_pieces(const MeosArray *pieces, BufferLocator *other,
+  const MeosArray *nodes, BufferNodeIndex *ix, EdgeLocation *locations)
+{
+  assert(pieces); assert(other); assert(nodes); assert(locations);
+  const Edge *prev = NULL;
+  for (uint32_t i = 0; i < pieces->count; i++)
+  {
+    const Edge *piece = (const Edge *) meos_array_get_intl(pieces, (int) i);
+    POINT2D mid;
+    if (ix && prev && prev->x2 == piece->x1 && prev->y2 == piece->y1 &&
+        (locations[i - 1] == BUFFER_PIECE_INTERIOR ||
+         locations[i - 1] == BUFFER_PIECE_EXTERIOR) &&
+        buffer_piece_midpoint(piece, &mid) &&
+        ! buffer_node_index_holds(ix, nodes, buffer_piece_start(piece)))
+      locations[i] = locations[i - 1];
+    else
+      locations[i] = buffer_classify_piece(piece, other, nodes);
+    prev = piece;
+  }
+  return;
+}
+
 static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   const MeosArray *pieces_b, BufferLocator *loc_a, const MeosArray *nodes,
@@ -3847,11 +3935,24 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     BUFFER_PIECE_INTERIOR : BUFFER_PIECE_EXTERIOR;
   EdgeLocation keep_b = (oper == CL_UNION) ?
     BUFFER_PIECE_EXTERIOR : BUFFER_PIECE_INTERIOR;
+  /* The pieces are classified in their order, a piece taking the location of
+   * the one before it where the two meet off the nodes, which is told from a
+   * node index of the nodes; a few pieces are each located, which costs less
+   * than indexing the nodes */
+  BufferNodeIndex ix;
+  bool chained = pieces_a->count + pieces_b->count >= BUFFER_FRAME_MIN_PIECES;
+  if (chained)
+    buffer_node_index_nodes(&ix, nodes, Max(buffer_pieces_scale(pieces_a),
+      buffer_pieces_scale(pieces_b)));
+  EdgeLocation *locations = palloc(sizeof(EdgeLocation) *
+    Max(Max(pieces_a->count, pieces_b->count), 1u));
+  buffer_classify_pieces(pieces_a, loc_b, nodes, chained ? &ix : NULL,
+    locations);
   /* Pieces belonging to A */
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
     Edge *piece = (Edge *) meos_array_get_intl(pieces_a, i);
-    EdgeLocation location = buffer_classify_piece(piece, loc_b, nodes);
+    EdgeLocation location = locations[i];
     if (location == keep_a)
       buffer_add_selected_piece(result, piece, loc_a, false, deferred,
         rings_a, ring_a ? ring_a[i] : -1);
@@ -3865,10 +3966,12 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     }
   }
   /* Pieces belonging to B */
+  buffer_classify_pieces(pieces_b, loc_a, nodes, chained ? &ix : NULL,
+    locations);
   for (uint32_t i = 0; i < pieces_b->count; i++)
   {
     Edge *piece = (Edge *) meos_array_get_intl(pieces_b, i);
-    EdgeLocation location = buffer_classify_piece(piece, loc_a, nodes);
+    EdgeLocation location = locations[i];
     if (location == keep_b)
       buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE,
         deferred, rings_b, ring_b ? ring_b[i] : -1);
@@ -3890,6 +3993,9 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
         meos_array_add(boundary, piece);
     }
   }
+  pfree(locations);
+  if (chained)
+    buffer_node_index_free(&ix);
   meos_array_destroy(bnd_a);
 }
 
