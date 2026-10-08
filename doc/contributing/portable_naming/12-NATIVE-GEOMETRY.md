@@ -198,11 +198,19 @@ Spanish:
    so a JVM binding loading an installed MEOS finds it under any prefix, as MobilityDuck finds the
    copy it embeds; Spark, Flink and DuckDB then advance their pin.
 10. **The clustering** (decision 2).
+11. **The measures read in place**: `area`, `length` and `perimeter` of a geometry holding no
+    curve read on its serialized form, a polygon directly and any other geometry by a walk of the
+    form, each ring by the terms of `ptarray_signed_area` and `ptarray_length_2d` in their order.
+12. **The point location read in place**: a point against a polygon or a multipolygon located on
+    the serialized rings, for `contains`, `covers`, `intersects` and `touches`.
+13. **The point distance read in place**: the distance of a point to a line or a polygon read on
+    the serialized form of the line or the polygon.
 
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 10 are on the branch, rebased on master `d76ba94472`, not pushed. Commit 1:
+**State.** Commits 1 to 13 are on the branch, head `493a6a512a` on master `e30ef41657`, with the
+strict-ci, cppcheck, smoke, Windows, CGAL oracle and GEOS speed receipts of the head. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -246,10 +254,16 @@ item 9 states them, each writer answering as its PostGIS function on fifteen geo
 geographies, `transform` byte for byte as `ST_Transform` on eight geometries and a geography, and
 `meos/test/geo_transform_test.c` stating the refusals of a geography into a projected system and
 of a byte order no decoder reads.
-Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer.
 Commit 10 (`09d6828462`): `clusterKMeans`, `clusterDBSCAN`, `clusterIntersecting` and
 `clusterWithin` over arrays of geometries as decision 2 states them, answering as
 `ST_ClusterKMeans` and `ST_ClusterDBSCAN` over the rows in the order of the array (an empty
 geometry in the cluster -1 of k-means, a noise point NULL in DBSCAN) and as the aggregates
-`ST_ClusterIntersecting` and `ST_ClusterWithin`. The ten commits of the plan are on the branch.
+`ST_ClusterIntersecting` and `ST_ClusterWithin`.
+Commits 11 to 13: the measures, the point location and the point distance read on the serialized
+form, bit for bit `ST_Area`, `ST_Perimeter`, `ST_Length` (`ST_3DLength` with Z), `ST_Contains`,
+`ST_Covers`, `ST_Intersects`, `ST_Touches` and `ST_Distance`. The CGAL judge `cgal_f12_judge`
+agrees with every answer over the AIS and geo fixtures: 270239 point and polygon pairs located
+exactly, 280091 point and line or polygon distances and 9695 areas, lengths and perimeters within
+the error bound of the PostGIS formula. Against GEOS 3.14.1 called directly, under callgrind, the
+native answer runs 0.51 to 0.56 of the instructions of GEOS for the point location, 0.54 for the
+distance, 0.97 for the area, 0.80 for the perimeter and 0.33 for the length.
