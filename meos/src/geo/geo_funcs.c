@@ -4498,23 +4498,218 @@ relate_point_in_area(double x, double y, Edge **edges, int nedges,
  * cheaper of the two keeps it */
 
 /**
- * @brief Return an index over the bounding boxes of an edge array
- * @details The boxes carry no SRID of their own: each is compared against
- * another built the same way, so the value only has to be the same everywhere
+ * @brief An edge read by an index, with the side of its box it is ordered by
  */
-static RTree *
+typedef struct
+{
+  double key;       /**< Bottom or left of the box of the edge */
+  uint32_t id;      /**< Position of the edge in its array */
+} EdgeKey;
+
+/**
+ * @brief Order the edges of an index by the side of their box, then by their
+ * position, which makes the order total
+ */
+static inline int
+edge_key_cmp(const EdgeKey *a, const EdgeKey *b)
+{
+  if (a->key < b->key)
+    return -1;
+  if (a->key > b->key)
+    return 1;
+  return (a->id < b->id) ? -1 : (a->id > b->id) ? 1 : 0;
+}
+
+/* Sort the edges of an index with their order written into the sort, as
+ * #buffer_sweep_edge_sort sorts the edges of a sweep */
+#define ST_SORT edge_key_sort
+#define ST_ELEMENT_TYPE EdgeKey
+#define ST_COMPARE(a, b) edge_key_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
+
+/**
+ * @brief Order the edges of an index along one axis
+ * @details An edge whose extent along the axis is more than eight times that
+ * of three edges in four is kept apart, in @p apart, and the rest stand in
+ * @p ids by the low side of their box, with that side in @p lo and the
+ * greatest extent among them in @p reach. Eight times the third quartile
+ * leaves the ordinary edges of a ring together and sets apart only the few a
+ * polygon carries across its whole extent; where three edges in four have no
+ * extent at all, as the horizontal or vertical edges of a grid, the extent of
+ * the whole array over the square root of their number takes its place
+ */
+static void
+edge_index_axis(Edge **edges, int nedges, bool alongy, uint32_t **ids,
+  double **lo, int *nids, double *reach, uint32_t **apart, int *napart)
+{
+  double *ext = palloc(sizeof(double) * nedges);
+  double amin = DBL_MAX, amax = -DBL_MAX;
+  for (int i = 0; i < nedges; i++)
+  {
+    double l = alongy ? edges[i]->ymin : edges[i]->xmin;
+    double h = alongy ? edges[i]->ymax : edges[i]->xmax;
+    ext[i] = h - l;
+    amin = Min(amin, l);
+    amax = Max(amax, h);
+  }
+  EdgeKey *keys = palloc(sizeof(EdgeKey) * nedges);
+  for (int i = 0; i < nedges; i++)
+  {
+    keys[i].key = ext[i];
+    keys[i].id = (uint32_t) i;
+  }
+  edge_key_sort(keys, (size_t) nedges);
+  double cut = 8.0 * keys[(3 * (nedges - 1)) / 4].key;
+  if (cut <= 0.0)
+    cut = (amax - amin) / sqrt((double) nedges);
+  int n = 0, na = 0;
+  *reach = 0.0;
+  for (int i = 0; i < nedges; i++)
+  {
+    if (ext[i] > cut)
+    {
+      na++;
+      continue;
+    }
+    keys[n].key = alongy ? edges[i]->ymin : edges[i]->xmin;
+    keys[n].id = (uint32_t) i;
+    n++;
+    *reach = Max(*reach, ext[i]);
+  }
+  edge_key_sort(keys, (size_t) n);
+  *ids = palloc(sizeof(uint32_t) * Max(n, 1));
+  *lo = palloc(sizeof(double) * Max(n, 1));
+  for (int k = 0; k < n; k++)
+  {
+    (*ids)[k] = keys[k].id;
+    (*lo)[k] = keys[k].key;
+  }
+  *nids = n;
+  *apart = palloc(sizeof(uint32_t) * Max(na, 1));
+  *napart = 0;
+  for (int i = 0; i < nedges; i++)
+    if (ext[i] > cut)
+      (*apart)[(*napart)++] = (uint32_t) i;
+  pfree(keys); pfree(ext);
+  return;
+}
+
+/**
+ * @brief Return an index over the boxes of an edge array
+ * @details See #EdgeIndex
+ * @param[in] edges,nedges The edges, which the index names by position
+ */
+EdgeIndex *
+edge_index_make(Edge **edges, int nedges)
+{
+  assert(edges); assert(nedges > 0);
+  EdgeIndex *index = palloc(sizeof(EdgeIndex));
+  index->nedges = nedges;
+  edge_index_axis(edges, nedges, true, &index->byy, &index->ylo,
+    &index->nbyy, &index->tallest, &index->tall, &index->ntall);
+  edge_index_axis(edges, nedges, false, &index->byx, &index->xlo,
+    &index->nbyx, &index->widest, &index->wide, &index->nwide);
+  return index;
+}
+
+/**
+ * @brief Release an index over the boxes of an edge array
+ */
+void
+edge_index_free(EdgeIndex *index)
+{
+  if (! index)
+    return;
+  pfree(index->byy); pfree(index->ylo); pfree(index->tall);
+  pfree(index->byx); pfree(index->xlo); pfree(index->wide);
+  pfree(index);
+  return;
+}
+
+/**
+ * @brief Return the first place in an ordered array of sides holding a side
+ * no lower than a value
+ */
+static int
+edge_index_first(const double *lo, int n, double value)
+{
+  int a = 0, b = n;
+  while (a < b)
+  {
+    int m = a + (b - a) / 2;
+    if (lo[m] < value)
+      a = m + 1;
+    else
+      b = m;
+  }
+  return a;
+}
+
+/**
+ * @brief Collect into an array the edges whose box meets a box, closed on both
+ * axes, read out of an index over them
+ * @details The edges answered are those an R-tree of the same boxes answers
+ * for the same query, each once, in the order the index reads them
+ * @param[in] index Index over @p edges
+ * @param[in] edges The edges the index was built over
+ * @param[in] xmin,xmax,ymin,ymax Box
+ * @param[out] result Array the positions of the edges are collected into, as
+ * #index_result_create makes one, emptied first
+ * @return The number of edges collected
+ */
+int
+edge_index_query(const EdgeIndex *index, Edge **edges, double xmin,
+  double xmax, double ymin, double ymax, MeosArray *result)
+{
+  assert(index); assert(edges); assert(result);
+  meos_array_reset(result);
+  /* A box wider than it is tall leaves few edges whose bottom lies within
+   * its height and many whose left lies within its width, and the other way
+   * round */
+  bool alongy = (xmax - xmin) >= (ymax - ymin);
+  const uint32_t *ids = alongy ? index->byy : index->byx;
+  const double *lo = alongy ? index->ylo : index->xlo;
+  int nids = alongy ? index->nbyy : index->nbyx;
+  double reach = alongy ? index->tallest : index->widest;
+  double qlo = alongy ? ymin : xmin, qhi = alongy ? ymax : xmax;
+  /* An edge meeting the box has its low side at most the high side of the
+   * box, and its high side at least the low side of the box, which with no
+   * edge reaching further than @p reach puts its low side at least that far
+   * below the box */
+  for (int k = edge_index_first(lo, nids, qlo - reach);
+       k < nids && lo[k] <= qhi; k++)
+  {
+    const Edge *e = edges[ids[k]];
+    if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
+      continue;
+    int64 id = (int64) ids[k];
+    meos_array_add(result, &id);
+  }
+  const uint32_t *apart = alongy ? index->tall : index->wide;
+  int napart = alongy ? index->ntall : index->nwide;
+  for (int k = 0; k < napart; k++)
+  {
+    const Edge *e = edges[apart[k]];
+    if (e->xmax < xmin || e->xmin > xmax || e->ymax < ymin || e->ymin > ymax)
+      continue;
+    int64 id = (int64) apart[k];
+    meos_array_add(result, &id);
+  }
+  return (int) result->count;
+}
+
+/**
+ * @brief Return an index over the bounding boxes of an edge array
+ * @details See #edge_index_make
+ */
+static EdgeIndex *
 relate_edges_index(Edge **edges, int nedges)
 {
   assert(edges);
-  RTree *rtree = rtree_create_stbox();
-  for (int i = 0; i < nedges; i++)
-  {
-    STBox box;
-    stbox_set(true, false, false, 0, edges[i]->xmin, edges[i]->xmax,
-      edges[i]->ymin, edges[i]->ymax, 0, 0, NULL, &box);
-    rtree_insert(rtree, &box, i);
-  }
-  return rtree;
+  return nedges > 0 ? edge_index_make(edges, nedges) : NULL;
 }
 
 /**
@@ -4588,7 +4783,7 @@ void
 relate_edges_clear(RelateEdges *re)
 {
   if (re->index)
-    rtree_free(re->index);
+    edge_index_free(re->index);
   if (re->results)
     meos_array_destroy(re->results);
   re->index = NULL;
@@ -4609,10 +4804,8 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re,
 {
   if (! re->index)
     return relate_point_on_boundary(x, y, re->edges, re->nedges, vertex);
-  STBox query;
-  stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
-    y + re->tol, 0, 0, NULL, &query);
-  int nc = rtree_search_intl(re->index, INDEX_OVERLAPS, &query, re->results);
+  int nc = edge_index_query(re->index, re->edges, x - re->tol, x + re->tol,
+    y - re->tol, y + re->tol, re->results);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
   {
@@ -4935,7 +5128,7 @@ typedef struct
   MeosArray *own;      /**< Its own edges, ending at the input vertices: the
                             array #arr is cut from for a value
                             #relate_reads_union names, #arr itself otherwise */
-  RTree **index;       /**< Where the index over #arr is kept for the calls
+  EdgeIndex **index;   /**< Where the index over #arr is kept for the calls
                             that follow, NULL for an operand read for one
                             call, which indexes by the size of the pair */
 } RelateOperand;
@@ -7467,15 +7660,13 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   int ncand = other->nedges;
   if (other->index)
   {
-    STBox query;
     double pad = fmax(other->tol, edge->tol);
-    stbox_set(true, false, false, 0, edge->xmin - pad, edge->xmax + pad,
-      edge->ymin - pad, edge->ymax + pad, 0, 0, NULL, &query);
     /* The ids are collected into the array the edges carry for their index,
      * which nothing else reads while this loop runs, rather than into one
      * made and released for every edge */
     candidates = other->results;
-    ncand = rtree_search_intl(other->index, INDEX_OVERLAPS, &query, candidates);
+    ncand = edge_index_query(other->index, other->edges, edge->xmin - pad,
+      edge->xmax + pad, edge->ymin - pad, edge->ymax + pad, candidates);
   }
 
   /* Maximum number of intersections between one edge and one
@@ -7650,11 +7841,9 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
     int ncand = nb;
     if (bre->index)
     {
-      STBox query;
       double pad = fmax(bre->tol, a->tol);
-      stbox_set(true, false, false, 0, a->xmin - pad, a->xmax + pad,
-        a->ymin - pad, a->ymax + pad, 0, 0, NULL, &query);
-      ncand = rtree_search_intl(bre->index, INDEX_OVERLAPS, &query, candidates);
+      ncand = edge_index_query(bre->index, bre->edges, a->xmin - pad,
+        a->xmax + pad, a->ymin - pad, a->ymax + pad, candidates);
     }
     for (int c = 0; c < ncand; c++)
     {
@@ -7947,11 +8136,9 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
      * unlike the point-location queries the tests behind it only ever REFUSE
      * a crossing near a boundary of either edge, so none of them reaches for a
      * point a pad would have to admit */
-    STBox query;
-    stbox_set(true, false, false, 0, ea->xmin, ea->xmax, ea->ymin, ea->ymax,
-      0, 0, NULL, &query);
     MeosArray *candidates = index_result_create();
-    int nc = rtree_search_intl(b->index, INDEX_OVERLAPS, &query, candidates);
+    int nc = edge_index_query(b->index, b->edges, ea->xmin, ea->xmax,
+      ea->ymin, ea->ymax, candidates);
     bool result = false;
     for (int c = 0; c < nc && ! result; c++)
     {
@@ -8038,7 +8225,7 @@ static bool
 relate_edges_init_kept(RelateEdges *re, Edge **edges, int nedges,
   const RelateOperands *ops, const MeosArray *arr, bool index)
 {
-  RTree **kept = NULL;
+  EdgeIndex **kept = NULL;
   if (ops)
     for (int k = 0; k < 2 && ! kept; k++)
       if (ops->op[k].arr == arr)
@@ -8362,11 +8549,8 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
       double best = -1;
       for (int i = 0; i < ncomp; i++)
       {
-        STBox query;
-        stbox_set(true, false, false, 0, x - r, x + r, y - r, y + r, 0, 0,
-          NULL, &query);
-        int nc = rtree_search_intl(comps[i].re.index, INDEX_OVERLAPS, &query,
-          candidates);
+        int nc = edge_index_query(comps[i].re.index, comps[i].re.edges,
+          x - r, x + r, y - r, y + r, candidates);
         for (int c = 0; c < nc; c++)
         {
           int j = (int) INDEX_RESULT_ID_N(candidates, c);
@@ -9014,11 +9198,9 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     int ncand = nall;
     if (re.index)
     {
-      STBox query;
       double pad = fmax(re.tol, e->tol);
-      stbox_set(true, false, false, 0, e->xmin - pad, e->xmax + pad,
-        e->ymin - pad, e->ymax + pad, 0, 0, NULL, &query);
-      ncand = rtree_search_intl(re.index, INDEX_OVERLAPS, &query, candidates);
+      ncand = edge_index_query(re.index, re.edges, e->xmin - pad,
+        e->xmax + pad, e->ymin - pad, e->ymax + pad, candidates);
     }
     for (int c = 0; c < ncand; c++)
     {
@@ -9932,10 +10114,8 @@ static int
 relate_edges_candidates(const RelateEdges *re, double xmin, double xmax,
   double ymin, double ymax, MeosArray *candidates)
 {
-  STBox query;
-  stbox_set(true, false, false, 0, xmin - re->tol, xmax + re->tol,
-    ymin - re->tol, ymax + re->tol, 0, 0, NULL, &query);
-  return rtree_search_intl(re->index, INDEX_OVERLAPS, &query, candidates);
+  return edge_index_query(re->index, re->edges, xmin - re->tol,
+    xmax + re->tol, ymin - re->tol, ymax + re->tol, candidates);
 }
 
 /**
@@ -10452,7 +10632,7 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
 struct RelateCtx
 {
   RelateOperand op;  /**< The geometry and the edges it draws */
-  RTree *index;      /**< Index over the edges #op reads, built by the first
+  EdgeIndex *index;  /**< Index over the edges #op reads, built by the first
                           call that needs it and kept with them */
 };
 
@@ -11002,7 +11182,7 @@ relate_ctx_free(void *ctxv)
   if (! ctx)
     return;
   if (ctx->index)
-    rtree_free(ctx->index);
+    edge_index_free(ctx->index);
   if (ctx->op.own != ctx->op.arr)
     meos_array_destroy(ctx->op.own);
   meos_array_destroy(ctx->op.arr);

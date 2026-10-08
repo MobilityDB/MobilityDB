@@ -132,6 +132,40 @@ typedef struct
   double t1;           /**< Only valid for OVERLAP */
 } IntersectResult;
 
+/**
+ * @brief Index over the boxes of an edge array, answering which edges a box
+ * meets
+ * @details The edges stand in order of the bottom of their box and of its
+ * left, and a box meets an edge where the edge's box overlaps it, closed on
+ * both axes, as an R-tree of the same boxes answers. A query wider than it is
+ * tall reads the edges in order of their bottom from the bottom of the query
+ * less the height of the tallest of them; a taller one reads them in order of
+ * their left. An edge far taller, or far wider, than the rest is kept apart
+ * and read by every query along that axis, so that one long edge does not
+ * widen the reading of all the others
+ */
+typedef struct
+{
+  int nedges;       /**< Number of edges the index holds */
+  uint32_t *byy;    /**< Edges in order of the bottom of their box */
+  double *ylo;      /**< That bottom, in the same order */
+  int nbyy;         /**< Number of edges in @p byy */
+  double tallest;   /**< Greatest height of an edge in @p byy */
+  uint32_t *tall;   /**< Edges too tall for @p byy, read by every query */
+  int ntall;        /**< Number of edges in @p tall */
+  uint32_t *byx;    /**< Edges in order of the left of their box */
+  double *xlo;      /**< That left, in the same order */
+  int nbyx;         /**< Number of edges in @p byx */
+  double widest;    /**< Greatest width of an edge in @p byx */
+  uint32_t *wide;   /**< Edges too wide for @p byx, read by every query */
+  int nwide;        /**< Number of edges in @p wide */
+} EdgeIndex;
+
+extern EdgeIndex *edge_index_make(Edge **edges, int nedges);
+extern void edge_index_free(EdgeIndex *index);
+extern int edge_index_query(const EdgeIndex *index, Edge **edges,
+  double xmin, double xmax, double ymin, double ymax, MeosArray *result);
+
 /*****************************************************************************/
 
 /**
@@ -234,7 +268,7 @@ extern int point_in_polygon_index(double x, double y, Edge **edges,
 extern int point_in_polygon_index_vertex(double x, double y, Edge **edges,
   int nedges, const RTree *rtree, double xmax);
 extern int point_in_polygon_index_into(double x, double y, Edge **edges,
-  int nedges, const RTree *rtree, double xmax, double reach,
+  int nedges, const EdgeIndex *index, double xmax, double reach,
   MeosArray *results, bool vertex);
 /**
  * @brief Return true if a polygon ring turns the same way at every vertex,
@@ -294,7 +328,7 @@ typedef struct
 {
   Edge **edges;   /**< Edges the array holds */
   int nedges;     /**< Number of edges */
-  RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
+  EdgeIndex *index; /**< Index over the edge boxes, NULL below the threshold */
   MeosArray *results; /**< Array a search of the index collects ids into,
                            made and released with the index, NULL without it */
   double xmin;    /**< Least x the edges reach */
