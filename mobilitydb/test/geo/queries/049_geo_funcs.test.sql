@@ -290,6 +290,38 @@ SELECT
   (SELECT count(*) FROM pairs WHERE round(maxDistance(a, b)::numeric, 9) IS DISTINCT FROM round(ST_MaxDistance(a, b)::numeric, 9)) AS maxdistance,
   (SELECT count(*) FROM pairs WHERE round(ST_Length(shortestLine(a, b))::numeric, 9) IS DISTINCT FROM round(ST_Length(ST_ShortestLine(a, b))::numeric, 9)) AS shortestline;
 
+-- The area, the length and the perimeter are read on the serialized form of
+-- every geometry but one holding a curve, and are exactly the PostGIS ones, the
+-- length of a geometry with Z being in 3D and the one of a surface 0; the
+-- geometry of a 3D box is a solid, whose serialized form carries extended flags
+WITH g(geom) AS (VALUES
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))'),
+  (geometry 'MultiPolygon(((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1)),((5 5,6 5,6 6,5 5)))'),
+  (geometry 'GeometryCollection(Point(1 1),Linestring(0 0,1 1),Polygon((0 0,1 0,1 1,0 0)))'),
+  (geometry 'Triangle((0 0,1 0,0 1,0 0))'),
+  (geometry 'TIN(((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,0 1 0,1 1 0,0 0 0)))'),
+  (geometry 'PolyhedralSurface(((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)),((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)))'),
+  (stbox 'STBOX Z((1,2,3),(4,5,6))'::geometry),
+  (geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
+  (geometry 'MultiSurface(CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0)),((5 5,6 5,6 6,5 5)))'),
+  (geometry 'Polygon((0 0,1 0,1 1,0 0),(0 0,0 0,0 0,0 0))'),
+  (geometry 'Polygon M((0 0 1,4 0 2,4 4 3,0 0 4))'),
+  (geometry 'Polygon ZM((0 0 1 2,4 0 2 3,4 4 3 4,0 0 4 5))'),
+  (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'),
+  (geometry 'Linestring Z(0 0 0,3 4 12)'), (geometry 'MultiLinestring((0 0,3 4),(1 1,1 2))'),
+  (geometry 'MultiCurve(CircularString(0 0,1 1,2 0),(2 0,3 0))'))
+SELECT count(*) FILTER (WHERE area(geom) IS DISTINCT FROM ST_Area(geom)) AS area,
+  count(*) FILTER (WHERE perimeter(geom) IS DISTINCT FROM ST_Perimeter(geom)) AS perimeter,
+  count(*) FILTER (WHERE length(geom) IS DISTINCT FROM CASE WHEN ST_Zmflag(geom) IN (2, 3)
+    THEN ST_3DLength(geom) ELSE ST_Length(geom) END) AS length,
+  count(*) FILTER (WHERE area(geom) > 0) AS area_positive,
+  count(*) FILTER (WHERE perimeter(geom) > 0) AS perimeter_positive,
+  count(*) FILTER (WHERE length(geom) > 0) AS length_positive
+FROM g;
+/* A curve polygon is a surface and has no length, as a polygon */
+SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
+  ST_Length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+
 -- The measures above are not all zero: the total of each over the same values
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),

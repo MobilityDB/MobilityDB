@@ -50,6 +50,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
+#include <gserialized2.h>
 #include <lwgeom_log.h>
 #include <intervaltree.h>
 #include <lwgeom_geos.h>
@@ -870,6 +871,371 @@ geo_is_unitary(const GSERIALIZED *gs)
   }
 }
 
+/*****************************************************************************
+ * Measures read on the serialized form
+ *****************************************************************************/
+
+/**
+ * @brief Return the position of the geometry in its serialized form, after
+ * the extended flags and the bounding box the form carries, as
+ * #gserialized2_get_geometry_p reads it
+ * @details The extended flags state a solid polyhedral surface, so the macro
+ * #GS_POINT_PTR, which reads a point, does not account for them
+ */
+static inline const uint8_t *
+gs_geometry_ptr(const GSERIALIZED *gs)
+{
+  /* The offset is set by the five low flags (Z, M, bounding box, geodetic,
+   * extended), so it is read from a table of their 32 combinations */
+#define GS_GEOM_OFFSET(f) ((G2FLAGS_GET_EXTENDED(f) ? 8 : 0) + \
+  (G2FLAGS_GET_BBOX(f) ? 2 * G2FLAGS_NDIMS_BOX(f) * sizeof(float) : 0))
+#define GS_GEOM_OFFSET4(f) GS_GEOM_OFFSET(f), GS_GEOM_OFFSET(f + 1), \
+  GS_GEOM_OFFSET(f + 2), GS_GEOM_OFFSET(f + 3)
+  static const uint8_t offsets[32] = {
+    GS_GEOM_OFFSET4(0), GS_GEOM_OFFSET4(4), GS_GEOM_OFFSET4(8),
+    GS_GEOM_OFFSET4(12), GS_GEOM_OFFSET4(16), GS_GEOM_OFFSET4(20),
+    GS_GEOM_OFFSET4(24), GS_GEOM_OFFSET4(28)
+  };
+#undef GS_GEOM_OFFSET4
+#undef GS_GEOM_OFFSET
+  return (const uint8_t *) gs->data + offsets[gs->gflags & 0x1f];
+}
+
+/**
+ * @brief The 2D measures #geo_walk_measure reads on a serialized geometry
+ */
+typedef enum
+{
+  WALK_AREA,
+  WALK_LENGTH,
+  WALK_PERIMETER,
+} WalkMeasure;
+
+/**
+ * @brief The outcome of #geo_walk_measure
+ */
+typedef enum
+{
+  WALK_DONE,   /**< The measure is read on the serialized form */
+  WALK_CURVE,  /**< The geometry holds a curve, measured deserialized */
+  WALK_ERROR,  /**< The serialized form holds no geometry type */
+} WalkStatus;
+
+/**
+ * @brief Return the signed area of a ring of serialized coordinates
+ * @details Mirrors #ptarray_signed_area term by term, in the same order, on
+ * the coordinates read in place rather than through a point array
+ * @param[in] c Coordinates of the ring
+ * @param[in] npoints Number of points of the ring
+ * @param[in] ndims Number of coordinates of a point
+ */
+static pg_attribute_always_inline double
+ring_signed_area(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 3)
+    return 0.0;
+  /* A term reads three consecutive points P1, P2, P3 as
+   * (P2.x - x0) * (P1.y - P3.y). The loop adds two terms per step, in their
+   * order, carrying over the coordinates of P1 and P2 the next step reads */
+  double sum = 0.0;
+  double x0 = c[0];
+  double y_p1 = c[1], x_p2 = c[ndims], y_p2 = c[ndims + 1];
+  const double *end = c + (size_t) npoints * ndims;
+  const double *p3 = c + 2 * ndims;
+  for (; p3 + ndims < end; p3 += 2 * ndims)
+  {
+    sum += (x_p2 - x0) * (y_p1 - p3[1]);
+    sum += (p3[0] - x0) * (y_p2 - p3[ndims + 1]);
+    y_p1 = p3[1];
+    x_p2 = p3[ndims];
+    y_p2 = p3[ndims + 1];
+  }
+  if (p3 < end)
+    sum += (x_p2 - x0) * (y_p1 - p3[1]);
+  return sum / 2.0;
+}
+
+/**
+ * @brief Return the 2D length of a ring or a line of serialized coordinates
+ * @details Mirrors #ptarray_length_2d term by term, in the same order, on the
+ * coordinates read in place rather than through a point array
+ * @param[in] c Coordinates of the ring or the line
+ * @param[in] npoints Number of points
+ * @param[in] ndims Number of coordinates of a point
+ */
+static pg_attribute_always_inline double
+ring_length_2d(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 2)
+    return 0.0;
+  double dist = 0.0;
+  const double *end = c + (size_t) npoints * ndims;
+  for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
+    dist += sqrt(((frm[0] - to[0]) * (frm[0] - to[0])) +
+                 ((frm[1] - to[1]) * (frm[1] - to[1])));
+  return dist;
+}
+
+/**
+ * @brief Read the measure of the polygon serialized at a position, as
+ * #lwpoly_area and #lwpoly_perimeter_2d measure it, without deserializing it
+ * @details Each ring is read on the serialized coordinates by
+ * #ring_signed_area and #ring_length_2d, the terms of the PostGIS functions in
+ * their order. A polygon has no length.
+ * @param[in] p Position of the polygon in the serialized form
+ * @param[in] ndims Number of coordinates of a point
+ * @param[in] measure Measure
+ * @param[out] size Number of bytes the polygon takes
+ */
+static pg_attribute_always_inline double
+poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
+  size_t *size)
+{
+  uint32_t num;
+  memcpy(&num, p + 4, 4);
+  /* The numbers of points of the rings, padded to a multiple of 8 bytes,
+   * precede the coordinates of the rings */
+  const uint8_t *counts = p + 8;
+  /* The serialized form stores the coordinates as doubles aligned on 8 bytes,
+   * as the point arrays of PostGIS read them */
+  const void *coords = counts + 4 * num + ((num % 2) ? 4 : 0);
+  const double *pts = coords;
+  double value = 0.0;
+  for (uint32_t i = 0; i < num; i++)
+  {
+    uint32_t npoints;
+    memcpy(&npoints, counts + 4 * i, 4);
+    if (measure == WALK_PERIMETER)
+      value += ring_length_2d(pts, npoints, ndims);
+    else if (measure == WALK_AREA && npoints >= 3)
+    {
+      /* The area as #lwpoly_area computes it, the outer ring positive and
+       * the inner ones negative */
+      double ringarea = fabs(ring_signed_area(pts, npoints, ndims));
+      if (i == 0)
+        value += ringarea;
+      else
+        value -= ringarea;
+    }
+    pts += npoints * ndims;
+  }
+  *size = (size_t) ((const uint8_t *) pts - p);
+  return value;
+}
+
+/**
+ * @brief Read the measure of the geometry serialized at a position, as
+ * #lwgeom_area, #lwgeom_length and #lwgeom_perimeter_2d measure it, without
+ * deserializing it
+ * @details Each ring is read as a point array referencing the serialized
+ * coordinates, so the measure is the one the PostGIS functions compute over
+ * the same coordinates in the same order, and a polygon is measured without
+ * allocating, and thus freeing, the rings it holds
+ * @param[in] p Position of the geometry in the serialized form
+ * @param[in] flags Flags of the point arrays
+ * @param[in] measure Measure
+ * @param[out] result Measure of the geometry
+ * @param[out] size Number of bytes the geometry takes
+ * @return #WALK_CURVE for a geometry holding a curve, which is measured on its
+ * deserialized form, and #WALK_ERROR with an error for a type word naming no
+ * geometry type
+ */
+static WalkStatus
+geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
+  double *result, size_t *size)
+{
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  POINTARRAY pa;
+  pa.flags = flags;
+  *result = 0.0;
+  switch (type)
+  {
+    case POINTTYPE:
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    case LINETYPE:
+      if (measure == WALK_LENGTH && num)
+      {
+        /* The length as #lwline_length computes it, in 3D for a line with Z */
+        pa.npoints = pa.maxpoints = num;
+        pa.serialized_pointlist = (uint8_t *) (p + 8);
+        *result = ptarray_length(&pa);
+      }
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    case TRIANGLETYPE:
+    {
+      pa.npoints = pa.maxpoints = num;
+      pa.serialized_pointlist = (uint8_t *) (p + 8);
+      if (measure == WALK_PERIMETER)
+        *result = ptarray_length_2d(&pa);
+      else if (measure == WALK_AREA && num)
+      {
+        /* The area as #lwtriangle_area computes it */
+        double area = 0.0;
+        POINT2D p1, p2;
+        for (uint32_t i = 0; i < num - 1; i++)
+        {
+          getPoint2d_p(&pa, i, &p1);
+          getPoint2d_p(&pa, i + 1, &p2);
+          area += (p1.x * p2.y) - (p1.y * p2.x);
+        }
+        area /= 2.0;
+        *result = fabs(area);
+      }
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    }
+    case POLYGONTYPE:
+      *result = poly_walk_measure(p, (uint32_t) FLAGS_NDIMS(flags), measure,
+        size);
+      return WALK_DONE;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      double value = 0.0;
+      size_t off = 8;
+      for (uint32_t i = 0; i < num; i++)
+      {
+        double sub;
+        size_t subsize;
+        WalkStatus status = geo_walk_measure(p + off, flags, measure, &sub,
+          &subsize);
+        if (status != WALK_DONE)
+          return status;
+        value += sub;
+        off += subsize;
+      }
+      *result = value;
+      *size = off;
+      return WALK_DONE;
+    }
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+      return WALK_CURVE;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", type);
+      return WALK_ERROR;
+  }
+}
+
+/**
+ * @brief Return the length of a geometry holding a curve, as #lwgeom_length
+ * measures it, but for a curve polygon, a surface whose length is 0 as the
+ * one of a polygon, as #lwgeom_length_2d measures it
+ */
+static double
+lwgeom_length_lines(const LWGEOM *geom)
+{
+  switch (geom->type)
+  {
+    case LINETYPE:
+      return lwline_length((LWLINE *) geom);
+    case CIRCSTRINGTYPE:
+      return lwcircstring_length((LWCIRCSTRING *) geom);
+    case COMPOUNDTYPE:
+      return lwcompound_length((LWCOMPOUND *) geom);
+    case POINTTYPE:
+    case POLYGONTYPE:
+    case TRIANGLETYPE:
+    case CURVEPOLYTYPE:
+      return 0.0;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      double length = 0.0;
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+      {
+        double sub = lwgeom_length_lines(col->geoms[i]);
+        if (sub == DBL_MAX)
+          return DBL_MAX;
+        length += sub;
+      }
+      return length;
+    }
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", geom->type);
+      return DBL_MAX;
+  }
+}
+
+/**
+ * @brief Return the measure of a geometry other than a polygon, read on its
+ * serialized form by #geo_walk_measure, or on its deserialized form when it
+ * holds a curve, as #lwgeom_area, #lwgeom_length_lines and
+ * #lwgeom_perimeter_2d measure it
+ * @errval DBL_MAX
+ */
+static double
+geom_walk_measure_any(const GSERIALIZED *gs, const uint8_t *p, lwflags_t flags,
+  WalkMeasure measure)
+{
+  double result;
+  size_t size;
+  WalkStatus status = geo_walk_measure(p, flags, measure, &result, &size);
+  if (status == WALK_ERROR)
+    return DBL_MAX;
+  if (status == WALK_DONE)
+    return result;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (measure == WALK_AREA)
+    result = lwgeom_area(lwgeom);
+  else if (measure == WALK_LENGTH)
+    result = lwgeom_length_lines(lwgeom);
+  else
+    result = lwgeom_perimeter_2d(lwgeom);
+  lwgeom_free(lwgeom);
+  return result;
+}
+
+/**
+ * @brief Return the measure of a geometry read on its serialized form, a
+ * polygon by #poly_walk_measure and any other geometry by
+ * #geom_walk_measure_any
+ * @errval DBL_MAX
+ */
+static pg_attribute_always_inline double
+geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
+{
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *p = gs_geometry_ptr(gs);
+  uint32_t type;
+  memcpy(&type, p, 4);
+  /* A polygon, the geometry most often measured, is read without the walk */
+  if (type == POLYGONTYPE)
+  {
+    size_t size;
+    return poly_walk_measure(p, (uint32_t) G2FLAGS_NDIMS(gs->gflags), measure,
+      &size);
+  }
+  /* The flags of the point arrays: the dimensions of the serialized form, no
+   * bounding box, and read only, since they reference the serialized form */
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
+  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
+  FLAGS_SET_READONLY(flags, 1);
+  return geom_walk_measure_any(gs, p, flags, measure);
+}
+
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the area of a geometry
@@ -893,10 +1259,7 @@ geom_area(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double area = lwgeom_area(lwgeom);
-  lwgeom_free(lwgeom);
-  return area;
+  return geom_walk_measure(gs, WALK_AREA);
 }
 
 /**
@@ -905,7 +1268,7 @@ geom_area(const GSERIALIZED *gs)
  * @details Defined by
  *   - length(point) = 0
  *   - length(line) = length of line
- *   - length(polygon) = 0  -- could make sense to return sum(ring perimeter)
+ *   - length(polygon) = length(curve polygon) = 0, the length of a surface
  *
  *  Uses Euclidean 3D/2D length depending on input dimensions.
  * @param[in] gs Geometry
@@ -922,10 +1285,7 @@ geom_length(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double dist = lwgeom_length(lwgeom);
-  lwgeom_free(lwgeom);
-  return dist;
+  return geom_walk_measure(gs, WALK_LENGTH);
 }
 
 /**
@@ -950,10 +1310,7 @@ geom_perimeter(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double perimeter = lwgeom_perimeter_2d(lwgeom);
-  lwgeom_free(lwgeom);
-  return perimeter;
+  return geom_walk_measure(gs, WALK_PERIMETER);
 }
 
 /**
