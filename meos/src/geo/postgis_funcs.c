@@ -1477,6 +1477,63 @@ geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @brief Return the 2D distance between a point and a line or a polygon,
+ * read on the serialized form of the line or the polygon, as the PostGIS
+ * functions @p lw_dist2d_point_line and @p lw_dist2d_point_poly measure it
+ * @details Each line or ring is read as a point array referencing the
+ * serialized coordinates, which the PostGIS functions
+ * @p ptarray_contains_point and @p lw_dist2d_pt_ptarray read as they read the
+ * rings of the deserialized polygon
+ */
+static double
+pt_linepoly_distance2d(const GSERIALIZED *gpt, const GSERIALIZED *gs)
+{
+  const POINT2D *p = GSERIALIZED_POINT2D_P(gpt);
+  lwflags_t flags = gserialized_get_lwflags(gs);
+  FLAGS_SET_BBOX(flags, 0);
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *g = gs_geometry_ptr(gs);
+  uint32_t type, num;
+  memcpy(&type, g, 4);
+  memcpy(&num, g + 4, 4);
+  DISTPTS dl;
+  lw_dist2d_distpts_init(&dl, DIST_MIN);
+  POINTARRAY pa;
+  pa.flags = flags;
+  if (type == LINETYPE)
+  {
+    pa.npoints = pa.maxpoints = num;
+    pa.serialized_pointlist = (uint8_t *) (g + 8);
+    lw_dist2d_pt_ptarray(p, &pa, &dl);
+    return dl.distance;
+  }
+  /* A polygon: the numbers of points of the rings, padded to a multiple of 8
+   * bytes, precede the coordinates of the rings */
+  const uint8_t *counts = g + 8;
+  const uint8_t *pts = counts + 4 * num + ((num % 2) ? 4 : 0);
+  for (uint32_t i = 0; i < num; i++)
+  {
+    uint32_t npoints;
+    memcpy(&npoints, counts + 4 * i, 4);
+    pa.npoints = pa.maxpoints = npoints;
+    pa.serialized_pointlist = (uint8_t *) pts;
+    int loc = ptarray_contains_point(&pa, p);
+    /* Outside the exterior ring, or inside a hole, the distance is the one to
+     * that ring */
+    if ((i == 0 && loc == LW_OUTSIDE) || (i > 0 && loc != LW_OUTSIDE))
+    {
+      lw_dist2d_pt_ptarray(p, &pa, &dl);
+      return dl.distance;
+    }
+    pts += npoints * ptsize;
+  }
+  /* Inside the polygon */
+  return 0.0;
+}
+
+/**
  * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries
@@ -1509,6 +1566,14 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       &dl);
     return dl.distance;
   }
+  /* A point and a line or a polygon are measured on the serialized form of the
+   * line or the polygon, with the primitives the general computation reaches */
+  uint32_t type1 = gserialized_get_type(gs1);
+  uint32_t type2 = gserialized_get_type(gs2);
+  if (type1 == POINTTYPE && (type2 == LINETYPE || type2 == POLYGONTYPE))
+    return pt_linepoly_distance2d(gs1, gs2);
+  if (type2 == POINTTYPE && (type1 == LINETYPE || type1 == POLYGONTYPE))
+    return pt_linepoly_distance2d(gs2, gs1);
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
