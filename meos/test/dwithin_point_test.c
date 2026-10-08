@@ -100,7 +100,12 @@ still(double x, double y)
  * squares underflow to zero or overflow to infinity, and two points near 1e155
  * one unit in the last place apart, whose coordinates square to infinity
  * while their difference does not. Each is asked at its distance, below it and
- * above it, and the answers follow from the integers as in the first part
+ * above it, and the answers follow from the integers as in the first part.
+ *
+ * The fourth part carries differences far apart in scale, one 2^540 to 2^1000
+ * times the other, whose products the scaled expansion cannot hold. Asked at
+ * the larger difference the points are farther apart, by the square of the
+ * smaller one, and asked at the double above it they are within
  */
 static void
 every_entry(double px, double py, double qx, double qy, double d, int expected)
@@ -193,9 +198,28 @@ int main(void)
   every_entry(big, 0, next, 0, nextafter(0x1p+462, 0.0), 0);
   asked += 3;
 
+  /* Differences far apart in scale */
+  int skewed = 0;
+  for (int exponent = -500; exponent <= 500; exponent += 500)
+  {
+    for (int ratio = 540; ratio <= 1000; ratio += 230)
+    {
+      if (exponent - ratio < -1074)
+        continue;
+      double a = ldexp(1.0, exponent), b = ldexp(1.0, exponent - ratio);
+      every_entry(0, 0, a, b, a, 0);
+      every_entry(0, 0, b, a, a, 0);
+      every_entry(0, 0, a, b, nextafter(a, INFINITY), 1);
+      every_entry(0, 0, a, 0, a, 1);
+      asked += 4;
+      skewed++;
+    }
+  }
+
   printf("%d distances answered exactly by three entries, 61 scales, 4 "
-    "pairs a double square root gets wrong and 20 scales and 1 pair whose "
-    "squares leave the range of a double\n", asked);
+    "pairs a double square root gets wrong, 20 scales and 1 pair whose "
+    "squares leave the range of a double and %d pairs of differences far "
+    "apart in scale\n", asked, skewed);
 
   /* Finalize MEOS */
   meos_finalize();
