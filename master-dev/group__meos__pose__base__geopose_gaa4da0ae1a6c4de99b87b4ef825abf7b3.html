@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geopose_frames</title>
+<title>MobilityDB: geopose_frame_srid</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,8 +82,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">geopose_frame</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gad24ab4ce726c8d6576be28a4411517c1.html#gad24ab4ce726c8d6576be28a4411517c1">geopose_frame_is_geographic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga1802eef8313202315c9873f35151859f.html#ga1802eef8313202315c9873f35151859f">geopose_frame_name</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gaa4da0ae1a6c4de99b87b4ef825abf7b3.html#gaa4da0ae1a6c4de99b87b4ef825abf7b3">geopose_frame_srid</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_gaa4da0ae1a6c4de99b87b4ef825abf7b3.html#gaa4da0ae1a6c4de99b87b4ef825abf7b3">geopose_frame_srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba">pose_apply_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
@@ -99,29 +99,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga515b121f0fdde2179dd97905c1be9d47" name="ga515b121f0fdde2179dd97905c1be9d47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga515b121f0fdde2179dd97905c1be9d47">&#9670;&#160;</a></span>geopose_frames()</h2>
+<a id="gaa4da0ae1a6c4de99b87b4ef825abf7b3" name="gaa4da0ae1a6c4de99b87b4ef825abf7b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa4da0ae1a6c4de99b87b4ef825abf7b3">&#9670;&#160;</a></span>geopose_frame_srid()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> * geopose_frames </td>
+          <td class="memname">int32_t geopose_frame_srid </td>
           <td>(</td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em></td><td>)</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>frame_id</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return every frame of the OGC GeoPose registry. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the spatial reference system of a frame of the OGC GeoPose registry, 0 for a frame parameterised at runtime. </p>
+<p >The PostgreSQL function of the same name reads the table the registry seeds, which also holds the frames a user registers, and answers NULL where this function answers 0; an unknown frame answers <code>SRID_INVALID</code>, the miss value of <a class="el" href="group__meos__pointcloud__schema__cache_gad25dfa4d16192376b7d3e3e6df47f2a0.html#gad25dfa4d16192376b7d3e3e6df47f2a0" title="Return the cached SRID for a pcid (SRID_INVALID on miss)">meos_pc_schema_srid</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of frames returned @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_ga701bed27a180131cf5f2f50019ef2417.html#ga701bed27a180131cf5f2f50019ef2417" title="Set-returning function emitting one row per frame of the OGC GeoPose registry.">Geopose_frames()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">frame_id</td><td>Identifier of the frame </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return SRID_INVALID @sqlfn geoPoseFrameSRID() </dd></dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: GEOPOSE_FRAME_REGISTRY</title>
+<title>MobilityDB: geopose_frame_registered</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -95,8 +95,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gad24ab4ce726c8d6576be28a4411517c1.html#gad24ab4ce726c8d6576be28a4411517c1">geopose_frame_is_geographic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga1802eef8313202315c9873f35151859f.html#ga1802eef8313202315c9873f35151859f">geopose_frame_name</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a6c09fe141839fc21880e02bf3f9747a5.html#a6c09fe141839fc21880e02bf3f9747a5">geopose_frame_parameters</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a80a0a224360c813356d166d171e0d99b.html#a80a0a224360c813356d166d171e0d99b">geopose_frame_registered</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a4dbd31591f42129f5815d4353c3d17bc.html#a4dbd31591f42129f5815d4353c3d17bc">GEOPOSE_FRAME_REGISTRY</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a80a0a224360c813356d166d171e0d99b.html#a80a0a224360c813356d166d171e0d99b">geopose_frame_registered</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a4dbd31591f42129f5815d4353c3d17bc.html#a4dbd31591f42129f5815d4353c3d17bc">GEOPOSE_FRAME_REGISTRY</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a3ed0707e51e7026aaebb4635feb6790a.html#a3ed0707e51e7026aaebb4635feb6790a">geopose_frame_spec</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gaa4da0ae1a6c4de99b87b4ef825abf7b3.html#gaa4da0ae1a6c4de99b87b4ef825abf7b3">geopose_frame_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a></td></tr>
@@ -160,8 +160,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4dbd31591f42129f5815d4353c3d17bc" name="a4dbd31591f42129f5815d4353c3d17bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4dbd31591f42129f5815d4353c3d17bc">&#9670;&#160;</a></span>GEOPOSE_FRAME_REGISTRY</h2>
+<a id="a80a0a224360c813356d166d171e0d99b" name="a80a0a224360c813356d166d171e0d99b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80a0a224360c813356d166d171e0d99b">&#9670;&#160;</a></span>geopose_frame_registered()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -170,7 +170,11 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> GEOPOSE_FRAME_REGISTRY[]</td>
+          <td class="memname">static const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> * geopose_frame_registered </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>frame_id</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -180,8 +184,13 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Every frame an encoder in this file names, and the two systems the Basic classes rest on. </p>
-<p >The four rows under <a class="el" href="pose__geopose_8c_aa784c2bec35eff6ca564a6835b76f793.html#aa784c2bec35eff6ca564a6835b76f793">GEOPOSE_AUTHORITY</a> take their identifiers from the very macros the encoders write, so a frame this file learns to emit cannot be absent here, and a host that materialises the registry as a table states what the documents state. </p>
+<p>Return the frame the registry states under an identifier, raising an error where it states none, as <a class="el" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b" title="Return the frame the registry states under an identifier, or NULL where it states none.">geopose_frame</a> answers <code>NULL</code> for it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">frame_id</td><td>Identifier of the frame </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
