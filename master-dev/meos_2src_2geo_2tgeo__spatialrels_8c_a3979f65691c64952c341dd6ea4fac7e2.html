@@ -232,7 +232,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Select the appropriate dwithin function for two temporal points. </p>
-<p >Mirrors <a class="el" href="tgeo__spatialfuncs_8h_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55" title="Select the appropriate distance function.">pt_distance_fn</a>, which makes the same choice for the distance itself: a planar 2D point pair is answered in closed form from the two coordinates, while a geodetic pair keeps the spheroid function and a 3D pair the generic entry, neither having a point twin here </p><dl class="section note"><dt>Note</dt><dd>We need two parameters to cope with mixed 2D/3D arguments </dd></dl>
+<p >Mirrors <a class="el" href="tgeo__spatialfuncs_8h_a452059d6cd813233143056d746806d55.html#a452059d6cd813233143056d746806d55" title="Select the appropriate distance function.">pt_distance_fn</a>, which makes the same choice for the distance itself: a planar 2D point pair is answered by the exact sign of <a class="el" href="geo__funcs_8h_a17d4b97aba1473852dbd6a983b9707db.html#a17d4b97aba1473852dbd6a983b9707db" title="Return the sign of the squared distance between two points less the square of a distance.">point_within_distance_sign</a> on the two coordinates, while a geodetic pair keeps the spheroid function and a 3D pair the generic entry, neither having a point twin here </p><dl class="section note"><dt>Note</dt><dd>We need two parameters to cope with mixed 2D/3D arguments </dd></dl>
 
 </div>
 </div>
