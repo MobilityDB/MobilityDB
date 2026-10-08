@@ -34,7 +34,7 @@ the judge accepts.
 
 ## What is measured
 
-Measured on MobilityDB master `bc5713429c` and on the head `1360d90ab5` of #2992.
+Measured on MobilityDB master `bc5713429c` and on the head `8628016beb` of #2992.
 
 | Distance | Input | Answer | The exact answer |
 |---|---|---|---|
@@ -62,6 +62,10 @@ Measured on MobilityDB master `bc5713429c` and on the head `1360d90ab5` of #2992
 | the geodetic distances (`datum_geog_distance`) | the spheroid by iteration | the exact answer needs its own definition |
 
 ## The plan
+
+Each pull request is built on the one its last column names, and adds to the code and the
+witness of the ones it is built on without removing or rewriting any of their lines, so a
+reviewer reads each one alone.
 
 | PR | Topic | What it changes | Branch, state |
 |---|---|---|---|
