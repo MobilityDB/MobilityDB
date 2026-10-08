@@ -213,6 +213,8 @@ extern double point_distance_exact(const double *p, const double *q,
   int ndims);
 extern double point_distance_offset_exact(const double *p, const double *q,
   int ndims, double r);
+extern double point_segment_distance_offset_exact(const double *p,
+  const double *a, const double *b, double r);
 
 /* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
  * with the double nearest to it and a bound on the error of that double */

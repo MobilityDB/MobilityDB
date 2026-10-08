@@ -79,6 +79,12 @@
  * where the radius is within a few units in the last place of the distance,
  * so that subtracting it from the rounded distance cancels and leaves an
  * error of percents rather than of a unit in the last place.
+ * The seventh asks a point and a circular buffer at rest against one segment,
+ * whose nearest point is the foot of the perpendicular: a pair in projected
+ * metres, a radius a few units in the last place below the distance, a point
+ * within 1e-7 of the segment's line, segments at 2^-500 and 2^500 and one
+ * spanning +-1e308, and points whose distance is exactly the midpoint of two
+ * doubles.
  *
  * Each part asks the nearest approach too, which reaches the same per-element
  * distance through the synchronous walk.
@@ -269,6 +275,35 @@ buffer_entry(double cx, double cy, double r, double px, double py,
   free(temp);
 }
 
+/**
+ * @brief Assert that the nearest approach of a point, or of a circular buffer
+ * of the given radius, resting at a centre to a segment is the expected
+ * distance less the radius
+ */
+static void
+segment_entry(double cx, double cy, double r, double ax, double ay, double bx,
+  double by, double expected)
+{
+  char buffer[320];
+  if (r == 0.0)
+    snprintf(buffer, sizeof(buffer), "[POINT(%.17g %.17g)@2001-01-01, "
+      "POINT(%.17g %.17g)@2001-01-02]", cx, cy, cx, cy);
+  else
+    snprintf(buffer, sizeof(buffer), "[Cbuffer(Point(%.17g %.17g),%.17g)"
+      "@2001-01-01, Cbuffer(Point(%.17g %.17g),%.17g)@2001-01-02]", cx, cy, r,
+      cx, cy, r);
+  Temporal *temp = (r == 0.0) ? tgeompoint_in(buffer) : tcbuffer_in(buffer);
+  snprintf(buffer, sizeof(buffer), "LINESTRING(%.17g %.17g, %.17g %.17g)", ax,
+    ay, bx, by);
+  GSERIALIZED *gs = geom_in(buffer, -1);
+  assert(temp != NULL && gs != NULL);
+  double d = (r == 0.0) ? nad_tgeo_geo(temp, gs, true) :
+    nad_tcbuffer_geo(temp, gs);
+  assert(d == expected);
+  free(gs);
+  free(temp);
+}
+
 /* Main program */
 int main(void)
 {
@@ -419,6 +454,33 @@ int main(void)
     "intermediate value is representable, 18 exact ties in two and three "
     "coordinates, 3 real pairs on which hypot is not the nearest double and 9 "
     "circular buffers at rest\n", asked);
+
+  /* A point and a circular buffer at rest against one segment */
+  int segments = 8;
+  segment_entry(516962.74227634474, 5107948.610185236, 0, 516931.81200000003,
+    5108222.836, 516882.48163457355, 5107913.724103649, 0x1.270a244e55fa5p+6);
+  segment_entry(522708.31187730626, 5394638.409778467, 31.30297357509829,
+    522836.172, 5394682.178, 522393.30386973545, 5394639.504396664,
+    0x1.720bde420e71dp-43);
+  segment_entry(444701.4571792798, 5328803.155586255, 0, 444840.779,
+    5328781.864, 444558.37996268016, 5328825.0210837815, 0x1.a5ce9ea9cb377p-24);
+  segment_entry(-2.4086662620552625e-152, -2.7425309156430855e-151, 0,
+    1.4867657329013218e-151, -1.973264725736441e-151, 1.3305241696727391e-152,
+    7.838752007775803e-152, 0x1.3cbb240cac384p-501);
+  segment_entry(-1.5285551538279573e+150, -2.0949832398599417e+149, 0,
+    -1.8044225536862182e+150, 3.656650249579651e+148, -2.5327694085907134e+150,
+    -9.107457317795018e+149, 0x1.cd54da28c5143p+496);
+  segment_entry(1.9065672791409535e+299, 2.2529152754140272e+297, 0, -1e+308,
+    0, 1e+308, 0, 0x1.b8f089ae83eb9p+987);
+  /* Exactly the midpoint of two doubles: 5j for an odd j, at two scales */
+  segment_entry(-5.866124092063631e+29, 4.399593069047723e+29, 0,
+    -2.4338891524382005e+32, -3.2451855365842673e+32, 2.4338891524382005e+32,
+    3.2451855365842673e+32, 0x1.2829e07aa8fd4p+99);
+  segment_entry(-1.0082578453796613e-07, 7.56193384034746e-08, 0,
+    -4.57763671875e-05, -6.103515625e-05, 4.57763671875e-05, 6.103515625e-05,
+    0x1.0ea6f398bec6ep-23);
+  printf("%d points and circular buffers at rest against a segment answered as "
+    "the nearest double\n", segments);
 
   /* Finalize MEOS */
   meos_finalize();

@@ -357,6 +357,39 @@ dist_rest_point(double cx, double cy, double r1, double r2, double px,
 }
 
 /**
+ * @brief Minimum of [ dist(c, edge) - r(t) ] for t in [0,1], where the centre
+ * c rests and the edge is a segment, writing in the last argument the t that
+ * attains it
+ * @details The twin of #dist_rest_point for a segment; the callers answer a
+ * degenerate edge, a point, by #dist_rest_point. The radius is largest at the
+ * end it grows to, where the minimum lies. Where the disc stands clear of the
+ * edge, the value is the distance less that radius as
+ * #point_segment_distance_offset_exact answers it, the double nearest the
+ * exact one. Where the disc reaches the edge, the value is the rounded
+ * distance less the radius, not positive, which the callers read to rank
+ * overlaps.
+ */
+static double
+dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
+  double *argt)
+{
+  bool grows = r2 > r1;
+  if (argt)
+    *argt = grows ? 1.0 : 0.0;
+  double r = grows ? r2 : r1;
+  const double c[2] = {cx, cy}, a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  double clear = point_segment_distance_offset_exact(c, a, b, r);
+  if (clear > 0.0)
+    return clear;
+  /* The rounded distance to the nearest point of the edge, less the radius */
+  double ux = e->x2 - e->x1, uy = e->y2 - e->y1, l2 = ux * ux + uy * uy;
+  double t = (l2 > 0.0) ? ((cx - e->x1) * ux + (cy - e->y1) * uy) / l2 : 0.0;
+  t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  double d = hypot(cx - (e->x1 + t * ux), cy - (e->y1 + t * uy)) - r;
+  return (d < 0.0) ? d : 0.0;
+}
+
+/**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
@@ -373,6 +406,9 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A centre at rest and a point, a degenerate edge, are a pair of points */
   if (dcx == 0.0 && dcy == 0.0 && ax == bx && ay == by)
     return dist_rest_point(cx1, cy1, r1, r2, ax, ay, NULL);
+  /* A centre at rest against a segment */
+  if (dcx == 0.0 && dcy == 0.0)
+    return dist_rest_segment(cx1, cy1, r1, r2, e, NULL);
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -729,6 +765,9 @@ dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
   /* A centre at rest and a point, a degenerate edge, are a pair of points */
   if (dcx == 0.0 && dcy == 0.0 && ax == bx && ay == by)
     return dist_rest_point(cx1, cy1, r1, r2, ax, ay, out_t);
+  /* A centre at rest against a segment */
+  if (dcx == 0.0 && dcy == 0.0)
+    return dist_rest_segment(cx1, cy1, r1, r2, e, out_t);
   if (l2 <= 1e-24)
   {
     double A = dcx * dcx + dcy * dcy;
@@ -878,19 +917,47 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
 
 /**
  * @brief Closest point on edge @p e to (px,py)
+ * @details The closest point is the foot of the perpendicular at the
+ * parameter `((p - a) . u) / (u . u)` of the edge `u = b - a`, clamped to
+ * [0, 1], a point the function constructs. A degenerate edge is a point,
+ * exactly. The parameter is a ratio, so the differences are first scaled by a
+ * quarter where one of them overflows, and then by the power of two that
+ * brings the largest of them near one, both exact, so neither the dot product
+ * nor the squared length leaves the range of a double; the point is
+ * `(1 - s) a + s b` where the edge itself overflows
  */
 static void
 dist_geom_closest_on_edge(double px, double py, const Edge *e,
   double *qx, double *qy)
 {
-  double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
-  double l2 = ux * ux + uy * uy;
-  if (l2 <= 1e-24) { *qx = e->x1; *qy = e->y1; return; }
-  double s = ((px - e->x1) * ux + (py - e->y1) * uy) / l2;
+  double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  if (ax == bx && ay == by) { *qx = ax; *qy = ay; return; }
+  double ux = bx - ax, uy = by - ay, wx = px - ax, wy = py - ay;
+  bool overflow = ! isfinite(ux) || ! isfinite(uy) || ! isfinite(wx) ||
+    ! isfinite(wy);
+  if (overflow)
+  {
+    ux = bx / 4.0 - ax / 4.0; uy = by / 4.0 - ay / 4.0;
+    wx = px / 4.0 - ax / 4.0; wy = py / 4.0 - ay / 4.0;
+  }
+  double m = fmax(fmax(fabs(ux), fabs(uy)), fmax(fabs(wx), fabs(wy)));
+  int k;
+  (void) frexp(m, &k);
+  ux = ldexp(ux, - k); uy = ldexp(uy, - k);
+  wx = ldexp(wx, - k); wy = ldexp(wy, - k);
+  double s = (wx * ux + wy * uy) / (ux * ux + uy * uy);
   if (s < 0.0) s = 0.0;
   if (s > 1.0) s = 1.0;
-  *qx = e->x1 + s * ux;
-  *qy = e->y1 + s * uy;
+  if (overflow)
+  {
+    *qx = (1.0 - s) * ax + s * bx;
+    *qy = (1.0 - s) * ay + s * by;
+  }
+  else
+  {
+    *qx = ax + s * (bx - ax);
+    *qy = ay + s * (by - ay);
+  }
 }
 
 /**
