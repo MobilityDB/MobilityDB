@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geomeas_to_tpoint</title>
+<title>MobilityDB: tgeompoint_to_tgeogpoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,14 +79,14 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__conversion_ga1122a89b0c3f655554e3b39017c1b2c6.html#ga1122a89b0c3f655554e3b39017c1b2c6">geomeas_to_tpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga1122a89b0c3f655554e3b39017c1b2c6.html#ga1122a89b0c3f655554e3b39017c1b2c6">geomeas_to_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga800f26eddc1fee3778a53514782a48da.html#ga800f26eddc1fee3778a53514782a48da">tgeogpoint_to_tgeography</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_gac325dd2ff4b876fa587c625e71db7760.html#gac325dd2ff4b876fa587c625e71db7760">tgeogpoint_to_tgeompoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga81b75cea790db4b9f027706db060b268.html#ga81b75cea790db4b9f027706db060b268">tgeography_to_tgeogpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga97f89695f203c9e4f65b9658b758df8c.html#ga97f89695f203c9e4f65b9658b758df8c">tgeography_to_tgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_gaca0e36c079e5f6741044b62962ea0a28.html#gaca0e36c079e5f6741044b62962ea0a28">tgeometry_to_tgeography</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga1a16b4d22ba933a7509d990923942881.html#ga1a16b4d22ba933a7509d990923942881">tgeometry_to_tgeompoint</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7.html#ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7">tgeompoint_to_tgeogpoint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__conversion_ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7.html#ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7">tgeompoint_to_tgeogpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga4c5de7e9786e2ab3f22a47b231f80174.html#ga4c5de7e9786e2ab3f22a47b231f80174">tgeompoint_to_tgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga4bda0631ec82da656d118d8364ba7cf5.html#ga4bda0631ec82da656d118d8364ba7cf5">tpoint_as_mvtgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__conversion_ga182c0342e5b02878bb8c3ffe37f5a65f.html#ga182c0342e5b02878bb8c3ffe37f5a65f">tpoint_tfloat_to_geomeas</a></td></tr>
@@ -95,29 +95,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga1122a89b0c3f655554e3b39017c1b2c6" name="ga1122a89b0c3f655554e3b39017c1b2c6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1122a89b0c3f655554e3b39017c1b2c6">&#9670;&#160;</a></span>geomeas_to_tpoint()</h2>
+<a id="ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7" name="ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5b8c3c0ea839a3ec6c58e1b3ba9f27d7">&#9670;&#160;</a></span>tgeompoint_to_tgeogpoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * geomeas_to_tpoint </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tgeompoint_to_tgeogpoint </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a geometry/geography with M measure encoding timestamps transformed to a temporal point. </p>
+<p>Return a temporal geography point from a temporal geometry point. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry @csqlfn <a class="el" href="group__mobilitydb__geo__conversion_ga2951773d8ed22564209f8218c6c87632.html#ga2951773d8ed22564209f8218c6c87632" title="Convert a geometry/geography with M measure into a temporal point @sqlfn tgeompoint(),...">Geomeas_to_tpoint()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__geo__conversion_ga5ecfd619ce06819572f1bbe1541bdc1a.html#ga5ecfd619ce06819572f1bbe1541bdc1a" title="Convert a temporal geometry point into a temporal geography point @sqlfn tgeogpoint()">Tgeompoint_to_tgeogpoint()</a> </dd></dl>
 
 </div>
 </div>
