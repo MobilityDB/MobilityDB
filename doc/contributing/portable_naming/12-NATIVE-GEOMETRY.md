@@ -202,7 +202,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 9 are on the branch, rebased on master `d76ba94472`, not pushed. Commit 1:
+**State.** Commits 1 to 10 are on the branch, rebased on master `d76ba94472`, not pushed. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
 `geom_disjoint` measure in 3D only when both geometries have Z, the new `geom_distance` and
@@ -247,4 +247,9 @@ geographies, `transform` byte for byte as `ST_Transform` on eight geometries and
 `meos/test/geo_transform_test.c` stating the refusals of a geography into a projected system and
 of a byte order no decoder reads.
 Left before the push: the strict-ci, cppcheck, smoke and Windows receipts of the head, and the CGAL
-oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer. Then commit 10.
+oracle and GEOS speed receipts the change to `meos/src/geo` owes, from the peer.
+Commit 10 (`09d6828462`): `clusterKMeans`, `clusterDBSCAN`, `clusterIntersecting` and
+`clusterWithin` over arrays of geometries as decision 2 states them, answering as
+`ST_ClusterKMeans` and `ST_ClusterDBSCAN` over the rows in the order of the array (an empty
+geometry in the cluster -1 of k-means, a noise point NULL in DBSCAN) and as the aggregates
+`ST_ClusterIntersecting` and `ST_ClusterWithin`. The ten commits of the plan are on the branch.
