@@ -390,6 +390,60 @@ dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
 }
 
 /**
+ * @brief Minimum of dist(c(t), edge) for t in [0,1], where the point c moves
+ * from (cx1,cy1) to (cx2,cy2) and the edge is straight, writing in the last
+ * argument the t that attains it
+ * @details The twin of #dist_rest_segment for a moving point, whose path is a
+ * segment. Two segments meet or not by exact orientations
+ * (#linesegm_intersect), and where they meet the distance is 0, at the
+ * instant of their first common point. Two segments that do not meet are
+ * nearest at an end of one of them, so the distance is the least of the
+ * distances of the two ends of the path to the edge and of the two ends of the
+ * edge to the path, each the double nearest the exact one
+ * (#point_segment_distance_offset_exact), and rounding is monotone, so the
+ * least of them is the double nearest the least distance. The instant is the
+ * earliest at which the least is reached: an end of the path, or the
+ * parameter of the foot of an edge end on it
+ */
+static double
+dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
+  const Edge *e, double *argt)
+{
+  IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1, e->y1,
+    e->x2, e->y2);
+  if (meet.type != INTERSECT_NONE)
+  {
+    if (argt)
+      *argt = meet.t0;
+    return 0.0;
+  }
+  const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+  const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  double dcx = cx2 - cx1, dcy = cy2 - cy1, l2 = dcx * dcx + dcy * dcy;
+  double cand[4], t[4];
+  cand[0] = point_segment_distance_offset_exact(c1, a, b, 0.0);
+  t[0] = 0.0;
+  cand[1] = point_segment_distance_offset_exact(c2, a, b, 0.0);
+  t[1] = 1.0;
+  cand[2] = point_segment_distance_offset_exact(a, c1, c2, 0.0);
+  t[2] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) : 0.0;
+  cand[3] = point_segment_distance_offset_exact(b, c1, c2, 0.0);
+  t[3] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) : 0.0;
+  double best = cand[0], bt = t[0];
+  for (int i = 1; i < 4; i++)
+  {
+    if (cand[i] < best || (cand[i] == best && t[i] < bt))
+    {
+      best = cand[i];
+      bt = t[i];
+    }
+  }
+  if (argt)
+    *argt = bt;
+  return best;
+}
+
+/**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
@@ -409,6 +463,9 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A centre at rest against a segment */
   if (dcx == 0.0 && dcy == 0.0)
     return dist_rest_segment(cx1, cy1, r1, r2, e, NULL);
+  /* A point moving against the edge */
+  if (r1 == 0.0 && r2 == 0.0)
+    return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL);
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -768,6 +825,9 @@ dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
   /* A centre at rest against a segment */
   if (dcx == 0.0 && dcy == 0.0)
     return dist_rest_segment(cx1, cy1, r1, r2, e, out_t);
+  /* A point moving against the edge */
+  if (r1 == 0.0 && r2 == 0.0)
+    return dist_moving_segment(cx1, cy1, cx2, cy2, e, out_t);
   if (l2 <= 1e-24)
   {
     double A = dcx * dcx + dcy * dcy;

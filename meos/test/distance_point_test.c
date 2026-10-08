@@ -85,6 +85,10 @@
  * within 1e-7 of the segment's line, segments at 2^-500 and 2^500 and one
  * spanning +-1e308, and points whose distance is exactly the midpoint of two
  * doubles.
+ * The eighth asks a moving point against a geometry, whose nearest approach
+ * is the distance of its path to the geometry: parallel segments one or two
+ * units in the last place apart, the points of a multipoint, and a line its
+ * path crosses, where the distance is 0.
  *
  * Each part asks the nearest approach too, which reaches the same per-element
  * distance through the synchronous walk.
@@ -304,6 +308,21 @@ segment_entry(double cx, double cy, double r, double ax, double ay, double bx,
   free(temp);
 }
 
+/* The nearest approach of a moving point to a geometry, which is the distance
+ * of its path to the geometry, against the double nearest the exact one; the
+ * moving twin of #segment_entry */
+static void
+moving_entry(const char *trip, const char *wkt, double expected)
+{
+  Temporal *temp = tgeompoint_in(trip);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  assert(temp != NULL && gs != NULL);
+  double d = nad_tgeo_geo(temp, gs, true);
+  assert(d == expected);
+  free(gs);
+  free(temp);
+}
+
 /* Main program */
 int main(void)
 {
@@ -481,6 +500,40 @@ int main(void)
     0x1.0ea6f398bec6ep-23);
   printf("%d points and circular buffers at rest against a segment answered as "
     "the nearest double\n", segments);
+
+  /* A moving point against parallel segments one or two units in the last
+   * place apart, against the points of a multipoint, and across a line its
+   * path crosses, where the distance is 0 */
+  int moving = 3;
+  moving_entry("[POINT(657655.292 5181685.274)@2001-01-01, "
+    "POINT(657705.292 5181685.274)@2001-01-02, "
+    "POINT(657755.292 5181685.274)@2001-01-03, "
+    "POINT(657805.292 5181685.274)@2001-01-04, "
+    "POINT(657855.292 5181685.274)@2001-01-05]",
+    "MULTILINESTRING((657650.8387083027 5181686.215331687, "
+    "657837.1602424956 5181686.215331687), "
+    "(657661.8867602018 5181686.215331687, "
+    "657932.2051257079 5181686.215331687), "
+    "(657675.1708392231 5181686.215331684, "
+    "657854.8218127734 5181686.215331684))", 0x1.e1f639f800000p-1);
+  moving_entry("[POINT(467291.059 5256659.43686811)@2001-01-01, "
+    "POINT(467341.059 5256657.007441363)@2001-01-02, "
+    "POINT(467391.059 5256657.95398316)@2001-01-03, "
+    "POINT(467441.059 5256656.494698682)@2001-01-04, "
+    "POINT(467491.059 5256651.3944048835)@2001-01-05]",
+    "MULTIPOINT(467441.059 5256657.135135818, "
+    "467441.6994371363 5256656.494698682, "
+    "467441.059 5256655.854261545, 467440.4185628637 5256656.494698682)",
+    0x1.321ce1b245485p-6);
+  moving_entry("[POINT(652154.8599123628 5004032.085512782)@2001-01-01, "
+    "POINT(652513.6326831725 5003847.107986104)@2001-01-02]",
+    "LINESTRING(652703.8964077407 5003786.774758782, "
+    "652322.368562004 5004155.573411469, 652318.1317795934 5003650.016050734, "
+    "652060.2892375863 5004251.273621884, 652367.7547813747 5004318.638264828, "
+    "652509.4005680797 5004005.870055652, 652703.4259387131 5003687.951227436)",
+    0.0);
+  printf("%d moving points against a geometry answered as the nearest "
+    "double\n", moving);
 
   /* Finalize MEOS */
   meos_finalize();
