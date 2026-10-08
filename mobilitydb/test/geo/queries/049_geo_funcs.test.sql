@@ -592,6 +592,24 @@ SELECT
   count(*) FILTER (WHERE ST_Touches(a, b)) AS n_touches
 FROM g;
 
+-- The distance of a point and a line or a polygon is read on the serialized
+-- form of the line or the polygon, and is exactly the PostGIS one in both orders
+WITH g(a, b) AS (VALUES
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.5 1.5)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1.2 1.7)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(1 1.5)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(3 3)'),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 2,1 1))', geometry 'Point(7 9)'),
+  (geometry 'Linestring(0 0,4 0,4 4)', geometry 'Point(2 2)'),
+  (geometry 'Linestring(0 0,4 0,4 4)', geometry 'Point(5 -1)'),
+  (geometry 'Linestring(0 0,0 0)', geometry 'Point(2 2)'))
+SELECT
+  count(*) FILTER (WHERE distance(a, b) IS DISTINCT FROM ST_Distance(a, b)) AS ab,
+  count(*) FILTER (WHERE distance(b, a) IS DISTINCT FROM ST_Distance(b, a)) AS ba,
+  count(*) FILTER (WHERE ST_Distance(a, b) = 0) AS zero,
+  count(*) FILTER (WHERE ST_Distance(a, b) > 0) AS positive
+FROM g;
+
 -------------------------------------------------------------------------------
 -- Clustering
 -- The array forms answer as the PostGIS window functions ST_ClusterKMeans and
