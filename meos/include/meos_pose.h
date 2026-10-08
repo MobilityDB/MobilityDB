@@ -140,6 +140,9 @@ typedef struct
 
 extern const GeoPoseFrame *geopose_frames(int *count);
 extern const GeoPoseFrame *geopose_frame(int32_t frame_id);
+extern char *geopose_frame_name(int32_t frame_id);
+extern int32_t geopose_frame_srid(int32_t frame_id);
+extern bool geopose_frame_is_geographic(int32_t frame_id);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
 extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
 extern Temporal *tpose_compose_pose(const Temporal *body, const Pose *frame);

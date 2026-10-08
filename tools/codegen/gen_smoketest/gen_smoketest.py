@@ -855,6 +855,11 @@ TPOSE_CONFIG = dict(
         # Reprojection needs a pose carrying an explicit source SRID and a real
         # target SRID (the default int32_t -> 0 is the unknown SRID).
         "pose_transform":    {0: "pose_srid1", 1: "3857"},
+        # The frame accessors read a frame the registry states (the default
+        # int32_t -> 0 names none, which they refuse).
+        "geopose_frame_name":          {0: "1"},
+        "geopose_frame_srid":          {0: "1"},
+        "geopose_frame_is_geographic": {0: "1"},
         # WKB byte-buffer input, paired with its size: built from pose_as_wkb()
         # against a canned pose (variant 0 is plain WKB, no hex encoding)
         # rather than guessed.
