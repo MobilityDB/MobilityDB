@@ -404,13 +404,20 @@ int main(void)
     5356862.606508227, 0x1.da01eba69dad5p-41);
   buffer_entry(350907.494, 5247885.866, 1021.3601095091641, 351595.69282486296,
     5248640.5572287515, 0x1.0e819b4674be7p-38);
-  asked += 7;
+  /* A point 2^-440 off the circle of radius 2^100, whose distance to the
+   * buffer, about 2^-881 squared over twice the radius, is 2^-981 */
+  buffer_entry(0, 0, 0x1p+100, 0x1p+100, 0x1p-440, 0x1p-981);
+  /* A centre and a point whose difference, one and a half times the largest
+   * double, is beyond it, the radius half of it, the distance to the buffer
+   * the largest double */
+  buffer_entry(-DBL_MAX / 2, 0, DBL_MAX / 2, DBL_MAX, 0, DBL_MAX);
+  asked += 9;
 
   printf("%d distances answered as the distance between two points, 61 scales, "
     "4 pairs whose squares leave the range of a double, 2 multipoints whose "
     "nearer point a squared bound would skip, 2 beyond FLT_MAX whose every "
     "intermediate value is representable, 18 exact ties in two and three "
-    "coordinates, 3 real pairs on which hypot is not the nearest double and 7 "
+    "coordinates, 3 real pairs on which hypot is not the nearest double and 9 "
     "circular buffers at rest\n", asked);
 
   /* Finalize MEOS */

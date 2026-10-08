@@ -520,9 +520,9 @@ dot_product_sign(const POINT3D *p, const POINT3D *q)
  * the term `DBL_MIN` does, so both reach the exact sign. Where the filter
  * cannot tell, #point_within_distance_sign_exact decides the same quantity
  * exactly over the scaled coordinate differences
- * @note Exact where #point_within_distance_sign_exact is. A negative @p d is
- * the caller's to refuse; every caller of this function validates it at its
- * own entry
+ * @note Exact for any finite coordinates and distance, as
+ * #point_within_distance_sign_exact is. A negative @p d is the caller's to
+ * refuse; every caller of this function validates it at its own entry
  * @return -1 where the points are nearer than the distance, 1 where they are
  * farther, 0 exactly where the distance is the one they are apart. A caller
  * reading a relationship that holds AT the distance takes 0 with -1
