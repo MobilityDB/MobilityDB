@@ -42,10 +42,12 @@
 #include <postgres.h>
 #if ! MEOS
   #include "utils/elog.h"
+  #include <miscadmin.h> /* For CHECK_FOR_INTERRUPTS */
 #endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
 #include <meos_tls.h>     /* MEOS_TLS — per-thread error number (restore #815) */
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Global variables
@@ -220,7 +222,49 @@ meos_initialize_noexit_error_handler(void)
   __atomic_store_n(&MEOS_ERROR_HANDLER, &noexit_error_handler, __ATOMIC_RELEASE);
   return;
 }
+
+/**
+ * @brief Global variable that keeps the interrupt handler function
+ */
+static void (*MEOS_INTERRUPT_HANDLER)(void) = NULL;
+
+/**
+ * @ingroup meos_setup
+ * @brief Initialize interrupt handler function
+ * @details The long computations of MEOS call the handler between two of
+ * their steps. A handler stops the computation by not returning, as a
+ * PostgreSQL backend leaves through its error on a cancel request, and one
+ * that returns lets the computation go on. A NULL handler removes the one
+ * installed
+ */
+void
+meos_initialize_interrupt_handler(interrupt_handler_fn handler)
+{
+  /* Published as the error handler is, see #meos_initialize_error_handler */
+  __atomic_store_n(&MEOS_INTERRUPT_HANDLER, handler, __ATOMIC_RELEASE);
+  return;
+}
 #endif /* MEOS */
+
+/**
+ * @brief Give a long computation the chance to be stopped between two of its
+ * steps
+ * @details MobilityDB answers the cancel request of the backend, and MEOS calls
+ * the handler installed by #meos_initialize_interrupt_handler(), if any
+ */
+void
+meos_check_for_interrupts(void)
+{
+#if MEOS
+  interrupt_handler_fn handler =
+    __atomic_load_n(&MEOS_INTERRUPT_HANDLER, __ATOMIC_ACQUIRE);
+  if (handler)
+    handler();
+#else
+  CHECK_FOR_INTERRUPTS();
+#endif /* MEOS */
+  return;
+}
 
 /*****************************************************************************/
 

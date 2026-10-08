@@ -497,6 +497,11 @@ typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
 
+/* Definition of interrupt handler function */
+typedef void (*interrupt_handler_fn)(void);
+
+extern void meos_initialize_interrupt_handler(interrupt_handler_fn handler);
+
 /* Definition of the optional allocator hook functions. When installed, MEOS
  * routes its working-memory allocations through these hooks so that an
  * embedder can account for and bound them with its own memory manager. They
