@@ -41,7 +41,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "geo/postgis_funcs.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
@@ -85,6 +84,74 @@ tnpointinstarr_step_set_stbox(TInstant **instants, int count, STBox *box)
 }
 
 /**
+ * @brief Expand the spatial extent of a box with a point
+ */
+static void
+stbox_expand_point4d(const POINT4D *p, bool hasz, STBox *box)
+{
+  box->xmin = Min(box->xmin, p->x); box->xmax = Max(box->xmax, p->x);
+  box->ymin = Min(box->ymin, p->y); box->ymax = Max(box->ymax, p->y);
+  if (hasz)
+  {
+    box->zmin = Min(box->zmin, p->z); box->zmax = Max(box->zmax, p->z);
+  }
+  return;
+}
+
+/**
+ * @brief Return in the last argument the spatial box of the stretch of a
+ * route between two positions
+ * @details The box is the one of the points a temporal network point
+ * travelling the stretch passes as #tnpointseq_tgeompointseq_cont states
+ * them: the points at the two positions, located as #npoint_to_geompoint
+ * locates a position, and the vertices of the route strictly between them,
+ * whose positions #route_vertex_positions gives. The points are read as
+ * #npointarr_set_stbox reads them
+ * @param[in] rid Route identifier
+ * @param[in] pos1,pos2 Positions on the route
+ * @param[out] box Spatiotemporal box
+ * @return False when the route is not found
+ */
+static bool
+route_stretch_set_stbox(int64 rid, double pos1, double pos2, STBox *box)
+{
+  const GSERIALIZED *gsline = route_geom(rid);
+  if (! gsline)
+    return false;
+  int32_t srid = gserialized_get_srid(gsline);
+  bool hasz = (bool) FLAGS_GET_Z(gsline->gflags);
+  /* The routes of the table ways are geometries */
+  assert(! FLAGS_GET_GEODETIC(gsline->gflags));
+  LWLINE *line = (LWLINE *) lwgeom_from_gserialized(gsline);
+  double posmin = Min(pos1, pos2), posmax = Max(pos1, pos2);
+
+  POINT4D p;
+  POINTARRAY *opa = lwline_interpolate_points(line, posmin, 0);
+  getPoint4d_p(opa, 0, &p);
+  ptarray_free(opa);
+  stbox_set(true, hasz, false, srid, p.x, p.x, p.y, p.y,
+    hasz ? p.z : 0.0, hasz ? p.z : 0.0, NULL, box);
+  opa = lwline_interpolate_points(line, posmax, 0);
+  getPoint4d_p(opa, 0, &p);
+  ptarray_free(opa);
+  stbox_expand_point4d(&p, hasz, box);
+
+  int count;
+  double *positions = route_vertex_positions(line->points, &count);
+  for (int k = 0; k < count; k++)
+  {
+    if (positions[k] <= posmin || positions[k] >= posmax)
+      continue;
+    getPoint4d_p(line->points, k + 1, &p);
+    stbox_expand_point4d(&p, hasz, box);
+  }
+  if (positions)
+    pfree(positions);
+  lwline_free(line);
+  return true;
+}
+
+/**
  * @brief Return in the last argument q spatiotemporal box constructed from
  * an array of temporal network point instants
  * @param[in] instants Temporal instant values
@@ -106,20 +173,14 @@ tnpointinstarr_linear_set_stbox(TInstant **instants, int count, STBox *box)
     posmax = Max(posmax, np->pos);
   }
 
-  const GSERIALIZED *line = route_geom(rid);
-  if (! line)
+  if (! route_stretch_set_stbox(rid, posmin, posmax, box))
   {
     memset(box, 0, sizeof(STBox));
     return;
   }
-  GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
-    line_substring(line, posmin, posmax);
-  geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
-  if (posmin != 0 || posmax != 1)
-    pfree(gs);
   return;
 }
 
@@ -158,22 +219,13 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
   else
   {
     const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
-    Npoint *np1 = DatumGetNpointP(tinstant_value_p(last));
-    Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst));
-    int64 rid = np1->rid;
-    double posmin = Min(np1->pos, np2->pos);
-    double posmax = Min(np1->pos, np2->pos);
-    const GSERIALIZED *line = route_geom(rid);
-    if (! line)
+    const Npoint *np1 = DatumGetNpointP(tinstant_value_p(last));
+    const Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst));
+    if (! route_stretch_set_stbox(np1->rid, np1->pos, np2->pos, &box))
       return;
-    GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
-      line_substring(line, posmin, posmax);
-    geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
     MEOS_FLAGS_SET_T(box.flags, true);
-    if (posmin != 0 || posmax != 1)
-      pfree(gs);
   }
   /* Expand the bounding box of the sequence with the last edge */
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));

@@ -395,3 +395,12 @@ ORDER BY op, leftarg, rightarg;
 DROP TABLE test_tnpoint_topops;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The box of a temporal network point is the box of the temporal geometry
+-- point it converts into
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE stbox(temp) <> stbox(temp::tgeompoint);
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE stbox(temp) <> stbox(temp::tgeompoint);
+
+-------------------------------------------------------------------------------
