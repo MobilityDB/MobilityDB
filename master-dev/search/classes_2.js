@@ -11,8 +11,10 @@ var searchData=
   ['buffernodebyx_8',['BufferNodeByX',['../structBufferNodeByX.html',1,'']]],
   ['buffernodeend_9',['BufferNodeEnd',['../structBufferNodeEnd.html',1,'']]],
   ['buffernodeindex_10',['BufferNodeIndex',['../structBufferNodeIndex.html',1,'']]],
-  ['bufferringinfo_11',['BufferRingInfo',['../structBufferRingInfo.html',1,'']]],
-  ['bufferselected_12',['BufferSelected',['../structBufferSelected.html',1,'']]],
-  ['buffersplitpoint_13',['BufferSplitPoint',['../structBufferSplitPoint.html',1,'']]],
-  ['buffersweepedge_14',['BufferSweepEdge',['../structBufferSweepEdge.html',1,'']]]
+  ['bufferoperandrings_11',['BufferOperandRings',['../structBufferOperandRings.html',1,'']]],
+  ['bufferringinfo_12',['BufferRingInfo',['../structBufferRingInfo.html',1,'']]],
+  ['bufferselected_13',['BufferSelected',['../structBufferSelected.html',1,'']]],
+  ['buffersideask_14',['BufferSideAsk',['../structBufferSideAsk.html',1,'']]],
+  ['buffersplitpoint_15',['BufferSplitPoint',['../structBufferSplitPoint.html',1,'']]],
+  ['buffersweepedge_16',['BufferSweepEdge',['../structBufferSweepEdge.html',1,'']]]
 ];
