@@ -64,7 +64,7 @@ Eintersects_geo_tquadbin(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_intersects_tgeo_geo(tgeo, gs, EVER);
+  int result = eintersects_geo_tgeo(gs, tgeo);
   pfree(tgeo);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -86,7 +86,7 @@ Eintersects_tquadbin_geo(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_intersects_tgeo_geo(tgeo, gs, EVER);
+  int result = eintersects_tgeo_geo(tgeo, gs);
   pfree(tgeo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -109,7 +109,7 @@ Eintersects_tquadbin_tquadbin(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *tgeo1 = tcellindex_cell_to_boundary(temp1);
   Temporal *tgeo2 = tcellindex_cell_to_boundary(temp2);
-  int result = ea_intersects_tgeo_tgeo(tgeo1, tgeo2, EVER);
+  int result = eintersects_tgeo_tgeo(tgeo1, tgeo2);
   pfree(tgeo1); pfree(tgeo2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -137,7 +137,7 @@ Edwithin_geo_tquadbin(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, true, EVER);
+  int result = edwithin_geo_tgeo(gs, tgeo, dist, true);
   pfree(tgeo);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -161,7 +161,7 @@ Edwithin_tquadbin_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo = tcellindex_cell_to_boundary(temp);
-  int result = ea_dwithin_tgeo_geo(tgeo, gs, dist, true, EVER);
+  int result = edwithin_tgeo_geo(tgeo, gs, dist, true);
   pfree(tgeo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -185,7 +185,7 @@ Edwithin_tquadbin_tquadbin(PG_FUNCTION_ARGS)
   double dist = PG_GETARG_FLOAT8(2);
   Temporal *tgeo1 = tcellindex_cell_to_boundary(temp1);
   Temporal *tgeo2 = tcellindex_cell_to_boundary(temp2);
-  int result = ea_dwithin_tgeo_tgeo(tgeo1, tgeo2, dist, true, EVER);
+  int result = edwithin_tgeo_tgeo(tgeo1, tgeo2, dist, true);
   pfree(tgeo1); pfree(tgeo2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
