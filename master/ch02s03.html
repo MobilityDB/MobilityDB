@@ -20,7 +20,19 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00, 2001-01-01 08
 /* {[2001-01-01 08:00:00, 2001-01-01 08:00:00], [2001-01-01 08:15:00,
    2001-01-01 08:15:00],
    [2001-01-01 08:25:00, 2001-01-01 08:25:00]} */
-</pre></li><li class="listitem"><a name="span_convert"></a><a class="indexterm" name="id2741"></a><a class="indexterm" name="id2744"></a><p>Convert a span value to a span set value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geoset_convert"></a><a class="indexterm" name="id2741"></a><a class="indexterm" name="id2744"></a><a class="indexterm" name="id2747"></a><p>Convert a geo set into the collection of its values</p><pre class="programlisting">
+geomset::geometry
+geogset::geography
+geometry(geomset) → geometry
+geography(geogset) → geography
+</pre><p>The collection takes its type from the types of the values alone, as the PostGIS function <code class="varname">ST_Collect</code> builds it from them, so a set of points, a set of one point included, answers a multipoint.</p><pre class="programlisting">
+SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry);
+-- MULTIPOINT((1 1),(2 2))
+SELECT ST_AsText(geomset '{"Point(1 1)"}'::geometry);
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+</pre></li><li class="listitem"><a name="span_convert"></a><a class="indexterm" name="id2756"></a><a class="indexterm" name="id2759"></a><p>Convert a span value to a span set value</p><pre class="programlisting">
 span::spanset
 spanset(span) → spanset
 </pre><pre class="programlisting">
@@ -28,7 +40,7 @@ SELECT floatspan '[1.5,2.5]'::floatspanset;
 -- {[1.5, 2.5]}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 -- {[2001-01-01 08:00:00, 2001-01-01 08:30:00)}
-</pre></li><li class="listitem"><a name="setspan_span"></a><a class="indexterm" name="id2751"></a><p>Convert a set or a span set into a span, ignoring the potential time gaps</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_span"></a><a class="indexterm" name="id2766"></a><p>Convert a set or a span set into a span, ignoring the potential time gaps</p><pre class="programlisting">
 {set,spanset}::span
 span({set,spanset}) → span
 </pre><pre class="programlisting">
@@ -36,7 +48,7 @@ SELECT span(dateset '{2001-01-01, 2001-01-03, 2001-01-05}');
 -- [2001-01-01, 2001-01-06)
 SELECT span(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- [2001-01-01, 2001-01-04)
-</pre></li><li class="listitem"><a name="range_convert"></a><a class="indexterm" name="id2758"></a><a class="indexterm" name="id2761"></a><a class="indexterm" name="id2764"></a><p>Convert a span value to and from a PostgreSQL range value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="range_convert"></a><a class="indexterm" name="id2773"></a><a class="indexterm" name="id2776"></a><a class="indexterm" name="id2779"></a><p>Convert a span value to and from a PostgreSQL range value</p><pre class="programlisting">
 {span,range}::{range,span}
 range(span) → range
 span(range) → span
@@ -53,7 +65,7 @@ SELECT int4range '[10,)'::intspan;
 -- ERROR:  Range bounds cannot be infinite
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
-</pre></li><li class="listitem"><a name="multirange_convert"></a><a class="indexterm" name="id2772"></a><a class="indexterm" name="id2775"></a><a class="indexterm" name="id2778"></a><p>Convert a span set value to and from a PostgreSQL multirange value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="multirange_convert"></a><a class="indexterm" name="id2787"></a><a class="indexterm" name="id2790"></a><a class="indexterm" name="id2793"></a><p>Convert a span set value to and from a PostgreSQL multirange value</p><pre class="programlisting">
 {spanset,multirange}::{multirange,spanset}
 multirange(spanset) → multirange
 spanset(multirange) → spanset

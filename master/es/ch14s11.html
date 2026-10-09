@@ -3,7 +3,7 @@ SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
 -- ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is
 -- a convex polygon without holes
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11242"></a><p>Devuelve la distancia temporal</p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_tdistance"></a><a class="indexterm" name="id11463"></a><p>Devuelve la distancia temporal</p><pre class="programlisting">
 {geometry,tgeompoint,trgeometry} &lt;-&gt; {geometry,tgeompoint,trgeometry} → tfloat
 tDistance({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry}) → tfloat
 </pre><p>En el primer ejemplo, un cuadrado pasa junto a un punto. Su lado permanece a distancia 2 del punto desde las 10:00 hasta las 14:00. En el segundo ejemplo, el cuadrado gira un cuarto de vuelta junto al punto. Una esquina del cuadrado se acerca más al punto a las 12:00, y el resultado tiene un instante allí.</p><pre class="programlisting">
@@ -27,7 +27,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(2 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]';
 -- [1@2001-01-01, 9@2001-01-02]
-</pre></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11250"></a><p>Devuelve la distancia de aproximación más cercana</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11471"></a><p>Devuelve la distancia de aproximación más cercana</p><pre class="programlisting">
 {geometry,stbox,tgeompoint,trgeometry} |=| {geometry,stbox,tgeompoint,trgeometry} → float
 nearestApproachDistance({geometry,stbox,tgeompoint,trgeometry},
   {geometry,stbox,tgeompoint,trgeometry}) → float
@@ -41,7 +41,7 @@ SELECT round(nearestApproachDistance(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963267948966)@2001-01-02]',
   geometry 'Point(3 0)')::numeric, 6);
 -- 1.585786
-</pre><p>El operador <code class="varname">|=|</code> se puede utilizar para búsquedas de vecino más cercano con índices GiST o SP-GiST (véase <a class="xref" href="ch14s20.html" title="Indexación">“Indexación”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11260"></a><p>Devuelve el instante del primer argumento en el que los dos argumentos están más cerca</p><pre class="programlisting">
+</pre><p>El operador <code class="varname">|=|</code> se puede utilizar para búsquedas de vecino más cercano con índices GiST o SP-GiST (véase <a class="xref" href="ch14s20.html" title="Indexación">“Indexación”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11481"></a><p>Devuelve el instante del primer argumento en el que los dos argumentos están más cerca</p><pre class="programlisting">
 nearestApproachInstant({geometry,tgeompoint,trgeometry},
   {geometry,tgeompoint,trgeometry}) → trgeometry
 </pre><p>Si la distancia permanece en su mínimo durante un intervalo, el resultado es el primer instante del intervalo. En el segundo ejemplo, el cuadrado está a distancia 4 del punto desde las 09:36 hasta las 12:00.</p><pre class="programlisting">
@@ -53,7 +53,7 @@ SELECT asText(nearestApproachInstant(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(5 5)'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@2001-01-01 09:36:00
-</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11268"></a><p>Devuelve la línea entre los puntos más cercanos de los dos argumentos en su instante de aproximación más cercana</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11489"></a><p>Devuelve la línea entre los puntos más cercanos de los dos argumentos en su instante de aproximación más cercana</p><pre class="programlisting">
 shortestLine({geometry,tgeompoint,trgeometry},{geometry,tgeompoint,trgeometry})
   → geometry
 </pre><pre class="programlisting">
