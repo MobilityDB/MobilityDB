@@ -2166,7 +2166,48 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
 }
 
 /**
+ * @brief Collect the ends of two straight buffer edges that lie on the other
+ * one, decided exactly
+ * @details An end is an input vertex, so whether it lies on the other edge is
+ * the sign of a cross product and comparisons of coordinates
+ * (#point_on_segment_exact). An end found twice, the joint two edges share,
+ * is collected once
+ * @param[in] e1,e2 Straight edges
+ * @param[out] ends Room for four points
+ * @return The number of ends collected
+ */
+static int
+buffer_segment_ends_on_segment(const Edge *e1, const Edge *e2, POINT2D *ends)
+{
+  assert(e1); assert(e2); assert(ends);
+  const Edge *edges[2] = {e1, e2};
+  int n = 0;
+  for (int k = 0; k < 4; k++)
+  {
+    const Edge *own = edges[k / 2], *other = edges[1 - k / 2];
+    POINT2D p = (k % 2 == 0) ? (POINT2D) {own->x1, own->y1} :
+      (POINT2D) {own->x2, own->y2};
+    if (! point_on_segment_exact(p.x, p.y, other->x1, other->y1, other->x2,
+          other->y2))
+      continue;
+    bool seen = false;
+    for (int m = 0; m < n && ! seen; m++)
+      seen = (ends[m].x == p.x && ends[m].y == p.y);
+    if (! seen)
+      ends[n++] = p;
+  }
+  return n;
+}
+
+/**
  * @brief Collect intersections between two straight buffer edges
+ * @details Two edges meeting at an end of one of them meet at that end, which
+ * is an input vertex and is collected as it is: rebuilt from its position
+ * along the other edge, it lands a rounding step away from itself, and the
+ * node it stands for is computed twice. Only a crossing interior to both
+ * edges is constructed, once, from its position along the first. Two edges
+ * overlapping along a stretch meet at its two ends, which are ends of the
+ * edges
  */
 static void
 buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
@@ -2175,21 +2216,17 @@ buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
   assert(e1); assert(e2); assert(points);
   IntersectResult result = linesegm_intersect(e1->x1, e1->y1,
     e1->x2, e1->y2, e2->x1, e2->y1, e2->x2, e2->y2);
-  if (result.type == INTERSECT_POINT)
+  if (result.type == INTERSECT_NONE)
+    return;
+  POINT2D ends[4];
+  int nends = buffer_segment_ends_on_segment(e1, e2, ends);
+  for (int k = 0; k < nends; k++)
+    buffer_add_intersection_point(points, ends[k].x, ends[k].y);
+  if (result.type == INTERSECT_POINT && nends == 0)
   {
     double x = e1->x1 + result.t0 * e1->dx;
     double y = e1->y1 + result.t0 * e1->dy;
     buffer_add_intersection_point(points, x, y);
-  }
-  else if (result.type == INTERSECT_OVERLAP)
-  {
-    /* For an overlapping segment there are two nodes */
-    double x0 = e1->x1 + result.t0 * e1->dx;
-    double y0 = e1->y1 + result.t0 * e1->dy;
-    double x1 = e1->x1 + result.t1 * e1->dx;
-    double y1 = e1->y1 + result.t1 * e1->dy;
-    buffer_add_intersection_point(points, x0, y0);
-    buffer_add_intersection_point(points, x1, y1);
   }
 }
 
