@@ -104,6 +104,31 @@ whole-shape semantics converts via `trgeometry::tgeometry` before applying the
 spatial restriction; that conversion materialises one polygon per instant and is
 correspondingly more expensive.
 
+## Ever within a distance
+
+`eDwithin(trgeometry, trgeometry, d)` answers whether the minimum of the temporal
+distance is at most `d`, and it answers without computing that distance. It
+walks the same synchronized segments with the same segment kernel as `tDistance`,
+and stops at the first value at most `d`. Before walking a segment, it bounds the
+distance of the two bodies from below by the distance of their rotation centers
+minus the largest distance of each body's vertices to its center. The centers
+move linearly in a segment, so the smallest distance of the centers in the
+segment is the clamped projection of the origin on their relative motion. A
+segment whose bound exceeds `d` holds no value at most `d` and is not walked. The
+bound is grown by `MEOS_EPSILON` relative to the magnitude of the coordinates, so
+the rounding of its computation never skips a segment that the walk would answer
+with a value at most `d`.
+
+Two vessels whose boxes meet within `d` mostly keep apart. Of 300 such pairs of
+real AIS trips, 4 come within 100 metres. A pair kept apart, which the full
+distance walks to its end, is then answered from the motion of the centers.
+Measured over those 300 pairs, `eDwithin` gives the same answer as
+`nearestApproachDistance(a, b) <= d` at 100, 300 and 500 metres, at the nearest
+approach itself and just below it, and takes 0.29 of the time of
+`nearestApproachDistance`. What remains is the synchronization of the two trips
+and their decompression. The always semantics `aDwithin` still needs the maximum
+of the distance, and computes it in full.
+
 ## Durability and storage
 
 The on-disk representation is the reference `GSERIALIZED` followed by the

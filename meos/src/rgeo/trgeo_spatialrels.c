@@ -769,10 +769,15 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  return ea_dwithin_tdist(trgeo_tdistance_trgeo(temp1, temp2,
-    ever ? -1.0 : dist), dist, ever);
+  /* The ever semantics stops at the first distance within the bound */
+  if (ever)
+    return trgeo_edwithin_trgeo(temp1, temp2, dist);
+  return ea_dwithin_tdist(trgeo_tdistance_trgeo(temp1, temp2, dist), dist,
+    ever);
 }
 
 /**
