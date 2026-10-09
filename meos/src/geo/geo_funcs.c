@@ -347,8 +347,9 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     double theta_b = atan2(by - my, bx - mx);
     /* Carried back to where the points came from */
     mx += ox; my += oy;
-    const double sx[2] = {ax + ox, bx + ox}, sy[2] = {ay + oy, by + oy};
-    const double ex[2] = {bx + ox, ax + ox}, ey[2] = {by + oy, ay + oy};
+    /* The points given, as the ends of an arc are */
+    const double sx[2] = {pa->x, pb->x}, sy[2] = {pa->y, pb->y};
+    const double ex[2] = {pb->x, pa->x}, ey[2] = {pb->y, pa->y};
     const double t0[2] = {theta_a, theta_b}, t1[2] = {theta_b, theta_a};
     for (int i = 0; i < 2; i++)
     {
@@ -383,8 +384,9 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   if (cross_product_sign(pb->x, pb->y, pa->x, pa->y, pb->x, pb->y, pc->x,
         pc->y) == 0 || d == 0.0)
   {
-    const double px[3] = {ax + ox, bx + ox, cx + ox};
-    const double py[3] = {ay + oy, by + oy, cy + oy};
+    /* The points given, as the ends of an arc are */
+    const double px[3] = {pa->x, pb->x, pc->x};
+    const double py[3] = {pa->y, pb->y, pc->y};
     for (int i = 0; i < 2; i++)
     {
       Edge e;
@@ -416,8 +418,12 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.sx = pa->x; e.sy = pa->y; e.mx = pb->x; e.my = pb->y;
   e.ex = pc->x; e.ey = pc->y;
   e.diameter = false;
-  e.x1 = ax + ox; e.y1 = ay + oy;
-  e.x2 = cx + ox; e.y2 = cy + oy;
+  /* The ends are the points given: carried back from the middle point, an
+   * end lands a rounding step from itself wherever its coordinates and the
+   * middle's lie in different binades, and the next edge of the string, which
+   * starts where this one ends, then does not meet it */
+  e.x1 = pa->x; e.y1 = pa->y;
+  e.x2 = pc->x; e.y2 = pc->y;
   e.theta0 = atan2(e.y1 - e.cy, e.x1 - e.cx);
   e.theta1 = atan2(e.y2 - e.cy, e.x2 - e.cx);
   /* Traversal orientation from the signed area of (start, mid, end) */
