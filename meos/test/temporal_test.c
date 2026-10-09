@@ -150,7 +150,7 @@ int main(void)
   char *tint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tint1 = tint_in(tint1_in);
   char *tint1_out = tint_out(tint1);
-  char *tint1_mfjson = temporal_as_mfjson(tint1, true, 1, 6, NULL);
+  char *tint1_mfjson = temporal_as_mfjson(tint1, 1, 1, 6, NULL);
   char *tint2_in = "{[2@2001-01-01, 4@2001-01-04],[5@2001-01-05, 7@2001-01-07]}";
   Temporal *tint2 = tint_in(tint2_in);
   char *tint2_out = tint_out(tint2);
@@ -160,7 +160,7 @@ int main(void)
   char *tfloat1_out = tfloat_out(tfloat1, 6);
   char *tfloat1_hexwkb = temporal_as_hexwkb(tfloat1, 1, &size_hexwkb);
   uint8_t *tfloat1_wkb = temporal_as_wkb(tfloat1, 1, &tfloat_size_wkb);
-  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, true, 1, 6, NULL);
+  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, 1, 1, 6, NULL);
   char *tfloatinst1_in = "1@2001-01-01";
   TInstant *tfloatinst1 = (TInstant *) tfloat_in(tfloatinst1_in);
   char *tfloatinst1_out = tfloat_out((Temporal *) tfloatinst1, 6);
@@ -185,7 +185,7 @@ int main(void)
   char *ttext1_in = "{[A@2001-01-01, B@2001-01-03],[C@2001-01-04, D@2001-01-06]}";
   Temporal *ttext1 = ttext_in(ttext1_in);
   char *ttext1_out = ttext_out(ttext1);
-  char *ttext1_mfjson = temporal_as_mfjson(ttext1, true, 1, 6, NULL);
+  char *ttext1_mfjson = temporal_as_mfjson(ttext1, 1, 1, 6, NULL);
   char *ttext2_in = "{[E@2001-01-02, F@2001-01-04],[G@2001-01-05, H@2001-01-07]}";
   Temporal *ttext2 = ttext_in(ttext2_in);
   char *ttext2_out = ttext_out(ttext2);
@@ -638,7 +638,7 @@ int main(void)
    *****************************************************************************/
 
   /* Temporal *tbool_from_mfjson(const char *str); */
-  char *mfjson = temporal_as_mfjson(tbool1, true, 1, 6, NULL);
+  char *mfjson = temporal_as_mfjson(tbool1, 1, 1, 6, NULL);
   tbool_result = tbool_from_mfjson(mfjson);
   char_result = tbool_out(tbool_result);
   printf("tbool_from_mfjson(%s): %s\n", tbool1_in, char_result);
@@ -661,8 +661,8 @@ int main(void)
   free(char_result);
 
   /* char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs); */
-  char_result = temporal_as_mfjson(tfloat1, true, 1, 1, "");
-  printf("temporal_as_mfjson(%s, true, 1, 1, \"\"): %s\n", tfloat1_out, char_result);
+  char_result = temporal_as_mfjson(tfloat1, 1, 1, 1, "");
+  printf("temporal_as_mfjson(%s, 1, 1, 1, \"\"): %s\n", tfloat1_out, char_result);
   free(char_result);
 
   /* uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out); */

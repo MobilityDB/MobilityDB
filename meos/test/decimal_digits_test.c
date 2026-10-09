@@ -234,8 +234,8 @@ int main(void)
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = temporal_as_mfjson(tfloat, false, 0, -1, NULL);
-  printf("temporal_as_mfjson(temp, false, 0, -1, NULL): %s, errno %d\n",
+  str = temporal_as_mfjson(tfloat, 0, 0, -1, NULL);
+  printf("temporal_as_mfjson(temp, 0, 0, -1, NULL): %s, errno %d\n",
     str ? "a value" : "NULL", meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
@@ -299,9 +299,9 @@ int main(void)
 
   /* An MF-JSON precision above the default writes the default number of
    * decimal digits */
-  str = temporal_as_mfjson(tfloat, false, 0, 20, NULL);
-  char *str15 = temporal_as_mfjson(tfloat, false, 0, 15, NULL);
-  printf("temporal_as_mfjson(temp, false, 0, 20, NULL): %s, errno %d\n",
+  str = temporal_as_mfjson(tfloat, 0, 0, 20, NULL);
+  char *str15 = temporal_as_mfjson(tfloat, 0, 0, 15, NULL);
+  printf("temporal_as_mfjson(temp, 0, 0, 20, NULL): %s, errno %d\n",
     str ? str : "NULL", meos_errno());
   assert(str && str15 && strcmp(str, str15) == 0 && meos_errno() == 0);
   free(str); free(str15);

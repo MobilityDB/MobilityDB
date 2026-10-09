@@ -34,8 +34,9 @@
  * @details Where the caller names no system, #geo_as_geojson names the one
  * its options ask for as PostGIS function @p ST_AsGeoJSON does, and
  * #temporal_as_mfjson names the one of a spatial value of known SRID as the
- * PostgreSQL function @p asMFJSON does, both reading the name from
- * `spatial_ref_sys.csv`. An SRID absent from the file is an error, reached
+ * PostgreSQL function @p asMFJSON does, the long name where its option asks
+ * for it alone and the short one otherwise, writing the bounding box where it
+ * asks for it, both reading the name from `spatial_ref_sys.csv`. An SRID absent from the file is an error, reached
  * under #meos_initialize_noexit_error_handler, the handler every language
  * binding installs.
  *
@@ -74,10 +75,10 @@ geojson(const char *ewkt, int option, const char *srs)
  * @brief Return the MF-JSON representation of a temporal value
  */
 static char *
-mfjson(Temporal *temp)
+mfjson(Temporal *temp, int option)
 {
   assert(temp);
-  char *result = temporal_as_mfjson(temp, false, 0, 6, NULL);
+  char *result = temporal_as_mfjson(temp, option, 0, 6, NULL);
   free(temp);
   return result;
 }
@@ -128,18 +129,34 @@ main(void)
 
   /* A temporal point of known SRID names its system, one of unknown SRID
    * and a temporal float name none */
-  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"));
+  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"), 0);
   assert(s && strstr(s, "\"properties\":{\"name\":\"EPSG:3857\"}"));
   free(s);
-  s = mfjson(tgeompoint_in("Point(1 1)@2001-01-01"));
+  s = mfjson(tgeompoint_in("Point(1 1)@2001-01-01"), 0);
   assert(s && ! strstr(s, "\"crs\""));
   free(s);
-  s = mfjson(tfloat_in("1.5@2001-01-01"));
+  s = mfjson(tfloat_in("1.5@2001-01-01"), 0);
   assert(s && ! strstr(s, "\"crs\""));
   free(s);
-  s = mfjson(tgeompoint_in("SRID=123456;Point(1 1)@2001-01-01"));
+  s = mfjson(tgeompoint_in("SRID=123456;Point(1 1)@2001-01-01"), 0);
   assert(s == NULL && meos_errno() != 0);
   meos_errno_reset();
+
+  /* The option asks for the long name alone with 4, the short name wins
+   * with 2 and 4, and 1 writes the bounding box */
+  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"), 4);
+  assert(s && strstr(s,
+    "\"properties\":{\"name\":\"urn:ogc:def:crs:EPSG::3857\"}"));
+  free(s);
+  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"), 6);
+  assert(s && strstr(s, "\"properties\":{\"name\":\"EPSG:3857\"}"));
+  free(s);
+  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"), 1);
+  assert(s && strstr(s, "\"bbox\""));
+  free(s);
+  s = mfjson(tgeompoint_in("SRID=3857;Point(1 1)@2001-01-01"), 0);
+  assert(s && ! strstr(s, "\"bbox\""));
+  free(s);
 
   meos_finalize();
   printf("crs_name_test: OK\n");
