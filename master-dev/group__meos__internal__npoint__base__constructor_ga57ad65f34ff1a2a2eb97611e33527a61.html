@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: npointset_make</title>
+<title>MobilityDB: nsegment_set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__npoint__set__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__npoint__base__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,28 +79,41 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__npoint__set__constructor_ga1a0ae8ac1e888a426363689bc2b3f46b.html#ga1a0ae8ac1e888a426363689bc2b3f46b">npointset_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__base__constructor_ga404d86c8ada734192a9d044646e83d6b.html#ga404d86c8ada734192a9d044646e83d6b">npoint_set</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__npoint__base__constructor_ga57ad65f34ff1a2a2eb97611e33527a61.html#ga57ad65f34ff1a2a2eb97611e33527a61">nsegment_set</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga1a0ae8ac1e888a426363689bc2b3f46b" name="ga1a0ae8ac1e888a426363689bc2b3f46b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1a0ae8ac1e888a426363689bc2b3f46b">&#9670;&#160;</a></span>npointset_make()</h2>
+<a id="ga57ad65f34ff1a2a2eb97611e33527a61" name="ga57ad65f34ff1a2a2eb97611e33527a61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga57ad65f34ff1a2a2eb97611e33527a61">&#9670;&#160;</a></span>nsegment_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSet.html">Set</a> * npointset_make </td>
+          <td class="memname">void nsegment_set </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structNpoint.html">Npoint</a> **&#160;</td>
-          <td class="paramname"><em>values</em>, </td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>rid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structNsegment.html">Nsegment</a> *&#160;</td>
+          <td class="paramname"><em>ns</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -110,14 +123,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a network point set from an array of values. </p>
+<p>Return in the last argument a network segment constructed from a route identifier and two positions. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Array of values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements of the array @csqlfn <a class="el" href="group__mobilitydb__setspan__constructor_ga5f5899742a70552ddbc2be41c81471e1.html#ga5f5899742a70552ddbc2be41c81471e1" title="Return a set from an array of values @sqlfn set() @altsqlfn setMake()">Set_constructor()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rid</td><td>Route identifier </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos1,pos2</td><td>Positions </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ns</td><td>Network segment </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>This function is equivalent to <a class="el" href="group__meos__npoint__base__constructor_gaeff5ddc22a67c4b199d15f66947f3338.html#gaeff5ddc22a67c4b199d15f66947f3338" title="Return a network segment from a route identifier and two positions.">nsegment_make</a> without memory allocation </dd></dl>
 
 </div>
 </div>
