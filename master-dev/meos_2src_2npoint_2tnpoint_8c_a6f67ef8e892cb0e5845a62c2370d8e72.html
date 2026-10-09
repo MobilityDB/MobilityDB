@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnpointseqset_tgeompointseqset</title>
+<title>MobilityDB: route_point_tinstant</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,7 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a5f02c470a2cb6efc496d2d8a21a2186b.html#a5f02c470a2cb6efc496d2d8a21a2186b">ensure_valid_tnpoint_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ab22ba536dffb591c803cbc3c66257c2e.html#ab22ba536dffb591c803cbc3c66257c2e">ensure_valid_tnpoint_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__set__accessor_gacac2cd1c73502ff07c70f9696bdc8ac8.html#gacac2cd1c73502ff07c70f9696bdc8ac8">npointset_routes</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a6f67ef8e892cb0e5845a62c2370d8e72.html#a6f67ef8e892cb0e5845a62c2370d8e72">route_point_tinstant</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a6f67ef8e892cb0e5845a62c2370d8e72.html#a6f67ef8e892cb0e5845a62c2370d8e72">route_point_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__conversion_ga18e87096b5f9556a9fe9d4f70f9eefe5.html#ga18e87096b5f9556a9fe9d4f70f9eefe5">tgeompoint_to_tnpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ac51ca2af32726e8fa49561a4cd9b6f93.html#ac51ca2af32726e8fa49561a4cd9b6f93">tgeompointseq_tnpointseq</a></td></tr>
@@ -136,28 +136,60 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_afa7404ea8b2232f73f3358b640018470.html#afa7404ea8b2232f73f3358b640018470">tnpointseqset_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a1e3f9e1abbfe420fe3d54abb631ec8d5.html#a1e3f9e1abbfe420fe3d54abb631ec8d5">tnpointseqset_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a6cf2be89a5dfda8281f238ba1f1a1b28.html#a6cf2be89a5dfda8281f238ba1f1a1b28">tnpointseqset_step_positions</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a1a74a7d95e33597471bb8bf2c1c3c069.html#a1a74a7d95e33597471bb8bf2c1c3c069">tnpointseqset_tgeompointseqset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a1a74a7d95e33597471bb8bf2c1c3c069.html#a1a74a7d95e33597471bb8bf2c1c3c069">tnpointseqset_tgeompointseqset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1a74a7d95e33597471bb8bf2c1c3c069" name="a1a74a7d95e33597471bb8bf2c1c3c069"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a74a7d95e33597471bb8bf2c1c3c069">&#9670;&#160;</a></span>tnpointseqset_tgeompointseqset()</h2>
+<a id="a6f67ef8e892cb0e5845a62c2370d8e72" name="a6f67ef8e892cb0e5845a62c2370d8e72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f67ef8e892cb0e5845a62c2370d8e72">&#9670;&#160;</a></span>route_point_tinstant()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> * tnpointseqset_tgeompointseqset </td>
+          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> * route_point_tinstant </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td>
-          <td class="paramname"><em>ss</em></td><td>)</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *&#160;</td>
+          <td class="paramname"><em>opa</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Convert a temporal network point into a temporal geometry point. </p>
+<p>Return a temporal geometry point instant located at the point of a point array, which the function consumes. </p>
+<p >The instant a point of a route makes, as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_abda8d6a60233ff78a9f73757aa59f1ba.html#abda8d6a60233ff78a9f73757aa59f1ba" title="Convert a temporal network point into a temporal geometry point.">tnpointinst_tgeompointinst</a> makes it for a network point </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the route </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">opa</td><td>Point array holding one point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
