@@ -3864,9 +3864,17 @@ typedef struct
   double e;
 } ArcsegFilter;
 
-/* The memory one exact evaluation takes, released in one step */
+/* The doubles one exact evaluation takes at most without a block of its
+ * own: the expansions of a meeting of a segment and an arc of three points */
+#define ARCSEG_ARENA_SIZE 4096
+
+/* The memory one exact evaluation takes, released in one step: taken in
+ * order from a buffer on the stack, and from blocks of its own once the
+ * buffer is used up */
 typedef struct
 {
+  double buf[ARCSEG_ARENA_SIZE];
+  int used;
   double **blocks;
   int n;
   int cap;
@@ -3882,6 +3890,13 @@ typedef struct
 static double *
 arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
 {
+  ndoubles = Max(ndoubles, 1);
+  if (arena->used + ndoubles <= ARCSEG_ARENA_SIZE)
+  {
+    double *block = arena->buf + arena->used;
+    arena->used += ndoubles;
+    return block;
+  }
   if (arena->n == arena->cap)
   {
     arena->cap = arena->cap ? 2 * arena->cap : 64;
@@ -3889,7 +3904,7 @@ arcseg_arena_alloc(ArcsegArena *arena, int ndoubles)
       repalloc(arena->blocks, sizeof(double *) * arena->cap) :
       palloc(sizeof(double *) * arena->cap);
   }
-  double *block = palloc(sizeof(double) * Max(ndoubles, 1));
+  double *block = palloc(sizeof(double) * ndoubles);
   arena->blocks[arena->n++] = block;
   return block;
 }
@@ -3902,7 +3917,7 @@ arcseg_arena_free(ArcsegArena *arena)
   if (arena->blocks)
     pfree(arena->blocks);
   arena->blocks = NULL;
-  arena->n = arena->cap = 0;
+  arena->n = arena->cap = arena->used = 0;
   return;
 }
 
@@ -4187,7 +4202,9 @@ static void
 arcseg_signs_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegSigns *sg)
 {
-  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.blocks = NULL;
   ArcsegExact qa, qb, qc, h1, h0, side;
   arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &qa, &qb, &qc, &h1,
     &h0, &side);
@@ -4248,7 +4265,9 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
   if (*sqa != 2 && *sqb != 2 && *sab != 2 && *s2ab != 2 && *sh1 != 2 &&
       *sside != 2)
     return;
-  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.blocks = NULL;
   ArcsegExact xqa, xqb, xqc, xh1, xh0, xside;
   arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &xqa, &xqb, &xqc,
     &xh1, &xh0, &xside);
@@ -4542,7 +4561,9 @@ arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   int *s1, int *sp, int *sq)
 {
   assert(p); assert(q); assert(s1); assert(sp); assert(sq);
-  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.blocks = NULL;
   ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
   arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
   arcarc_centre_exact(arena, q, &m2x, &m2y, &n2x, &n2y, &d2);
@@ -4603,7 +4624,9 @@ void
 arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
 {
   assert(p); assert(q); assert(meet); assert(within);
-  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.blocks = NULL;
   ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
   arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
   arcarc_centre_exact(arena, q, &m2x, &m2y, &n2x, &n2y, &d2);
@@ -4746,7 +4769,9 @@ int
 edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
   bool ccw2, bool out2, double vx, double vy)
 {
-  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.blocks = NULL;
   ArcsegExact ax, ay, bx, by;
   if (e1)
     edge_direction_exact(arena, e1, ccw1, out1, vx, vy, &ax, &ay);
