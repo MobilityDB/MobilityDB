@@ -686,14 +686,9 @@ Temporal *
 trgeo_tdistance_geo(const Temporal *temp, const GSERIALIZED *gs,
   double level)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
-  if (MEOS_FLAGS_GET_Z(temp->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Distance computation in 3D is not currently supported");
-    return NULL;
-  }
   DistOps ops;
   memset(&ops, 0, sizeof(DistOps));
   ops.ref1 = trgeo_geom_p(temp);
@@ -716,17 +711,14 @@ trgeo_tdistance_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return the temporal distance between a temporal rigid geometry and
  * a temporal point or another temporal rigid geometry
  * @param[in] level See #trgeo_tdistance_geo()
+ * @pre The arguments are valid and planar, as the external entries test them
  */
 static Temporal *
 trgeo_tdistance_temporal(const Temporal *temp1, const Temporal *temp2,
   double level)
 {
-  if (MEOS_FLAGS_GET_Z(temp1->flags) || MEOS_FLAGS_GET_Z(temp2->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Distance computation in 3D is not currently supported");
-    return NULL;
-  }
+  assert(! MEOS_FLAGS_GET_Z(temp1->flags));
+  assert(! MEOS_FLAGS_GET_Z(temp2->flags));
   DistOps ops;
   memset(&ops, 0, sizeof(DistOps));
   ops.ref1 = trgeo_geom_p(temp1);
@@ -769,7 +761,9 @@ Temporal *
 trgeo_tdistance_tpoint(const Temporal *temp1, const Temporal *temp2,
   double level)
 {
-  if (! ensure_valid_trgeo_tpoint(temp1, temp2))
+  if (! ensure_valid_trgeo_tpoint(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
   return trgeo_tdistance_temporal(temp1, temp2, level);
 }
@@ -782,9 +776,174 @@ Temporal *
 trgeo_tdistance_trgeo(const Temporal *temp1, const Temporal *temp2,
   double level)
 {
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
   return trgeo_tdistance_temporal(temp1, temp2, level);
+}
+
+/*****************************************************************************
+ * Ever within a distance
+ *****************************************************************************/
+
+/**
+ * @brief Return true if two bodies are farther apart than @p dist during the
+ * whole segment @p seg
+ * @details Every point of a body lies within the distance @p rmax of its
+ * rotation center, see #distmotion_place(), so the bodies are at least the
+ * distance of their centers minus the two @p rmax apart.  The centers move
+ * linearly in the segment, and their distance is smallest at the projection
+ * of the origin on their relative motion, clamped to the segment.  The bound
+ * is grown by #MEOS_EPSILON relative to the magnitude of the values it is
+ * computed from, far above the rounding of the computation, so that no
+ * segment in which the walk finds a distance at or below @p dist is skipped.
+ */
+static bool
+dist_segm_apart(const DistSegm *seg, const DistRefPoly *ra,
+  const DistRefPoly *rb, double dist)
+{
+  double vv = seg->wx1 * seg->wx1 + seg->wy1 * seg->wy1;
+  double t = 0.0;
+  if (vv > 0.0)
+    t = fmin(fmax(-(seg->wx0 * seg->wx1 + seg->wy0 * seg->wy1) / vv, 0.0),
+      1.0);
+  double near = hypot(seg->wx0 + t * seg->wx1, seg->wy0 + t * seg->wy1);
+  double bound = dist + ra->rmax + rb->rmax;
+  double scale = fabs(seg->ma.cx) + fabs(seg->ma.cy) + fabs(seg->mb.cx) +
+    fabs(seg->mb.cy) + sqrt(vv) + bound;
+  return near > bound + MEOS_EPSILON * scale;
+}
+
+/**
+ * @brief Return 1 if the operands are ever within @p dist in two
+ * synchronized sequences, 0 if not, -1 if the walk fails
+ * @details The values compared with @p dist are those #dist_seq() gives the
+ * temporal distance, read until the first one at or below @p dist.  A
+ * segment the centers of the bodies keep apart, see #dist_segm_apart(), has
+ * none of them and is not walked.
+ */
+static int
+dist_ever_seq(const DistOps *ops, const TSequence *seq1,
+  const TSequence *seq2, double dist)
+{
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+  if (seq1->count == 1 || (! linear1 && ! linear2))
+  {
+    for (int i = 0; i < seq1->count; i++)
+      if (dist_instant(ops, TSEQUENCE_INST_N(seq1, i),
+          TSEQUENCE_INST_N(seq2, i)) <= dist)
+        return 1;
+    return 0;
+  }
+
+  DistEvents events;
+  distevents_init(&events);
+  DistPair cf;
+  cf.kind = DISTPAIR_NONE;
+  cf.i = cf.j = 0;
+  int result = 0;
+  for (int i = 0; i < seq1->count - 1 && result == 0; i++)
+  {
+    DistMotion ma, mb;
+    dist_segmotion(&ma, seq1, i, true);
+    dist_segmotion(&mb, seq2, i, true);
+    DistSegm dseg;
+    distsegm_set(&dseg, &ma, &mb);
+    if (dist_segm_apart(&dseg, &ops->body1, &ops->body2, dist))
+    {
+      /* The closest feature at the start of the next segment is unknown */
+      cf.kind = DISTPAIR_NONE;
+      continue;
+    }
+    events.count = 0;
+    if (distwalk_segm(&dseg, &ops->body1, &ops->body2,
+        distwalk_ftol(&dseg, &ops->body1, &ops->body2), ops->level, &cf,
+        &events) != DISTWALK_OK)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "The temporal distance of a temporal rigid geometry failed at "
+        "segment %d", i);
+      result = -1;
+      break;
+    }
+    for (int j = 0; j < events.count && result == 0; j++)
+      if (events.ev[j].dist <= dist)
+        result = 1;
+  }
+  distevents_free(&events);
+  /* With a linear and a step operand, the last instant is a value of its own,
+   * see #dist_walk_seq() */
+  if (result == 0 && linear1 != linear2 && seq1->period.upper_inc &&
+      dist_instant(ops, TSEQUENCE_INST_N(seq1, seq1->count - 1),
+        TSEQUENCE_INST_N(seq2, seq2->count - 1)) <= dist)
+    result = 1;
+  return result;
+}
+
+/**
+ * @brief Return 1 if two temporal rigid geometries are ever within a distance,
+ * 0 if not, -1 if they do not intersect in time
+ * @details The answer is that of the minimum of their temporal distance, as
+ * #trgeo_tdistance_trgeo() gives it: the values of that distance are read
+ * until the first one at or below @p dist, and a segment that the centers of
+ * the bodies keep apart is not walked, see #dist_ever_seq().
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[in] dist Distance
+ * @pre The arguments are valid and planar, as the external entry tests
+ * them
+ */
+int
+trgeo_edwithin_trgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist)
+{
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == T_TRGEOMETRY);
+  assert(temp2->temptype == T_TRGEOMETRY);
+  assert(dist >= 0.0);
+  assert(! MEOS_FLAGS_GET_Z(temp1->flags));
+  assert(! MEOS_FLAGS_GET_Z(temp2->flags));
+  DistOps ops;
+  memset(&ops, 0, sizeof(DistOps));
+  ops.ref1 = trgeo_geom_p(temp1);
+  ops.ref2 = trgeo_geom_p(temp2);
+  ops.level = -1.0;
+  if (! dist_ref_body(ops.ref1, &ops.body1))
+    return -1;
+  if (! dist_ref_body(ops.ref2, &ops.body2))
+  {
+    distrefpoly_free(&ops.body1);
+    return -1;
+  }
+
+  /* The synchronization of #trgeo_tdistance_temporal() */
+  Temporal *sync1, *sync2;
+  int result = -1;
+  if (intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+      &sync1, &sync2))
+  {
+    assert(temptype_subtype(sync1->subtype));
+    if (sync1->subtype == TINSTANT)
+      result = (dist_instant(&ops, (const TInstant *) sync1,
+        (const TInstant *) sync2) <= dist) ? 1 : 0;
+    else if (sync1->subtype == TSEQUENCE)
+      result = dist_ever_seq(&ops, (const TSequence *) sync1,
+        (const TSequence *) sync2, dist);
+    else /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss1 = (const TSequenceSet *) sync1;
+      const TSequenceSet *ss2 = (const TSequenceSet *) sync2;
+      result = 0;
+      for (int i = 0; i < ss1->count && result == 0; i++)
+        result = dist_ever_seq(&ops, TSEQUENCESET_SEQ_N(ss1, i),
+          TSEQUENCESET_SEQ_N(ss2, i), dist);
+    }
+    pfree(sync1); pfree(sync2);
+  }
+  distrefpoly_free(&ops.body1);
+  distrefpoly_free(&ops.body2);
+  return result;
 }
 
 /**
