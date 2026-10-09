@@ -38,6 +38,7 @@ endif()
 set(GEO_SOURCES
   ${GEO_LWGEOM_NONE}
   ${GEO_GEOS_NONE}
+  geo_arrange.c
   geo_buffer.c
   geo_cluster.c
   geo_funcs.c
