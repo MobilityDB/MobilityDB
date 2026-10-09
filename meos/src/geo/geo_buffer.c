@@ -47,6 +47,7 @@
 /* MEOS */
 #include "meos.h"
 #include "meos_internal_geo.h"
+#include "geo/geo_arrange.h"
 #include "geo/geo_funcs.h"
 #include "geo/geo_poly_clip.h"
 #include "geo/postgis_funcs.h"
@@ -7067,6 +7068,31 @@ buffer_ring_resolve(LWGEOM *raw, const LWGEOM *input, double radius,
   {
     meos_array_destroy(arr);
     return raw;
+  }
+  /* The region the ring of offsets winds around, read off its arrangement */
+  MeosArray **rings;
+  uint32_t nrings;
+  ArrangeStatus ast = arrange_wound_boundary(arr, &rings, &nrings);
+  if (ast == ARR_ANSWERED)
+  {
+    LWCURVEPOLY *poly = lwcurvepoly_construct_empty(srid, 0, 0);
+    bool ok = true;
+    for (uint32_t i = 0; i < nrings && ok; i++)
+    {
+      LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+      if (ring)
+        buffer_curvepoly_add_ring(poly, ring);
+      else
+        ok = false;
+    }
+    arrange_rings_free(rings, nrings);
+    if (ok)
+    {
+      meos_array_destroy(arr);
+      lwgeom_free(raw);
+      return lwcurvepoly_as_lwgeom(poly);
+    }
+    lwgeom_free(lwcurvepoly_as_lwgeom(poly));
   }
   MeosArray *edges = geom_extract_edges(input);
   LWGEOM *result = edges ?

@@ -254,6 +254,34 @@ extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
 extern int arc_circle_side(const Edge *e, double qx, double qy);
 extern bool arc_same_circle(const Edge *a, const Edge *b);
 
+/* Where a straight segment meets a circular arc: at the start or the end of
+ * the segment, at the start or the end of the arc, or interior to both */
+typedef enum
+{
+  ARCSEG_INTERIOR,
+  ARCSEG_AT_SEGMENT_START,
+  ARCSEG_AT_SEGMENT_END,
+  ARCSEG_AT_ARC_START,
+  ARCSEG_AT_ARC_END
+} ArcsegMeetKind;
+
+/* One meeting of a segment and an arc, and its position along the segment */
+typedef struct
+{
+  ArcsegMeetKind kind;  /**< Where it stands */
+  double t;             /**< Position along the segment, rounded once */
+  int sigma;            /**< The root: -1 or 1, the sign of the derivative of
+                             the quadratic there, or 0 where it is double */
+  bool smaller;         /**< The smaller of the two roots along the segment */
+} ArcsegMeet;
+
+extern int arcsegm_meet_exact(double ax, double ay, double bx, double by,
+  const Edge *arc, ArcsegMeet out[2]);
+extern void arcarc_shared_point_signs(const Edge *p, const Edge *q,
+  double jx, double jy, int *s1, int *sp, int *sq);
+extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
+  int within[2][2]);
+
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
  * for a multi-surface — whose edges are those of the union of its members —
