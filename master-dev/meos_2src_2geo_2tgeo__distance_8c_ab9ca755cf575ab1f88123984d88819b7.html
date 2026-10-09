@@ -106,6 +106,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ade41ad021ff69bf2c6c3ddbdc955a288.html#ade41ad021ff69bf2c6c3ddbdc955a288">dist_poly_seg_raycross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_af6bb6fa767a9d3e0e858e50a661197b7.html#af6bb6fa767a9d3e0e858e50a661197b7">dist_pt_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a02fe1997a21c93a44cf0fdaa471ad430.html#a02fe1997a21c93a44cf0fdaa471ad430">dist_rest_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a14a6d032ed2747fbf007bde4a14f1bf0.html#a14a6d032ed2747fbf007bde4a14f1bf0">dist_rest_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a231d5d2c2bc98d1708b5e65c99bd4966.html#a231d5d2c2bc98d1708b5e65c99bd4966">dist_seg_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a2f699d1367d5960e091c4dae0f722525.html#a2f699d1367d5960e091c4dae0f722525">dist_segm_arc_dt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_af618dd374490defc14ea5b4cad7eae2a.html#af618dd374490defc14ea5b4cad7eae2a">dist_segm_arc_mindist</a></td></tr>
@@ -220,6 +221,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Closest point on edge <code>e</code> to (px,py) </p>
+<p >The closest point is the foot of the perpendicular at the parameter <code>((p - a) . u) / (u . u)</code> of the edge <code>u = b - a</code>, clamped to [0, 1], a point the function constructs. A degenerate edge is a point, exactly. The parameter is a ratio, so the differences are first scaled by a quarter where one of them overflows, and then by the power of two that brings the largest of them near one, both exact, so neither the dot product nor the squared length leaves the range of a double; the point is <code>(1 - s) a + s b</code> where the edge itself overflows </p>
 
 </div>
 </div>
