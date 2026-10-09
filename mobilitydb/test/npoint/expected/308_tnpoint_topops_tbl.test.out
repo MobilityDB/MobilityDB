@@ -417,3 +417,15 @@ ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_tnpoint_topops;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_tnpoint WHERE stbox(temp) <> stbox(temp::tgeompoint);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE stbox(temp) <> stbox(temp::tgeompoint);
+ count 
+-------
+     0
+(1 row)
+

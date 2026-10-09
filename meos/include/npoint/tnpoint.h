@@ -123,6 +123,7 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 
 /* Conversion functions */
 
+extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
 extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
 extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);

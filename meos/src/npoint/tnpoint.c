@@ -441,6 +441,37 @@ route_point_tinstant(int32_t srid, POINTARRAY *opa, TimestampTz t)
 }
 
 /**
+ * @brief Return the positions of the interior vertices of a route
+ * @details The position of a vertex is its distance along the route over the
+ * length of the route, the measure with which `lwline_interpolate_points`
+ * locates a position. Both #tnpointseq_tgeompointseq_cont and
+ * #tnpointinstarr_linear_set_stbox read the vertices a linear segment passes
+ * from these positions
+ * @param[in] pa Points of the route
+ * @param[out] count Number of positions
+ * @return NULL when the route has no interior vertex or no length
+ */
+double *
+route_vertex_positions(const POINTARRAY *pa, int *count)
+{
+  assert(pa); assert(count);
+  *count = 0;
+  double length = ptarray_length_2d(pa);
+  if (pa->npoints <= 2 || length <= 0.0)
+    return NULL;
+  double *result = palloc(sizeof(double) * (pa->npoints - 2));
+  double cum = 0.0;
+  for (uint32_t k = 1; k < pa->npoints - 1; k++)
+  {
+    const POINT2D *p1 = getPoint2d_cp(pa, k - 1);
+    const POINT2D *p2 = getPoint2d_cp(pa, k);
+    cum += hypot(p2->x - p1->x, p2->y - p1->y);
+    result[(*count)++] = cum / length;
+  }
+  return result;
+}
+
+/**
  * @brief Convert a temporal network point into a temporal geometry point
  * @details A linear segment travels its route between the positions of its
  * instants, so each vertex of the route that a segment passes is an instant
@@ -466,20 +497,8 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
    * passes and a step segment does not */
   const POINTARRAY *pa = lwline->points;
   int nfracs = 0;
-  double *fracs = NULL;
-  double length = ptarray_length_2d(pa);
-  if (interp == LINEAR && pa->npoints > 2 && length > 0.0)
-  {
-    fracs = palloc(sizeof(double) * (pa->npoints - 2));
-    double cum = 0.0;
-    for (uint32_t k = 1; k < pa->npoints - 1; k++)
-    {
-      const POINT2D *p1 = getPoint2d_cp(pa, k - 1);
-      const POINT2D *p2 = getPoint2d_cp(pa, k);
-      cum += hypot(p2->x - p1->x, p2->y - p1->y);
-      fracs[nfracs++] = cum / length;
-    }
-  }
+  double *fracs = (interp == LINEAR) ?
+    route_vertex_positions(pa, &nfracs) : NULL;
 
   /* Bound of the number of instants of the result */
   int count = seq->count;
