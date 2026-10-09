@@ -4675,6 +4675,123 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   arcseg_arena_free(arena);
   return;
 }
+/* The direction an edge leaves a point of it in, scaled by a positive
+ * factor, exactly: the segment itself, or the radius of an arc to the point
+ * turned a quarter in the sense it turns, the radius V - C being
+ * ((V - M) D - N) / D with the centre of #arcarc_centre_exact; negated where
+ * the edge arrives at the point rather than leaves it */
+static void
+edge_direction_exact(ArcsegArena *arena, const Edge *e, bool ccw, bool out,
+  double vx, double vy, ArcsegExact *dx, ArcsegExact *dy)
+{
+  if (e->etype != EDGE_POLYARC && e->etype != EDGE_LINEARC)
+  {
+    *dx = arcseg_x_diff(arena, e->x2, e->x1);
+    *dy = arcseg_x_diff(arena, e->y2, e->y1);
+  }
+  else
+  {
+    ArcsegExact mx, my, nx, ny, d;
+    arcarc_centre_exact(arena, e, &mx, &my, &nx, &ny, &d);
+    ArcsegExact wx = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, arcseg_x_diff(arena, vx, 0.0), mx), d), nx);
+    ArcsegExact wy = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, arcseg_x_diff(arena, vy, 0.0), my), d), ny);
+    if (arcseg_x_sign(d) < 0)
+    {
+      wx = arcseg_x_scale(arena, wx, -1.0);
+      wy = arcseg_x_scale(arena, wy, -1.0);
+    }
+    /* Counterclockwise the radius (x, y) turns to (-y, x) */
+    *dx = ccw ? arcseg_x_scale(arena, wy, -1.0) : wy;
+    *dy = ccw ? wx : arcseg_x_scale(arena, wx, -1.0);
+  }
+  if (! out)
+  {
+    *dx = arcseg_x_scale(arena, *dx, -1.0);
+    *dy = arcseg_x_scale(arena, *dy, -1.0);
+  }
+  return;
+}
+
+/* The half-plane of a direction from its exact signs: 0 for an angle in
+ * [0, pi), 1 for [pi, 2pi), 2 for no direction */
+static inline int
+edge_direction_half_plane(int sx, int sy)
+{
+  if (sy != 0)
+    return sy > 0 ? 0 : 1;
+  return sx > 0 ? 0 : (sx < 0 ? 1 : 2);
+}
+
+/**
+ * @brief Return how two edges leaving a point of both are ordered
+ * counterclockwise from the positive x axis, decided exactly
+ * @details Each direction is that of #edge_direction_exact. Two edges
+ * leaving in one direction are ordered by how they bend from it: a segment
+ * runs straight, and an arc bends toward its centre, which lies on its left
+ * where it leaves the point counterclockwise or arrives at it clockwise, so
+ * that it comes after a segment counterclockwise. The ordering mirrors that
+ * of the intervals the arrangement reads first (#arcarc_meet_exact computes
+ * on the same centres)
+ * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis
+ * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
+ * @param[in] out1,out2 Whether each edge leaves the point rather than
+ * arrives at it
+ * @param[in] vx,vy The point, an end of each edge or a vertex on it
+ * @return -1 where the first comes before the second, 1 where after, 2 where
+ * the two leave alike: two segments, two arcs or an edge along the axis
+ */
+int
+edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
+  bool ccw2, bool out2, double vx, double vy)
+{
+  ArcsegArena arena_ = {NULL, 0, 0}, *arena = &arena_;
+  ArcsegExact ax, ay, bx, by;
+  if (e1)
+    edge_direction_exact(arena, e1, ccw1, out1, vx, vy, &ax, &ay);
+  else
+  {
+    ax = arcseg_x_diff(arena, 1.0, 0.0);
+    ay = arcseg_x_diff(arena, 0.0, 0.0);
+  }
+  if (e2)
+    edge_direction_exact(arena, e2, ccw2, out2, vx, vy, &bx, &by);
+  else
+  {
+    bx = arcseg_x_diff(arena, 1.0, 0.0);
+    by = arcseg_x_diff(arena, 0.0, 0.0);
+  }
+  int ha = edge_direction_half_plane(arcseg_x_sign(ax), arcseg_x_sign(ay));
+  int hb = edge_direction_half_plane(arcseg_x_sign(bx), arcseg_x_sign(by));
+  int result = 2;
+  if (ha != 2 && hb != 2)
+  {
+    if (ha != hb)
+      result = ha < hb ? -1 : 1;
+    else
+    {
+      int s = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, ax, by),
+        arcseg_x_mul(arena, ay, bx)));
+      if (s != 0)
+        result = s > 0 ? -1 : 1;
+      else if (e1 && e2)
+      {
+        bool arc1 = e1->etype == EDGE_POLYARC || e1->etype == EDGE_LINEARC;
+        bool arc2 = e2->etype == EDGE_POLYARC || e2->etype == EDGE_LINEARC;
+        if (arc1 != arc2)
+        {
+          /* The arc bends left of the direction where it leaves the point
+           * counterclockwise or arrives at it clockwise */
+          bool left = arc1 ? (ccw1 == out1) : (ccw2 == out2);
+          result = (left == arc1) ? 1 : -1;
+        }
+      }
+    }
+  }
+  arcseg_arena_free(arena);
+  return result;
+}
 
 /*****************************************************************************
  * Functions computing the intersection of two segments derived from PostGIS

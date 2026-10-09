@@ -281,6 +281,8 @@ extern void arcarc_shared_point_signs(const Edge *p, const Edge *q,
   double jx, double jy, int *s1, int *sp, int *sq);
 extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
   int within[2][2]);
+extern int edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1,
+  const Edge *e2, bool ccw2, bool out2, double vx, double vy);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and

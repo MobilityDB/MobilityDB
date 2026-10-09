@@ -1057,6 +1057,26 @@ arr_turn_cmp(Ival ax, Ival ay, Ival bx, Ival by)
   return 2;
 }
 
+/* Return how two halves of a vertex, or a half and the positive x axis
+ * (NULL), are ordered counterclockwise from that axis: #arr_turn_cmp on the
+ * intervals of their directions, and #edges_turn_cmp_exact where those
+ * cannot tell, as for the directions of an offset segment and the join arc
+ * tangent to it */
+static int
+arr_half_cmp(const Arr *a, uint32_t v, const ArrHalf *h1, Ival d1x,
+  Ival d1y, const ArrHalf *h2, Ival d2x, Ival d2y)
+{
+  int c = arr_turn_cmp(d1x, d1y, d2x, d2y);
+  if (c != 2)
+    return c;
+  const ArrNode *nd = &a->nodes[v];
+  uint32_t e1 = h1 ? a->pieces[h1->piece].edge : 0;
+  uint32_t e2 = h2 ? a->pieces[h2->piece].edge : 0;
+  return edges_turn_cmp_exact(h1 ? &a->e[e1] : NULL, h1 && a->ccw[e1],
+    h1 && h1->out, h2 ? &a->e[e2] : NULL, h2 && a->ccw[e2], h2 && h2->out,
+    nd->x, nd->y);
+}
+
 /**
  * @brief Gather the halves of every node and order them counterclockwise
  */
@@ -1131,7 +1151,8 @@ arr_order_nodes(Arr *a)
     for (uint32_t k = 1; k < deg; k++)
       for (uint32_t m = k; m > 0; m--)
       {
-        int c = arr_turn_cmp(dx[m - 1], dy[m - 1], dx[m], dy[m]);
+        int c = arr_half_cmp(a, v, &h[m - 1], dx[m - 1], dy[m - 1], &h[m],
+          dx[m], dy[m]);
         if (c == 2)
         {
           pfree(dx); pfree(dy);
@@ -1404,6 +1425,21 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         int holds = arr_piece_holds_right(a, p, &x);
         if (holds == 0)
           continue;
+        /* A vertex on the circle of the arc, an end of its edge, stands left
+         * of the point of the circle furthest along x where the piece holds
+         * that point strictly within it, however close the intervals put
+         * them */
+        const Edge *ae = &a->e[p->edge];
+        const ArrNode *xn = &a->nodes[ex.node];
+        if (holds == 1 && ! ex.on_arc &&
+            (arr_same(xn->x, xn->y, ae->x1, ae->y1) ||
+             arr_same(xn->x, xn->y, ae->x2, ae->y2)))
+        {
+          ex.on_arc = true;
+          ex.piece = a->halves[k].piece;
+          ex.x = x;
+          continue;
+        }
         if (holds == 2 || (x.hi >= ex.x.lo && x.lo <= ex.x.hi))
         {
           if (holds == 2 && x.hi < ex.x.lo)
@@ -1430,13 +1466,9 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     int outside = 0;
     if (! first)
     {
-      /* The ray counts crossings from a point it holds exactly, a vertex */
-      if (ex.on_arc)
-      {
-        st = ARR_DEPTH;
-        pfree(comp); pfree(incomp);
-        break;
-      }
+      /* The ray counts crossings from a point it holds exactly: the
+       * rightmost vertex, whose face of the components labelled before is
+       * the one the whole component lies in, as it meets none of them */
       Ival px = ival(a->nodes[ex.node].x);
       double py = a->nodes[ex.node].y;
       if (! arr_winding_at(a, px, py, &outside))
@@ -1477,9 +1509,10 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         Ival dx, dy, ex2, ey2;
         arr_half_direction(a, &h[k], v, &dx, &dy);
         arr_half_direction(a, &h[(k + 1) % deg], v, &ex2, &ey2);
-        int c1 = arr_turn_cmp(dx, dy, ux, uy);
-        int c2 = arr_turn_cmp(ux, uy, ex2, ey2);
-        int c3 = arr_turn_cmp(dx, dy, ex2, ey2);
+        const ArrHalf *hn = &h[(k + 1) % deg];
+        int c1 = arr_half_cmp(a, v, &h[k], dx, dy, NULL, ux, uy);
+        int c2 = arr_half_cmp(a, v, NULL, ux, uy, hn, ex2, ey2);
+        int c3 = arr_half_cmp(a, v, &h[k], dx, dy, hn, ex2, ey2);
         if (c1 == 2 || c2 == 2 || (deg > 1 && c3 == 2))
         {
           before = UINT32_MAX;
