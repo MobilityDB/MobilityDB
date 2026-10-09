@@ -1129,6 +1129,47 @@ npoint_to_geompoint(const Npoint *np)
 }
 
 /**
+ * @brief Return the stretch of a route between two positions
+ * @details The stretch holds the points a temporal network point travelling it
+ * passes, as #tnpointseq_tgeompointseq_cont states them: the points at the two
+ * positions, located by `lwline_interpolate_points` as #npoint_to_geompoint
+ * locates a position, and the vertices of the route strictly between them,
+ * whose positions #route_vertex_positions gives
+ * @param[in] line Route
+ * @param[in] pos1,pos2 Positions on the route, the first smaller
+ */
+static GSERIALIZED *
+route_stretch_geom(const GSERIALIZED *line, double pos1, double pos2)
+{
+  assert(pos1 < pos2);
+  int32_t srid = gserialized_get_srid(line);
+  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
+  const POINTARRAY *pa = lwline->points;
+  POINTARRAY *opa = ptarray_construct_empty((char) FLAGS_GET_Z(pa->flags),
+    (char) FLAGS_GET_M(pa->flags), pa->npoints + 2);
+  POINTARRAY *end = lwline_interpolate_points(lwline, pos1, 0);
+  ptarray_append_point(opa, getPoint4d_cp(end, 0), LW_TRUE);
+  ptarray_free(end);
+  int count;
+  double *positions = route_vertex_positions(pa, &count);
+  for (int k = 0; k < count; k++)
+  {
+    if (positions[k] > pos1 && positions[k] < pos2)
+      ptarray_append_point(opa, getPoint4d_cp(pa, k + 1), LW_TRUE);
+  }
+  if (positions)
+    pfree(positions);
+  end = lwline_interpolate_points(lwline, pos2, 0);
+  ptarray_append_point(opa, getPoint4d_cp(end, 0), LW_TRUE);
+  ptarray_free(end);
+  LWGEOM *result = lwline_as_lwgeom(lwline_construct(srid, NULL, opa));
+  GSERIALIZED *gs = geo_serialize(result);
+  lwgeom_free(result);
+  lwline_free(lwline);
+  return gs;
+}
+
+/**
  * @ingroup meos_npoint_base_conversion
  * @brief Transform a network segment into a geometry
  * @param[in] ns Network segment
@@ -1145,7 +1186,7 @@ nsegment_to_geom(const Nsegment *ns)
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
     return line_interpolate_point(line, ns->pos1, 0);
   else
-    return line_substring(line, ns->pos1, ns->pos2);
+    return route_stretch_geom(line, ns->pos1, ns->pos2);
 }
 
 /**
@@ -1284,7 +1325,8 @@ nsegmentarr_geom(Nsegment **segments, int count)
     else if (segments[i]->pos1 == segments[i]->pos2)
       geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
     else
-      geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
+      geoms[i] = route_stretch_geom(line, segments[i]->pos1,
+        segments[i]->pos2);
   }
   GSERIALIZED *result = geom_array_union(geoms, count);
   pfree_array((void **) geoms, count);
