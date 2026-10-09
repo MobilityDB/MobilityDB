@@ -561,6 +561,15 @@ int main(void)
   printf("%d ties a component far below the largest difference breaks "
     "answered as the nearest double\n", distant);
 
+  /* A tie at the midpoint of two doubles, the points (3j, 4j) * 2^158 apart
+   * for an odd j, broken by a first coordinate 2^-999, far below the last
+   * bit of the differences, which the differences read as they are keep */
+  int unscaled = 1;
+  every_entry(0x1p-999, 0.0, 0x1.37ebb720727d5p+158, 0x1.9fe4f42b4351cp+158,
+    0x1.03ef189b0a131p+159);
+  printf("%d tie broken by a coordinate far below the others answered as the "
+    "nearest double\n", unscaled);
+
   /* Finalize MEOS */
   meos_finalize();
   return EXIT_SUCCESS;
