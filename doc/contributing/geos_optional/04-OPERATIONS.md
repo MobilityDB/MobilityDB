@@ -77,8 +77,7 @@ and the part of the first not in the second. Temporal restriction (`atGeometry`,
 `minusGeometry`) and the clipping of a trajectory to a zone rest on them.
 
 **How it is answered.** A cascade of native routes, tried in the order the code of
-`geom_intersection2d_route` gives them: a 2D polygon against a 2D polygon, through Clipper2
-(below); a point set, whose answer is the points the other geometry covers; a line, clipped
+`geom_intersection2d_route` gives them: a point set, whose answer is the points the other geometry covers; a line, clipped
 exactly against the other geometry; a part of no area, read as the boundary it traces; an areal
 pair, on the circles its arcs lie on; a multi-part geometry, taken part by part. A pair carrying Z or M is answered on the plane
 and the elevations are put back where the inputs determine them (#2821). A part of no area is
@@ -102,16 +101,20 @@ differences do. Two examples: the intersection of
 multi-part shape or a collection, restricted to such a collection, reaches GEOS
 ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.6).
 
-**Polygon against polygon: Clipper2.** A 2D `POLYGON`/`MULTIPOLYGON` against another goes
-through `clip_poly_poly` (`geo_poly_clip.c`), backed by **Clipper2**, a polygon-clipping library
-MobilityDB vendors in `clipper2/` and calls through `clip_clipper2.cpp`. It is part of MEOS's
-native engine, as is the trajectory clip against a polygon (`clipper2_traj_poly_periods`).
-Clipper2 computes on integers: every coordinate is multiplied by 10^7 and rounded
-(`CLIP_SCALE`), a resolution of 1e-7 of a unit — about 11 mm in longitude/latitude — which the
-project accepts for this route. Two consequences for contributors: Clipper2 takes paths only,
-so it is never the vehicle for a shape carrying an arc (that is the areal route on the circles);
-and a geometry built by Clipper2 and one built by the exact kernels are at different
-resolutions, so one is not clipped against the other.
+**Polygon against polygon: the exact areal overlay, stated in #2998, merged as `07712e447c`.**
+A 2D `POLYGON`/`MULTIPOLYGON` against another goes through the native areal overlay
+(`buffer_areal_overlay`), which computes each crossing on the segments themselves rather than on
+a grid. Judged by CGAL's exact kernel on its own answers, in a build without GEOS: 819 of 819
+valid quadrilateral pairs, 2000 of 2000 collections and 1500 of 1500 random pairs agree, for the
+intersection and the difference alike, and CGAL's circle-segment operations agree with the 7847
+overlays of discs less triangles they judge. In instructions it reads 0.757 of GEOS for the
+intersection of quadrilaterals and 0.870 for their difference, 0.922 and 0.997 on the
+multipolygons of `areal_pairs.txt`. **Clipper2**, the polygon-clipping library MobilityDB vendors
+in `clipper2/`, computes on integers at a resolution of 1e-7 of a unit (`CLIP_SCALE`):
+`geom_intersection2d_route` and `geom_difference2d_route` do not call it, and it remains the
+vehicle of the trajectory clip against a polygon (`clipper2_traj_poly_periods`). A geometry built
+by Clipper2 and one built by the exact kernels are at different resolutions, so one is not
+clipped against the other.
 
 **Left.** The collections above. And the function comment of `geom_intersection2d` describes
 the route as falling through to PostGIS's GEOS-backed entry point for other combinations, which
