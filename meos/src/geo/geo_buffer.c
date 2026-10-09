@@ -4429,6 +4429,9 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
   MeosArray *rings)
 {
   assert(pieces); assert(rings);
+  /* Every piece is read as a #BufferSelected, so an array of anything
+   * narrower would be read past each element */
+  assert(pieces->elem_size == sizeof(BufferSelected));
   if (pieces->count == 0)
     return true;
   bool *used = palloc0(sizeof(bool) * pieces->count);
@@ -6957,12 +6960,19 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
    * middle of the piece, which the splitting above leaves wholly on one side
    * of the question */
   double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
-  MeosArray *keep = meos_array_create(sizeof(Edge));
+  /* The pieces are chained as the overlay's are (#buffer_make_surfaces_from_pieces),
+   * which reads each as a #BufferSelected. The buffer reads no side of its
+   * pieces, so every one carries the same: the ring takes its frame from its
+   * first piece, and a candidate then keeps that frame exactly where it is
+   * taken in the direction it is stored in, which is the direction the offset
+   * runs */
+  MeosArray *keep = meos_array_create(sizeof(BufferSelected));
   RTree *index = buffer_edges_index(edges);
   MeosArray *found = index_result_create();
   for (int i = 0; i < meos_array_count(split); i++)
   {
-    Edge *piece = (Edge *) meos_array_get_intl(split, (uint32_t) i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(split,
+      (uint32_t) i);
     POINT2D mid;
     if (! piece || ! buffer_piece_midpoint(piece, &mid))
       continue;
@@ -6976,7 +6986,12 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
     double mid_tol = Max(tol, coordinate_tolerance(mid.x, mid.y));
     if (! buffer_point_edges_nearer(mid.x, mid.y, edges, index,
         radius - mid_tol, found))
-      meos_array_add(keep, piece);
+    {
+      BufferSelected kept;
+      kept.e = *piece;
+      kept.answer_left = false;
+      meos_array_add(keep, &kept);
+    }
   }
   meos_array_destroy(found);
   rtree_free(index);
