@@ -338,11 +338,11 @@ WITH test AS (
   SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
   FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
-  round   
-----------
- 0.169994
- 9.424488
- 11.35039
+   round   
+-----------
+  7.489958
+  9.467924
+ 11.331565
 (3 rows)
 
 WITH test AS (
@@ -378,11 +378,11 @@ WITH test AS (
   SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
   FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
-  round   
-----------
- 0.169994
- 9.424488
- 11.35039
+   round   
+-----------
+  7.489958
+  9.467924
+ 11.331565
 (3 rows)
 
 WITH test AS (

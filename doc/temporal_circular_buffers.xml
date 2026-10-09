@@ -364,10 +364,11 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 				</listitem>
 
 				<listitem xml:id="cbuffer_same">
+					<indexterm significance="normal"><primary><varname>cbufferSame</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>Are the two values approximately equal with respect to an epsilon value?</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-same(cbuffer,cbuffer) &#8594; boolean
+cbufferSame(cbuffer,cbuffer) &#8594; boolean
 cbuffer ~= cbuffer &#8594; boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1388,9 +1389,24 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 
 	<sect1 xml:id="tcbuffer_aggregations">
 		<title>Aggregations</title>
-		<para>The three aggregate functions for temporal circular buffers are illustrated next.</para>
+		<para>The four aggregate functions for temporal circular buffers are illustrated next.</para>
 
 		<itemizedlist>
+			<listitem xml:id="tcbuffer_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Bounding box extent</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+extent(tcbuffer) → stbox
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
+  (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02,
+    Cbuffer(Point(3 3), 0.4)@2001-01-03]')) t(temp);
+-- STBOX XT(((0.5,0.5),(3.4,3.4)),[2001-01-01, 2001-01-03])
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbuffer_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>

@@ -325,6 +325,28 @@ Ever_eq_quadbinset_tquadbin(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(r == 1);
 }
 
+PGDLLEXPORT Datum Ever_eq_tquadbin_quadbinset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_tquadbin_quadbinset);
+/**
+ * @ingroup mobilitydb_quadbin_comp_ever
+ * @brief Return true if a temporal quadbin cell ever takes a cell of a quadbin
+ * cell set
+ * @sqlfn eEqual()
+ * @sqlop @p ?=
+ */
+Datum
+Ever_eq_tquadbin_quadbinset(PG_FUNCTION_ARGS)
+{
+  Temporal *tqb = PG_GETARG_TEMPORAL_P(0);
+  Set *cells = PG_GETARG_SET_P(1);
+  int r = ever_eq_tquadbin_quadbinset(tqb, cells);
+  PG_FREE_IF_COPY(tqb, 0);
+  PG_FREE_IF_COPY(cells, 1);
+  if (r < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(r == 1);
+}
+
 PGDLLEXPORT Datum Quadbin_cell_to_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Quadbin_cell_to_point);
 /**

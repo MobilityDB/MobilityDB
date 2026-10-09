@@ -146,3 +146,60 @@ SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
  
 (1 row)
 
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+   tpcbox_extent_combinefn   
+-----------------------------
+ TPCBOX(X((0,0),(10,10)), 1)
+(1 row)
+
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 0
+SELECT tpcbox_extent_combinefn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
+   tpcbox_extent_combinefn   
+-----------------------------
+ TPCBOX(X((3,3),(10,10)), 1)
+(1 row)
+
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
+  tpcbox_extent_combinefn  
+---------------------------
+ TPCBOX(X((0,0),(5,5)), 1)
+(1 row)
+
+SELECT tpcbox_extent_combinefn(NULL::tpcbox, NULL::tpcbox);
+ tpcbox_extent_combinefn 
+-------------------------
+ 
+(1 row)
+
+DROP TABLE IF EXISTS tbl_extent_state;
+NOTICE:  table "tbl_extent_state" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_extent_state AS
+SELECT extent(temp) AS b, extent(temp) AS b0
+FROM (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1) t;
+SELECT 1
+SELECT tpc_extent_transfn(b, (SELECT temp FROM tbl_tpcpoint
+  WHERE temp IS NOT NULL ORDER BY k DESC LIMIT 1)) ~= b0
+FROM tbl_extent_state;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcbox_extent_transfn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0,
+  tpcbox_extent_combinefn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0
+FROM tbl_extent_state;
+ ?column? | ?column? 
+----------+----------
+ f        | f
+(1 row)
+
+SELECT b ~= b0 FROM tbl_extent_state;
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE tbl_extent_state;
+DROP TABLE

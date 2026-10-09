@@ -512,6 +512,28 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00, 2001-01-01 08
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geoset_convert">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geography</varname></primary></indexterm>
+				<para>Convert a geo set into the collection of its values</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geomset::geometry
+geogset::geography
+geometry(geomset) → geometry
+geography(geogset) → geography
+</programlisting>
+				<para>The collection takes its type from the types of the values alone, as the PostGIS function <varname>ST_Collect</varname> builds it from them, so a set of points, a set of one point included, answers a multipoint.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry);
+-- MULTIPOINT((1 1),(2 2))
+SELECT ST_AsText(geomset '{"Point(1 1)"}'::geometry);
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="span_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>
@@ -1496,7 +1518,10 @@ SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
 numbers &lt;-&gt; numbers → base
 dates &lt;-&gt; dates → integer
 times &lt;-&gt; times → interval
+{base,spatialset} &lt;-&gt; {base,spatialset} → float
+setDistance({geography,geogset},{geography,geogset},spheroid boolean=true) → float
 </programlisting>
+				<para>For geographies, the operator computes on the WGS 84 spheroid, and the function <varname>setDistance</varname> computes on the sphere, faster, if its last argument is false.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT 3 &lt;-&gt; intspan '[6, 8)';
 -- 3
@@ -1509,6 +1534,12 @@ SELECT tstzspan '[2001-01-02, 2001-01-06)' &lt;-&gt; timestamptz '2001-01-07';
 SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
   dateset '{2001-01-02, 2001-01-04}';
 --  0
+SELECT round((geography 'Point(0 0)' &lt;-&gt;
+  geogset '{"Point(0 1)", "Point(0 2)"}')::numeric, 3);
+-- 110574.389
+SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}',
+  false)::numeric, 3);
+-- 111195.080
 </programlisting>
 			</listitem>
 		</itemizedlist>

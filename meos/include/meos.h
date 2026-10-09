@@ -497,6 +497,11 @@ typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
 
+/* Definition of interrupt handler function */
+typedef void (*interrupt_handler_fn)(void);
+
+extern void meos_initialize_interrupt_handler(interrupt_handler_fn handler);
+
 /* Definition of the optional allocator hook functions. When installed, MEOS
  * routes its working-memory allocations through these hooks so that an
  * embedder can account for and bound them with its own memory manager. They
@@ -1213,13 +1218,19 @@ extern Set *float_union_transfn(Set *state, double d);
 extern Span *int_extent_transfn(Span *state, int i);
 extern Set *int_union_transfn(Set *state, int32 i);
 extern Span *set_extent_transfn(Span *state, const Set *s);
+extern Set *set_union_combinefn(Set *state1, Set *state2);
 extern Set *set_union_finalfn(Set *state);
 extern Set *set_union_transfn(Set *state, Set *s);
+extern Set *setstate_deserialize(const uint8_t *bytes, size_t size);
+extern uint8_t *setstate_serialize(const Set *state, size_t *size_out);
 extern Span *span_extent_transfn(Span *state, const Span *s);
 extern SpanSet *span_union_transfn(SpanSet *state, const Span *s);
 extern Span *spanset_extent_transfn(Span *state, const SpanSet *ss);
+extern SpanSet *spanset_union_combinefn(SpanSet *state1, const SpanSet *state2);
 extern SpanSet *spanset_union_finalfn(SpanSet *state);
 extern SpanSet *spanset_union_transfn(SpanSet *state, const SpanSet *ss);
+extern SpanSet *spansetstate_deserialize(const uint8_t *bytes, size_t size);
+extern uint8_t *spansetstate_serialize(const SpanSet *state, size_t *size_out);
 extern Set *text_union_transfn(Set *state, const text *txt);
 extern Span *timestamptz_extent_transfn(Span *state, TimestampTz t);
 extern Set *timestamptz_union_transfn(Set *state, TimestampTz t);
@@ -1383,7 +1394,7 @@ extern Temporal *tbool_from_mfjson(const char *str);
 extern Temporal *tbool_in(const char *str);
 extern char *tbool_out(const Temporal *temp);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs);
+extern char *temporal_as_mfjson(const Temporal *temp, int option, int flags, int precision, const char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern uint8_t wkb_variant_from_endian(const char *endian);
 extern interpType interptype_from_string(const char *str);
@@ -2019,10 +2030,14 @@ extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tand_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_combinefn(SkipList *state1, SkipList *state2);
+extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
+extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
+extern Temporal *temporal_append_finalfn(const Temporal *state);
 extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *temporal_tcount_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *temporal_wcount_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *temporal_to_taggstate(const Temporal *temp);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmax_combinefn(SkipList *state1, SkipList *state2);
@@ -2043,6 +2058,7 @@ extern SkipList *tint_tsum_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
+extern TBox *tbox_extent_transfn(TBox *state, const TBox *box);
 extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
@@ -2080,13 +2096,13 @@ extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration
 
 /* Similarity functions for temporal types */
 
-extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
-extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
-extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
-extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
-extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
-extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
-extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon);
+extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count);
+extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count);
+extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon, bool spheroid);
 
 /*****************************************************************************/
 

@@ -710,6 +710,25 @@ static double tcbufferseg_distance_lb(Datum start1, Datum end1,
   Datum start2, Datum end2);
 
 /**
+ * @brief Return the nearest approach distance of two temporal circular
+ * buffers by the time-synchronous running minimum, as #nad_tcont_tcont_sync
+ * does for the temporal geometries
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[out] t Instant attaining the minimum
+ * @return The infinity sentinel when the overlap is empty or degenerate
+ */
+static double
+nad_tcbuffer_tcbuffer_sync(const Temporal *temp1, const Temporal *temp2,
+  TimestampTz *t)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_distance;
+  return nad_tcont_tcont_sync(temp1, temp2, &lfinfo,
+    &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, t);
+}
+
+/**
  * @ingroup meos_cbuffer_dist
  * @brief Return the nearest approach instant of two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
@@ -730,8 +749,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
-    double d = nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
-      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t);
+    double d = nad_tcbuffer_tcbuffer_sync(temp1, temp2, &t);
     if (d != DBL_MAX)
     {
       /* The closest point may be at an exclusive bound. */
@@ -1858,8 +1876,7 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
-    double d = nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
-      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t);
+    double d = nad_tcbuffer_tcbuffer_sync(temp1, temp2, &t);
     if (d != DBL_MAX)
       return d;
   }
@@ -2472,8 +2489,7 @@ shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   TimestampTz t;
   bool found = false;
   if (nad_tcont_tcont_sync_applies(temp1, temp2))
-    found = (nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
-      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t) != DBL_MAX);
+    found = (nad_tcbuffer_tcbuffer_sync(temp1, temp2, &t) != DBL_MAX);
   if (! found)
   {
     Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);

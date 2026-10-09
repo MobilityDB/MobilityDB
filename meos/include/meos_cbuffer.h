@@ -47,9 +47,16 @@
  * Type definitions
  *****************************************************************************/
 
-/* Opaque structure to represent circular buffers */
+/* Structure to represent circular buffers */
 
-typedef struct Cbuffer Cbuffer;
+typedef struct Cbuffer
+{
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 srid;           /**< Spatial reference identifier */
+  double radius;        /**< Radius */
+  double x;             /**< X coordinate of the centre point */
+  double y;             /**< Y coordinate of the centre point */
+} Cbuffer;
 
 /*****************************************************************************
  * Validity macros and functions
@@ -101,7 +108,9 @@ typedef struct Cbuffer Cbuffer;
 
 /* Input and output functions */
 
+extern uint8_t *cbuffer_as_ewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_ewkt(const Cbuffer *cb, int maxdd);
+extern char *cbuffer_as_hexewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_text(const Cbuffer *cb, int maxdd);
 extern uint8_t *cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
@@ -185,7 +194,7 @@ extern char *cbufferset_out(const Set *s, int maxdd);
 
 /* Constructor functions */
 
-extern Set *cbufferset_make(Cbuffer **values, int count);
+extern Set *cbufferset_make(const Cbuffer *values, int count);
 
 /* Conversion functions */
 

@@ -697,7 +697,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
 /* Structure of an expandable arrays used in particular to avoid parsing twice
  * a MEOS value input in text format */
 
-#define MEOS_ARRAY_INITIAL_SIZE 256
+#define MEOS_ARRAY_INITIAL_SIZE 16
 
 /**
  * @brief Structure of an expandable arrays used in particular to avoid parsing
@@ -782,7 +782,7 @@ typedef enum
 } SkipListType;
 
 /*****************************************************************************
- * Definition of a function with one to three Datum arguments and returning 
+ * Definition of a function with one to seven Datum arguments and returning
  * a Datum
  *****************************************************************************/
 
@@ -792,6 +792,8 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 typedef Datum (*datum_func4) (Datum, Datum, Datum, Datum);
 typedef Datum (*datum_func5) (Datum, Datum, Datum, Datum, Datum);
 typedef Datum (*datum_func6) (Datum, Datum, Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func7) (Datum, Datum, Datum, Datum, Datum, Datum,
+  Datum);
 
 /*****************************************************************************
  * Internal functions accessing the PostgreSQL pseudo-random number generator
@@ -1154,12 +1156,14 @@ extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, MeosType temptype, TimestampTz t);
 extern TInstant *tinstant_make_free(Datum value, MeosType temptype, TimestampTz t);
 extern TSequence *tsequence_copy(const TSequence *seq);
+extern TSequence *tsequence_derivative(const TSequence *seq, bool spheroid);
 extern TSequence *tsequence_from_base_temp(Datum value, MeosType temptype, const TSequence *seq);
 extern TSequence *tsequence_from_base_tstzset(Datum value, MeosType temptype, const Set *s);
 extern TSequence *tsequence_from_base_tstzspan(Datum value, MeosType temptype, const Span *s, interpType interp);
 extern TSequence *tsequence_make_exp(TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_derivative(const TSequenceSet *ss, bool spheroid);
 extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
 extern TSequenceSet *tsequenceset_from_base_temp(Datum value, MeosType temptype, const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, MeosType temptype, const SpanSet *ss, interpType interp);
@@ -1472,9 +1476,6 @@ extern void skiplist_splice(SkipList *list, void **keys, void **values, int coun
 extern void temporal_skiplist_splice(SkipList *list, void **values, int count, datum_func2 func, bool crossings);
 extern void **skiplist_values(SkipList *list);
 extern void **skiplist_keys_values(SkipList *list, void **values);
-
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
-extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 
 /*****************************************************************************/
 

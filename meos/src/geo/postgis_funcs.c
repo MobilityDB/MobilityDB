@@ -50,6 +50,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
+#include <gserialized2.h>
 #include <lwgeom_log.h>
 #include <intervaltree.h>
 #include <lwgeom_geos.h>
@@ -60,7 +61,6 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/type_util.h"
-#include "geo/geo_poly_clip.h"  /* clip_poly_poly fast-path for polygon ∩/− polygon */
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -870,6 +870,371 @@ geo_is_unitary(const GSERIALIZED *gs)
   }
 }
 
+/*****************************************************************************
+ * Measures read on the serialized form
+ *****************************************************************************/
+
+/**
+ * @brief Return the position of the geometry in its serialized form, after
+ * the extended flags and the bounding box the form carries, as
+ * #gserialized2_get_geometry_p reads it
+ * @details The extended flags state a solid polyhedral surface, so the macro
+ * #GS_POINT_PTR, which reads a point, does not account for them
+ */
+static inline const uint8_t *
+gs_geometry_ptr(const GSERIALIZED *gs)
+{
+  /* The offset is set by the five low flags (Z, M, bounding box, geodetic,
+   * extended), so it is read from a table of their 32 combinations */
+#define GS_GEOM_OFFSET(f) ((G2FLAGS_GET_EXTENDED(f) ? 8 : 0) + \
+  (G2FLAGS_GET_BBOX(f) ? 2 * G2FLAGS_NDIMS_BOX(f) * sizeof(float) : 0))
+#define GS_GEOM_OFFSET4(f) GS_GEOM_OFFSET(f), GS_GEOM_OFFSET(f + 1), \
+  GS_GEOM_OFFSET(f + 2), GS_GEOM_OFFSET(f + 3)
+  static const uint8_t offsets[32] = {
+    GS_GEOM_OFFSET4(0), GS_GEOM_OFFSET4(4), GS_GEOM_OFFSET4(8),
+    GS_GEOM_OFFSET4(12), GS_GEOM_OFFSET4(16), GS_GEOM_OFFSET4(20),
+    GS_GEOM_OFFSET4(24), GS_GEOM_OFFSET4(28)
+  };
+#undef GS_GEOM_OFFSET4
+#undef GS_GEOM_OFFSET
+  return (const uint8_t *) gs->data + offsets[gs->gflags & 0x1f];
+}
+
+/**
+ * @brief The 2D measures #geo_walk_measure reads on a serialized geometry
+ */
+typedef enum
+{
+  WALK_AREA,
+  WALK_LENGTH,
+  WALK_PERIMETER,
+} WalkMeasure;
+
+/**
+ * @brief The outcome of #geo_walk_measure
+ */
+typedef enum
+{
+  WALK_DONE,   /**< The measure is read on the serialized form */
+  WALK_CURVE,  /**< The geometry holds a curve, measured deserialized */
+  WALK_ERROR,  /**< The serialized form holds no geometry type */
+} WalkStatus;
+
+/**
+ * @brief Return the signed area of a ring of serialized coordinates
+ * @details Mirrors #ptarray_signed_area term by term, in the same order, on
+ * the coordinates read in place rather than through a point array
+ * @param[in] c Coordinates of the ring
+ * @param[in] npoints Number of points of the ring
+ * @param[in] ndims Number of coordinates of a point
+ */
+static pg_attribute_always_inline double
+ring_signed_area(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 3)
+    return 0.0;
+  /* A term reads three consecutive points P1, P2, P3 as
+   * (P2.x - x0) * (P1.y - P3.y). The loop adds two terms per step, in their
+   * order, carrying over the coordinates of P1 and P2 the next step reads */
+  double sum = 0.0;
+  double x0 = c[0];
+  double y_p1 = c[1], x_p2 = c[ndims], y_p2 = c[ndims + 1];
+  const double *end = c + (size_t) npoints * ndims;
+  const double *p3 = c + 2 * ndims;
+  for (; p3 + ndims < end; p3 += 2 * ndims)
+  {
+    sum += (x_p2 - x0) * (y_p1 - p3[1]);
+    sum += (p3[0] - x0) * (y_p2 - p3[ndims + 1]);
+    y_p1 = p3[1];
+    x_p2 = p3[ndims];
+    y_p2 = p3[ndims + 1];
+  }
+  if (p3 < end)
+    sum += (x_p2 - x0) * (y_p1 - p3[1]);
+  return sum / 2.0;
+}
+
+/**
+ * @brief Return the 2D length of a ring or a line of serialized coordinates
+ * @details Mirrors #ptarray_length_2d term by term, in the same order, on the
+ * coordinates read in place rather than through a point array
+ * @param[in] c Coordinates of the ring or the line
+ * @param[in] npoints Number of points
+ * @param[in] ndims Number of coordinates of a point
+ */
+static pg_attribute_always_inline double
+ring_length_2d(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 2)
+    return 0.0;
+  double dist = 0.0;
+  const double *end = c + (size_t) npoints * ndims;
+  for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
+    dist += sqrt(((frm[0] - to[0]) * (frm[0] - to[0])) +
+                 ((frm[1] - to[1]) * (frm[1] - to[1])));
+  return dist;
+}
+
+/**
+ * @brief Read the measure of the polygon serialized at a position, as
+ * #lwpoly_area and #lwpoly_perimeter_2d measure it, without deserializing it
+ * @details Each ring is read on the serialized coordinates by
+ * #ring_signed_area and #ring_length_2d, the terms of the PostGIS functions in
+ * their order. A polygon has no length.
+ * @param[in] p Position of the polygon in the serialized form
+ * @param[in] ndims Number of coordinates of a point
+ * @param[in] measure Measure
+ * @param[out] size Number of bytes the polygon takes
+ */
+static pg_attribute_always_inline double
+poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
+  size_t *size)
+{
+  uint32_t num;
+  memcpy(&num, p + 4, 4);
+  /* The numbers of points of the rings, padded to a multiple of 8 bytes,
+   * precede the coordinates of the rings */
+  const uint8_t *counts = p + 8;
+  /* The serialized form stores the coordinates as doubles aligned on 8 bytes,
+   * as the point arrays of PostGIS read them */
+  const void *coords = counts + 4 * num + ((num % 2) ? 4 : 0);
+  const double *pts = coords;
+  double value = 0.0;
+  for (uint32_t i = 0; i < num; i++)
+  {
+    uint32_t npoints;
+    memcpy(&npoints, counts + 4 * i, 4);
+    if (measure == WALK_PERIMETER)
+      value += ring_length_2d(pts, npoints, ndims);
+    else if (measure == WALK_AREA && npoints >= 3)
+    {
+      /* The area as #lwpoly_area computes it, the outer ring positive and
+       * the inner ones negative */
+      double ringarea = fabs(ring_signed_area(pts, npoints, ndims));
+      if (i == 0)
+        value += ringarea;
+      else
+        value -= ringarea;
+    }
+    pts += npoints * ndims;
+  }
+  *size = (size_t) ((const uint8_t *) pts - p);
+  return value;
+}
+
+/**
+ * @brief Read the measure of the geometry serialized at a position, as
+ * #lwgeom_area, #lwgeom_length and #lwgeom_perimeter_2d measure it, without
+ * deserializing it
+ * @details Each ring is read as a point array referencing the serialized
+ * coordinates, so the measure is the one the PostGIS functions compute over
+ * the same coordinates in the same order, and a polygon is measured without
+ * allocating, and thus freeing, the rings it holds
+ * @param[in] p Position of the geometry in the serialized form
+ * @param[in] flags Flags of the point arrays
+ * @param[in] measure Measure
+ * @param[out] result Measure of the geometry
+ * @param[out] size Number of bytes the geometry takes
+ * @return #WALK_CURVE for a geometry holding a curve, which is measured on its
+ * deserialized form, and #WALK_ERROR with an error for a type word naming no
+ * geometry type
+ */
+static WalkStatus
+geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
+  double *result, size_t *size)
+{
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  POINTARRAY pa;
+  pa.flags = flags;
+  *result = 0.0;
+  switch (type)
+  {
+    case POINTTYPE:
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    case LINETYPE:
+      if (measure == WALK_LENGTH && num)
+      {
+        /* The length as #lwline_length computes it, in 3D for a line with Z */
+        pa.npoints = pa.maxpoints = num;
+        pa.serialized_pointlist = (uint8_t *) (p + 8);
+        *result = ptarray_length(&pa);
+      }
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    case TRIANGLETYPE:
+    {
+      pa.npoints = pa.maxpoints = num;
+      pa.serialized_pointlist = (uint8_t *) (p + 8);
+      if (measure == WALK_PERIMETER)
+        *result = ptarray_length_2d(&pa);
+      else if (measure == WALK_AREA && num)
+      {
+        /* The area as #lwtriangle_area computes it */
+        double area = 0.0;
+        POINT2D p1, p2;
+        for (uint32_t i = 0; i < num - 1; i++)
+        {
+          getPoint2d_p(&pa, i, &p1);
+          getPoint2d_p(&pa, i + 1, &p2);
+          area += (p1.x * p2.y) - (p1.y * p2.x);
+        }
+        area /= 2.0;
+        *result = fabs(area);
+      }
+      *size = 8 + num * ptsize;
+      return WALK_DONE;
+    }
+    case POLYGONTYPE:
+      *result = poly_walk_measure(p, (uint32_t) FLAGS_NDIMS(flags), measure,
+        size);
+      return WALK_DONE;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      double value = 0.0;
+      size_t off = 8;
+      for (uint32_t i = 0; i < num; i++)
+      {
+        double sub;
+        size_t subsize;
+        WalkStatus status = geo_walk_measure(p + off, flags, measure, &sub,
+          &subsize);
+        if (status != WALK_DONE)
+          return status;
+        value += sub;
+        off += subsize;
+      }
+      *result = value;
+      *size = off;
+      return WALK_DONE;
+    }
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+      return WALK_CURVE;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", type);
+      return WALK_ERROR;
+  }
+}
+
+/**
+ * @brief Return the length of a geometry holding a curve, as #lwgeom_length
+ * measures it, but for a curve polygon, a surface whose length is 0 as the
+ * one of a polygon, as #lwgeom_length_2d measures it
+ */
+static double
+lwgeom_length_lines(const LWGEOM *geom)
+{
+  switch (geom->type)
+  {
+    case LINETYPE:
+      return lwline_length((LWLINE *) geom);
+    case CIRCSTRINGTYPE:
+      return lwcircstring_length((LWCIRCSTRING *) geom);
+    case COMPOUNDTYPE:
+      return lwcompound_length((LWCOMPOUND *) geom);
+    case POINTTYPE:
+    case POLYGONTYPE:
+    case TRIANGLETYPE:
+    case CURVEPOLYTYPE:
+      return 0.0;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      double length = 0.0;
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+      {
+        double sub = lwgeom_length_lines(col->geoms[i]);
+        if (sub == DBL_MAX)
+          return DBL_MAX;
+        length += sub;
+      }
+      return length;
+    }
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", geom->type);
+      return DBL_MAX;
+  }
+}
+
+/**
+ * @brief Return the measure of a geometry other than a polygon, read on its
+ * serialized form by #geo_walk_measure, or on its deserialized form when it
+ * holds a curve, as #lwgeom_area, #lwgeom_length_lines and
+ * #lwgeom_perimeter_2d measure it
+ * @errval DBL_MAX
+ */
+static double
+geom_walk_measure_any(const GSERIALIZED *gs, const uint8_t *p, lwflags_t flags,
+  WalkMeasure measure)
+{
+  double result;
+  size_t size;
+  WalkStatus status = geo_walk_measure(p, flags, measure, &result, &size);
+  if (status == WALK_ERROR)
+    return DBL_MAX;
+  if (status == WALK_DONE)
+    return result;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (measure == WALK_AREA)
+    result = lwgeom_area(lwgeom);
+  else if (measure == WALK_LENGTH)
+    result = lwgeom_length_lines(lwgeom);
+  else
+    result = lwgeom_perimeter_2d(lwgeom);
+  lwgeom_free(lwgeom);
+  return result;
+}
+
+/**
+ * @brief Return the measure of a geometry read on its serialized form, a
+ * polygon by #poly_walk_measure and any other geometry by
+ * #geom_walk_measure_any
+ * @errval DBL_MAX
+ */
+static pg_attribute_always_inline double
+geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
+{
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *p = gs_geometry_ptr(gs);
+  uint32_t type;
+  memcpy(&type, p, 4);
+  /* A polygon, the geometry most often measured, is read without the walk */
+  if (type == POLYGONTYPE)
+  {
+    size_t size;
+    return poly_walk_measure(p, (uint32_t) G2FLAGS_NDIMS(gs->gflags), measure,
+      &size);
+  }
+  /* The flags of the point arrays: the dimensions of the serialized form, no
+   * bounding box, and read only, since they reference the serialized form */
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
+  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
+  FLAGS_SET_READONLY(flags, 1);
+  return geom_walk_measure_any(gs, p, flags, measure);
+}
+
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the area of a geometry
@@ -893,10 +1258,7 @@ geom_area(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double area = lwgeom_area(lwgeom);
-  lwgeom_free(lwgeom);
-  return area;
+  return geom_walk_measure(gs, WALK_AREA);
 }
 
 /**
@@ -905,7 +1267,7 @@ geom_area(const GSERIALIZED *gs)
  * @details Defined by
  *   - length(point) = 0
  *   - length(line) = length of line
- *   - length(polygon) = 0  -- could make sense to return sum(ring perimeter)
+ *   - length(polygon) = length(curve polygon) = 0, the length of a surface
  *
  *  Uses Euclidean 3D/2D length depending on input dimensions.
  * @param[in] gs Geometry
@@ -922,10 +1284,7 @@ geom_length(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double dist = lwgeom_length(lwgeom);
-  lwgeom_free(lwgeom);
-  return dist;
+  return geom_walk_measure(gs, WALK_LENGTH);
 }
 
 /**
@@ -950,10 +1309,7 @@ geom_perimeter(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  double perimeter = lwgeom_perimeter_2d(lwgeom);
-  lwgeom_free(lwgeom);
-  return perimeter;
+  return geom_walk_measure(gs, WALK_PERIMETER);
 }
 
 /**
@@ -1014,13 +1370,14 @@ lwmsurface_boundary(const LWGEOM *geom)
  * @brief Return the boundary of a geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p boundary(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_boundary()
  */
 GSERIALIZED *
 geom_boundary(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (gserialized_is_empty(gs) || ! ensure_not_geodetic_geo(gs))
+  if (! ensure_not_geodetic_geo(gs))
     return NULL;
 
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
@@ -1087,12 +1444,92 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *line = lwgeom_closest_line_3d(geom1, geom2);
-  if (lwgeom_is_empty(line))
-    return NULL;
-
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line); lwgeom_free(geom1); lwgeom_free(geom2);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  GSERIALIZED *result = NULL;
+  if (! lwgeom_is_empty(line))
+    result = geo_serialize(line);
+  lwgeom_free(line);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the shortest line between two geometries
+ * @details The line is computed in 3D when the geometries have Z and in 2D
+ * otherwise, as #geo_distance_fn selects the temporal distance, which refuses
+ * operands of different dimensions; this is PostGIS @p ST_3DShortestLine when
+ * both have Z and @p ST_ShortestLine otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p LWGEOM_shortestline2d(PG_FUNCTION_ARGS),
+ * @p LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
+ * @errval NULL
+ */
+GSERIALIZED *
+geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, NULL); VALIDATE_NOT_NULL(gs2, NULL);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return NULL;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_shortestline3d(gs1, gs2) : geom_shortestline2d(gs1, gs2);
+}
+
+/**
+ * @brief Return the 2D distance between a point and a line or a polygon,
+ * read on the serialized form of the line or the polygon, as the PostGIS
+ * functions @p lw_dist2d_point_line and @p lw_dist2d_point_poly measure it
+ * @details Each line or ring is read as a point array referencing the
+ * serialized coordinates, which the PostGIS functions
+ * @p ptarray_contains_point and @p lw_dist2d_pt_ptarray read as they read the
+ * rings of the deserialized polygon
+ */
+static double
+pt_linepoly_distance2d(const GSERIALIZED *gpt, const GSERIALIZED *gs)
+{
+  const POINT2D *p = GSERIALIZED_POINT2D_P(gpt);
+  lwflags_t flags = gserialized_get_lwflags(gs);
+  FLAGS_SET_BBOX(flags, 0);
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *g = gs_geometry_ptr(gs);
+  uint32_t type, num;
+  memcpy(&type, g, 4);
+  memcpy(&num, g + 4, 4);
+  DISTPTS dl;
+  lw_dist2d_distpts_init(&dl, DIST_MIN);
+  POINTARRAY pa;
+  pa.flags = flags;
+  if (type == LINETYPE)
+  {
+    pa.npoints = pa.maxpoints = num;
+    pa.serialized_pointlist = (uint8_t *) (g + 8);
+    lw_dist2d_pt_ptarray(p, &pa, &dl);
+    return dl.distance;
+  }
+  /* A polygon: the numbers of points of the rings, padded to a multiple of 8
+   * bytes, precede the coordinates of the rings */
+  const uint8_t *counts = g + 8;
+  const uint8_t *pts = counts + 4 * num + ((num % 2) ? 4 : 0);
+  for (uint32_t i = 0; i < num; i++)
+  {
+    uint32_t npoints;
+    memcpy(&npoints, counts + 4 * i, 4);
+    pa.npoints = pa.maxpoints = npoints;
+    pa.serialized_pointlist = (uint8_t *) pts;
+    int loc = ptarray_contains_point(&pa, p);
+    /* Outside the exterior ring, or inside a hole, the distance is the one to
+     * that ring */
+    if ((i == 0 && loc == LW_OUTSIDE) || (i > 0 && loc != LW_OUTSIDE))
+    {
+      lw_dist2d_pt_ptarray(p, &pa, &dl);
+      return dl.distance;
+    }
+    pts += npoints * ptsize;
+  }
+  /* Inside the polygon */
+  return 0.0;
 }
 
 /**
@@ -1128,6 +1565,14 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       &dl);
     return dl.distance;
   }
+  /* A point and a line or a polygon are measured on the serialized form of the
+   * line or the polygon, with the primitives the general computation reaches */
+  uint32_t type1 = gserialized_get_type(gs1);
+  uint32_t type2 = gserialized_get_type(gs2);
+  if (type1 == POINTTYPE && (type2 == LINETYPE || type2 == POLYGONTYPE))
+    return pt_linepoly_distance2d(gs1, gs2);
+  if (type2 == POINTTYPE && (type1 == LINETYPE || type1 == POLYGONTYPE))
+    return pt_linepoly_distance2d(gs2, gs1);
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
@@ -1165,6 +1610,60 @@ geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   lwgeom_free(geom1);
   lwgeom_free(geom2);
   return maxdist;
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the maximum distance between two geometries in 3D
+ * @details The maximum distance is the distance between the two points, one
+ * on each geometry, that are farthest from each other
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
+ * @note A geometry carrying a circular arc is not supported, since the
+ * underlying computation implements the maximum only for straight edges, so
+ * the answer is DBL_MAX
+ * @note An empty geometry has no farthest point, so the answer is DBL_MAX
+ * @errval DBL_MAX
+ */
+double
+geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return DBL_MAX;
+
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  double maxdist = (lwgeom_has_arc(geom1) || lwgeom_has_arc(geom2)) ?
+    DBL_MAX : lwgeom_maxdistance3d(geom1, geom2);
+  lwgeom_free(geom1);
+  lwgeom_free(geom2);
+  return maxdist;
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the maximum distance between two geometries
+ * @details The maximum distance is measured in 3D when the geometries have Z
+ * and in 2D otherwise, refusing geometries of different dimensions, as
+ * #geom_distance measures the distance; this is PostGIS @p ST_3DMaxDistance
+ * when both have Z and @p ST_MaxDistance otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p ST_MaxDistance(PG_FUNCTION_ARGS),
+ * @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
+ * @errval DBL_MAX
+ * @csqlfn #Geom_max_distance()
+ */
+double
+geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_max_distance3d(gs1, gs2) : geom_max_distance2d(gs1, gs2);
 }
 
 /**
@@ -1209,6 +1708,31 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   double mindist = lwgeom_mindistance3d(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
   return mindist;
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the distance between two geometries
+ * @details The distance is measured in 3D when the geometries have Z and in
+ * 2D otherwise, as #geo_distance_fn selects the temporal distance, which
+ * refuses operands of different dimensions; this is PostGIS @p ST_3DDistance
+ * when both have Z and @p ST_Distance otherwise
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS functions: @p ST_Distance(PG_FUNCTION_ARGS),
+ * @p ST_3DDistance(PG_FUNCTION_ARGS)
+ * @note An empty geometry has no point to measure from, so the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
+ */
+double
+geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  if (! ensure_same_dimensionality_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_Z(gs1->gflags) ?
+    geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
 }
 
 /**
@@ -1301,20 +1825,23 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
- * @details Bare name for the planar (2D) distance-within test, the portable
- * counterpart of @ref geog_dwithin() for geometry; equivalent to PostGIS
- * @p ST_DWithin.
+ * @details The distance is measured in 3D when both geometries have Z and in
+ * 2D otherwise, as #geo_dwithin_fn selects it for the temporal dwithin at
+ * every instant; this is PostGIS @p ST_3DDWithin when both have Z and
+ * @p ST_DWithin otherwise
  * @param[in] gs1,gs2 Geometries
  * @param[in] tolerance Tolerance
- * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ * @note PostGIS functions: @p LWGEOM_dwithin(PG_FUNCTION_ARGS),
+ * @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_dwithin()
  */
 bool
 geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs1, false);
-  return FLAGS_GET_Z(gs1->gflags) ?
-    geom_dwithin2d(gs1, gs2, tolerance) : geom_dwithin3d(gs1, gs2, tolerance);
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
 }
 
 /**
@@ -1351,6 +1878,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @brief Reverse vertex order of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_reverse(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_reverse()
  */
 GSERIALIZED *
 geo_reverse(const GSERIALIZED *gs)
@@ -1445,6 +1973,7 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
  * @param[in] gsarr Array of geometries/geographies
  * @param[in] nelems Number of elements in the array
  * @note PostGIS function: @p LWGEOM_collect_garray(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_collect_garray()
  */
 GSERIALIZED *
 geo_collect_garray(GSERIALIZED **gsarr, int nelems)
@@ -1453,10 +1982,6 @@ geo_collect_garray(GSERIALIZED **gsarr, int nelems)
   VALIDATE_NOT_NULL(gsarr, NULL);
   if (! ensure_positive(nelems))
     return NULL;
-
-  /* Singleton array */
-  if (nelems == 1)
-    return geo_copy(gsarr[0]);
 
   uint32 outtype = 0;
   int count = 0;
@@ -1531,12 +2056,30 @@ geo_collect_garray(GSERIALIZED **gsarr, int nelems)
 }
 
 /**
+ * @ingroup meos_internal_geo_base_spatial
+ * @brief Return the one geometry of an array of a single element, and the
+ * collection of the elements otherwise
+ * @details The trajectories, the traversed areas and the conversions of an
+ * array answer a single value as it is, where #geo_collect_garray collects it
+ * into a collection of one element, as PostGIS @p ST_Collect does
+ * @param[in] gsarr Array of geometries/geographies
+ * @param[in] count Number of elements in the array
+ */
+GSERIALIZED *
+geoarr_collect(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 0);
+  return count == 1 ? geo_copy(gsarr[0]) : geo_collect_garray(gsarr, count);
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return a line from an array of geometries/geographies
  * @details Array elements that are not points or linestrings are discarded
  * @param[in] gsarr Array of geometries/geographies
  * @param[in] count Number of elements in the array
  * @note PostGIS function: @p LWGEOM_makeline_garray(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_makeline_garray()
  */
 GSERIALIZED *
 geo_makeline_garray(GSERIALIZED **gsarr, int count)
@@ -1568,7 +2111,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
       if (! ensure_same_srid(srid, geoms[ngeoms - 1]->srid))
       {
         for (int j = 0; j < ngeoms; j++)
-          lwgeom_free(geoms[i]);
+          lwgeom_free(geoms[j]);
         pfree(geoms);
         return NULL;
       }
@@ -1578,11 +2121,9 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   /* Return null on 0-points input array */
   if (ngeoms == 0)
   {
-    /* TODO: should we return LINESTRING EMPTY here ? */
-    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(NOTICE, MEOS_ERR_INVALID_ARG_VALUE,
       "No points or linestrings in input array");
-    for (int i = 0; i < ngeoms; i++)
-      lwgeom_free(geoms[i]);
+    pfree(geoms);
     return NULL;
   }
   LWGEOM *outlwg = (LWGEOM *) lwline_from_lwgeom_array(srid, ngeoms, geoms);
@@ -1648,8 +2189,9 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
- * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_NPoints(PG_FUNCTION_ARGS)
  * @errval -1
+ * @csqlfn #Geo_num_points()
  */
 int
 geo_num_points(const GSERIALIZED *gs)
@@ -1669,6 +2211,7 @@ geo_num_points(const GSERIALIZED *gs)
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
  * @errval -1
+ * @csqlfn #Geo_num_geos()
  */
 int
 geo_num_geos(const GSERIALIZED *gs)
@@ -1697,6 +2240,7 @@ geo_num_geos(const GSERIALIZED *gs)
  * @param[in] gs Geometry/geography
  * @param[in] n Number (1-based)
  * @note PostGIS function: @p LWGEOM_geometryn_collection(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_geo_n()
  */
 GSERIALIZED *
 geo_geo_n(const GSERIALIZED *gs, int n)
@@ -1798,6 +2342,165 @@ gserialized_is_poly(const GSERIALIZED* gs)
 }
 
 /**
+ * @brief Return the side of a point relative to a segment, as the PostGIS
+ * function @p itree_segment_side computes it
+ */
+static inline double
+pip_segment_side(const POINT2D *seg1, const POINT2D *seg2,
+  const POINT2D *point)
+{
+  return ((seg2->x - seg1->x) * (point->y - seg1->y) -
+    (point->x - seg1->x) * (seg2->y - seg1->y));
+}
+
+/**
+ * @brief Return 1 if a point on the line of a segment lies within its
+ * bounds, as the PostGIS function @p itree_point_on_segment tests it
+ */
+static inline int
+pip_point_on_segment(const POINT2D *seg1, const POINT2D *seg2,
+  const POINT2D *point)
+{
+  double maxX = FP_MAX(seg1->x, seg2->x);
+  double maxY = FP_MAX(seg1->y, seg2->y);
+  double minX = FP_MIN(seg1->x, seg2->x);
+  double minY = FP_MIN(seg1->y, seg2->y);
+  return point->x >= minX && point->x <= maxX &&
+    point->y >= minY && point->y <= maxY;
+}
+
+/**
+ * @brief Return the location of a point relative to a ring, as the interval
+ * tree of PostGIS locates it
+ * @details The tree tests each segment of nonzero length and finite
+ * coordinates whose range of y covers the one of the point, a segment
+ * outside that range contributing neither a boundary nor a winding; the
+ * segments are tested here in turn with the same arithmetic, so the location
+ * is the one of the tree, which a single location does not pay for building
+ */
+static IntervalTreeResult
+pip_point_in_ring(const POINTARRAY *pa, const POINT2D *pt)
+{
+  int winding_number = 0;
+  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  {
+    const POINT2D *seg1 = getPoint2d_cp(pa, i);
+    const POINT2D *seg2 = getPoint2d_cp(pa, i + 1);
+    /* A segment of zero length or of a nonfinite coordinate is not indexed */
+    if ((seg1->x == seg2->x && seg1->y == seg2->y) ||
+        ! (isfinite(seg1->x) && isfinite(seg1->y) && isfinite(seg2->x) &&
+           isfinite(seg2->y)))
+      continue;
+    if (! FP_CONTAINS_INCL(FP_MIN(seg1->y, seg2->y), pt->y,
+          FP_MAX(seg1->y, seg2->y)))
+      continue;
+    double side = pip_segment_side(seg1, seg2, pt);
+    /* A point on the boundary of a ring is not contained */
+    if (side == 0.0 && pip_point_on_segment(seg1, seg2, pt) == 1)
+      return ITREE_BOUNDARY;
+    if ((seg1->y <= pt->y) && (pt->y < seg2->y) && (side > 0))
+      winding_number++;
+    else if ((seg2->y <= pt->y) && (pt->y < seg1->y) && (side < 0))
+      winding_number--;
+  }
+  return (winding_number == 0) ? ITREE_OUTSIDE : ITREE_INSIDE;
+}
+
+/**
+ * @brief Return in the last argument the location of a point relative to the
+ * (multi)polygon, read on its serialized form, as the PostGIS function
+ * @p itree_point_in_multipolygon locates it
+ * @return False where a ring has fewer than 4 points, on which the interval
+ * tree raises an error
+ */
+static bool
+pip_point_in_mpoly(const GSERIALIZED *gpoly, const POINT2D *pt,
+  IntervalTreeResult *result)
+{
+  lwflags_t flags = gserialized_get_lwflags(gpoly);
+  FLAGS_SET_BBOX(flags, 0);
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *p = gs_geometry_ptr(gpoly);
+  uint32_t type, npolys;
+  memcpy(&type, p, 4);
+  if (type == POLYGONTYPE)
+    npolys = 1;
+  else
+  {
+    memcpy(&npolys, p + 4, 4);
+    p += 8;
+  }
+  /* The interval tree is built on every ring before any is tested */
+  const uint8_t *q = p;
+  for (uint32_t k = 0; k < npolys; k++)
+  {
+    uint32_t nrings;
+    memcpy(&nrings, q + 4, 4);
+    const uint8_t *counts = q + 8;
+    size_t npoints = 0;
+    for (uint32_t r = 0; r < nrings; r++)
+    {
+      uint32_t n;
+      memcpy(&n, counts + 4 * r, 4);
+      if (n < 4)
+        return false;
+      npoints += n;
+    }
+    q = counts + 4 * nrings + ((nrings % 2) ? 4 : 0) + npoints * ptsize;
+  }
+
+  POINTARRAY pa;
+  pa.flags = flags;
+  for (uint32_t k = 0; k < npolys; k++)
+  {
+    uint32_t nrings;
+    memcpy(&nrings, p + 4, 4);
+    const uint8_t *counts = p + 8;
+    const uint8_t *pts = counts + 4 * nrings + ((nrings % 2) ? 4 : 0);
+    /* An empty polygon contains nothing */
+    bool done = false;
+    for (uint32_t r = 0; r < nrings; r++)
+    {
+      uint32_t n;
+      memcpy(&n, counts + 4 * r, 4);
+      if (! done)
+      {
+        pa.npoints = pa.maxpoints = n;
+        pa.serialized_pointlist = (uint8_t *) pts;
+        IntervalTreeResult loc = pip_point_in_ring(&pa, pt);
+        /* The boundary of any ring is a hard stop */
+        if (loc == ITREE_BOUNDARY)
+        {
+          *result = ITREE_BOUNDARY;
+          return true;
+        }
+        if (r == 0)
+        {
+          /* Outside the exterior ring, the holes are not read */
+          if (loc == ITREE_OUTSIDE)
+            done = true;
+        }
+        /* Inside a hole, the point is outside this polygon */
+        else if (loc == ITREE_INSIDE)
+          done = true;
+      }
+      pts += n * ptsize;
+    }
+    /* Inside the exterior ring and outside every hole */
+    if (nrings > 0 && ! done)
+    {
+      *result = ITREE_INSIDE;
+      return true;
+    }
+    p = pts;
+  }
+  *result = ITREE_OUTSIDE;
+  return true;
+}
+
+/**
  * @brief Return -1, 0, or 1 depending on whether a (multi)point is completely
  * outside, on the boundary, or completely inside a (multi)polygon
  * @details The function selects the polygon and the point out of the pair
@@ -1818,6 +2521,24 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     rel == TOUCHES);
   const GSERIALIZED *gpoly = gserialized_is_poly(gs1) ? gs1 : gs2;
   const GSERIALIZED *gpoint = gserialized_is_point(gs1) ? gs1 : gs2;
+  /* A single point is located on the serialized polygon, read in place */
+  if (gserialized_get_type(gpoint) == POINTTYPE)
+  {
+    IntervalTreeResult loc = ITREE_OUTSIDE;
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gpoint);
+    /* An empty or a nonfinite point is within nothing */
+    bool located = gserialized_is_empty(gpoint) ||
+      ! (isfinite(pt->x) && isfinite(pt->y)) ||
+      pip_point_in_mpoly(gpoly, pt, &loc);
+    if (located)
+    {
+      if (rel == INTERSECTS || rel == COVERS)
+        return loc != ITREE_OUTSIDE;
+      if (rel == CONTAINS)
+        return loc == ITREE_INSIDE;
+      return loc == ITREE_BOUNDARY;
+    }
+  }
   LWGEOM *poly = lwgeom_from_gserialized(gpoly);
   LWGEOM *point = lwgeom_from_gserialized(gpoint);
   IntervalTree *itree = itree_from_lwgeom(poly);
@@ -2102,27 +2823,59 @@ geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries intersect
- * @details Bare name for the planar (2D) intersection test, the portable
- * counterpart of @ref geog_intersects() for geometry; equivalent to PostGIS
- * @p ST_Intersects.
+ * @details The intersection is tested in 3D when both geometries have Z and
+ * in 2D otherwise, as #geo_intersects_fn selects it for the temporal
+ * intersects at every instant; this is PostGIS @p ST_3DIntersects when both
+ * have Z and @p ST_Intersects otherwise
  * @param[in] gs1,gs2 Geometries
- * @note PostGIS function: @p ST_Intersects(PG_FUNCTION_ARGS)
+ * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
+ * @p ST_3DIntersects(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_intersects()
  */
 bool
 geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  return geom_intersects2d(gs1, gs2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    geom_intersects3d(gs1, gs2) : geom_intersects2d(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if two geometries are disjoint
+ * @details The relationship is tested in 3D when both geometries have Z and
+ * in 2D otherwise, as #geo_disjoint_fn selects it for the temporal disjoint
+ * at every instant
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_Disjoint(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_disjoint()
+ */
+bool
+geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
+    ! geom_intersects3d(gs1, gs2) : geom_disjoint2d(gs1, gs2);
 }
 
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry contains the second one
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS functions: @p contains(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_contains()
  */
 bool
 geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
 
@@ -2130,11 +2883,18 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return true if the two geometries intersect on a border
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS function: @p touches(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_touches()
  */
 bool
 geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, TOUCHES);
 }
 
@@ -2142,11 +2902,18 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry covers the second one
  * @param[in] gs1,gs2 Geometries
+ * @errval false
  * @note PostGIS function: @p ST_Covers(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_covers()
  */
 bool
 geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
+  /* Ensure the validity of the arguments: the containment family has no 3D
+   * kernel, so a geometry with Z is refused, as its lifts refuse it */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2))
+    return false;
   return geom_spatialrel(gs1, gs2, COVERS);
 }
 
@@ -2227,6 +2994,7 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * a linearization would put in its place, and an empty operand meets nothing
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
  * Note also the the pattern may be modified in the function
+ * @csqlfn #Geom_relate_pattern()
  */
 bool
 geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
@@ -2285,9 +3053,9 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
 
 /**
  * @brief Return @c true iff @p gs is a 2D POLYGON or MULTIPOLYGON
- * @internal Used by #geom_intersection2d / #geom_difference2d to decide
- * whether to fast-path through the Clipper2-backed @c clip_poly_poly.
- * Geography and 3D inputs fall through to the GEOS path
+ * @internal Used by #geom_intersection2d to decide whether the region two
+ * operands share is answered with the stretches they touch along outside it.
+ * A geography and a geometry carrying Z are not, and answer false
  */
 static bool
 geo_is_planar_polygonal(const GSERIALIZED *gs)
@@ -2512,58 +3280,6 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return what two areal geometries meet along where they share no area,
- * or @c NULL where they meet in nothing
- * @details The intersection of two point sets is a point set, and nothing
- * about it promises an area. An engine that assembles regions answers the
- * region, so for a pair meeting at a point or along a curve it answers an
- * empty one -- and "no area" and "nothing" are different sentences.
- *
- * Where the two share no area, no part of the first one's boundary reaches
- * the interior of the second: a point of it that did would carry a
- * neighbourhood of the first one's own interior into the second's, which is
- * area they would then share. So the part of that boundary the second
- * geometry covers is exactly the part lying ON its boundary -- the two
- * expressions denote one set -- and it is the SECOND BOUNDARY the clip is
- * asked about, because only that one is answered by the segment kernels
- * alone. Clipping against the second geometry as a SOLID asks additionally
- * where a point falls relative to its interior, a question the kernels answer
- * by locating constructed points, and the answer it gives is not always on
- * either operand. Asking it of the first operand's boundary also keeps the
- * answer running in that operand's own direction
- * @param[in] gs1,gs2 Geometries
- * @pre The two share no area, which is what the caller has just read
- */
-static GSERIALIZED *
-geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  assert(gs1); assert(gs2);
-  /* Two geometries whose bounding boxes lie apart meet nowhere, which spares
-   * an ordinary spatial join a boundary of its own for every pair it rejects */
-  GBOX box1, box2;
-  memset(&box1, 0, sizeof(GBOX));
-  memset(&box2, 0, sizeof(GBOX));
-  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2)
-      && gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
-    return NULL;
-
-  GSERIALIZED *bound1 = geom_boundary(gs1);
-  GSERIALIZED *bound2 = bound1 ? geom_boundary(gs2) : NULL;
-  GSERIALIZED *result = (bound1 && bound2 && geo_clip_subject(bound1) &&
-    geo_meos_coverage(bound2) == 1) ?
-    geo_clip_linear_geom(bound1, bound2, true) : NULL;
-  if (bound1) pfree(bound1);
-  if (bound2) pfree(bound2);
-  /* A meeting of nothing is the empty region the caller already holds */
-  if (result && geo_is_empty(result))
-  {
-    pfree(result);
-    result = NULL;
-  }
-  return result;
-}
-
-/**
  * @brief Return true if a geometry is one built of parts, which the overlay
  * can answer a part at a time
  * @details Every one of these is an @p LWCOLLECTION under the type tag, so the
@@ -2784,13 +3500,13 @@ geo_has_ordinates(const GSERIALIZED *gs)
 static LWGEOM *geo_arealess_parts_as_lines(const LWGEOM *geom);
 
 static GSERIALIZED *geom_intersection2d_route(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2, bool fastpath);
+  const GSERIALIZED *gs2);
 static GSERIALIZED *geom_difference2d_route(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2, bool fastpath);
+  const GSERIALIZED *gs2);
 
 static GSERIALIZED *
 geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  GSERIALIZED *(*overlay)(const GSERIALIZED *, const GSERIALIZED *, bool))
+  GSERIALIZED *(*overlay)(const GSERIALIZED *, const GSERIALIZED *))
 {
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
@@ -2799,7 +3515,7 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   GSERIALIZED *gsplane1 = geo_serialize(plane1);
   GSERIALIZED *gsplane2 = geo_serialize(plane2);
   lwgeom_free(plane1); lwgeom_free(plane2);
-  GSERIALIZED *flat = overlay(gsplane1, gsplane2, false);
+  GSERIALIZED *flat = overlay(gsplane1, gsplane2);
   pfree(gsplane1); pfree(gsplane2);
   if (! flat)
   {
@@ -2838,10 +3554,11 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @note PostGIS function: @p ST_Intersection(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
  *
- * When both inputs are 2D POLYGON / MULTIPOLYGON the call routes through
- * the Clipper2-backed #clip_poly_poly, and where that answers a region of no
- * area #geom_areal_meeting answers what the two meet along. Other type
- * combinations fall through to PostGIS's GEOS-backed
+ * Surfaces are answered by the native areal overlay, which computes the
+ * vertices it builds from the doubles the operands hold, without rounding them
+ * onto a grid; two polygons sharing a region and touching along a stretch
+ * outside it are answered with both. Other type combinations the native
+ * routes do not answer fall through to PostGIS's GEOS-backed
  * @c lwgeom_intersection_prec.
  */
 GSERIALIZED *
@@ -2856,56 +3573,16 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
     return geo_overlay_lifted(gs1, gs2, geom_intersection2d_route);
 
-  return geom_intersection2d_route(gs1, gs2, true);
+  return geom_intersection2d_route(gs1, gs2);
 }
 
 /**
  * @brief Return the intersection of two planar geometries
  * @param[in] gs1,gs2 Geometries
- * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
  */
 static GSERIALIZED *
-geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  bool fastpath)
+geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Clipper2 fast-path for 2D polygonal inputs. The PROJECTION of a pair
-   * carrying ordinates skips it: Clipper2 quantises the vertices it builds
-   * onto a grid of 1e-7, which leaves them off the edges of the geometries
-   * the ordinates are read from, so the answer would carry none of them */
-  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
-  {
-    GSERIALIZED *result = clip_poly_poly(gs1, gs2, CL_INTERSECTION);
-    /* The region two surfaces share is empty where they meet without
-     * overlapping, and what they meet along is still theirs in common */
-    if (result && geo_is_empty(result))
-    {
-      GSERIALIZED *meeting = geom_areal_meeting(gs1, gs2);
-      if (meeting)
-      {
-        pfree(result);
-        return meeting;
-      }
-    }
-    /* Two surfaces can share a region AND touch along a stretch outside it,
-     * and the region states only the first half */
-    else if (result)
-    {
-      GSERIALIZED *beside = geom_areal_touching_stretches(gs1, gs2);
-      if (beside)
-      {
-        GSERIALIZED *parts[2] = { result, beside };
-        GSERIALIZED *both = geo_collect_garray(parts, 2);
-        pfree(beside);
-        if (both)
-        {
-          pfree(result);
-          return both;
-        }
-      }
-    }
-    return result;
-  }
-
   /* The points of a point set that the other geometry covers ARE the
    * intersection, whatever the other geometry draws */
   if (geo_is_point_set(gs1))
@@ -2938,8 +3615,8 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     GSERIALIZED *written = geo_serialize(lines);
     lwgeom_free(lines);
     GSERIALIZED *result = i ?
-      geom_intersection2d_route(gs1, written, fastpath) :
-      geom_intersection2d_route(written, gs2, fastpath);
+      geom_intersection2d_route(gs1, written) :
+      geom_intersection2d_route(written, gs2);
     pfree(written);
     return result;
   }
@@ -2958,6 +3635,24 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     if (lwresult)
       lwgeom_free(lwresult);
     lwgeom_free(geom1); lwgeom_free(geom2);
+    /* Two polygons can share a region AND touch along a stretch outside it,
+     * and the region states only the first half */
+    if (result && ! geo_is_empty(result) && geo_is_planar_areal(result) &&
+        geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
+    {
+      GSERIALIZED *beside = geom_areal_touching_stretches(gs1, gs2);
+      if (beside)
+      {
+        GSERIALIZED *parts[2] = { result, beside };
+        GSERIALIZED *both = geo_collect_garray(parts, 2);
+        pfree(beside);
+        if (both)
+        {
+          pfree(result);
+          return both;
+        }
+      }
+    }
     if (result)
       return result;
   }
@@ -3018,23 +3713,16 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_has_ordinates(gs1) || geo_has_ordinates(gs2))
     return geo_overlay_lifted(gs1, gs2, geom_difference2d_route);
 
-  return geom_difference2d_route(gs1, gs2, true);
+  return geom_difference2d_route(gs1, gs2);
 }
 
 /**
  * @brief Return the difference of two planar geometries
  * @param[in] gs1,gs2 Geometries
- * @param[in] fastpath True to read a pair of 2D polygons through Clipper2
  */
 static GSERIALIZED *
-geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  bool fastpath)
+geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Clipper2 fast-path for 2D polygonal inputs, which the projection of a
-   * pair carrying ordinates skips, as #geom_intersection2d_route states */
-  if (fastpath && geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
-    return clip_poly_poly(gs1, gs2, CL_DIFFERENCE);
-
   /* Difference takes the FIRST operand apart, so only its own kind decides */
   if (geo_is_point_set(gs1))
     return geo_points_covered(gs1, gs2, false);
@@ -3055,7 +3743,7 @@ geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     {
       GSERIALIZED *written = geo_serialize(lines);
       lwgeom_free(lines);
-      GSERIALIZED *result = geom_difference2d_route(written, gs2, fastpath);
+      GSERIALIZED *result = geom_difference2d_route(written, gs2);
       pfree(written);
       return result;
     }
@@ -3168,12 +3856,124 @@ union_collection_make(LWGEOM **geoms, uint32_t ngeoms, int32_t srid)
 }
 
 /**
+ * @brief Return whether the union reads a member as the surfaces it lists
+ * @details A multi-surface stands for its faces, and the union of an array is
+ * the union of what its members stand for, so such a member is given to the
+ * arms face by face: the boundary walk of #meos_areal_union() reads a
+ * collection whose components are single surfaces, and a member that is itself
+ * a collection of surfaces is not one. A TIN and a polyhedral surface are
+ * collections of faces too, with Z or without: each face is read on the plane,
+ * where the faces of a surface in space need not bound one region between them
+ * but each bounds its own, as #geom_unary_union() reads them
+ */
+static bool
+union_member_is_faces(const LWGEOM *geom)
+{
+  uint8_t type = geom->type;
+  return type == MULTIPOLYGONTYPE || type == MULTISURFACETYPE ||
+    type == TINTYPE || type == POLYHEDRALSURFACETYPE;
+}
+
+static bool geo_part_bounds_area(const LWGEOM *part);
+
+/**
+ * @brief Return a piece of a union array as the union reads it: on the plane,
+ * and as the line its ring traces where it is a face enclosing no area
+ * @details The arms dissolve the projection of the members and the array union
+ * reads the ordinates back onto the answer, see #union_lifted(), so a piece is
+ * given to them without Z or M, as #geom_unary_union() gives its geometry. The
+ * projection of a face standing upright encloses no area, and a face of no area
+ * is not a region but its own boundary, which #geo_arealess_parts_as_lines()
+ * writes as lines for the unary union
+ * @param[in] piece Piece, owned by this function
+ * @param[in] face True where the piece is a face of a multi-surface
+ */
+static LWGEOM *
+union_piece_on_plane(LWGEOM *piece, bool face)
+{
+  if (FLAGS_GET_Z(piece->flags) || FLAGS_GET_M(piece->flags))
+  {
+    LWGEOM *plane = lwgeom_force_2d(piece);
+    lwgeom_free(piece);
+    piece = plane;
+  }
+  if (! face || (piece->type != POLYGONTYPE && piece->type != TRIANGLETYPE) ||
+      geo_part_bounds_area(piece))
+    return piece;
+  const POINTARRAY *ring = (piece->type == TRIANGLETYPE) ?
+    ((const LWTRIANGLE *) piece)->points : ((const LWPOLY *) piece)->rings[0];
+  LWGEOM *line = lwline_as_lwgeom(lwline_construct(lwgeom_get_srid(piece), NULL,
+    ptarray_clone_deep(ring)));
+  lwgeom_free(piece);
+  return line;
+}
+
+/**
+ * @brief Return the members of an array as the pieces the union reads,
+ * a multi-surface member listed face by face
+ * @details An empty member carries no points and is left out, and so is an
+ * empty face. Every piece is read on the plane, see #union_piece_on_plane()
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @param[out] npieces Number of pieces
+ * @return Array of pieces, which the caller owns together with each piece, or
+ * @p NULL where every member is empty
+ */
+static LWGEOM **
+union_member_pieces(GSERIALIZED **gsarr, int count, uint32_t *npieces)
+{
+  assert(gsarr); assert(npieces);
+  LWGEOM **members = palloc(sizeof(LWGEOM *) * count);
+  uint32_t nmembers = 0, total = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (gserialized_is_empty(gsarr[i]))
+      continue;
+    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+    members[nmembers++] = geom;
+    total += union_member_is_faces(geom) ?
+      ((const LWCOLLECTION *) geom)->ngeoms : 1;
+  }
+  *npieces = 0;
+  if (total == 0)
+  {
+    for (uint32_t i = 0; i < nmembers; i++)
+      lwgeom_free(members[i]);
+    pfree(members);
+    return NULL;
+  }
+  LWGEOM **result = palloc(sizeof(LWGEOM *) * total);
+  for (uint32_t i = 0; i < nmembers; i++)
+  {
+    if (! union_member_is_faces(members[i]))
+    {
+      result[(*npieces)++] = union_piece_on_plane(members[i], false);
+      continue;
+    }
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) members[i];
+    for (uint32_t j = 0; j < coll->ngeoms; j++)
+      if (! lwgeom_is_empty(coll->geoms[j]))
+        result[(*npieces)++] = union_piece_on_plane(
+          lwgeom_clone_deep(coll->geoms[j]), true);
+    lwgeom_free(members[i]);
+  }
+  pfree(members);
+  if (*npieces == 0)
+  {
+    pfree(result);
+    return NULL;
+  }
+  return result;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members are all
  * surfaces, read from their boundaries
  * @details The array is presented to #meos_areal_union() as the collection it
  * stands for, so the answer is the one the unary union of that collection
  * gives: a pair whose interiors meet becomes one surface and a pair that only
- * touches stays apart. An empty member carries no area and is left out
+ * touches stays apart. A multi-surface member is read face by face, see
+ * #union_member_pieces(), and an empty member carries no area and is left out
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @return The union, or @p NULL where a member is not a surface or the
@@ -3184,19 +3984,13 @@ static GSERIALIZED *
 geom_array_areal_union(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
-  int ngeoms = 0;
-  for (int i = 0; i < count; i++)
-    if (! gserialized_is_empty(gsarr[i]))
-      geoms[ngeoms++] = lwgeom_from_gserialized(gsarr[i]);
-  if (ngeoms == 0)
-  {
-    pfree(geoms);
+  uint32_t ngeoms;
+  LWGEOM **geoms = union_member_pieces(gsarr, count, &ngeoms);
+  if (! geoms)
     return NULL;
-  }
   /* #union_collection_make() takes ownership of the array it is given, so
    * geoms must not be freed after this call */
-  LWCOLLECTION *coll = union_collection_make(geoms, (uint32_t) ngeoms,
+  LWCOLLECTION *coll = union_collection_make(geoms, ngeoms,
     gserialized_get_srid(gsarr[0]));
   if (! coll)
     return NULL;
@@ -3342,20 +4136,23 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
   int32_t srid = gserialized_get_srid(gsarr[0]);
-  /* An empty member carries no points and is left out, as it is in both arms */
-  LWGEOM **areal = palloc(sizeof(LWGEOM *) * count);
-  LWGEOM **other = palloc(sizeof(LWGEOM *) * count);
+  /* An empty member carries no points and is left out, as it is in both arms,
+   * and a multi-surface member is read face by face, as the areal arm reads it */
+  uint32_t npieces;
+  LWGEOM **pieces = union_member_pieces(gsarr, count, &npieces);
+  if (! pieces)
+    return NULL;
+  LWGEOM **areal = palloc(sizeof(LWGEOM *) * npieces);
+  LWGEOM **other = palloc(sizeof(LWGEOM *) * npieces);
   uint32_t nareal = 0, nother = 0;
-  for (int i = 0; i < count; i++)
+  for (uint32_t i = 0; i < npieces; i++)
   {
-    if (gserialized_is_empty(gsarr[i]))
-      continue;
-    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
-    if (relate_is_areal(geom))
-      areal[nareal++] = geom;
+    if (relate_is_areal(pieces[i]))
+      areal[nareal++] = pieces[i];
     else
-      other[nother++] = geom;
+      other[nother++] = pieces[i];
   }
+  pfree(pieces);
   /* An array that stays on one side of the boundary is what the two arms
    * already answered, and this one has nothing to add to it */
   if (nareal == 0 || nother == 0)
@@ -3552,6 +4349,63 @@ geom_array_shared_dims(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return an array whose geometry collection members are listed
+ * component by component, or NULL where it holds no such member
+ * @details The union of an array is the union of what its members hold, and a
+ * geometry collection holds its components, so the array a collection is a
+ * member of has the union of the array listing those components in its place.
+ * The arms read a member as one geometry of one kind, and a collection holding
+ * a surface beside the line two surfaces meet along -- what an intersection of
+ * a collection gives for each of its components -- is neither. The components
+ * are split by #geo_collection_components(), which the overlay of a collection
+ * splits its operand with; a collection nested in one is split by the union of
+ * the array this returns. An empty collection holds no component and stays a
+ * member
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @param[out] nflat Number of elements of the array returned
+ */
+static GSERIALIZED **
+union_collection_members(GSERIALIZED **gsarr, int count, int *nflat)
+{
+  assert(gsarr); assert(nflat);
+  *nflat = 0;
+  int total = 0;
+  bool any = false;
+  for (int i = 0; i < count; i++)
+  {
+    int ncomp = 1;
+    if (gserialized_get_type(gsarr[i]) == COLLECTIONTYPE &&
+        ! gserialized_is_empty(gsarr[i]))
+    {
+      LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+      ncomp = (int) ((const LWCOLLECTION *) geom)->ngeoms;
+      lwgeom_free(geom);
+      any = true;
+    }
+    total += ncomp;
+  }
+  if (! any)
+    return NULL;
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * total);
+  for (int i = 0; i < count; i++)
+  {
+    int ncomp = 0;
+    GSERIALIZED **comps = (gserialized_get_type(gsarr[i]) == COLLECTIONTYPE) ?
+      geo_collection_components(gsarr[i], &ncomp) : NULL;
+    if (! comps)
+    {
+      result[(*nflat)++] = geo_copy(gsarr[i]);
+      continue;
+    }
+    for (int j = 0; j < ncomp; j++)
+      result[(*nflat)++] = comps[j];
+    pfree(comps);
+  }
+  return result;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members share their
  * dimensions
  * @details The function will iteratively call @p GEOSUnion on the
@@ -3567,6 +4421,18 @@ static GSERIALIZED *
 geom_array_union_shared(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 1);
+
+  /* A collection member is read as the components it holds, as
+   * #geom_unary_union() reads a collection through the union of its parts */
+  int nflat;
+  GSERIALIZED **flat = union_collection_members(gsarr, count, &nflat);
+  if (flat)
+  {
+    GSERIALIZED *result = (nflat > 1) ? geom_array_union_shared(flat, nflat) :
+      geo_copy(flat[0]);
+    geo_free_array(flat, nflat);
+    return result;
+  }
 
   /* An array holding nothing but empties has an empty union, which is read
    * from the array alone. It is answered here so that a build carrying no
@@ -4201,6 +5067,7 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * circular arc is met on its own circle rather than on the chords a
  * linearization would put in its place
  * @note PostGIS function: @p ST_Equals(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_equals()
  */
 int
 geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -4300,6 +5167,7 @@ geog_serialize(LWGEOM *lwgeom)
  * @param[in] gs Geometry/geography
  * @param[in] srid_to Target SRID
  * @note PostGIS function: @p transform(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_transform()
  */
 GSERIALIZED *
 geo_transform(const GSERIALIZED *gs, int32_t srid_to)
@@ -4321,6 +5189,10 @@ geo_transform(const GSERIALIZED *gs, int32_t srid_to)
       "geo_transform: Input geometry has unknown (%d) SRID", SRID_UNKNOWN);
     return NULL;
   }
+  /* A geography is transformed only into a lon/lat coordinate system, as a
+   * geometry cast into a geography is */
+  if (FLAGS_GET_GEODETIC(gs->gflags) && ! ensure_srid_is_latlong(srid_to))
+    return NULL;
 
   /* Input SRID and output SRID are equal, noop */
   if (srid_from == srid_to)
@@ -4377,7 +5249,11 @@ geo_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
   /* The SRID may be SRID_UNKNOWN: the pipeline string itself states the
    * destination coordinate reference system, as for
-   * #tspatial_transform_pipeline */
+   * #tspatial_transform_pipeline. A geography is transformed only into a
+   * lon/lat coordinate system */
+  if (FLAGS_GET_GEODETIC(gs->gflags) && srid != SRID_UNKNOWN &&
+      ! ensure_srid_is_latlong(srid))
+    return NULL;
 
   GSERIALIZED *gs1 = geo_copy(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs1);
@@ -4927,21 +5803,136 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry or a geography, the one of a
- * geography in meters on the spheroid
+ * geography in meters
  * @details A geometry is measured as #geom_length measures it and a geography
- * as #geog_length measures it on the spheroid, which is the default of the
- * PostGIS function @p ST_Length over a geography
+ * as #geog_length measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Length over a geography chooses, the earth model being an
+ * argument as in #stbox_area
  * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @errval DBL_MAX
  * @csqlfn #Geo_length()
  */
 double
-geo_length(const GSERIALIZED *gs)
+geo_length(const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, DBL_MAX);
-  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, true) :
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_length(gs, spheroid) :
     geom_length(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the area of a geometry or a geography, the one of a geography in square meters
+ * @details A geometry is measured as #geom_area measures it and a geography
+ * as #geog_area measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Area over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_area()
+ */
+double
+geo_area(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_area(gs, spheroid) :
+    geom_area(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the perimeter of a geometry or a geography, the one of a geography in meters
+ * @details A geometry is measured as #geom_perimeter measures it and a geography
+ * as #geog_perimeter measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Perimeter over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_perimeter()
+ */
+double
+geo_perimeter(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_perimeter(gs, spheroid) :
+    geom_perimeter(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the centroid of a geometry or a geography
+ * @details A geometry is measured as #geom_centroid measures it and a geography
+ * as #geog_centroid measures it, on the spheroid or on the sphere as the PostGIS
+ * function @p ST_Centroid over a geography chooses, the earth model being an
+ * argument as in #geo_length
+ * @param[in] gs Geometry or geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval NULL
+ * @csqlfn #Geo_centroid()
+ */
+GSERIALIZED *
+geo_centroid(const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  return FLAGS_GET_GEODETIC(gs->gflags) ? geog_centroid(gs, spheroid) :
+    geom_centroid(gs);
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the distance of two geometries or two geographies
+ * @details Two geometries are measured as #geom_distance measures them and two
+ * geographies as #geog_distance measures them, on the spheroid or on the sphere as
+ * the PostGIS function @p ST_Distance over geographies chooses, the earth model
+ * being an argument as in #geo_length
+ * @param[in] gs1,gs2 Geometries or geographies
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval DBL_MAX
+ * @csqlfn #Geo_distance()
+ */
+double
+geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2))
+    return DBL_MAX;
+  return FLAGS_GET_GEODETIC(gs1->gflags) ? geog_distance(gs1, gs2, spheroid) :
+    geom_distance(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_dist
+ * @brief Return the shortest line of two geometries or two geographies
+ * @details Two geometries are measured as #geom_shortestline measures them and two
+ * geographies as #geog_shortestline measures them, on the spheroid or on the sphere as
+ * the PostGIS function @p ST_ShortestLine over geographies chooses, the earth model
+ * being an argument as in #geo_length
+ * @param[in] gs1,gs2 Geometries or geographies
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @errval NULL
+ * @csqlfn #Geo_shortestline()
+ */
+GSERIALIZED *
+geo_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2))
+    return NULL;
+  return FLAGS_GET_GEODETIC(gs1->gflags) ? geog_shortestline(gs1, gs2, spheroid) :
+    geom_shortestline(gs1, gs2);
 }
 
 /**
@@ -4952,6 +5943,7 @@ geo_length(const GSERIALIZED *gs)
  * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_dwithin_uncached(PG_FUNCTION_ARGS)
  * where we use the WGS84 spheroid
+ * @csqlfn #Geog_dwithin()
  */
 bool
 geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
@@ -5016,6 +6008,7 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
  * @param[in] gs1,gs2 Geographies
  * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_intersects(PG_FUNCTION_ARGS)
+ * @csqlfn #Geog_intersects()
  */
 bool
 geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
@@ -5025,18 +6018,40 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if the geographies are disjoint
+ * @details The negation of #geog_intersects, which the temporal disjoint of
+ * two geographies applies at every instant
+ * @param[in] gs1,gs2 Geographies
+ * @param[in] use_spheroid True when using a spheroid
+ * @errval false
+ * @csqlfn #Geog_disjoint()
+ */
+bool
+geog_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool use_spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
+    return false;
+  return ! geog_dwithin(gs1, gs2, 0.0, use_spheroid);
+}
+
+/**
  * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geographies
  * @param[in] gs1,gs2 Geographies
+ * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_distance_uncached(PG_FUNCTION_ARGS).
- * We set by default both @p tolerance and @p use_spheroid and initialize the
- * spheroid to WGS84
+ * We set by default the @p tolerance and initialize the spheroid to the one
+ * of the SRID, as #geog_dwithin does
  * @note An empty geography has no point to measure from, so the answer is
  * DBL_MAX
  * @errval DBL_MAX
  */
 double
-geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
@@ -5047,7 +6062,6 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return DBL_MAX;
 
   double tolerance = FP_TOLERANCE;
-  bool use_spheroid = true;
 
   /* Initialize spheroid */
   SPHEROID s;
@@ -5430,6 +6444,7 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
  * @param[in] gs Geometry/geography
  * @param[in] precision Maximum number of decimal digits
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
+ * @sqlfn asText()
  */
 char *
 geo_as_text(const GSERIALIZED *gs, int precision)
@@ -5450,6 +6465,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
  * @note This is a a stricter version of #geom_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asEWKT(PG_FUNCTION_ARGS)
+ * @sqlfn asEWKT()
  */
 char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision)
@@ -5463,57 +6479,54 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary
- * (HexEWKB) representation
- * @param[in] wkt WKT string
- * @note This is a a stricter version of #geom_in, where we refuse to
- * accept (HEX)WKB or EWKT.
- * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
+ * @brief Return a geometry from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details The value is read as #geom_in reads it, so a HexWKB without an
+ * SRID is read as well
+ * @param[in] hexwkb HexEWKB string
+ * @csqlfn #Geom_from_hexewkb()
  */
 GSERIALIZED *
-geom_from_hexewkb(const char *wkt)
+geom_from_hexewkb(const char *hexwkb)
 {
-  return geom_in(wkt, -1);
+  return geom_in(hexwkb, -1);
 }
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return a geography from its ASCII hex-encoded Well-Known Binary
- * (HexEWKB) representation
- * @param[in] wkt WKT string
- * @note This is a a stricter version of #geog_in, where we refuse to
- * accept (HEX)WKB or EWKT.
- * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
+ * @brief Return a geography from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details The value is read as #geog_in reads it, so a HexWKB without an
+ * SRID is read as well
+ * @param[in] hexwkb HexEWKB string
+ * @csqlfn #Geog_from_hexewkb()
  */
 GSERIALIZED *
-geog_from_hexewkb(const char *wkt)
+geog_from_hexewkb(const char *hexwkb)
 {
-  return geog_in(wkt, -1);
+  return geog_in(hexwkb, -1);
 }
 
 /**
  * @ingroup meos_geo_base_inout
- * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
  * representation of a geometry/geography
  * @param[in] gs Geometry/geography
- * @param[in] endian Endianness
+ * @param[in] endian Endian encoding: an empty string (machine endianness),
+ * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
+ * reads it
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
+ * @csqlfn #Geo_as_hexewkb()
  */
 char *
 geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-
-  uint8_t variant = 0;
-  /* If user specified endianness, respect it */
-  if (endian)
-  {
-    if  (! strncmp(endian, "xdr", 3) || ! strncmp(endian, "XDR", 3))
-      variant = variant | WKB_XDR;
-    else
-      variant = variant | WKB_NDR;
-  }
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
   /* Create WKB hex string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_hexwkb_buffer(geom, variant | WKB_EXTENDED);
@@ -5560,29 +6573,27 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @ingroup meos_geo_base_inout
  * @brief Return the Extended Well-Known Binary (EWKB) representation of a
  * geometry/geography
+ * @details The byte order is read as #geo_as_hexewkb reads it: `NDR` or `XDR`
+ * in any case, and the order of the machine for `NULL` or an empty string
  * @param[in] gs Geometry/geography
- * @param[in] endian Endianness
+ * @param[in] endian Byte order, may be `NULL`
  * @param[out] size Size of result
+ * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
+ * @sqlfn asEWKB()
  */
 uint8_t *
 geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size, NULL); *size = 0;
   VALIDATE_NOT_NULL(gs, NULL);
+  uint8_t variant = wkb_variant_from_endian(endian);
+  /* A non-empty order read as the machine's is one the decoder refused */
+  if (variant == 0 && endian && *endian)
+    return NULL;
 
-  uint8_t variant = 0;
-
-  /* If user specified endianness, respect it */
-  if (endian)
-  {
-    if (! strncmp(endian, "xdr", 3) || ! strncmp(endian, "XDR", 3))
-      variant = variant | WKB_XDR;
-    else
-      variant = variant | WKB_NDR;
-  }
-
-  /* Create WKB hex string */
+  /* Create the WKB string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
 
@@ -5634,11 +6645,20 @@ geo_from_geojson(const char *geojson)
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return the GeoJSON representation of a geometry/geography
+ * @details The option is the sum of 1 for the bounding box, 2 for the short
+ * name of the coordinate reference system, as in `EPSG:3857`, 4 for its long
+ * name, as in `urn:ogc:def:crs:EPSG::3857`, and 8 for the short name of any
+ * system but WGS 84. Where @p srs is `NULL`, the name is the one of the SRID
+ * of the value in `spatial_ref_sys.csv`, as PostGIS names it from the table
+ * `spatial_ref_sys`, and a value of unknown SRID states no system
  * @param[in] gs Geometry/geography
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
- * @param[in] srs Spatial reference system, may be `NULL`
+ * @param[in] srs Name of the coordinate reference system, which the output
+ * states in place of the one of the SRID, may be `NULL`
+ * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
+ * @sqlfn asGeoJSON()
  */
 char *
 geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
@@ -5657,6 +6677,24 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
    * 8 = guess if CRS is needed (default)
    */
   int output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
+
+#if MEOS
+  /* Name the coordinate reference system the options ask for, as PostGIS
+   * function LWGEOM_asGeoJson names it, where the caller names none */
+  if (! srs)
+  {
+    int32_t srid = gserialized_get_srid(gs);
+    bool short_crs = (option & 2) ||
+      ((option & 8) && srid != WGS84_SRID && srid != SRID_UNKNOWN);
+    bool long_crs = (option & 4);
+    if (srid != SRID_UNKNOWN && (short_crs || long_crs))
+    {
+      srs = srid_srs(srid, ! long_crs);
+      if (! srs)
+        return NULL;
+    }
+  }
+#endif /* MEOS */
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);
@@ -5918,6 +6956,7 @@ lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
  * is located
  * @param[in] repeat True when obtaining several points
  * @note PostGIS function: @p LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
+ * @csqlfn #Line_interpolate_point()
  */
 GSERIALIZED *
 line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
@@ -5954,6 +6993,7 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
  * @param[in] from,to Values in [0,1] representing the fractional locations
  * where the subline starts and ends
  * @note PostGIS function: @p LWGEOM_line_substring(PG_FUNCTION_ARGS)
+ * @csqlfn #Line_substring()
  */
 GSERIALIZED *
 line_substring(const GSERIALIZED *gs, double from, double to)
@@ -6396,6 +7436,7 @@ geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
  * @param[in] gs1 Line
  * @param[in] gs2 Point
  * @errval -1.0
+ * @csqlfn #Line_locate_point()
  */
 double
 line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)

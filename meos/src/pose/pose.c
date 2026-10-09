@@ -147,8 +147,6 @@ ensure_valid_poseset_pose(const Set *s, const Pose *pose)
 #define WGS84_A       6378137.0
 /** Flattening of the WGS-84 ellipsoid */
 #define WGS84_F       (1.0 / 298.257223563)
-/** First eccentricity squared of the WGS-84 ellipsoid */
-#define WGS84_E2      (WGS84_F * (2.0 - WGS84_F))
 
 /**
  * @brief Rotate a vector by a unit quaternion
@@ -170,57 +168,60 @@ quaternion_rotate_vector(double W, double X, double Y, double Z,
 }
 
 /**
- * @brief Convert a geographic position into WGS-84 geocentric Cartesian
- * coordinates
+ * @brief Convert a geographic position into geocentric Cartesian coordinates
+ * @details The ellipsoid is an argument; #geopose_geodetic_to_ecef is the
+ * WGS-84 form that the GeoPose reader keeps
+ * @param[in] s Ellipsoid
  * @param[in] lon,lat Longitude and latitude in degrees
  * @param[in] h Height above the ellipsoid in metres
  * @param[out] X,Y,Z Geocentric coordinates in metres
  */
 void
-geodetic_to_ecef(double lon, double lat, double h, double *X, double *Y,
-  double *Z)
+geodetic_to_ecef(const SPHEROID *s, double lon, double lat, double h,
+  double *X, double *Y, double *Z)
 {
   double lam = lon * (M_PI / 180.0), phi = lat * (M_PI / 180.0);
   double sphi = sin(phi), cphi = cos(phi);
-  double N = WGS84_A / sqrt(1.0 - WGS84_E2 * sphi * sphi);
+  double N = s->a / sqrt(1.0 - s->e_sq * sphi * sphi);
   *X = (N + h) * cphi * cos(lam);
   *Y = (N + h) * cphi * sin(lam);
-  *Z = (N * (1.0 - WGS84_E2) + h) * sphi;
+  *Z = (N * (1.0 - s->e_sq) + h) * sphi;
 }
 
 /**
- * @brief Convert WGS-84 geocentric Cartesian coordinates into a geographic
- * position
+ * @brief Convert geocentric Cartesian coordinates into a geographic position
  * @details Uses Bowring's formula, whose one pass is exact to well below a
- * micrometre for any point at terrestrial altitude
+ * micrometre for any point at terrestrial altitude. The ellipsoid is an
+ * argument; #geopose_ecef_to_geodetic is the WGS-84 form that the GeoPose
+ * reader keeps
+ * @param[in] s Ellipsoid
  * @param[in] X,Y,Z Geocentric coordinates in metres
  * @param[out] lon,lat Longitude and latitude in degrees
  * @param[out] h Height above the ellipsoid in metres
  */
 void
-ecef_to_geodetic(double X, double Y, double Z, double *lon, double *lat,
-  double *h)
+ecef_to_geodetic(const SPHEROID *s, double X, double Y, double Z,
+  double *lon, double *lat, double *h)
 {
-  double b = WGS84_A * (1.0 - WGS84_F);
-  double ep2 = WGS84_E2 / (1.0 - WGS84_E2);
+  double a = s->a, b = s->b, e2 = s->e_sq;
+  double ep2 = e2 / (1.0 - e2);
   double p = hypot(X, Y);
   double lam = atan2(Y, X);
   double phi;
-  if (p < DBL_EPSILON * WGS84_A)
+  if (p < DBL_EPSILON * a)
     /* On the polar axis, where the parametric latitude is undefined */
     phi = (Z >= 0.0) ? M_PI_2 : -M_PI_2;
   else
   {
-    double theta = atan2(Z * WGS84_A, p * b);
+    double theta = atan2(Z * a, p * b);
     double st = sin(theta), ct = cos(theta);
-    phi = atan2(Z + ep2 * b * st * st * st,
-      p - WGS84_E2 * WGS84_A * ct * ct * ct);
+    phi = atan2(Z + ep2 * b * st * st * st, p - e2 * a * ct * ct * ct);
   }
   double sphi = sin(phi), cphi = cos(phi);
-  double N = WGS84_A / sqrt(1.0 - WGS84_E2 * sphi * sphi);
+  double N = a / sqrt(1.0 - e2 * sphi * sphi);
   /* Near the poles the height is read along the axis, since p / cos(phi)
    * loses all of its precision there */
-  *h = (fabs(cphi) > 0.1) ? p / cphi - N : Z / sphi - N * (1.0 - WGS84_E2);
+  *h = (fabs(cphi) > 0.1) ? p / cphi - N : Z / sphi - N * (1.0 - e2);
   *lon = lam * (180.0 / M_PI);
   *lat = phi * (180.0 / M_PI);
 }
@@ -247,6 +248,9 @@ void
 pose_compose_values(const double *parent, const double *child, bool hasz,
   bool geodetic, double *result)
 {
+  /* A geographic chain is composed on the WGS-84 ellipsoid */
+  SPHEROID wgs84;
+  spheroid_init(&wgs84, WGS84_A, WGS84_A * (1.0 - WGS84_F));
   if (! hasz)
   {
     /* The orientation of a two-dimensional pose is one angle about the
@@ -270,12 +274,12 @@ pose_compose_values(const double *parent, const double *child, bool hasz,
       /* The offset lies in the tangent plane at the parent, on the
        * ellipsoid surface */
       double Rw, Rx, Ry, Rz, ex, ey, ez, px, py, pz, dummy;
-      geodetic_to_ecef(parent[0], parent[1], 0.0, &px, &py, &pz);
+      geodetic_to_ecef(&wgs84, parent[0], parent[1], 0.0, &px, &py, &pz);
       pose_enu_to_ecef_quaternion(parent[1] * (M_PI / 180.0),
         parent[0] * (M_PI / 180.0), &Rw, &Rx, &Ry, &Rz);
       quaternion_rotate_vector(Rw, Rx, Ry, Rz, dx, dy, 0.0, &ex, &ey, &ez);
-      ecef_to_geodetic(px + ex, py + ey, pz + ez, &result[0], &result[1],
-        &dummy);
+      ecef_to_geodetic(&wgs84, px + ex, py + ey, pz + ez, &result[0],
+        &result[1], &dummy);
     }
     result[2] = theta;
     return;
@@ -303,12 +307,12 @@ pose_compose_values(const double *parent, const double *child, bool hasz,
      * the parent's position, so the offset is an ENU vector there. Add it
      * in geocentric coordinates, then read the position back */
     double Rw, Rx, Ry, Rz, ex, ey, ez, px, py, pz;
-    geodetic_to_ecef(parent[0], parent[1], parent[2], &px, &py, &pz);
+    geodetic_to_ecef(&wgs84, parent[0], parent[1], parent[2], &px, &py, &pz);
     pose_enu_to_ecef_quaternion(parent[1] * (M_PI / 180.0),
       parent[0] * (M_PI / 180.0), &Rw, &Rx, &Ry, &Rz);
     quaternion_rotate_vector(Rw, Rx, Ry, Rz, dx, dy, dz, &ex, &ey, &ez);
-    ecef_to_geodetic(px + ex, py + ey, pz + ez, &result[0], &result[1],
-      &result[2]);
+    ecef_to_geodetic(&wgs84, px + ex, py + ey, pz + ez, &result[0],
+      &result[1], &result[2]);
     /* The ENU basis has turned between the two positions, so the rotation
      * is re-expressed against the basis at the position it now has */
     double Sw, Sx, Sy, Sz, aw, ax, ay, az;
@@ -1022,6 +1026,44 @@ pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a pose
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] pose Pose
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pose_as_ewkb()
+ */
+uint8_t *
+pose_as_ewkb(const Pose *pose, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(pose), T_POSE,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a pose
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] pose Pose
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Pose_as_hexewkb()
+ */
+char *
+pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(pose), T_POSE,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************
  * Constructors
  *****************************************************************************/
@@ -1301,7 +1343,7 @@ posearr_points(Pose **posearr, int count)
     }
     geoms[i] = pose_to_point(posearr[i]);
   }
-  GSERIALIZED *result = geo_collect_garray(geoms, count);
+  GSERIALIZED *result = geoarr_collect(geoms, count);
   pfree_array((void **) geoms, count);
   return result;
 }
@@ -2095,18 +2137,6 @@ pose_set_srid(const Pose *pose, int32_t srid)
 /*****************************************************************************/
 
 /**
- * @brief Return a pose transformed to another SRID using a pipeline
- * @param[in] pose Pose
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
- * transformation
- * @param[in] pj Information about the transformation
- */
-/* SRIDs whose orientation correction is implemented by
- * pose_orientation_apply_frame_change. */
-#define POSE_SRID_WGS84_GEOGRAPHIC 4326   /* lat/lon/h, ENU local frame */
-#define POSE_SRID_WGS84_ECEF       4978   /* X/Y/Z geocentric Cartesian */
-
-/**
  * @brief Compose two unit quaternions: out = a * b (Hamilton convention)
  */
 void
@@ -2121,6 +2151,55 @@ pose_quaternion_mul(double aw, double ax, double ay, double az,
 }
 
 /**
+ * @brief Return in the last arguments the unit quaternion of a rotation
+ * matrix
+ * @details Shepperd's algorithm, taking the branch of the largest diagonal
+ * term for numerical stability. It is the matrix step of
+ * #pose_enu_to_ecef_quaternion, which calls it.
+ * @param[in] R Row-major rotation matrix
+ * @param[out] W,X,Y,Z Quaternion
+ */
+static void
+pose_matrix_to_quaternion(const double R[3][3], double *W, double *X,
+  double *Y, double *Z)
+{
+  double trace = R[0][0] + R[1][1] + R[2][2];
+  if (trace > 0.0)
+  {
+    double S = 2.0 * sqrt(1.0 + trace);
+    *W = 0.25 * S;
+    *X = (R[2][1] - R[1][2]) / S;
+    *Y = (R[0][2] - R[2][0]) / S;
+    *Z = (R[1][0] - R[0][1]) / S;
+  }
+  else if (R[0][0] > R[1][1] && R[0][0] > R[2][2])
+  {
+    double S = 2.0 * sqrt(1.0 + R[0][0] - R[1][1] - R[2][2]);
+    *W = (R[2][1] - R[1][2]) / S;
+    *X = 0.25 * S;
+    *Y = (R[0][1] + R[1][0]) / S;
+    *Z = (R[0][2] + R[2][0]) / S;
+  }
+  else if (R[1][1] > R[2][2])
+  {
+    double S = 2.0 * sqrt(1.0 + R[1][1] - R[0][0] - R[2][2]);
+    *W = (R[0][2] - R[2][0]) / S;
+    *X = (R[0][1] + R[1][0]) / S;
+    *Y = 0.25 * S;
+    *Z = (R[1][2] + R[2][1]) / S;
+  }
+  else
+  {
+    double S = 2.0 * sqrt(1.0 + R[2][2] - R[0][0] - R[1][1]);
+    *W = (R[1][0] - R[0][1]) / S;
+    *X = (R[0][2] + R[2][0]) / S;
+    *Y = (R[1][2] + R[2][1]) / S;
+    *Z = 0.25 * S;
+  }
+  return;
+}
+
+/**
  * @brief Build the unit quaternion representing the rotation from the
  * East-North-Up basis to the WGS-84 ECEF basis
  * @details The East-North-Up basis is taken at geographic point
@@ -2130,8 +2209,7 @@ pose_quaternion_mul(double aw, double ax, double ay, double az,
  *   [ -sin λ     -sin φ · cos λ      cos φ · cos λ ]
  *   [  cos λ     -sin φ · sin λ      cos φ · sin λ ]
  *   [    0            cos φ               sin φ    ]
- * Converted to a quaternion via Shepperd's algorithm with the
- * largest-trace branch for numerical stability.
+ * Converted to a quaternion by #pose_matrix_to_quaternion.
  */
 void
 pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
@@ -2140,169 +2218,264 @@ pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
   double sl = sin(lon_rad), cl = cos(lon_rad);
   double sp = sin(lat_rad), cp = cos(lat_rad);
   /* Row-major 3x3 matrix R[i][j] (R takes ENU column vectors to ECEF) */
-  double R00 = -sl,   R01 = -sp * cl,   R02 = cp * cl;
-  double R10 =  cl,   R11 = -sp * sl,   R12 = cp * sl;
-  double R20 =  0.0,  R21 =  cp,        R22 = sp;
-  double trace = R00 + R11 + R22;
-  if (trace > 0.0)
-  {
-    double S = 2.0 * sqrt(1.0 + trace);
-    *W = 0.25 * S;
-    *X = (R21 - R12) / S;
-    *Y = (R02 - R20) / S;
-    *Z = (R10 - R01) / S;
-  }
-  else if (R00 > R11 && R00 > R22)
-  {
-    double S = 2.0 * sqrt(1.0 + R00 - R11 - R22);
-    *W = (R21 - R12) / S;
-    *X = 0.25 * S;
-    *Y = (R01 + R10) / S;
-    *Z = (R02 + R20) / S;
-  }
-  else if (R11 > R22)
-  {
-    double S = 2.0 * sqrt(1.0 + R11 - R00 - R22);
-    *W = (R02 - R20) / S;
-    *X = (R01 + R10) / S;
-    *Y = 0.25 * S;
-    *Z = (R12 + R21) / S;
-  }
-  else
-  {
-    double S = 2.0 * sqrt(1.0 + R22 - R00 - R11);
-    *W = (R10 - R01) / S;
-    *X = (R02 + R20) / S;
-    *Y = (R12 + R21) / S;
-    *Z = 0.25 * S;
-  }
+  const double R[3][3] = {
+    { -sl, -sp * cl, cp * cl },
+    {  cl, -sp * sl, cp * sl },
+    { 0.0,  cp,      sp      } };
+  pose_matrix_to_quaternion(R, W, X, Y, Z);
+  return;
+}
+
+/* Distance in metres from the position of a pose of the points whose images
+ * measure the local linear map of a transformation */
+#define POSE_FRAME_STEP 1.0
+
+/**
+ * @brief Return true when a reference system is geographic, writing in the
+ * last arguments its ellipsoid and the East-North-Up frame at a position
+ * @details A geographic system writes the orientation of a pose in the
+ * East-North-Up frame at its position. The axes are returned as unit
+ * vectors in the geocentric coordinates of the ellipsoid, the rows of
+ * @p enu, which are the columns of the matrix of
+ * #pose_enu_to_ecef_quaternion. At a pole the longitude of the position
+ * names the East axis, as there. Any other system writes an orientation in
+ * its coordinate axes.
+ * @param[in] srid SRID
+ * @param[in] coords Coordinates of the position
+ * @param[out] s Ellipsoid
+ * @param[out] enu East, North and Up axes
+ */
+static bool
+pose_frame_enu(int32_t srid, const double *coords, SPHEROID *s,
+  double enu[3][3])
+{
+  if (! spheroid_init_from_srid(srid, s))
+    return false;
+  double lam = coords[0] * (M_PI / 180.0), phi = coords[1] * (M_PI / 180.0);
+  double sl = sin(lam), cl = cos(lam), sp = sin(phi), cp = cos(phi);
+  enu[0][0] = -sl;      enu[0][1] = cl;       enu[0][2] = 0.0;
+  enu[1][0] = -sp * cl; enu[1][1] = -sp * sl; enu[1][2] = cp;
+  enu[2][0] = cp * cl;  enu[2][1] = cp * sl;  enu[2][2] = sp;
+  return true;
 }
 
 /**
- * @brief Apply the orientation correction for a frame change between two
- * SRIDs
- * @details The new orientation @p (q_new) re-expresses the same physical
- * body→world rotation in the *target* frame's basis at the (transformed)
- * point. The correction is defined for the canonical OGC GeoPose case
- * (WGS-84 geographic ↔ ECEF); for any other SRID pair the orientation is
- * passed through unchanged with a NOTICE.
+ * @brief Write in the last argument a position in the axes of the frame in
+ * which a reference system writes orientations
+ * @details For a geographic system these are its geocentric coordinates
+ * along the East-North-Up axes returned by #pose_frame_enu, for any other
+ * system its coordinates
+ * @param[in] geo True when the system is geographic
+ * @param[in] s Ellipsoid of a geographic system
+ * @param[in] enu East-North-Up axes of a geographic system
+ * @param[in] coords Coordinates of the position
+ * @param[in] hasz True when the position has a Z coordinate
+ * @param[out] m Position in the axes of the frame
  */
 static void
-pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
-  double lat_rad, double lon_rad,
-  double Win, double Xin, double Yin, double Zin,
-  double *Wout, double *Xout, double *Yout, double *Zout)
+pose_frame_coords(bool geo, const SPHEROID *s, const double enu[3][3],
+  const double *coords, bool hasz, double *m)
 {
-  /* No-op for same-frame and for SRID 0 (treated as opaque). */
-  if (srid_from == srid_to || srid_from == 0 || srid_to == 0)
+  if (! geo)
   {
-    *Wout = Win; *Xout = Xin; *Yout = Yin; *Zout = Zin;
+    m[0] = coords[0];
+    m[1] = coords[1];
+    m[2] = hasz ? coords[2] : 0.0;
     return;
   }
-
-  /* Geographic (4326) -> ECEF (4978): rotate the orientation by the
-   * ENU → ECEF basis change at the point. */
-  if (srid_from == POSE_SRID_WGS84_GEOGRAPHIC &&
-      srid_to   == POSE_SRID_WGS84_ECEF)
-  {
-    double Rw, Rx, Ry, Rz;
-    pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
-    pose_quaternion_mul(Rw, Rx, Ry, Rz, Win, Xin, Yin, Zin, Wout, Xout, Yout, Zout);
-    return;
-  }
-
-  /* ECEF (4978) -> geographic (4326): inverse rotation (conjugate of
-   * R since R is unit). */
-  if (srid_from == POSE_SRID_WGS84_ECEF &&
-      srid_to   == POSE_SRID_WGS84_GEOGRAPHIC)
-  {
-    double Rw, Rx, Ry, Rz;
-    pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
-    /* Conjugate of unit quaternion */
-    pose_quaternion_mul(Rw, -Rx, -Ry, -Rz, Win, Xin, Yin, Zin,
-      Wout, Xout, Yout, Zout);
-    return;
-  }
-
-  /* Unknown frame pair — pass orientation through unchanged. */
-  meos_error(NOTICE, MEOS_ERR_VALUE_OUT_OF_RANGE,
-    "Orientation correction not implemented for SRID %d -> %d; "
-    "transforming position only", srid_from, srid_to);
-  *Wout = Win; *Xout = Xin; *Yout = Yin; *Zout = Zin;
+  double x[3];
+  geodetic_to_ecef(s, coords[0], coords[1], hasz ? coords[2] : 0.0,
+    &x[0], &x[1], &x[2]);
+  for (int i = 0; i < 3; i++)
+    m[i] = enu[i][0] * x[0] + enu[i][1] * x[1] + enu[i][2] * x[2];
+  return;
 }
 
+/**
+ * @brief Write in the result the orientation of a pose in the frame of the
+ * reference system that its position is transformed to
+ * @details Around the position of the pose, a change of reference system is
+ * a linear map J, its Jacobian, that carries a displacement written in the
+ * source frame into one written in the target frame. J is measured with the
+ * transformation of the position: the points a step away from the position
+ * along each axis of the source frame, on both sides, are transformed, and
+ * their differences are written in the axes of the target frame. In a
+ * geographic system the steps and the differences are taken in geocentric
+ * coordinates, which are metric and continuous across the antimeridian and
+ * the poles.
+ * The images of the body axes of the pose are the columns of J · R(q). They
+ * are made orthonormal from the first: the direction that the body faces is
+ * carried exactly, the second axis is the part of its image orthogonal to
+ * that direction, and the third completes a right-handed frame. When the map
+ * preserves angles, as a conformal projection or the change between
+ * geographic and geocentric coordinates do, J is a rotation times a scale
+ * and the result is that rotation applied to the orientation. A
+ * two-dimensional pose carries its facing direction alone.
+ * @param[in] pose Pose
+ * @param[in,out] result Pose whose position is the transformed one
+ * @param[in] pj Information about the transformation
+ */
+static bool
+pose_orientation_transf_pj(const Pose *pose, Pose *result, const LWPROJ *pj)
+{
+  bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  int dim = hasz ? 3 : 2;
+  SPHEROID from_s, to_s;
+  double from_enu[3][3], to_enu[3][3];
+  bool from_geo = pose_frame_enu(pose_srid(pose), pose->data, &from_s,
+    from_enu);
+  bool to_geo = pose_frame_enu(pose_srid(result), result->data, &to_s,
+    to_enu);
+  double x0[3];
+  if (from_geo)
+    geodetic_to_ecef(&from_s, pose->data[0], pose->data[1],
+      hasz ? pose->data[2] : 0.0, &x0[0], &x0[1], &x0[2]);
+
+  /* The transformed position, in the axes of the target frame */
+  double mc[3];
+  pose_frame_coords(to_geo, &to_s, to_enu, result->data, hasz, mc);
+
+  /* J[i][j] is the component along axis i of the target frame of the image
+   * of the unit vector along axis j of the source frame */
+  double J[3][3] = {{0.0}};
+  for (int j = 0; j < dim; j++)
+  {
+    /* Images of the steps forward and backward, as offsets from the
+     * transformed position in the axes of the target frame */
+    double d[2][3], norm[2];
+    for (int k = 0; k < 2; k++)
+    {
+      double step = (k == 0) ? POSE_FRAME_STEP : -POSE_FRAME_STEP;
+      POINT4D pt;
+      if (from_geo)
+        ecef_to_geodetic(&from_s, x0[0] + step * from_enu[j][0],
+          x0[1] + step * from_enu[j][1], x0[2] + step * from_enu[j][2],
+          &pt.x, &pt.y, &pt.z);
+      else
+      {
+        pt.x = pose->data[0];
+        pt.y = pose->data[1];
+        pt.z = hasz ? pose->data[2] : 0.0;
+        ((double *) &pt)[j] += step;
+      }
+      if (! hasz)
+        pt.z = 0.0;
+      if (! point4d_transf_pj(&pt, hasz, pj))
+        return false;
+      double m[3];
+      pose_frame_coords(to_geo, &to_s, to_enu, (double *) &pt, hasz, m);
+      norm[k] = 0.0;
+      for (int i = 0; i < 3; i++)
+      {
+        d[k][i] = (m[i] - mc[i]) / step;
+        norm[k] += d[k][i] * d[k][i];
+      }
+    }
+    /* A step whose image jumps across a seam of the target system, as the
+     * antimeridian of a projection, is far longer than the other one, which
+     * then measures the map alone */
+    for (int i = 0; i < dim; i++)
+    {
+      if (norm[0] > 4.0 * norm[1])
+        J[i][j] = d[1][i];
+      else if (norm[1] > 4.0 * norm[0])
+        J[i][j] = d[0][i];
+      else
+        J[i][j] = (d[0][i] + d[1][i]) / 2.0;
+    }
+  }
+
+  if (! hasz)
+  {
+    double theta = pose->data[2];
+    double c = cos(theta), s = sin(theta);
+    /* Image of the direction that the body faces */
+    double x = J[0][0] * c + J[0][1] * s;
+    double y = J[1][0] * c + J[1][1] * s;
+    /* Turn the angle by the one between the direction and its image, so that
+     * a direction the map keeps is kept exactly */
+    result->data[2] = pose_angle_wrap(theta +
+      atan2(c * y - s * x, c * x + s * y));
+    return true;
+  }
+
+  /* Rotation matrix of the orientation, as #lwgeom_apply_pose writes it */
+  double W = pose->data[3], X = pose->data[4], Y = pose->data[5],
+    Z = pose->data[6];
+  const double R[3][3] = {
+    { W*W + X*X - Y*Y - Z*Z, 2*X*Y - 2*W*Z, 2*X*Z + 2*W*Y },
+    { 2*X*Y + 2*W*Z, W*W - X*X + Y*Y - Z*Z, 2*Y*Z - 2*W*X },
+    { 2*X*Z - 2*W*Y, 2*Y*Z + 2*W*X, W*W - X*X - Y*Y + Z*Z } };
+  /* Images of the first two body axes, the columns of J · R(q) */
+  double u[3], v[3];
+  for (int i = 0; i < 3; i++)
+  {
+    u[i] = J[i][0] * R[0][0] + J[i][1] * R[1][0] + J[i][2] * R[2][0];
+    v[i] = J[i][0] * R[0][1] + J[i][1] * R[1][1] + J[i][2] * R[2][1];
+  }
+  double nu = sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
+  for (int i = 0; i < 3; i++)
+    u[i] /= nu;
+  double uv = u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+  for (int i = 0; i < 3; i++)
+    v[i] -= uv * u[i];
+  double nv = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  for (int i = 0; i < 3; i++)
+    v[i] /= nv;
+  /* The columns of the rotation in the target frame are u, v and their
+   * cross product */
+  const double Rn[3][3] = {
+    { u[0], v[0], u[1] * v[2] - u[2] * v[1] },
+    { u[1], v[1], u[2] * v[0] - u[0] * v[2] },
+    { u[2], v[2], u[0] * v[1] - u[1] * v[0] } };
+  pose_matrix_to_quaternion(Rn, &W, &X, &Y, &Z);
+  /* Renormalize and keep the representative with W >= 0 */
+  double n = sqrt(W * W + X * X + Y * Y + Z * Z);
+  W /= n; X /= n; Y /= n; Z /= n;
+  if (W < 0.0)
+  {
+    W = -W; X = -X; Y = -Y; Z = -Z;
+  }
+  result->data[3] = W;
+  result->data[4] = X;
+  result->data[5] = Y;
+  result->data[6] = Z;
+  return true;
+}
+
+/**
+ * @brief Return a pose transformed to another SRID
+ * @details The position is transformed and the orientation is written in the
+ * frame of the target system at the transformed position by
+ * #pose_orientation_transf_pj. An orientation whose source or target frame
+ * is not known, as the one of a pipeline without a target SRID, is kept.
+ * @param[in] pose Pose
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
+ * transformation
+ * @param[in] pj Information about the transformation
+ */
 Pose *
 pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pj, NULL);
-  /* Copy the pose to transform its point in place */
+  bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  POINT4D p = { pose->data[0], pose->data[1], hasz ? pose->data[2] : 0.0,
+    0.0 };
+  if (! point4d_transf_pj(&p, hasz, pj))
+    return NULL;
   Pose *result = pose_copy(pose);
-  GSERIALIZED *gs = pose_to_point(pose);
-  if (! point_transf_pj(gs, srid_to, pj))
+  result->data[0] = p.x;
+  result->data[1] = p.y;
+  if (hasz)
+    result->data[2] = p.z;
+  pose_set_srid_intl(result, srid_to);
+  if (pose_srid(pose) != SRID_UNKNOWN && srid_to != SRID_UNKNOWN &&
+      ! pose_orientation_transf_pj(pose, result, pj))
   {
-    pfree(gs);
     pfree(result);
     return NULL;
   }
-  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
-  const double * coordarr = (const double *) p;
-
-  int32_t srid_from = pose_srid(pose);
-  bool has_z = MEOS_FLAGS_GET_Z(pose->flags);
-  if (has_z)
-  {
-    result->data[0] = coordarr[0];
-    result->data[1] = coordarr[1];
-    result->data[2] = coordarr[2];
-  }
-  else
-  {
-    result->data[0] = coordarr[0];
-    result->data[1] = coordarr[1];
-  }
-  pfree(gs);
-  /* The result's SRID must match the target frame so downstream code
-   * (and the orientation correction below, which dispatches on the
-   * source/target SRID pair) sees the right value. */
-  pose_set_srid_intl(result, srid_to);
-
-  /* Apply the orientation correction. For the
-   * geographic ↔ ECEF case the rotation depends on the lat/lon of the
-   * source point — compute that from the *input* pose's coordinates,
-   * which were lon/lat (degrees) when the source SRID is 4326, or
-   * derived from the output coordinates when the target is 4326. */
-  if (has_z)
-  {
-    double lat_rad = 0.0, lon_rad = 0.0;
-    if (srid_from == POSE_SRID_WGS84_GEOGRAPHIC)
-    {
-      lon_rad = pose->data[0] * (M_PI / 180.0);
-      lat_rad = pose->data[1] * (M_PI / 180.0);
-    }
-    else if (srid_to == POSE_SRID_WGS84_GEOGRAPHIC)
-    {
-      lon_rad = result->data[0] * (M_PI / 180.0);
-      lat_rad = result->data[1] * (M_PI / 180.0);
-    }
-    double W, X, Y, Z;
-    pose_orientation_apply_frame_change(srid_from, srid_to,
-      lat_rad, lon_rad,
-      pose->data[3], pose->data[4], pose->data[5], pose->data[6],
-      &W, &X, &Y, &Z);
-    /* Re-canonicalize (W >= 0) and renormalize. */
-    double n = sqrt(W*W + X*X + Y*Y + Z*Z);
-    if (n > 0.0) { W /= n; X /= n; Y /= n; Z /= n; }
-    if (W < 0.0) { W = -W; X = -X; Y = -Y; Z = -Z; }
-    result->data[3] = W;
-    result->data[4] = X;
-    result->data[5] = Y;
-    result->data[6] = Z;
-  }
-  /* 2D pose: theta is a planar angle whose meaning is intrinsic to
-   * the source projection. There's no general orientation-correction
-   * for 2D-projected → 2D-projected; passing through is the safest
-   * default. */
   return result;
 }
 

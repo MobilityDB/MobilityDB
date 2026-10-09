@@ -128,7 +128,7 @@ test_stbox_knn(void)
   /* Brute-force oracle: the distance from the query to every inserted box */
   double *brute = malloc(NUM_BOXES * sizeof(double));
   for (int i = 0; i < NUM_BOXES; i++)
-    brute[i] = nad_stbox_stbox(query, boxes[i]);
+    brute[i] = nad_stbox_stbox(query, boxes[i], true);
   double *sorted = malloc(NUM_BOXES * sizeof(double));
   memcpy(sorted, brute, NUM_BOXES * sizeof(double));
   qsort(sorted, NUM_BOXES, sizeof(double), cmp_double);

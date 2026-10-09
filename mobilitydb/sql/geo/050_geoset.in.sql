@@ -237,6 +237,18 @@ CREATE FUNCTION set(geography)
 CREATE CAST (geometry AS geomset) WITH FUNCTION set(geometry);
 CREATE CAST (geography AS geogset) WITH FUNCTION set(geography);
 
+CREATE FUNCTION geometry(geomset)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geoset_to_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geography(geogset)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geoset_to_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (geomset AS geometry) WITH FUNCTION geometry(geomset);
+CREATE CAST (geogset AS geography) WITH FUNCTION geography(geogset);
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
@@ -396,38 +408,42 @@ CREATE FUNCTION geogset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(geometry) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geomset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geography) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geogset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE setUnion(geomset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geomset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geogset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geogset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 
@@ -935,28 +951,40 @@ CREATE OPERATOR * (
 
 CREATE FUNCTION setDistance(geometry, geomset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  AS 'MODULE_PATHNAME', 'Distance_geo_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geomset, geometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_set_value'
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geomset, geomset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_set_set'
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setDistance(geography, geogset)
+CREATE FUNCTION setDistance(geography, geogset, spheroid boolean DEFAULT true)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  AS 'MODULE_PATHNAME', 'Distance_geo_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setDistance(geogset, geography)
+CREATE FUNCTION setDistanceOp(geography, geogset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_set_value'
+  AS 'MODULE_PATHNAME', 'Distance_geo_geoset_op'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setDistance(geogset, geogset)
+CREATE FUNCTION setDistance(geogset, geography, spheroid boolean DEFAULT true)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_set_set'
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistanceOp(geogset, geography)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geo_op'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistance(geogset, geogset, spheroid boolean DEFAULT true)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistanceOp(geogset, geogset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset_op'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -976,17 +1004,17 @@ CREATE OPERATOR <-> (
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOp,
   LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOp,
   LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOp,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = <->
 );

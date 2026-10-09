@@ -928,116 +928,6 @@ trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
 
 
 /*****************************************************************************
- * Similarity distance functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_rgeo_analytics_similarity
- * @brief Return the Hausdorff distance between two temporal rigid geometries
- * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Trgeometry_hausdorff_distance()
- */
-double
-trgeometry_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
-{
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
-    return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
-  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
-  double result = temporal_hausdorff_distance(tp1, tp2);
-  pfree(tp1); pfree(tp2);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_analytics_similarity
- * @brief Return the discrete Frechet distance between two temporal rigid
- * geometries
- * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Trgeometry_frechet_distance()
- */
-double
-trgeometry_frechet_distance(const Temporal *temp1, const Temporal *temp2)
-{
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
-    return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
-  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
-  double result = temporal_similarity(tp1, tp2, FRECHET);
-  pfree(tp1); pfree(tp2);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_analytics_similarity
- * @brief Return the Dynamic Time Warp distance between two temporal rigid
- * geometries
- * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Trgeometry_dyntimewarp_distance()
- */
-double
-trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
-{
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
-    return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
-  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
-  double result = temporal_similarity(tp1, tp2, DYNTIMEWARP);
-  pfree(tp1); pfree(tp2);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_analytics_similarity
- * @brief Return the discrete Frechet path between two temporal rigid
- * geometries
- * @param[in] temp1,temp2 Temporal rigid geometries
- * @param[out] count Number of elements in the resulting array
- * @csqlfn #Trgeometry_frechet_path()
- */
-Match *
-trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2,
-  int *count)
-{
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
-    return NULL;
-  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
-  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
-  Match *result = temporal_similarity_path(tp1, tp2, count, FRECHET);
-  pfree(tp1); pfree(tp2);
-  return result;
-}
-
-/**
- * @ingroup meos_rgeo_analytics_similarity
- * @brief Return the Dynamic Time Warp path between two temporal rigid
- * geometries
- * @param[in] temp1,temp2 Temporal rigid geometries
- * @param[out] count Number of elements in the resulting array
- * @csqlfn #Trgeometry_dyntimewarp_path()
- */
-Match *
-trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
-  int *count)
-{
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
-    return NULL;
-  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
-  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
-  Match *result = temporal_similarity_path(tp1, tp2, count, DYNTIMEWARP);
-  pfree(tp1); pfree(tp2);
-  return result;
-}
-
-/*****************************************************************************
  * Motion metrics
  *****************************************************************************/
 
@@ -1056,7 +946,7 @@ trgeometry_length(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, DBL_MAX);
 
   Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  double result = tpoint_length(tpoint);
+  double result = tpoint_length(tpoint, true);
   pfree(tpoint);
   return result;
 }
@@ -1075,7 +965,7 @@ trgeometry_cumulative_length(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  Temporal *result = tpoint_cumulative_length(tpoint);
+  Temporal *result = tpoint_cumulative_length(tpoint, true);
   pfree(tpoint);
   return result;
 }

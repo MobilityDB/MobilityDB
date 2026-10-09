@@ -2243,11 +2243,13 @@ rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
     return distance_double(nad_tbox_tbox((const TBox *) query,
       (const TBox *) box), ((const TBox *) query)->span.basetype);
   if (rtree->bboxtype == T_STBOX)
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box);
+    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
+      true);
 #if POINTCLOUD
   if (rtree->bboxtype == T_TPCBOX)
     /* TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box);
+    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
+      true);
 #endif
   /* Span types: the one-dimensional gap between the two spans, zero when they
    * overlap, read through the box's axis accessor */

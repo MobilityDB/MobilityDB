@@ -376,18 +376,46 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 -------------------------------------------------------------------------------
--- A value whose pcid names no schema
--- A pcpoint carries a pcid, its coordinates and nothing about its own
--- layout, so which dimensions it holds and what a stored number means as a
--- coordinate are stated by the schema that pcid resolves to. A value naming
--- a pcid no pointcloud_formats row declares is still read from its
--- serialized form and written back to it, because neither reads the schema;
--- a question that must decode a coordinate reports the schema it did not
--- find.
+-- The text of a pcpoint
+-- A pcpoint is read and written as the hex of its pgPointCloud Well-Known
+-- Binary (WKB), the text the type input and output functions of pgPointCloud
+-- read and write: the endian flag, the pcid and the data of the point. A
+-- point in either byte order is read, and written in the order of the
+-- machine.
 -------------------------------------------------------------------------------
 
-SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01';
-SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01' &&
-  tpcbox 'TPCBOX(XT(((0,0),(10,10)),[2024-01-01, 2024-01-31]), 99)';
+SELECT tpcpoint '010100000064000000C80000002C010000@2024-01-01';
+SELECT tpcpoint '000000000100000064000000C80000012C@2024-01-01' =
+  tpcpoint '010100000064000000C80000002C010000@2024-01-01';
+SELECT asText(set(ARRAY[PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])])) =
+  '{"' || PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])::text || '"}';
+/* Errors */
+SELECT tpcpoint '020100000064000000C80000002C010000@2024-01-01';
+SELECT tpcpoint '010100000064000000C8000000@2024-01-01';
+
+-- pcpointFromHexWKB and asHexWKB read and write the text of the type input
+-- and output functions of pgPointCloud
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+SELECT pcpointFromHexWKB('010100000064000000C80000002C010000') =
+  '010100000064000000C80000002C010000'::pcpoint;
+SELECT pcpointFromHexWKB('000000000100000064000000C80000012C') =
+  pcpointFromHexWKB('010100000064000000C80000002C010000');
+SELECT asHexWKB(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])) =
+  PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]::float[])::text;
+SELECT pcpointFromHexWKB(asHexWKB(pcpoint(1, 1.0, 2.0, 3.0))) =
+  pcpoint(1, 1.0, 2.0, 3.0);
+/* Errors */
+SELECT pcpointFromHexWKB('020100000064000000C80000002C010000');
+SELECT pcpointFromHexWKB('010100000064000000C8000000');
+
+-------------------------------------------------------------------------------
+-- A value whose pcid names no schema
+-- The data of a pcpoint is laid out by the schema its pcid resolves to, so a
+-- value naming a pcid no pointcloud_formats row declares is reported when it
+-- is read, as the type input function of pgPointCloud reports it.
+-------------------------------------------------------------------------------
+
+SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024-01-01';
 
 -------------------------------------------------------------------------------

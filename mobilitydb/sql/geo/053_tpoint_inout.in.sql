@@ -102,6 +102,15 @@ CREATE FUNCTION tgeogpointFromHexEWKB(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geometryFromHexEWKB(text)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geographyFromHexEWKB(text)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Output
  *****************************************************************************/
@@ -123,6 +132,15 @@ CREATE FUNCTION asText(tgeogpoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(geometry, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsText($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(geography, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsText($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(geometry[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
@@ -203,6 +221,26 @@ CREATE FUNCTION asEWKB(tgeogpoint, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asEWKB(geometry, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'SELECT @extschema@.ST_AsEWKB($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(geography, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'SELECT @extschema@.ST_AsEWKB($1::geometry, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asGeoJSON(geometry, maxdecimaldigits integer DEFAULT 9,
+    options integer DEFAULT 8)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asGeoJSON(geography, maxdecimaldigits integer DEFAULT 9,
+    options integer DEFAULT 0)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 -- asHexWKB: base hex-WKB (variant 0, no SRID) — portable RFC #861 name,
 -- byte-for-byte identical to MobilityDuck asHexWKB and MobilitySpark asHexWKB.
 CREATE FUNCTION asHexWKB(tgeompoint, endian text DEFAULT '')
@@ -223,6 +261,15 @@ CREATE FUNCTION asHexEWKB(tgeompoint, endian text DEFAULT '')
 CREATE FUNCTION asHexEWKB(tgeogpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(geometry, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(geography, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

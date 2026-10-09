@@ -390,11 +390,11 @@ CREATE FUNCTION endValue(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tgeompoint, int)
+CREATE FUNCTION valueN(tgeompoint, integer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tgeogpoint, int)
+CREATE FUNCTION valueN(tgeogpoint, integer)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

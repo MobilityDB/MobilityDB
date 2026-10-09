@@ -271,18 +271,15 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_box_constructor
- * @brief Transition function for the extent aggregate over tpcpoint /
- * tpcpatch values
- * @details The function folds @p temp's bounding box into @p state.
- * @return @p state (mutated) when both inputs are non-NULL and comparable;
- *   a freshly-palloc'd TPCBox when @p state is NULL and @p temp is non-NULL;
- *   @p NULL when both are NULL, or when the two boxes name different schemas
- *   or hold different dimensions (which raises an error).
+ * @ingroup meos_pointcloud_agg
+ * @brief Transition function for temporal extent aggregate of temporal point
+ * clouds
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] temp Temporal point cloud to aggregate, may be `NULL`
  * @csqlfn #Tpc_extent_transfn()
  */
 TPCBox *
-tpcbox_extent_transfn(TPCBox *state, const Temporal *temp)
+tpc_extent_transfn(TPCBox *state, const Temporal *temp)
 {
   if (! state && ! temp)
     return NULL;
@@ -301,6 +298,40 @@ tpcbox_extent_transfn(TPCBox *state, const Temporal *temp)
       ! ensure_same_dimensionality(state->flags, tmp.flags))
     return NULL;
   tpcbox_expand(&tmp, state);
+  return state;
+}
+
+/**
+ * @ingroup meos_pointcloud_agg
+ * @brief Transition function for temporal extent aggregate of temporal point
+ * cloud boxes
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] box Temporal point cloud box to aggregate, may be `NULL`
+ * @note The function is also the combine function of the extent aggregates
+ * of temporal point cloud boxes and temporal point clouds, the box to
+ * aggregate being the state of another partial aggregation
+ * @csqlfn #Tpcbox_extent_transfn(), #Tpcbox_extent_combinefn()
+ */
+TPCBox *
+tpcbox_extent_transfn(TPCBox *state, const TPCBox *box)
+{
+  /* Can't do anything with null inputs */
+  if (! state && ! box)
+    return NULL;
+  /* Null state and non-null box, return a copy of the box */
+  if (! state)
+    return tpcbox_copy(box);
+  /* Non-null state and null box, return the state */
+  if (! box)
+    return state;
+
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(state, box) ||
+      ! ensure_same_dimensionality(state->flags, box->flags))
+    return NULL;
+
+  /* Both state and box are not null */
+  tpcbox_expand(box, state);
   return state;
 }
 
@@ -413,7 +444,7 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   STBox sbox1, sbox2;
   tpcbox_set_stbox(box1, &sbox1);
   tpcbox_set_stbox(box2, &sbox2);
-  return nad_stbox_stbox(&sbox1, &sbox2);
+  return nad_stbox_stbox(&sbox1, &sbox2, true);
 }
 
 /**
@@ -487,7 +518,7 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
     if (proj2) pfree(proj2);
     return DBL_MAX;
   }
-  double result = nad_tgeo_tgeo(proj1, proj2);
+  double result = nad_tgeo_tgeo(proj1, proj2, true);
   pfree(proj1); pfree(proj2);
   return result;
 }

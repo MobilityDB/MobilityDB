@@ -1225,3 +1225,13 @@ SELECT ST_AsText(transformPipeline(geography 'SRID=4326;POINT(2 49)',
   text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true)::geometry, 6) =
   ST_AsText(startValue(transformPipeline(tgeogpoint 'SRID=4326;POINT(2 49)@2001-01-01',
   text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, true))::geometry, 6);
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 3);
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 3);
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'), 6);
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 6);
+SELECT round(length(geography 'Linestring(0 1,0 2)')::numeric, 3);
+SELECT round(length(geography 'Linestring(0 1,0 2)', false)::numeric, 3);

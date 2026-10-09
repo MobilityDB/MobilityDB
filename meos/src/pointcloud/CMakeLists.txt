@@ -119,6 +119,9 @@ if(POINTCLOUD)
     # mirroring meos/src/geo/tspatial_topops_meos.c. The PG extension reaches
     # the same answers through the Boxop_* dispatchers in the wrapper layer.
     list(APPEND POINTCLOUD_SRCS tpc_topops_meos.c)
+    # Position bounding-box operators taking a temporal point cloud, mirroring
+    # meos/src/geo/tspatial_posops_meos.c.
+    list(APPEND POINTCLOUD_SRCS tpc_posops_meos.c)
   endif()
 
   add_library(pointcloud OBJECT ${POINTCLOUD_SRCS})

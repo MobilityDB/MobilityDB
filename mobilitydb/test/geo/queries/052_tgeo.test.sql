@@ -604,6 +604,11 @@ SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@200
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}'));
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}'));
 SELECT asText(merge(tgeometry 'Point(1 1)@2001-01-01', tgeometry 'Point(1 1)@2001-01-01'));
+-- Surfaces with Z at one timestamp, two overlapping and one apart
+SELECT asText(merge(ARRAY[tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01', 'Polygon Z((1 0 1,3 0 1,3 2 1,1 2 1,1 0 1))@2001-01-01', 'Polygon Z((5 5 1,6 5 1,6 6 1,5 6 1,5 5 1))@2001-01-01']));
+-- Surfaces with Z at one timestamp that overlap at different heights, in both orders
+SELECT asText(merge(tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01', tgeometry 'Polygon Z((1 0 7,3 0 7,3 2 7,1 2 7,1 0 7))@2001-01-01'));
+SELECT asText(merge(tgeometry 'Polygon Z((1 0 7,3 0 7,3 2 7,1 2 7,1 0 7))@2001-01-01', tgeometry 'Polygon Z((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01'));
 
 -- Different values at the same timestamp
 SELECT asText(merge(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeometry '{Point(2 2)@2001-01-02, Point(2 2)@2001-01-03, Point(1 1)@2001-01-04}'));
@@ -638,6 +643,16 @@ SELECT asText(merge(ARRAY[tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', '{Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05}']));
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-01-01']));
 SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2001-01-01', 'Point(1 1)@2001-01-01']));
+-- Surfaces at one timestamp whose union holds a hole touching its shell at one point
+SELECT asText(merge(ARRAY [tgeometry 'Polygon((6 2,9 2,9 5,6 5,6 2))@2001-01-01', 'Triangle((0 0,6 2,4 8,0 0))@2001-01-01', 'Triangle((7 8,2 6,8 2,7 8))@2001-01-01', 'Polygon((7 2,8 2,8 3,7 3,7 2))@2001-01-01']), 6);
+-- Surfaces at one timestamp whose union in the order given meets a vertex it constructs near an edge
+SELECT asText(merge(ARRAY [tgeometry 'Triangle((1 3,4 2,8 3,1 3))@2001-01-01', 'Triangle((5 1,5 2,7 8,5 1))@2001-01-01', 'Triangle((7 8,3 2,5 1,7 8))@2001-01-01']), 6);
+-- Surfaces at one timestamp whose union holds a hole its walk reaches through the shell
+SELECT asText(merge(ARRAY [tgeometry 'Triangle((3 3,4 2,6 2,3 3))@2001-01-01', 'Triangle((8 5,5 2,7 8,8 5))@2001-01-01', 'Triangle((2 4,7 7,3 3,2 4))@2001-01-01']), 6);
+-- Multi-surfaces at one timestamp, read face by face, with Z or without
+SELECT asText(merge(ARRAY [tgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01', 'MultiPolygon(((1 0,3 0,3 2,1 2,1 0)),((5 5,6 5,6 6,5 6,5 5)))@2001-01-01']), 6);
+SELECT asText(merge(ARRAY [tgeometry 'Tin Z(((0 0 0,1 0 0,1 0 1,0 0 0)),((0 0 0,2 0 0,0 2 0,0 0 0)))@2001-01-01', 'Triangle Z((1 1 0,3 1 0,1 3 0,1 1 0))@2001-01-01']), 6);
+SELECT asText(merge(ARRAY [tgeometry 'PolyhedralSurface Z(((5 5 0,6 5 0,6 5 1,5 5 1,5 5 0)))@2001-01-01', 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0))@2001-01-01']), 6);
 
 -- Different values at the same timestamp
 SELECT asText(merge(ARRAY [tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(1 1)@2001-01-04, Point(1 1)@2001-01-05]}', '{[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06, Point(1 1)@2001-01-07],[Point(1 1)@2001-01-08, Point(1 1)@2001-01-09]}']));

@@ -43,7 +43,7 @@ CREATE FUNCTION tpose_gist_consistent(internal, tpose, smallint, oid, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tpose_gist_distance(internal, tpose, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

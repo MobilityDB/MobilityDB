@@ -332,7 +332,7 @@ CREATE FUNCTION endValue(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tcbuffer, int)
+CREATE FUNCTION valueN(tcbuffer, integer)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

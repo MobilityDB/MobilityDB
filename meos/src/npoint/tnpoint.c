@@ -423,39 +423,142 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
 }
 
 /**
+ * @brief Return a temporal geometry point instant located at the point of a
+ * point array, which the function consumes
+ * @details The instant a point of a route makes, as
+ * #tnpointinst_tgeompointinst makes it for a network point
+ * @param[in] srid SRID of the route
+ * @param[in] opa Point array holding one point
+ * @param[in] t Timestamp
+ */
+static TInstant *
+route_point_tinstant(int32_t srid, POINTARRAY *opa, TimestampTz t)
+{
+  LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+  Datum point = PointerGetDatum(geo_serialize(lwpoint));
+  lwgeom_free(lwpoint);
+  return tinstant_make_free(point, T_TGEOMPOINT, t);
+}
+
+/**
+ * @brief Return the positions of the interior vertices of a route
+ * @details The position of a vertex is its distance along the route over the
+ * length of the route, the measure with which `lwline_interpolate_points`
+ * locates a position. Both #tnpointseq_tgeompointseq_cont and
+ * #tnpointinstarr_linear_set_stbox read the vertices a linear segment passes
+ * from these positions
+ * @param[in] pa Points of the route
+ * @param[out] count Number of positions
+ * @return NULL when the route has no interior vertex or no length
+ */
+double *
+route_vertex_positions(const POINTARRAY *pa, int *count)
+{
+  assert(pa); assert(count);
+  *count = 0;
+  double length = ptarray_length_2d(pa);
+  if (pa->npoints <= 2 || length <= 0.0)
+    return NULL;
+  double *result = palloc(sizeof(double) * (pa->npoints - 2));
+  double cum = 0.0;
+  for (uint32_t k = 1; k < pa->npoints - 1; k++)
+  {
+    const POINT2D *p1 = getPoint2d_cp(pa, k - 1);
+    const POINT2D *p2 = getPoint2d_cp(pa, k);
+    cum += hypot(p2->x - p1->x, p2->y - p1->y);
+    result[(*count)++] = cum / length;
+  }
+  return result;
+}
+
+/**
  * @brief Convert a temporal network point into a temporal geometry point
+ * @details A linear segment travels its route between the positions of its
+ * instants, so each vertex of the route that a segment passes is an instant
+ * of the result, located at the vertex. Its ratio in the segment is the one
+ * #npointsegm_locate gives, and it is dated from the ratio as
+ * #tnpointsegm_intersection dates a crossing
  */
 TSequence *
 tnpointseq_tgeompointseq_cont(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TNPOINT);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* A route that is found is not empty */
   const GSERIALIZED *line = route_geom(np->rid);
   if (! line)
-  {
-    pfree(instants);
     return NULL;
-  }
   int32_t srid = gserialized_get_srid(line);
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+
+  /* Positions of the interior vertices of the route, which a linear segment
+   * passes and a step segment does not */
+  const POINTARRAY *pa = lwline->points;
+  int nfracs = 0;
+  double *fracs = (interp == LINEAR) ?
+    route_vertex_positions(pa, &nfracs) : NULL;
+
+  /* Bound of the number of instants of the result */
+  int count = seq->count;
+  for (int i = 1; nfracs > 0 && i < seq->count; i++)
+  {
+    double pos1 = DatumGetNpointP(tinstant_value_p(
+      TSEQUENCE_INST_N(seq, i - 1)))->pos;
+    double pos2 = DatumGetNpointP(tinstant_value_p(
+      TSEQUENCE_INST_N(seq, i)))->pos;
+    for (int k = 0; k < nfracs; k++)
+      if (fracs[k] > Min(pos1, pos2) && fracs[k] < Max(pos1, pos2))
+        count++;
+  }
+
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
     np = DatumGetNpointP(tinstant_value_p(inst));
+    if (i > 0 && nfracs > 0)
+    {
+      /* The vertices the segment ending at this instant passes, in the order
+       * it travels them */
+      const TInstant *prev = TSEQUENCE_INST_N(seq, i - 1);
+      const Npoint *np1 = DatumGetNpointP(tinstant_value_p(prev));
+      TimestampTz lower = prev->t;
+      double duration = (double) (inst->t - lower);
+      bool forward = np1->pos < np->pos;
+      for (int j = 0; j < nfracs; j++)
+      {
+        int k = forward ? j : nfracs - 1 - j;
+        if (fracs[k] <= Min(np1->pos, np->pos) ||
+            fracs[k] >= Max(np1->pos, np->pos))
+          continue;
+        Npoint vertex;
+        npoint_set(np->rid, fracs[k], &vertex);
+        long double fraction = npointsegm_locate(np1, np, &vertex);
+        if (fraction < 0.0)
+          continue;
+        TimestampTz t = lower + (TimestampTz) (duration * fraction);
+        /* A vertex dated at an instant already in the result is not
+         * representable at microsecond resolution */
+        if (t <= instants[ninsts - 1]->t || t >= inst->t)
+          continue;
+        POINTARRAY *opa = ptarray_construct_empty(0, 0, 1);
+        ptarray_append_point(opa, getPoint4d_cp(pa, k + 1), LW_TRUE);
+        instants[ninsts++] = route_point_tinstant(srid, opa, t);
+      }
+    }
     POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
     assert(opa->npoints <= 1);
-    LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
-    Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    lwgeom_free(lwpoint);
-    instants[i] = tinstant_make_free(point, T_TGEOMPOINT, inst->t);
+    instants[ninsts++] = route_point_tinstant(srid, opa, inst->t);
   }
 
+  if (fracs)
+    pfree(fracs);
   lwline_free(lwline);
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE_NO);
 }
 
 /**

@@ -61,10 +61,12 @@ CREATE FUNCTION transform(geometry, integer)
   RETURNS geometry
   AS 'SELECT @extschema@.ST_Transform($1, $2)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+-- A geography is transformed by MEOS, which refuses a coordinate system other
+-- than lon/lat as the cast of a geometry into a geography refuses it
 CREATE FUNCTION transform(geography, integer)
   RETURNS geography
-  AS 'SELECT @extschema@.ST_Transform($1::geometry, $2)::geography'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -149,11 +151,11 @@ CREATE FUNCTION transformGK(geometry)
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tgeometry_to_tgeography'
+  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tgeogpoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeography_to_tgeometry'
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
@@ -218,7 +220,7 @@ CREATE FUNCTION length(tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION length(tgeogpoint)
+CREATE FUNCTION length(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -226,7 +228,7 @@ CREATE FUNCTION length(geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION length(geography)
+CREATE FUNCTION length(geography, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Geo_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -235,7 +237,7 @@ CREATE FUNCTION cumulativeLength(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cumulativeLength(tgeogpoint)
+CREATE FUNCTION cumulativeLength(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -249,7 +251,7 @@ CREATE FUNCTION speed(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION speed(tgeogpoint)
+CREATE FUNCTION speed(tgeogpoint, spheroid boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

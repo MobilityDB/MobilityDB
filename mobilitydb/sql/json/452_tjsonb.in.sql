@@ -108,11 +108,24 @@ CREATE FUNCTION tjsonbFromMFJSON(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION jsonbFromText(text)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Jsonb_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION jsonpathFromText(text)
+  RETURNS jsonpath
+  AS 'MODULE_PATHNAME', 'Jsonpath_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION asText(jsonb)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Jsonb_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(jsonpath)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Jsonpath_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(tjsonb)
@@ -270,7 +283,7 @@ CREATE FUNCTION endValue(tjsonb)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tjsonb, int)
+CREATE FUNCTION valueN(tjsonb, integer)
   RETURNS jsonb
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

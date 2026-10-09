@@ -810,11 +810,20 @@ def render_dwithin(fam: dict) -> str:
         else:
             result = (f"  int result = ever ? edwithin_{d['kernel']}({d['kargs']}) :\n"
                       f"    adwithin_{d['kernel']}({d['kargs']});")
+        # A geography direction reads its earth model from argument `spheroid`
+        # when the SQL signature states it, the spheroid otherwise, as
+        # `area(stbox, spheroid)` does; the guarded local is what the MEOS-API
+        # catalog reads as the default of a signature omitting the argument.
+        sph = d.get("spheroid")
+        spheroid = "" if sph is None else (
+            f"  bool spheroid = true;\n  if (PG_NARGS() > {sph})\n"
+            f"    spheroid = PG_GETARG_BOOL({sph});\n")
         out.append(
             disp_t.replace("{BRIEF}", _wrap_brief(
                         f"Return true if {d['noun']} are ever/always within a distance"))
                   .replace("{DIR}", direc)
                   .replace("{DECLS}", decls)
+                  .replace("{SPHEROID}", spheroid)
                   .replace("{RESULT}", result)
                   .replace("{FREES}", frees))
         out += _dwithin_wrappers(
@@ -2728,28 +2737,51 @@ _DIST_DIRS = (("{v}", "{s}", "Distance_value_set"),
               ("{s}", "{s}", "Distance_set_set"))
 
 
+def _dist_dirs(fam: dict):
+    """The three directions of a family, with the backing symbols its `syms`
+    names when the family has wrappers of its own, the generic ones otherwise."""
+    syms = fam.get("syms")
+    if not syms:
+        return _DIST_DIRS
+    return tuple((l, r, sym) for (l, r, _), sym in zip(_DIST_DIRS, syms))
+
+
+def _dist_spheroid(fam: dict):
+    """Per pair, whether its functions read the earth model from a trailing
+    `spheroid boolean DEFAULT true`, as `area(stbox, spheroid)` does, with the
+    operator backed by the 2-argument `setDistanceOp` on the spheroid"""
+    return fam.get("spheroid") or [False] * len(fam["pairs"])
+
+
 def _dist_fns(fam: dict) -> str:
     """The three setDistance CREATE FUNCTIONs for every (value, set) pair: a
-    pair's functions packed, consecutive pairs separated by one blank line."""
+    pair's functions packed, consecutive pairs separated by one blank line. A
+    pair with an earth model follows each function with its operator twin."""
     tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     groups = []
-    for (v, s), ret in zip(fam["pairs"], fam["rets"]):
+    for (v, s), ret, sph in zip(fam["pairs"], fam["rets"], _dist_spheroid(fam)):
         rets = ret if isinstance(ret, list) else [ret] * 3
-        groups.append("\n".join(
-            tmpl.replace("{SIG}", f"setDistance({l.format(v=v, s=s)}, "
-                                  f"{r.format(v=v, s=s)})")
-                .replace("{RET}", rd).replace("{SYM}", sym)
-            for (l, r, sym), rd in zip(_DIST_DIRS, rets)))
+        fns = []
+        for (l, r, sym), rd in zip(_dist_dirs(fam), rets):
+            args = f"{l.format(v=v, s=s)}, {r.format(v=v, s=s)}"
+            extra = ", spheroid boolean DEFAULT true" if sph else ""
+            fns.append(tmpl.replace("{SIG}", f"setDistance({args}{extra})")
+                           .replace("{RET}", rd).replace("{SYM}", sym))
+            if sph:
+                fns.append(tmpl.replace("{SIG}", f"setDistanceOp({args})")
+                               .replace("{RET}", rd).replace("{SYM}", f"{sym}_op"))
+        groups.append("\n".join(fns))
     return "\n\n".join(groups) + "\n"
 
 
 def _dist_ops(fam: dict) -> str:
     """The three `<->` operators for every pair, grouped like the functions."""
     groups = []
-    for v, s in fam["pairs"]:
+    for (v, s), sph in zip(fam["pairs"], _dist_spheroid(fam)):
+        proc = "setDistanceOp" if sph else "setDistance"
         groups.append("\n".join(
             f"CREATE OPERATOR <-> (\n"
-            f"  PROCEDURE = setDistance,\n"
+            f"  PROCEDURE = {proc},\n"
             f"  LEFTARG = {l.format(v=v, s=s)}, "
             f"RIGHTARG = {r.format(v=v, s=s)},\n"
             f"  COMMUTATOR = <->\n"

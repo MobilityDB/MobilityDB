@@ -172,9 +172,17 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     }
     case T_BOOL:
     {
+      /* A failed parse is told by the error number, which #meos_errno_reset
+       * clears first, as for T_INT4 */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       bool b = bool_in(str);
       if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = BoolGetDatum(b);
       return true;
     }
@@ -253,9 +261,17 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
 #if H3
     case T_H3INDEX:
     {
+      /* A failed parse is told by the error number, which #meos_errno_reset
+       * clears first, as for T_INT4 */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       H3Index cell = meos_h3index_in(str);
       if (meos_errno())
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = Int64GetDatum((int64) cell);
       return true;
     }
@@ -2973,9 +2989,13 @@ stbox_from_wkb_state(meos_wkb_parse_state *s)
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   stbox_flags_from_wkb_state(s, wkb_flags);
 
-  /* Read the SRID, if necessary */
+  /* Read the SRID, if necessary; a geodetic box writing none is in WGS84
+   * (EPSG:4326), as #temporal_from_wkb_state reads a geodetic value and
+   * #stbox_parse a geodetic box */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
+  else if (s->geodetic)
+    s->srid = SRID_DEFAULT;
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;

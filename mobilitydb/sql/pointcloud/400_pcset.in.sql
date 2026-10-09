@@ -46,6 +46,34 @@
  */
 
 /******************************************************************************
+ * Input and output
+ *
+ * pcpointFromHexWKB, pcpatchFromHexWKB and asHexWKB read and write the hex of
+ * the pgPointCloud Well-Known Binary, the text representation of the type
+ * input and output functions of pgPointCloud.
+ ******************************************************************************/
+
+CREATE FUNCTION pcpointFromHexWKB(text)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpoint_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pcpatchFromHexWKB(text)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Pcpatch_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pcpoint_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(pcpatch)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pcpatch_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * pcid accessor — shared by pcpoint and pcpatch
  ******************************************************************************/
 
@@ -59,6 +87,16 @@ CREATE FUNCTION pcid(pcpatch)
   AS 'MODULE_PATHNAME', 'Pcpatch_pcid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION numPoints(pcpatch)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pcpatch_npoints'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pointN(pcpatch, integer)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpatch_point_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Schema-aware dimension getters for pcpoint
  *
@@ -67,22 +105,22 @@ CREATE FUNCTION pcid(pcpatch)
  ******************************************************************************/
 
 CREATE FUNCTION getX(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getY(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getZ(pcpoint)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getDim(pcpoint, text)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Pcpoint_get_dim'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -466,19 +504,21 @@ CREATE FUNCTION pcpointset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(pcpoint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpointset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 
@@ -875,19 +915,21 @@ CREATE FUNCTION pcpatchset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(pcpatch) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpatchset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  COMBINEFUNC = array_agg_combine,
-  SERIALFUNC = array_agg_serialize,
-  DESERIALFUNC = array_agg_deserialize,
+  COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = setstate_serialize,
+  DESERIALFUNC = setstate_deserialize,
   PARALLEL = safe
 );
 

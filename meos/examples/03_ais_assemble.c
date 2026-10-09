@@ -208,7 +208,7 @@ int main(void)
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);
     printf("  Trip -> Number of instants: %d, Distance travelled %lf\n",
-      temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip));
+      temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip, true));
     printf("  SOG -> Number of instants: %d, Time-weighted average %lf\n",
       temporal_num_instants(trips[i].SOG), tnumber_twavg(trips[i].SOG));
   }

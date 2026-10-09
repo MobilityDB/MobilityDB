@@ -383,7 +383,7 @@ CREATE FUNCTION endValue(tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tquadbin, int)
+CREATE FUNCTION valueN(tquadbin, integer)
   RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

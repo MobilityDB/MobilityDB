@@ -241,8 +241,8 @@ int main(void)
           // Temporal *rest = div_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = tdistance_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = textcat_ttext_ttext(temp1, temp2);
-          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
-          // Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 5);
+          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2, true);
+          // Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 5, true);
           // Temporal *rest = temporal_append_tinstant(temp1, inst, LINEAR, 0.0,
           // Temporal *rest = temporal_append_tsequence(temp1, seq, false);
 
@@ -264,12 +264,12 @@ int main(void)
 
           /******************* Similarity functions *******************/
 
-          // double result = temporal_dyntimewarp_distance(temp1, temp2);
-          // double result = temporal_frechet_distance(temp1, temp2);
-          // double result = temporal_hausdorff_distance(temp1, temp2);
+          // double result = temporal_dyntimewarp_distance(temp1, temp2, true);
+          // double result = temporal_frechet_distance(temp1, temp2, true);
+          // double result = temporal_hausdorff_distance(temp1, temp2, true);
           int count;
-          Match *result = temporal_dyntimewarp_path(temp1, temp2, &count);
-          // Match *result = temporal_frechet_path(temp1, temp2, &count);
+          Match *result = temporal_dyntimewarp_path(temp1, temp2, true, &count);
+          // Match *result = temporal_frechet_path(temp1, temp2, true, &count);
 
           if (count > 0)
           {

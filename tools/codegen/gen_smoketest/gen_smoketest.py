@@ -855,6 +855,11 @@ TPOSE_CONFIG = dict(
         # Reprojection needs a pose carrying an explicit source SRID and a real
         # target SRID (the default int32_t -> 0 is the unknown SRID).
         "pose_transform":    {0: "pose_srid1", 1: "3857"},
+        # The frame accessors read a frame the registry states (the default
+        # int32_t -> 0 names none, which they refuse).
+        "geopose_frame_name":          {0: "1"},
+        "geopose_frame_srid":          {0: "1"},
+        "geopose_frame_is_geographic": {0: "1"},
         # WKB byte-buffer input, paired with its size: built from pose_as_wkb()
         # against a canned pose (variant 0 is plain WKB, no hex encoding)
         # rather than guessed.
@@ -1218,9 +1223,8 @@ TCBUFFER_CONFIG = dict(
         # ensure_srid_known().
         "cbuffer_transform_pipeline": {1: "pipeline1", 2: "4326"},
         "cbufferarr_to_geom":    {0: "cbufferarr1", 1: "2"},
-        # cbufferset_make takes a non-const Cbuffer **, unlike its
-        # const-qualified array-input siblings; cbufferarr2 is its own
-        # non-const array so passing it needs no pointer-qualifier cast.
+        # cbufferset_make reads an array of values, unlike the array-of-
+        # pointers inputs of its siblings, so cbufferarr2 holds values.
         "cbufferset_make":       {0: "cbufferarr2", 1: "2"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
@@ -1245,9 +1249,8 @@ TCBUFFER_CONFIG = dict(
   /* A second, distinct buffer for the array-input constructors below. */
   Cbuffer *cbuffer2 = cbuffer_in("Cbuffer(Point(2 2), 0.3)");
   const Cbuffer *cbufferarr1[] = { cbuffer1, cbuffer2 };
-  /* cbufferset_make takes a non-const Cbuffer **, so it gets its own
-   * non-const array rather than reusing cbufferarr1. */
-  Cbuffer *cbufferarr2[] = { cbuffer1, cbuffer2 };
+  /* cbufferset_make reads an array of values rather than pointers. */
+  const Cbuffer cbufferarr2[] = { *cbuffer1, *cbuffer2 };
   /* Reprojection reads the source SRID off the value, so the transform input
    * carries one explicitly. */
   Cbuffer *cbuffer_srid1 = cbuffer_in("SRID=4326;Cbuffer(Point(1 2), 0.5)");
@@ -1428,7 +1431,8 @@ TNPOINT_CONFIG = dict(
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
   /* A second, distinct network point for npointset_make's array input. */
   Npoint *npoint2 = npoint_in("NPoint(1, 0.8)");
-  Npoint *npointarr1[] = { npoint1, npoint2 };
+  /* npointset_make reads an array of values rather than pointers. */
+  const Npoint npointarr1[] = { *npoint1, *npoint2 };
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
   Set *npointset1 = npointset_in("{\\"NPoint(1, 0.5)\\"}");
@@ -1632,6 +1636,10 @@ TGEOMETRY_CONFIG = dict(
         "tgeography_to_tgeometry":  {0: "tgeog1"},
         "tgeography_to_tgeogpoint": {0: "tgeog_point1"},
         "tgeogpoint_to_tgeography": {0: "tgeogpoint_step1"},
+        # The point conversions keep the interpolation, so they take LINEAR
+        # lon/lat temporal points.
+        "tgeompoint_to_tgeogpoint": {0: "tgeompoint_geod1"},
+        "tgeogpoint_to_tgeompoint": {0: "tgeogpoint_lin1"},
         # The geog_* surface needs real lon/lat literals: every canned
         # geometry above is planar (SRID 5676) and is refused with "Only
         # lon/lat coordinate systems are supported".
@@ -1656,7 +1664,9 @@ TGEOMETRY_CONFIG = dict(
         "geog_perimeter":    {0: "geog1"},
         "geog_dwithin":      {0: "geog1", 1: "geog1"},
         "geog_intersects":   {0: "geog1", 1: "geog1"},
+        "geog_disjoint":     {0: "geog1", 1: "geog1"},
         "geog_distance":     {0: "geog1", 1: "geog1"},
+        "geog_shortestline": {0: "geog1", 1: "geog1"},
         # A tgeometry sequence/sequence-set can never carry LINEAR
         # interpolation (there is no interpolation between polygon values);
         # force the interp arg to STEP instead of the arg_map's LINEAR default.
@@ -1936,6 +1946,10 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   Temporal *tgeogpoint_step1 = tgeogpoint_in(
     "Interp=Step;[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  Temporal *tgeompoint_geod1 = tgeompoint_in(
+    "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  Temporal *tgeogpoint_lin1 = tgeogpoint_in(
+    "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   /* Input arrays for the array-of-geometry / array-of-temporal-geo
    * constructors and relationship family below. */
   GSERIALIZED *garr_g1 = geom_in("SRID=5676;Point(0 0)", -1);
@@ -2002,8 +2016,8 @@ TGEOMETRY_CONFIG = dict(
   {
     int t_count = 0;
     SpanSet **t_periods = NULL;
-    int *r = tdwithin_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, 1.0, &t_count,
-      &t_periods);
+    int *r = tdwithin_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, 1.0, true,
+      &t_count, &t_periods);
     printf("tdwithin_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
     if (r) free(r);
     if (t_periods) {
@@ -2036,6 +2050,8 @@ TGEOMETRY_CONFIG = dict(
   if (tgeog1) free(tgeog1);
   if (tgeog_point1) free(tgeog_point1);
   if (tgeogpoint_step1) free(tgeogpoint_step1);
+  if (tgeompoint_geod1) free(tgeompoint_geod1);
+  if (tgeogpoint_lin1) free(tgeogpoint_lin1);
   free(stbox_wkb1);
   free(geo_wkb1);
   if (tgeoarr_tp1) free(tgeoarr_tp1);
@@ -2453,7 +2469,9 @@ def write_test(name, cfg):
         sigm = SIG_RE.match(sig)
         if not sigm:
             continue
-        ret = sigm.group("ret").strip()
+        # A header aligning its names (meos_h3.h) writes `Set    *`, which
+        # reads as `Set *` once its whitespace is collapsed
+        ret = re.sub(r"\s+", " ", sigm.group("ret")).strip()
         fname = sigm.group("name").strip()
         args = parse_args(sigm.group("args"))
         decls.append((fname, ret, args))

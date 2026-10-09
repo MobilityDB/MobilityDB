@@ -247,17 +247,17 @@ CREATE FUNCTION eDwithin(tgeompoint, tgeompoint, dist float)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION eDwithin(geography, tgeogpoint, dist float)
+CREATE FUNCTION eDwithin(geography, tgeogpoint, dist float, spheroid boolean DEFAULT true)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tgeo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eDwithin(tgeogpoint, geography, dist float)
+CREATE FUNCTION eDwithin(tgeogpoint, geography, dist float, spheroid boolean DEFAULT true)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tgeo_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eDwithin(tgeogpoint, tgeogpoint, dist float)
+CREATE FUNCTION eDwithin(tgeogpoint, tgeogpoint, dist float, spheroid boolean DEFAULT true)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tgeo_tgeo'
   SUPPORT tspatial_supportfn
@@ -284,7 +284,7 @@ CREATE FUNCTION aDwithin(tgeompoint, tgeompoint, dist float)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION aDwithin(tgeogpoint, tgeogpoint, dist float)
+CREATE FUNCTION aDwithin(tgeogpoint, tgeogpoint, dist float, spheroid boolean DEFAULT true)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_tgeo_tgeo'
   SUPPORT tspatial_supportfn

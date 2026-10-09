@@ -325,7 +325,7 @@ CREATE FUNCTION endValue(tposechain)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tposechain, int)
+CREATE FUNCTION valueN(tposechain, integer)
   RETURNS posechain
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

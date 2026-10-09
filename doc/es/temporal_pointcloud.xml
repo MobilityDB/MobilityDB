@@ -84,6 +84,46 @@ SELECT pointCloudSchemaNDims(1);
 
 		<para>Los tipos estáticos provienen de pgPointCloud. MobilityDB expone las funciones de acceso de coordenadas con conocimiento del esquema necesarias para proyectar los valores de pgPointCloud en el resto del ecosistema de tipos temporales.</para>
 
+		<sect2 xml:id="pcpoint_pcpatch_inout">
+			<title>Entrada y salida</title>
+
+			<para>El texto de un <varname>pcpoint</varname> y de un <varname>pcpatch</varname> es el hexadecimal de su representación binaria conocida (WKB) de pgPointCloud, el texto que leen y escriben las funciones de entrada y salida del tipo de pgPointCloud, y cada motor lo lee y lo escribe con las funciones siguientes.</para>
+
+			<itemizedlist>
+				<listitem xml:id="pcpoint_asHexWKB">
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) de un pcpoint o de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asHexWKB({pcpoint,pcpatch}) → text
+</programlisting>
+					<para>El resultado es el texto que escribe la función de salida del tipo de pgPointCloud, en el orden de bytes de la máquina.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(pcpoint(1, 1.0, 2.0, 3.0));
+-- 010100000064000000C80000002C010000
+SELECT asHexWKB(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpointFromHexWKB">
+					<indexterm significance="normal"><primary><varname>pcpointFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>pcpatchFromHexWKB</varname></primary></indexterm>
+					<para>Entrada de un pcpoint o de un pcpatch a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pcpointFromHexWKB(text) → pcpoint
+pcpatchFromHexWKB(text) → pcpatch
+</programlisting>
+					<para>La entrada se lee como la lee la función de entrada del tipo de pgPointCloud, en cualquier orden de bytes, bajo el esquema de su <varname>pcid</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getZ(pcpointFromHexWKB('010100000064000000C80000002C010000'));
+-- 3
+SELECT numPoints(pcpatchFromHexWKB('01010000000000000002000000640000006400000064000000C8000000C8000000C8000000'));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="pcpoint_pcpatch_constructors">
 			<title>Constructores</title>
 
@@ -200,6 +240,35 @@ SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)))
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pcpatch_numPoints">
+					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
+					<para>Devuelve el número de puntos de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+numPoints(pcpatch) → integer
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- 2
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpatch_pointN">
+					<indexterm significance="normal"><primary><varname>pointN</varname></primary></indexterm>
+					<para>Devuelve el n-ésimo punto de un pcpatch</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pointN(pcpatch,integer) → pcpoint
+</programlisting>
+					<para>Los puntos se numeran desde uno, un entero negativo cuenta desde el final del parche, y un entero que no designa ningún punto devuelve NULL.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
+  = pcpoint(1, 2.0, 2.0, 2.0);
+-- true
+SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
+  IS NULL;
+-- true
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pcpatch_geometry">
 					<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
 					<para>Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</para>
@@ -262,11 +331,28 @@ SELECT numValues(set(ARRAY[pcpoint(1, 10.0, 20.0, 30.0),
 asBinary(tpcbox,endian text='') → bytea
 asHexWKB(tpcbox,endian text='') → text
 </programlisting>
-					<para>El resultado es la representación de la <varname>stbox</varname> que abarca la caja seguida de su <varname>pcid</varname>, codificada utilizando la codificación little-endian (NDR) o big-endian (XDR), la codificación de la máquina cuando no se especifica ninguna. Como para una <varname>stbox</varname>, el SRID siempre se escribe.</para>
+					<para>El resultado es la representación de la <varname>stbox</varname> que abarca la caja seguida de su <varname>pcid</varname>, codificada utilizando la codificación little-endian (NDR) o big-endian (XDR), la codificación de la máquina cuando no se especifica ninguna. Como para todo tipo espacial, la representación plana no escribe el SRID, que escriben <varname>asEWKB</varname> y <varname>asHexEWKB</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 1));
 -- 0101000000000000000000000000000024400000000000000000000000000000244001000000
 SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
+-- 0001000000000000000040240000000000000000000000000000402400000000000000000005
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_asEWKB">
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB) de una caja de nube de puntos</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKB(tpcbox,endian text='') → bytea
+asHexEWKB(tpcbox,endian text='') → text
+</programlisting>
+					<para>El resultado es la representación que escriben <varname>asBinary</varname> y <varname>asHexWKB</varname> con el SRID de la caja, el que indica el esquema de su <varname>pcid</varname>, como todo tipo espacial escribe su SRID en su representación extendida.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 1));
+-- 0101000000000000000000000000000024400000000000000000000000000000244001000000
+SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
 -- 0041000010E6000000000000000040240000000000000000000000000000402400000000000000000005
 </programlisting>
 				</listitem>
@@ -279,9 +365,26 @@ SELECT asHexWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
 tpcboxFromBinary(bytea) → tpcbox
 tpcboxFromHexWKB(text) → tpcbox
 </programlisting>
+					<para>El SRID del resultado es el que indica el esquema de su <varname>pcid</varname>, que la representación plana no escribe.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 5))));
+-- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcboxFromEWKB">
+					<indexterm significance="normal"><primary><varname>tpcboxFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcboxFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada de una caja de nube de puntos desde la representación binaria conocida extendida (EWKB) o la representación hexadecimal binaria conocida extendida (HexEWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcboxFromEWKB(bytea) → tpcbox
+tpcboxFromHexEWKB(text) → tpcbox
+</programlisting>
 					<para>El SRID que indica la entrada debe ser el que indica el esquema de su <varname>pcid</varname>, cuando ese esquema indica uno.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcboxFromHexWKB(replace(asHexWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
+SELECT tpcboxFromHexEWKB(asHexEWKB(tpcboxX(0, 0, 10, 10, 1)));
+-- TPCBOX(X((0,0),(10,10)), 1)
+SELECT tpcboxFromHexEWKB(replace(asHexEWKB(tpcboxX(0, 0, 10, 10, 5)), 'E6100000', '110F0000'));
 -- ERROR:  Could not parse tpcbox value: The value states SRID 3857 and the schema of pcid 5 states SRID 4326
 </programlisting>
 				</listitem>
@@ -659,9 +762,9 @@ tpcpoint::text → text
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpoint_asMFJSON">
@@ -727,7 +830,7 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para><varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>, ya que un <varname>pcpoint</varname> se imprime como el WKB hexadecimal de su forma serializada, que no tiene decimales que redondear. MF-JSON lleva una clave <varname>"bbox"</varname> cuando <varname>options</varname> es 1, un objeto JSON TPCBox que añade un campo <varname>"pcid"</varname> junto al array <varname>"bbox"</varname> con forma de stbox estándar.</para>
+			<para><varname>asText</varname> no toma un argumento <varname>maxdecimaldigits</varname>, ya que un <varname>pcpoint</varname> se imprime como el hexadecimal de su WKB de pgPointCloud, el texto que escribe la función de salida del tipo de pgPointCloud, que no tiene decimales que redondear. MF-JSON lleva una clave <varname>"bbox"</varname> cuando <varname>options</varname> es 1, un objeto JSON TPCBox que añade un campo <varname>"pcid"</varname> junto al array <varname>"bbox"</varname> con forma de stbox estándar.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_constructors">
@@ -744,9 +847,9 @@ tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
--- 5C00000001000000640000006400000064000000000000@2001-01-01
+-- 0101000000640000006400000064000000@2001-01-01
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), tstzspan '[2001-01-01, 2001-01-02]'));
--- [5C000000010000006400…000000@2001-01-01, 5C000000010000006400…000000@2001-01-02]
+-- [0101000000640000…64000000@2001-01-01, 0101000000640000…64000000@2001-01-02]
 </programlisting>
 				</listitem>
 
@@ -1243,7 +1346,7 @@ nearestApproachInstant({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tpcpoint
 SELECT asText(nearestApproachInstant(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]), geometry 'Point Z(5 5 5)'));
--- 5C00000001000000900100009001000090010000000000@2001-01-02
+-- 0101000000900100009001000090010000@2001-01-02
 </programlisting>
 					</listitem>
 
@@ -1714,9 +1817,9 @@ SELECT t,
   point FROM points(tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0),
   pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
 -- ('2024-01-01',
--- '01:0000000000000000000000F03F0000000000000000F03F00000000000000F03F'::pcpoint)
+-- '0101000000640000006400000064000000'::pcpoint)
 -- ('2024-01-01',
--- '01:0000000000000000000000004000000000000000400000000000000040'::pcpoint)
+-- '0101000000C8000000C8000000C8000000'::pcpoint)
 </programlisting>
 				</listitem>
 			</itemizedlist>

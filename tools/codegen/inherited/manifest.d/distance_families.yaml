@@ -19,6 +19,8 @@ distance_families:
   whole_file: true
   pairs: [[geometry, geomset], [geography, geogset]]
   rets: [float, float]
+  syms: [Distance_geo_geoset, Distance_geoset_geo, Distance_geoset_geoset]
+  spheroid: [false, true]
   blocks:
   - lit: "/*****************************************************************************/\n\n"
   - distfns: true

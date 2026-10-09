@@ -30,17 +30,17 @@
 /**
  * @file
  * @brief A program that tests the temporal point cloud types in a program that
- * has no pgPointCloud schema for the pcid its values name
+ * states the pgPointCloud schema of the pcid its values name itself
  * @details A pcpoint and a pcpatch carry a pcid and nothing else about their
- * layout,
- * and the schema that pcid resolves to lives in a catalog table only a
- * PostgreSQL backend can scan. A standalone program has neither that catalog
- * nor, until it registers one, any schema at all, which is the state every
- * binding starts in. What such a program can still do is what needs no
- * schema: read a value from its serialized form, write it back, and build a
- * temporal value out of it. What it cannot do is read a coordinate, and the
- * program checks that the two are separated — the value is built, and the
- * question that must decode a coordinate reports the missing schema.
+ * layout, and the schema that pcid resolves to lives in a catalog table only
+ * a PostgreSQL backend can scan. A standalone program has neither that
+ * catalog nor, until it registers one, any schema at all, which is the state
+ * every binding starts in. The text of a value is the pgPointCloud
+ * Well-Known Binary (WKB) of its points, whose data the schema lays out, so
+ * the program checks that a value is not read before its schema is
+ * registered, as the type input function of pgPointCloud refuses it, that it
+ * is read and written back once the schema is registered, and that a
+ * question that must decode a coordinate reports a schema that is gone.
  *
  * The program can be build as follows
  * @code
@@ -59,14 +59,14 @@
 
 /* A pcpoint of pcid 1 holding X=1.0 Y=2.0 Z=3.0, and a pcpatch of pcid 1
  * holding the two points (1,1,1) and (2,2,2), each at one timestamp. Both
- * are the hex WKB pgPointCloud serializes, the form that carries no schema */
+ * are the hex WKB the type output functions of pgPointCloud write, the data
+ * laid out by schema 1 of meos/src/pointcloud/pointcloud_schemas.xml: three
+ * int32 dimensions at scale 0.01 */
 #define TPCPOINT_IN \
-  "2300000001000000000000000000F03F0000000000000040000000000000084000" \
-  "0000@2024-01-01"
+  "010100000064000000C80000002C010000@2024-01-01"
 #define TPCPATCH_IN \
-  "4F000000010000000000000002000000000000000000F03F000000000000F03F00" \
-  "0000000000F03F0000000000000040000000000000004000000000000000400000" \
-  "00000000000000000000000000@2024-01-01"
+  "01010000000000000002000000640000006400000064000000C8000000C8000000" \
+  "C8000000@2024-01-01"
 
 /* Main program */
 int main(void)
@@ -82,23 +82,105 @@ int main(void)
   meos_pc_schema_clear();
   assert(meos_errno() == 0);
 
-  /* A temporal point cloud point is built from its serialized form and
-   * written back to it, neither of which reads the schema */
+  /* The data of a value is laid out by the schema of its pcid, so with no
+   * schema registered a value is not read */
+  Temporal *unread = temporal_in(TPCPOINT_IN, T_TPCPOINT);
+  printf("errno reading a value with no schema registered: %d\n",
+    meos_errno());
+  assert(unread == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
+  /* With the schema of pcid 1 registered, a temporal point cloud point is
+   * read and written back to the text it was read from */
+  PCDimensionSpec dims1[3] = {
+    { "X", NULL, 1, "int32_t", 0.01, 0, true },
+    { "Y", NULL, 2, "int32_t", 0.01, 0, true },
+    { "Z", NULL, 3, "int32_t", 0.01, 0, true }
+  };
+  assert(meos_pc_schema_register_dims(1, 0, "none", dims1, 3));
   Temporal *tpcpoint = temporal_in(TPCPOINT_IN, T_TPCPOINT);
   assert(tpcpoint != NULL);
   assert(meos_errno() == 0);
   char *tpcpoint_out = temporal_out(tpcpoint, 15);
   printf("tpcpoint: %s\n", tpcpoint_out);
-  assert(strchr(tpcpoint_out, '@') != NULL);
+  Temporal *tpcpoint2 = temporal_in(tpcpoint_out, T_TPCPOINT);
+  assert(tpcpoint2 != NULL && temporal_eq(tpcpoint, tpcpoint2));
 
-  /* And so is a temporal point cloud patch, whose bounds its own serialized
-   * header carries */
+  /* And so is a temporal point cloud patch */
   Temporal *tpcpatch = temporal_in(TPCPATCH_IN, T_TPCPATCH);
   assert(tpcpatch != NULL);
   assert(meos_errno() == 0);
   char *tpcpatch_out = temporal_out(tpcpatch, 15);
   printf("tpcpatch: %s\n", tpcpatch_out);
-  assert(strchr(tpcpatch_out, '@') != NULL);
+  Temporal *tpcpatch2 = temporal_in(tpcpatch_out, T_TPCPATCH);
+  assert(tpcpatch2 != NULL && temporal_eq(tpcpatch, tpcpatch2));
+
+  /* The point (1,2,3) is to the left of, below, in front of and before a box
+   * spanning 5 to 6 on each axis at a later time, the box answers the
+   * converse, and the point only does not extend past itself */
+  TPCBox *far = tpcbox_in("TPCBOX(ZT(((5,5,5),(6,6,6)),"
+    "[2030-01-01,2030-01-02]), 1)");
+  assert(far != NULL);
+  struct {
+    const char *op;
+    bool (*box_temp)(const TPCBox *, const Temporal *);
+    bool (*temp_box)(const Temporal *, const TPCBox *);
+    bool (*temp_temp)(const Temporal *, const Temporal *);
+    bool point_first, self;
+  } posops[] = {
+    { "left", left_tpcbox_tpointcloud, left_tpointcloud_tpcbox,
+      left_tpointcloud_tpointcloud, true, false },
+    { "overleft", overleft_tpcbox_tpointcloud, overleft_tpointcloud_tpcbox,
+      overleft_tpointcloud_tpointcloud, true, true },
+    { "right", right_tpcbox_tpointcloud, right_tpointcloud_tpcbox,
+      right_tpointcloud_tpointcloud, false, false },
+    { "overright", overright_tpcbox_tpointcloud, overright_tpointcloud_tpcbox,
+      overright_tpointcloud_tpointcloud, false, true },
+    { "below", below_tpcbox_tpointcloud, below_tpointcloud_tpcbox,
+      below_tpointcloud_tpointcloud, true, false },
+    { "overbelow", overbelow_tpcbox_tpointcloud, overbelow_tpointcloud_tpcbox,
+      overbelow_tpointcloud_tpointcloud, true, true },
+    { "above", above_tpcbox_tpointcloud, above_tpointcloud_tpcbox,
+      above_tpointcloud_tpointcloud, false, false },
+    { "overabove", overabove_tpcbox_tpointcloud, overabove_tpointcloud_tpcbox,
+      overabove_tpointcloud_tpointcloud, false, true },
+    { "front", front_tpcbox_tpointcloud, front_tpointcloud_tpcbox,
+      front_tpointcloud_tpointcloud, true, false },
+    { "overfront", overfront_tpcbox_tpointcloud, overfront_tpointcloud_tpcbox,
+      overfront_tpointcloud_tpointcloud, true, true },
+    { "back", back_tpcbox_tpointcloud, back_tpointcloud_tpcbox,
+      back_tpointcloud_tpointcloud, false, false },
+    { "overback", overback_tpcbox_tpointcloud, overback_tpointcloud_tpcbox,
+      overback_tpointcloud_tpointcloud, false, true },
+    { "before", before_tpcbox_tpointcloud, before_tpointcloud_tpcbox,
+      before_tpointcloud_tpointcloud, true, false },
+    { "overbefore", overbefore_tpcbox_tpointcloud,
+      overbefore_tpointcloud_tpcbox, overbefore_tpointcloud_tpointcloud,
+      true, true },
+    { "after", after_tpcbox_tpointcloud, after_tpointcloud_tpcbox,
+      after_tpointcloud_tpointcloud, false, false },
+    { "overafter", overafter_tpcbox_tpointcloud, overafter_tpointcloud_tpcbox,
+      overafter_tpointcloud_tpointcloud, false, true },
+  };
+  for (size_t i = 0; i < sizeof(posops) / sizeof(posops[0]); i++)
+  {
+    bool temp_box = posops[i].temp_box(tpcpoint, far);
+    bool box_temp = posops[i].box_temp(far, tpcpoint);
+    bool temp_temp = posops[i].temp_temp(tpcpoint, tpcpoint);
+    printf("%s: point-box %d, box-point %d, point-point %d\n", posops[i].op,
+      temp_box, box_temp, temp_temp);
+    assert(temp_box == posops[i].point_first);
+    assert(box_temp == ! posops[i].point_first);
+    assert(temp_temp == posops[i].self);
+    assert(meos_errno() == 0);
+  }
+  free(far);
+
+  /* The schema is cleared again, the state a value read earlier meets when
+   * its schema is gone */
+  meos_pc_schema_clear();
+  assert(meos_errno() == 0);
 
   /* The reference system of a point cloud value is stated by its schema, so
    * with none registered the value reports the SRID that names none, and
@@ -116,6 +198,34 @@ int main(void)
   printf("errno after a question needing the schema: %d\n", meos_errno());
   assert(meos_errno() != 0);
   meos_errno_reset();
+
+  /* With no schema registered a box still writes its plain WKB and its EWKB,
+   * as every spatial type does, and reads either back: reading a value needs
+   * no catalog */
+  size_t wkb_size, ewkb_size;
+  uint8_t *wkb = tpcbox_as_wkb(box, 0, &wkb_size);
+  uint8_t *ewkb = tpcbox_as_ewkb(box, 0, &ewkb_size);
+  assert(wkb != NULL && ewkb != NULL);
+  TPCBox *from_wkb = tpcbox_from_wkb(wkb, wkb_size);
+  TPCBox *from_ewkb = tpcbox_from_wkb(ewkb, ewkb_size);
+  assert(from_wkb != NULL && from_ewkb != NULL);
+  char *from_wkb_out = tpcbox_out(from_wkb, 6);
+  char *from_ewkb_out = tpcbox_out(from_ewkb, 6);
+  printf("tpcbox_as_wkb read back with no schema: %s\n", from_wkb_out);
+  printf("tpcbox_as_ewkb read back with no schema: %s\n", from_ewkb_out);
+  assert(meos_errno() == 0);
+  free(wkb); free(ewkb); free(from_wkb); free(from_ewkb);
+  free(from_wkb_out); free(from_ewkb_out);
+
+  /* The extent of two boxes of one schema expands a copy of the first */
+  TPCBox *box2 = tpcbox_in("TPCBOX(XT(((2,2),(5,5)),[2024-01-02,2024-01-03]), 1)");
+  TPCBox *ext = tpcbox_extent_transfn(NULL, box);
+  ext = tpcbox_extent_transfn(ext, box2);
+  assert(ext != NULL);
+  char *ext_out = tpcbox_out(ext, 6);
+  printf("tpcbox_extent_transfn: %s\n", ext_out);
+  assert(meos_errno() == 0);
+  free(ext); free(ext_out); free(box2);
 
   /* With a schema registered, a patch built from its points answers which
    * point stands at a given position */
@@ -171,8 +281,24 @@ int main(void)
   free(first); free(last); free(last_from_end); free(first_from_end);
   free(p1); free(p2); free(p3); free(pa);
 
-  free(tpcpoint); free(tpcpoint_out);
-  free(tpcpatch); free(tpcpatch_out);
+  /* The point count and density aggregates sum the patches instant by
+   * instant */
+  SkipList *npstate = tpcpatch_tnpoints_transfn(NULL, tpcpatch);
+  npstate = tpcpatch_tnpoints_transfn(npstate, tpcpatch2);
+  Temporal *np = temporal_tagg_finalfn(npstate);
+  assert(np != NULL);
+  char *np_out = temporal_out(np, 6);
+  printf("tpcpatch_tnpoints_transfn: %s\n", np_out);
+  SkipList *dstate = tpcpatch_tdensity_transfn(NULL, tpcpatch);
+  Temporal *dens = temporal_tagg_finalfn(dstate);
+  assert(dens != NULL);
+  char *dens_out = temporal_out(dens, 6);
+  printf("tpcpatch_tdensity_transfn: %s\n", dens_out);
+  assert(meos_errno() == 0);
+  free(np); free(np_out); free(dens); free(dens_out);
+
+  free(tpcpoint); free(tpcpoint2); free(tpcpoint_out);
+  free(tpcpatch); free(tpcpatch2); free(tpcpatch_out);
   free(box);
 
   /* Finalize MEOS */

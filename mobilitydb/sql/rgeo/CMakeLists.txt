@@ -36,7 +36,6 @@ SET(LOCAL_FILES
   161_trgeo_topops
   162_trgeo_posops
   164_trgeo_distance
-  166_trgeo_similarity
   168_trgeo_aggfuncs
   170_trgeo_spatialrels
   172_trgeo_tempspatialrels

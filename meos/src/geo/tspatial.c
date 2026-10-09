@@ -51,6 +51,8 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
+#include "temporal/type_inout.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
@@ -246,6 +248,44 @@ spatialset_as_ewkt(const Set *s, int maxdd)
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true);
 }
 
+/**
+ * @ingroup meos_geo_set_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a spatial set
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states, as #set_as_wkb writes the variant it is given
+ * @param[in] s Set
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Spatialset_as_ewkb()
+ */
+uint8_t *
+spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(s), s->settype,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_geo_set_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a spatial set
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states, as #set_as_hexwkb writes the variant it is given
+ * @param[in] s Set
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Spatialset_as_hexewkb()
+ */
+char *
+spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************/
 
 /**
@@ -354,6 +394,44 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
   return result;
 }
 
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a spatiotemporal value
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states, as #temporal_as_wkb writes the variant it is given
+ * @param[in] temp Spatiotemporal value
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tspatial_as_ewkb()
+ */
+uint8_t *
+tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(temp), temp->temptype,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal value
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states, as #temporal_as_hexwkb writes the variant it is given
+ * @param[in] temp Spatiotemporal value
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Tspatial_as_hexewkb()
+ */
+char *
+tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
+}
+
 /*****************************************************************************/
 
 /**
@@ -451,38 +529,84 @@ spatialset_set_stbox(const Set *s, STBox *result)
  * @brief Return the distance between a spatial set and a value
  * @param[in] s Spatial set
  * @param[in] value Value
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @details A set answers the distance of the extent that bounds it, which for
  * a spatial set is its spatiotemporal box where for a span set it is its
  * bounding span: the gaps between the elements are not boundaries of the set.
  * @errval DBL_MAX
  */
 Datum
-distance_spatialset_value(const Set *s, Datum value)
+distance_spatialset_value(const Set *s, Datum value, bool spheroid)
 {
   assert(s); assert(type_bboxtype(s->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s, &box1);
   if (! spatial_set_stbox(value, s->basetype, &box2))
     return Float8GetDatum(DBL_MAX);
-  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2, spheroid));
 }
 
 /**
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spatial sets
  * @param[in] s1,s2 Spatial sets
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @details Each set answers for the extent that bounds it, as above.
  * @errval DBL_MAX
  */
 Datum
-distance_spatialset_spatialset(const Set *s1, const Set *s2)
+distance_spatialset_spatialset(const Set *s1, const Set *s2, bool spheroid)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
   assert(type_bboxtype(s1->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s1, &box1);
   spatialset_set_stbox(s2, &box2);
-  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2, spheroid));
+}
+
+/**
+ * @ingroup meos_geo_set_dist
+ * @brief Return the distance between a geo set and a geometry/geography,
+ * as #distance_set_float does for a float set
+ * @param[in] s Set
+ * @param[in] gs Geometry/geography
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only, as in #stbox_area
+ * @errval DBL_MAX
+ * @csqlfn #Distance_geoset_geo(), #Distance_geo_geoset()
+ */
+double
+distance_set_geo(const Set *s, const GSERIALIZED *gs, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geoset_geo(s, gs))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_spatialset_value(s, PointerGetDatum(gs),
+    spheroid));
+}
+
+/**
+ * @ingroup meos_geo_set_dist
+ * @brief Return the distance between two geo sets, as
+ * #distance_floatset_floatset does for two float sets
+ * @param[in] s1,s2 Sets
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only, as in #stbox_area
+ * @errval DBL_MAX
+ * @csqlfn #Distance_geoset_geoset()
+ */
+double
+distance_geoset_geoset(const Set *s1, const Set *s2, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s1, DBL_MAX); VALIDATE_GEOSET(s2, DBL_MAX);
+  if (! ensure_valid_set_set(s1, s2) ||
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_spatialset_spatialset(s1, s2, spheroid));
 }
 
 /*****************************************************************************/
@@ -500,6 +624,28 @@ spatialset_to_stbox(const Set *s)
   VALIDATE_SPATIALSET(s, NULL);
   STBox *result = palloc(sizeof(STBox));
   spatialset_set_stbox(s, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_set_conversion
+ * @brief Convert a geo set into the collection of its values
+ * @details The collection is the one #geo_collect_garray builds, whose type
+ * follows from the types of the values alone, as PostGIS @p ST_Collect builds
+ * it, so a set of points, a set of one point included, answers a multipoint
+ * @param[in] s Set
+ * @csqlfn #Geoset_to_geo()
+ */
+GSERIALIZED *
+geoset_to_geo(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s, NULL);
+  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * s->count);
+  for (int i = 0; i < s->count; i++)
+    gsarr[i] = DatumGetGserializedP(SET_VAL_N(s, i));
+  GSERIALIZED *result = geo_collect_garray(gsarr, s->count);
+  pfree(gsarr);
   return result;
 }
 

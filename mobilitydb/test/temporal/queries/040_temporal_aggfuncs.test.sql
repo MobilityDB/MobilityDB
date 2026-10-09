@@ -407,6 +407,11 @@ WITH temp(inst) AS (
   SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tfloat '[1@2001-01-01, 2@2001-01-02]')) t(temp);
+SELECT appendInstant(temp, 'linear', 0.0, NULL::interval)
+FROM (VALUES (tint '1@2001-01-01'), (tint '2@2001-01-02')) t(temp);
+
 -------------------------------------------------------------------------------
 -- Interpolation stated
 
@@ -650,20 +655,20 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
 -- which is what makes these the first cases to reach it at all.
 -------------------------------------------------------------------------------
 
-SELECT temporal_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)',
+SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)',
   tstzspan '[2001-01-05,2001-01-07)');
-SELECT temporal_extent_combinefn(NULL::tstzspan, tstzspan '[2001-01-05,2001-01-07)');
-SELECT temporal_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)', NULL::tstzspan);
-SELECT temporal_extent_combinefn(NULL::tstzspan, NULL::tstzspan);
+SELECT span_extent_combinefn(NULL::tstzspan, tstzspan '[2001-01-05,2001-01-07)');
+SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)', NULL::tstzspan);
+SELECT span_extent_combinefn(NULL::tstzspan, NULL::tstzspan);
 
 -- The temporal number extent measures a box, whose span type states what the
 -- value dimension holds, so two different ones are a refusal
-SELECT tnumber_extent_combinefn(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])',
+SELECT tbox_extent_combinefn(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])',
   tbox 'TBOXINT XT([3,4],[2001-01-03,2001-01-04])');
-SELECT tnumber_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
-SELECT tnumber_extent_combinefn(NULL::tbox, tbox 'TBOXINT X([3,4])');
-SELECT tnumber_extent_combinefn(tbox 'TBOXINT X([1,2])', NULL::tbox);
-SELECT tnumber_extent_combinefn(NULL::tbox, NULL::tbox);
+SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT tbox_extent_combinefn(NULL::tbox, tbox 'TBOXINT X([3,4])');
+SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', NULL::tbox);
+SELECT tbox_extent_combinefn(NULL::tbox, NULL::tbox);
 
 -------------------------------------------------------------------------------
 
@@ -676,5 +681,22 @@ SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
 SELECT numInstants(tcount(tint(1, t))) FROM generate_series(
   timestamptz '2001-01-01', timestamptz '2001-01-01' + interval '2999 minutes',
   interval '1 minute') t;
+
+-------------------------------------------------------------------------------
+-- A direct call expands a copy of the box it is given
+DROP TABLE IF EXISTS tbl_extent_state;
+CREATE TABLE tbl_extent_state(s tstzspan, s0 tstzspan, b tbox, b0 tbox);
+INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
+  tstzspan '[2001-01-01, 2001-01-02]',
+  tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
+  tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
+SELECT temporal_extent_transfn(s, tbool 't@2001-02-01'),
+  span_extent_combinefn(s, tstzspan '[2001-03-01, 2001-03-02]'),
+  tnumber_extent_transfn(b, tfloat '100@2001-02-01'),
+  tbox_extent_transfn(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
+  tbox_extent_combinefn(b, tbox 'TBOXFLOAT XT([300, 301],[2001-04-01, 2001-04-02])')
+FROM tbl_extent_state;
+SELECT s = s0, b = b0 FROM tbl_extent_state;
+DROP TABLE tbl_extent_state;
 
 -------------------------------------------------------------------------------

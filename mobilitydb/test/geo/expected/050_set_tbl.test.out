@@ -486,3 +486,70 @@ SELECT round(setDistance(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Poin
  0.000000
 (1 row)
 
+SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(setDistance(geography 'Point(0 0)', geogset '{"Point(0 1)", "Point(0 2)"}', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Point(0 0)')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Point(0 0)', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}')::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}', false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Point(2 2)"}'));
+        st_astext        
+-------------------------
+ MULTIPOINT((1 1),(2 2))
+(1 row)
+
+SELECT ST_AsText(geomset '{"Point(1 1)"}'::geometry);
+     st_astext     
+-------------------
+ MULTIPOINT((1 1))
+(1 row)
+
+SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
+                     st_astext                      
+----------------------------------------------------
+ GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+(1 row)
+
+SELECT ST_AsText(geography(geogset '{"Point(1 1)", "Point(2 2)"}'));
+        st_astext        
+-------------------------
+ MULTIPOINT((1 1),(2 2))
+(1 row)
+
+SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry) =
+  ST_AsText(ST_Collect(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
+ ?column? 
+----------
+ t
+(1 row)
+

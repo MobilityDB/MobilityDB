@@ -150,7 +150,7 @@ int main(void)
   char *tint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tint1 = tint_in(tint1_in);
   char *tint1_out = tint_out(tint1);
-  char *tint1_mfjson = temporal_as_mfjson(tint1, true, 1, 6, NULL);
+  char *tint1_mfjson = temporal_as_mfjson(tint1, 1, 1, 6, NULL);
   char *tint2_in = "{[2@2001-01-01, 4@2001-01-04],[5@2001-01-05, 7@2001-01-07]}";
   Temporal *tint2 = tint_in(tint2_in);
   char *tint2_out = tint_out(tint2);
@@ -160,7 +160,7 @@ int main(void)
   char *tfloat1_out = tfloat_out(tfloat1, 6);
   char *tfloat1_hexwkb = temporal_as_hexwkb(tfloat1, 1, &size_hexwkb);
   uint8_t *tfloat1_wkb = temporal_as_wkb(tfloat1, 1, &tfloat_size_wkb);
-  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, true, 1, 6, NULL);
+  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, 1, 1, 6, NULL);
   char *tfloatinst1_in = "1@2001-01-01";
   TInstant *tfloatinst1 = (TInstant *) tfloat_in(tfloatinst1_in);
   char *tfloatinst1_out = tfloat_out((Temporal *) tfloatinst1, 6);
@@ -185,7 +185,7 @@ int main(void)
   char *ttext1_in = "{[A@2001-01-01, B@2001-01-03],[C@2001-01-04, D@2001-01-06]}";
   Temporal *ttext1 = ttext_in(ttext1_in);
   char *ttext1_out = ttext_out(ttext1);
-  char *ttext1_mfjson = temporal_as_mfjson(ttext1, true, 1, 6, NULL);
+  char *ttext1_mfjson = temporal_as_mfjson(ttext1, 1, 1, 6, NULL);
   char *ttext2_in = "{[E@2001-01-02, F@2001-01-04],[G@2001-01-05, H@2001-01-07]}";
   Temporal *ttext2 = ttext_in(ttext2_in);
   char *ttext2_out = ttext_out(ttext2);
@@ -638,7 +638,7 @@ int main(void)
    *****************************************************************************/
 
   /* Temporal *tbool_from_mfjson(const char *str); */
-  char *mfjson = temporal_as_mfjson(tbool1, true, 1, 6, NULL);
+  char *mfjson = temporal_as_mfjson(tbool1, 1, 1, 6, NULL);
   tbool_result = tbool_from_mfjson(mfjson);
   char_result = tbool_out(tbool_result);
   printf("tbool_from_mfjson(%s): %s\n", tbool1_in, char_result);
@@ -661,8 +661,8 @@ int main(void)
   free(char_result);
 
   /* char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs); */
-  char_result = temporal_as_mfjson(tfloat1, true, 1, 1, "");
-  printf("temporal_as_mfjson(%s, true, 1, 1, \"\"): %s\n", tfloat1_out, char_result);
+  char_result = temporal_as_mfjson(tfloat1, 1, 1, 1, "");
+  printf("temporal_as_mfjson(%s, 1, 1, 1, \"\"): %s\n", tfloat1_out, char_result);
   free(char_result);
 
   /* uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out); */
@@ -3341,6 +3341,37 @@ int main(void)
   printf("%s\n", char_result);
   free(result_agg); free(char_result);
 
+  /* Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt); */
+  tfloat_result = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
+  tfloat_result = temporal_app_tinst_transfn(tfloat_result, tfloatinst2, LINEAR, -1.0, NULL);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_app_tinst aggregate\n");
+  printf("%s\n", tfloatinst1_out);
+  printf("%s\n", tfloatinst2_out);
+  printf("temporal_app_tinst result\n");
+  printf("%s\n", char_result);
+  free(tfloat_result); free(char_result);
+
+  /* Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq); */
+  tfloat_result = temporal_app_tseq_transfn(NULL, tfloatseq1);
+  tfloat_result = temporal_app_tseq_transfn(tfloat_result, tfloatseq2);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_app_tseq aggregate\n");
+  printf("%s\n", tfloatseq1_out);
+  printf("%s\n", tfloatseq2_out);
+  printf("temporal_app_tseq result\n");
+  printf("%s\n", char_result);
+  free(tfloat_result); free(char_result);
+
+  /* Temporal *temporal_append_finalfn(const Temporal *state); */
+  Temporal *app_state = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
+  app_state = temporal_app_tinst_transfn(app_state, tfloatinst2, LINEAR, -1.0, NULL);
+  tfloat_result = temporal_append_finalfn(app_state);
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("temporal_append_finalfn result\n");
+  printf("%s\n", char_result);
+  free(app_state); free(tfloat_result); free(char_result);
+
   /* SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp); */
   sklist = temporal_tcount_transfn(NULL, tfloat1);
   sklist = temporal_tcount_transfn(sklist, tfloat2);
@@ -3529,6 +3560,18 @@ int main(void)
   printf("%s\n", char_result);
   free(tint_result); free(char_result);
 
+  /* SkipList *temporal_wcount_transfn(SkipList *state, const Temporal *temp, const Interval *interv); */
+  sklist = temporal_wcount_transfn(NULL, tint1, interv3);
+  sklist = temporal_wcount_transfn(sklist, tint2, interv3);
+  tint_result = temporal_tagg_finalfn(sklist);
+  char_result = tint_out(tint_result);
+  printf("temporal_wcount aggregate with interval = %s\n", interv3_out);
+  printf("%s\n", tint1_out);
+  printf("%s\n", tint2_out);
+  printf("temporal_wcount result\n");
+  printf("%s\n", char_result);
+  free(tint_result); free(char_result);
+
   /* TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp); */
   TBox *tbox_agg = tnumber_extent_transfn(NULL, tfloat1);
   tbox_agg = tnumber_extent_transfn(tbox_agg, tfloat2);
@@ -3537,6 +3580,17 @@ int main(void)
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
   printf("tnumber_extent result\n");
+  printf("%s\n", char_result);
+  free(tbox_agg); free(char_result);
+
+  /* TBox *tbox_extent_transfn(TBox *state, const TBox *box); */
+  tbox_agg = tbox_extent_transfn(NULL, tbox1);
+  tbox_agg = tbox_extent_transfn(tbox_agg, tbox2);
+  char_result = tbox_out(tbox_agg, 6);
+  printf("tbox_extent aggregate\n");
+  printf("%s\n", tbox1_out);
+  printf("%s\n", tbox2_out);
+  printf("tbox_extent result\n");
   printf("%s\n", char_result);
   free(tbox_agg); free(char_result);
 
@@ -3693,12 +3747,12 @@ int main(void)
   /* Similarity functions for temporal types */
   printf("****************************************************************\n");
 
-  /* double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_dyntimewarp_distance(tfloat1, tfloat2);
+  /* double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_dyntimewarp_distance(tfloat1, tfloat2, true);
   printf("temporal_dyntimewarp_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
-  /* Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count); */
-  matches = temporal_dyntimewarp_path(tfloat1, tfloat2, &count);
+  /* Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count); */
+  matches = temporal_dyntimewarp_path(tfloat1, tfloat2, true, &count);
   printf("temporal_dyntimewarp_path(%s, %s): {", tfloat1_out, tfloat2_out);
   for (int i = 0; i < count; i++)
   {
@@ -3710,12 +3764,12 @@ int main(void)
   }
   free(matches);
 
-  /* double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_frechet_distance(tfloat1, tfloat2);
+  /* double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_frechet_distance(tfloat1, tfloat2, true);
   printf("temporal_frechet_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
-  /* Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count); */
-  matches = temporal_frechet_path(tfloat1, tfloat2, &count);
+  /* Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, bool spheroid, int *count); */
+  matches = temporal_frechet_path(tfloat1, tfloat2, true, &count);
   printf("temporal_frechet_path(%s, %s): {", tfloat1_out, tfloat2_out);
   for (int i = 0; i < count; i++)
   {
@@ -3727,8 +3781,8 @@ int main(void)
   }
   free(matches);
 
-  /* double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2); */
-  float8_result = temporal_hausdorff_distance(tfloat1, tfloat2);
+  /* double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2, bool spheroid); */
+  float8_result = temporal_hausdorff_distance(tfloat1, tfloat2, true);
   printf("temporal_hausdorff_distance(%s, %s): %lf\n", tfloat1_out, tfloat2_out, float8_result);
 
   /*****************************************************************************/

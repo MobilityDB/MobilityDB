@@ -210,6 +210,77 @@ Tspatial_as_hexewkb(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Input and output of a geometry or a geography in HexEWKB representation
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geom_from_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_from_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geometry from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details Read through the public MEOS reader, as #Cbuffer_from_hexwkb reads
+ * a circular buffer
+ * @sqlfn geometryFromHexEWKB()
+ */
+Datum
+Geom_from_hexewkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  GSERIALIZED *result = geom_from_hexewkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geog_from_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geog_from_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return a geography from its ASCII hex-encoded Extended Well-Known
+ * Binary (HexEWKB) representation
+ * @details Read through the public MEOS reader, as #Cbuffer_from_hexwkb reads
+ * a circular buffer
+ * @sqlfn geographyFromHexEWKB()
+ */
+Datum
+Geog_from_hexewkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  GSERIALIZED *result = geog_from_hexewkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a geometry or a geography
+ * @details Written through the public MEOS writer, which takes the byte order
+ * as #Cbuffer_as_hexewkb takes it
+ * @note It is the HexWKB representation prefixed with the SRID
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Geo_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  text *endian_text = PG_GETARG_TEXT_P(1);
+  char *endian = text_to_cstring(endian_text);
+  char *hexwkb = geo_as_hexewkb(gs, endian);
+  text *result = cstring_to_text(hexwkb);
+  pfree(endian); pfree(hexwkb);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(endian_text, 1);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
@@ -309,6 +380,25 @@ Tspatial_transform_pipeline(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(pipelinetxt, 1);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Geo_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_transform);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry or a geography transformed to an SRID
+ * @details A geography is transformed only into a lon/lat coordinate system
+ * @sqlfn transform()
+ * @altsqlfn geoTransform()
+ */
+Datum
+Geo_transform(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int32_t srid = PG_GETARG_INT32(1);
+  GSERIALIZED *result = geo_transform(gs, srid);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Geo_transform_pipeline(PG_FUNCTION_ARGS);

@@ -63,6 +63,8 @@
 
 /* Validity functions */
 
+extern bool ensure_route_exists(int64 rid);
+extern bool ensure_valid_position(double pos);
 extern bool ensure_valid_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
 extern bool ensure_valid_tnpoint_npointset(const Temporal *temp, const Set *s);
@@ -121,6 +123,7 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 
 /* Conversion functions */
 
+extern double *route_vertex_positions(const POINTARRAY *pa, int *count);
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
 extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
 extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);

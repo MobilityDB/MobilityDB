@@ -62,6 +62,96 @@
 #include "pg_pointcloud/schema_cache.h"
 
 /*****************************************************************************
+ * Input and output
+ *
+ * The text of a pcpoint and of a pcpatch is the hex of its pgPointCloud
+ * Well-Known Binary, the text the type input and output functions of
+ * pgPointCloud read and write.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpoint_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_from_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return a pcpoint from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @details Read as #H3index_from_hexwkb reads an h3index, the WKB being the
+ * one of pgPointCloud
+ * @sqlfn pcpointFromHexWKB()
+ */
+Datum
+Pcpoint_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Pcpoint *result = pcpoint_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_PCPOINT_P(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_as_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a pcpoint
+ * @details Written as #H3index_as_hexwkb writes an h3index, the WKB being the
+ * one of pgPointCloud, in the byte order of the machine
+ * @sqlfn asHexWKB()
+ */
+Datum
+Pcpoint_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  char *hexwkb = pcpoint_as_hexwkb(pt);
+  text *result = cstring_to_text(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(pt, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_from_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return a pcpatch from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @details Read as #Pcpoint_from_hexwkb reads a pcpoint
+ * @sqlfn pcpatchFromHexWKB()
+ */
+Datum
+Pcpatch_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Pcpatch *result = pcpatch_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_PCPATCH_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_as_hexwkb);
+/**
+ * @ingroup mobilitydb_pointcloud_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a pcpatch
+ * @details Written as #Pcpoint_as_hexwkb writes a pcpoint
+ * @sqlfn asHexWKB()
+ */
+Datum
+Pcpatch_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  char *hexwkb = pcpatch_as_hexwkb(pa);
+  text *result = cstring_to_text(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Constructors
  *****************************************************************************/
 
@@ -205,6 +295,46 @@ Pcpatch_pcid(PG_FUNCTION_ARGS)
   uint32_t pcid = pcpatch_get_pcid(pa);
   PG_FREE_IF_COPY(pa, 0);
   PG_RETURN_INT32((int32) pcid);
+}
+
+PGDLLEXPORT Datum Pcpatch_npoints(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_npoints);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the number of points of a pcpatch
+ * @details The accessor the pointcloud extension calls `PC_NumPoints`, the
+ * value of each instant of #Tpcpatch_npoints
+ * @sqlfn numPoints()
+ */
+Datum
+Pcpatch_npoints(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  uint32_t result = pcpatch_npoints(pa);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_UINT32(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_point_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_point_n);
+/**
+ * @ingroup mobilitydb_pointcloud_base_accessor
+ * @brief Return the n-th point of a pcpatch, counting from the end when n is
+ * negative, NULL when n addresses no point
+ * @details The accessor the pointcloud extension calls `PC_PointN`, beside
+ * #Pcpatch_npoints
+ * @sqlfn pointN()
+ */
+Datum
+Pcpatch_point_n(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  int n = PG_GETARG_INT32(1);
+  Pcpoint *result = pcpatch_point_n(pa, n);
+  PG_FREE_IF_COPY(pa, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

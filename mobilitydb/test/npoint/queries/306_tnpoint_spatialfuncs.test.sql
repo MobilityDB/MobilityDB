@@ -42,6 +42,8 @@ SELECT ST_AsText(round(trajectory(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6))) AS t(dp);
 SELECT ST_AsText(round(trajectory(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
 SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+-- Two sequences sharing one stretch of a route
+SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02], [Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.6)@2001-01-04]}'), 6));
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6))) AS t(dp);
@@ -124,8 +126,8 @@ WITH temp(temp, box) AS (
 SELECT temp = merge(atStbox(temp, box), minusStbox(temp, box))
 FROM temp;
 
-SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
-SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
+SELECT npointSame(npoint(1, 0.5), npoint(1, 0.50000001));
+SELECT npointSame(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
 SELECT npoint(1, 0.5) ~= npoint(1, 0.50000001);
 SELECT npoint 'Npoint(1, 1)' ~= npoint 'Npoint(2, 1)';
 -- TODO

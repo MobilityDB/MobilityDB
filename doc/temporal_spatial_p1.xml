@@ -116,11 +116,12 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 
 			<listitem xml:id="geo_relate">
 				<indexterm significance="normal"><primary><varname>relate</varname></primary></indexterm>
-				<para>Return the DE-9IM intersection matrix of two geometries</para>
+				<para>Return the DE-9IM intersection matrix of two geometries or whether it matches a pattern</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 relate(geometry,geometry) → text
+relate(geometry,geometry,text) → boolean
 </programlisting>
-				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members.</para>
+				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members. With a pattern, the function answers whether the matrix matches it, as <varname>ST_Relate</varname> with three arguments does: a character <literal>T</literal> of the pattern matches any of <literal>0</literal>, <literal>1</literal> and <literal>2</literal>, and a character <literal>*</literal> matches anything.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
 -- 1020F1102
@@ -130,6 +131,250 @@ SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
 SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
   geometry 'Point(2 1.9)');
 -- 0F2FF1FF2
+SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)',
+  'T*****FF*');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_spatialrels">
+				<indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>covers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>disjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>touches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoEquals</varname></primary></indexterm>
+				<para>Return true if two geometries satisfy a spatial relationship</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+contains(geometry,geometry) → boolean
+covers(geometry,geometry) → boolean
+touches(geometry,geometry) → boolean
+geoEquals(geometry,geometry) → boolean
+disjoint({geometry,geography},{geometry,geography}) → boolean
+intersects({geometry,geography},{geometry,geography}) → boolean
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname> on the same arguments, without calling GEOS. Over two geometries with Z, <varname>disjoint</varname> and <varname>intersects</varname> are tested in 3D, as <varname>ST_3DIntersects</varname>, and in 2D when one of them has no Z. The containment relationships <varname>contains</varname>, <varname>covers</varname> and <varname>touches</varname> have no 3D form and refuse a geometry with Z. Two geographies intersect on the WGS 84 spheroid, as <varname>ST_Intersects</varname> decides it. The equality of two sets of points is named <varname>geoEquals</varname> in every engine, since PostGIS declares <varname>equals(geometry, geometry)</varname> as a deprecated alias of <varname>ST_Equals</varname>; it reads the points, where the operator <varname>=</varname> compares the vertices.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT contains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)');
+-- true
+SELECT touches(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(4 2)');
+-- true
+SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
+-- false
+SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_dwithin">
+				<indexterm significance="normal"><primary><varname>dwithin</varname></primary></indexterm>
+				<para>Return true if two geometries are within a distance</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dwithin(geometry,geometry,float) → boolean
+dwithin(geography,geography,float,spheroid boolean=true) → boolean
+</programlisting>
+				<para>Two geometries with Z are measured in 3D, as <varname>ST_3DDWithin</varname>, and in 2D when one of them has no Z. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
+-- false
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
+-- true
+SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_measures">
+				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Return the area, the perimeter or the centroid of a geometry or a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+area(geometry) → float
+area(geography,spheroid boolean=true) → float
+perimeter(geometry) → float
+perimeter(geography,spheroid boolean=true) → float
+centroid(geometry) → geometry
+centroid(geography,spheroid boolean=true) → geography
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, without calling GEOS. A geography is measured in square meters or in meters on the WGS 84 spheroid by default, and on the sphere, a faster calculation, if the last argument is false. On the sphere, the area is the one the great circles joining the vertices bound, which <varname>ST_Area</varname> over a geography on the sphere approximates: for the square of one degree at the equator below, the approximation is 0.67 percent smaller.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT area(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
+-- 16
+SELECT ST_AsText(centroid(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- POINT(2 2)
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
+-- 12308778361
+SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
+-- 12364031799
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_distances">
+				<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>maxDistance</varname></primary></indexterm>
+				<para>Return the distance, the line joining the closest points, or the maximum distance of two geometries or geographies</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+distance(geometry,geometry) → float
+distance(geography,geography,spheroid boolean=true) → float
+shortestLine(geometry,geometry) → geometry
+shortestLine(geography,geography,spheroid boolean=true) → geography
+maxDistance(geometry,geometry) → float
+</programlisting>
+				<para>Two geometries with Z are measured in 3D, as the PostGIS functions with the prefix <varname>ST_3D</varname>, and a geometry with Z and one without are refused. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used. The shortest line of two geographies joins their closest points on the sphere, as <varname>ST_ShortestLine</varname> over geographies joins them.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4 12)');
+-- 13
+SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)',
+  geometry 'Linestring(1 -1 1,1 1 1)'));
+-- LINESTRING Z (0 0 0,1 0 1)
+SELECT round(maxDistance(geometry 'Linestring(0 0 0,1 0 0)',
+  geometry 'Point(0 0 2)')::numeric, 6);
+-- 2.236068
+SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3);
+-- 111195.080
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_accessors">
+				<indexterm significance="normal"><primary><varname>boundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>reverse</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numGeometries</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometryN</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
+				<para>Return the boundary, the reversal or the parts of a geometry</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+boundary(geometry) → geometry
+reverse(geometry) → geometry
+numGeometries(geometry) → integer
+geometryN(geometry,integer) → geometry
+numPoints(geometry) → integer
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, <varname>numPoints</varname> counting every vertex as <varname>ST_NPoints</varname> does and <varname>geometryN</varname> counting from 1. The boundary of an empty geometry is the empty geometry of the dimension of a boundary. The boundary of a compound curve is its two end points, or empty when it closes, and the boundary of a multisurface is the boundaries of its members; <varname>ST_Boundary</varname> refuses both.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(boundary(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- LINESTRING(0 0,4 0,4 4,0 4,0 0)
+SELECT ST_AsText(reverse(geometry 'Linestring(0 0,4 0,4 3)'));
+-- LINESTRING(4 3,4 0,0 0)
+SELECT numGeometries(geometry 'MultiPoint(1 1,5 5)');
+-- 2
+SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
+-- POINT(5 5)
+SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_lines">
+				<indexterm significance="normal"><primary><varname>lineInterpolatePoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>lineSubstring</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>lineLocatePoint</varname></primary></indexterm>
+				<para>Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+lineInterpolatePoint(geometry,float) → geometry
+lineSubstring(geometry,float,float) → geometry
+lineLocatePoint(geometry,geometry) → float
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, a fraction being a share of the length of the line between 0 and 1.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(lineInterpolatePoint(geometry 'Linestring(0 0,4 0,4 3)', 0.25));
+-- POINT(1.75 0)
+SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
+-- LINESTRING(1.75 0,4 0,4 1.6)
+SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
+-- 1
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_constructors">
+				<indexterm significance="normal"><primary><varname>collect</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>makeLine</varname></primary></indexterm>
+				<para>Return the collection of an array of geometries or the line joining them</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+collect(geometry[]) → geometry
+makeLine(geometry[]) → geometry
+</programlisting>
+				<para>A collection takes its type from the types of the geometries alone, as the PostGIS function <varname>ST_Collect</varname> gives it, so an array of one point answers a multipoint, and a line joins the points and lines of the array in their order, as <varname>ST_MakeLine</varname> joins them. An empty array answers <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)']));
+-- MULTIPOINT((1 1))
+SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1 1)']));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
+SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
+-- LINESTRING(1 1,2 2)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_output">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asGeoJSON</varname></primary></indexterm>
+				<para>Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asText({geometry,geography},maxdecimaldigits integer=15) → text
+asEWKT({geometry,geography},maxdecimaldigits integer=15) → text
+asEWKB({geometry,geography},endian text='') → bytea
+asGeoJSON(geometry,maxdecimaldigits integer=9,options integer=8) → text
+asGeoJSON(geography,maxdecimaldigits integer=9,options integer=0) → text
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>. The GeoJSON states the coordinate reference system its options ask for, the sum of 1 for the bounding box, 2 for the short name of the system, as in <varname>EPSG:3857</varname>, 4 for its long name, and 8 for the short name of any system but WGS 84, which is the default for a geometry; a geography takes no option by default.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(geometry 'SRID=3857;Point(1.123456789 2)', 3);
+-- POINT(1.123 2)
+SELECT asEWKT(geometry 'SRID=3857;Point(1 2)');
+-- SRID=3857;POINT(1 2)
+SELECT asEWKB(geometry 'Point(1 1)', 'XDR');
+-- \x00000000013ff00000000000003ff0000000000000
+SELECT asGeoJSON(geometry 'SRID=3857;Point(1 2)');
+-- {"type":"Point","crs":{"type":"name","properties":{"name":"EPSG:3857"}},"coordinates":[1,2]}
+SELECT asGeoJSON(geometry 'SRID=4326;Point(1 2)');
+-- {"type":"Point","coordinates":[1,2]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<para>Transform a geometry or a geography to a spatial reference identifier</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(geometry,integer) → geometry
+transform(geography,integer) → geography
+</programlisting>
+				<para>A geometry is transformed as the PostGIS function <varname>ST_Transform</varname> transforms it. A geography is transformed only into a coordinate system of longitude and latitude, as the cast of a geometry into a geography requires.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
+-- SRID=3857;POINT(484239.78 6594803.23)
+SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
+-- ERROR:  Only lon/lat coordinate systems are supported
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_clustering">
+				<indexterm significance="normal"><primary><varname>clusterKMeans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterDBSCAN</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterIntersecting</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>clusterWithin</varname></primary></indexterm>
+				<para>Return the clusters of an array of geometries</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+clusterKMeans(geometry[],k integer) → integer[]
+clusterDBSCAN(geometry[],eps float,minpoints integer) → integer[]
+clusterIntersecting(geometry[]) → geometry[]
+clusterWithin(geometry[],distance float) → geometry[]
+</programlisting>
+				<para><varname>clusterKMeans</varname> and <varname>clusterDBSCAN</varname> return the number of the cluster of each geometry, in the order of the array, as the PostGIS window functions <varname>ST_ClusterKMeans</varname> and <varname>ST_ClusterDBSCAN</varname> number them over the rows in that order: an empty geometry is in the cluster -1 of k-means, and a geometry DBSCAN places in no cluster has the number <varname>NULL</varname>. <varname>clusterIntersecting</varname> and <varname>clusterWithin</varname> return a geometry collection per cluster, as the PostGIS aggregates <varname>ST_ClusterIntersecting</varname> and <varname>ST_ClusterWithin</varname> return them. An empty array answers <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT clusterKMeans(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 2);
+-- {1,1,1,1,0}
+SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 1.5, 2);
+-- {0,0,1,1,NULL}
+SELECT array_length(clusterWithin(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
+  geometry 'Point(11 10)', geometry 'Point(30 30)'], 2), 1);
+-- 3
 </programlisting>
 			</listitem>
 
@@ -218,6 +463,10 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 
 			<listitem>
 				<para><varname>tgeom</varname> represents a temporal geometry type that is, <varname>tgeometry</varname> or <varname>tgeompoint</varname>,</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>tgeog</varname> represents a temporal geography type, that is, <varname>tgeography</varname> or <varname>tgeogpoint</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -327,7 +576,7 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asBinary(tspatial,endian text='') → bytea
 asEWKB(tspatial,endian text='') → bytea
-asHexEWKB(tspatial,endian text='') → text
+asHexEWKB({tspatial,geo},endian text='') → text
 </programlisting>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -337,6 +586,8 @@ SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
 -- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
 SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
 -- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
+SELECT asHexEWKB(geometry 'SRID=3812;Point(1 2)');
+-- 0101000020E40E0000000000000000F03F0000000000000040
 </programlisting>
 			</listitem>
 
@@ -395,12 +646,16 @@ SELECT asEWKT(tgeographyFromMFJSON(text '{"type":"MovingGeometry",
 				<indexterm significance="normal"><primary><varname>tspatialFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromHexEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometryFromHexEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geographyFromHexEWKB</varname></primary></indexterm>
 				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tspatialFromBinary(bytea) → tspatial
 tspatialFromEWKB(bytea) → tspatial
 tspatialFromHexWKB(text) → tspatial
 tspatialFromHexEWKB(text) → tspatial
+geometryFromHexEWKB(text) → geometry
+geographyFromHexEWKB(text) → geography
 </programlisting>
 				<para>In the previous functions, <varname>tspatial</varname> replaces any spatiotemporal type, for example, <varname>tgeompoint</varname>, <varname>tgeometry</varname>, or <varname>tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -413,6 +668,9 @@ SELECT asEWKT(tgeogpointFromEWKB(
 SELECT asEWKT(tgeompointFromHexEWKB(
   '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
 -- SRID=3812;POINT(1 2 3)@2001-01-01
+SELECT ST_AsEWKT(geographyFromHexEWKB(
+  '0101000020E61000006666666666661140CDCCCCCCCC6C4940'));
+-- SRID=4326;POINT(4.35 50.85)
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -537,7 +795,9 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 				<para>Return the centroid as a temporal point &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 centroid(tgeo) → tpoint
+centroid(tgeography,spheroid boolean=true) → tgeogpoint
 </programlisting>
+				<para>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-02,
   Polygon((1 1,4 4,7 1,1 1))@2001-01-03]'));
@@ -545,6 +805,8 @@ SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@20
 SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2001-01-01,
   Polygon((1 1,4 4,7 1,1 1))@2001-01-02]'),6);
 -- Interp=Step;[POINT(4 2.001727)@2001-01-01, POINT(4 2.001727)@2001-01-02]
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);
+-- {POINT(0.249967 0.750007)@2001-01-01}
 </programlisting>
 			</listitem>
 
@@ -606,8 +868,9 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tpoint) → float
 length(geo) → float
+length({geography,tgeogpoint},spheroid boolean=true) → float
 </programlisting>
-				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does.</para>
+				<para>The function <varname>length</varname> returns the length of a geometry or a geography, the one of a geography in meters on the spheroid, as the PostGIS function <varname>ST_Length</varname> does. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
 -- 1.73205080756888
@@ -621,6 +884,9 @@ SELECT length(geometry 'Linestring(0 0,3 4)');
 -- 5
 SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
 -- 3521.188745
+SELECT round(length(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 3);
+-- 111195.08
 </programlisting>
 			</listitem>
 
@@ -629,7 +895,9 @@ SELECT round(length(geography 'Linestring(4.35 50.85,4.40 50.85)'), 6);
 				<para>Return the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cumulativeLength(tpoint) → tfloatSeq
+cumulativeLength(tgeogpoint,spheroid boolean=true) → tfloatSeq
 </programlisting>
+				<para>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}'), 6);
@@ -638,6 +906,9 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@20
 SELECT cumulativeLength(tgeompoint 'Interp=Step;
   [Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- Interp=Step;[0@2001-01-01, 0@2001-01-03]
+SELECT round(cumulativeLength(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 3);
+-- [0@2001-01-01, 111195.08@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -646,8 +917,9 @@ SELECT cumulativeLength(tgeompoint 'Interp=Step;
 				<para>Return the speed of the temporal point in units per second &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 speed(tpoint) → tfloatSeqSet
+speed(tgeogpoint,spheroid boolean=true) → tfloatSeqSet
 </programlisting>
-				<para>The temporal point must have linear interpolation</para>
+				<para>The temporal point must have linear interpolation. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}') * 3600 * 24;
@@ -656,6 +928,9 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;
   [Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
+SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  false), 6);
+-- Interp=Step;[1.28698@2001-01-01, 1.28698@2001-01-02]
 </programlisting>
 			</listitem>
 

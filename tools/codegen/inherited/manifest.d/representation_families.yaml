@@ -284,8 +284,9 @@ representation_families:
     - FromBinary
     - FromHexWKB
     - FromMFJSON
+  - lit: "CREATE FUNCTION jsonbFromText(text)\n  RETURNS jsonb\n  AS 'MODULE_PATHNAME', 'Jsonb_from_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION jsonpathFromText(text)\n  RETURNS jsonpath\n  AS 'MODULE_PATHNAME', 'Jsonpath_from_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: /*****************************************************************************/
-  - lit: "CREATE FUNCTION asText(jsonb)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonb_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "CREATE FUNCTION asText(jsonb)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonb_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(jsonpath)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Jsonpath_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - asText
   - lit: CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);
@@ -477,10 +478,11 @@ representation_families:
     - FromEWKB
     - FromHexWKB
     - FromHexEWKB
+  - lit: "CREATE FUNCTION geometryFromHexEWKB(text)\n  RETURNS geometry\n  AS 'MODULE_PATHNAME', 'Geom_from_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION geographyFromHexEWKB(text)\n  RETURNS geography\n  AS 'MODULE_PATHNAME', 'Geog_from_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: "/*****************************************************************************\n * Output\n *****************************************************************************/"
   - ops:
     - asText
-  - lit: "CREATE FUNCTION asText(geometry[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(geography[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "CREATE FUNCTION asText(geometry, maxdecimaldigits integer DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsText($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(geography, maxdecimaldigits integer DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsText($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION asText(geometry[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(geography[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - asEWKT
   - lit: "-- Single base geometry/geography EWKT. In the PostgreSQL extension this rewrites\n-- to PostGIS ST_AsEWKT; the standalone MEOS library and the generated bindings\n-- back the same asEWKT(geometry) surface with the geo_as_ewkt() kernel. Together\n-- with transform(geometry, integer) this lets one portable generator/suite use\n-- MobilityDB names (asEWKT, transform) instead of PostGIS-only ST_AsEWKT/ST_Transform.\nCREATE FUNCTION asEWKT(geometry, maxdecimaldigits integer DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asEWKT(geography, maxdecimaldigits integer DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION asEWKT(geometry[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asEWKT(geography[], maxdecimaldigits integer DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
@@ -488,11 +490,13 @@ representation_families:
     - asMFJSON
     - asBinary
     - asEWKB
+  - lit: "CREATE FUNCTION asEWKB(geometry, endian text DEFAULT '')\n  RETURNS bytea\n  AS 'SELECT @extschema@.ST_AsEWKB($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asEWKB(geography, endian text DEFAULT '')\n  RETURNS bytea\n  AS 'SELECT @extschema@.ST_AsEWKB($1::geometry, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION asGeoJSON(geometry, maxdecimaldigits integer DEFAULT 9,\n    options integer DEFAULT 8)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asGeoJSON(geography, maxdecimaldigits integer DEFAULT 9,\n    options integer DEFAULT 0)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsGeoJSON($1, $2, $3)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - - lit: "-- asHexWKB: base hex-WKB (variant 0, no SRID) \u2014 portable RFC #861 name,\n-- byte-for-byte identical to MobilityDuck asHexWKB and MobilitySpark asHexWKB."
       - asHexWKB
     - - lit: "-- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) \u2014\n-- mirrors asEWKB() and is consistent with MobilityDuck asHexEWKB."
       - asHexEWKB
+  - lit: "CREATE FUNCTION asHexEWKB(geometry, endian text DEFAULT '')\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asHexEWKB(geography, endian text DEFAULT '')\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Geo_as_hexewkb'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: /*****************************************************************************/
 - family: npoint_base
   file: mobilitydb/sql/npoint/300_npoint.in.sql
@@ -792,16 +796,24 @@ representation_families:
   syms:
     FromText: Tpcbox_from_text
     FromBinary: Tpcbox_from_wkb
+    FromEWKB: Tpcbox_from_wkb
     FromHexWKB: Tpcbox_from_hexwkb
+    FromHexEWKB: Tpcbox_from_hexwkb
     asText: Tpcbox_as_text
     asBinary: Tpcbox_as_wkb
+    asEWKB: Tpcbox_as_ewkb
     asHexWKB: Tpcbox_as_hexwkb
+    asHexEWKB: Tpcbox_as_hexewkb
   blocks:
-  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its plain forms, as an stbox does, so it takes\n * no EWKT or EWKB form.\n ******************************************************************************/"
+  - lit: "/******************************************************************************\n * Text and Well-Known Binary representations\n *\n * A tpcbox writes its SRID in its text form, as an stbox does, so it takes no\n * EWKT form; its binary forms are those of every spatial type, the plain WKB\n * without the SRID and the EWKB with it.\n ******************************************************************************/"
   - ops:
     - FromText
     - FromBinary
+    - FromEWKB
     - FromHexWKB
+    - FromHexEWKB
     - asText
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB

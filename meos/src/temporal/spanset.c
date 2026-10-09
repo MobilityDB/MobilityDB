@@ -313,10 +313,19 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   result->count = newcount;
   result->maxcount = maxcount;
 
-  /* Compute the bounding span */
-  span_set(newspans[0].lower, newspans[newcount - 1].upper,
-    newspans[0].lower_inc, newspans[newcount - 1].upper_inc,
-    result->basetype, result->spantype, &result->span);
+  /* Compute the bounding span. Spans kept as given without normalization may
+   * be in any order, as in the state of a union aggregate, so their bounding
+   * span is the expansion of all of them, as #spanset_append_span keeps it */
+  if (order && ! normalize)
+  {
+    result->span = newspans[0];
+    for (int i = 1; i < newcount; i++)
+      span_expand(&newspans[i], &result->span);
+  }
+  else
+    span_set(newspans[0].lower, newspans[newcount - 1].upper,
+      newspans[0].lower_inc, newspans[newcount - 1].upper_inc,
+      result->basetype, result->spantype, &result->span);
   /* Copy the span array */
   for (int i = 0; i < newcount; i++)
     result->elems[i] = newspans[i];
@@ -1080,7 +1089,6 @@ floatspanset_round(const SpanSet *ss, int maxdd)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
  * @brief Return a copy of a span set without any extra storage space
@@ -1094,7 +1102,6 @@ spanset_compact(const SpanSet *ss)
   return spanset_make_exp((Span *) &ss->elems, ss->count, ss->count,
     NORMALIZE, ORDER);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

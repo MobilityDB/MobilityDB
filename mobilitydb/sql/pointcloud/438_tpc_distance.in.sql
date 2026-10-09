@@ -70,7 +70,7 @@ CREATE OPERATOR |=| (PROCEDURE = nearestApproachDistance,
  *****************************************************************************/
 
 CREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tpcbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

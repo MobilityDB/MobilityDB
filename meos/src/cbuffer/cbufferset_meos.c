@@ -89,22 +89,40 @@ cbufferset_out(const Set *s, int maxdd)
 /**
  * @ingroup meos_cbuffer_set_constructor
  * @brief Return a circular buffer set from an array of values
+ * @details The values are read from an array the caller owns, as
+ * #spanset_make reads its spans, and each is checked as #cbuffer_make checks
+ * its radius. The varlena header of a value is set here rather than read from
+ * the array, since a caller filling the structure cannot set it portably
  * @param[in] values Array of values
  * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
-cbufferset_make(Cbuffer **values, int count)
+cbufferset_make(const Cbuffer *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_positive(count))
     return NULL;
+  for (int i = 0; i < count; ++i)
+    if (! ensure_not_negative_datum(Float8GetDatum(values[i].radius),
+        T_FLOAT8))
+      return NULL;
 
+  Cbuffer *cbs = palloc0(sizeof(Cbuffer) * count);
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make_free(datums, count, T_CBUFFER, ORDER);
+  {
+    SET_VARSIZE(&cbs[i], sizeof(Cbuffer));
+    cbs[i].srid = values[i].srid;
+    cbs[i].radius = values[i].radius;
+    cbs[i].x = values[i].x;
+    cbs[i].y = values[i].y;
+    datums[i] = PointerGetDatum(&cbs[i]);
+  }
+  Set *result = set_make_free(datums, count, T_CBUFFER, ORDER);
+  pfree(cbs);
+  return result;
 }
 
 /*****************************************************************************
@@ -319,6 +337,7 @@ minus_set_cbuffer(const Set *s, const Cbuffer *cb)
  * @brief Transition function for set union aggregate of circular buffers
  * @param[in,out] state Current aggregate state
  * @param[in] cb Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 cbuffer_union_transfn(Set *state, const Cbuffer *cb)

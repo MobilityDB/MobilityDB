@@ -214,7 +214,7 @@ PG_FUNCTION_INFO_V1(Posechain_from_wkb);
 /**
  * @ingroup mobilitydb_posechain_base_inout
  * @brief Return a pose chain from its Well-Known Binary (WKB) representation
- * @sqlfn posechainFromBinary()
+ * @sqlfn posechainFromBinary(), posechainFromEWKB()
  */
 Datum
 Posechain_from_wkb(PG_FUNCTION_ARGS)
@@ -658,7 +658,7 @@ PG_FUNCTION_INFO_V1(Posechain_same);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if two pose chains are equal up to the tolerance of the
  * comparison of floating-point values
- * @sqlfn same()
+ * @sqlfn posechainSame()
  * @sqlop @p ~=
  */
 Datum

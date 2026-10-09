@@ -63,6 +63,10 @@
  *   @ingroup mobilitydb_geo_set
  *   @brief Spatial reference system functions for geometry sets
  *
+ *   @defgroup mobilitydb_geo_set_dist Distance functions
+ *   @ingroup mobilitydb_geo_set
+ *   @brief Distance functions for geometry sets
+ *
  * @defgroup mobilitydb_geo_box Functions for spatiotemporal boxes
  * @ingroup mobilitydb_geo
  * @brief Functions for spatiotemporal boxes
@@ -151,6 +155,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup mobilitydb_geo_base_inout Input and output functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Input and output functions for static geometries
+ *
  * @defgroup mobilitydb_geo_base_accessor Accessor functions
  * @ingroup mobilitydb_geo_base
  * @brief Accessor functions for static geometries
@@ -166,6 +174,10 @@
  * @defgroup mobilitydb_geo_base_rel Spatial relationship functions
  * @ingroup mobilitydb_geo_base
  * @brief Spatial relationship functions for static geometries
+ *
+ * @defgroup mobilitydb_geo_base_dist Distance functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Distance functions for static geometries
  */
 
 /*****************************************************************************/

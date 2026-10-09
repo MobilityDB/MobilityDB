@@ -85,7 +85,8 @@ check(double x, double y, double radius, const char *wkt, double expected)
     temp = tgeompoint_in(text);
   }
   GSERIALIZED *gs = geom_in(wkt, -1);
-  double d = (radius > 0) ? nad_tcbuffer_geo(temp, gs) : nad_tgeo_geo(temp, gs);
+  double d = (radius > 0) ? nad_tcbuffer_geo(temp, gs) :
+    nad_tgeo_geo(temp, gs, true);
   bool ok = fabs(d - expected) <= TOLERANCE;
   printf("  (%g %g) r %-4g %-66s %.12g %s\n", x, y, radius, wkt, d,
     ok ? "OK" : "FAIL");

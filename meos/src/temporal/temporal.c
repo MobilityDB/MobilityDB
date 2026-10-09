@@ -2622,7 +2622,6 @@ temporal_sequence_n(const Temporal *temp, int n)
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @errval NULL
- * @csqlfn #Temporal_sequences()
  */
 const TSequence **
 temporal_sequences_p(const Temporal *temp, int *count)
@@ -2656,10 +2655,15 @@ temporal_sequences_p(const Temporal *temp, int *count)
 TSequence **
 temporal_sequences(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(temp, NULL);
   /* We do a casting to avoid allocating a new array of sequences */
   TSequence **sequences = (TSequence **) temporal_sequences_p(temp, count);
+  if (! sequences)
+    return NULL;
   for (int i = 0; i < *count; i ++)
     sequences[i] = tsequence_copy(sequences[i]);
   return sequences;
@@ -3239,10 +3243,12 @@ temporal_segm_duration(const Temporal *temp, const Interval *duration,
  * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence
  * @param[in] seq Temporal sequence
+ * @param[in] spheroid True when measuring two geographies on the spheroid,
+ * false on the sphere, as #datum_distance reads it
  * @csqlfn #Temporal_derivative()
  */
 TSequence *
-tsequence_derivative(const TSequence *seq)
+tsequence_derivative(const TSequence *seq, bool spheroid)
 {
   assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
@@ -3261,7 +3267,7 @@ tsequence_derivative(const TSequence *seq)
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     Datum value2 = tinstant_value_p(inst2);
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
-      datum_distance(value1, value2, basetype, seq->flags) / 
+      datum_distance(value1, value2, basetype, seq->flags, spheroid) /
         ((double)(inst2->t - inst1->t) / 1000000);
     instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
     inst1 = inst2;
@@ -3280,10 +3286,12 @@ tsequence_derivative(const TSequence *seq)
  * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set
  * @param[in] ss Temporal sequence set
+ * @param[in] spheroid True when measuring two geographies on the spheroid,
+ * false on the sphere, as #tsequence_derivative reads it
  * @csqlfn #Temporal_derivative()
  */
 TSequenceSet *
-tsequenceset_derivative(const TSequenceSet *ss)
+tsequenceset_derivative(const TSequenceSet *ss, bool spheroid)
 {
   assert(ss); assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -3292,7 +3300,7 @@ tsequenceset_derivative(const TSequenceSet *ss)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
-      sequences[nseqs++] = tsequence_derivative(seq);
+      sequences[nseqs++] = tsequence_derivative(seq, spheroid);
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
@@ -3320,9 +3328,9 @@ temporal_derivative(const Temporal *temp)
     case TINSTANT:
       return NULL;
     case TSEQUENCE:
-      return (Temporal *) tsequence_derivative((TSequence *) temp);
+      return (Temporal *) tsequence_derivative((TSequence *) temp, true);
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_derivative((TSequenceSet *) temp);
+      return (Temporal *) tsequenceset_derivative((TSequenceSet *) temp, true);
   }
 }
 

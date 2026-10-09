@@ -125,3 +125,37 @@ SELECT i, j FROM aDisjointPairs(
 ---+---
 (0 rows)
 
+SELECT round(minDistance(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'])::numeric, 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(minDistance(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], false)::numeric, 3);
+   round    
+------------
+ 111195.080
+(1 row)
+
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+
+SELECT i, j FROM eDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false) ORDER BY i, j;
+ i | j 
+---+---
+(0 rows)
+
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+
+SELECT i, j FROM aDwithinPairs(ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]'], ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false) ORDER BY i, j;
+ i | j 
+---+---
+(0 rows)
+

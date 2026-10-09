@@ -77,6 +77,7 @@ extern bool meos_h3index_gt(H3Index a, H3Index b);
 extern bool meos_h3index_ge(H3Index a, H3Index b);
 extern int meos_h3index_cmp(H3Index a, H3Index b);
 extern uint32 meos_h3index_hash(H3Index cell);
+extern uint64 meos_h3index_hash_extended(H3Index cell, uint64 seed);
 
 /*****************************************************************************
  * Validators (bodies in h3index.c)

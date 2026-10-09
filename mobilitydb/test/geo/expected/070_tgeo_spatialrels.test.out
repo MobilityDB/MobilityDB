@@ -2199,3 +2199,51 @@ SELECT eDwithin(tgeography 'Point(1 1)@2001-01-01', geography 'SRID=4283;Point(1
 ERROR:  Operation on mixed SRID
 SELECT eDwithin(tgeography 'SRID=4283;Point(1 1)@2001-01-01', tgeography 'Point(1 1)@2001-01-01', 2);
 ERROR:  Operation on mixed SRID
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', 110800, false);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', 110800, false);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+ adwithin 
+----------
+ f
+(1 row)
+

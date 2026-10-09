@@ -57,15 +57,13 @@
 #include <meos_quadbin.h>
 #include <meos_s2cell.h>
 
-/* A pcpoint and a pcpatch of pcid 1 in the hex WKB pgPointCloud serializes,
- * the form that carries no schema, as tpointcloud_test reads them */
+/* A pcpoint and a pcpatch of pcid 1 in the hex WKB the type output functions
+ * of pgPointCloud write, as tpointcloud_test reads them */
 #define TPCPOINT_IN \
-  "2300000001000000000000000000F03F0000000000000040000000000000084000" \
-  "0000@2024-01-01"
+  "010100000064000000C80000002C010000@2024-01-01"
 #define TPCPATCH_IN \
-  "4F000000010000000000000002000000000000000000F03F000000000000F03F00" \
-  "0000000000F03F0000000000000040000000000000004000000000000000400000" \
-  "00000000000000000000000000@2024-01-01"
+  "01010000000000000002000000640000006400000064000000C8000000C8000000" \
+  "C8000000@2024-01-01"
 
 typedef Temporal *(*text_in_fn)(const char *);
 typedef char *(*text_out_fn)(const Temporal *);
@@ -108,6 +106,15 @@ int main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
+
+  /* The pcpoint and the pcpatch read below name pcid 1, whose schema lays out
+   * their data, so the program registers it as tpointcloud_test does */
+  PCDimensionSpec dims[3] = {
+    { "X", NULL, 1, "int32_t", 0.01, 0, true },
+    { "Y", NULL, 2, "int32_t", 0.01, 0, true },
+    { "Z", NULL, 3, "int32_t", 0.01, 0, true }
+  };
+  assert(meos_pc_schema_register_dims(1, 0, "none", dims, 3));
 
   Temporal *tint = tint_in("{1@2001-01-01}");
   assert(tint);

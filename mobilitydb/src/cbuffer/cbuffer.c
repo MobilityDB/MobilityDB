@@ -216,7 +216,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_from_wkb);
  * @ingroup mobilitydb_cbuffer_base_inout
  * @brief Return a circular buffer from its Well-Known Binary (WKB)
  * representation
- * @sqlfn cbufferFromBinary()
+ * @sqlfn cbufferFromBinary(), cbufferFromEWKB()
  */
 Datum
 Cbuffer_from_wkb(PG_FUNCTION_ARGS)
@@ -594,7 +594,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_contains);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if the first circular buffer contains the second one
- * @sqlfn contains()
+ * @sqlfn cbufferContains()
  */
 Datum
 Cbuffer_contains(PG_FUNCTION_ARGS)
@@ -612,7 +612,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_covers);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if the first circular buffer covers the second one
- * @sqlfn cbuffer_covers()
+ * @sqlfn cbufferCovers()
  */
 Datum
 Cbuffer_covers(PG_FUNCTION_ARGS)
@@ -630,7 +630,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_disjoint);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers are disjoint
- * @sqlfn cbuffer_disjoint()
+ * @sqlfn cbufferDisjoint()
  */
 Datum
 Cbuffer_disjoint(PG_FUNCTION_ARGS)
@@ -648,7 +648,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_intersects);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers intersect
- * @sqlfn cbuffer_intersects()
+ * @sqlfn cbufferIntersects()
  */
 Datum
 Cbuffer_intersects(PG_FUNCTION_ARGS)
@@ -666,7 +666,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_touches);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if the first circular buffer touches the second one
- * @sqlfn cbuffer_touches()
+ * @sqlfn cbufferTouches()
  */
 Datum
 Cbuffer_touches(PG_FUNCTION_ARGS)
@@ -684,7 +684,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_dwithin);
 /**
  * @ingroup mobilitydb_cbuffer_base_rel
  * @brief Return true if two circular buffers are within a distance
- * @sqlfn cbuffer_dwithin()
+ * @sqlfn cbufferDwithin()
  */
 Datum
 Cbuffer_dwithin(PG_FUNCTION_ARGS)
@@ -708,7 +708,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_same);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if two circular buffers are approximately equal with 
  * respect to an epsilon value
- * @sqlfn same()
+ * @sqlfn cbufferSame()
  * @sqlop @p ~=
  */
 Datum

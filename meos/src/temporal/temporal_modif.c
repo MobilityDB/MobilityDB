@@ -1978,7 +1978,8 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
     bool split = false;
     if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
     {
-      double dist = datum_distance(value1, value, basetype, seq->flags);
+      double dist = datum_distance(value1, value, basetype, seq->flags,
+        true);
       if (dist > maxdist)
         split = true;
     }
@@ -2045,7 +2046,12 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
       /* There is not enough available space */
       break;
 
-    /* There is enough space to add the new instant */
+    /* There is enough space to add the instant. The bounding box expands
+     * while the last instant of the sequence is the one the instant follows,
+     * so that it holds the edge between the two; an instant normalization
+     * replaces lies on the edge from the penultimate instant to the appended
+     * one */
+    tsequence_expand_bbox(seq, inst);
     if (count != seq->count)
     {
       /* Update the offsets array and the count when adding one instant */
@@ -2054,8 +2060,6 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
       seq->count++;
     }
     memcpy(new, inst, VARSIZE(inst));
-    /* Expand the bounding box and return */
-    tsequence_expand_bbox(seq, inst);
     return (Temporal *) seq;
   }
 

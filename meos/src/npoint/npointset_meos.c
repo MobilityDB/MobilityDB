@@ -89,21 +89,28 @@ npointset_out(const Set *s, int maxdd)
 /**
  * @ingroup meos_npoint_set_constructor
  * @brief Return a network point set from an array of values
+ * @details The values are read from an array the caller owns, as
+ * #spanset_make reads its spans, and each is checked as #npoint_make checks
+ * its arguments
  * @param[in] values Array of values
  * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
-npointset_make(Npoint **values, int count)
+npointset_make(const Npoint *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_positive(count))
     return NULL;
+  for (int i = 0; i < count; ++i)
+    if (! ensure_route_exists(values[i].rid) ||
+        ! ensure_valid_position(values[i].pos))
+      return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
+    datums[i] = PointerGetDatum(&values[i]);
   return set_make_free(datums, count, T_NPOINT, ORDER);
 }
 
@@ -350,6 +357,7 @@ minus_set_npoint(const Set *s, const Npoint *np)
  * @brief Transition function for set union aggregate of network points
  * @param[in,out] state Current aggregate state
  * @param[in] np Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 npoint_union_transfn(Set *state, const Npoint *np)

@@ -5,7 +5,7 @@
 # land unnoticed. The list is a ratchet: it may only shrink. Bring a file
 # under the manifest, then delete its line here.
 #
-# 101 of 219 files remain.
+# 96 of 219 files remain.
 
 mobilitydb/sql/cbuffer/204_tcbuffer_compops.in.sql
 mobilitydb/sql/cbuffer/205_tcbuffer_spatialfuncs.in.sql
@@ -51,6 +51,7 @@ mobilitydb/sql/h3/285_th3index_traversal.in.sql
 mobilitydb/sql/h3/286_th3index_metrics.in.sql
 mobilitydb/sql/header.in.sql
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql
+mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql
 mobilitydb/sql/json/456_tjsonb_op.in.sql
 mobilitydb/sql/json/458_tjsonb_compops.in.sql
@@ -83,7 +84,6 @@ mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/156_trgeo_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/160_trgeo_boxops.in.sql
 mobilitydb/sql/rgeo/164_trgeo_distance.in.sql
-mobilitydb/sql/rgeo/166_trgeo_similarity.in.sql
 mobilitydb/sql/rgeo/170_trgeo_spatialrels.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
 mobilitydb/sql/s2cell/602_s2cell_ops.in.sql

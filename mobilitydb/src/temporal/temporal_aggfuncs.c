@@ -294,6 +294,10 @@ Datum
 Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (s && ! AggCheckCallContext(fcinfo, NULL))
+    s = span_copy(s);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   Span *result = temporal_extent_transfn(s, temp);
   PG_FREE_IF_COPY(temp, 1);
@@ -316,6 +320,10 @@ Datum
 Tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box && ! AggCheckCallContext(fcinfo, NULL))
+    box = tbox_copy(box);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   TBox *result = tnumber_extent_transfn(box, temp);
   PG_FREE_IF_COPY(temp, 1);

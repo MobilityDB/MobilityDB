@@ -417,3 +417,39 @@ ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_tnpoint_topops;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_tnpoint WHERE stbox(temp) <> stbox(temp::tgeompoint);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE stbox(temp) <> stbox(temp::tgeompoint);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM ways, (VALUES (0.1, 0.4), (0.25, 0.75), (0.5, 0.9),
+  (0.0, 1.0)) p(a, b)
+WHERE stbox(nsegment(gid, a, b)) <> stbox(trajectory(tnpointSeq(ARRAY[
+  tnpoint(npoint(gid, a), timestamptz '2001-01-01'),
+  tnpoint(npoint(gid, b), timestamptz '2001-01-02')])::tgeompoint));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint
+WHERE stbox(trajectory(temp)) <> stbox(trajectory(temp::tgeompoint));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big
+WHERE stbox(trajectory(temp)) <> stbox(trajectory(temp::tgeompoint));
+ count 
+-------
+     0
+(1 row)
+

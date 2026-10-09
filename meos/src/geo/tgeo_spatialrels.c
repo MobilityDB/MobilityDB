@@ -232,13 +232,16 @@ datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
- * @brief Return a Datum true if two geographies are within a distance
+ * @brief Return a Datum true if two geographies are within a distance on the
+ * spheroid or on the sphere
+ * @details The geography twin of #datum_geom_dwithin2d, which takes the model
+ * of the earth as the parameter of the lift that follows the distance
  */
 Datum
-datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist)
+datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist, Datum spheroid)
 {
   return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
+    DatumGetGserializedP(geog2), DatumGetFloat8(dist), DatumGetBool(spheroid)));
 }
 
 /**
@@ -257,8 +260,8 @@ datum_geom_relate_pattern(Datum geom1, Datum geom2, Datum p)
 Datum
 datum_geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geom_touches(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), TOUCHES));
 }
 
 /*****************************************************************************/
@@ -325,51 +328,111 @@ geo_intersects_fn_geo(int16 flags1, uint8_t flags2)
 
 /**
  * @brief Select the appropriate dwithin function depending on the flags
+ * @details The dwithin of two geographies takes the model of the earth as a
+ * parameter after the distance, which the dwithin of two geometries does not,
+ * so the function is applied through #geo_dwithin_lfinfo
  * @note We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func3
+varfunc
 geo_dwithin_fn(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &datum_geog_dwithin;
+    return (varfunc) &datum_geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
-      &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+      (varfunc) &datum_geom_dwithin3d : (varfunc) &datum_geom_dwithin2d;
 }
 
 /**
  * @brief Select the appropriate dwithin function for two temporal points
  * @details Mirrors #pt_distance_fn, which makes the same choice for the
- * distance itself: a planar 2D point pair is answered in closed form from the
- * two coordinates, while a geodetic pair keeps the spheroid function and a 3D
- * pair the generic entry, neither having a point twin here
+ * distance itself: a planar 2D point pair is answered by the exact sign of
+ * #point_within_distance_sign on the two coordinates, while a geodetic pair
+ * keeps the spheroid function and a 3D pair the generic entry, neither having
+ * a point twin here
  * @note We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func3
+varfunc
 pt_dwithin_fn(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &datum_geog_dwithin;
+    return (varfunc) &datum_geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
-      &datum_geom_dwithin3d : &datum_pt_dwithin2d;
+      (varfunc) &datum_geom_dwithin3d : (varfunc) &datum_pt_dwithin2d;
 }
 
 /**
- * @brief Select the appropriate dwithin function depending on the flags
+ * @brief Select the appropriate dwithin function depending on the flags of a
+ * spatiotemporal value and of a geometry, as #geo_dwithin_fn does
  * @note We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func3
+varfunc
 geo_dwithin_fn_geo(int16 flags1, uint8_t flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &datum_geog_dwithin;
+    return (varfunc) &datum_geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+      (varfunc) &datum_geom_dwithin3d : (varfunc) &datum_geom_dwithin2d;
+}
+
+/**
+ * @brief Set in a lifted structure the dwithin function selected by
+ * #geo_dwithin_fn and its parameters: the distance, and the model of the
+ * earth for two geographies
+ * @param[in] flags1,flags2 Flags of the spatiotemporal values
+ * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @param[out] lfinfo Lifted structure
+ */
+void
+geo_dwithin_lfinfo(int16 flags1, int16 flags2, double dist, bool spheroid,
+  LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = geo_dwithin_fn(flags1, flags2);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags1) ? 2 : 1;
+  lfinfo->param[0] = Float8GetDatum(dist);
+  lfinfo->param[1] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Set in a lifted structure the dwithin function selected by
+ * #geo_dwithin_fn_geo and its parameters, as #geo_dwithin_lfinfo does
+ */
+void
+geo_dwithin_lfinfo_geo(int16 flags1, uint8_t flags2, double dist,
+  bool spheroid, LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = geo_dwithin_fn_geo(flags1, flags2);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags1) ? 2 : 1;
+  lfinfo->param[0] = Float8GetDatum(dist);
+  lfinfo->param[1] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Select the appropriate dwithin function for a temporal point and a
+ * point
+ * @details The twin of #pt_dwithin_fn for a base point carried by a geometry
+ * rather than by a second temporal point. The choice is the same one: a planar
+ * 2D pair is answered from the four coordinates, while a geodetic pair keeps
+ * the spheroid function and a 3D pair the generic entry, neither having a
+ * point twin here
+ * @note We need two parameters to cope with mixed 2D/3D arguments
+ */
+varfunc
+pt_dwithin_fn_geo(int16 flags1, uint8_t flags2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
+    return (varfunc) &datum_geog_dwithin;
+  else
+    /* 3D only if both arguments are 3D */
+    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+      (varfunc) &datum_geom_dwithin3d : (varfunc) &datum_pt_dwithin2d;
 }
 
 /*****************************************************************************
@@ -397,6 +460,8 @@ typedef enum
  * @param[in] d1,d2 Geometries, in the order the relationship reads them
  * @param[in] op Relationship asked for
  * @param[in] dist Distance, read by @p SREL_DWITHIN alone
+ * @param[in] spheroid True when measuring on the spheroid, read by
+ * @p SREL_DWITHIN over geographies alone
  * @param[in] flags1,flags2 Flags of the temporal value and of the geometry
  * @details The dimension a relationship is read in follows from the operands
  * rather than from the caller, and three dimensions require BOTH of them to
@@ -404,7 +469,7 @@ typedef enum
  */
 static Datum
 spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
-  int16 flags1, uint8_t flags2)
+  bool spheroid, int16 flags1, uint8_t flags2)
 {
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(flags1);
   bool has_z = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2);
@@ -425,7 +490,8 @@ spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
     }
     default: /* SREL_DWITHIN */
       return geodetic ?
-        datum_geog_dwithin(d1, d2, Float8GetDatum(dist)) :
+        datum_geog_dwithin(d1, d2, Float8GetDatum(dist),
+          BoolGetDatum(spheroid)) :
         (has_z ? datum_geom_dwithin3d(d1, d2, Float8GetDatum(dist)) :
           datum_geom_dwithin2d(d1, d2, Float8GetDatum(dist)));
   }
@@ -500,6 +566,8 @@ spatialrel_tgeo_geo_box(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance, read by @p SREL_DWITHIN alone
+ * @param[in] spheroid True when measuring on the spheroid, read by
+ * @p SREL_DWITHIN over geographies alone
  * @param[in] op Relationship asked for
  * @param[in] invert True if the arguments should be inverted
  * @param[in] ever True for the ever semantics (any element satisfies),
@@ -508,7 +576,7 @@ spatialrel_tgeo_geo_box(const Temporal *temp, const GSERIALIZED *gs,
  */
 static int
 spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
-  SpatialRelOp op, bool invert, bool ever)
+  bool spheroid, SpatialRelOp op, bool invert, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) )
@@ -532,8 +600,8 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     dtrav = PointerGetDatum(trav);
     result = invert ?
-      spatialrel_datum_geo_geo(geo, dtrav, op, dist, flags1, flags2) :
-      spatialrel_datum_geo_geo(dtrav, geo, op, dist, flags1, flags2);
+      spatialrel_datum_geo_geo(geo, dtrav, op, dist, spheroid, flags1, flags2) :
+      spatialrel_datum_geo_geo(dtrav, geo, op, dist, spheroid, flags1, flags2);
     pfree(DatumGetPointer(dtrav));
     return result ? 1 : 0;
   }
@@ -547,8 +615,8 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
     const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
     dtrav = PointerGetDatum(geo_serialize(elem));
     result = invert ?
-      spatialrel_datum_geo_geo(geo, dtrav, op, dist, flags1, flags2) :
-      spatialrel_datum_geo_geo(dtrav, geo, op, dist, flags1, flags2);
+      spatialrel_datum_geo_geo(geo, dtrav, op, dist, spheroid, flags1, flags2) :
+      spatialrel_datum_geo_geo(dtrav, geo, op, dist, spheroid, flags1, flags2);
     /* We cannot lwgeom_free((LWGEOM *) coll); */
     pfree(DatumGetPointer(dtrav));
     if ((ever && result) || (! ever && ! result))
@@ -613,7 +681,8 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 
   /* Call the GEOS function for each trapezoid in the collection */
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(trav1));
-  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  bool found = false;
+  for (uint32_t i = 0; i < coll->ngeoms && ! found; i++)
   {
     const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
     dtrav1 = PointerGetDatum(geo_serialize(elem));
@@ -627,12 +696,12 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       datum_func3 func3 = (datum_func3) func;
       result = func3(dtrav1, dtrav2, param);
     }
+    pfree(DatumGetPointer(dtrav1));
     /* We cannot lwgeom_free((LWGEOM *) coll); */
-    if (result)
-      return 1;
+    found = DatumGetBool(result);
   }
   pfree(trav1); pfree(trav2);
-  return 0;
+  return found ? 1 : 0;
 }
 
 /*****************************************************************************/
@@ -817,8 +886,9 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
     return -1;
 
   int result = ever ?
-    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_INTERIORS_MEET, invert, EVER) :
-    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_CONTAINS, invert, ALWAYS);
+    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_INTERIORS_MEET, invert,
+      EVER) :
+    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_CONTAINS, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -1001,7 +1071,7 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
     /* Iterate for each composing geometry */
     ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, EVER, invert) :
     /* Compute the result from the traversed area and the geometry */
-    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_COVERS, invert, ALWAYS);
+    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_COVERS, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -1196,7 +1266,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * geodetic-capable dwithin kernel; the planar trajectory machinery
    * below is not applicable. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
-    return INVERT_RESULT(ea_dwithin_tgeo_geo(temp, gs, 0.0, ! ever));
+    return INVERT_RESULT(ea_dwithin_tgeo_geo(temp, gs, 0.0, true, ! ever));
 
   int result;
 
@@ -1232,7 +1302,8 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Temporal point case: "ever disjoint" reduces to "not always covered". */
   if (tpoint_type(temp->temptype))
   {
-    result = spatialrel_tgeo_geo(temp, gs, 0.0, SREL_COVERS, INVERT, ALWAYS);
+    result = spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_COVERS, INVERT,
+      ALWAYS);
     return INVERT_RESULT(result);
   }
 
@@ -1465,7 +1536,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * through the geodetic-capable dwithin kernel instead of the planar
    * spatialrel_tgeo_geo trajectory. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
-    return ea_dwithin_tgeo_geo(temp, gs, 0.0, ever);
+    return ea_dwithin_tgeo_geo(temp, gs, 0.0, true, ever);
 
   /* ALWAYS */
   if (! ever)
@@ -1523,7 +1594,8 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     }
   }
 
-  return spatialrel_tgeo_geo(temp, gs, 0.0, SREL_INTERSECTS, INVERT_NO, EVER);
+  return spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_INTERSECTS, INVERT_NO,
+    EVER);
 }
 
 /**
@@ -1543,7 +1615,8 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_tgeo_geo()
+ * @csqlfn #Eintersects_tgeo_geo(), #Eintersects_tpose_geo(),
+ * #Eintersects_tquadbin_geo(), #Eintersects_tnpoint_geo()
  */
 int
 eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1571,7 +1644,8 @@ aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_geo_tgeo()
+ * @csqlfn #Eintersects_geo_tgeo(), #Eintersects_geo_tpose(),
+ * #Eintersects_geo_tquadbin(), #Eintersects_geo_tnpoint()
  */
 int
 eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -1624,7 +1698,8 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @brief Return 1 if the temporal geos ever intersect, 0 if not, and
  * -1 on error or if the temporal geos do not intersect in time
  * @param[in] temp1,temp2 Temporal geos
- * @csqlfn #Eintersects_tgeo_tgeo()
+ * @csqlfn #Eintersects_tgeo_tgeo(), #Eintersects_tpose_tpose(),
+ * #Eintersects_tquadbin_tquadbin(), #Eintersects_tnpoint_tnpoint()
  */
 int
 eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
@@ -1697,7 +1772,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * time, and this rejects those among them that never make contact. #ea_touches_tcbuffer_geo carries the same reject with the
    * same tolerance, and the guards above have already restricted this to
    * planar 2D operands, which is what the nearest approach requires. */
-  if (nad_tgeo_geo(temp, gs) > 1e-6)
+  if (nad_tgeo_geo(temp, gs, true) > 1e-6)
     return 0;
 
   /* EVER */
@@ -1968,12 +2043,13 @@ atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edwithin_tgeo_geo()
  */
 int
 ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
-  bool ever)
+  bool spheroid, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) ||
@@ -1994,9 +2070,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-    lfinfo.func = (varfunc) geo_dwithin_fn_geo(temp->flags, gs->gflags);
-    lfinfo.numparam = 1;
-    lfinfo.param[0] = Float8GetDatum(dist);
+    geo_dwithin_lfinfo_geo(temp->flags, gs->gflags, dist, spheroid, &lfinfo);
     lfinfo.argtype[0] = temp->temptype;
     lfinfo.argtype[1] = temptype_basetype(temp->temptype);
     lfinfo.restype = T_TBOOL;
@@ -2052,7 +2126,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * dimensions. */
   if (ever && dist > 0.0 && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
-    return (nad_tgeo_geo(temp, gs) <= dist) ? 1 : 0;
+    return (nad_tgeo_geo(temp, gs, true) <= dist) ? 1 : 0;
 
   /* Native fast path for a temporal geometry point with linear interpolation
    * against a non-point geometry the clip engine supports (planar, 2D,
@@ -2094,13 +2168,14 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* EVER */
   if (ever)
   {
-    return spatialrel_tgeo_geo(temp, gs, dist, SREL_DWITHIN, INVERT_NO, EVER);
+    return spatialrel_tgeo_geo(temp, gs, dist, spheroid, SREL_DWITHIN,
+      INVERT_NO, EVER);
   }
 
   /* ALWAYS */
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
-  int result = spatialrel_tgeo_geo(temp, buffer, 0.0, SREL_COVERS, INVERT,
-    ALWAYS);
+  int result = spatialrel_tgeo_geo(temp, buffer, 0.0, true, SREL_COVERS,
+    INVERT, ALWAYS);
   pfree(buffer);
   return result;
 }
@@ -2112,12 +2187,16 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #Edwithin_tgeo_geo()
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
+ * @csqlfn #Edwithin_tgeo_geo(), #Edwithin_tpose_geo(),
+ * #Edwithin_tquadbin_geo(), #Edwithin_tnpoint_geo()
  */
 int
-edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
+edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool spheroid)
 {
-  return ea_dwithin_tgeo_geo(temp, gs, dist, EVER);
+  return ea_dwithin_tgeo_geo(temp, gs, dist, spheroid, EVER);
 }
 
 /**
@@ -2127,12 +2206,15 @@ edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_geo()
  */
 int
-adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
+adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool spheroid)
 {
-  return ea_dwithin_tgeo_geo(temp, gs, dist, ALWAYS);
+  return ea_dwithin_tgeo_geo(temp, gs, dist, spheroid, ALWAYS);
 }
 
 /**
@@ -2142,12 +2224,16 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #Edwithin_geo_tgeo()
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
+ * @csqlfn #Edwithin_geo_tgeo(), #Edwithin_geo_tpose(),
+ * #Edwithin_geo_tquadbin(), #Edwithin_geo_tnpoint()
  */
 int
-edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
+edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
+  bool spheroid)
 {
-  return edwithin_tgeo_geo(temp, gs, dist);
+  return edwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
 /**
@@ -2157,12 +2243,15 @@ edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_geo_tgeo()
  */
 int
-adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
+adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
+  bool spheroid)
 {
-  return adwithin_tgeo_geo(temp, gs, dist);
+  return adwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
 /*****************************************************************************/
@@ -2187,8 +2276,12 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   double duration = (double) (upper - lower);
   const GSERIALIZED *gs1 = DatumGetGserializedP(start1);
   const GSERIALIZED *gs2 = DatumGetGserializedP(start2);
-  datum_func3 func = geo_dwithin_fn(gs1->gflags, gs2->gflags);
-  bool hasz = FLAGS_GET_Z(gs1->gflags);
+  /* The distance of the lift that calls this function, as #geo_dwithin_fn
+   * selects it from the flags of the temporal values: 3D only if both
+   * arguments are 3D */
+  bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
+  bool geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
+  datum_func3 func = hasz ? &datum_geom_dwithin3d : &datum_geom_dwithin2d;
   long double a, b, c;
   if (hasz) /* 3D */
   {
@@ -2269,7 +2362,16 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   /* They are parallel, moving in the same direction at the same speed */
   if (a == 0)
   {
-    if (! func(start1, start2, Float8GetDatum(dist)))
+    /* Two geographies are read on the spheroid: the function receives the
+     * distance alone, and the lift that calls it for geographies, the ever
+     * and always dwithin, takes the instants it answers as candidates and
+     * evaluates the dwithin at each of them with the model it carries, so
+     * the model here selects candidates and never decides a value */
+    Datum within = geodetic ?
+      datum_geog_dwithin(start1, start2, Float8GetDatum(dist),
+        BoolGetDatum(true)) :
+      func(start1, start2, Float8GetDatum(dist));
+    if (! DatumGetBool(within))
       return 0;
     *t1 = lower;
     *t2 = upper;
@@ -2333,12 +2435,13 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
  * 0 if not, -1 on error or if the temporal geos do not intersect on time
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edwithin_tgeo_tgeo(), #Adwithin_tgeo_tgeo()
  */
 int
 ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
-  bool ever)
+  bool spheroid, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
@@ -2370,19 +2473,16 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
       return 0;
   }
 
-  /* A temporal point carries a point at every instant, #tpointinst_make
-   * refusing an empty one and any other type, so the pair is answered in
-   * closed form rather than by the generic any-geometry entry */
-  datum_func3 func = (tpoint_type(temp1->temptype) &&
-      tpoint_type(temp2->temptype)) ?
-    pt_dwithin_fn(temp1->flags, temp2->flags) :
-    geo_dwithin_fn(temp1->flags, temp2->flags);
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Float8GetDatum(dist);
+  geo_dwithin_lfinfo(temp1->flags, temp2->flags, dist, spheroid, &lfinfo);
+  /* A temporal point carries a point at every instant, #tpointinst_make
+   * refusing an empty one and any other type, so the pair is answered by the
+   * exact sign of #point_within_distance_sign rather than by the generic
+   * any-geometry entry */
+  if (tpoint_type(temp1->temptype) && tpoint_type(temp2->temptype))
+    lfinfo.func = pt_dwithin_fn(temp1->flags, temp2->flags);
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.invert = INVERT_NO;
@@ -2400,12 +2500,16 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
- * @csqlfn #Edwithin_tgeo_tgeo()
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
+ * @csqlfn #Edwithin_tgeo_tgeo(), #Edwithin_tpose_tpose(),
+ * #Edwithin_tquadbin_tquadbin(), #Edwithin_tnpoint_tnpoint()
  */
 int
-edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
+edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
+  bool spheroid)
 {
-  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, EVER);
+  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, EVER);
 }
 
 /**
@@ -2414,12 +2518,15 @@ edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
  * 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_tgeo()
  */
 int
-adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
+adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
+  bool spheroid)
 {
-  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);
+  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, ALWAYS);
 }
 
 /*****************************************************************************
@@ -2586,19 +2693,22 @@ typedef enum
  * @brief Return the exact ever/always relationship of a pair
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance, for the within-distance relationships
+ * @param[in] spheroid True when measuring on the spheroid, for the
+ * within-distance relationships over geographies, as #ea_dwithin_tgeo_tgeo
+ * reads it
  * @param[in] pred Relationship to apply
  * @return 1 when the pair satisfies it, 0 when it does not, -1 on error
  */
 static int
 setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
-  SetSetEAPred pred)
+  bool spheroid, SetSetEAPred pred)
 {
   switch (pred)
   {
     case SS_EDWITHIN:
-      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, EVER);
+      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, EVER);
     case SS_ADWITHIN:
-      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);
+      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, ALWAYS);
     case SS_EINTERSECTS:
       return ea_intersects_tgeo_tgeo(temp1, temp2, EVER);
     case SS_AINTERSECTS:
@@ -2633,6 +2743,8 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
  * @param[in] count1,count2 Number of elements
  * @param[in] bb1,bb2 Their bounding boxes
  * @param[in] dist Distance, for the within-distance relationships
+ * @param[in] spheroid True when measuring on the spheroid, passed on to
+ * #setset_ea_exact
  * @param[in] pred Relationship to apply
  * @param[in] is_dwithin,is_disjoint Class of @p pred
  * @param[out] count Number of pairs reported
@@ -2641,7 +2753,7 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
 static int *
 setset_ea_pairs_indexed(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, const STBox *bb1, const STBox *bb2,
-  double dist, SetSetEAPred pred, bool is_dwithin, int *count)
+  double dist, bool spheroid, SetSetEAPred pred, bool is_dwithin, int *count)
 {
   /* The within-distance relationships compare the boxes of the first side
    * grown by the distance, which is what their prefilter tests */
@@ -2679,7 +2791,7 @@ setset_ea_pairs_indexed(const Temporal **arr1, int count1,
   for (int k = 0; k < nbox; k++)
   {
     int i = boxpairs[2 * k], j = boxpairs[2 * k + 1];
-    if (setset_ea_exact(arr1[i], arr2[j], dist, pred) == 1)
+    if (setset_ea_exact(arr1[i], arr2[j], dist, spheroid, pred) == 1)
     {
       result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
     }
@@ -2708,13 +2820,14 @@ setset_ea_pairs_indexed(const Temporal **arr1, int count1,
  *   without the exact test (they are always disjoint) and run the exact test
  *   only on the pairs whose boxes overlap in space.
  * Pairs whose time extents do not overlap are excluded, matching the scalar
- * predicates.
+ * predicates. The model of the earth @p spheroid is passed on to
+ * #setset_ea_exact.
  * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
  * NULL on validation failure or when no pair qualifies
  */
 static int *
 setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
-  int count2, double dist, SetSetEAPred pred, int *count)
+  int count2, double dist, bool spheroid, SetSetEAPred pred, int *count)
 {
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
@@ -2734,7 +2847,7 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
       (double) count1 * (double) count2 >= SETSET_INDEX_MIN_PAIRS)
   {
     int *res = setset_ea_pairs_indexed(arr1, count1, arr2, count2, bb1, bb2,
-      dist, pred, is_dwithin, count);
+      dist, spheroid, pred, is_dwithin, count);
     pfree(bb1); pfree(bb2);
     return res;
   }
@@ -2761,7 +2874,7 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
           ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
-      int r = setset_ea_exact(arr1[i], arr2[j], dist, pred);
+      int r = setset_ea_exact(arr1[i], arr2[j], dist, spheroid, pred);
       if (r == 1)
       {
         result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
@@ -2787,12 +2900,14 @@ typedef enum
  * temporal boolean is true at some instant, together with the periods during
  * which it holds.  The disjoint predicate uses only the temporal-overlap
  * prefilter, since spatially disjoint pairs are disjoint and must be tested.
+ * The model of the earth @p spheroid is passed on to #tdwithin_tgeo_tgeo.
  * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
  * NULL on validation failure or when no pair qualifies
  */
 static int *
 setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
-  int count2, double dist, SetSetTPred pred, int *count, SpanSet ***periods)
+  int count2, double dist, bool spheroid, SetSetTPred pred, int *count,
+  SpanSet ***periods)
 {
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
@@ -2819,7 +2934,7 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
       switch (pred)
       {
         case SS_TDWITHIN:
-          t = tdwithin_tgeo_tgeo(arr1[i], arr2[j], dist); break;
+          t = tdwithin_tgeo_tgeo(arr1[i], arr2[j], dist, spheroid); break;
         case SS_TINTERSECTS:
           t = tintersects_tgeo_tgeo(arr1[i], arr2[j]); break;
         case SS_TTOUCHES:
@@ -2852,6 +2967,8 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
  * @param[in] arr1,arr2 Arrays of temporal geos
  * @param[in] count1,count2 Number of elements in the arrays
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #edwithin_tgeo_tgeo reads it
  * @param[out] count Number of resulting index pairs
  * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
  * NULL on validation failure or when no pair qualifies
@@ -2859,11 +2976,12 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
  */
 int *
 edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
-  const Temporal **arr2, int count2, double dist, int *count)
+  const Temporal **arr2, int count2, double dist, bool spheroid, int *count)
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, dist, SS_EDWITHIN, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
+    SS_EDWITHIN, count);
 }
 
 /**
@@ -2873,6 +2991,8 @@ edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
  * @param[in] arr1,arr2 Arrays of temporal geos
  * @param[in] count1,count2 Number of elements in the arrays
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #adwithin_tgeo_tgeo reads it
  * @param[out] count Number of resulting index pairs
  * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
  * NULL on validation failure or when no pair qualifies
@@ -2880,11 +3000,12 @@ edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
  */
 int *
 adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
-  const Temporal **arr2, int count2, double dist, int *count)
+  const Temporal **arr2, int count2, double dist, bool spheroid, int *count)
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, dist, SS_ADWITHIN, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
+    SS_ADWITHIN, count);
 }
 
 /**
@@ -2904,7 +3025,8 @@ eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_EINTERSECTS, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_EINTERSECTS,
+    count);
 }
 
 /**
@@ -2924,7 +3046,8 @@ aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_AINTERSECTS, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_AINTERSECTS,
+    count);
 }
 
 /**
@@ -2943,7 +3066,8 @@ etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_ETOUCHES, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ETOUCHES,
+    count);
 }
 
 /**
@@ -2963,7 +3087,8 @@ atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_ATOUCHES, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ATOUCHES,
+    count);
 }
 
 /**
@@ -2983,7 +3108,8 @@ edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_EDISJOINT, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_EDISJOINT,
+    count);
 }
 
 /**
@@ -3003,7 +3129,8 @@ adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, SS_ADISJOINT, count);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ADISJOINT,
+    count);
 }
 
 /*****************************************************************************/
@@ -3015,6 +3142,8 @@ adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
  * @param[in] arr1,arr2 Arrays of temporal geos
  * @param[in] count1,count2 Number of elements in the arrays
  * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, read for geographies only, as #tdwithin_tgeo_tgeo reads it
  * @param[out] count Number of resulting index pairs
  * @param[out] periods Spansets of the times when each resulting pair holds
  * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
@@ -3023,13 +3152,13 @@ adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
  */
 int *
 tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
-  const Temporal **arr2, int count2, double dist, int *count,
+  const Temporal **arr2, int count2, double dist, bool spheroid, int *count,
   SpanSet ***periods)
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
-  return setset_t_pairs(arr1, count1, arr2, count2, dist, SS_TDWITHIN, count,
-    periods);
+  return setset_t_pairs(arr1, count1, arr2, count2, dist, spheroid,
+    SS_TDWITHIN, count, periods);
 }
 
 /**
@@ -3050,8 +3179,8 @@ tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
-  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, SS_TINTERSECTS, count,
-    periods);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TINTERSECTS,
+    count, periods);
 }
 
 /**
@@ -3072,8 +3201,8 @@ ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
-  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, SS_TTOUCHES, count,
-    periods);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TTOUCHES,
+    count, periods);
 }
 
 /**
@@ -3094,8 +3223,8 @@ tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
-  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, SS_TDISJOINT, count,
-    periods);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TDISJOINT,
+    count, periods);
 }
 
 /*****************************************************************************/

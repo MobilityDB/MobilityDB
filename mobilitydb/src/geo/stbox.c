@@ -188,7 +188,23 @@ Datum
 Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  /* A spatiotemporal box always outputs the SRID */
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, false));
+}
+
+PGDLLEXPORT Datum Stbox_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_ewkb);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a
+ * spatiotemporal box
+ * @note It is the WKB representation prefixed with the SRID, as
+ * #Cbuffer_as_ewkb writes that of a circular buffer
+ * @sqlfn asEWKB()
+ */
+Datum
+Stbox_as_ewkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
 }
 
@@ -204,6 +220,23 @@ Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX, false));
+}
+
+PGDLLEXPORT Datum Stbox_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a spatiotemporal box
+ * @note It is the HexWKB representation prefixed with the SRID, as
+ * #Cbuffer_as_hexewkb writes that of a circular buffer
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Stbox_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
   PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX, true));
 }
 
@@ -215,7 +248,7 @@ PG_FUNCTION_INFO_V1(Stbox_from_wkb);
  * @ingroup mobilitydb_geo_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation
- * @sqlfn stboxFromBinary()
+ * @sqlfn stboxFromBinary(), stboxFromEWKB()
  */
 Datum
 Stbox_from_wkb(PG_FUNCTION_ARGS)
@@ -233,7 +266,7 @@ PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
  * @ingroup mobilitydb_geo_box_inout
  * @brief Return a spatiotemporal box from its ASCII hex-encoded Well-Known
  * Binary (HexWKB) representation
- * @sqlfn stboxFromHexWKB()
+ * @sqlfn stboxFromHexWKB(), stboxFromHexEWKB()
  */
 Datum
 Stbox_from_hexwkb(PG_FUNCTION_ARGS)
@@ -1594,59 +1627,47 @@ Stbox_quad_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
 /**
+ * @ingroup mobilitydb_geo_agg
  * @brief Transition function for extent aggregation of spatiotemporal boxes
+ * @sqlfn stbox_extent_transfn()
  * @sqlaggfn extent()
  */
 Datum
 Stbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-
-  /* Can't do anything with null inputs */
-  if (! box1 && ! box2)
+  const STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = stbox_copy(box1);
+  STBox *result = stbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  /* One of the boxes is null, return the other one */
-  if (! box1)
-    PG_RETURN_STBOX_P(stbox_copy(box2));
-  if (! box2)
-    PG_RETURN_STBOX_P(stbox_copy(box1));
-
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_stbox_stbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
-    PG_RETURN_NULL();
-  STBox *result = palloc(sizeof(STBox));
-  memcpy(result, box1, sizeof(STBox));
-  stbox_expand(box2, result);
   PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
 /**
+ * @ingroup mobilitydb_geo_agg
  * @brief Combine function for extent aggregation of spatiotemporal boxes
+ * and spatiotemporal values
+ * @sqlfn stbox_extent_combinefn()
  * @sqlaggfn extent()
  */
 Datum
 Stbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-  if (!box1 && !box2)
+  const STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = stbox_copy(box1);
+  STBox *result = stbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_STBOX_P(box1);
-  if (!box1 && box2)
-    PG_RETURN_STBOX_P(box2);
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_stbox_stbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
-    PG_RETURN_NULL();
-  STBox *result = stbox_copy(box1);
-  stbox_expand(box2, result);
   PG_RETURN_STBOX_P(result);
 }
 

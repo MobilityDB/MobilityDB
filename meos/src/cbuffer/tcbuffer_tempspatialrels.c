@@ -203,7 +203,7 @@ tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
-  return tspatialrel_tspatial_tspatial(temp1, temp2, (Datum) NULL,
+  return tspatialrel_tspatial_tspatial(temp1, temp2, NULL,
     (varfunc) func, 0, INVERT_NO);
 }
 
@@ -1075,7 +1075,7 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
   {
     Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
     Temporal *result = (dist > 0.0) ?
-      tdwithin_tgeo_geo(tpoint, gs, dist) :
+      tdwithin_tgeo_geo(tpoint, gs, dist, true) :
       tinterrel_tgeo_geo(tpoint, gs, tinter);
     pfree(tpoint);
     return result;
@@ -1367,8 +1367,14 @@ tcontains_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
       &sync1, &sync2))
     return NULL;
 
-  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
-    Float8GetDatum(strict ? 1.0 : 0.0), &datum_cbuffer_contains3,
+  /* The engine of the temporal dwithin answers the containment, the
+   * strictness standing in its parameter where the distance stands */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_contains3;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Float8GetDatum(strict ? 1.0 : 0.0);
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tcbuffersegm_contains_turnpt);
   pfree(sync1); pfree(sync2);
   return result;
@@ -2821,8 +2827,12 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
 
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */
-  return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb),
-    Float8GetDatum(dist), &datum_cbuffer_dwithin,
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Float8GetDatum(dist);
+  return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb), &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
 }
 
@@ -2854,8 +2864,12 @@ tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */
-  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
-    Float8GetDatum(dist), &datum_cbuffer_dwithin,
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Float8GetDatum(dist);
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);
   return result;

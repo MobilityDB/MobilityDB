@@ -195,8 +195,8 @@ CREATE FUNCTION eEqual(quadbinset, tquadbin)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eEqual(tquadbin, quadbinset)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT eEqual($2, $1) $$;
+  AS 'MODULE_PATHNAME', 'Ever_eq_tquadbin_quadbinset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = quadbinset, RIGHTARG = tquadbin,

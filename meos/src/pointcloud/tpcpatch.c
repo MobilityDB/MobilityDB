@@ -53,7 +53,10 @@
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "temporal/skiplist.h"
+#include "temporal/temporal_aggfuncs.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpc_aggfuncs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -417,6 +420,69 @@ tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa)
   /* Restrict the temporal pgpointcloud patch to the instants where it does not
    * equal the given pa */
   return temporal_restrict_value(temp, PointerGetDatum(pa), REST_MINUS);
+}
+
+
+/*****************************************************************************
+ * Aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_agg
+ * @brief Transition function for the temporal sum of the number of points of
+ * temporal pgpointcloud patches
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
+ * @csqlfn #Tpcpatch_tnpoints_transfn()
+ */
+SkipList *
+tpcpatch_tnpoints_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, NULL);
+  int count;
+  TInstant **instants = tpcpatch_transform_tnpoints(temp, &count);
+  /* Null state: create a new state */
+  if (! state)
+    state = temporal_skiplist_make();
+  temporal_skiplist_splice(state, (void **) instants, count, &datum_sum_int32,
+    false);
+  for (int i = 0; i < count; i++)
+    pfree(instants[i]);
+  pfree(instants);
+  return state;
+}
+
+/**
+ * @ingroup meos_pointcloud_agg
+ * @brief Transition function for the temporal sum of the density of
+ * temporal pgpointcloud patches
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
+ * @csqlfn #Tpcpatch_tdensity_transfn()
+ */
+SkipList *
+tpcpatch_tdensity_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, NULL);
+  int count;
+  TInstant **instants = tpcpatch_transform_tdensity(temp, &count);
+  /* Null state: create a new state */
+  if (! state)
+    state = temporal_skiplist_make();
+  temporal_skiplist_splice(state, (void **) instants, count, &datum_sum_float8,
+    false);
+  for (int i = 0; i < count; i++)
+    pfree(instants[i]);
+  pfree(instants);
+  return state;
 }
 
 /*****************************************************************************/

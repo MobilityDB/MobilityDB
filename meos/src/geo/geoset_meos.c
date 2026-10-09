@@ -39,6 +39,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
+#include "temporal/set.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -235,24 +236,6 @@ geoset_values(const Set *s, int *count)
  *****************************************************************************/
 
 /**
- * @brief Return true if a set and a geometry/geography are valid for set
- * operations
- * @param[in] s Set
- * @param[in] gs Value
- */
-bool
-ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_not_empty(gs) ||
-      ! ensure_same_srid(spatialset_srid(s), geo_srid(gs)) ||
-      ! ensure_same_geodetic_set_geo(s, gs))
-    return false;
-  return true;
-}
-
-/**
  * @ingroup meos_geo_set_setops
  * @brief Return true if a set contains a geometry/geography
  * @param[in] s Set
@@ -383,6 +366,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
  * @brief Transition function for set union aggregate of geometries/geographies
  * @param[in,out] state Current aggregate state
  * @param[in] gs Value
+ * @csqlfn #Value_union_transfn()
  */
 Set *
 geo_union_transfn(Set *state, const GSERIALIZED *gs)
@@ -394,5 +378,6 @@ geo_union_transfn(Set *state, const GSERIALIZED *gs)
   MeosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   return value_union_transfn(state, PointerGetDatum(gs), geotype);
 }
+
 
 /*****************************************************************************/

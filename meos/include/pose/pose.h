@@ -85,10 +85,10 @@ extern bool ensure_valid_poseset_pose(const Set *s, const Pose *pose);
 
 extern void quaternion_rotate_vector(double W, double X, double Y, double Z,
   double vx, double vy, double vz, double *rx, double *ry, double *rz);
-extern void geodetic_to_ecef(double lon, double lat, double h, double *X,
-  double *Y, double *Z);
-extern void ecef_to_geodetic(double X, double Y, double Z, double *lon,
-  double *lat, double *h);
+extern void geodetic_to_ecef(const SPHEROID *s, double lon, double lat,
+  double h, double *X, double *Y, double *Z);
+extern void ecef_to_geodetic(const SPHEROID *s, double X, double Y, double Z,
+  double *lon, double *lat, double *h);
 extern void pose_compose_values(const double *parent, const double *child,
   bool hasz, bool geodetic, double *result);
 

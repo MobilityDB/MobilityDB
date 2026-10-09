@@ -112,7 +112,10 @@ Datum
 Tgeo_centroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeo_centroid(temp);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  Temporal *result = tgeo_centroid(temp, spheroid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -151,6 +154,40 @@ Tgeography_to_tgeometry(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeom_tgeog(temp, TGEOGP_TO_TGEOMP);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_geo_conversion
+ * @brief Convert a temporal geometry point into a temporal geography point
+ * @sqlfn tgeogpoint()
+ * @sqlop @p ::
+ */
+Datum
+Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_to_tgeogpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
+/**
+ * @ingroup mobilitydb_geo_conversion
+ * @brief Convert a temporal geography point into a temporal geometry point
+ * @sqlfn tgeompoint()
+ * @sqlop @p ::
+ */
+Datum
+Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeogpoint_to_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -851,7 +888,10 @@ Datum
 Tpoint_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = tpoint_length(temp);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  double result = tpoint_length(temp, spheroid);
   PG_FREE_IF_COPY(temp, 0);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
@@ -863,7 +903,7 @@ PG_FUNCTION_INFO_V1(Geo_length);
 /**
  * @ingroup mobilitydb_geo_base_accessor
  * @brief Return the length of a geometry or a geography, the one of a
- * geography in meters on the spheroid
+ * geography in meters on the earth model of the optional second argument
  * @sqlfn length()
  * @altsqlfn geoLength()
  */
@@ -871,7 +911,10 @@ Datum
 Geo_length(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  double result = geo_length(gs);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  double result = geo_length(gs, spheroid);
   PG_FREE_IF_COPY(gs, 0);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
@@ -889,7 +932,10 @@ Datum
 Tpoint_speed(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_speed(temp);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  Temporal *result = tpoint_speed(temp, spheroid);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -909,7 +955,10 @@ Datum
 Tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_cumulative_length(temp);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  Temporal *result = tpoint_cumulative_length(temp, spheroid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

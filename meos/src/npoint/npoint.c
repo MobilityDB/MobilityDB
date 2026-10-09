@@ -212,7 +212,10 @@ nsegmentarr_sort(Nsegment **segments, int count)
 }
 
 /**
- * @brief Normalize an array of temporal segments
+ * @brief Normalize an array of network segments
+ * @details The segments are sorted and two segments of a route are merged
+ * where they overlap or touch, as #spanarr_normalize merges spans, so that a
+ * stretch of a route between two segments stays out of the result
  */
 Nsegment **
 nsegmentarr_normalize(Nsegment **segments, int *count)
@@ -225,7 +228,7 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
   for (int i = 1; i < *count; i++)
   {
     Nsegment *seg = segments[i];
-    if (current->rid == seg->rid)
+    if (current->rid == seg->rid && seg->pos1 <= current->pos2)
     {
       current->pos1 = Min(current->pos1, seg->pos1);
       current->pos2 = Max(current->pos2, seg->pos2);
@@ -620,8 +623,7 @@ npoint_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return the Well-Known Binary (WKB) representation of a circular
- * buffer
+ * @brief Return the Well-Known Binary (WKB) representation of a network point
  * @param[in] np Network point
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
@@ -651,6 +653,44 @@ npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
   VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
     variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a network point
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_as_ewkb()
+ */
+uint8_t *
+npoint_as_ewkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(np), T_NPOINT,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a network point
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_as_hexewkb()
+ */
+char *
+npoint_as_hexewkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
 }
 
 /*****************************************************************************
@@ -699,7 +739,7 @@ nsegment_from_hexwkb(const char *hexwkb)
  * @param[in] ns Network segment
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Nsegment_as_wkb(), #Nsegment_as_ewkb()
+ * @csqlfn #Nsegment_as_wkb()
  */
 uint8_t *
 nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
@@ -717,7 +757,7 @@ nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
  * @param[in] ns Network segment
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Nsegment_as_hexwkb(), #Nsegment_as_hexewkb()
+ * @csqlfn #Nsegment_as_hexwkb()
  */
 char *
 nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
@@ -726,6 +766,44 @@ nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
   VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
     variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a network segment
+ * @details It is the WKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_ewkb()
+ */
+uint8_t *
+nsegment_as_ewkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
+    variant | (uint8_t) WKB_EXTENDED, size_out);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB) representation of a network segment
+ * @details It is the HexWKB representation carrying the SRID, whatever the
+ * variant states
+ * @param[in] ns Network segment
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Nsegment_as_hexewkb()
+ */
+char *
+nsegment_as_hexewkb(const Nsegment *ns, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(ns), T_NSEGMENT,
+    variant | (uint8_t) (WKB_EXTENDED | WKB_HEX), size_out);
 }
 
 /*****************************************************************************
@@ -753,8 +831,13 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
+ * @ingroup meos_internal_npoint_base_constructor
  * @brief Return in the last argument a network point constructed from a route
  * identifier and a position
+ * @param[in] rid Route identifier
+ * @param[in] pos Position
+ * @param[out] np Network point
+ * @note This function is equivalent to #npoint_make without memory allocation
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -790,8 +873,14 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
+ * @ingroup meos_internal_npoint_base_constructor
  * @brief Return in the last argument a network segment constructed from a
  * route identifier and two positions
+ * @param[in] rid Route identifier
+ * @param[in] pos1, pos2 Positions
+ * @param[out] ns Network segment
+ * @note This function is equivalent to #nsegment_make without memory
+ * allocation
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
@@ -861,6 +950,11 @@ npoint_to_stbox(const Npoint *np)
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of network points
+ * @details The geometry of a route is read once for each run of points on
+ * it, which the order of the points of a set makes one run per route, and each
+ * point is located on the route as #npointarr_geom locates it. The box of a
+ * point is its coordinates, the ones #npoint_set_stbox reads back from the
+ * serialized point
  * @param[in] values Network points
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -868,13 +962,44 @@ npoint_to_stbox(const Npoint *np)
 void
 npointarr_set_stbox(const Datum *values, int count, STBox *box)
 {
-  npoint_set_stbox(DatumGetNpointP(values[0]), box);
-  for (int i = 1; i < count; i++)
+  LWGEOM *line = NULL;
+  int64 rid = 0;
+  int32_t srid = SRID_UNKNOWN;
+  bool hasz = false, geodetic = false;
+  for (int i = 0; i < count; i++)
   {
-    STBox box1;
-    npoint_set_stbox(DatumGetNpointP(values[i]), &box1);
-    stbox_expand(&box1, box);
+    const Npoint *np = DatumGetNpointP(values[i]);
+    if (! line || np->rid != rid)
+    {
+      if (line)
+        lwgeom_free(line);
+      const GSERIALIZED *gsline = route_geom(np->rid);
+      if (! gsline)
+        return;
+      rid = np->rid;
+      srid = gserialized_get_srid(gsline);
+      hasz = (bool) FLAGS_GET_Z(gsline->gflags);
+      geodetic = (bool) FLAGS_GET_GEODETIC(gsline->gflags);
+      line = lwgeom_from_gserialized(gsline);
+    }
+    LWGEOM *point = lwgeom_line_interpolate_point(line, np->pos, srid, 0);
+    POINT4D p;
+    lwpoint_getPoint4d_p((LWPOINT *) point, &p);
+    lwgeom_free(point);
+    if (i == 0)
+      stbox_set(true, hasz, geodetic, srid, p.x, p.x, p.y, p.y,
+        hasz ? p.z : 0.0, hasz ? p.z : 0.0, NULL, box);
+    else
+    {
+      box->xmin = Min(box->xmin, p.x); box->xmax = Max(box->xmax, p.x);
+      box->ymin = Min(box->ymin, p.y); box->ymax = Max(box->ymax, p.y);
+      if (hasz)
+      {
+        box->zmin = Min(box->zmin, p.z); box->zmax = Max(box->zmax, p.z);
+      }
+    }
   }
+  lwgeom_free(line);
   return;
 }
 
@@ -1004,6 +1129,47 @@ npoint_to_geompoint(const Npoint *np)
 }
 
 /**
+ * @brief Return the stretch of a route between two positions
+ * @details The stretch holds the points a temporal network point travelling it
+ * passes, as #tnpointseq_tgeompointseq_cont states them: the points at the two
+ * positions, located by `lwline_interpolate_points` as #npoint_to_geompoint
+ * locates a position, and the vertices of the route strictly between them,
+ * whose positions #route_vertex_positions gives
+ * @param[in] line Route
+ * @param[in] pos1,pos2 Positions on the route, the first smaller
+ */
+static GSERIALIZED *
+route_stretch_geom(const GSERIALIZED *line, double pos1, double pos2)
+{
+  assert(pos1 < pos2);
+  int32_t srid = gserialized_get_srid(line);
+  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
+  const POINTARRAY *pa = lwline->points;
+  POINTARRAY *opa = ptarray_construct_empty((char) FLAGS_GET_Z(pa->flags),
+    (char) FLAGS_GET_M(pa->flags), pa->npoints + 2);
+  POINTARRAY *end = lwline_interpolate_points(lwline, pos1, 0);
+  ptarray_append_point(opa, getPoint4d_cp(end, 0), LW_TRUE);
+  ptarray_free(end);
+  int count;
+  double *positions = route_vertex_positions(pa, &count);
+  for (int k = 0; k < count; k++)
+  {
+    if (positions[k] > pos1 && positions[k] < pos2)
+      ptarray_append_point(opa, getPoint4d_cp(pa, k + 1), LW_TRUE);
+  }
+  if (positions)
+    pfree(positions);
+  end = lwline_interpolate_points(lwline, pos2, 0);
+  ptarray_append_point(opa, getPoint4d_cp(end, 0), LW_TRUE);
+  ptarray_free(end);
+  LWGEOM *result = lwline_as_lwgeom(lwline_construct(srid, NULL, opa));
+  GSERIALIZED *gs = geo_serialize(result);
+  lwgeom_free(result);
+  lwline_free(lwline);
+  return gs;
+}
+
+/**
  * @ingroup meos_npoint_base_conversion
  * @brief Transform a network segment into a geometry
  * @param[in] ns Network segment
@@ -1020,7 +1186,7 @@ nsegment_to_geom(const Nsegment *ns)
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
     return line_interpolate_point(line, ns->pos1, 0);
   else
-    return line_substring(line, ns->pos1, ns->pos2);
+    return route_stretch_geom(line, ns->pos1, ns->pos2);
 }
 
 /**
@@ -1159,7 +1325,8 @@ nsegmentarr_geom(Nsegment **segments, int count)
     else if (segments[i]->pos1 == segments[i]->pos2)
       geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
     else
-      geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
+      geoms[i] = route_stretch_geom(line, segments[i]->pos1,
+        segments[i]->pos2);
   }
   GSERIALIZED *result = geom_array_union(geoms, count);
   pfree_array((void **) geoms, count);

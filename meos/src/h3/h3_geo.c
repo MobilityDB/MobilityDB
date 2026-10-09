@@ -1050,4 +1050,25 @@ ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
   return tcellindex_ever_in_set(th3idx, cells) ? 1 : 0;
 }
 
+/**
+ * @ingroup meos_h3_comp
+ * @brief Return true if a temporal H3 cell is ever equal to a cell of an H3
+ * cell set
+ * @details Returns 1 if any cell of @p cells appears among the values of
+ * @p th3idx, 0 if none does, and -1 on error. This is the cross-platform
+ * spatial prefilter the `eIntersects` SQL wrappers and Spark UDFs consume: it
+ * walks the instants of the temporal H3 cell and stops at the first instant
+ * the set contains.
+ * @param[in] th3idx The th3index temporal value.
+ * @param[in] cells The candidate H3 cell set (T_H3INDEX).
+ * @csqlfn #Ever_eq_th3index_h3indexset()
+ */
+int
+ever_eq_th3index_h3indexset(const Temporal *th3idx, const Set *cells)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(th3idx, -1); VALIDATE_H3INDEXSET(cells, -1);
+  return tcellindex_ever_in_set(th3idx, cells) ? 1 : 0;
+}
+
 /*****************************************************************************/

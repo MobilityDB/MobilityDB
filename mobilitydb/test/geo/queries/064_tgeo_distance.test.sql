@@ -850,3 +850,40 @@ SELECT round(minDistance(
 SELECT minDistance(ARRAY[]::tgeometry[], ARRAY[tgeometry 'Point(0 0)@2001-01-01']);
 SELECT minDistance(ARRAY[tgeometry 'Point(0 0)@2001-01-01'],
                    ARRAY[tgeometry 'SRID=4326;Point(0 0)@2001-01-01']);
+
+-- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'), 3);
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false), 3);
+SELECT round(tDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'), 3);
+SELECT round(tDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false), 3);
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'), 3);
+SELECT round(tDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false), 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)')::numeric, 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false)::numeric, 3);
+SELECT round(nearestApproachDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}')::numeric, 3);
+SELECT round(nearestApproachDistance(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false)::numeric, 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}')::numeric, 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false)::numeric, 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))')::numeric, 3);
+SELECT round(nearestApproachDistance(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', false)::numeric, 3);
+SELECT round(nearestApproachDistance(stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}')::numeric, 3);
+SELECT round(nearestApproachDistance(stbox 'SRID=4326;GEODSTBOX X((0,0),(0,0))', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false)::numeric, 3);
+SELECT asText(nearestApproachInstant(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'));
+SELECT asText(nearestApproachInstant(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false));
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'));
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false));
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'));
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false));
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)'), 6);
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', geography 'Point(0 0)', false), 6);
+SELECT ST_AsText(shortestLine(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}'), 6);
+SELECT ST_AsText(shortestLine(geography 'Point(0 0)', tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', false), 6);
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}'), 6);
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', false), 6);
+-- 1 degree north and 0.998 degree east of the end of the line: the spheroid ranks north nearer, the sphere east
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'), 6);
+SELECT ST_AsText(shortestLine(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false), 6);
+SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}'), 6);
+SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', false), 6);
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
+SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));

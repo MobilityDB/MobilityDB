@@ -346,9 +346,9 @@ extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
 extern char *geo_out(const GSERIALIZED *gs);
 // extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
-extern GSERIALIZED *geog_from_hexewkb(const char *wkt);
+extern GSERIALIZED *geog_from_hexewkb(const char *hexwkb);
 extern GSERIALIZED *geog_in(const char *str, int32 typmod);
-extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
+extern GSERIALIZED *geom_from_hexewkb(const char *hexwkb);
 extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 
 /* Constructor functions */
@@ -368,7 +368,10 @@ extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 
 extern bool geo_is_empty(const GSERIALIZED *gs);
 extern bool geo_is_unitary(const GSERIALIZED *gs);
-extern double geo_length(const GSERIALIZED *gs);
+extern double geo_area(const GSERIALIZED *gs, bool spheroid);
+extern GSERIALIZED *geo_centroid(const GSERIALIZED *gs, bool spheroid);
+extern double geo_length(const GSERIALIZED *gs, bool spheroid);
+extern double geo_perimeter(const GSERIALIZED *gs, bool spheroid);
 extern const char *geo_typename(int type);
 extern double geog_area(const GSERIALIZED *gs, bool use_spheroid);
 extern GSERIALIZED *geog_centroid(const GSERIALIZED *gs, bool use_spheroid);
@@ -424,6 +427,7 @@ extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZE
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius);
 extern GSERIALIZED *geom_oriented_envelope(const GSERIALIZED *gs);
+extern GSERIALIZED *geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);
@@ -434,9 +438,11 @@ extern GSERIALIZED *line_substring(const GSERIALIZED *gs, double from, double to
 /* Spatial relationship functions */
 
 extern bool geog_dwithin(const GSERIALIZED *g1, const GSERIALIZED *g2, double tolerance, bool use_spheroid);
+extern bool geog_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern bool geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
@@ -456,9 +462,15 @@ extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *cou
 
 /* Distance functions */
 
-extern double geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2);
+extern double geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid);
+extern GSERIALIZED *geo_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid);
+extern double geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2, bool use_spheroid);
+extern GSERIALIZED *geog_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
+extern double geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 /* Comparison functions */
@@ -476,7 +488,9 @@ extern Set *geogset_in(const char *str);
 extern Set *geomset_in(const char *str);
 extern char *spatialset_out(const Set *s, int maxdd);
 extern char *spatialset_as_text(const Set *set, int maxdd);
+extern uint8_t *spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out);
 extern char *spatialset_as_ewkt(const Set *set, int maxdd);
+extern char *spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out);
 
 /* Constructor functions */
 
@@ -485,6 +499,7 @@ extern Set *geoset_make(GSERIALIZED **values, int count);
 /* Conversion functions */
 
 extern Set *geo_to_set(const GSERIALIZED *gs);
+extern GSERIALIZED *geoset_to_geo(const Set *s);
 
 /* Accessor functions */
 
@@ -505,6 +520,11 @@ extern Set *minus_set_geo(const Set *s, const GSERIALIZED *gs);
 extern Set *union_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *union_set_geo(const Set *s, const GSERIALIZED *gs);
 
+/* Distance functions */
+
+extern double distance_geoset_geoset(const Set *s1, const Set *s2, bool spheroid);
+extern double distance_set_geo(const Set *s, const GSERIALIZED *gs, bool spheroid);
+
 /* SRID functions */
 
 extern Set *spatialset_set_srid(const Set *s, int32_t srid);
@@ -518,6 +538,8 @@ extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
 
 /* Input/output functions */
 
+extern uint8_t *stbox_as_ewkb(const STBox *box, uint8_t variant, size_t *size_out);
+extern char *stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern char *stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern uint8_t *stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern STBox *stbox_from_hexwkb(const char *hexwkb);
@@ -641,7 +663,9 @@ extern Temporal *tgeometry_from_mfjson(const char *str);
 extern Temporal *tgeometry_in(const char *str);
 extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
+extern uint8_t *tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
+extern char *tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd);
 
 /* Constructor functions */
@@ -667,6 +691,8 @@ extern Temporal *tgeogpoint_to_tgeography(const Temporal *temp);
 extern Temporal *tgeography_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tgeography_to_tgeometry(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeography(const Temporal *temp);
+extern Temporal *tgeogpoint_to_tgeompoint(const Temporal *temp);
+extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeometry(const Temporal *temp);
 extern bool tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
@@ -678,7 +704,7 @@ extern STBox *tspatial_to_stbox(const Temporal *temp);
 extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *tgeo_centroid(const Temporal *temp);
+extern Temporal *tgeo_centroid(const Temporal *temp, bool spheroid);
 extern GSERIALIZED *tgeo_convex_hull(const Temporal *temp);
 extern GSERIALIZED *tgeo_end_value(const Temporal *temp);
 extern GSERIALIZED *tgeo_start_value(const Temporal *temp);
@@ -689,14 +715,14 @@ extern GSERIALIZED **tgeo_values(const Temporal *temp, int *count);
 extern SpanSet **tgeo_unnest(const Temporal *temp, GSERIALIZED ***values, int *count);
 extern Temporal *tpoint_angular_difference(const Temporal *temp);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
-extern Temporal *tpoint_cumulative_length(const Temporal *temp);
+extern Temporal *tpoint_cumulative_length(const Temporal *temp, bool spheroid);
 extern bool tpoint_direction(const Temporal *temp, double *result);
 extern Temporal *tpoint_get_x(const Temporal *temp);
 extern Temporal *tpoint_get_y(const Temporal *temp);
 extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
-extern double tpoint_length(const Temporal *temp);
-extern Temporal *tpoint_speed(const Temporal *temp);
+extern double tpoint_length(const Temporal *temp, bool spheroid);
+extern Temporal *tpoint_speed(const Temporal *temp, bool spheroid);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp, bool unary_union);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
@@ -846,9 +872,9 @@ extern int acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int adisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern int adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist);
-extern int adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
-extern int adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist, bool spheroid);
+extern int adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool spheroid);
+extern int adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist, bool spheroid);
 extern int aintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
@@ -866,9 +892,9 @@ extern int ecovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int edisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern int edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist);
-extern int edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
-extern int edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist, bool spheroid);
+extern int edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool spheroid);
+extern int edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist, bool spheroid);
 extern int eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
@@ -889,9 +915,9 @@ extern Temporal *tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 extern Temporal *tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern Temporal *tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist);
-extern Temporal *tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
-extern Temporal *tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist);
+extern Temporal *tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist, bool spheroid);
+extern Temporal *tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool spheroid);
+extern Temporal *tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist, bool spheroid);
 extern Temporal *tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern Temporal *tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
@@ -901,39 +927,41 @@ extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2
 
 /* Set-set spatial join */
 
-extern int *edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count);
-extern int *adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count);
+extern int *edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, bool spheroid, int *count);
+extern int *adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, bool spheroid, int *count);
 extern int *eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
-extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count, SpanSet ***periods);
+extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, bool spheroid, int *count, SpanSet ***periods);
 extern int *tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 
 /* Distance */
 
-extern Temporal *tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs);
-extern double nad_stbox_stbox(const STBox *box1, const STBox *box2);
+extern Temporal *tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid);
+extern Temporal *tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs, bool spheroid);
+extern double nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid);
 extern double stbox_spatial_distance(const STBox *box1, const STBox *box2);
-extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box);
-extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern double mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
+extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid);
+extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box, bool spheroid);
+extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid);
+extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid);
+extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid);
+extern double mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, bool spheroid);
 
 /* Aggregates */
 
+extern SkipList *tpoint_tcentroid_combinefn(SkipList *state1, SkipList *state2);
 extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
 extern SkipList *tpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
+extern STBox *stbox_extent_transfn(STBox *state, const STBox *box);
 extern STBox *tspatial_extent_transfn(STBox *box, const Temporal *temp);
 
 /* Tile functions */

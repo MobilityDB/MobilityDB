@@ -520,6 +520,10 @@ extern datum_func2 round_fn(MeosType basetype);
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 
+/* Interrupt functions */
+
+extern void meos_check_for_interrupts(void);
+
 /*****************************************************************************/
 
 #endif

@@ -47,6 +47,7 @@
 #include "pointcloud/tpc_boxops.h"
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P, etc. */
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpc_aggfuncs.h"
 #include "geo/geo_funcs.h"          /* ensure_same_dimensionality */
 #include "temporal/temporal.h"
 #include "temporal/skiplist.h"          /* PG_RETURN_SKIPLIST_P macro */
@@ -78,8 +79,12 @@ Datum
 Tpc_extent_transfn(PG_FUNCTION_ARGS)
 {
   TPCBox *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  TPCBox *result = tpcbox_extent_transfn(state, temp);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (state && ! AggCheckCallContext(fcinfo, NULL))
+    state = tpcbox_copy(state);
+  const Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
+  TPCBox *result = tpc_extent_transfn(state, temp);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);
@@ -90,8 +95,6 @@ PG_FUNCTION_INFO_V1(Tpcbox_extent_transfn);
 /**
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for the extent aggregate over tpcbox values
- * @details The function doubles as the parallel combine function for the
- * temporal variants.
  * @sqlfn tpcbox_extent_transfn()
  * @sqlaggfn extent()
  */
@@ -99,17 +102,38 @@ Datum
 Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   TPCBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
-  TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
-  if (! box1 && ! box2) PG_RETURN_NULL();
-  if (! box1) PG_RETURN_TPCBOX_P(tpcbox_copy(box2));
-  if (! box2) PG_RETURN_TPCBOX_P(tpcbox_copy(box1));
-  /* Both boxes are not null */
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags))
+  const TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tpcbox_copy(box1);
+  TPCBox *result = tpcbox_extent_transfn(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  TPCBox *result = tpcbox_copy(box1);
-  tpcbox_expand(box2, result);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_extent_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_extent_combinefn);
+/**
+ * @ingroup mobilitydb_pointcloud_agg
+ * @brief Combine function for the extent aggregates over tpcbox, tpcpoint
+ * and tpcpatch values
+ * @sqlfn tpcbox_extent_combinefn()
+ * @sqlaggfn extent()
+ */
+Datum
+Tpcbox_extent_combinefn(PG_FUNCTION_ARGS)
+{
+  TPCBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TPCBOX_P(0);
+  const TPCBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TPCBOX_P(1);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box1 && ! AggCheckCallContext(fcinfo, NULL))
+    box1 = tpcbox_copy(box1);
+  TPCBox *result = tpcbox_extent_transfn(box1, box2);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);
 }
 
@@ -121,29 +145,6 @@ Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
  * pcpatch's npoints, so the result tint reads as "how many points
  * total are in the cloud at time t".
  *****************************************************************************/
-
-/**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
- * T_TINT where each instant carries the pcpatch's npoints
- */
-static TInstant **
-tpcpatch_transform_tnpoints(const Temporal *temp, int *count_out)
-{
-  /* Easiest correct path: enumerate all instants regardless of subtype.
-   * temporal_num_instants returns total count across instant / sequence
-   * / sequenceset; temporal_instant_n returns the i-th. */
-  int n = temporal_num_instants(temp);
-  TInstant **result = palloc(sizeof(TInstant *) * n);
-  for (int i = 0; i < n; i++)
-  {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
-    Pcpatch *pa = (Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-    int32 npts = (int32) pcpatch_npoints(pa);
-    result[i] = tinstant_make(Int32GetDatum(npts), T_TINT, inst->t);
-  }
-  *count_out = n;
-  return result;
-}
 
 PGDLLEXPORT Datum Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_tnpoints_transfn);
@@ -191,30 +192,6 @@ Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS)
  * +Infinity for that instant (IEEE 1.0/0.0). Callers can filter with
  * isfinite() / IS NOT NAN if they want to drop those.
  *****************************************************************************/
-
-/**
- * @brief Walk a Temporal of tpcpatch and return an array of TInstants over
- * T_TFLOAT each carrying npoints / (xrange * yrange)
- */
-static TInstant **
-tpcpatch_transform_tdensity(const Temporal *temp, int *count_out)
-{
-  int n = temporal_num_instants(temp);
-  TInstant **result = palloc(sizeof(TInstant *) * n);
-  for (int i = 0; i < n; i++)
-  {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
-    Pcpatch *pa = (Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
-    double xrange = pa->bounds[1] - pa->bounds[0];
-    double yrange = pa->bounds[3] - pa->bounds[2];
-    double area = xrange * yrange;
-    double density = (area > 0.0) ? (double) pa->npoints / area
-                                   : (double) pa->npoints / 0.0;
-    result[i] = tinstant_make(Float8GetDatum(density), T_TFLOAT, inst->t);
-  }
-  *count_out = n;
-  return result;
-}
 
 PGDLLEXPORT Datum Tpcpatch_tdensity_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_tdensity_transfn);

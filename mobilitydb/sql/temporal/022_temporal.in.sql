@@ -741,23 +741,23 @@ CREATE FUNCTION endValue(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tbool, int)
+CREATE FUNCTION valueN(tbool, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tint, int)
+CREATE FUNCTION valueN(tint, integer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tbigint, int)
+CREATE FUNCTION valueN(tbigint, integer)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tfloat, int)
+CREATE FUNCTION valueN(tfloat, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(ttext, int)
+CREATE FUNCTION valueN(ttext, integer)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

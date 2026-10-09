@@ -131,6 +131,28 @@ datum_point_eq(Datum point1, Datum point2)
 
 
 /**
+ * @brief Return true if the points are equal, the caller having established
+ * that they share a reference system, a dimensionality and a geodetic flag
+ * @details The internal twin of #datum_point_eq, for the walks that compare one
+ * instant after another. The entry of such a walk establishes the condition
+ * once -- `ensure_valid_tgeo_tgeo` refuses two temporal points whose SRIDs
+ * differ -- so reading the SRID out of both serializations per element pays
+ * again for a question already answered. The condition set is the external
+ * form's, asserted rather than tested, and `NDEBUG` removes it from a release
+ * build while a debug build checks it
+ */
+bool
+datum_point_eq_intl(Datum point1, Datum point2)
+{
+  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  return geopoint_eq(gs1, gs2);
+}
+
+/**
  * @brief Return true if the points are equal taking into account floating 
  * point imprecision
  */
@@ -174,13 +196,15 @@ datum2_geom_centroid(Datum geo)
 }
 
 /**
- * @brief Return the centroid of a geography
+ * @brief Return the centroid of a geography on the spheroid or on the sphere
+ * @details The geography twin of #datum2_geom_centroid, which takes the model
+ * of the earth as the parameter of the lift
  */
 Datum
-datum2_geog_centroid(Datum geo)
+datum2_geog_centroid(Datum geo, Datum spheroid)
 {
   return GserializedPGetDatum(geog_centroid(DatumGetGserializedP(geo),
-    BoolGetDatum(false)));
+    DatumGetBool(spheroid)));
 }
 
 /*****************************************************************************
@@ -189,28 +213,92 @@ datum2_geog_centroid(Datum geo)
 
 /**
  * @brief Select the appropriate distance function
+ * @details The distance of two geographies takes the model of the earth as a
+ * parameter, which the distance of two geometries does not, so the function
+ * is applied through #geo_distance_lfinfo
  */
-datum_func2
+varfunc
 geo_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &datum_geog_distance;
+    return (varfunc) &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &datum_geom_distance3d : &datum_geom_distance2d;
+      (varfunc) &datum_geom_distance3d : (varfunc) &datum_geom_distance2d;
 }
 
 /**
- * @brief Select the appropriate distance function
+ * @brief Select the appropriate distance function for two points
+ * @details As #geo_distance_fn, applied through #pt_distance_lfinfo
  */
-datum_func2
+varfunc
 pt_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &datum_geog_distance;
+    return (varfunc) &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &datum_pt_distance3d : &datum_pt_distance2d;
+      (varfunc) &datum_pt_distance3d : (varfunc) &datum_pt_distance2d;
+}
+
+/**
+ * @brief Set in a lifted structure the distance function selected by
+ * #geo_distance_fn and its parameters: none for two geometries, the model of
+ * the earth for two geographies
+ * @param[in] flags Flags of the spatial values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ * @param[out] lfinfo Lifted structure
+ */
+void
+geo_distance_lfinfo(int16 flags, bool spheroid, LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = geo_distance_fn(flags);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags) ? 1 : 0;
+  lfinfo->param[0] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Set in a lifted structure the distance function selected by
+ * #pt_distance_fn and its parameters, as #geo_distance_lfinfo does
+ */
+void
+pt_distance_lfinfo(int16 flags, bool spheroid, LiftedFunctionInfo *lfinfo)
+{
+  lfinfo->func = pt_distance_fn(flags);
+  lfinfo->numparam = MEOS_FLAGS_GET_GEODETIC(flags) ? 1 : 0;
+  lfinfo->param[0] = BoolGetDatum(spheroid);
+}
+
+/**
+ * @brief Return the distance between two spatial values with the function
+ * #geo_distance_lfinfo sets and its parameters, for a caller applying it
+ * directly rather than through a lift
+ * @param[in] value1,value2 Spatial values
+ * @param[in] flags Flags of the spatial values
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere; read for geographies only
+ */
+Datum
+datum_geo_distance(Datum value1, Datum value2, int16 flags, bool spheroid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  geo_distance_lfinfo(flags, spheroid, &lfinfo);
+  return tfunc_base_base(value1, value2, &lfinfo);
+}
+
+/**
+ * @brief Return the distance between two points with the function
+ * #pt_distance_lfinfo sets and its parameters, as #datum_geo_distance does
+ */
+Datum
+datum_pt_distance(Datum value1, Datum value2, int16 flags, bool spheroid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  pt_distance_lfinfo(flags, spheroid, &lfinfo);
+  return tfunc_base_base(value1, value2, &lfinfo);
 }
 
 /**
@@ -235,35 +323,43 @@ datum_geom_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Return the distance between the two geographies
+ * @brief Return the distance between the two geographies on the spheroid or
+ * on the sphere
+ * @details The geography twin of #datum_geom_distance2d, which takes the
+ * model of the earth as the parameter of the lift
  */
 Datum
-datum_geog_distance(Datum geog1, Datum geog2)
+datum_geog_distance(Datum geog1, Datum geog2, Datum spheroid)
 {
   return Float8GetDatum(geog_distance(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2)));
+    DatumGetGserializedP(geog2), DatumGetBool(spheroid)));
 }
 
 /**
  * @brief Return the 2D distance between the two geometry points
+ * @details The distance of two points is a question about their coordinates,
+ * answered by #point_distance_exact as the double nearest the exact distance
  */
 Datum
 datum_pt_distance2d(Datum geom1, Datum geom2)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(geom1);
   const POINT2D *p2 = DATUM_POINT2D_P(geom2);
-  return Float8GetDatum(distance2d_pt_pt(p1, p2));
+  const double a[2] = {p1->x, p1->y}, b[2] = {p2->x, p2->y};
+  return Float8GetDatum(point_distance_exact(a, b, 2));
 }
 
 /**
  * @brief Return the 3D distance between the two geometry points
+ * @details Answered by #point_distance_exact, as #datum_pt_distance2d is
  */
 Datum
 datum_pt_distance3d(Datum geom1, Datum geom2)
 {
   const POINT3DZ *p1 = DATUM_POINT3DZ_P(geom1);
   const POINT3DZ *p2 = DATUM_POINT3DZ_P(geom2);
-  return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
+  const double a[3] = {p1->x, p1->y, p1->z}, b[3] = {p2->x, p2->y, p2->z};
+  return Float8GetDatum(point_distance_exact(a, b, 3));
 }
 
 /*****************************************************************************/
@@ -558,6 +654,24 @@ ensure_same_geodetic_set_geo(const Set *s, const GSERIALIZED *gs)
   return true;
 }
 
+/**
+ * @brief Return true if a set and a geometry/geography are valid for set
+ * operations
+ * @param[in] s Set
+ * @param[in] gs Value
+ */
+bool
+ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_not_empty(gs) ||
+      ! ensure_same_srid(spatialset_srid(s), geo_srid(gs)) ||
+      ! ensure_same_geodetic_set_geo(s, gs))
+    return false;
+  return true;
+}
+
 
 
 
@@ -703,7 +817,7 @@ bool
 ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   VALIDATE_TGEO(temp1, false); VALIDATE_TGEO(temp2, false); 
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) &&
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
   return true;
@@ -876,6 +990,36 @@ tgeography_to_tgeometry(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOG(temp, NULL);
+  return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a temporal geography point from a temporal geometry point
+ * @param[in] temp Temporal point
+ * @errval NULL
+ * @csqlfn #Tgeompoint_to_tgeogpoint()
+ */
+Temporal *
+tgeompoint_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL);
+  return tgeom_tgeog(temp, TGEOM_TO_TGEOG);
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a temporal geometry point from a temporal geography point
+ * @param[in] temp Temporal point
+ * @errval NULL
+ * @csqlfn #Tgeogpoint_to_tgeompoint()
+ */
+Temporal *
+tgeogpoint_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL);
   return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
 }
 
@@ -1931,7 +2075,7 @@ geo_values_collect(const Temporal *temp, bool unary_union)
   GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
   for (int i = 0; i < count; i++)
     gsarr[i] = DatumGetGserializedP(values[i]);
-  GSERIALIZED *res = geo_collect_garray(gsarr, count);
+  GSERIALIZED *res = geoarr_collect(gsarr, count);
   pfree(values); pfree(gsarr);
   if (! unary_union)
     return res;
@@ -1977,10 +2121,12 @@ tgeo_traversed_area(const Temporal *temp, bool unary_union)
  * @ingroup meos_geo_accessor
  * @brief Return the centroid of a temporal geo as a temporal point
  * @param[in] temp Temporal geo
+ * @param[in] spheroid True when computing the centroid of a temporal
+ * geography on the spheroid, false on the sphere, as #geog_centroid reads it
  * @csqlfn #Tgeo_centroid()
  */
 Temporal *
-tgeo_centroid(const Temporal *temp)
+tgeo_centroid(const Temporal *temp, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
@@ -1988,8 +2134,16 @@ tgeo_centroid(const Temporal *temp)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) 
-    (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
+  /* The centroid of a geography takes the model of the earth as the
+   * parameter of the lift, that of a geometry none */
+  if (geodetic)
+  {
+    lfinfo.func = (varfunc) &datum2_geog_centroid;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = BoolGetDatum(spheroid);
+  }
+  else
+    lfinfo.func = (varfunc) &datum2_geom_centroid;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   /* Centroid is affine in vertex positions: linear input -> linear output */
@@ -2003,11 +2157,13 @@ tgeo_centroid(const Temporal *temp)
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the k-means algorithm
+ * @details An empty geometry is assigned to no cluster, its number being -1
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_kmeans()
  */
 int *
 geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
@@ -2053,12 +2209,15 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
  * the input geometries using the DBSCAN algorithm
+ * @details A geometry the algorithm assigns to no cluster, a noise point, has
+ * the number @p UINT32_MAX
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
  * @param[in] minpoints Minimum number of points
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterDBSCAN(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_dbscan()
  */
 uint32_t *
 geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
@@ -2131,6 +2290,7 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
  * @param[in] ngeoms Number of elements in the input array
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterIntersectingWin(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_intersecting()
  */
 GSERIALIZED ** 
 geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
@@ -2191,6 +2351,7 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
  * @param[in] tolerance Tolerance
  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterWithin(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_cluster_within()
  */
 GSERIALIZED **
 geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,

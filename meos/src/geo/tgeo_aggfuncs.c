@@ -46,6 +46,8 @@
 #include "temporal/skiplist.h"
 #include "temporal/temporal_aggfuncs.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
+#include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -239,6 +241,33 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   return state;
 }
 
+/**
+ * @ingroup meos_geo_agg
+ * @brief Combine function for temporal centroid aggregation of temporal
+ * points
+ * @param[in,out] state1, state2 Current aggregate states, may be `NULL`
+ * @csqlfn #Tpoint_tcentroid_combinefn()
+ */
+SkipList *
+tpoint_tcentroid_combinefn(SkipList *state1, SkipList *state2)
+{
+  /* Can't do anything with null inputs */
+  if (! state1 && ! state2)
+    return NULL;
+  /* Ensure the validity of the arguments */
+  if (! ensure_geoaggstate_state(state1, state2))
+    return NULL;
+
+  const struct GeoAggregateState *extra = NULL;
+  if (state1 && state1->extra)
+    extra = state1->extra;
+  if (state2 && state2->extra)
+    extra = state2->extra;
+  assert(extra);
+  datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
+  return temporal_tagg_combinefn(state1, state2, func, CROSSINGS_NO);
+}
+
 /*****************************************************************************
  * Extent
  *****************************************************************************/
@@ -279,6 +308,40 @@ tspatial_extent_transfn(STBox *state, const Temporal *temp)
   STBox b;
   tspatial_set_stbox(temp, &b);
   stbox_expand(&b, state);
+  return state;
+}
+
+/**
+ * @ingroup meos_geo_agg
+ * @brief Transition function for temporal extent aggregate of spatiotemporal
+ * boxes
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] box Spatiotemporal box to aggregate, may be `NULL`
+ * @note The function is also the combine function of the extent aggregates
+ * of spatiotemporal boxes and spatiotemporal values, the box to aggregate
+ * being the state of another partial aggregation
+ * @csqlfn #Stbox_extent_transfn(), #Stbox_extent_combinefn()
+ */
+STBox *
+stbox_extent_transfn(STBox *state, const STBox *box)
+{
+  /* Can't do anything with null inputs */
+  if (! state && ! box)
+    return NULL;
+  /* Null state and non-null box, return a copy of the box */
+  if (! state)
+    return stbox_copy(box);
+  /* Non-null state and null box, return the state */
+  if (! box)
+    return state;
+
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_stbox(state, box) ||
+      ! ensure_same_dimensionality(state->flags, box->flags))
+    return NULL;
+
+  /* Both state and box are not null */
+  stbox_expand(box, state);
   return state;
 }
 

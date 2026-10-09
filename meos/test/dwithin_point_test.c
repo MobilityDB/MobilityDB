@@ -29,14 +29,20 @@
 
 /**
  * @file
- * @brief A program that tests that two temporal points answer the distance
- * they are within exactly
+ * @brief A program that tests that a temporal point answers the distance it is
+ * within of another temporal point and of a point geometry exactly
  * @details Whether two points are within a distance is a question about four
  * coordinates and that distance, each an exact rational, so it has one answer,
  * and #point_within_distance_sign gives it without constructing the distance
  * between them. A square root is a rounded value, and a rounded value that
  * decides an answer moves it for every pair lying within its own rounding of
  * the distance asked about.
+ *
+ * Each case is asked of the three entries that answer it: the two quantifiers
+ * over two temporal points, and the temporal relationship of a temporal point
+ * against the second point as a geometry. The second point reaches the walk as
+ * a geometry rather than as a temporal value, but it is the same point, so the
+ * three answers are one answer.
  *
  * The first part asks only questions whose answer follows from the integers:
  * a 3-4-5 triangle scaled by a power of two has every coordinate and every
@@ -83,16 +89,47 @@ still(double x, double y)
 }
 
 /**
- * @brief Assert that both quantifiers answer a pair of resting points as
- * expected, the two agreeing because the distance never changes
+ * @brief Assert that every entry answering a pair of resting points gives the
+ * expected answer: both quantifiers over two temporal points, which agree
+ * because the distance never changes, and the temporal relationship of a
+ * temporal point against the second point as a geometry, which answers one
+ * value over the whole period for the same reason.
+ *
+ * The third part carries the scales where the squares leave the range of a
+ * double: the 3-4-5 triangle at 2^-1000 to 2^-550 and 2^550 to 2^1000, whose
+ * squares underflow to zero or overflow to infinity, and two points near 1e155
+ * one unit in the last place apart, whose coordinates square to infinity
+ * while their difference does not. Each is asked at its distance, below it and
+ * above it, and the answers follow from the integers as in the first part.
+ *
+ * The fourth part carries differences far apart in scale, one 2^540 to 2^1000
+ * times the other, whose products the scaled expansion cannot hold. Asked at
+ * the larger difference the points are farther apart, by the square of the
+ * smaller one, and asked at the double above it they are within
  */
 static void
-both(double px, double py, double qx, double qy, double d, int expected)
+every_entry(double px, double py, double qx, double qy, double d, int expected)
 {
   Temporal *p = still(px, py), *q = still(qx, qy);
   assert(p != NULL && q != NULL);
-  assert(edwithin_tgeo_tgeo(p, q, d) == expected);
-  assert(adwithin_tgeo_tgeo(p, q, d) == expected);
+  assert(edwithin_tgeo_tgeo(p, q, d, true) == expected);
+  assert(adwithin_tgeo_tgeo(p, q, d, true) == expected);
+
+  /* The same question with the second point as a geometry */
+  char buffer[256];
+  snprintf(buffer, sizeof(buffer), "POINT(%.17g %.17g)", qx, qy);
+  GSERIALIZED *gs = geom_in(buffer, -1);
+  assert(gs != NULL);
+  Temporal *res = tdwithin_tgeo_geo(p, gs, d, true);
+  assert(res != NULL);
+  int count;
+  bool *values = tbool_values(res, &count);
+  /* Neither point moves, so the walk answers one value over the whole period */
+  assert(count == 1);
+  assert(values[0] == (expected ? true : false));
+  free(values);
+  free(res);
+  free(gs);
   free(p);
   free(q);
 }
@@ -110,14 +147,14 @@ int main(void)
   {
     double s = ldexp(1.0, exponent);
     /* Exactly five units apart: within five, and within everything above it */
-    both(0, 0, 3 * s, 4 * s, 5 * s, 1);
-    both(0, 0, 3 * s, 4 * s, nextafter(5 * s, INFINITY), 1);
-    both(0, 0, 3 * s, 4 * s, 10 * s, 1);
+    every_entry(0, 0, 3 * s, 4 * s, 5 * s, 1);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, INFINITY), 1);
+    every_entry(0, 0, 3 * s, 4 * s, 10 * s, 1);
     /* And within nothing below it */
-    both(0, 0, 3 * s, 4 * s, nextafter(5 * s, 0.0), 0);
-    both(0, 0, 3 * s, 4 * s, 4 * s, 0);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, 0.0), 0);
+    every_entry(0, 0, 3 * s, 4 * s, 4 * s, 0);
     /* Two points in the same place are within no distance at all */
-    both(3 * s, 4 * s, 3 * s, 4 * s, 0.0, 1);
+    every_entry(3 * s, 4 * s, 3 * s, 4 * s, 0.0, 1);
     asked += 6;
   }
 
@@ -138,13 +175,71 @@ int main(void)
     /* The two forms really do differ on these coordinates */
     assert(rounded_above > rounded_below);
     /* CGAL: not within the lower rounding, within the upper one */
-    both(0, 0, x, y, rounded_below, 0);
-    both(0, 0, x, y, rounded_above, 1);
+    every_entry(0, 0, x, y, rounded_below, 0);
+    every_entry(0, 0, x, y, rounded_above, 1);
     asked += 2;
   }
 
-  printf("%d distances answered exactly, 61 scales and 4 pairs a double "
-    "square root gets wrong\n", asked);
+  /* Where the squares leave the range of a double */
+  for (int exponent = -1000; exponent <= 1000; exponent += 50)
+  {
+    if (exponent > -550 && exponent < 550)
+      continue;
+    double s = ldexp(1.0, exponent);
+    every_entry(0, 0, 3 * s, 4 * s, 5 * s, 1);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, INFINITY), 1);
+    every_entry(0, 0, 3 * s, 4 * s, nextafter(5 * s, 0.0), 0);
+    asked += 3;
+  }
+  /* Two points one unit in the last place of 1e155 apart, 2^462 */
+  double big = 1e155, next = nextafter(big, INFINITY);
+  every_entry(big, 0, next, 0, 0x1p+462, 1);
+  every_entry(big, 0, next, 0, nextafter(0x1p+462, INFINITY), 1);
+  every_entry(big, 0, next, 0, nextafter(0x1p+462, 0.0), 0);
+  asked += 3;
+
+  /* Differences far apart in scale */
+  int skewed = 0;
+  for (int exponent = -500; exponent <= 500; exponent += 500)
+  {
+    for (int ratio = 540; ratio <= 1000; ratio += 230)
+    {
+      if (exponent - ratio < -1074)
+        continue;
+      double a = ldexp(1.0, exponent), b = ldexp(1.0, exponent - ratio);
+      every_entry(0, 0, a, b, a, 0);
+      every_entry(0, 0, b, a, a, 0);
+      every_entry(0, 0, a, b, nextafter(a, INFINITY), 1);
+      every_entry(0, 0, a, 0, a, 1);
+      asked += 4;
+      skewed++;
+    }
+  }
+
+  printf("%d distances answered exactly by three entries, 61 scales, 4 "
+    "pairs a double square root gets wrong, 20 scales and 1 pair whose "
+    "squares leave the range of a double and %d pairs of differences far "
+    "apart in scale\n", asked, skewed);
+
+  /* Two points (3m, 4m) * 2^s apart but for a first coordinate 2^-1739 of
+   * the others, which alone decides whether they are within 5m * 2^s */
+  int distant = 2;
+  every_entry(-0x1p-839, 0.0, 0x1.5f14da9786626p+900, 0x1.d41bce1f5dd88p+900,
+    0x1.249160d39aa75p+901, 0);
+  every_entry(0x1p-700, 0.0, 0x1.6bbf9bb721d4cp+875, 0x1.e4ff7a4982710p+875,
+    0x1.2f1fac6df186ap+876, 1);
+  /* The same at 2^111, where the differences are read as they are: the first
+   * coordinate 2^-993 toward the second point, away from it, and 0, where the
+   * points are exactly the distance apart */
+  distant += 3;
+  every_entry(0x1p-993, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 1);
+  every_entry(-0x1p-993, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 0);
+  every_entry(0.0, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 1);
+  printf("%d distances a coordinate far below the others decides answered "
+    "exactly\n", distant);
 
   /* Finalize MEOS */
   meos_finalize();

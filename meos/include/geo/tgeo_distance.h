@@ -43,6 +43,7 @@
 #include <meos.h>
 #include "temporal/temporal.h"
 #include "geo/geo_funcs.h"
+#include "temporal/lifting.h"
 #include <meos_tls.h>
 
 /*****************************************************************************/
@@ -58,7 +59,7 @@ extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
   TimestampTz *t1, TimestampTz *t2);
   
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
-  datum_func2 func);
+  LiftedFunctionInfo *lfinfo);
 
 /**
  * @brief Lower bound on the distance over two synchronized linear segments,
@@ -70,7 +71,7 @@ typedef double (*seglb_func)(Datum start1, Datum end1, Datum start2,
 extern bool nad_tcont_tcont_sync_applies(const Temporal *temp1,
   const Temporal *temp2);
 extern double nad_tcont_tcont_sync(const Temporal *temp1,
-  const Temporal *temp2, datum_func2 func, tpfunc_temp turnpt,
+  const Temporal *temp2, LiftedFunctionInfo *lfinfo, tpfunc_temp turnpt,
   seglb_func seglb, TimestampTz *tmin);
 extern double tpointseg_distance_lb(Datum start1, Datum end1, Datum start2,
   Datum end2);

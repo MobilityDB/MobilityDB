@@ -100,7 +100,9 @@ typedef struct Pose Pose;
 
 /* Input and output functions */
 
+extern uint8_t *pose_as_ewkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern char *pose_as_ewkt(const Pose *pose, int maxdd);
+extern char *pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern char *pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern char *pose_as_text(const Pose *pose, int maxdd);
 extern uint8_t *pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out);
@@ -138,6 +140,9 @@ typedef struct
 
 extern const GeoPoseFrame *geopose_frames(int *count);
 extern const GeoPoseFrame *geopose_frame(int32_t frame_id);
+extern char *geopose_frame_name(int32_t frame_id);
+extern int32_t geopose_frame_srid(int32_t frame_id);
+extern bool geopose_frame_is_geographic(int32_t frame_id);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
 extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
 extern Temporal *tpose_compose_pose(const Temporal *body, const Pose *frame);
@@ -427,8 +432,10 @@ typedef struct PoseChain PoseChain;
 extern PoseChain *posechain_in(const char *str);
 extern char *posechain_out(const PoseChain *pc, int maxdd);
 extern char *posechain_as_text(const PoseChain *pc, int maxdd);
+extern uint8_t *posechain_as_ewkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
 extern char *posechain_as_ewkt(const PoseChain *pc, int maxdd);
 extern uint8_t *posechain_as_wkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
+extern char *posechain_as_hexewkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
 extern char *posechain_as_hexwkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
 extern PoseChain *posechain_from_wkb(const uint8_t *wkb, size_t size);
 extern PoseChain *posechain_from_hexwkb(const char *hexwkb);

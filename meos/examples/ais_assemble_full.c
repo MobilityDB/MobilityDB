@@ -385,7 +385,7 @@ int main(void)
     {
       Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
         trips[i].num_trip_instants, true, true, LINEAR, true);
-      printf(" %15.6lf |", tpoint_length(trip));
+      printf(" %15.6lf |", tpoint_length(trip, true));
       free(trip);
     }
     else

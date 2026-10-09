@@ -126,6 +126,8 @@ jobs:
           ./tbl_tcbuffer_geometry
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos -lm
           ./tbl_tcbuffer_tcbuffer
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cbuffer_exact_test cbuffer_exact_test.c -L/usr/local/lib -lmeos -lm
+          ./cbuffer_exact_test
           # The DE-9IM harness reaches the engine through the public geom_relate,
           # so it builds against the installed library like every program here
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o relate_diff relate_diff.c -L/usr/local/lib -lmeos -lm
@@ -264,3 +266,57 @@ jobs:
             exit 1
           fi
           ./loader ./module.so
+
+  geos-free:
+    name: Build without GEOS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/apt-resilient
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgdal-dev \
+            libh3-dev \
+            libxml2-dev \
+            zlib1g-dev
+
+      # Install into a local prefix rather than /usr/local, so the programs
+      # below cannot resolve against another libmeos.
+      - name: Build MEOS with GEOS compiled out
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on \
+            -DGEOS=OFF -DCMAKE_INSTALL_PREFIX="$PWD/prefix"
+          cmake --build build -j $(nproc)
+          cmake --install build
+
+      # GEOS stays installed because GDAL depends on it, so the libraries the
+      # loader maps say nothing: what the build must not do is CALL it.
+      - name: Check that the library calls no GEOS function
+        run: |
+          n=$(nm -D --undefined-only prefix/lib/libmeos.so | grep -c ' GEOS' || true)
+          echo "$n GEOS function(s) called by libmeos"
+          test "$n" -eq 0
+
+      # Each program exits 1 where an input reaches one of the fall-backs a
+      # build without GEOS has in place of the library, so a count that grows
+      # reddens the job instead of passing unseen. The sweep carries its own
+      # controls, and fails where they do.
+      - name: Sweep the inputs that could reach a GEOS fall-back
+        run: |
+          cd meos/test
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/prefix/lib"
+          for t in geos_fallback_sweep geos_gateway_reach; do
+            echo "./$t"
+            gcc -Wall -Werror=implicit-function-declaration -g \
+              -I"$GITHUB_WORKSPACE/prefix/include" -o "$t" "$t.c" \
+              -L"$GITHUB_WORKSPACE/prefix/lib" -lmeos -lm
+            "./$t"
+          done

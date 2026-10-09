@@ -48,6 +48,7 @@
 #include "temporal/skiplist.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/tbool_ops.h"
 #include "temporal/tinstant.h"
@@ -1777,15 +1778,48 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
   return state;
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal extent aggregate of temporal boxes
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] box Temporal box to aggregate, may be `NULL`
+ * @note The function is also the combine function of the extent aggregates
+ * of temporal boxes and temporal numbers, the box to aggregate being the
+ * state of another partial aggregation
+ * @csqlfn #Tbox_extent_transfn(), #Tbox_extent_combinefn()
+ */
+TBox *
+tbox_extent_transfn(TBox *state, const TBox *box)
+{
+  /* Can't do anything with null inputs */
+  if (! state && ! box)
+    return NULL;
+  /* Null state and non-null box, return a copy of the box */
+  if (! state)
+    return tbox_copy(box);
+  /* Non-null state and null box, return the state */
+  if (! box)
+    return state;
+
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tbox_tbox(state, box) ||
+      ! ensure_same_dimensionality_tbox(state, box))
+    return NULL;
+
+  /* Both state and box are not null */
+  tbox_expand(box, state);
+  return state;
+}
+
 /*****************************************************************************
  * Append aggregate functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for append temporal instant aggregate
  * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] inst Temporal value to aggregate
+ * @param[in] inst Temporal instant to aggregate
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance
  * @param[in] maxt Maximum duration, may be `NULL`
@@ -1798,6 +1832,9 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
   /* Null state: create a new temporal sequence with the instant */
   if (! state)
   {
+    /* The constructor ensures the validity of the instant and of the
+     * interpolation, temporal_append_tinstant those of the next instants */
+    VALIDATE_NOT_NULL(inst, NULL);
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
@@ -1816,18 +1853,21 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
  * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] seq Temporal value to aggregate
+ * @param[in] seq Temporal sequence to aggregate
  * @csqlfn #Temporal_app_tseq_transfn()
  */
 Temporal *
 temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 {
-  /* Null state: create a new temporal sequence with the sequence */
+  /* Null state: create a new temporal sequence set with the sequence */
   if (! state)
   {
+    /* The constructor ensures the validity of the sequence,
+     * temporal_append_tsequence those of the next sequences */
+    VALIDATE_NOT_NULL(seq, NULL);
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
@@ -1841,6 +1881,26 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
   }
 
   return temporal_append_tsequence(state, seq, true);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Final function for append temporal instant and append temporal
+ * sequence aggregates
+ * @param[in] state Current aggregate state, may be `NULL`
+ * @return A copy of the state without the extra storage space it keeps for
+ * the values still to append, the state remaining unchanged
+ * @csqlfn #Temporal_append_finalfn()
+ */
+Temporal *
+temporal_append_finalfn(const Temporal *state)
+{
+  /* Null state: return NULL */
+  if (! state)
+    return NULL;
+  return temporal_compact(state);
 }
 
 /*****************************************************************************/

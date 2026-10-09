@@ -203,6 +203,7 @@ extern Set *geo_to_s2cell_set(const GSERIALIZED *gs, int32 level);
 extern GSERIALIZED *s2cell_cell_to_geogpoint(S2CellId cell);
 extern GSERIALIZED *s2cell_cell_to_geog(S2CellId cell);
 extern int ever_eq_s2cellset_ts2cell(const Set *cells, const Temporal *temp);
+extern int ever_eq_ts2cell_s2cellset(const Temporal *temp, const Set *cells);
 
 /* Bounding box */
 
@@ -242,6 +243,10 @@ extern Set *minus_s2cell_set(S2CellId cell, const Set *s);
 extern Set *minus_set_s2cell(const Set *s, S2CellId cell);
 extern Set *union_s2cell_set(S2CellId cell, const Set *s);
 extern Set *union_set_s2cell(const Set *s, S2CellId cell);
+
+/* Aggregate functions of `s2cellset` */
+
+extern Set *s2cell_union_transfn(Set *state, S2CellId cell);
 
 /*****************************************************************************
  * Temporal `ts2cell` inheritance

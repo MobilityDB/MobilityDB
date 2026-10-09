@@ -132,6 +132,40 @@ typedef struct
   double t1;           /**< Only valid for OVERLAP */
 } IntersectResult;
 
+/**
+ * @brief Index over the boxes of an edge array, answering which edges a box
+ * meets
+ * @details The edges stand in order of the bottom of their box and of its
+ * left, and a box meets an edge where the edge's box overlaps it, closed on
+ * both axes, as an R-tree of the same boxes answers. A query wider than it is
+ * tall reads the edges in order of their bottom from the bottom of the query
+ * less the height of the tallest of them; a taller one reads them in order of
+ * their left. An edge far taller, or far wider, than the rest is kept apart
+ * and read by every query along that axis, so that one long edge does not
+ * widen the reading of all the others
+ */
+typedef struct
+{
+  int nedges;       /**< Number of edges the index holds */
+  uint32_t *byy;    /**< Edges in order of the bottom of their box */
+  double *ylo;      /**< That bottom, in the same order */
+  int nbyy;         /**< Number of edges in @p byy */
+  double tallest;   /**< Greatest height of an edge in @p byy */
+  uint32_t *tall;   /**< Edges too tall for @p byy, read by every query */
+  int ntall;        /**< Number of edges in @p tall */
+  uint32_t *byx;    /**< Edges in order of the left of their box */
+  double *xlo;      /**< That left, in the same order */
+  int nbyx;         /**< Number of edges in @p byx */
+  double widest;    /**< Greatest width of an edge in @p byx */
+  uint32_t *wide;   /**< Edges too wide for @p byx, read by every query */
+  int nwide;        /**< Number of edges in @p wide */
+} EdgeIndex;
+
+extern EdgeIndex *edge_index_make(Edge **edges, int nedges);
+extern void edge_index_free(EdgeIndex *index);
+extern int edge_index_query(const EdgeIndex *index, Edge **edges,
+  double xmin, double xmax, double ymin, double ymax, MeosArray *result);
+
 /*****************************************************************************/
 
 /**
@@ -165,6 +199,9 @@ extern bool meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2,
 extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool relate_is_areal(const LWGEOM *geom);
+extern bool relate_members_apart(const LWGEOM *geom);
+extern bool relate_members_apart_within(const LWGEOM *geom,
+  int64 budget);
 extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
 extern double cross_product_exact(double ax, double ay, double bx, double by,
@@ -172,6 +209,37 @@ extern double cross_product_exact(double ax, double ay, double bx, double by,
 extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
 extern int point_within_distance_sign_exact(double px, double py, double qx,
   double qy, double d);
+extern double point_distance_exact(const double *p, const double *q,
+  int ndims);
+extern double point_distance_offset_exact(const double *p, const double *q,
+  int ndims, double r);
+extern double point_segment_distance_offset_exact(const double *p,
+  const double *a, const double *b, double r);
+
+/* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
+ * with the double nearest to it and a bound on the error of that double */
+#define EXACT_SUM_MAXTERMS 4
+typedef struct
+{
+  double e[EXACT_SUM_MAXTERMS];  /**< Components, increasing in magnitude */
+  int n;                         /**< Number of components */
+  double approx;                 /**< Double nearest to the sum */
+  double err;                    /**< Bound on the error of approx */
+} ExactSum;
+
+/* A term of a polynomial in exact sums: a coefficient, exactly representable,
+ * times the product of up to POLY_TERM_MAXDEG exact sums given by index */
+#define POLY_TERM_MAXDEG 4
+typedef struct
+{
+  double coef;                   /**< Coefficient */
+  int deg;                       /**< Number of factors */
+  int sum[POLY_TERM_MAXDEG];     /**< Indices of the exact sums multiplied */
+} PolyTerm;
+
+extern void exact_sum_set(ExactSum *sum, const double *terms, int nterms);
+extern int polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+  int nterms);
 extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
   const POINT3D *r);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
@@ -209,7 +277,7 @@ extern int point_in_polygon_index(double x, double y, Edge **edges,
 extern int point_in_polygon_index_vertex(double x, double y, Edge **edges,
   int nedges, const RTree *rtree, double xmax);
 extern int point_in_polygon_index_into(double x, double y, Edge **edges,
-  int nedges, const RTree *rtree, double xmax, double reach,
+  int nedges, const EdgeIndex *index, double xmax, double reach,
   MeosArray *results, bool vertex);
 /**
  * @brief Return true if a polygon ring turns the same way at every vertex,
@@ -269,7 +337,7 @@ typedef struct
 {
   Edge **edges;   /**< Edges the array holds */
   int nedges;     /**< Number of edges */
-  RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
+  EdgeIndex *index; /**< Index over the edge boxes, NULL below the threshold */
   MeosArray *results; /**< Array a search of the index collects ids into,
                            made and released with the index, NULL without it */
   double xmin;    /**< Least x the edges reach */
@@ -315,6 +383,8 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
   return true;
 }
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
+extern bool ensure_same_dimensionality_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_srid_valid(int32_t srid);
@@ -450,11 +520,14 @@ dot_product_sign(const POINT3D *p, const POINT3D *q)
  * (`doc/contributing/distance_design_notes.md`). A filter gives the sign where
  * the double evaluation carries it, bounding the rounding of two squared
  * differences and a square summed together, each difference itself rounded.
- * Where the filter cannot tell, #point_within_distance_sign_exact decides the
- * same quantity exactly over the input coordinates
- * @note Exact where no square of a coordinate difference overflows or
- * underflows. A negative @p d is the caller's to refuse; every caller of this
- * function validates it at its own entry
+ * A square that overflows makes the bound infinite, and one in the subnormal
+ * range carries an absolute error the relative bound does not cover, which
+ * the term `DBL_MIN` does, so both reach the exact sign. Where the filter
+ * cannot tell, #point_within_distance_sign_exact decides the same quantity
+ * exactly over the scaled coordinate differences
+ * @note Exact for any finite coordinates and distance, as
+ * #point_within_distance_sign_exact is. A negative @p d is the caller's to
+ * refuse; every caller of this function validates it at its own entry
  * @return -1 where the points are nearer than the distance, 1 where they are
  * farther, 0 exactly where the distance is the one they are apart. A caller
  * reading a relationship that holds AT the distance takes 0 with -1
@@ -468,8 +541,10 @@ point_within_distance_sign(double px, double py, double qx, double qy,
   double value = (hh + vv) - dd;
   /* Three roundings reach each squared difference (the difference, its square,
    * and the sum) and two reach the square of the distance, so five bound the
-   * whole; the second-order term follows the siblings above */
-  double bound = (5.0 + 32.0 * DBL_EPSILON) * DBL_EPSILON * (hh + vv + dd);
+   * whole; the second-order term follows the siblings above, and DBL_MIN
+   * covers a square in the subnormal range */
+  double bound = (5.0 + 32.0 * DBL_EPSILON) * DBL_EPSILON * (hh + vv + dd) +
+    DBL_MIN;
   if (value > bound)
     return 1;
   if (value < - bound)
@@ -817,6 +892,53 @@ point_on_arc(double px, double py, const Edge *e)
 }
 
 /**
+ * @brief Return whether a line crosses an arc at a point within the rounding
+ * of an end of the arc
+ * @details Such a crossing is a point the arithmetic constructs, and whether
+ * its angle falls inside the span of the arc is then decided by the last bit
+ * of an arctangent, which the mathematical libraries of two platforms round
+ * differently. The end of the arc is an input vertex, so the side of the line
+ * it stands on is a sign decided exactly (#cross_product_sign), and the arc
+ * leaves that end along the tangent of its circle there: the line is crossed
+ * next to the end exactly where the arc, leaving it, moves toward the line.
+ * The tangent is read in the double the centre gives, and the side it turns
+ * to is a sign that holds wherever the line crosses the circle rather than
+ * touching it, read against the magnitudes of the two products it is the
+ * difference of, which do not vanish
+ * @param[in] ax,ay Coordinates of a point of the line
+ * @param[in] rx,ry Direction of the line
+ * @param[in] e Arc edge
+ * @param[in] at_start True for the start of the arc, false for its end
+ * @return 1 where the line crosses the arc next to that end, 0 where it does
+ * not, -1 where the end lies on the line or the line runs along the arc there,
+ * which this does not decide
+ */
+static inline int
+arcsegm_end_crossing(double ax, double ay, double rx, double ry, const Edge *e,
+  bool at_start)
+{
+  double sx = at_start ? e->x1 : e->x2, sy = at_start ? e->y1 : e->y2;
+  int side = cross_product_sign(ax, ay, ax + rx, ay + ry, ax, ay, sx, sy);
+  if (side == 0)
+    return -1;
+  /* The tangent in the sense the arc is traversed, turned around at its end,
+   * where the arc is left by walking it backwards */
+  double tx = - (sy - e->cy), ty = sx - e->cx;
+  if (! e->ccw)
+  {
+    tx = - tx; ty = - ty;
+  }
+  if (! at_start)
+  {
+    tx = - tx; ty = - ty;
+  }
+  double turn = rx * ty - ry * tx;
+  if (fabs(turn) <= 4.0 * DBL_EPSILON * (fabs(rx * ty) + fabs(ry * tx)))
+    return -1;
+  return ((turn > 0.0) != (side > 0)) ? 1 : 0;
+}
+
+/**
  * @brief Return the trajectory parameters at which a trajectory segment
  * intersects an arc edge
  * @details Solves |A + t*R - C|^2 = r^2 for the trajectory parameter t in
@@ -882,7 +1004,15 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
     if (t < 0) t = 0;
     if (t > 1) t = 1;
     double px = ax + t * rx, py = ay + t * ry;
-    if (arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
+    /* A crossing within the rounding of an end of the arc is decided by the
+     * side that end stands on, where that decides it */
+    int at_end = -1;
+    if (fabs(px - e->x1) <= e->tol && fabs(py - e->y1) <= e->tol)
+      at_end = arcsegm_end_crossing(ax, ay, rx, ry, e, true);
+    else if (fabs(px - e->x2) <= e->tol && fabs(py - e->y2) <= e->tol)
+      at_end = arcsegm_end_crossing(ax, ay, rx, ry, e, false);
+    if (at_end >= 0 ? at_end == 1 :
+        arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
       out[n++] = t;
   }
   return n;

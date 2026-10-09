@@ -112,11 +112,11 @@ CREATE FUNCTION jsonbsetArrayElementText(jsonbset, integer,
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, integer)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, integer)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -246,10 +246,10 @@ CREATE FUNCTION jsonbsetSet(jsonbset, path text[], val jsonb,
   AS 'MODULE_PATHNAME', 'Jsonbset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetSetLax(jsonbset, path text[], val jsonb,
-    create_missing boolean DEFAULT true, handle_null text DEFAULT '')
+    create_missing boolean DEFAULT true, handle_null text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_set_lax'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION jsonbsetInsert(jsonbset, path text[], val jsonb,
     after boolean DEFAULT false)

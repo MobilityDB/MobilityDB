@@ -259,6 +259,23 @@ Spatialset_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(result);
 }
 
+PGDLLEXPORT Datum Geoset_to_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_to_geo);
+/**
+ * @ingroup mobilitydb_geo_set_conversion
+ * @brief Convert a geo set into the collection of its values
+ * @sqlfn geometry(), geography()
+ * @sqlop @p ::
+ */
+Datum
+Geoset_to_geo(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  GSERIALIZED *result = geoset_to_geo(set);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 /*****************************************************************************
  * Spatial reference system functions for spatial sets
  *****************************************************************************/
@@ -340,6 +357,133 @@ Spatialset_transform_pipeline(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
+}
+
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Distance_geo_geoset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_geoset);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between a geometry/geography and a geo set, the
+ * one of geographies on the earth model of the optional third argument
+ * @sqlfn setDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geo_geoset(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  double result = distance_set_geo(s, gs, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(s, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_geo_geoset_op(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_geoset_op);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between a geometry/geography and a geo set
+ * @details Implementation of the operator, the 2-argument version of
+ * #Distance_geo_geoset() on the spheroid
+ * @sqlfn setDistanceOp()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geo_geoset_op(PG_FUNCTION_ARGS)
+{
+  return Distance_geo_geoset(fcinfo);
+}
+
+PGDLLEXPORT Datum Distance_geoset_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geo);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between a geo set and a geometry/geography, the
+ * one of geographies on the earth model of the optional third argument
+ * @sqlfn setDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geoset_geo(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  double result = distance_set_geo(s, gs, spheroid);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_geoset_geo_op(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geo_op);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between a geo set and a geometry/geography
+ * @details Implementation of the operator, the 2-argument version of
+ * #Distance_geoset_geo() on the spheroid
+ * @sqlfn setDistanceOp()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geoset_geo_op(PG_FUNCTION_ARGS)
+{
+  return Distance_geoset_geo(fcinfo);
+}
+
+PGDLLEXPORT Datum Distance_geoset_geoset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geoset);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between two geo sets, the one of geographies on
+ * the earth model of the optional third argument
+ * @sqlfn setDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geoset_geoset(PG_FUNCTION_ARGS)
+{
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  double result = distance_geoset_geoset(s1, s2, spheroid);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_geoset_geoset_op(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geoset_op);
+/**
+ * @ingroup mobilitydb_geo_set_dist
+ * @brief Return the distance between two geo sets
+ * @details Implementation of the operator, the 2-argument version of
+ * #Distance_geoset_geoset() on the spheroid
+ * @sqlfn setDistanceOp()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geoset_geoset_op(PG_FUNCTION_ARGS)
+{
+  return Distance_geoset_geoset(fcinfo);
 }
 
 /*****************************************************************************/

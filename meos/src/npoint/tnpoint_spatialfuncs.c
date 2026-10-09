@@ -149,8 +149,11 @@ tnpointseqset_trajectory(const TSequenceSet *ss)
   GSERIALIZED *result;
   if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
+    /* The sequences can share one stretch of a route, which the positions
+     * state as a single segment */
     Nsegment **segments = tnpointseqset_positions(ss, &count);
-    result = nsegmentarr_geom(segments, count);
+    result = (count == 1) ? nsegment_to_geom(segments[0]) :
+      nsegmentarr_geom(segments, count);
     pfree_array((void **) segments, count);
   }
   else

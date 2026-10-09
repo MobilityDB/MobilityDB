@@ -221,7 +221,7 @@ PG_FUNCTION_INFO_V1(Npoint_from_wkb);
  * @ingroup mobilitydb_npoint_base_inout
  * @brief Return a network point from its Well-Known Binary (WKB)
  * representation
- * @sqlfn npointFromBinary()
+ * @sqlfn npointFromBinary(), npointFromEWKB()
  */
 Datum
 Npoint_from_wkb(PG_FUNCTION_ARGS)
@@ -976,7 +976,7 @@ PG_FUNCTION_INFO_V1(Npoint_same);
 /**
  * @ingroup mobilitydb_npoint_comp
  * @brief Return true if two network points are spatially equal
- * @sqlfn same()
+ * @sqlfn npointSame()
  * @sqlop @p ~=
  */
 Datum

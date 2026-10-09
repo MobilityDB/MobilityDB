@@ -65,7 +65,7 @@
 					<row><entry></entry><entry>@&gt;</entry><entry><indexterm significance="normal"><primary><varname>setContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxContains</varname></primary></indexterm>setContains / spanContains / spansetContains / tboxContains / stboxContains / tpcboxContains (a, b)</entry></row>
 					<row><entry></entry><entry>&lt;@</entry><entry><indexterm significance="normal"><primary><varname>setContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxContained</varname></primary></indexterm>setContained / spanContained / spansetContained / tboxContained / stboxContained / tpcboxContained (a, b)</entry></row>
 					<row><entry></entry><entry>-|-</entry><entry><indexterm significance="normal"><primary><varname>spanAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAdjacent</varname></primary></indexterm>spanAdjacent / spansetAdjacent / tboxAdjacent / stboxAdjacent / tpcboxAdjacent (a, b)</entry></row>
-					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>spanSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxSame</varname></primary></indexterm>spanSame / tboxSame / stboxSame / tpcboxSame (a, b), <indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same (a, b) over a circular buffer, a network point, a pose or a pose chain</entry></row>
+					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>spanSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxSame</varname></primary></indexterm>spanSame / tboxSame / stboxSame / tpcboxSame (a, b), <indexterm significance="normal"><primary><varname>cbufferSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>npointSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>poseSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>posechainSame</varname></primary></indexterm>cbufferSame / npointSame / poseSame / posechainSame (a, b)</entry></row>
 					<row><entry>Time span of a temporal JSONB value</entry><entry>#@&gt;</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContains</varname></primary></indexterm>tjsonbContains(a, b)</entry></row>
 					<row><entry></entry><entry>&lt;@#</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContained</varname></primary></indexterm>tjsonbContained(a, b)</entry></row>
 					<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>sameRid</varname></primary></indexterm>sameRid(a, b)</entry></row>
@@ -301,6 +301,76 @@
 		</informaltable>
 	</sect1>
 
+	<sect1 xml:id="portable_sql_host_base_values">
+		<title>Base Values Provided by the Host</title>
+
+		<para>Some base types of MobilityDB are provided in PostgreSQL by the database itself or by an extension MobilityDB requires: <varname>jsonb</varname> and <varname>jsonpath</varname> by PostgreSQL, <varname>h3index</varname> by the <varname>h3</varname> extension, and <varname>pcpoint</varname> and <varname>pcpatch</varname> by the <varname>pointcloud</varname> extension. The operators and functions of the provider keep their spelling, and every engine, PostgreSQL included, also calls these operations by the names below. Their comparisons are the functions of <xref linkend="portable_sql_comparisons_traditional"/> together with <varname>cmp</varname>, and their hash functions are <varname>hash</varname> and <varname>hashExtended</varname>, which Apache Spark and Apache Flink call <varname>jsonbHash</varname>, <varname>jsonbHashExtended</varname>, <varname>h3indexHash</varname> and <varname>h3indexHashExtended</varname>, as they call the hash functions of every other type by the name of the type. A value is read from its text by <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname> and <varname>h3indexFromText</varname> and written by <varname>asText</varname>, which a literal and a cast from and to <varname>text</varname> reach in PostgreSQL. The text of a <varname>pcpoint</varname> and of a <varname>pcpatch</varname> is the hex of its Well-Known Binary, read by <varname>pcpointFromHexWKB</varname> and <varname>pcpatchFromHexWKB</varname> and written by <varname>asHexWKB</varname>.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="4*"/>
+				<thead>
+					<row>
+						<entry>PostgreSQL</entry>
+						<entry>Portable function</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>jsonb '…', text::jsonb</entry><entry><indexterm significance="normal"><primary><varname>jsonbFromText</varname></primary></indexterm>jsonbFromText(a)</entry></row>
+					<row><entry>jsonb::text</entry><entry>asText(a)</entry></row>
+					<row><entry>jsonpath '…', text::jsonpath</entry><entry><indexterm significance="normal"><primary><varname>jsonpathFromText</varname></primary></indexterm>jsonpathFromText(a)</entry></row>
+					<row><entry>jsonpath::text</entry><entry>asText(a)</entry></row>
+					<row><entry>h3index '…', text::h3index</entry><entry><indexterm significance="normal"><primary><varname>h3indexFromText</varname></primary></indexterm>h3indexFromText(a)</entry></row>
+					<row><entry>h3index::text</entry><entry>asText(a)</entry></row>
+					<row><entry>pcpoint '…', text::pcpoint</entry><entry><indexterm significance="normal"><primary><varname>pcpointFromHexWKB</varname></primary></indexterm>pcpointFromHexWKB(a)</entry></row>
+					<row><entry>pcpoint::text</entry><entry>asHexWKB(a)</entry></row>
+					<row><entry>pcpatch '…', text::pcpatch</entry><entry><indexterm significance="normal"><primary><varname>pcpatchFromHexWKB</varname></primary></indexterm>pcpatchFromHexWKB(a)</entry></row>
+					<row><entry>pcpatch::text</entry><entry>asHexWKB(a)</entry></row>
+					<row><entry>jsonb -&gt; text</entry><entry><indexterm significance="normal"><primary><varname>jsonbObjectField</varname></primary></indexterm>jsonbObjectField(a, b)</entry></row>
+					<row><entry>jsonb -&gt; integer</entry><entry><indexterm significance="normal"><primary><varname>jsonbArrayElement</varname></primary></indexterm>jsonbArrayElement(a, b)</entry></row>
+					<row><entry>jsonb -&gt;&gt; text</entry><entry><indexterm significance="normal"><primary><varname>jsonbObjectFieldText</varname></primary></indexterm>jsonbObjectFieldText(a, b)</entry></row>
+					<row><entry>jsonb -&gt;&gt; integer</entry><entry><indexterm significance="normal"><primary><varname>jsonbArrayElementText</varname></primary></indexterm>jsonbArrayElementText(a, b)</entry></row>
+					<row><entry>jsonb #&gt; text[], jsonb_extract_path</entry><entry><indexterm significance="normal"><primary><varname>jsonbExtractPath</varname></primary></indexterm>jsonbExtractPath(a, b)</entry></row>
+					<row><entry>jsonb #&gt;&gt; text[], jsonb_extract_path_text</entry><entry><indexterm significance="normal"><primary><varname>jsonbExtractPathText</varname></primary></indexterm>jsonbExtractPathText(a, b)</entry></row>
+					<row><entry>jsonb ? text</entry><entry><indexterm significance="normal"><primary><varname>jsonbExists</varname></primary></indexterm>jsonbExists(a, b)</entry></row>
+					<row><entry>jsonb ?| text[]</entry><entry><indexterm significance="normal"><primary><varname>jsonbExistsAny</varname></primary></indexterm>jsonbExistsAny(a, b)</entry></row>
+					<row><entry>jsonb ?&amp; text[]</entry><entry><indexterm significance="normal"><primary><varname>jsonbExistsAll</varname></primary></indexterm>jsonbExistsAll(a, b)</entry></row>
+					<row><entry>jsonb @&gt; jsonb</entry><entry><indexterm significance="normal"><primary><varname>jsonbContains</varname></primary></indexterm>jsonbContains(a, b)</entry></row>
+					<row><entry>jsonb &lt;@ jsonb</entry><entry><indexterm significance="normal"><primary><varname>jsonbContained</varname></primary></indexterm>jsonbContained(a, b)</entry></row>
+					<row><entry>jsonb || jsonb</entry><entry><indexterm significance="normal"><primary><varname>jsonbConcat</varname></primary></indexterm>jsonbConcat(a, b)</entry></row>
+					<row><entry>jsonb - text</entry><entry><indexterm significance="normal"><primary><varname>jsonbDelete</varname></primary></indexterm>jsonbDelete(a, b)</entry></row>
+					<row><entry>jsonb - text[]</entry><entry><indexterm significance="normal"><primary><varname>jsonbDeleteArray</varname></primary></indexterm>jsonbDeleteArray(a, b)</entry></row>
+					<row><entry>jsonb - integer</entry><entry><indexterm significance="normal"><primary><varname>jsonbDeleteIndex</varname></primary></indexterm>jsonbDeleteIndex(a, b)</entry></row>
+					<row><entry>jsonb #- text[]</entry><entry><indexterm significance="normal"><primary><varname>jsonbDeletePath</varname></primary></indexterm>jsonbDeletePath(a, b)</entry></row>
+					<row><entry>jsonb @? jsonpath, jsonb_path_exists</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathExists</varname></primary></indexterm>jsonbPathExists(a, b)</entry></row>
+					<row><entry>jsonb_path_exists_tz</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathExistsTz</varname></primary></indexterm>jsonbPathExistsTz(a, b)</entry></row>
+					<row><entry>jsonb @@ jsonpath, jsonb_path_match</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathMatch</varname></primary></indexterm>jsonbPathMatch(a, b)</entry></row>
+					<row><entry>jsonb_path_match_tz</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathMatchTz</varname></primary></indexterm>jsonbPathMatchTz(a, b)</entry></row>
+					<row><entry>jsonb_path_query</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQuery</varname></primary></indexterm>jsonbPathQuery(a, b)</entry></row>
+					<row><entry>jsonb_path_query_tz</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQueryTz</varname></primary></indexterm>jsonbPathQueryTz(a, b)</entry></row>
+					<row><entry>jsonb_path_query_array</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQueryArray</varname></primary></indexterm>jsonbPathQueryArray(a, b)</entry></row>
+					<row><entry>jsonb_path_query_array_tz</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQueryArrayTz</varname></primary></indexterm>jsonbPathQueryArrayTz(a, b)</entry></row>
+					<row><entry>jsonb_path_query_first</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQueryFirst</varname></primary></indexterm>jsonbPathQueryFirst(a, b)</entry></row>
+					<row><entry>jsonb_path_query_first_tz</entry><entry><indexterm significance="normal"><primary><varname>jsonbPathQueryFirstTz</varname></primary></indexterm>jsonbPathQueryFirstTz(a, b)</entry></row>
+					<row><entry>jsonb_array_length</entry><entry><indexterm significance="normal"><primary><varname>jsonbArrayLength</varname></primary></indexterm>jsonbArrayLength(a)</entry></row>
+					<row><entry>jsonb_array_elements</entry><entry><indexterm significance="normal"><primary><varname>jsonbArrayElements</varname></primary></indexterm>jsonbArrayElements(a)</entry></row>
+					<row><entry>jsonb_array_elements_text</entry><entry><indexterm significance="normal"><primary><varname>jsonbArrayElementsText</varname></primary></indexterm>jsonbArrayElementsText(a)</entry></row>
+					<row><entry>jsonb_each</entry><entry><indexterm significance="normal"><primary><varname>jsonbEach</varname></primary></indexterm>jsonbEach(a)</entry></row>
+					<row><entry>jsonb_each_text</entry><entry><indexterm significance="normal"><primary><varname>jsonbEachText</varname></primary></indexterm>jsonbEachText(a)</entry></row>
+					<row><entry>jsonb_object_keys</entry><entry><indexterm significance="normal"><primary><varname>jsonbObjectKeys</varname></primary></indexterm>jsonbObjectKeys(a)</entry></row>
+					<row><entry>jsonb_insert</entry><entry><indexterm significance="normal"><primary><varname>jsonbInsert</varname></primary></indexterm>jsonbInsert(a, b, c)</entry></row>
+					<row><entry>jsonb_set</entry><entry><indexterm significance="normal"><primary><varname>jsonbSet</varname></primary></indexterm>jsonbSet(a, b, c)</entry></row>
+					<row><entry>jsonb_set_lax</entry><entry><indexterm significance="normal"><primary><varname>jsonbSetLax</varname></primary></indexterm>jsonbSetLax(a, b, c)</entry></row>
+					<row><entry>jsonb_pretty</entry><entry><indexterm significance="normal"><primary><varname>jsonbPretty</varname></primary></indexterm>jsonbPretty(a)</entry></row>
+					<row><entry>jsonb_strip_nulls</entry><entry><indexterm significance="normal"><primary><varname>jsonbStripNulls</varname></primary></indexterm>jsonbStripNulls(a)</entry></row>
+					<row><entry>PC_NumPoints(pcpatch)</entry><entry><indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>numPoints(a)</entry></row>
+					<row><entry>PC_PointN(pcpatch, integer)</entry><entry><indexterm significance="normal"><primary><varname>pointN</varname></primary></indexterm>pointN(a, b)</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+
 	<sect1 xml:id="portable_sql_aggregates">
 		<title>Aggregations</title>
 
@@ -400,7 +470,7 @@
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; npoint, npointset, tnpoint; nsegment; pose, poseset, tpose; posechain, posechainset, tposechain; tbox; stbox; tpcbox</entry><entry>cbufferRound, npointRound, nsegmentRound, poseRound, posechainRound, tboxRound, stboxRound, tpcboxRound</entry></row>
 						<row><entry>abs</entry><entry>tint, tbigint, tfloat</entry><entry>intAbs, bigintAbs, floatAbs</entry></row>
 						<row><entry>ceil, floor, degrees, radians, cos, sin, tan, exp, ln, log10</entry><entry>float and its set, span, span set and temporal types</entry><entry>floatCeil, floatFloor, floatDegrees, floatRadians, floatCos, floatSin, floatTan, floatExp, floatLn, floatLog10</entry></row>
-						<row><entry>transform</entry><entry>the sets and temporal types of geometry and geography, trgeometry</entry><entry>geoTransform</entry></row>
+						<row><entry>transform</entry><entry>geometry and geography, their sets and temporal types, trgeometry</entry><entry>geoTransform</entry></row>
 						<row><entry>transformPipeline</entry><entry>geometry and geography, their sets and temporal types, trgeometry</entry><entry>geoTransformPipeline</entry></row>
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; pose, poseset, tpose; posechain, posechainset, tposechain; stbox; raster</entry><entry>cbufferTransform, poseTransform, posechainTransform, stboxTransform, rasterTransform, and the …TransformPipeline of each</entry></row>
 						<row><entry>translate, affine, rotate, rotateX, rotateY, rotateZ, scale, transscale</entry><entry>geometry, tgeompoint, tgeometry</entry><entry>geoTranslate, geoAffine, geoRotate, geoRotateX, geoRotateY, geoRotateZ, geoScale, geoTransscale</entry></row>

@@ -381,7 +381,7 @@ CREATE FUNCTION endValue(th3index)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(th3index, int)
+CREATE FUNCTION valueN(th3index, integer)
   RETURNS h3index
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

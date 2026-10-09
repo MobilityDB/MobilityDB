@@ -34,6 +34,343 @@ SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
 		que se obtienen aplicando el operador de PostgreSQL <varname>-></varname> a cada elemento del conjunto JSONB y a cada instante del valor JSONB temporal.
 		</para>
 
+	<sect1 xml:id="jsonb_jsonb">
+		<title>Operaciones sobre valores JSONB</title>
+
+		<para>PostgreSQL proporciona las siguientes operaciones sobre valores JSONB con sus propios nombres y operadores. MobilityDB las nombra como sus equivalentes sobre conjuntos JSONB y JSONB temporales, de modo que una consulta que utiliza estos nombres se ejecuta sin cambios en todos los motores del ecosistema (<xref linkend="portable_sql_host_base_values"/>). Los operadores de PostgreSQL conservan sus símbolos.</para>
+
+		<itemizedlist>
+			<listitem xml:id="jsonb_object_field">
+				<indexterm significance="normal"><primary><varname>jsonbObjectField</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbObjectFieldText</varname></primary></indexterm>
+				<para>Extrae un campo de objeto JSON especificado por una clave</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbObjectField(jsonb,text) → jsonb
+jsonbObjectFieldText(jsonb,text) → text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbObjectField(jsonb '{"a": {"b": 1}}', 'a');
+-- {"b": 1}
+SELECT jsonbObjectFieldText(jsonb '{"a": "x"}', 'a');
+-- x
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_extract_path">
+				<indexterm significance="normal"><primary><varname>jsonbExtractPath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbExtractPathText</varname></primary></indexterm>
+				<para>Extrae un valor JSON especificado por una ruta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbExtractPath(jsonb,path text[]) → jsonb
+jsonbExtractPathText(jsonb,path text[]) → text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']);
+-- 20
+SELECT jsonbExtractPathText(jsonb '{"a": {"b": "z"}}', ARRAY['a', 'b']);
+-- z
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_array_element">
+				<indexterm significance="normal"><primary><varname>jsonbArrayElement</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbArrayElementText</varname></primary></indexterm>
+				<para>Extrae un elemento de un arreglo JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbArrayElement(jsonb,integer) → jsonb
+jsonbArrayElementText(jsonb,integer) → text
+</programlisting>
+				<para>Los elementos se numeran desde cero, y un entero negativo cuenta desde el final del arreglo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbArrayElement(jsonb '[1, [2, 3]]', 1);
+-- [2, 3]
+SELECT jsonbArrayElement(jsonb '[1, 2, 3]', -1);
+-- 3
+SELECT jsonbArrayElementText(jsonb '["x", "y"]', 0);
+-- x
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_array_length">
+				<indexterm significance="normal"><primary><varname>jsonbArrayLength</varname></primary></indexterm>
+				<para>Devuelve el número de elementos de un arreglo JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbArrayLength(jsonb) → integer
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbArrayLength(jsonb '[1, 2, 3]');
+-- 3
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_array_elements">
+				<indexterm significance="normal"><primary><varname>jsonbArrayElements</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbArrayElementsText</varname></primary></indexterm>
+				<para>Devuelve los elementos de un arreglo JSON como filas</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbArrayElements(jsonb) → setof jsonb
+jsonbArrayElementsText(jsonb) → setof text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT * FROM jsonbArrayElements(jsonb '[1, "two", {"three": 3}]');
+-- 1
+-- "two"
+-- {"three": 3}
+SELECT * FROM jsonbArrayElementsText(jsonb '[1, "two"]');
+-- 1
+-- two
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_each">
+				<indexterm significance="normal"><primary><varname>jsonbEach</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbEachText</varname></primary></indexterm>
+				<para>Devuelve los campos de un objeto JSON como filas de una clave y un valor</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbEach(jsonb) → setof (key text,value jsonb)
+jsonbEachText(jsonb) → setof (key text,value text)
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT * FROM jsonbEach(jsonb '{"a": 1, "b": [2]}') ORDER BY key;
+-- a | 1
+-- b | [2]
+SELECT * FROM jsonbEachText(jsonb '{"a": 1, "b": "x"}') ORDER BY key;
+-- a | 1
+-- b | x
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_object_keys">
+				<indexterm significance="normal"><primary><varname>jsonbObjectKeys</varname></primary></indexterm>
+				<para>Devuelve las claves de un objeto JSON como filas</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbObjectKeys(jsonb) → setof text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT * FROM jsonbObjectKeys(jsonb '{"b": 1, "a": 2}') ORDER BY 1;
+-- a
+-- b
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_pretty">
+				<indexterm significance="normal"><primary><varname>jsonbPretty</varname></primary></indexterm>
+				<para>Devuelve el texto indentado de un valor JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbPretty(jsonb) → text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbPretty(jsonb '{"a": 1}');
+-- {
+--     "a": 1
+-- }
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_concat">
+				<indexterm significance="normal"><primary><varname>jsonbConcat</varname></primary></indexterm>
+				<para>Concatena dos valores JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbConcat(jsonb,jsonb) → jsonb
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbConcat(jsonb '{"a": 1}', jsonb '{"b": 2}');
+-- {"a": 1, "b": 2}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_delete">
+				<indexterm significance="normal"><primary><varname>jsonbDelete</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbDeleteArray</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbDeleteIndex</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbDeletePath</varname></primary></indexterm>
+				<para>Elimina de un valor JSON una clave, las claves de un arreglo, un elemento de arreglo o el elemento en una ruta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbDelete(jsonb,text) → jsonb
+jsonbDeleteArray(jsonb,text[]) → jsonb
+jsonbDeleteIndex(jsonb,integer) → jsonb
+jsonbDeletePath(jsonb,path text[]) → jsonb
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbDelete(jsonb '{"a": 1, "b": 2}', 'a');
+-- {"b": 2}
+SELECT jsonbDeleteArray(jsonb '{"a": 1, "b": 2, "c": 3}', ARRAY['a', 'c']);
+-- {"b": 2}
+SELECT jsonbDeleteIndex(jsonb '[1, 2, 3]', -1);
+-- [1, 2]
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1, "c": 2}}', ARRAY['a', 'b']);
+-- {"a": {"c": 2}}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_exists">
+				<indexterm significance="normal"><primary><varname>jsonbExists</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbExistsAny</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbExistsAll</varname></primary></indexterm>
+				<para>¿Existe un texto, o alguno o todos los textos de un arreglo, como clave de nivel superior o elemento de arreglo de un valor JSON?</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbExists(jsonb,text) → boolean
+jsonbExistsAny(jsonb,text[]) → boolean
+jsonbExistsAll(jsonb,text[]) → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbExists(jsonb '{"a": 1}', 'a');
+-- true
+SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', 'a']);
+-- true
+SELECT jsonbExistsAll(jsonb '{"a": 1}', ARRAY['b', 'a']);
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_contains">
+				<indexterm significance="normal"><primary><varname>jsonbContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbContained</varname></primary></indexterm>
+				<para>¿Contiene el primer valor JSON al segundo, o está contenido en él?</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbContains(jsonb,jsonb) → boolean
+jsonbContained(jsonb,jsonb) → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}');
+-- true
+SELECT jsonbContained(jsonb '{"a": 1}', jsonb '{"a": 1, "b": 2}');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_set">
+				<indexterm significance="normal"><primary><varname>jsonbSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbSetLax</varname></primary></indexterm>
+				<para>Devuelve un valor JSON con el elemento en una ruta establecido en un valor</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbSet(jsonb,path text[],val jsonb,create_missing boolean=true) → jsonb
+jsonbSetLax(jsonb,path text[],val jsonb,create_missing boolean=true,
+  handle_null text='use_json_null') → jsonb
+</programlisting>
+				<para>El elemento se añade cuando no existe y <varname>create_missing</varname> es verdadero. La función <varname>jsonbSetLax</varname> trata un valor NULL según <varname>handle_null</varname>, que es uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_target'</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbSet(jsonb '{"a": 1}', ARRAY['b'], jsonb '2');
+-- {"a": 1, "b": 2}
+SELECT jsonbSet(jsonb '{"a": 1}', ARRAY['b'], jsonb '2', false);
+-- {"a": 1}
+SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL);
+-- {"a": null}
+SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'delete_key');
+-- {}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_insert">
+				<indexterm significance="normal"><primary><varname>jsonbInsert</varname></primary></indexterm>
+				<para>Devuelve un valor JSON con un valor insertado en una ruta</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbInsert(jsonb,path text[],val jsonb,after boolean=false) → jsonb
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2');
+-- [1, 2, 3]
+SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2', true);
+-- [1, 3, 2]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_strip_nulls">
+				<indexterm significance="normal"><primary><varname>jsonbStripNulls</varname></primary></indexterm>
+				<para>Devuelve un valor JSON sin sus campos de objeto cuyo valor es nulo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbStripNulls(jsonb,strip_in_arrays boolean=false) → jsonb
+</programlisting>
+				<para>El último argumento indica si los elementos de arreglo nulos también se eliminan.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}');
+-- {"b": [1, null]}
+SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}', true);
+-- {"b": [1]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_path_exists">
+				<indexterm significance="normal"><primary><varname>jsonbPathExists</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathExistsTz</varname></primary></indexterm>
+				<para>¿Devuelve la ruta JSON algún elemento para un valor JSON?</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbPathExists(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
+jsonbPathExistsTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
+</programlisting>
+				<para>El último argumento suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos; el resultado de un error suprimido es NULL. Las funciones que terminan en <varname>Tz</varname> comparan valores de fecha y hora entre zonas horarias.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > 2)');
+-- true
+SELECT jsonbPathExists(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ > $x)', '{"x": 5}');
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_path_match">
+				<indexterm significance="normal"><primary><varname>jsonbPathMatch</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathMatchTz</varname></primary></indexterm>
+				<para>Devuelve el resultado de una comprobación de predicado de ruta JSON para un valor JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbPathMatch(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
+jsonbPathMatchTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbPathMatch(jsonb '{"a": [1, 2, 3]}', 'exists($.a[*] ? (@ > 2))');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_path_query">
+				<indexterm significance="normal"><primary><varname>jsonbPathQuery</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathQueryTz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathQueryArray</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathQueryArrayTz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathQueryFirst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbPathQueryFirstTz</varname></primary></indexterm>
+				<para>Devuelve los elementos que una ruta JSON devuelve para un valor JSON, como filas, como un arreglo JSON, o el primero de ellos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonbPathQuery(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
+jsonbPathQueryTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → setof jsonb
+jsonbPathQueryArray(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
+jsonbPathQueryArrayTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
+jsonbPathQueryFirst(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
+jsonbPathQueryFirstTz(jsonb,jsonpath,vars jsonb='{}',silent boolean=false) → jsonb
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT * FROM jsonbPathQuery(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+-- 2
+-- 3
+SELECT jsonbPathQueryArray(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+-- [2, 3]
+SELECT jsonbPathQueryFirst(jsonb '{"a": [1, 2, 3]}', '$.a[*] ? (@ >= 2)');
+-- 2
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="jsonb_comp">
+				<indexterm significance="normal"><primary><varname>eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hash</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
+				<para>Compara dos valores JSON, o devuelve el valor hash de un valor JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+jsonb {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} jsonb → boolean
+cmp(jsonb,jsonb) → integer
+hash(jsonb) → integer
+hashExtended(jsonb,seed bigint) → bigint
+</programlisting>
+				<para>Los operadores son los de PostgreSQL, y las funciones <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname> responden como ellos, junto con <varname>cmp</varname>, que devuelve -1, 0 o 1. Las funciones <varname>hash</varname> y <varname>hashExtended</varname> responden como las funciones <varname>jsonb_hash</varname> y <varname>jsonb_hash_extended</varname> de PostgreSQL.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eq(jsonb '{"a": 1}', jsonb '{"a": 1}');
+-- true
+SELECT cmp(jsonb '1', jsonb '2');
+-- -1
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="jsonbset_jsonb">
 		<title>Operaciones sobre conjuntos JSONB</title>
 
@@ -228,10 +565,10 @@ SELECT jsonbset '{"{\"speed\": 10}",
 				<para>Asignación en un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetSet(jsonbset,path text[],val jsonb,create_missing boolean=true) → jsonbset
-jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
-  handle_null text) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],val jsonb,create_missing boolean=true,
+  handle_null text='use_json_null') → jsonbset
 </programlisting>
-				<para>Devuelve el valor <varname>jsonbset</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>jsonbsetSetLax</varname> se comporta de forma idéntica a <varname>jsonbsetSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>Devuelve el valor <varname>jsonbset</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>jsonbsetSetLax</varname> se comporta de forma idéntica a <varname>jsonbsetSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_target'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_target'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
@@ -243,7 +580,7 @@ SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
   '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
 -- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
 SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
-  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+  ARRAY['units'], NULL, true, 'delete_key');
 -- {"{\"speed\": 10}", "{\"speed\": 20}"}
 </programlisting>
 			</listitem>
@@ -472,12 +809,14 @@ SELECT tjsonb 'Point(0 0)@2001-01-01 08:05:00';
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Devuelve la representación de texto conocido (WKT)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asText({tjsonb,tjsonb[],jsonb}) → {text,text[]}
+asText({tjsonb,tjsonb[],jsonb,jsonpath}) → {text,text[]}
 </programlisting>
-				<para>Sobre un valor JSONB, la función devuelve el texto que PostgreSQL escribe para el valor, como <varname>jsonb::text</varname>.</para>
+				<para>Sobre un valor JSONB o una ruta JSON, la función devuelve el texto que PostgreSQL escribe para el valor, como <varname>jsonb::text</varname> y <varname>jsonpath::text</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(jsonb '{"b": {"c": [1, {"d": null}]}, "a": "x"}');
 -- {"a": "x", "b": {"c": [1, {"d": null}]}}
+SELECT asText(jsonpath 'strict $.a[0 to 2].b');
+-- strict $."a"[0 to 2]."b"
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
@@ -527,11 +866,20 @@ SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
 
 			<listitem xml:id="tjsonbFromText">
 				<indexterm significance="normal"><primary><varname>tjsonbFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonpathFromText</varname></primary></indexterm>
 				<para>Entrada desde la representación de texto conocido (WKT)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tjsonbFromText(text) → tjsonb
+jsonbFromText(text) → jsonb
+jsonpathFromText(text) → jsonpath
 </programlisting>
+				<para>Un valor JSONB y una ruta JSON se leen del texto que PostgreSQL lee para ellos, como <varname>text::jsonb</varname> y <varname>text::jsonpath</varname>; las funciones son la inversa de <varname>asText</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT jsonbFromText('{"b": [1, 2], "a": null}');
+-- {"a": null, "b": [1, 2]}
+SELECT asText(jsonpathFromText('lax $.a.**{1 to last}'));
+-- $."a".**{1 to last}
 SELECT tjsonbFromText(text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
@@ -1032,9 +1380,9 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tjsonbSet(tjsonb,path text[],val jsonb,create_missing boolean=true) → tjsonb
 tjsonbSetLax(tjsonb,path text[],val jsonb,create_missing boolean=true,
-  handle_null text) → tjsonb
+  handle_null text='use_json_null') → tjsonb
 </programlisting>
-				<para>Devuelve el valor <varname>tjsonb</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>tjsonbSetLax</varname> se comporta de forma idéntica a <varname>tjsonbSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>Devuelve el valor <varname>tjsonb</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <varname>tjsonbSetLax</varname> se comporta de forma idéntica a <varname>tjsonbSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_target'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_target'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
@@ -1048,7 +1396,7 @@ SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 /* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
    \"mi/h\"}"@2001-01-02]} */
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
-  {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+  {"speed": 20}@2001-01-02]', ARRAY['units'], NULL, true, 'delete_key');
 -- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 </programlisting>
 			</listitem>

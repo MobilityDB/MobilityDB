@@ -318,6 +318,24 @@ SELECT asEWKT(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 2) =
 SELECT asEWKT(geography 'SRID=4326;Point(4.35 50.85)') =
        ST_AsEWKT(geography 'SRID=4326;Point(4.35 50.85)');
 
+-- asHexEWKB(geometry/geography) must equal ST_AsHEXEWKB, and the readers invert it
+SELECT asHexEWKB(geometry 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geometry 'SRID=4326;Point(4.35 50.85)');
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'XDR');
+SELECT asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR') =
+       ST_AsHEXEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 'NDR');
+SELECT asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsHEXEWKB(geography 'SRID=4326;Point(4.35 50.85)'::geometry);
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)')));
+SELECT ST_AsEWKT(geometryFromHexEWKB(asHexEWKB(geometry 'Point(1 1)', 'XDR')));
+SELECT ST_AsEWKT(geographyFromHexEWKB(asHexEWKB(geography 'SRID=4326;Point(4.35 50.85)')));
+SELECT asHexEWKB(geometry 'SRID=3812;Point(1 2)', 'NDR');
+SELECT ST_AsEWKT(geographyFromHexEWKB('0101000020E61000006666666666661140CDCCCCCCCC6C4940'));
+/* Errors */
+SELECT asHexEWKB(geometry 'Point(1 1)', 'ABC');
+SELECT geometryFromHexEWKB('XYZ');
+
 --------------------------------------------------------
 
 -- 2D
@@ -440,6 +458,14 @@ SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-0
 SELECT asText(atGeometry(tgeometry '[Point(0 1)@2001-01-01,Point(5 1)@2001-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
 SELECT asText(atGeometry(tgeometry '[Point(0 0)@2001-01-01]', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
 SELECT asText(atGeometry(tgeometry '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02],[Point(0 0)@2001-01-03]}', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
+-- A geometry collection value restricted to a multi-geometry
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(MultiPoint((1 1),(3 3)),Triangle((0 0,4 0,2 4,0 0)))@2001-01-01', geometry 'MultiSurface(CurvePolygon(CircularString(0 2,2 4,4 2,2 0,0 2)),((3 3,4 3,4 4,3 4,3 3)))'), 6);
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(Linestring(0 2,4 2),MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3))))@2001-01-01', geometry 'MultiSurface(CurvePolygon(CircularString(0 2,2 4,4 2,2 0,0 2)),((3 3,4 3,4 4,3 4,3 3)))'), 6);
+SELECT asText(atGeometry(tgeometry 'GeometryCollection(Triangle((4 7,5 2,7 7,4 7)),MultiPolygon(((0 4,1 4,1 7,0 7,0 4)),((6 0,10 0,10 3,6 3,6 0))))@2001-01-01', geometry 'MultiPolygon(((0 7,1 7,1 9,0 9,0 7)),((3 1,5 1,5 5,3 5,3 1)),((6 1,8 1,8 4,6 4,6 1)))'), 6);
+-- A curved surface whose vertex lies a rounding away from an edge of the geometry
+SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
+-- A curved surface whose arc starts a rounding away from an edge of the geometry
+SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8),CircularString(3.6 0.8,3.8973665961010275 1.367544467966324,4 2),CircularString(4 2,3.414213562373095 3.414213562373095,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
 
 -- NULL
 SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
@@ -464,6 +490,8 @@ SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-0
 SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02)}', geometry 'Linestring(0 1,2 1)'));
 SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02]','Point(2 2)'));
 SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02],[Point(3 3)@2001-01-03]}','Point(2 2)'));
+-- A curved surface whose vertex lies a rounding away from an edge of the geometry
+SELECT asText(minusGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
 
 /* Errors */
 SELECT minusGeometry(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)');
@@ -559,3 +587,7 @@ FROM temp;
 
 --------------------------------------------------------
 
+
+-- The weights of a meridian and a parallel segment differ between the spheroid and the sphere
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}'), 6);
+SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);

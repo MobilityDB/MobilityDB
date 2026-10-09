@@ -58,9 +58,10 @@
  * corresponding PG wrappers were removed together with their SQL. */
 
 /*****************************************************************************
- * WKB and HexWKB input/output
+ * Text, WKB and HexWKB input/output
  *
- * An h3index is a geographic cell with the constant default SRID WGS84
+ * The text representation is the one the type input and output functions of
+ * h3-pg read and write. An h3index is a geographic cell with the constant default SRID WGS84
  * (EPSG:4326). asBinary/asHexWKB are the SRID-less base WKB (the inherited
  * Temporal<T> surface, like geography ST_AsBinary — the 4326 is implicit);
  * they mirror th3index exactly. The SRID-bearing EWKB form is the
@@ -68,6 +69,43 @@
  * Datum_as_wkb / Datum_as_hexwkb dispatch; the input side calls the MEOS
  * helpers (which accept an absent SRID as 4326, or a present 4326).
  *****************************************************************************/
+
+PGDLLEXPORT Datum H3index_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_as_text);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return the text representation of an h3index
+ * @details Written as #Quadbin_as_text writes a quadbin
+ * @sqlfn asText()
+ */
+Datum
+H3index_as_text(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  char *str = meos_h3index_out(cell);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum H3index_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_from_text);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return an h3index from its text representation
+ * @details Read as #Quadbin_from_text reads a quadbin
+ * @sqlfn h3indexFromText()
+ */
+Datum
+H3index_from_text(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  char *str = text_to_cstring(txt);
+  H3Index result = meos_h3index_in(str);
+  pfree(str);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_RETURN_H3INDEX(result);
+}
 
 PGDLLEXPORT Datum H3index_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(H3index_from_wkb);
@@ -178,6 +216,141 @@ Datum
 H3index_is_valid_vertex(PG_FUNCTION_ARGS)
 {
   PG_RETURN_BOOL(h3_is_valid_vertex_meos(PG_GETARG_H3INDEX(0)));
+}
+
+
+/*****************************************************************************
+ * Comparison functions
+ *
+ * The h3 extension provides the comparison operators and the operator
+ * classes of h3index; these functions are the names a query uses in every
+ * engine, as #Quadbin_eq and its siblings are for quadbin.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum H3index_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_eq);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if two h3index values are equal
+ * @sqlfn eq()
+ */
+Datum
+H3index_eq(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_eq(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_ne);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if two h3index values are not equal
+ * @sqlfn ne()
+ */
+Datum
+H3index_ne(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_ne(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_lt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_lt);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if the first h3index value is less than the second one
+ * @sqlfn lt()
+ */
+Datum
+H3index_lt(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_lt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_le(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_le);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if the first h3index value is less than or equal to the
+ * second one
+ * @sqlfn le()
+ */
+Datum
+H3index_le(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_le(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_gt);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if the first h3index value is greater than the second
+ * one
+ * @sqlfn gt()
+ */
+Datum
+H3index_gt(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_gt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_ge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_ge);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return true if the first h3index value is greater than or equal to
+ * the second one
+ * @sqlfn ge()
+ */
+Datum
+H3index_ge(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_BOOL(meos_h3index_ge(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_cmp);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return -1, 0 or 1 depending on whether the first h3index value is
+ * less than, equal to or greater than the second one
+ * @sqlfn cmp()
+ */
+Datum
+H3index_cmp(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_INT32(meos_h3index_cmp(PG_GETARG_H3INDEX(0),
+    PG_GETARG_H3INDEX(1)));
+}
+
+PGDLLEXPORT Datum H3index_hash(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_hash);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return the 32-bit hash value of an h3index value
+ * @sqlfn hash()
+ * @altsqlfn h3indexHash()
+ */
+Datum
+H3index_hash(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_UINT32(meos_h3index_hash(PG_GETARG_H3INDEX(0)));
+}
+
+PGDLLEXPORT Datum H3index_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_hash_extended);
+/**
+ * @ingroup mobilitydb_h3_base_comp
+ * @brief Return the 64-bit hash value of an h3index value using a seed
+ * @sqlfn hashExtended()
+ * @altsqlfn h3indexHashExtended()
+ */
+Datum
+H3index_hash_extended(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  PG_RETURN_UINT64(meos_h3index_hash_extended(cell, seed));
 }
 
 /*****************************************************************************/

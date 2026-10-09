@@ -130,7 +130,7 @@ CREATE FUNCTION asHexWKB(raquet, endian text DEFAULT '')
  ******************************************************************************/
 
 CREATE FUNCTION raquet(pixels bytea, width integer, height integer,
-    quadbin quadbin, pixtype text, nodata float8 DEFAULT NULL)
+    quadbin quadbin, pixtype text, nodata float DEFAULT NULL)
   RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_constructor'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -230,7 +230,7 @@ CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
     height     integer,
     quadbin    quadbin,
     pixtype    text,
-    nodata     float8,
+    nodata     float,
     has_nodata boolean
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value_quadbin'
@@ -459,7 +459,7 @@ CREATE FUNCTION SRID(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION upperLeftX(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_upper_left_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -469,7 +469,7 @@ CREATE FUNCTION upperLeftX(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION upperLeftY(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_upper_left_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -480,7 +480,7 @@ CREATE FUNCTION upperLeftY(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION scaleX(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_scale_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -491,7 +491,7 @@ CREATE FUNCTION scaleX(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION scaleY(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_scale_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -501,7 +501,7 @@ CREATE FUNCTION scaleY(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION skewX(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_skew_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -511,7 +511,7 @@ CREATE FUNCTION skewX(raster)
  * @param[in] rast Raster
  */
 CREATE FUNCTION skewY(raster)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_skew_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -549,7 +549,7 @@ CREATE FUNCTION bandHasNoDataValue(raster, integer DEFAULT 1)
  * @param[in] band Number of the band, starting at 1
  */
 CREATE FUNCTION bandNoDataValue(raster, integer DEFAULT 1)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raster_band_nodata_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -600,7 +600,7 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
  * zero
  */
 CREATE FUNCTION reclass(rast raster, nband integer, reclassexpr text,
-    pixeltype text, nodataval float8 DEFAULT NULL)
+    pixeltype text, nodataval float DEFAULT NULL)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_reclass'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -634,7 +634,7 @@ CREATE FUNCTION clip(rast raster, geom geometry, crop boolean DEFAULT true,
  * of nodata values keeps the nodata value of each band
  */
 CREATE FUNCTION clip(rast raster, nband integer[], geom geometry,
-    nodataval float8[] DEFAULT NULL, crop boolean DEFAULT true,
+    nodataval float[] DEFAULT NULL, crop boolean DEFAULT true,
     touched boolean DEFAULT false)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_clip_bands'
@@ -651,8 +651,8 @@ CREATE FUNCTION clip(rast raster, nband integer[], geom geometry,
  * system, 0 to let the warp derive it
  */
 CREATE FUNCTION transform(rast raster, srid integer,
-    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125,
-    scalex float8 DEFAULT 0, scaley float8 DEFAULT 0)
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float DEFAULT 0.125,
+    scalex float DEFAULT 0, scaley float DEFAULT 0)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -673,8 +673,8 @@ CREATE FUNCTION transform(rast raster, srid integer,
  */
 CREATE FUNCTION transformPipeline(rast raster, pipeline text,
     srid integer DEFAULT 0, is_forward boolean DEFAULT true,
-    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125,
-    scalex float8 DEFAULT 0, scaley float8 DEFAULT 0)
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float DEFAULT 0.125,
+    scalex float DEFAULT 0, scaley float DEFAULT 0)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -688,7 +688,7 @@ CREATE FUNCTION transformPipeline(rast raster, pipeline text,
  * @param[in] maxerr Error in input pixels the warp may commit
  */
 CREATE FUNCTION transform(rast raster, alignto raster,
-    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125)
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float DEFAULT 0.125)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_transform_raster'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -702,8 +702,8 @@ CREATE FUNCTION transform(rast raster, alignto raster,
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] maxerr Error in input pixels the warp may commit
  */
-CREATE FUNCTION rescale(rast raster, scalex float8, scaley float8,
-    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125)
+CREATE FUNCTION rescale(rast raster, scalex float, scaley float,
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float DEFAULT 0.125)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_rescale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -762,7 +762,7 @@ CREATE FUNCTION bandHasNoDataValue(raquet)
   AS 'MODULE_PATHNAME', 'Raquet_band_has_nodata_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bandNoDataValue(raquet)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Raquet_band_nodata_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION pixels(raquet)

@@ -38,7 +38,8 @@ CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION frechetDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION frechetDistance(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -47,7 +48,8 @@ CREATE FUNCTION frechetDistancePath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint)
+CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -58,7 +60,8 @@ CREATE FUNCTION dynTimeWarpDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynTimeWarpDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpDistance(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -67,7 +70,8 @@ CREATE FUNCTION dynTimeWarpPath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynTimeWarpPath(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpPath(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -78,7 +82,8 @@ CREATE FUNCTION hausdorffDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION hausdorffDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION hausdorffDistance(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -89,7 +94,8 @@ CREATE FUNCTION averageHausdorffDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION averageHausdorffDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION averageHausdorffDistance(tgeogpoint, tgeogpoint,
+  spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -98,7 +104,8 @@ CREATE FUNCTION lcssDistance(tgeompoint, tgeompoint, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lcssDistance(tgeogpoint, tgeogpoint, float)
+CREATE FUNCTION lcssDistance(tgeogpoint, tgeogpoint, float,
+  spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

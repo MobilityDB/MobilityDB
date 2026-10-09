@@ -173,15 +173,15 @@ SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 38
 (1 row)
 
 SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
-                                                      asewkt                                                      
-------------------------------------------------------------------------------------------------------------------
- SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),1),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
+                                                         asewkt                                                          
+-------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),0.999876),Pose(POINT(10 0),0))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
-                                            asewkt                                             
------------------------------------------------------------------------------------------------
- SRID=4326;PoseChain(Pose(POINT(595032.294558 5634012.833372),1))@Mon Jan 01 00:00:00 2001 PST
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 6));
+                                                asewkt                                                 
+-------------------------------------------------------------------------------------------------------
+ SRID=32631;PoseChain(Pose(POINT(595032.294558 5634012.833372),1.018274))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-03]', timestamptz '2001-01-02'));

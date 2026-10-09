@@ -113,4 +113,26 @@ SELECT tpcbox_extent_transfn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
 SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
 SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
 
+-- The combine function of the three extent aggregates
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
+SELECT tpcbox_extent_combinefn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
+SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
+SELECT tpcbox_extent_combinefn(NULL::tpcbox, NULL::tpcbox);
+
+-------------------------------------------------------------------------------
+-- A direct call expands a copy of the box it is given
+DROP TABLE IF EXISTS tbl_extent_state;
+CREATE TABLE tbl_extent_state AS
+SELECT extent(temp) AS b, extent(temp) AS b0
+FROM (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1) t;
+SELECT tpc_extent_transfn(b, (SELECT temp FROM tbl_tpcpoint
+  WHERE temp IS NOT NULL ORDER BY k DESC LIMIT 1)) ~= b0
+FROM tbl_extent_state;
+SELECT tpcbox_extent_transfn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0,
+  tpcbox_extent_combinefn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0
+FROM tbl_extent_state;
+SELECT b ~= b0 FROM tbl_extent_state;
+DROP TABLE tbl_extent_state;
+
 -------------------------------------------------------------------------------

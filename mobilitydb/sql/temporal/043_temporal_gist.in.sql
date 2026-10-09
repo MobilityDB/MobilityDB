@@ -55,7 +55,7 @@ CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   AS 'MODULE_PATHNAME', 'Tbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_sortsupport(internal)
@@ -237,7 +237,7 @@ CREATE OPERATOR CLASS tbool_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION tint_gist_distance(internal, tint, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -317,7 +317,7 @@ CREATE OPERATOR CLASS tint_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION tbigint_gist_distance(internal, tbigint, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -397,7 +397,7 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION tfloat_gist_distance(internal, tfloat, smallint, oid, internal)
-  RETURNS float8
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

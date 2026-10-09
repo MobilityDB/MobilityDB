@@ -695,6 +695,29 @@ Atouches_tgeo_tgeo(PG_FUNCTION_ARGS)
  * The function only accepts points and not arbitrary geometries/geographies
  *****************************************************************************/
 
+/**
+ * @brief Return true if a geometry/geography and a temporal geometry are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
+ */
+static Datum
+EA_dwithin_geo_tgeo(FunctionCallInfo fcinfo, bool ever)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  int result = ever ? edwithin_geo_tgeo(gs, temp, dist, spheroid) :
+    adwithin_geo_tgeo(gs, temp, dist, spheroid);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
 PGDLLEXPORT Datum Edwithin_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_geo_tgeo);
 /**
@@ -706,7 +729,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tgeo);
 inline Datum
 Edwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_tgeo_geo, EVER);
+  return EA_dwithin_geo_tgeo(fcinfo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_geo_tgeo(PG_FUNCTION_ARGS);
@@ -720,7 +743,30 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_tgeo);
 inline Datum
 Adwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
+  return EA_dwithin_geo_tgeo(fcinfo, ALWAYS);
+}
+
+/**
+ * @brief Return true if a temporal geometry and a geometry/geography are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
+ */
+static Datum
+EA_dwithin_tgeo_geo(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  int result = ever ? edwithin_tgeo_geo(temp, gs, dist, spheroid) :
+    adwithin_tgeo_geo(temp, gs, dist, spheroid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Edwithin_tgeo_geo(PG_FUNCTION_ARGS);
@@ -734,7 +780,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tgeo_geo);
 inline Datum
 Edwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, EVER);
+  return EA_dwithin_tgeo_geo(fcinfo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_tgeo_geo(PG_FUNCTION_ARGS);
@@ -748,12 +794,12 @@ PG_FUNCTION_INFO_V1(Adwithin_tgeo_geo);
 inline Datum
 Adwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
+  return EA_dwithin_tgeo_geo(fcinfo, ALWAYS);
 }
-/* GENERATED-SPATIALRELS-END geo_ea_dwithin */
 
 /**
- * @brief Return true if two temporal geometries are even/always within a distance
+ * @brief Return true if two temporal geometries are ever/always within a
+ * distance
  * @sqlfn eDwithin(), aDwithin()
  */
 static Datum
@@ -762,7 +808,11 @@ EA_dwithin_tgeo_tgeo(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ever);
+  bool spheroid = true;
+  if (PG_NARGS() > 3)
+    spheroid = PG_GETARG_BOOL(3);
+  int result = ever ? edwithin_tgeo_tgeo(temp1, temp2, dist, spheroid) :
+    adwithin_tgeo_tgeo(temp1, temp2, dist, spheroid);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -773,7 +823,7 @@ EA_dwithin_tgeo_tgeo(FunctionCallInfo fcinfo, bool ever)
 PGDLLEXPORT Datum Edwithin_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_geo_rel
+ * @ingroup mobilitydb_geo_rel_ever
  * @brief Return true if two temporal geometries are ever within a distance
  * @sqlfn eDwithin()
  */
@@ -786,7 +836,7 @@ Edwithin_tgeo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Adwithin_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adwithin_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_geo_rel
+ * @ingroup mobilitydb_geo_rel_ever
  * @brief Return true if two temporal geometries are always within a distance
  * @sqlfn aDwithin()
  */
@@ -795,6 +845,7 @@ Adwithin_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_tgeo_tgeo(fcinfo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END geo_ea_dwithin */
 
 /*****************************************************************************
  * Set-set spatial join
@@ -843,14 +894,19 @@ setset_join_srf(FunctionCallInfo fcinfo, PgSetSetPred pred)
     const Temporal **a1 = (const Temporal **) arr1;
     const Temporal **a2 = (const Temporal **) arr2;
     TgeoarrJoinState *state = palloc0(sizeof(TgeoarrJoinState));
+    /* The dwithin pairs of geographies read their earth model from argument
+     * 3 when the call states it, the spheroid otherwise */
+    bool spheroid = true;
+    if (PG_NARGS() > 3)
+      spheroid = PG_GETARG_BOOL(3);
     switch (pred)
     {
       case PG_SS_EDWITHIN:
         state->pairs = edwithin_tgeoarr_tgeoarr(a1, count1, a2, count2,
-          PG_GETARG_FLOAT8(2), &npairs); break;
+          PG_GETARG_FLOAT8(2), spheroid, &npairs); break;
       case PG_SS_ADWITHIN:
         state->pairs = adwithin_tgeoarr_tgeoarr(a1, count1, a2, count2,
-          PG_GETARG_FLOAT8(2), &npairs); break;
+          PG_GETARG_FLOAT8(2), spheroid, &npairs); break;
       case PG_SS_EINTERSECTS:
         state->pairs = eintersects_tgeoarr_tgeoarr(a1, count1, a2, count2,
           &npairs); break;
@@ -871,7 +927,7 @@ setset_join_srf(FunctionCallInfo fcinfo, PgSetSetPred pred)
           &npairs); break;
       case PG_SS_TDWITHIN:
         state->pairs = tdwithin_tgeoarr_tgeoarr(a1, count1, a2, count2,
-          PG_GETARG_FLOAT8(2), &npairs, &state->periods); break;
+          PG_GETARG_FLOAT8(2), spheroid, &npairs, &state->periods); break;
       case PG_SS_TINTERSECTS:
         state->pairs = tintersects_tgeoarr_tgeoarr(a1, count1, a2, count2,
           &npairs, &state->periods); break;

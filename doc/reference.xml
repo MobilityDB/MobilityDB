@@ -238,6 +238,9 @@
 					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convert a set value to a span set value</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geoset_convert"><varname>::</varname>, <varname>geometry</varname>, <varname>geography</varname></link>: Convert a geo set into the collection of its values</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convert a span value to a span set value</para>
 				</listitem>
 				<listitem>
@@ -447,10 +450,16 @@
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="stbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatiotemporal box</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="stboxFromEWKB"><varname>stboxFromEWKB</varname>, <varname>stboxFromHexEWKB</varname></link>: Input of a spatiotemporal box from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -966,7 +975,37 @@
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Return the geometry holding every point within a distance of a geometry</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_relate"><varname>relate</varname></link>: Return the DE-9IM intersection matrix of two geometries</para>
+					<para><link linkend="geo_relate"><varname>relate</varname></link>: Return the DE-9IM intersection matrix of two geometries or whether it matches a pattern</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Return true if two geometries satisfy a spatial relationship</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Return true if two geometries are within a distance</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_measures"><varname>area</varname>, <varname>perimeter</varname>, <varname>centroid</varname></link>: Return the area, the perimeter or the centroid of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_distances"><varname>distance</varname>, <varname>shortestLine</varname>, <varname>maxDistance</varname></link>: Return the distance, the line joining the closest points, or the maximum distance of two geometries or geographies</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Return the boundary, the reversal or the parts of a geometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_constructors"><varname>collect</varname>, <varname>makeLine</varname></link>: Return the collection of an array of geometries or the line joining them</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_output"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asEWKB</varname>, <varname>asGeoJSON</varname></link>: Return the Well-Known Text, Extended Well-Known Text, Extended Well-Known Binary or GeoJSON representation of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_transform"><varname>transform</varname></link>: Transform a geometry or a geography to a spatial reference identifier</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_clustering"><varname>clusterKMeans</varname>, <varname>clusterDBSCAN</varname>, <varname>clusterIntersecting</varname>, <varname>clusterWithin</varname></link>: Return the clusters of an array of geometries</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
@@ -1001,7 +1040,7 @@
 					<para><link linkend="tspatialFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Input from the Moving Features JSON representation &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
+					<para><link linkend="tspatialFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexWKB</varname>, <varname>tspatialFromHexEWKB</varname>, <varname>geometryFromHexEWKB</varname>, <varname>geographyFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), from the Hexadecimal Well-Known Binary (HexWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1443,7 +1482,7 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="pose_same"><varname>poseSame</varname>, <varname>posechainSame</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1894,7 +1933,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="npoint_same"><varname>npointSame</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2180,7 +2219,7 @@
 						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="cbuffer_same"><varname>cbufferSame</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2391,6 +2430,9 @@
 				<title>Aggregations</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="tcbuffer_extent"><varname>extent</varname></link>: Bounding box extent</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tcbuffer_tCount"><varname>tCount</varname></link>: Temporal count</para>
 					</listitem>
 					<listitem>
@@ -2596,17 +2638,6 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Similarity</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="trgeometry_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Return the discrete Hausdorff distance, the discrete Fréchet distance, or the Dynamic Time Warp distance between two temporal rigid geometries</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal rigid geometries with respect to the discrete Fréchet distance or the Dynamic Time Warp distance, as a set of <varname>(i,j)</varname> instant-index pairs</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
 			<title>Bounding Box Operations</title>
 			<itemizedlist>
 				<listitem>
@@ -2682,6 +2713,68 @@
 	<sect1>
 		<title>Temporal JSON</title>
 		<sect2>
+			<title>JSONB Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="jsonb_object_field"><varname>jsonbObjectField</varname>, <varname>jsonbObjectFieldText</varname></link>: Extract a JSON object field specified by a key</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_extract_path"><varname>jsonbExtractPath</varname>, <varname>jsonbExtractPathText</varname></link>: Extract a JSON value specified by a path</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_element"><varname>jsonbArrayElement</varname>, <varname>jsonbArrayElementText</varname></link>: Extract an element from a JSON array</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_length"><varname>jsonbArrayLength</varname></link>: Return the number of elements of a JSON array</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_array_elements"><varname>jsonbArrayElements</varname>, <varname>jsonbArrayElementsText</varname></link>: Return the elements of a JSON array as rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_each"><varname>jsonbEach</varname>, <varname>jsonbEachText</varname></link>: Return the fields of a JSON object as rows of a key and a value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_object_keys"><varname>jsonbObjectKeys</varname></link>: Return the keys of a JSON object as rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_pretty"><varname>jsonbPretty</varname></link>: Return the indented text of a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_concat"><varname>jsonbConcat</varname></link>: Concatenate two JSON values</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_delete"><varname>jsonbDelete</varname>, <varname>jsonbDeleteArray</varname>, <varname>jsonbDeleteIndex</varname>, <varname>jsonbDeletePath</varname></link>: Delete a key, the keys of an array, an array element or the item at a path from a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_exists"><varname>jsonbExists</varname>, <varname>jsonbExistsAny</varname>, <varname>jsonbExistsAll</varname></link>: Does a text, or any or all the texts of an array, exist as a top-level key or array element of a JSON value?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_contains"><varname>jsonbContains</varname>, <varname>jsonbContained</varname></link>: Does the first JSON value contain, or is it contained in, the second one?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_set"><varname>jsonbSet</varname>, <varname>jsonbSetLax</varname></link>: Return a JSON value with the item at a path set to a value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_insert"><varname>jsonbInsert</varname></link>: Return a JSON value with a value inserted at a path</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_strip_nulls"><varname>jsonbStripNulls</varname></link>: Return a JSON value without its object fields whose value is null</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_exists"><varname>jsonbPathExists</varname>, <varname>jsonbPathExistsTz</varname></link>: Does the JSON path return any item for a JSON value?</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_match"><varname>jsonbPathMatch</varname>, <varname>jsonbPathMatchTz</varname></link>: Return the result of a JSON path predicate check for a JSON value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_path_query"><varname>jsonbPathQuery</varname>, <varname>jsonbPathQueryTz</varname>, <varname>jsonbPathQueryArray</varname>, <varname>jsonbPathQueryArrayTz</varname>, <varname>jsonbPathQueryFirst</varname>, <varname>jsonbPathQueryFirstTz</varname></link>: Return the items a JSON path returns for a JSON value, as rows, as a JSON array, or the first one</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="jsonb_comp"><varname>eq</varname>, <varname>cmp</varname>, <varname>hash</varname>, <varname>hashExtended</varname></link>: Compare two JSON values, or return the hash value of a JSON value</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>JSONB Set Operations</title>
 			<itemizedlist>
 				<listitem>
@@ -2741,7 +2834,7 @@
 					<para><link linkend="tjsonb_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname>, <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonbFromBinary"><varname>tjsonbFromBinary</varname>, <varname>tjsonbFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
@@ -2921,7 +3014,7 @@
 					<para><link linkend="cell_asText"><varname>asText</varname></link>: Return the text representation of a cell</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="cellFromText"><varname>cellFromText</varname></link>: Input from the text representation of a cell</para>
+					<para><link linkend="cellFromText"><varname>h3indexFromText</varname>, <varname>quadbinFromText</varname>, <varname>s2cellFromText</varname></link>: Input from the text representation of a cell</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a raster or a Raquet tile</para>
@@ -3178,7 +3271,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
@@ -3399,6 +3492,17 @@
 		<sect2>
 			<title>Static Point Clouds</title>
 			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpoint_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a pcpoint or a pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpointFromHexWKB"><varname>pcpointFromHexWKB</varname>, <varname>pcpatchFromHexWKB</varname></link>: Input of a pcpoint or a pcpatch from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
@@ -3431,6 +3535,12 @@
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Return the number of points of a pcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_pointN"><varname>pointN</varname></link>: Return the n-th point of a pcpatch</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Return the multipoint of the positions the points of a patch occupy</para>
 					</listitem>
 				</itemizedlist>
@@ -3456,7 +3566,13 @@
 						<para><link linkend="tpcbox_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation of a point cloud box</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcbox_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a point cloud box</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcboxFromBinary"><varname>tpcboxFromBinary</varname>, <varname>tpcboxFromHexWKB</varname></link>: Input of a point cloud box from the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromEWKB"><varname>tpcboxFromEWKB</varname>, <varname>tpcboxFromHexEWKB</varname></link>: Input of a point cloud box from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>

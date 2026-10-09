@@ -47,17 +47,6 @@
  * Type definitions
  *****************************************************************************/
 
-/* Structure to represent circular buffers */
-
-struct Cbuffer
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 srid;           /**< Spatial reference identifier */
-  double radius;        /**< Radius */
-  double x;             /**< X coordinate of the centre point */
-  double y;             /**< Y coordinate of the centre point */
-};
-
 /*****************************************************************************
  * fmgr macros
  *****************************************************************************/
@@ -110,6 +99,7 @@ extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPR
 /* Spatial reference system functions */
 
 extern void cbuffer_set_srid_intl(Cbuffer *cb, int32_t srid);
+extern bool cbuffer_eq_intl(const Cbuffer *cb1, const Cbuffer *cb2);
 
 /* Distance function */
 

@@ -115,6 +115,17 @@ WITH temp(inst) AS (
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
+-- The box of a sequence the aggregate grows holds the geodesic from (0 60) to
+-- (90 60), which passes north of latitude 60
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(0 0)@2001-01-01' UNION
+  SELECT tgeogpoint 'Point(0 60)@2001-01-02' UNION
+  SELECT tgeogpoint 'Point(90 60)@2001-01-04' )
+SELECT stbox(appendInstant(inst ORDER BY inst)),
+  stbox(appendInstant(inst ORDER BY inst)) = stbox(tgeogpoint
+    '[Point(0 0)@2001-01-01, Point(0 60)@2001-01-02, Point(90 60)@2001-01-04]')
+FROM temp;
+
 /* Errors */
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
@@ -218,5 +229,18 @@ temp2(seq) AS (
   FROM temp1
   GROUP BY k / 3)
 SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
+
+-------------------------------------------------------------------------------
+-- A direct call expands a copy of the box it is given
+DROP TABLE IF EXISTS tbl_extent_state;
+CREATE TABLE tbl_extent_state(b stbox, b0 stbox);
+INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])',
+  stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
+SELECT tspatial_extent_transfn(b, tgeompoint 'Point(100 100)@2001-02-01'),
+  stbox_extent_transfn(b, stbox 'STBOX XT(((200, 200),(201, 201)),[2001-03-01, 2001-03-02])'),
+  stbox_extent_combinefn(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
+FROM tbl_extent_state;
+SELECT b = b0 FROM tbl_extent_state;
+DROP TABLE tbl_extent_state;
 
 -------------------------------------------------------------------------------

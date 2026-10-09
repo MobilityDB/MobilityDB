@@ -19,6 +19,10 @@ name: Fedora
 # pointcloud` and the h3 cascade fail, test_setup aborts and every test reports
 # Not Run. The build job keeps -DALL=ON because compiling those families needs
 # only their C libraries.
+#
+# The image comes from Fedora's own registry on quay.io rather than from Docker
+# Hub, whose anonymous pull limit the shared runners exhaust: a job that cannot
+# pull its image fails before it builds anything.
 
 on:
   workflow_dispatch:
@@ -49,7 +53,7 @@ jobs:
   fedora-build:
     name: fedora-build
     runs-on: ubuntu-24.04
-    container: fedora:44
+    container: quay.io/fedora/fedora:44
 
     steps:
       - name: Install dependencies
@@ -94,7 +98,7 @@ jobs:
   fedora-sqlascii:
     name: fedora-sqlascii
     runs-on: ubuntu-24.04
-    container: fedora:44
+    container: quay.io/fedora/fedora:44
 
     steps:
       # No glibc-langpack-en here on purpose: the image locale stays C, so

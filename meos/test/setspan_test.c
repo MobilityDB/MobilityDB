@@ -3598,6 +3598,48 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("spanset_union aggregate: %s, %s -> %s\n", ispanset1_out, ispanset2_out, char_result);
   free(ispanset_result); free(char_result);
 
+  /* Set *set_union_combinefn(Set *state1, Set *state2); */
+  /* uint8_t *setstate_serialize(const Set *state, size_t *size_out); */
+  /* Set *setstate_deserialize(const uint8_t *bytes, size_t size); */
+  /* Two partial states, the second one written as bytes and read back, are
+   * combined into the union of both */
+  {
+    Set *state1 = set_union_transfn(NULL, iset1);
+    Set *state2 = set_union_transfn(NULL, iset2);
+    size_t size;
+    uint8_t *bytes = setstate_serialize(state2, &size);
+    free(state2);
+    state2 = setstate_deserialize(bytes, size);
+    free(bytes);
+    Set *state = set_union_combinefn(state1, state2);
+    free(state2);
+    iset_result = set_union_finalfn(state);
+    char_result = intset_out(iset_result);
+    printf("set_union combined from a state read back from its bytes: %s, %s -> %s\n",
+      iset1_out, iset2_out, char_result);
+    free(iset_result); free(char_result);
+  }
+
+  /* SpanSet *spanset_union_combinefn(SpanSet *state1, const SpanSet *state2); */
+  /* uint8_t *spansetstate_serialize(const SpanSet *state, size_t *size_out); */
+  /* SpanSet *spansetstate_deserialize(const uint8_t *bytes, size_t size); */
+  {
+    SpanSet *state1 = spanset_union_transfn(NULL, ispanset1);
+    SpanSet *state2 = spanset_union_transfn(NULL, ispanset2);
+    size_t size;
+    uint8_t *bytes = spansetstate_serialize(state2, &size);
+    free(state2);
+    state2 = spansetstate_deserialize(bytes, size);
+    free(bytes);
+    SpanSet *state = spanset_union_combinefn(state1, state2);
+    free(state2);
+    ispanset_result = spanset_union_finalfn(state);
+    char_result = intspanset_out(ispanset_result);
+    printf("spanset_union combined from a state read back from its bytes: %s, %s -> %s\n",
+      ispanset1_out, ispanset2_out, char_result);
+    free(ispanset_result); free(char_result);
+  }
+
   /* Set *text_union_transfn(Set *state, const text *txt); */
   textset_result = text_union_transfn(NULL, text1);
   textset_result = text_union_transfn(textset_result, text2);

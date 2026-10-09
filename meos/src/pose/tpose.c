@@ -850,7 +850,7 @@ tpose_speed(const Temporal *temp)
   Temporal *traj = tpose_to_tpoint(temp);
   if (! traj)
     return NULL;
-  Temporal *result = tpoint_speed(traj);
+  Temporal *result = tpoint_speed(traj, true);
   pfree(traj);
   return result;
 }

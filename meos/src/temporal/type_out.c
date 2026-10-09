@@ -61,6 +61,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
+#include "geo/meos_transform.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
@@ -1354,18 +1355,27 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the MF-JSON representation of a temporal value
+ * @details The option is the sum of 1 for the bounding box, 2 for the short
+ * name of the coordinate reference system, as in `EPSG:3857`, and 4 for its
+ * long name, as in `urn:ogc:def:crs:EPSG::3857`, as for #geo_as_geojson.
+ * Where @p srs is `NULL`, a spatial value of known SRID states the name of its
+ * system in `spatial_ref_sys.csv`, the short one unless the option asks for
+ * the long one alone, so that the SRID can be read back from the output, as
+ * the PostgreSQL function @p asMFJSON states it from the table
+ * `spatial_ref_sys`
  * @param[in] temp Temporal value
- * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] option Option
  * @param[in] flags Flags
  * @param[in] precision Number of decimal digits, of which at most
  * #OUT_DEFAULT_DECIMAL_DIGITS are written. It is only used when the base type
  * has floating point components, such as tfloat or tgeometry
- * @param[in] srs Spatial reference system, may be `NULL`
+ * @param[in] srs Name of the coordinate reference system, which the output
+ * states in place of the one of the SRID, may be `NULL`
  * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
+temporal_as_mfjson(const Temporal *temp, int option, int flags,
   int precision, const char *srs)
 {
   /* Ensure the validity of the arguments */
@@ -1374,6 +1384,23 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
     return NULL;
   if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
     precision = OUT_DEFAULT_DECIMAL_DIGITS;
+  bool with_bbox = (option & 1) != 0;
+
+#if MEOS
+  /* Name the coordinate reference system of a spatial value of known SRID
+   * where the caller names none, as the PostgreSQL function asMFJSON names
+   * it from the table spatial_ref_sys before calling this function */
+  if (! srs && tspatial_type(temp->temptype))
+  {
+    int32_t srid = tspatial_srid(temp);
+    if (srid != SRID_UNKNOWN)
+    {
+      srs = srid_srs(srid, (option & 2) || ! (option & 4));
+      if (! srs)
+        return NULL;
+    }
+  }
+#endif /* MEOS */
 
   /* Get bounding box if needed */
   bboxunion *box = NULL, tmp;
@@ -1576,8 +1603,8 @@ nsegment_to_wkb_size(const Nsegment *ns, uint8_t variant)
  * the note in pointcloud/pcpoint.c): shrinking the length would make @c
  * pcvarlena_from_wkb_state (type_in.c) allocate a varlena pgpointcloud's own
  * point deserializer no longer recognizes.
- * @c pcpoint_to_wkb_buf writes that padding as zeros instead, mirroring
- * @c pcpoint_hex_out, so two byte-equal pcpoints always agree on their
+ * @c pcpoint_to_wkb_buf writes that padding as zeros instead, as the
+ * constructors store it, so two byte-equal pcpoints always agree on their
  * WKB. The schema for the @c pcid is resolved out-of-band (pgpointcloud's
  * @c pointcloud_formats catalog, via the @c meos_pc_schema_fn hook
  * installed at backend startup), so it is not embedded in the WKB. This
@@ -2598,7 +2625,7 @@ opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
  * dimension payload. The trailing bytes past the meaningful prefix are
  * pgpointcloud's struct-tail padding, which its constructor leaves
  * uninitialized (see the note in pointcloud/pcpoint.c). They are written as
- * zeros — mirroring @c pcpoint_hex_out — instead of copied verbatim, so that
+ * zeros, as the constructors store them, instead of copied verbatim, so that
  * two pcpoints holding the same point always produce the same WKB. The full
  * body length is still written, matching what
  * @c pcvarlena_from_wkb_state (type_in.c) needs to rebuild a varlena of

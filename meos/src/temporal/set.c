@@ -457,7 +457,6 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
       values_size = (size_t) DOUBLE_PAD(typlen) * newcount;
   }
 
-#if MEOS
   /* Compute the total size for maxcount elements as a proportion of the size
    * of the count elements provided. Note that this is only an INITIAL
    * ESTIMATION. The functions adding elements to a set must verify BOTH
@@ -465,7 +464,6 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
    * additional variable-length element of arbitrary size */
   if (count != maxcount)
     values_size = (double) values_size * (double) maxcount / (double) count;
-#endif /* MEOS */
 
   /* Total size of the struct */
   size_t memsize = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(bboxsize) +
@@ -817,7 +815,6 @@ set_round(const Set *s, int maxdd)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
  * @brief Return a copy of a set ordered, without duplicates, and without any
@@ -833,11 +830,10 @@ set_compact(const Set *s)
   for (int i = 0; i < s->count; i++)
     values[i] = SET_VAL_N(s, i);
 
-  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDER_NO);
+  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDER);
   pfree(values);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

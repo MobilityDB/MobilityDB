@@ -459,3 +459,26 @@ minus_set_quadbin(const Set *s, Quadbin cell)
   VALIDATE_QUADBINSET(s, NULL);
   return minus_set_value(s, QuadbinGetDatum(cell));
 }
+
+/*****************************************************************************
+ * Aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_set_setops
+ * @brief Transition function for set union aggregate of quadbin cells
+ * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in] cell Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+quadbin_union_transfn(Set *state, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_QUADBINSET))
+    return NULL;
+  return value_union_transfn(state, QuadbinGetDatum(cell), T_QUADBIN);
+}
+
+/*****************************************************************************/

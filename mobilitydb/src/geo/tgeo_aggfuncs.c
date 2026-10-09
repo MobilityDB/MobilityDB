@@ -63,6 +63,10 @@ Datum
 Tspatial_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  /* Outside an aggregate the state is a value of the caller, which is
+   * expanded in a copy */
+  if (box && ! AggCheckCallContext(fcinfo, NULL))
+    box = stbox_copy(box);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   STBox *result = tspatial_extent_transfn(box, temp);
   if (! result)
@@ -116,17 +120,10 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     (SkipList *) PG_GETARG_POINTER(1);
 
   store_fcinfo(fcinfo);
-  if (! ensure_geoaggstate_state(state1, state2))
-    return PointerGetDatum(NULL);
-
-  struct GeoAggregateState *extra = NULL;
-  if (state1 && state1->extra)
-    extra = state1->extra;
-  if (state2 && state2->extra)
-    extra = state2->extra;
-  assert(extra);
-  datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
-  PG_RETURN_SKIPLIST_P(temporal_tagg_combinefn(state1, state2, func, false));
+  SkipList *result = tpoint_tcentroid_combinefn(state1, state2);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /*****************************************************************************/

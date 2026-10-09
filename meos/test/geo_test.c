@@ -1152,6 +1152,31 @@ int main(void)
   free(coll_geo_a); free(coll_geo_b);
   meos_errno_reset();
 
+  /* Two polygons crossing where no grid holds the crossing: the edge from
+   * (0 0) to (3 1) leaves the unit square at (1, 1/3), and both overlays carry
+   * that vertex as the double nearest 1/3, which an overlay rounding its
+   * vertices to a grid of 1e-7 answers as 0.3333333 */
+  GSERIALIZED *third_sq = geom_in("POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
+  GSERIALIZED *third_tr = geom_in("POLYGON((0 0,3 1,0 1,0 0))", -1);
+  assert(third_sq != NULL);
+  assert(third_tr != NULL);
+  GSERIALIZED *third_inter = geom_intersection2d(third_sq, third_tr);
+  GSERIALIZED *third_diff = geom_difference2d(third_sq, third_tr);
+  assert(third_inter != NULL);
+  assert(third_diff != NULL);
+  char *third_inter_wkt = geo_as_text(third_inter, 17);
+  char *third_diff_wkt = geo_as_text(third_diff, 17);
+  printf("geom_intersection2d(the unit square, a triangle leaving it at "
+    "(1, 1/3)): %s\n", third_inter_wkt);
+  printf("geom_difference2d(the unit square, the same triangle): %s\n",
+    third_diff_wkt);
+  assert(strstr(third_inter_wkt, "1 0.3333333333333333") != NULL);
+  assert(strstr(third_diff_wkt, "1 0.3333333333333333") != NULL);
+  free(third_inter_wkt); free(third_diff_wkt);
+  free(third_inter); free(third_diff);
+  free(third_sq); free(third_tr);
+  meos_errno_reset();
+
   /* A subject drawing NOTHING has nothing for a clip to take, whatever the
    * clip draws. The rule above answers a region unchanged where the clip is of
    * lower dimension, and an empty subject reaches it the same way: it keeps
@@ -2636,6 +2661,22 @@ int main(void)
   assert(vcoarse != NULL); assert(vfine != NULL);
   printf("the cells a trajectory crosses at resolutions 3 and 6: %d %d\n",
     ncoarse, nfine);
+
+  /* The centroid of two partial aggregates combined is the centroid of one
+   * aggregate over both values */
+  Temporal *tp2 = tgeompoint_in("SRID=4326;[POINT(2.32 48.86)@2001-01-01, "
+    "POINT(2.42 48.91)@2001-01-02]");
+  SkipList *cs1 = tpoint_tcentroid_transfn(NULL, tp);
+  SkipList *cs2 = tpoint_tcentroid_transfn(NULL, tp2);
+  SkipList *csall = tpoint_tcentroid_transfn(NULL, tp);
+  csall = tpoint_tcentroid_transfn(csall, tp2);
+  cs1 = tpoint_tcentroid_combinefn(cs1, cs2);
+  Temporal *ccomb = tpoint_tcentroid_finalfn(cs1);
+  Temporal *call = tpoint_tcentroid_finalfn(csall);
+  assert(ccomb != NULL && call != NULL && temporal_eq(ccomb, call));
+  assert(meos_errno() == 0);
+  printf("tpoint_tcentroid_combinefn answers the centroid of both values\n");
+  free(ccomb); free(call); free(tp2);
   assert(ncoarse == 1); assert(nfine == 3);
   free(vcoarse); free(vfine);
   free(coarse); free(fine); free(tp);
@@ -3248,7 +3289,8 @@ int main(void)
    * SAY. Two half discs glued along their diameter meet along the whole of
    * it, and the nodes bounding that stretch are its two ENDS -- they state
    * where the meeting begins and ends, never what it draws. What draws it is
-   * the piece of boundary both carry, so that piece is the answer */
+   * the piece of boundary both carry, so that piece is the answer, read off
+   * the first one's boundary as two polygons' meeting is below */
   GSERIALIZED *hd1 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
     "CIRCULARSTRING(-2 0,0 2,2 0),(2 0,-2 0)))", -1);
   GSERIALIZED *hd2 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
@@ -3259,7 +3301,7 @@ int main(void)
   assert(hdi != NULL);
   char *hdw = geo_as_text(hdi, 6);
   printf("two half discs sharing their diameter answer: %s\n", hdw);
-  assert(strcmp(hdw, "LINESTRING(-2 0,2 0)") == 0);
+  assert(strcmp(hdw, "LINESTRING(2 0,-2 0)") == 0);
   free(hdw); free(hdi); free(hd1); free(hd2);
   meos_errno_reset();
   /* AND THE STRETCH KEEPS THE CIRCLE IT IS AN ARC OF. The disc and the lune
@@ -3305,7 +3347,7 @@ int main(void)
     /* two squares meeting along an edge share the edge they meet along ... */
     "LINESTRING(2 0,2 2)",
     /* ... and neither takes any area from the other */
-    "POLYGON((2 2,2 0,0 0,0 2,2 2))",
+    "POLYGON((0 0,2 0,2 2,0 2,0 0))",
   };
   for (int i = 0; i < 3; i++)
   {
@@ -3363,9 +3405,9 @@ int main(void)
     /* boxes that meet over shapes that do not is still nothing */
     "POLYGON EMPTY",
     /* one region inside another shares that region, which has area */
-    "POLYGON((3 3,3 1,1 1,1 3,3 3))",
+    "POLYGON((1 1,3 1,3 3,1 3,1 1))",
     /* and two overlapping squares share the region they overlap in */
-    "POLYGON((4 4,4 0,2 0,2 4,4 4))",
+    "POLYGON((2 0,4 0,4 4,2 4,2 0))",
   };
   for (int i = 0; i < 8; i++)
   {
@@ -3638,6 +3680,18 @@ int main(void)
   assert(stbox_spatial_distance(sb1, sbt) == DBL_MAX);
   assert(meos_errno() != 0);
   meos_errno_reset();
+
+  /* The extent of two boxes expands a copy of the first into the state, and
+   * two boxes of different reference systems are refused */
+  STBox *sbext = stbox_extent_transfn(NULL, sb1);
+  sbext = stbox_extent_transfn(sbext, sb2);
+  char *sbext_txt = stbox_out(sbext, 6);
+  printf("stbox_extent_transfn: %s\n", sbext_txt);
+  assert(meos_errno() == 0);
+  assert(stbox_extent_transfn(sbext, sb3) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  free(sbext); free(sbext_txt);
   free(sb1); free(sb2); free(sb3); free(sbt);
 
   /* A reversed line is a new geometry: the line it reverses keeps its vertex
@@ -3725,12 +3779,39 @@ int main(void)
   GSERIALIZED *lgeom = geom_in("Linestring(0 0,3 4)", -1);
   GSERIALIZED *lgeog = geog_in("Linestring(0 0,0 1)", -1);
   assert(lgeom != NULL && lgeog != NULL);
-  double glen = geo_length(lgeom), gglen = geo_length(lgeog);
+  double glen = geo_length(lgeom, true), gglen = geo_length(lgeog, true);
   printf("geo_length: geometry %.17g, geography %.17g\n", glen, gglen);
   assert(glen == 5.0 && glen == geom_length(lgeom));
   assert(gglen == geog_length(lgeog, true));
   assert(gglen != geog_length(lgeog, false));
   free(lgeom); free(lgeog);
+
+  /* A relationship is tested in 3D when both geometries have Z and in 2D
+   * otherwise, as the temporal relationships decide it at every instant; a
+   * distance and a shortest line refuse geometries of different dimensions,
+   * as the temporal distance does */
+  GSERIALIZED *dz1 = geom_in("Point(0 0 0)", -1);
+  GSERIALIZED *dz2 = geom_in("Point(0 1 5)", -1);
+  GSERIALIZED *dz3 = geom_in("Point(0 0 5)", -1);
+  GSERIALIZED *d2 = geom_in("Point(0 1)", -1);
+  GSERIALIZED *d0 = geom_in("Point(0 0)", -1);
+  assert(dz1 && dz2 && dz3 && d2 && d0);
+  assert(! geom_dwithin(dz1, dz2, 1.2));
+  assert(geom_dwithin(dz1, d2, 1.2) && geom_dwithin(d2, dz1, 1.2));
+  assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
+  assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
+  assert(geom_distance(dz1, dz2) == sqrt(26.0));
+  GSERIALIZED *dline = geom_shortestline(dz1, dz2);
+  char *dline_wkt = geo_as_text(dline, 6);
+  printf("shortest line in 3D: %s\n", dline_wkt);
+  assert(strcmp(dline_wkt, "LINESTRING Z (0 0 0,0 1 5)") == 0);
+  assert(meos_errno() == 0);
+  assert(geom_distance(dz1, d2) == DBL_MAX && meos_errno() != 0);
+  meos_errno_reset();
+  assert(geom_shortestline(dz1, d2) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  free(dline_wkt); free(dline);
+  free(dz1); free(dz2); free(dz3); free(d2); free(d0);
 
   /* Finalize MEOS */
   meos_finalize();
