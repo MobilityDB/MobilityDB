@@ -138,11 +138,15 @@ subtypes:
     # tnpoint has no boundary polygon, only a route-relative position, so that
     # projection is the cast target its geometry names. It carries linear
     # interpolation, which is the interpolation a sequence carries by default,
-    # and answers from the same kernel. No index_support: the tnpoint/geometry
-    # cross relationships have no bbox-backed SUPPORT function, so every wrapper
-    # stays a plain SQL cast-composition with zero new C symbols. The temporal
-    # relationships (322) are generated separately, from the `impl: cast` entry
-    # in manifest.d/tempspatialrel_families.yaml (same convert).
+    # and answers from the same kernel. The box of a temporal network point is
+    # the box of the temporal geometry point it converts into, so the ever
+    # intersects/dwithin relationships get spatial index support: they are
+    # emitted as C wrappers with SUPPORT tspatial_supportfn
+    # (tnpoint_spatialrels.c), as tquadbin's are, and the other relationships
+    # stay SQL cast-compositions. The temporal relationships (322) are generated
+    # separately, from the `impl: cast` entry in
+    # manifest.d/tempspatialrel_families.yaml (same convert).
+    index_support: true
     convert: "@N@::@extschema@.tgeompoint"
     # A network point holds a POSITION, so the temporal geometry point is the
     # cast target its geometry names, and the family declares the matrix that

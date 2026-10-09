@@ -270,7 +270,8 @@ C source) and under-reports its coverage — read the manifest itself, not the `
 number, for this one axis. `pose`'s native C spatial-rel wrapper is still hand
 (memory `spatialrel-wrapper-surface-is-inherited-generate-it`); `npoint` needs no
 native kernel — its ever/always relationships cast-delegate to the temporal geometry
-point in pure SQL (§6, `320_tnpoint_spatialrels`).
+point, `eIntersects`/`eDwithin` through C wrappers with index support
+(`index_support`) and the others in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 ## 4. `Temporal<T>` chapter — section-by-section
 
@@ -722,8 +723,9 @@ Reading the table:
   `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`: contains/covers/disjoint/
   intersects/dwithin); pose's native C spatial-rel wrapper is still hand (memory
   `spatialrel-wrapper-surface-is-inherited-generate-it`) — npoint needs no native
-  kernel, its ever/always relationships cast-delegate to `tgeometry` in pure SQL
-  (320, previous bullet).
+  kernel, its ever/always relationships cast-delegate to the temporal geometry
+  point, `eIntersects`/`eDwithin` through C wrappers with index support and the
+  others in pure SQL (320, previous bullet).
 - The **geo/tpoint/tgeo** family SQL surfaces are not in the `subtypes:` list at all
   (geo is the hand-written reference layout the generator derives from) — **except
   `compops`**: `temporal`/`tgeo`/`tpoint` each carry an explicit multi-pair

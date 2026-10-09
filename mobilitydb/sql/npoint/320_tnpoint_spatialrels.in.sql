@@ -112,8 +112,9 @@ CREATE FUNCTION aDisjoint(tnpoint, tnpoint)
 
 CREATE FUNCTION eIntersects(geometry, tnpoint)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1, $2::@extschema@.tgeompoint) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tnpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(geometry, tnpoint)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -121,8 +122,9 @@ CREATE FUNCTION aIntersects(geometry, tnpoint)
 
 CREATE FUNCTION eIntersects(tnpoint, geometry)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1::@extschema@.tgeompoint, $2) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tnpoint, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -130,9 +132,9 @@ CREATE FUNCTION aIntersects(tnpoint, geometry)
 
 CREATE FUNCTION eIntersects(tnpoint, tnpoint)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1::@extschema@.tgeompoint,
-                            $2::@extschema@.tgeompoint) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_tnpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tnpoint, tnpoint)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -167,8 +169,9 @@ CREATE FUNCTION aTouches(tnpoint, geometry)
 
 CREATE FUNCTION eDwithin(geometry, tnpoint, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1, $2::@extschema@.tgeompoint, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tnpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(geometry, tnpoint, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -176,8 +179,9 @@ CREATE FUNCTION aDwithin(geometry, tnpoint, dist float)
 
 CREATE FUNCTION eDwithin(tnpoint, geometry, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1::@extschema@.tgeompoint, $2, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tnpoint, geometry, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -185,9 +189,9 @@ CREATE FUNCTION aDwithin(tnpoint, geometry, dist float)
 
 CREATE FUNCTION eDwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1::@extschema@.tgeompoint,
-                         $2::@extschema@.tgeompoint, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_tnpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
