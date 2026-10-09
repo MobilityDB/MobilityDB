@@ -535,6 +535,32 @@ int main(void)
   printf("%d moving points against a geometry answered as the nearest "
     "double\n", moving);
 
+  /* Ties that only a component far below the largest difference breaks: a
+   * third coordinate 2^-866 of the others, the rounding error of a
+   * difference below the least subnormal once scaled, the same with a
+   * radius, and a point at the midpoint of two doubles from a segment 2^1100
+   * times longer than its distance */
+  int distant = 4;
+  const double far_p3[3] = {0.0, 0.0, 0.0};
+  const double far_q3[3] = {0x1.7d37073a0c333p+122, 0x1.fc495ef810444p+122,
+    0x1p-744};
+  every_entry3d(far_p3, far_q3, 0x1.3daddb5b0a2abp+123);
+  every_entry(0x1p-289, 0.0, 0x1.5b1dfd1e46b61p+864, 0x1.ced2a6d308f2cp+864,
+    0x1.2143a843e597bp+865);
+  buffer_entry(0x1p-289, 0.0, 0x1p+862, 0x1.5b1dfd1e46b61p+864,
+    0x1.ced2a6d308f2cp+864, 0x1.0143a843e597bp+865);
+  segment_entry(-0x1.25887c8a0c4d2p-161, 0x1.b84cbacf1273bp-162, 0.0,
+    -0x1.8p+952, -0x1p+953, 0x1.8p+952, 0x1p+953, 0x1.6eea9bac8f606p-161);
+  /* The same with differences near 2^20: the rounding error of the first,
+   * 2^-1056, falls below the least subnormal once scaled */
+  distant += 2;
+  every_entry(-0x1p-1056, 0.0, 0x1.4985cc3a69f83p+20, 0x1.b75d104de2a04p+20,
+    0x1.129a2a30ada43p+21);
+  buffer_entry(-0x1p-1056, 0.0, 0x1p-31, 0x1.4985cc3a69f83p+20,
+    0x1.b75d104de2a04p+20, 0x1.129a2a30ada42p+21);
+  printf("%d ties a component far below the largest difference breaks "
+    "answered as the nearest double\n", distant);
+
   /* Finalize MEOS */
   meos_finalize();
   return EXIT_SUCCESS;
