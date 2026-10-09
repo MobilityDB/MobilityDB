@@ -1,0 +1,98 @@
+# geos_fallback_sweep.c in a build without GEOS of MobilityDB #2966 (47e9f1dcd3), on master 2d13c5c42d
+CONTROL positive: unary union on a precision grid reaches the fall-back: yes
+CONTROL negative: geodetic array of lines reaches the fall-back: no (refused otherwise: The union of a geodetic array is answered for positions only)
+intersection flat x flat:   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection Z x Z      :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection Z x flat   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+intersection flat x Z   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   flat x flat:   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   Z x Z      :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   Z x flat   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+difference   flat x Z   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+array union  flat x flat:   0 of 225 ordered pairs reach the fall-back; other refusals 0
+array union  Z x Z      :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+array union  Z x flat   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+array union  flat x Z   :   0 of 225 ordered pairs reach the fall-back; other refusals 0
+unary union  flat and Z : 0 of 30 shapes reach the fall-back; other refusals 0
+
+COLLECTIONS OF TWO TYPES
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, TRIANGLE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOINT, TIN) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(LINE, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, POLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, TRIANGLE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, CURVEPOLY) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, MULTISURFACE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, TIN) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTILINE, POLYHEDRAL) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTILINE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, COMPOUND) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, CURVEPOLY) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYGON, MULTISURFACE) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, LINE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTILINE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, CIRCSTRING) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, COMPOUND) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, MULTICURVE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTIPOLYGON, COLLECTION) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTIPOINT) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTILINE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, TRIANGLE) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, CIRCSTRING) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, MULTICURVE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TRIANGLE, TIN) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, TRIANGLE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, CURVEPOLY) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CIRCSTRING, TIN) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, POLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, CURVEPOLY) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, MULTISURFACE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COMPOUND, POLYHEDRAL) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, TRIANGLE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, CURVEPOLY) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, MULTISURFACE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTICURVE, TIN) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTILINE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, POLYGON) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, CIRCSTRING) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, COMPOUND) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, MULTICURVE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(CURVEPOLY, POLYHEDRAL) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTILINE) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, POLYGON) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, COMPOUND) against the 15 types: intersection 2, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, MULTICURVE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(MULTISURFACE, POLYHEDRAL) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTIPOINT) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTILINE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, TRIANGLE) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, CIRCSTRING) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, MULTICURVE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(TIN, TIN) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTILINE) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, COMPOUND) against the 15 types: intersection 1, difference 0 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, CURVEPOLY) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(POLYHEDRAL, MULTISURFACE) against the 15 types: intersection 0, difference 2 of 30 calls each
+  REACHES GEOS: GEOMETRYCOLLECTION(COLLECTION, MULTIPOLYGON) against the 15 types: intersection 1, difference 0 of 30 calls each
+collections: unary union reaches the fall-back for 0 of 225; intersection 64 and difference 24 of 6750 calls each
+
+GEOMETRIC SPECIAL CASES
+identical arcs                                intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+arcs coinciding over part of one circle       intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+arc reversed on the same circle               intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+lines that share a stretch then fork          intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+overlapping collinear lines                   intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+a line doubling back on itself                intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons sharing an edge                      intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons touching at a corner                 intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygons sharing part of an edge              intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+discs tangent at one point                    intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+disc and square sharing an arc chord region   intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+polygon and the hole it fills                 intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line along a polygon edge                     intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line along an arc boundary                    intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0
+line of zero length                           intersection ok  difference ok  array union ok  unary union of both ok  other refusals 0

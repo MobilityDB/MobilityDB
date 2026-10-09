@@ -1,0 +1,19 @@
+[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(4 4),0.5)@2000-01-02]
+with POLYGON((1 1,3 1,3 3,1 3,1 1))
+  tcbuffer_traversed_area    answered
+  tcbuffer_at_geom           answered
+  tintersects_tcbuffer_geo   answered
+  tdwithin_tcbuffer_geo      answered
+  eintersects_tcbuffer_geo   answered
+with MULTIPOLYGON(((1 1,2 1,2 2,1 2,1 1)),((3 3,5 3,5 5,3 5,3 3)))
+  tcbuffer_traversed_area    answered
+  tcbuffer_at_geom           answered
+  tintersects_tcbuffer_geo   answered
+  tdwithin_tcbuffer_geo      answered
+  eintersects_tcbuffer_geo   answered
+with GEOMETRYCOLLECTION(POINT(2 2),POLYGON((1 1,3 1,3 3,1 3,1 1)))
+  tcbuffer_traversed_area    answered
+  tcbuffer_at_geom           answered
+  tintersects_tcbuffer_geo   answered
+  tdwithin_tcbuffer_geo      answered
+  eintersects_tcbuffer_geo   answered

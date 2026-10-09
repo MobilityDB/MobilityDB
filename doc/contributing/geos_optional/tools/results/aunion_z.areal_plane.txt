@@ -1,0 +1,10 @@
+# The same 1500 arrays as aunion_z.master_path.txt, on a build without GEOS at c6f3b35e6a
+# (MobilityDB #2954): cgal_aunion on the point set, then cgal_zlift on the Z of every vertex.
+controls: 0 of 6 wrong
+rings touching themselves at a vertex, read as their loops: 16, in 16 answers
+worst relative gap seen: 1.59e-16 (tolerance 1e-09)
+ORACLE zx.after: 1500 of 1500 agree, 0 disagree
+controls: pass
+ORACLE zlift: 1500 of 1500 agree, 0 disagree
+# declined: 0
+# answers identical to aunion_z.master_path.txt where that build answered: 619 of 619

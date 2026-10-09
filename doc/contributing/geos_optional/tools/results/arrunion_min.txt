@@ -1,0 +1,12 @@
+POLYGON((0 0,1 0,1 1,0 1,0 0)) + MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)))
+  -> The union of a geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+POLYGON((0 0,1 0,1 1,0 1,0 0)) + MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))
+  -> The union of a geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))) + MULTIPOLYGON(((7 7,8 7,8 8,7 8,7 7)))
+  -> The union of a geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+POINT(9 9) + MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)))
+  -> The union of a geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS library, which this build excludes: configure with -DGEOS=ON
+POLYGON((0 0,1 0,1 1,0 1,0 0)) + POLYGON((5 5,6 5,6 6,5 6,5 5))
+  -> MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((5 5,6 5,6 6,5 6,5 5)))
+LINESTRING(0 0,1 1) + MULTILINESTRING((5 5,6 6))
+  -> MULTILINESTRING((0 0,1 1),(5 5,6 6))
