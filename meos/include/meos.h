@@ -1394,7 +1394,7 @@ extern Temporal *tbool_from_mfjson(const char *str);
 extern Temporal *tbool_in(const char *str);
 extern char *tbool_out(const Temporal *temp);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs);
+extern char *temporal_as_mfjson(const Temporal *temp, int option, int flags, int precision, const char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern uint8_t wkb_variant_from_endian(const char *endian);
 extern interpType interptype_from_string(const char *str);

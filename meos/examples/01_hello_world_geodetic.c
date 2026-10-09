@@ -68,7 +68,7 @@ int main()
   Temporal *ss_step = tgeogpoint_in(ss_step_wkt);
 
   /* Convert result to MF-JSON */
-  char *inst_mfjson = temporal_as_mfjson(inst, true, 3, 6, srs);
+  char *inst_mfjson = temporal_as_mfjson(inst, 1, 3, 6, srs);
   printf("\n"
     "--------------------\n"
     "| Temporal Instant |\n"
@@ -77,7 +77,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", inst_wkt, inst_mfjson);
-  char *seq_disc_mfjson = temporal_as_mfjson(seq_disc, true, 3, 6, srs);
+  char *seq_disc_mfjson = temporal_as_mfjson(seq_disc, 1, 3, 6, srs);
   printf("\n"
     "-------------------------------------------------\n"
     "| Temporal Sequence with Discrete Interpolation |\n"
@@ -86,7 +86,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_disc_wkt, seq_disc_mfjson);
-  char *seq_linear_mfjson = temporal_as_mfjson(seq_linear, true, 3, 6, srs);
+  char *seq_linear_mfjson = temporal_as_mfjson(seq_linear, 1, 3, 6, srs);
   printf("\n"
     "-----------------------------------------------\n"
     "| Temporal Sequence with Linear Interpolation |\n"
@@ -95,7 +95,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_linear_wkt, seq_linear_mfjson);
-  char *seq_step_mfjson = temporal_as_mfjson(seq_step, true, 3, 6, srs);
+  char *seq_step_mfjson = temporal_as_mfjson(seq_step, 1, 3, 6, srs);
   printf("\n"
     "--------------------------------------------\n"
     "| Temporal Sequence with Step Interpolation |\n"
@@ -104,7 +104,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_step_wkt, seq_step_mfjson);
-  char *ss_linear_mfjson = temporal_as_mfjson(ss_linear, true, 3, 6, srs);
+  char *ss_linear_mfjson = temporal_as_mfjson(ss_linear, 1, 3, 6, srs);
   printf("\n"
     "---------------------------------------------------\n"
     "| Temporal Sequence Set with Linear Interpolation |\n"
@@ -113,7 +113,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", ss_linear_wkt, ss_linear_mfjson);
-  char *ss_step_mfjson = temporal_as_mfjson(ss_step, true, 3, 6, srs);
+  char *ss_step_mfjson = temporal_as_mfjson(ss_step, 1, 3, 6, srs);
   printf("\n"
     "------------------------------------------------\n"
     "| Temporal Sequence Set with Step Interpolation |\n"

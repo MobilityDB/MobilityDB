@@ -227,7 +227,6 @@ PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
 {
-  bool with_bbox = 0;
   int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
   int flags = 0;
@@ -268,9 +267,6 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
     }
   }
 
-  if (option & 1)
-    with_bbox = 1;
-
   /* Retrieve JSON flags (e.g. for pretty print) if any (default is 0) */
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     flags = PG_GETARG_INT32(2);
@@ -279,7 +275,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     precision = PG_GETARG_INT32(3);
 
-  char *mfjson = temporal_as_mfjson(temp, with_bbox, flags, precision, srs);
+  char *mfjson = temporal_as_mfjson(temp, option, flags, precision, srs);
   text *result = cstring_to_text(mfjson);
   /* Cannot pfree(mfjson) here — temporal_as_mfjson uses json-c's
    * allocator, not PG's; pfree triggers

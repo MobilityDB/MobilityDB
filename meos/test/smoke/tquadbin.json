@@ -73,7 +73,7 @@
     "  Set *qset1 = quadbinset_make(qarr1, 2);",
     "  TSequence *tqseq1 = tquadbinseq_make(qarr_same1, tstzarr1, 2, true, true);",
     "  Temporal *tquadbin1 = (Temporal *) tqseq1;",
-    "  char *tqmfjson1 = temporal_as_mfjson(tquadbin1, false, 0, 15, NULL);",
+    "  char *tqmfjson1 = temporal_as_mfjson(tquadbin1, 0, 0, 15, NULL);",
     "  /* 5206864856682070015 is the cell 48427fffffffffff as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5206864856682070015@2001-01-01, 5206864856682070015@2001-01-03]\");",
     "  Temporal *tgeompoint1 = tgeompoint_in(\"SRID=4326;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-03]\");",

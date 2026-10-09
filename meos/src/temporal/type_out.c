@@ -1355,12 +1355,16 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the MF-JSON representation of a temporal value
- * @details Where @p srs is `NULL`, a spatial value of known SRID states the
- * short name of its coordinate reference system in `spatial_ref_sys.csv`, as
- * in `EPSG:3857`, as the PostgreSQL function @p asMFJSON states it from the
- * table `spatial_ref_sys`
+ * @details The option is the sum of 1 for the bounding box, 2 for the short
+ * name of the coordinate reference system, as in `EPSG:3857`, and 4 for its
+ * long name, as in `urn:ogc:def:crs:EPSG::3857`, as for #geo_as_geojson.
+ * Where @p srs is `NULL`, a spatial value of known SRID states the name of its
+ * system in `spatial_ref_sys.csv`, the short one unless the option asks for
+ * the long one alone, so that the SRID can be read back from the output, as
+ * the PostgreSQL function @p asMFJSON states it from the table
+ * `spatial_ref_sys`
  * @param[in] temp Temporal value
- * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] option Option
  * @param[in] flags Flags
  * @param[in] precision Number of decimal digits, of which at most
  * #OUT_DEFAULT_DECIMAL_DIGITS are written. It is only used when the base type
@@ -1371,7 +1375,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
+temporal_as_mfjson(const Temporal *temp, int option, int flags,
   int precision, const char *srs)
 {
   /* Ensure the validity of the arguments */
@@ -1380,17 +1384,18 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
     return NULL;
   if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
     precision = OUT_DEFAULT_DECIMAL_DIGITS;
+  bool with_bbox = (option & 1) != 0;
 
 #if MEOS
   /* Name the coordinate reference system of a spatial value of known SRID
    * where the caller names none, as the PostgreSQL function asMFJSON names
-   * it, so that the SRID can be read back from the output */
+   * it from the table spatial_ref_sys before calling this function */
   if (! srs && tspatial_type(temp->temptype))
   {
     int32_t srid = tspatial_srid(temp);
     if (srid != SRID_UNKNOWN)
     {
-      srs = srid_srs(srid, true);
+      srs = srid_srs(srid, (option & 2) || ! (option & 4));
       if (! srs)
         return NULL;
     }
