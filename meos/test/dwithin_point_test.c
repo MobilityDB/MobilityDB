@@ -228,6 +228,16 @@ int main(void)
     0x1.249160d39aa75p+901, 0);
   every_entry(0x1p-700, 0.0, 0x1.6bbf9bb721d4cp+875, 0x1.e4ff7a4982710p+875,
     0x1.2f1fac6df186ap+876, 1);
+  /* The same at 2^111, where the differences are read as they are: the first
+   * coordinate 2^-993 toward the second point, away from it, and 0, where the
+   * points are exactly the distance apart */
+  distant += 3;
+  every_entry(0x1p-993, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 1);
+  every_entry(-0x1p-993, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 0);
+  every_entry(0.0, 0.0, 0x1.b765a76ee652ep+110, 0x1.24ee6f9f44374p+111,
+    0x1.6e2a0b8715451p+111, 1);
   printf("%d distances a coordinate far below the others decides answered "
     "exactly\n", distant);
 

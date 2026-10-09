@@ -2349,12 +2349,16 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
  * @brief Return the sign of the squared distance between two points less the
  * square of a distance, computed exactly
  * @details The coordinate differences are held exactly as their rounded values
- * and the errors of that rounding, and they and the distance are scaled by the
- * power of two that brings the largest difference into [1, 2), which is exact
- * (#point_distance_diffs, #point_distance_scale), so the squares neither
- * overflow nor underflow where the points and the distance are doubles. The
- * sign is then that of #point_distance_square_sign_exact with the distance as
- * the one term. The distance is below twice the largest difference, so a
+ * and the errors of that rounding (#point_distance_diffs). Where the largest
+ * difference lies from 2^-400 to 2^400, they and the distance are read as they
+ * are: the squared distance less the square of the distance, formed from
+ * squares split by #two_square, gives the sign wherever it stands clear of a
+ * bound of 2^-90 of the squares, and #point_distance_square_sign_exact
+ * decides the rest. Beyond that range they are scaled by the power of two that
+ * brings the largest difference into [1, 2), which is exact
+ * (#point_distance_scale), so the squares neither overflow nor underflow where
+ * the points and the distance are doubles. The sign is then that of
+ * #point_distance_square_sign_exact with the distance as the one term. The distance is below twice the largest difference, so a
  * distance of at least that is not reached, and a distance whose scaled value
  * underflows is far below the squared distance. #point_within_distance_sign
  * calls it where its filter cannot tell
@@ -2380,6 +2384,37 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
     return (d > 0.0) ? -1 : 0;
   if (d >= 2.0 * maxd)
     return -1;
+  uint64_t maxbits;
+  memcpy(&maxbits, &maxd, sizeof(maxbits));
+  int maxexp = (int) ((maxbits >> 52) & 0x7FF) - 1023;
+  if (maxexp >= -400 && maxexp <= 400)
+  {
+    /* A largest difference from 2^-400 to 2^400 and a distance below twice
+     * it keep every square between 2^-1000 and 2^804, so the values are read
+     * as they are, as #point_distance_exact reads them. S - d^2 is the sum s
+     * of the rounded squares of the differences and its small terms lo, less
+     * the square of d split by #two_square: the magnitudes of those terms add
+     * to below 2^-48 (s + d^2) and their rounding, with at most an absolute
+     * 2^-1060 where a term underflows, to below 2^-95 (s + d^2), and the two
+     * subtractions and the final sum round by at most 2^-52 of the value, so
+     * a value beyond that bound has the sign of S - d^2 */
+    double s = 0.0, lo = 0.0, x, y, t;
+    for (int i = 0; i < 2; i++)
+    {
+      two_square(dd[i], &x, &y);
+      two_sum(s, x, &s, &t);
+      lo += (t + y) + (2.0 * dd[i] * e[i] + e[i] * e[i]);
+    }
+    two_square(d, &x, &y);
+    double value = (s - x) + (lo - y);
+    double bound = 0x1p-90 * (s + x) + 0x1p-51 * fabs(value) + DBL_MIN;
+    if (value > bound)
+      return 1;
+    if (value < - bound)
+      return -1;
+    /* The exact sign on the values as they are, which no scaling rounds */
+    return point_distance_square_sign_exact(dd, e, 2, &d, 1);
+  }
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
