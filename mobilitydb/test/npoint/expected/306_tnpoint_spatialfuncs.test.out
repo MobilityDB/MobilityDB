@@ -58,6 +58,12 @@ SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1
  GEOMETRYCOLLECTION(POINT(27.252917 77.656661),LINESTRING(69.790369 81.452098,69.080715 81.20815,48.718663 77.764071))
 (1 row)
 
+SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02], [Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.6)@2001-01-04]}'), 6));
+                               st_astext                                
+------------------------------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.080715 81.20815,41.684678 76.574328)
+(1 row)
+
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6))) AS t(dp);
                           array_agg                          
 -------------------------------------------------------------
