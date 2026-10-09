@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: nsegmentarr_normalize</title>
+<title>MobilityDB: route_stretch_geom</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -155,31 +155,40 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga5d8ce7ae728688c3fd034642e9508ea6.html#ga5d8ce7ae728688c3fd034642e9508ea6">nsegment_to_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga9d02e72943c2342e18b3827d5c2a1b5e.html#ga9d02e72943c2342e18b3827d5c2a1b5e">nsegment_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__conversion_gaacc3255d09dae3f59586bd860897b30c.html#gaacc3255d09dae3f59586bd860897b30c">nsegmentarr_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a8efea76e1ca25a2fa9cdf00b0631a318.html#a8efea76e1ca25a2fa9cdf00b0631a318">nsegmentarr_normalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a8efea76e1ca25a2fa9cdf00b0631a318.html#a8efea76e1ca25a2fa9cdf00b0631a318">nsegmentarr_normalize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a79b2f2f0ce64a36aac7f05f83c987041.html#a79b2f2f0ce64a36aac7f05f83c987041">nsegmentarr_sort</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a6f697ced8078cb52a95e35a6f1ff333f.html#a6f697ced8078cb52a95e35a6f1ff333f">route_stretch_geom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a6f697ced8078cb52a95e35a6f1ff333f.html#a6f697ced8078cb52a95e35a6f1ff333f">route_stretch_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2npoint_8c_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8efea76e1ca25a2fa9cdf00b0631a318" name="a8efea76e1ca25a2fa9cdf00b0631a318"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8efea76e1ca25a2fa9cdf00b0631a318">&#9670;&#160;</a></span>nsegmentarr_normalize()</h2>
+<a id="a6f697ced8078cb52a95e35a6f1ff333f" name="a6f697ced8078cb52a95e35a6f1ff333f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f697ced8078cb52a95e35a6f1ff333f">&#9670;&#160;</a></span>route_stretch_geom()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structNsegment.html">Nsegment</a> ** nsegmentarr_normalize </td>
+          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * route_stretch_geom </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structNsegment.html">Nsegment</a> **&#160;</td>
-          <td class="paramname"><em>segments</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -187,10 +196,21 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Normalize an array of network segments. </p>
-<p >The segments are sorted and two segments of a route are merged where they overlap or touch, as <a class="el" href="meos_2include_2temporal_2span_8h_af48dc2ea13984f31204c133b6dfab699.html#af48dc2ea13984f31204c133b6dfab699" title="Normalize an array of spans.">spanarr_normalize</a> merges spans, so that a stretch of a route between two segments stays out of the result </p>
+<p>Return the stretch of a route between two positions. </p>
+<p >The stretch holds the points a temporal network point travelling it passes, as <a class="el" href="tnpoint_8h_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898" title="Convert a temporal network point into a temporal geometry point.">tnpointseq_tgeompointseq_cont</a> states them: the points at the two positions, located by <code>lwline_interpolate_points</code> as <a class="el" href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f" title="Transform a network point into a geometry.">npoint_to_geompoint</a> locates a position, and the vertices of the route strictly between them, whose positions <a class="el" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f" title="Return the positions of the interior vertices of a route.">route_vertex_positions</a> gives </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Route </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos1,pos2</td><td>Positions on the route, the first smaller </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
