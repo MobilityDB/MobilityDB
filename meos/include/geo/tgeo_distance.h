@@ -75,6 +75,12 @@ extern double nad_tcont_tcont_sync(const Temporal *temp1,
   seglb_func seglb, TimestampTz *tmin);
 extern double tpointseg_distance_lb(Datum start1, Datum end1, Datum start2,
   Datum end2);
+extern bool tpoint_motion_exact_applies(const Temporal *temp1,
+  const Temporal *temp2);
+extern double nad_tpoint_tpoint_exact(const Temporal *temp1,
+  const Temporal *temp2);
+extern int ea_dwithin_tpoint_tpoint_exact(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever);
 
 /*****************************************************************************/
 
