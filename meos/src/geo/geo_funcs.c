@@ -1670,6 +1670,36 @@ point_distance_scale(double maxd, int *k, double *f1, double *f2, double *g1,
 }
 
 /**
+ * @brief Return true if scaling the coordinate differences, the errors of
+ * their rounding and a radius by 2^k keeps every one of them exact
+ * @details A scaled value is exact where its lowest bit times 2^k is not below
+ * 2^-1074, the lowest bit of a double; the largest difference scales into
+ * [1, 2), so none overflows. Read before the scaling, since the lowest bits of
+ * a scaled value cannot tell whether the scaling rounded it
+ * (#lowest_bits_exact reads the scaled ones)
+ * @param[in] d,e Coordinate differences and the errors of their rounding
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] k Exponent of the scaling (#point_distance_scale)
+ * @param[in] r Radius, 0 for none
+ */
+static bool
+point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
+  double r)
+{
+  for (int i = 0; i < ndims; i++)
+  {
+    if (d[i] != 0.0 && double_lowest_bit(d[i]) + k < -1074)
+      return false;
+    if (e[i] != 0.0 && double_lowest_bit(e[i]) + k < -1074)
+      return false;
+  }
+  return r == 0.0 || double_lowest_bit(r) + k >= -1074;
+}
+
+static double point_distance_offset_inputs(const double *p, const double *q,
+  int ndims, double r);
+
+/**
  * @brief Return the distance between two points, computed exactly and rounded
  * once
  * @details The distance is the square root of the sum of the squared
@@ -1720,6 +1750,10 @@ point_distance_exact(const double *p, const double *q, int ndims)
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  /* Where the scaling rounds a difference or its error, every side is read
+   * on the input coordinates */
+  if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
+    return point_distance_offset_inputs(p, q, ndims, 0.0);
   double sum = 0.0;
   for (int i = 0; i < ndims; i++)
   {
@@ -1882,6 +1916,104 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
 }
 
 /**
+ * @brief Return the distance between two points less a radius, not below
+ * zero, as the double nearest it, every side read on the input coordinates
+ * @details The path of #point_distance_exact and #point_distance_offset_exact
+ * where scaling by 2^k would round a coordinate difference or its error
+ * (#point_distance_scale_exact): the lowest bits of the scaled values cannot
+ * show that rounding, so no decision reads them. Whether the points are
+ * farther apart than the radius, and each side of every candidate, is the
+ * sign #point_distance_offset_side_sign reads on the input coordinates, exact
+ * for any finite doubles. The first candidate is read from the integer
+ * #square_products_wide sets for `S - r^2` on the input coordinates, a start
+ * only, as #point_distance_offset_exact reads it where the difference lies
+ * below the smallest double
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative, 0 for the distance itself
+ */
+static double
+point_distance_offset_inputs(const double *p, const double *q, int ndims,
+  double r)
+{
+  /* No farther apart than the radius: S - r^2 is not positive */
+  if (point_distance_offset_side_sign(p, q, ndims, r, 0.0, 0.0) <= 0)
+    return 0.0;
+  double left[10], right[10], factor[10];
+  int n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    left[n] = q[i]; right[n] = q[i]; factor[n++] = 1.0;
+    left[n] = q[i]; right[n] = p[i]; factor[n++] = -2.0;
+    left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
+  }
+  left[n] = r; right[n] = r; factor[n++] = -1.0;
+  uint64_t acc[WIDE_LIMBS];
+  square_products_wide(left, right, factor, n, acc);
+  /* (S - r^2) / (sqrt(S) + r), its numerator m * 2^exp and its denominator
+   * read on the halves of the differences scaled by 2^-hexp, which brings the
+   * largest into [1/2, 1), so that their squares neither overflow nor vanish;
+   * the radius scales below 2, as sqrt(S) exceeds it */
+  int exp, hexp;
+  double m = wide_frexp(acc, &exp);
+  double h[3], maxh = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    h[i] = q[i] * 0.5 - p[i] * 0.5;
+    maxh = fmax(maxh, fabs(h[i]));
+  }
+  (void) frexp(maxh, &hexp);
+  double sum = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double hs = ldexp(h[i], - hexp);
+    sum += hs * hs;
+  }
+  double den = 2.0 * sqrt(sum) + ldexp(r, - hexp);
+  double c = (den > 0.0) ? ldexp(m / den, exp - hexp) : 0.0;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+
+  /* Move the candidate to the nearest double */
+  while (true)
+  {
+    uint64_t bits;
+    memcpy(&bits, &c, sizeof(bits));
+    bool even = (bits & 1) == 0;
+    uint64_t upbits = bits + 1;
+    double up;
+    memcpy(&up, &upbits, sizeof(up));
+    /* The gap to the upper neighbour, past the largest double the gap below
+     * it, 2^971 */
+    double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
+    int su = point_distance_offset_side_sign(p, q, ndims, r, c, gu);
+    if (su > 0 || (su == 0 && ! even))
+    {
+      if (isinf(up))
+        return INFINITY;
+      c = up;
+      continue;
+    }
+    if (c > 0.0)
+    {
+      uint64_t downbits = bits - 1;
+      double down;
+      memcpy(&down, &downbits, sizeof(down));
+      int sd = point_distance_offset_side_sign(p, q, ndims, r, c,
+        - (c - down));
+      if (sd < 0 || (sd == 0 && ! even))
+      {
+        c = down;
+        continue;
+      }
+    }
+    return c;
+  }
+}
+
+/**
  * @brief Return the distance between two points less a radius, computed
  * exactly and rounded once, or 0 where the points are no farther apart than
  * the radius
@@ -1955,6 +2087,10 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     if (r >= 2.0 * maxd)
       return 0.0;
     point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+    /* Where the scaling rounds a difference or its error, every side is read
+     * on the input coordinates; the radius is read below */
+    if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
+      return point_distance_offset_inputs(p, q, ndims, r);
     /* Every scaled value is below 4, so its lowest bit is at most 2^-50 and
      * only the lowest one is tracked */
     double sum = 0.0;
@@ -2104,6 +2240,10 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  /* Where the scaling rounds a difference, its error or the distance, the
+   * sign of S - d^2 is read on the input coordinates */
+  if (! point_distance_scale_exact(dd, e, 2, k, d))
+    return point_distance_offset_side_sign(p, q, 2, d, 0.0, 0.0);
   for (int i = 0; i < 2; i++)
   {
     dd[i] = dd[i] * f1 * f2;
@@ -2138,6 +2278,337 @@ point_segment_beyond(ExactSum *sums, double r, double c, double h, bool odd)
     {-1.0, 4, {4, 4, 2, 2}}, {-1.0, 4, {4, 4, 3, 3}}};
   int sign = polynomial_sign_exact(sums, terms, 5);
   return sign > 0 || (sign == 0 && odd);
+}
+
+/**
+ * @brief Set the magnitude of a two's complement integer of #WIDE_LIMBS limbs
+ * and return its sign
+ */
+static int
+wide_magnitude(const uint64_t *acc, uint64_t *mag)
+{
+  int sign = wide_sign(acc);
+  memcpy(mag, acc, WIDE_LIMBS * sizeof(uint64_t));
+  if (sign < 0)
+  {
+    /* Negate: invert every bit and add one */
+    uint64_t carry = 1;
+    for (int i = 0; i < WIDE_LIMBS; i++)
+    {
+      mag[i] = ~mag[i] + carry;
+      carry = (carry && mag[i] == 0) ? 1 : 0;
+    }
+  }
+  return sign;
+}
+
+/**
+ * @brief Set the product of two magnitudes #wide_magnitude sets, exactly, in
+ * 32-bit words, the lowest first
+ * @details The schoolbook product of the 32-bit halves of the limbs, each
+ * partial product and its carries held in 64 bits
+ * @param[in] x,y Magnitudes of #WIDE_LIMBS limbs
+ * @param[out] out Product of 4 * #WIDE_LIMBS words
+ */
+static void
+wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
+{
+  const int n = 2 * WIDE_LIMBS;
+  uint32_t a[2 * WIDE_LIMBS], b[2 * WIDE_LIMBS];
+  for (int i = 0; i < WIDE_LIMBS; i++)
+  {
+    a[2 * i] = (uint32_t) x[i]; a[2 * i + 1] = (uint32_t) (x[i] >> 32);
+    b[2 * i] = (uint32_t) y[i]; b[2 * i + 1] = (uint32_t) (y[i] >> 32);
+  }
+  memset(out, 0, 2 * n * sizeof(uint32_t));
+  for (int i = 0; i < n; i++)
+  {
+    if (a[i] == 0)
+      continue;
+    uint64_t carry = 0;
+    for (int j = 0; j < n; j++)
+    {
+      uint64_t t = (uint64_t) a[i] * b[j] + out[i + j] + carry;
+      out[i + j] = (uint32_t) t;
+      carry = t >> 32;
+    }
+    /* No earlier row reaches past word i + n - 1 */
+    out[i + n] = (uint32_t) carry;
+  }
+  return;
+}
+
+/**
+ * @brief Return the sign of the squared distance of a point to the line of a
+ * segment, times the squared length of the segment, less the square of
+ * `r + c + g/2` times that squared length, computed exactly for any finite
+ * doubles
+ * @details This is the side of a midpoint #point_segment_distance_offset_exact
+ * decides, `(w x u)^2 - (r + c + g/2)^2 (u . u)` with `w = p - a` and
+ * `u = b - a`, read on the input coordinates where scaling them would round a
+ * value or leave a product of four outside the doubles. The cross product
+ * `w x u`, the squared length `u . u` and `(r + c + g/2)^2` are each a sum of
+ * products of two input doubles, an integer #square_products_wide sets as
+ * #point_distance_offset_side_sign sets its terms; the cross product squared
+ * and the product of the other two are compared on their exact products
+ * (#wide_product), the two having the weight of the same lowest bit
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] r Radius
+ * @param[in] c Candidate
+ * @param[in] g Gap from the candidate to its upper neighbour
+ */
+static int
+point_segment_side_sign_inputs(const double *p, const double *a,
+  const double *b, double r, double c, double g)
+{
+  double left[6], right[6], factor[6];
+  uint64_t cross[WIDE_LIMBS], len[WIDE_LIMBS], mid[WIDE_LIMBS];
+  /* (px - ax)(by - ay) - (py - ay)(bx - ax), the products of ax and ay
+   * cancelling */
+  left[0] = p[0]; right[0] = b[1]; factor[0] = 1.0;
+  left[1] = p[0]; right[1] = a[1]; factor[1] = -1.0;
+  left[2] = a[0]; right[2] = b[1]; factor[2] = -1.0;
+  left[3] = p[1]; right[3] = b[0]; factor[3] = -1.0;
+  left[4] = p[1]; right[4] = a[0]; factor[4] = 1.0;
+  left[5] = a[1]; right[5] = b[0]; factor[5] = 1.0;
+  square_products_wide(left, right, factor, 6, cross);
+  /* (bx - ax)^2 + (by - ay)^2 */
+  for (int i = 0; i < 2; i++)
+  {
+    left[3 * i] = b[i]; right[3 * i] = b[i]; factor[3 * i] = 1.0;
+    left[3 * i + 1] = b[i]; right[3 * i + 1] = a[i];
+    factor[3 * i + 1] = -2.0;
+    left[3 * i + 2] = a[i]; right[3 * i + 2] = a[i]; factor[3 * i + 2] = 1.0;
+  }
+  square_products_wide(left, right, factor, 6, len);
+  /* (r + c + g/2)^2 */
+  left[0] = r; right[0] = r; factor[0] = 1.0;
+  left[1] = c; right[1] = c; factor[1] = 1.0;
+  left[2] = g; right[2] = g; factor[2] = 0.25;
+  left[3] = r; right[3] = c; factor[3] = 2.0;
+  left[4] = r; right[4] = g; factor[4] = 1.0;
+  left[5] = c; right[5] = g; factor[5] = 1.0;
+  square_products_wide(left, right, factor, 6, mid);
+
+  uint64_t mcross[WIDE_LIMBS], mlen[WIDE_LIMBS], mmid[WIDE_LIMBS];
+  wide_magnitude(cross, mcross);
+  int slen = wide_magnitude(len, mlen);
+  int smid = wide_magnitude(mid, mmid);
+  uint32_t lhs[4 * WIDE_LIMBS], rhs[4 * WIDE_LIMBS];
+  wide_product(mcross, mcross, lhs);
+  wide_product(mmid, mlen, rhs);
+  /* The cross product squared is not negative; the other product carries the
+   * signs of its factors, both not negative for a segment and a midpoint */
+  int srhs = slen * smid;
+  if (srhs < 0)
+    return 1;
+  for (int i = 4 * WIDE_LIMBS - 1; i >= 0; i--)
+  {
+    if (lhs[i] != rhs[i])
+      return (lhs[i] > rhs[i]) ? 1 : -1;
+  }
+  return 0;
+}
+
+/**
+ * @brief Return true where the distance of a point to the interior of a
+ * segment, less a radius, lies beyond the upper midpoint of a double, read on
+ * the input coordinates
+ * @details The twin of #point_segment_beyond by
+ * #point_segment_side_sign_inputs; past the largest double the gap is the one
+ * below it, 2^971
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] r,c,n Radius, candidate and its upper neighbour
+ * @param[in] odd Whether the last bit of the candidate is odd
+ */
+static bool
+point_segment_beyond_inputs(const double *p, const double *a, const double *b,
+  double r, double c, double n, bool odd)
+{
+  double g = isinf(n) ? ldexp(1.0, 971) : n - c;
+  int sign = point_segment_side_sign_inputs(p, a, b, r, c, g);
+  return sign > 0 || (sign == 0 && odd);
+}
+
+/**
+ * @brief Return the sign of `(p - s) . (b - a)`, computed exactly for any
+ * finite doubles
+ * @details A sum of products of two input doubles (#square_products_sign):
+ * with `s = a` it is the sign of `w . u`, with `s = b` that of
+ * `w . u - u . u`, which decide whether the nearest point of the segment is an
+ * end
+ */
+static int
+point_segment_dot_sign_inputs(const double *p, const double *s,
+  const double *a, const double *b)
+{
+  double left[8], right[8], factor[8];
+  int n = 0;
+  for (int i = 0; i < 2; i++)
+  {
+    left[n] = p[i]; right[n] = b[i]; factor[n++] = 1.0;
+    left[n] = p[i]; right[n] = a[i]; factor[n++] = -1.0;
+    left[n] = s[i]; right[n] = b[i]; factor[n++] = -1.0;
+    left[n] = s[i]; right[n] = a[i]; factor[n++] = 1.0;
+  }
+  return square_products_sign(left, right, factor, n);
+}
+
+/**
+ * @brief Return the distance between a point and a segment less a radius, not
+ * below zero, as the double nearest it, every sign read on the input
+ * coordinates
+ * @details The path of #point_segment_distance_offset_exact where scaling the
+ * coordinates would round a value or leave a product of four of them outside
+ * the doubles, or where a difference overflows and a quarter of a coordinate
+ * would round. Whether the nearest point is an end is the sign
+ * #point_segment_dot_sign_inputs reads, an end is a pair of points
+ * (#point_distance_offset_exact), and for the foot the answer is the smallest
+ * double whose upper midpoint the distance less the radius does not pass
+ * (#point_segment_beyond_inputs), found by the galloping search of
+ * #point_segment_distance_offset_exact from a rounded start
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] r Radius, not negative
+ */
+static double
+point_segment_distance_offset_inputs(const double *p, const double *a,
+  const double *b, double r)
+{
+  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
+    return point_distance_offset_exact(p, a, 2, r);
+  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
+    return point_distance_offset_exact(p, b, 2, r);
+
+  /* First candidate, a start only, from the halves of the differences scaled
+   * by 2^-hexp, which brings the largest into [1/2, 1), so that neither the
+   * cross product nor the length overflows or vanishes */
+  double hw[2], hu[2], maxh = 0.0;
+  for (int i = 0; i < 2; i++)
+  {
+    hw[i] = p[i] * 0.5 - a[i] * 0.5;
+    hu[i] = b[i] * 0.5 - a[i] * 0.5;
+    maxh = fmax(maxh, fmax(fabs(hw[i]), fabs(hu[i])));
+  }
+  int hexp;
+  (void) frexp(maxh, &hexp);
+  double wx = ldexp(hw[0], - hexp), wy = ldexp(hw[1], - hexp);
+  double ux = ldexp(hu[0], - hexp), uy = ldexp(hu[1], - hexp);
+  double ul = sqrt(ux * ux + uy * uy);
+  double c = (ul > 0.0) ?
+    ldexp(fabs(wx * uy - wy * ux) / ul, 1 + hexp) - r : 0.0;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+
+  /* The answer is the smallest bit pattern that is not beyond: gallop from the
+   * candidate to bracket it, then halve the bracket */
+#define PSD_BEYOND_INPUTS(bb, res) \
+  do { \
+    double cc, nn; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nn, &b2, sizeof(nn)); \
+    (res) = point_segment_beyond_inputs(p, a, b, r, cc, nn, (b1 & 1) != 0); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  PSD_BEYOND_INPUTS(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (true)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      PSD_BEYOND_INPUTS(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+        return 0.0;
+      lo = (hi > step) ? hi - step : 0;
+      PSD_BEYOND_INPUTS(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      if (lo == 0)
+        return 0.0;
+      step *= 2;
+    }
+  }
+  /* lo is beyond, hi is not, and the answer is the least not beyond */
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    PSD_BEYOND_INPUTS(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef PSD_BEYOND_INPUTS
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return result;
+}
+
+/**
+ * @brief Return true if the scaled values of
+ * #point_segment_distance_offset_exact keep every product of four of them
+ * exact
+ * @details A product of four values whose lowest bits are at least `L` has its
+ * lowest bit at least `4 L`, a double where that is not below 2^-1074, so
+ * every value scaled by 2^k must keep its lowest bit at or above 2^-268. Every
+ * scaled value is below 4, so no product of four overflows
+ * @param[in] v Values before the scaling, zeros left out
+ * @param[in] n Number of values
+ * @param[in] k Exponent of the scaling (#point_distance_scale)
+ */
+static bool
+point_segment_scale_exact(const double *v, int n, int k)
+{
+  for (int i = 0; i < n; i++)
+  {
+    if (v[i] != 0.0 && double_lowest_bit(v[i]) + k < -268)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a quarter of a coordinate of the point or of the
+ * segment, or of the radius, rounds, its lowest bit falling below 2^-1074
+ * @details #point_segment_distance_offset_exact answers a difference beyond
+ * the largest double on the quarters of its values, which is exact otherwise
+ */
+static bool
+point_segment_quarter_rounds(const double *p, const double *a,
+  const double *b, double r)
+{
+  const double v[7] = {p[0], p[1], a[0], a[1], b[0], b[1], r};
+  for (int i = 0; i < 7; i++)
+  {
+    if (v[i] != 0.0 && double_lowest_bit(v[i]) - 2 < -1074)
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -2177,6 +2648,10 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   /* A degenerate segment is a point, exactly */
   if (du[0] == 0.0 && du[1] == 0.0)
     return point_distance_offset_exact(p, a, 2, r);
+  /* A difference beyond the largest double where a quarter of a coordinate
+   * or of the radius would round: every sign on the input coordinates */
+  if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, r))
+    return point_segment_distance_offset_inputs(p, a, b, r);
   /* A difference beyond the largest double: a quarter of every value is
    * exact and its differences are doubles, so solve there and scale back */
   if (sw == 2 || su == 2)
@@ -2190,6 +2665,14 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  /* Where the scaling rounds a value or leaves a product of four of them
+   * outside the doubles, every sign on the input coordinates */
+  {
+    const double v[9] = {dw[0], dw[1], ew[0], ew[1], du[0], du[1], eu[0],
+      eu[1], r};
+    if (! point_segment_scale_exact(v, 9, k))
+      return point_segment_distance_offset_inputs(p, a, b, r);
+  }
   ExactSum sums[5];
   double t[2];
   for (int i = 0; i < 2; i++)
@@ -2234,6 +2717,14 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     uint64_t b1 = (bb), b2 = (bb) + 1; \
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nn, &b2, sizeof(nn)); \
+    /* A candidate or a half gap scaled below 2^-268: the input coordinates */ \
+    if ((cc != 0.0 && double_lowest_bit(cc) + k < -268) || \
+        (! isinf(nn) && double_lowest_bit(nn - cc) - 1 + k < -268)) \
+    { \
+      (res) = point_segment_beyond_inputs(p, a, b, r, cc, nn, \
+        (b1 & 1) != 0); \
+      break; \
+    } \
     double hh = isinf(nn) ? ldexp(1.0, 970 + k) : (nn - cc) * f1 * f2 / 2.0; \
     (res) = point_segment_beyond(sums, rs, cc * f1 * f2, hh, (b1 & 1) != 0); \
   } while (0)

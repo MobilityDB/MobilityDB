@@ -221,6 +221,16 @@ int main(void)
     "squares leave the range of a double and %d pairs of differences far "
     "apart in scale\n", asked, skewed);
 
+  /* Two points (3m, 4m) * 2^s apart but for a first coordinate 2^-1739 of
+   * the others, which alone decides whether they are within 5m * 2^s */
+  int distant = 2;
+  every_entry(-0x1p-839, 0.0, 0x1.5f14da9786626p+900, 0x1.d41bce1f5dd88p+900,
+    0x1.249160d39aa75p+901, 0);
+  every_entry(0x1p-700, 0.0, 0x1.6bbf9bb721d4cp+875, 0x1.e4ff7a4982710p+875,
+    0x1.2f1fac6df186ap+876, 1);
+  printf("%d distances a coordinate far below the others decides answered "
+    "exactly\n", distant);
+
   /* Finalize MEOS */
   meos_finalize();
   return EXIT_SUCCESS;
