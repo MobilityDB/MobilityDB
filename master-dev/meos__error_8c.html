@@ -88,6 +88,7 @@ $(function() {
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__tls_8h_source.html">meos_tls.h</a>&gt;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -97,6 +98,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a9f602acc6e4275cd39cc028db5f0ed8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__error_8c_a9f602acc6e4275cd39cc028db5f0ed8f.html#a9f602acc6e4275cd39cc028db5f0ed8f">error_handler_errno</a> (int errlevel pg_attribute_unused(), int errcode, const char *errmsg)</td></tr>
 <tr class="memdesc:a9f602acc6e4275cd39cc028db5f0ed8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error handler function that sets the errcode and the error message.  <a href="meos__error_8c_a9f602acc6e4275cd39cc028db5f0ed8f.html#a9f602acc6e4275cd39cc028db5f0ed8f">More...</a><br /></td></tr>
 <tr class="separator:a9f602acc6e4275cd39cc028db5f0ed8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab62143368d5ba3ff4c157f773810b963"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__error_8c_ab62143368d5ba3ff4c157f773810b963.html#ab62143368d5ba3ff4c157f773810b963">meos_check_for_interrupts</a> (void)</td></tr>
+<tr class="memdesc:ab62143368d5ba3ff4c157f773810b963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Give a long computation the chance to be stopped between two of its steps.  <a href="meos__error_8c_ab62143368d5ba3ff4c157f773810b963.html#ab62143368d5ba3ff4c157f773810b963">More...</a><br /></td></tr>
+<tr class="separator:ab62143368d5ba3ff4c157f773810b963"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gada390bc9c4a7a12ae8d2393a9dc3bee3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">meos_errno</a> (void)</td></tr>
 <tr class="memdesc:gada390bc9c4a7a12ae8d2393a9dc3bee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an error number.  <a href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">More...</a><br /></td></tr>
 <tr class="separator:gada390bc9c4a7a12ae8d2393a9dc3bee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,6 +119,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga79b411cce6b7a6993dee33dff2d2d018"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setup_ga79b411cce6b7a6993dee33dff2d2d018.html#ga79b411cce6b7a6993dee33dff2d2d018">meos_initialize_error_handler</a> (<a class="el" href="meos_8h_ac6cea2666f057c8268d1e0b25a7df255.html#ac6cea2666f057c8268d1e0b25a7df255">error_handler_fn</a> err_handler)</td></tr>
 <tr class="memdesc:ga79b411cce6b7a6993dee33dff2d2d018"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize error handler function.  <a href="group__meos__setup_ga79b411cce6b7a6993dee33dff2d2d018.html#ga79b411cce6b7a6993dee33dff2d2d018">More...</a><br /></td></tr>
 <tr class="separator:ga79b411cce6b7a6993dee33dff2d2d018"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae109cc56dabb7f08fb2a049b9b4be81b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setup_gae109cc56dabb7f08fb2a049b9b4be81b.html#gae109cc56dabb7f08fb2a049b9b4be81b">meos_initialize_interrupt_handler</a> (<a class="el" href="meos_8h_aa4fcd4b973f6526e448b4804fdb984f5.html#aa4fcd4b973f6526e448b4804fdb984f5">interrupt_handler_fn</a> <a class="el" href="geos__fallback__sweep_8c_a7c0f4caf0d6528ac6f48dc7f0e161053.html#a7c0f4caf0d6528ac6f48dc7f0e161053">handler</a>)</td></tr>
+<tr class="memdesc:gae109cc56dabb7f08fb2a049b9b4be81b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize interrupt handler function.  <a href="group__meos__setup_gae109cc56dabb7f08fb2a049b9b4be81b.html#gae109cc56dabb7f08fb2a049b9b4be81b">More...</a><br /></td></tr>
+<tr class="separator:gae109cc56dabb7f08fb2a049b9b4be81b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaeb7ea3eefd3551c3db4f3297e1504fa9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setup_gaeb7ea3eefd3551c3db4f3297e1504fa9.html#gaeb7ea3eefd3551c3db4f3297e1504fa9">meos_initialize_noexit_error_handler</a> (void)</td></tr>
 <tr class="memdesc:gaeb7ea3eefd3551c3db4f3297e1504fa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install the no-exit error handler.  <a href="group__meos__setup_gaeb7ea3eefd3551c3db4f3297e1504fa9.html#gaeb7ea3eefd3551c3db4f3297e1504fa9">More...</a><br /></td></tr>
 <tr class="separator:gaeb7ea3eefd3551c3db4f3297e1504fa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,6 +137,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a45ef7a7f5972720cb2b709fbf430678e"><td class="memItemLeft" align="right" valign="top">static void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__error_8c_a45ef7a7f5972720cb2b709fbf430678e.html#a45ef7a7f5972720cb2b709fbf430678e">MEOS_ERROR_HANDLER</a> )(int, int, const char *) = NULL</td></tr>
 <tr class="memdesc:a45ef7a7f5972720cb2b709fbf430678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global variable that keeps the error handler function.  <a href="meos__error_8c_a45ef7a7f5972720cb2b709fbf430678e.html#a45ef7a7f5972720cb2b709fbf430678e">More...</a><br /></td></tr>
 <tr class="separator:a45ef7a7f5972720cb2b709fbf430678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeee17c246b984602c840461d9c9f8c6e"><td class="memItemLeft" align="right" valign="top">static void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__error_8c_aeee17c246b984602c840461d9c9f8c6e.html#aeee17c246b984602c840461d9c9f8c6e">MEOS_INTERRUPT_HANDLER</a> )(void) = NULL</td></tr>
+<tr class="memdesc:aeee17c246b984602c840461d9c9f8c6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global variable that keeps the interrupt handler function.  <a href="meos__error_8c_aeee17c246b984602c840461d9c9f8c6e.html#aeee17c246b984602c840461d9c9f8c6e">More...</a><br /></td></tr>
+<tr class="separator:aeee17c246b984602c840461d9c9f8c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Error handling of the MEOS library. </p>
