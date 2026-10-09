@@ -94,7 +94,7 @@ int main(void)
   Npoint *npoint2 = npoint_in(npoint2_in);
   char *npoint2_out = npoint_out(npoint2, 6);
 
-  Npoint *npointarray[2];
+  Npoint npointarray[2];
 
   char *npointset1_in = "{\"Npoint(2, 0.5)\", \"Npoint(2, 0.5)\"}";
   Set *npointset1 = npointset_in(npointset1_in);
@@ -448,9 +448,9 @@ int main(void)
   /* Constructor functions */
   printf("****************************************************************\n");
 
-  /* Set *npointset_make(Npoint **values, int count); */
-  npointarray[0] = npoint1;
-  npointarray[1] = npoint2;
+  /* Set *npointset_make(const Npoint *values, int count); */
+  npointarray[0] = *npoint1;
+  npointarray[1] = *npoint2;
   npointset_result = npointset_make(npointarray, 2);
   char_result = spatialset_as_text(npointset_result, 6);
   printf("npointset_make({%s, %s}, 2): %s\n", npoint1_out, npoint2_out, char_result);

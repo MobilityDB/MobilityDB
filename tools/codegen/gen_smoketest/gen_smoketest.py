@@ -1223,9 +1223,8 @@ TCBUFFER_CONFIG = dict(
         # ensure_srid_known().
         "cbuffer_transform_pipeline": {1: "pipeline1", 2: "4326"},
         "cbufferarr_to_geom":    {0: "cbufferarr1", 1: "2"},
-        # cbufferset_make takes a non-const Cbuffer **, unlike its
-        # const-qualified array-input siblings; cbufferarr2 is its own
-        # non-const array so passing it needs no pointer-qualifier cast.
+        # cbufferset_make reads an array of values, unlike the array-of-
+        # pointers inputs of its siblings, so cbufferarr2 holds values.
         "cbufferset_make":       {0: "cbufferarr2", 1: "2"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
@@ -1250,9 +1249,8 @@ TCBUFFER_CONFIG = dict(
   /* A second, distinct buffer for the array-input constructors below. */
   Cbuffer *cbuffer2 = cbuffer_in("Cbuffer(Point(2 2), 0.3)");
   const Cbuffer *cbufferarr1[] = { cbuffer1, cbuffer2 };
-  /* cbufferset_make takes a non-const Cbuffer **, so it gets its own
-   * non-const array rather than reusing cbufferarr1. */
-  Cbuffer *cbufferarr2[] = { cbuffer1, cbuffer2 };
+  /* cbufferset_make reads an array of values rather than pointers. */
+  const Cbuffer cbufferarr2[] = { *cbuffer1, *cbuffer2 };
   /* Reprojection reads the source SRID off the value, so the transform input
    * carries one explicitly. */
   Cbuffer *cbuffer_srid1 = cbuffer_in("SRID=4326;Cbuffer(Point(1 2), 0.5)");
@@ -1433,7 +1431,8 @@ TNPOINT_CONFIG = dict(
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
   /* A second, distinct network point for npointset_make's array input. */
   Npoint *npoint2 = npoint_in("NPoint(1, 0.8)");
-  Npoint *npointarr1[] = { npoint1, npoint2 };
+  /* npointset_make reads an array of values rather than pointers. */
+  const Npoint npointarr1[] = { *npoint1, *npoint2 };
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
   Set *npointset1 = npointset_in("{\\"NPoint(1, 0.5)\\"}");
