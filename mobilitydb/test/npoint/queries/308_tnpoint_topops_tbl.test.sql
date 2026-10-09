@@ -404,3 +404,20 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE stbox(temp) <> stbox(temp::tgeompoint);
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE stbox(temp) <> stbox(temp::tgeompoint);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The box of a network segment is the box of the stretch a temporal network
+-- point travels between its positions, and the trajectory of a temporal
+-- network point has the box of the trajectory of its conversion
+
+SELECT COUNT(*) FROM ways, (VALUES (0.1, 0.4), (0.25, 0.75), (0.5, 0.9),
+  (0.0, 1.0)) p(a, b)
+WHERE stbox(nsegment(gid, a, b)) <> stbox(trajectory(tnpointSeq(ARRAY[
+  tnpoint(npoint(gid, a), timestamptz '2001-01-01'),
+  tnpoint(npoint(gid, b), timestamptz '2001-01-02')])::tgeompoint));
+SELECT COUNT(*) FROM tbl_tnpoint
+WHERE stbox(trajectory(temp)) <> stbox(trajectory(temp::tgeompoint));
+SELECT COUNT(*) FROM tbl_tnpoint_big
+WHERE stbox(trajectory(temp)) <> stbox(trajectory(temp::tgeompoint));
+
+-------------------------------------------------------------------------------
