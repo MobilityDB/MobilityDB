@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: every_entry</title>
+<title>MobilityDB: moving_entry</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,10 +80,10 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_a469a6675ce32215bc8932d9f070db91c.html#a469a6675ce32215bc8932d9f070db91c">buffer_entry</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="distance__point__test_8c_a332f4031fa9aad53af9ed142da406b68.html#a332f4031fa9aad53af9ed142da406b68">every_entry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_a332f4031fa9aad53af9ed142da406b68.html#a332f4031fa9aad53af9ed142da406b68">every_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_ad0b07766eb537ecedc0c6aa017d73c92.html#ad0b07766eb537ecedc0c6aa017d73c92">every_entry3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_a592bf03cc1df3d44dddc20c49727bc42.html#a592bf03cc1df3d44dddc20c49727bc42">moving_entry</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="distance__point__test_8c_a592bf03cc1df3d44dddc20c49727bc42.html#a592bf03cc1df3d44dddc20c49727bc42">moving_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_afb0c78667b2fcc2a376398dab3526bda.html#afb0c78667b2fcc2a376398dab3526bda">point_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_afc1e53a6435513be9a1c1ee6afe61e6b.html#afc1e53a6435513be9a1c1ee6afe61e6b">segment_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="distance__point__test_8c_acdba7fe72f41e640704bb9154c7639e3.html#acdba7fe72f41e640704bb9154c7639e3">still</a></td></tr>
@@ -92,8 +92,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a332f4031fa9aad53af9ed142da406b68" name="a332f4031fa9aad53af9ed142da406b68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a332f4031fa9aad53af9ed142da406b68">&#9670;&#160;</a></span>every_entry()</h2>
+<a id="a592bf03cc1df3d44dddc20c49727bc42" name="a592bf03cc1df3d44dddc20c49727bc42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a592bf03cc1df3d44dddc20c49727bc42">&#9670;&#160;</a></span>moving_entry()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -102,28 +102,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void every_entry </td>
+          <td class="memname">static void moving_entry </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>px</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>trip</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>py</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>qx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>qy</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>wkt</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -143,9 +131,6 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Assert that every entry answering the distance of a pair of resting points gives the distance between those points: the temporal distance of two temporal points, the temporal distance of one against the other as a geometry, the nearest approach of the two temporal points and of the first against the second as a geometry, which the resting pair makes equal to it, and the shortest line of the first against the second, which runs from the one point to the other. </p>
-<p >Built on <a class="el" href="distance__point__test_8c_acdba7fe72f41e640704bb9154c7639e3.html#acdba7fe72f41e640704bb9154c7639e3" title="Return a temporal point that stays where it is over the period every case shares, so the distance of ...">still</a>, as every case of this program is </p>
 
 </div>
 </div>
