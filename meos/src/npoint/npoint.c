@@ -212,7 +212,10 @@ nsegmentarr_sort(Nsegment **segments, int count)
 }
 
 /**
- * @brief Normalize an array of temporal segments
+ * @brief Normalize an array of network segments
+ * @details The segments are sorted and two segments of a route are merged
+ * where they overlap or touch, as #spanarr_normalize merges spans, so that a
+ * stretch of a route between two segments stays out of the result
  */
 Nsegment **
 nsegmentarr_normalize(Nsegment **segments, int *count)
@@ -225,7 +228,7 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
   for (int i = 1; i < *count; i++)
   {
     Nsegment *seg = segments[i];
-    if (current->rid == seg->rid)
+    if (current->rid == seg->rid && seg->pos1 <= current->pos2)
     {
       current->pos1 = Min(current->pos1, seg->pos1);
       current->pos2 = Max(current->pos2, seg->pos2);
