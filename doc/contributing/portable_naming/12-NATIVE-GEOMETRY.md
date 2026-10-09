@@ -209,7 +209,7 @@ Spanish:
 The portable dialect chapter (`doc/portable_sql.xml`) lists each `X` and `geoX` as the PR lands
 them. `geom_unary_union` stays outside the rule until MEOS answers it natively.
 
-**State.** Commits 1 to 13 are on the branch, head `493a6a512a` on master `e30ef41657`, with the
+**State.** Commits 1 to 13 are PR #3005, head `7c628484a5` on master `e30ef41657`, with the
 strict-ci, cppcheck, smoke, Windows, CGAL oracle and GEOS speed receipts of the head. Commit 1:
 `datum_eq` compares two geometries and two geographies exactly, and `049_geo_equality.test.sql`
 answers structurally throughout. Commit 2: `geom_dwithin`, `geom_intersects` and the new
