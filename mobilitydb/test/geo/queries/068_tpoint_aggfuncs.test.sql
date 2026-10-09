@@ -115,6 +115,17 @@ WITH temp(inst) AS (
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
+-- The box of a sequence the aggregate grows holds the geodesic from (0 60) to
+-- (90 60), which passes north of latitude 60
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(0 0)@2001-01-01' UNION
+  SELECT tgeogpoint 'Point(0 60)@2001-01-02' UNION
+  SELECT tgeogpoint 'Point(90 60)@2001-01-04' )
+SELECT stbox(appendInstant(inst ORDER BY inst)),
+  stbox(appendInstant(inst ORDER BY inst)) = stbox(tgeogpoint
+    '[Point(0 0)@2001-01-01, Point(0 60)@2001-01-02, Point(90 60)@2001-01-04]')
+FROM temp;
+
 /* Errors */
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION

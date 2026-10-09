@@ -126,6 +126,19 @@ SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
        36900
 (1 row)
 
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(0 0)@2001-01-01' UNION
+  SELECT tgeogpoint 'Point(0 60)@2001-01-02' UNION
+  SELECT tgeogpoint 'Point(90 60)@2001-01-04' )
+SELECT stbox(appendInstant(inst ORDER BY inst)),
+  stbox(appendInstant(inst ORDER BY inst)) = stbox(tgeogpoint
+    '[Point(0 0)@2001-01-01, Point(0 60)@2001-01-02, Point(90 60)@2001-01-04]')
+FROM temp;
+                                                    stbox                                                    | ?column? 
+-------------------------------------------------------------------------------------------------------------+----------
+ SRID=4326;GEODSTBOX XT(((0,0),(90,67.792346)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]) | t
+(1 row)
+
 /* Errors */
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
