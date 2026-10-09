@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnpointinstarr_step_set_stbox</title>
+<title>MobilityDB: route_stretch_set_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,34 +79,43 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_a8bd06c09591a721c3a0a34b6ac6ad9b1.html#a8bd06c09591a721c3a0a34b6ac6ad9b1">route_stretch_set_stbox</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tnpoint__boxops_8c_a8bd06c09591a721c3a0a34b6ac6ad9b1.html#a8bd06c09591a721c3a0a34b6ac6ad9b1">route_stretch_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_a796df5bd83005e66570d7c53cafe1929.html#a796df5bd83005e66570d7c53cafe1929">stbox_expand_point4d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_aff8a270017c275a504d6f082d0d7ecb7.html#aff8a270017c275a504d6f082d0d7ecb7">tnpointinst_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_ab04908d89ef34f992d89608fd1e1f23f.html#ab04908d89ef34f992d89608fd1e1f23f">tnpointinstarr_linear_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_a3f71d95779e2c5e350aafae3a22637b4.html#a3f71d95779e2c5e350aafae3a22637b4">tnpointinstarr_set_stbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tnpoint__boxops_8c_a04a8cc0a1b7c369493b4d2d544b29abf.html#a04a8cc0a1b7c369493b4d2d544b29abf">tnpointinstarr_step_set_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_a04a8cc0a1b7c369493b4d2d544b29abf.html#a04a8cc0a1b7c369493b4d2d544b29abf">tnpointinstarr_step_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint__boxops_8c_ab938adb766fc0a62196e1fcbeb2babd9.html#ab938adb766fc0a62196e1fcbeb2babd9">tnpointseq_expand_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a04a8cc0a1b7c369493b4d2d544b29abf" name="a04a8cc0a1b7c369493b4d2d544b29abf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04a8cc0a1b7c369493b4d2d544b29abf">&#9670;&#160;</a></span>tnpointinstarr_step_set_stbox()</h2>
+<a id="a8bd06c09591a721c3a0a34b6ac6ad9b1" name="a8bd06c09591a721c3a0a34b6ac6ad9b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bd06c09591a721c3a0a34b6ac6ad9b1">&#9670;&#160;</a></span>route_stretch_set_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void tnpointinstarr_step_set_stbox </td>
+          <td class="memname">static bool route_stretch_set_stbox </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> **&#160;</td>
-          <td class="paramname"><em>instants</em>, </td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>rid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pos2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -120,17 +129,23 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return in the last argument a spatiotemporal box constructed from an array of temporal network point instants. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return in the last argument the spatial box of the stretch of a route between two positions. </p>
+<p >The box is the one of the points a temporal network point travelling the stretch passes as <a class="el" href="tnpoint_8h_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898" title="Convert a temporal network point into a temporal geometry point.">tnpointseq_tgeompointseq_cont</a> states them: the points at the two positions, located as <a class="el" href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f" title="Transform a network point into a geometry.">npoint_to_geompoint</a> locates a position, and the vertices of the route strictly between them, whose positions <a class="el" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f" title="Return the positions of the interior vertices of a route.">route_vertex_positions</a> gives. The points are read as <a class="el" href="group__meos__internal__box__constructor_gac4eb607103c78b3a35e80af211901325.html#gac4eb607103c78b3a35e80af211901325" title="Return in the last argument a spatiotemporal box constructed from an array of network points.">npointarr_set_stbox</a> reads them </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">instants</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> network point values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rid</td><td>Route identifier </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos1,pos2</td><td>Positions on the route </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>False when the route is not found </dd></dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnpointseq_tgeompointseq_cont</title>
+<title>MobilityDB: route_vertex_positions</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -107,7 +107,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a500eea0bb13292c48067cc1065afc64e.html#a500eea0bb13292c48067cc1065afc64e">PG_GETARG_NSEGMENT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ac3b096d6102985eb5de0a897db8c4f0a.html#ac3b096d6102985eb5de0a897db8c4f0a">PG_RETURN_NPOINT_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a294bdc370095b6f9fadfd13011954c56.html#a294bdc370095b6f9fadfd13011954c56">PG_RETURN_NSEGMENT_P</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a5fc5eb54422b049a9930ff6bad47551f.html#a5fc5eb54422b049a9930ff6bad47551f">route_vertex_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a2ecf86b4af23fbd67f6bf95fce4b0222.html#a2ecf86b4af23fbd67f6bf95fce4b0222">srid_matches_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ac51ca2af32726e8fa49561a4cd9b6f93.html#ac51ca2af32726e8fa49561a4cd9b6f93">tgeompointseq_tnpointseq</a></td></tr>
@@ -124,7 +124,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_aca9dbcdf6871726fddf384c0bb0b7082.html#aca9dbcdf6871726fddf384c0bb0b7082">tnpointseq_disc_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_af2de9053b174bcc2e59274074948552a.html#af2de9053b174bcc2e59274074948552a">tnpointseq_linear_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ad6259bdeaf5b6a04c136f8e83e746f5b.html#ad6259bdeaf5b6a04c136f8e83e746f5b">tnpointseq_positions</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898">tnpointseq_tgeompointseq_cont</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898">tnpointseq_tgeompointseq_cont</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_af9581580896ff6600811163553bf31b5.html#af9581580896ff6600811163553bf31b5">tnpointseq_tgeompointseq_disc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_afa7404ea8b2232f73f3358b640018470.html#afa7404ea8b2232f73f3358b640018470">tnpointseqset_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a1e3f9e1abbfe420fe3d54abb631ec8d5.html#a1e3f9e1abbfe420fe3d54abb631ec8d5">tnpointseqset_routes</a></td></tr>
@@ -133,24 +133,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afcf686686d1ad88a2d9ecbf6e1e84898" name="afcf686686d1ad88a2d9ecbf6e1e84898"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afcf686686d1ad88a2d9ecbf6e1e84898">&#9670;&#160;</a></span>tnpointseq_tgeompointseq_cont()</h2>
+<a id="a5fc5eb54422b049a9930ff6bad47551f" name="a5fc5eb54422b049a9930ff6bad47551f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fc5eb54422b049a9930ff6bad47551f">&#9670;&#160;</a></span>route_vertex_positions()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTSequence.html">TSequence</a> * tnpointseq_tgeompointseq_cont </td>
+          <td class="memname">double * route_vertex_positions </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structPOINTARRAY.html">POINTARRAY</a> *&#160;</td>
+          <td class="paramname"><em>pa</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Convert a temporal network point into a temporal geometry point. </p>
-<p >A linear segment travels its route between the positions of its instants, so each vertex of the route that a segment passes is an instant of the result, located at the vertex. Its ratio in the segment is the one <a class="el" href="tnpoint_8h_a706c2b6e50168baa2b4487ab74a6839b.html#a706c2b6e50168baa2b4487ab74a6839b" title="Return the location of a network point in a network point segment.">npointsegm_locate</a> gives, and it is dated from the ratio as <a class="el" href="meos_2src_2npoint_2tnpoint_8c_a02155b2d8217227077f8c6d48159b543.html#a02155b2d8217227077f8c6d48159b543" title="Return 1 or 2 if two temporal network point segments intersect during the period defined by the outpu...">tnpointsegm_intersection</a> dates a crossing </p>
+<p>Return the positions of the interior vertices of a route. </p>
+<p >The position of a vertex is its distance along the route over the length of the route, the measure with which <code>lwline_interpolate_points</code> locates a position. Both <a class="el" href="meos_2src_2npoint_2tnpoint_8c_afcf686686d1ad88a2d9ecbf6e1e84898.html#afcf686686d1ad88a2d9ecbf6e1e84898" title="Convert a temporal network point into a temporal geometry point.">tnpointseq_tgeompointseq_cont</a> and <a class="el" href="tnpoint__boxops_8c_ab04908d89ef34f992d89608fd1e1f23f.html#ab04908d89ef34f992d89608fd1e1f23f" title="Return in the last argument q spatiotemporal box constructed from an array of temporal network point ...">tnpointinstarr_linear_set_stbox</a> read the vertices a linear segment passes from these positions </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Points of the route </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of positions </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL when the route has no interior vertex or no length </dd></dl>
 
 </div>
 </div>
