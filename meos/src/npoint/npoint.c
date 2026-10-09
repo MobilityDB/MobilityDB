@@ -936,6 +936,11 @@ npoint_to_stbox(const Npoint *np)
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of network points
+ * @details The geometry of a route is read once for each run of points on
+ * it, which the order of the points of a set makes one run per route, and each
+ * point is located on the route as #npointarr_geom locates it. The box of a
+ * point is its coordinates, the ones #npoint_set_stbox reads back from the
+ * serialized point
  * @param[in] values Network points
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -943,13 +948,44 @@ npoint_to_stbox(const Npoint *np)
 void
 npointarr_set_stbox(const Datum *values, int count, STBox *box)
 {
-  npoint_set_stbox(DatumGetNpointP(values[0]), box);
-  for (int i = 1; i < count; i++)
+  LWGEOM *line = NULL;
+  int64 rid = 0;
+  int32_t srid = SRID_UNKNOWN;
+  bool hasz = false, geodetic = false;
+  for (int i = 0; i < count; i++)
   {
-    STBox box1;
-    npoint_set_stbox(DatumGetNpointP(values[i]), &box1);
-    stbox_expand(&box1, box);
+    const Npoint *np = DatumGetNpointP(values[i]);
+    if (! line || np->rid != rid)
+    {
+      if (line)
+        lwgeom_free(line);
+      const GSERIALIZED *gsline = route_geom(np->rid);
+      if (! gsline)
+        return;
+      rid = np->rid;
+      srid = gserialized_get_srid(gsline);
+      hasz = (bool) FLAGS_GET_Z(gsline->gflags);
+      geodetic = (bool) FLAGS_GET_GEODETIC(gsline->gflags);
+      line = lwgeom_from_gserialized(gsline);
+    }
+    LWGEOM *point = lwgeom_line_interpolate_point(line, np->pos, srid, 0);
+    POINT4D p;
+    lwpoint_getPoint4d_p((LWPOINT *) point, &p);
+    lwgeom_free(point);
+    if (i == 0)
+      stbox_set(true, hasz, geodetic, srid, p.x, p.x, p.y, p.y,
+        hasz ? p.z : 0.0, hasz ? p.z : 0.0, NULL, box);
+    else
+    {
+      box->xmin = Min(box->xmin, p.x); box->xmax = Max(box->xmax, p.x);
+      box->ymin = Min(box->ymin, p.y); box->ymax = Max(box->ymax, p.y);
+      if (hasz)
+      {
+        box->zmin = Min(box->zmin, p.z); box->zmax = Max(box->zmax, p.z);
+      }
+    }
   }
+  lwgeom_free(line);
   return;
 }
 
