@@ -63,6 +63,8 @@
 
 /* Validity functions */
 
+extern bool ensure_route_exists(int64 rid);
+extern bool ensure_valid_position(double pos);
 extern bool ensure_valid_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
 extern bool ensure_valid_tnpoint_npointset(const Temporal *temp, const Set *s);

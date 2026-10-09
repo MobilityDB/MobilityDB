@@ -129,6 +129,24 @@ int main(void)
 
   free(np); free(tint); free(disc); free(seq);
 
+  /* A network point set is built from an array of network points the caller
+   * fills, each checked as npoint_make checks its arguments */
+  Npoint vals[3] = {{1, 0.25}, {2, 0.5}, {3, 0.75}};
+  Set *s = npointset_make(vals, 3);
+  printf("npointset_make(filled array): %s, errno %d\n",
+    s ? "a value" : "NULL", meos_errno());
+  assert(s != NULL);
+  assert(meos_errno() == 0);
+  free(s);
+
+  vals[1].pos = 1.5;
+  s = npointset_make(vals, 3);
+  printf("npointset_make(position 1.5): %s, errno %d\n",
+    s ? "a value" : "NULL", meos_errno());
+  assert(s == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
   return EXIT_SUCCESS;

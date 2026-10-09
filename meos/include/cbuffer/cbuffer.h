@@ -47,17 +47,6 @@
  * Type definitions
  *****************************************************************************/
 
-/* Structure to represent circular buffers */
-
-struct Cbuffer
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 srid;           /**< Spatial reference identifier */
-  double radius;        /**< Radius */
-  double x;             /**< X coordinate of the centre point */
-  double y;             /**< Y coordinate of the centre point */
-};
-
 /*****************************************************************************
  * fmgr macros
  *****************************************************************************/

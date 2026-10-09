@@ -828,8 +828,13 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
+ * @ingroup meos_internal_npoint_base_constructor
  * @brief Return in the last argument a network point constructed from a route
  * identifier and a position
+ * @param[in] rid Route identifier
+ * @param[in] pos Position
+ * @param[out] np Network point
+ * @note This function is equivalent to #npoint_make without memory allocation
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -865,8 +870,14 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
+ * @ingroup meos_internal_npoint_base_constructor
  * @brief Return in the last argument a network segment constructed from a
  * route identifier and two positions
+ * @param[in] rid Route identifier
+ * @param[in] pos1, pos2 Positions
+ * @param[out] ns Network segment
+ * @note This function is equivalent to #nsegment_make without memory
+ * allocation
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)

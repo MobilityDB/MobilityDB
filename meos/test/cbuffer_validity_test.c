@@ -114,6 +114,29 @@ int main(void)
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
 
   free(temp); free(geo); free(other);
+  meos_errno_reset();
+
+  /* A circular buffer set is built from an array of circular buffers the
+   * caller fills, whose varlena header the set constructor sets, each radius
+   * checked as cbuffer_make checks it */
+  Cbuffer cbs[2] = {{0, 3857, 0.5, 1.0, 2.0}, {0, 3857, 1.5, 3.0, 4.0}};
+  Set *s = cbufferset_make(cbs, 2);
+  printf("cbufferset_make(filled array): %s, errno %d\n",
+    s ? "a value" : "NULL", meos_errno());
+  assert(s != NULL);
+  assert(meos_errno() == 0);
+  Cbuffer *start = cbufferset_start_value(s);
+  Cbuffer *made = cbuffer_in("SRID=3857;Cbuffer(Point(1 2),0.5)");
+  assert(cbuffer_eq(start, made));
+  free(start); free(made); free(s);
+
+  cbs[1].radius = -1.0;
+  s = cbufferset_make(cbs, 2);
+  printf("cbufferset_make(radius -1): %s, errno %d\n",
+    s ? "a value" : "NULL", meos_errno());
+  assert(s == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
 
   /* Finalize MEOS */
   meos_finalize();
