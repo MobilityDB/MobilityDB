@@ -240,6 +240,8 @@ SELECT positions(tnpoint 'Npoint(1, 0.5)@2001-01-01');
 SELECT positions(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}');
 SELECT positions(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]');
 SELECT positions(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
+SELECT positions(tnpoint '{[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.2)@2001-01-02], [Npoint(1, 0.5)@2001-01-03, Npoint(1, 0.6)@2001-01-04]}');
+SELECT positions(tnpoint '{[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-02], [Npoint(1, 0.2)@2001-01-03, Npoint(1, 0.4)@2001-01-04]}');
 SELECT positions(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]');
 SELECT positions(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
 
