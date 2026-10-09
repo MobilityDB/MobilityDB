@@ -79,10 +79,12 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga658daa26894b8a16db373a6e2fd40bd0.html#ga658daa26894b8a16db373a6e2fd40bd0">geog_disjoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9">geog_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2d318481a308c8a7f92709c21480118f.html#ga2d318481a308c8a7f92709c21480118f">geog_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gabdddabbac6830ffdc98a4fd98a79075d.html#gabdddabbac6830ffdc98a4fd98a79075d">geom_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2448e79006b40a02efcfcf151343303e.html#ga2448e79006b40a02efcfcf151343303e">geom_covers</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga4dc1b7b3c3e9e4217ac3476634c83e9d.html#ga4dc1b7b3c3e9e4217ac3476634c83e9d">geom_disjoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaf36cfbd72f603112f8782375b46c1a69.html#gaf36cfbd72f603112f8782375b46c1a69">geom_disjoint2d</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga4e370d139ce7131490d898a6d8f619ea.html#ga4e370d139ce7131490d898a6d8f619ea">geom_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga3f306b295cbca018ce74fa93f9e95c81.html#ga3f306b295cbca018ce74fa93f9e95c81">geom_dwithin2d</a></td></tr>
@@ -130,14 +132,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if two geometries are within a distance. </p>
-<p >Bare name for the planar (2D) distance-within test, the portable counterpart of <a class="el" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9">geog_dwithin()</a> for geometry; equivalent to PostGIS <code>ST_DWithin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The distance is measured in 3D when both geometries have Z and in 2D otherwise, as <a class="el" href="tgeo__spatialrels_8h_afbb1bd2787243db201282d165c68089a.html#afbb1bd2787243db201282d165c68089a" title="Select the appropriate dwithin function depending on the flags.">geo_dwithin_fn</a> selects it for the temporal dwithin at every instant; this is PostGIS <code>ST_3DDWithin</code> when both have Z and <code>ST_DWithin</code> otherwise </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tolerance</td><td>Tolerance </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_afa7cea4e1235b557fbb9dcebc3152403.html#afa7cea4e1235b557fbb9dcebc3152403">LWGEOM_dwithin(PG_FUNCTION_ARGS)</a></code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS functions: <code><a class="el" href="postgis_8h_afa7cea4e1235b557fbb9dcebc3152403.html#afa7cea4e1235b557fbb9dcebc3152403">LWGEOM_dwithin(PG_FUNCTION_ARGS)</a></code>, <code><a class="el" href="postgis_8h_a792431a442a4f69fe9d63458f254a561.html#a792431a442a4f69fe9d63458f254a561">LWGEOM_dwithin3d(PG_FUNCTION_ARGS)</a></code> @csqlfn <a class="el" href="group__mobilitydb__geo__base__rel_ga4c8e7ede12b8dc25ce97929f7250d582.html#ga4c8e7ede12b8dc25ce97929f7250d582" title="Return true if two geometries are within a distance @sqlfn dwithin() @altsqlfn geoDwithin()">Geom_dwithin()</a> </dd></dl>
 
 </div>
 </div>

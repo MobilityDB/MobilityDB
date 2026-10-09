@@ -86,6 +86,7 @@ $(function() {
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
@@ -98,9 +99,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gab708c13c31de706be0628559ff3da769"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__set__setops_gab708c13c31de706be0628559ff3da769.html#gab708c13c31de706be0628559ff3da769">contains_set_geo</a> (const <a class="el" href="structSet.html">Set</a> *<a class="el" href="trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f">s</a>, <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
 <tr class="memdesc:gab708c13c31de706be0628559ff3da769"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a set contains a geometry/geography.  <a href="group__meos__geo__set__setops_gab708c13c31de706be0628559ff3da769.html#gab708c13c31de706be0628559ff3da769">More...</a><br /></td></tr>
 <tr class="separator:gab708c13c31de706be0628559ff3da769"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a819b3468ffb1ba0b9e04b4348e26f806"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geoset__meos_8c_a819b3468ffb1ba0b9e04b4348e26f806.html#a819b3468ffb1ba0b9e04b4348e26f806">ensure_valid_geoset_geo</a> (const <a class="el" href="structSet.html">Set</a> *<a class="el" href="trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f">s</a>, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
-<tr class="memdesc:a819b3468ffb1ba0b9e04b4348e26f806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a set and a geometry/geography are valid for set operations.  <a href="geoset__meos_8c_a819b3468ffb1ba0b9e04b4348e26f806.html#a819b3468ffb1ba0b9e04b4348e26f806">More...</a><br /></td></tr>
-<tr class="separator:a819b3468ffb1ba0b9e04b4348e26f806"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gadf56c5c1bad114790896d801cee760ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__set__conversion_gadf56c5c1bad114790896d801cee760ec.html#gadf56c5c1bad114790896d801cee760ec">geo_set</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
 <tr class="memdesc:gadf56c5c1bad114790896d801cee760ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a geometry/geography into a geo set.  <a href="group__meos__internal__geo__set__conversion_gadf56c5c1bad114790896d801cee760ec.html#gadf56c5c1bad114790896d801cee760ec">More...</a><br /></td></tr>
 <tr class="separator:gadf56c5c1bad114790896d801cee760ec"><td class="memSeparator" colspan="2">&#160;</td></tr>

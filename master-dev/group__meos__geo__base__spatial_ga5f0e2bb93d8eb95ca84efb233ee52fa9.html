@@ -101,6 +101,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga4c43039b8653455b0deca057f1c5604e.html#ga4c43039b8653455b0deca057f1c5604e">geom_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga2836bc2ac6761798b63154135896eb91.html#ga2836bc2ac6761798b63154135896eb91">geom_minimum_bounding_radius</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaa9d084c3fa8cf531fef5aa4f18c39ae0.html#gaa9d084c3fa8cf531fef5aa4f18c39ae0">geom_oriented_envelope</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaac19fdb88f4d9ece10cb1c230af5a974.html#gaac19fdb88f4d9ece10cb1c230af5a974">geom_shortestline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3625560eff370095b7c7cd1494ed52d6.html#ga3625560eff370095b7c7cd1494ed52d6">geom_shortestline2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga34d5b963ed0f9c339ecd4d8398bdd2e1.html#ga34d5b963ed0f9c339ecd4d8398bdd2e1">geom_shortestline3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3e227f98f45314e22860b20b114a33d2.html#ga3e227f98f45314e22860b20b114a33d2">geom_unary_union</a></td></tr>
@@ -150,7 +151,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return an array of integers specifying the cluster number assigned to the input geometries using the k-means algorithm. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >An empty geometry is assigned to no cluster, its number being -1 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in the input array </td></tr>
@@ -159,7 +160,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_ClusterKMeans(PG_FUNCTION_ARGS)</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_ClusterKMeans(PG_FUNCTION_ARGS)</code> @csqlfn <a class="el" href="group__mobilitydb__geo__base__spatial_gabe0834337fb988780db569e722662bde.html#gabe0834337fb988780db569e722662bde" title="Return the number of the cluster the k-means algorithm assigns to each geometry of an array,...">Geo_cluster_kmeans()</a> </dd></dl>
 
 </div>
 </div>
