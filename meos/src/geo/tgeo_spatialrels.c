@@ -58,6 +58,7 @@
 #include "temporal/tsequence.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_tempspatialrels.h"
 
@@ -2453,6 +2454,10 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
    * that does not meet the other. */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
+
+  /* Two planar linearly moving points: the exact sign over continuous time */
+  if (tpoint_motion_exact_applies(temp1, temp2))
+    return ea_dwithin_tpoint_tpoint_exact(temp1, temp2, dist, ever);
 
   /* Bounding box test with distance expansion: the two share time, so if the
    * box of the first does not meet the box of the second expanded by the

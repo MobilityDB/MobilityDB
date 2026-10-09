@@ -323,6 +323,22 @@ moving_entry(const char *trip, const char *wkt, double expected)
   free(temp);
 }
 
+/* The nearest approach of two moving points over continuous time, against the
+ * double nearest the exact one, and whether they are ever and always within a
+ * distance; the two-operand twin of #moving_entry */
+static void
+pair_entry(const char *trip1, const char *trip2, double expected, double d,
+  int ever, int always)
+{
+  Temporal *temp1 = tgeompoint_in(trip1), *temp2 = tgeompoint_in(trip2);
+  assert(temp1 != NULL && temp2 != NULL);
+  assert(nad_tgeo_tgeo(temp1, temp2, true) == expected);
+  assert(edwithin_tgeo_tgeo(temp1, temp2, d, true) == ever);
+  assert(adwithin_tgeo_tgeo(temp1, temp2, d, true) == always);
+  free(temp1);
+  free(temp2);
+}
+
 /* Main program */
 int main(void)
 {
@@ -569,6 +585,26 @@ int main(void)
     0x1.03ef189b0a131p+159);
   printf("%d tie broken by a coordinate far below the others answered as the "
     "nearest double\n", unscaled);
+
+  /* Two moving points over continuous time: a point crossing a day against a
+   * point at rest 1 from its path, the foot between two microseconds, and two
+   * points meeting at a seventh of a day, each asked at a distance either
+   * side of its nearest approach */
+  int pairs = 4;
+  const char *fast = "[POINT(0 0)@2001-01-01, POINT(1000000 0)@2001-01-02]";
+  const char *rest = "[POINT(123456.789 1)@2001-01-01, "
+    "POINT(123456.789 1)@2001-01-02]";
+  pair_entry(fast, rest, 1.0, 1.0, 1, 0);
+  pair_entry(fast, rest, 1.0, 0.999999, 0, 0);
+  const char *east = "[POINT(0 0)@2001-01-01, POINT(7 0)@2001-01-02]";
+  const char *fall = "[POINT(0 1)@2001-01-01, POINT(7 -6)@2001-01-02]";
+  pair_entry(east, fall, 0.0, 6.0, 1, 1);
+  pair_entry(east, fall, 0.0, 5.999, 1, 0);
+  /* Two sequences touching only at an exclusive bound share no time */
+  pairs++;
+  pair_entry("[POINT(0 0)@2001-01-01, POINT(1 0)@2001-01-02)",
+    "[POINT(5 0)@2001-01-02, POINT(6 0)@2001-01-03]", DBL_MAX, 10.0, -1, -1);
+  printf("%d pairs of moving points answered over continuous time\n", pairs);
 
   /* Finalize MEOS */
   meos_finalize();

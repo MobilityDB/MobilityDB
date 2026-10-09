@@ -215,6 +215,12 @@ extern double point_distance_offset_exact(const double *p, const double *q,
   int ndims, double r);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, double r);
+extern double point_motion_nad_exact(const double *p0, const double *p1,
+  int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
+  int64 ta, int64 tb);
+extern bool point_motion_dwithin_exact(const double *p0, const double *p1,
+  int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
+  int64 ta, int64 tb, double d, bool ever);
 
 /* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
  * with the double nearest to it and a bound on the error of that double */

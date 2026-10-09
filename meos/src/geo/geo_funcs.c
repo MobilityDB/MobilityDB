@@ -2516,6 +2516,600 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
   return;
 }
 
+/** Number of 64-bit limbs of a #WideDyadic. The quantities
+ * #point_motion_squares forms are products of up to six differences of
+ * timestamps and four doubles, whose terms the exponents of the doubles spread
+ * over at most about 9100 bits */
+#define WIDE_DYADIC_LIMBS 160
+
+/**
+ * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
+ * 64-bit limbs, the lowest first, as #square_products_wide holds its integer,
+ * with exact sums and products of any two
+ */
+typedef struct
+{
+  int sign;         /**< -1, 0 or 1 */
+  int len;          /**< Number of limbs of the magnitude */
+  int exp;          /**< Weight of the lowest bit of the magnitude */
+  uint64_t limb[WIDE_DYADIC_LIMBS];
+} WideDyadic;
+
+/**
+ * @brief Drop the zero limbs at both ends of a #WideDyadic, those at the
+ * bottom raising its exponent
+ */
+static void
+wide_dyadic_normalize(WideDyadic *a)
+{
+  while (a->len > 0 && a->limb[a->len - 1] == 0)
+    a->len--;
+  if (a->len == 0)
+  {
+    a->sign = 0;
+    a->exp = 0;
+    return;
+  }
+  int z = 0;
+  while (a->limb[z] == 0)
+    z++;
+  if (z > 0)
+  {
+    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64_t));
+    a->len -= z;
+    a->exp += 64 * z;
+  }
+  return;
+}
+
+/**
+ * @brief Set a #WideDyadic to a finite double, exactly: its integer mantissa
+ * times the weight of its lowest bit
+ */
+static void
+wide_dyadic_set_double(WideDyadic *a, double x)
+{
+  a->sign = 0;
+  a->len = 0;
+  a->exp = 0;
+  if (x == 0.0)
+    return;
+  uint64_t bits;
+  memcpy(&bits, &x, sizeof(bits));
+  int e = (int) ((bits >> 52) & 0x7FF);
+  uint64_t m = bits & 0xFFFFFFFFFFFFFULL;
+  if (e)
+  {
+    m |= 1ULL << 52;
+    a->exp = e - 1075;
+  }
+  else
+    a->exp = -1074;
+  a->sign = (bits >> 63) ? -1 : 1;
+  a->limb[0] = m;
+  a->len = 1;
+  return;
+}
+
+/**
+ * @brief Set a #WideDyadic to a 64-bit integer, exactly
+ */
+static void
+wide_dyadic_set_int(WideDyadic *a, int64 v)
+{
+  a->exp = 0;
+  if (v == 0)
+  {
+    a->sign = 0;
+    a->len = 0;
+    return;
+  }
+  a->sign = (v < 0) ? -1 : 1;
+  a->limb[0] = (v < 0) ? (uint64_t) 0 - (uint64_t) v : (uint64_t) v;
+  a->len = 1;
+  return;
+}
+
+/**
+ * @brief Set the product of two 64-bit integers as two 64-bit halves, from
+ * their 32-bit halves as #wide_product forms its partial products
+ */
+static inline void
+wide_mul64(uint64_t a, uint64_t b, uint64_t *hi, uint64_t *lo)
+{
+  uint64_t a0 = a & 0xFFFFFFFFULL, a1 = a >> 32;
+  uint64_t b0 = b & 0xFFFFFFFFULL, b1 = b >> 32;
+  uint64_t p00 = a0 * b0, p01 = a0 * b1, p10 = a1 * b0, p11 = a1 * b1;
+  uint64_t mid = (p00 >> 32) + (p01 & 0xFFFFFFFFULL) + (p10 & 0xFFFFFFFFULL);
+  *lo = (p00 & 0xFFFFFFFFULL) | (mid << 32);
+  *hi = p11 + (p01 >> 32) + (p10 >> 32) + (mid >> 32);
+  return;
+}
+
+/**
+ * @brief Return false, raising an internal error, where @p n limbs exceed the
+ * capacity of a #WideDyadic
+ */
+static bool
+wide_dyadic_fits(int n)
+{
+  if (n <= WIDE_DYADIC_LIMBS)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "An exact product exceeds %d limbs", WIDE_DYADIC_LIMBS);
+  return false;
+}
+
+/**
+ * @brief Set the product of two #WideDyadic, exactly
+ * @note The result is not one of the operands
+ */
+static void
+wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
+{
+  r->sign = 0;
+  r->len = 0;
+  r->exp = 0;
+  if (a->sign == 0 || b->sign == 0 || ! wide_dyadic_fits(a->len + b->len))
+    return;
+  int n = a->len + b->len;
+  memset(r->limb, 0, (size_t) n * sizeof(uint64_t));
+  for (int i = 0; i < a->len; i++)
+  {
+    uint64_t carry = 0;
+    for (int j = 0; j < b->len; j++)
+    {
+      uint64_t hi, lo;
+      wide_mul64(a->limb[i], b->limb[j], &hi, &lo);
+      uint64_t s = r->limb[i + j] + lo;
+      hi += (s < lo);
+      uint64_t s2 = s + carry;
+      hi += (s2 < s);
+      r->limb[i + j] = s2;
+      carry = hi;
+    }
+    /* No earlier row reaches past limb i + b->len - 1 */
+    r->limb[i + b->len] = carry;
+  }
+  r->len = n;
+  r->sign = a->sign * b->sign;
+  r->exp = a->exp + b->exp;
+  wide_dyadic_normalize(r);
+  return;
+}
+
+/**
+ * @brief Set in @p out the magnitude of a #WideDyadic shifted to the weight
+ * 2^e of its lowest bit, e not above its exponent, and return its number of
+ * limbs, or -1 where it exceeds the capacity
+ */
+static int
+wide_dyadic_aligned(const WideDyadic *a, int e, uint64_t *out)
+{
+  int s = a->exp - e, ls = s / 64, bs = s % 64;
+  int n = a->len + ls + 1;
+  if (! wide_dyadic_fits(n))
+    return -1;
+  memset(out, 0, (size_t) n * sizeof(uint64_t));
+  for (int i = 0; i < a->len; i++)
+  {
+    out[i + ls] |= a->limb[i] << bs;
+    if (bs)
+      out[i + ls + 1] |= a->limb[i] >> (64 - bs);
+  }
+  return n;
+}
+
+/**
+ * @brief Set the sum of two #WideDyadic, exactly: both magnitudes aligned to
+ * the lower of the two lowest bits, then added or the smaller subtracted
+ * @note The result is not one of the operands
+ */
+static void
+wide_dyadic_add(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
+{
+  if (a->sign == 0)
+  {
+    *r = *b;
+    return;
+  }
+  if (b->sign == 0)
+  {
+    *r = *a;
+    return;
+  }
+  uint64_t x[WIDE_DYADIC_LIMBS], y[WIDE_DYADIC_LIMBS];
+  int e = (a->exp < b->exp) ? a->exp : b->exp;
+  int nx = wide_dyadic_aligned(a, e, x), ny = wide_dyadic_aligned(b, e, y);
+  r->sign = 0;
+  r->len = 0;
+  r->exp = 0;
+  if (nx < 0 || ny < 0)
+    return;
+  int n = (nx > ny) ? nx : ny;
+  for (int i = nx; i < n; i++)
+    x[i] = 0;
+  for (int i = ny; i < n; i++)
+    y[i] = 0;
+  if (a->sign == b->sign)
+  {
+    if (! wide_dyadic_fits(n + 1))
+      return;
+    uint64_t carry = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64_t s = x[i] + y[i];
+      uint64_t c1 = s < x[i];
+      r->limb[i] = s + carry;
+      carry = c1 + (r->limb[i] < s);
+    }
+    r->limb[n] = carry;
+    r->len = n + 1;
+    r->sign = a->sign;
+  }
+  else
+  {
+    /* The larger magnitude less the smaller, with the sign of the larger */
+    int cmp = 0;
+    for (int i = n - 1; i >= 0 && cmp == 0; i--)
+    {
+      if (x[i] != y[i])
+        cmp = (x[i] > y[i]) ? 1 : -1;
+    }
+    if (cmp == 0)
+      return;
+    const uint64_t *big = (cmp > 0) ? x : y, *small = (cmp > 0) ? y : x;
+    uint64_t borrow = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64_t d = big[i] - small[i];
+      uint64_t b1 = big[i] < small[i];
+      r->limb[i] = d - borrow;
+      borrow = b1 + (d < borrow);
+    }
+    r->len = n;
+    r->sign = (cmp > 0) ? a->sign : b->sign;
+  }
+  r->exp = e;
+  wide_dyadic_normalize(r);
+  return;
+}
+
+/**
+ * @brief Return the sign of the difference of two #WideDyadic, exactly
+ */
+static int
+wide_dyadic_cmp(const WideDyadic *a, const WideDyadic *b)
+{
+  WideDyadic nb = *b, d;
+  nb.sign = - nb.sign;
+  wide_dyadic_add(a, &nb, &d);
+  return d.sign;
+}
+
+/**
+ * @brief Return a #WideDyadic as a double @p m and a power of two whose
+ * product is within a relative 2^-63 of it, as #wide_frexp reads an integer
+ * of #square_products_wide, so a caller divides two such values without
+ * leaving the doubles
+ */
+static double
+wide_dyadic_frexp(const WideDyadic *a, int *exp)
+{
+  if (a->sign == 0)
+  {
+    *exp = 0;
+    return 0.0;
+  }
+  int i = a->len - 1;
+  double m = (double) a->limb[i];
+  if (i > 0)
+    m += ldexp((double) a->limb[i - 1], -64);
+  *exp = a->exp + 64 * i;
+  return m;
+}
+
+/**
+ * @brief Set the exact squared distances of two points moving linearly over
+ * the interval [ta, tb], as quotients over a common denominator
+ * @details Over the interval the first point lies on its segment from @p p0
+ * at @p s0 to @p p1 at @p s1, and the second on its segment from @p q0 at
+ * @p r0 to @p q1 at @p r1, so with `Dp = s1 - s0`, `Dq = r1 - r0`,
+ * `a = ta - s0`, `b = ta - r0` and `t = ta + u`, the difference of their
+ * positions times `Dp Dq` is `V0 + u E`, linear in the time, with
+ *   `V0 = Dq (Dp - a) p0 + Dq a p1 - Dp (Dq - b) q0 - Dp b q1`,
+ *   `E = Dq p1 - Dq p0 - Dp q1 + Dp q0`,
+ * sums of products of integer timestamps and input doubles, held exactly. No
+ * position between the instants of an operand is formed. The least squared
+ * distance over the interval is that of the origin to the segment from `V0`
+ * to `V0 + L E`, `L = tb - ta`: the squared cross product of `V0` and `E`
+ * over `|E|^2` where the foot falls inside, an end otherwise, all over
+ * `(Dp Dq)^2`.
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @param[out] nmin,dmin The least squared distance as @p nmin over @p dmin
+ * @param[out] nend0,nend1,dend Squared distances at @p ta and at @p tb, over
+ * @p dend
+ * @pre `s0 < s1`, `r0 < r1`, `s0 <= ta <= tb <= s1`, `r0 <= ta <= tb <= r1`,
+ * 2D points
+ */
+static void
+point_motion_squares(const double *p0, const double *p1, int64 s0, int64 s1,
+  const double *q0, const double *q1, int64 r0, int64 r1, int64 ta, int64 tb,
+  WideDyadic *nmin, WideDyadic *dmin, WideDyadic *nend0, WideDyadic *nend1,
+  WideDyadic *dend)
+{
+  int64 dp = s1 - s0, dq = r1 - r0, a = ta - s0, b = ta - r0;
+  WideDyadic Dp, Dq, Ka, Kb, k[4], kneg, t1, t2, acc, sum;
+  wide_dyadic_set_int(&Dp, dp);
+  wide_dyadic_set_int(&Dq, dq);
+  /* The coefficients of p0, p1, q0, q1 in V0 */
+  wide_dyadic_set_int(&Ka, dp - a);
+  wide_dyadic_mul(&Dq, &Ka, &k[0]);
+  wide_dyadic_set_int(&Ka, a);
+  wide_dyadic_mul(&Dq, &Ka, &k[1]);
+  wide_dyadic_set_int(&Kb, b - dq);
+  wide_dyadic_mul(&Dp, &Kb, &k[2]);
+  wide_dyadic_set_int(&Kb, - b);
+  wide_dyadic_mul(&Dp, &Kb, &k[3]);
+  WideDyadic v[2], e[2];
+  for (int c = 0; c < 2; c++)
+  {
+    const double val[4] = {p0[c], p1[c], q0[c], q1[c]};
+    /* V0 */
+    acc.sign = 0; acc.len = 0; acc.exp = 0;
+    for (int i = 0; i < 4; i++)
+    {
+      wide_dyadic_set_double(&t1, val[i]);
+      wide_dyadic_mul(&k[i], &t1, &t2);
+      wide_dyadic_add(&acc, &t2, &sum);
+      acc = sum;
+    }
+    v[c] = acc;
+    /* E: Dq p1 - Dq p0 - Dp q1 + Dp q0 */
+    acc.sign = 0; acc.len = 0; acc.exp = 0;
+    for (int i = 0; i < 4; i++)
+    {
+      wide_dyadic_set_double(&t1, val[i]);
+      const WideDyadic *f = (i < 2) ? &Dq : &Dp;
+      wide_dyadic_mul(f, &t1, &t2);
+      /* p0 and q1 enter negated */
+      if (i == 0 || i == 3)
+        t2.sign = - t2.sign;
+      wide_dyadic_add(&acc, &t2, &sum);
+      acc = sum;
+    }
+    e[c] = acc;
+  }
+  /* The common denominator of the squared distances at the ends */
+  WideDyadic dpdq;
+  wide_dyadic_mul(&Dp, &Dq, &dpdq);
+  wide_dyadic_mul(&dpdq, &dpdq, dend);
+  /* |V0|^2 and |V0 + L E|^2 */
+  WideDyadic L, v1[2], sq0, sq1;
+  wide_dyadic_set_int(&L, tb - ta);
+  for (int c = 0; c < 2; c++)
+  {
+    wide_dyadic_mul(&L, &e[c], &t1);
+    wide_dyadic_add(&v[c], &t1, &v1[c]);
+  }
+  wide_dyadic_mul(&v[0], &v[0], &sq0);
+  wide_dyadic_mul(&v[1], &v[1], &sq1);
+  wide_dyadic_add(&sq0, &sq1, nend0);
+  wide_dyadic_mul(&v1[0], &v1[0], &sq0);
+  wide_dyadic_mul(&v1[1], &v1[1], &sq1);
+  wide_dyadic_add(&sq0, &sq1, nend1);
+  /* |E|^2 and V0 . E */
+  WideDyadic ee, ve;
+  wide_dyadic_mul(&e[0], &e[0], &sq0);
+  wide_dyadic_mul(&e[1], &e[1], &sq1);
+  wide_dyadic_add(&sq0, &sq1, &ee);
+  wide_dyadic_mul(&v[0], &e[0], &sq0);
+  wide_dyadic_mul(&v[1], &e[1], &sq1);
+  wide_dyadic_add(&sq0, &sq1, &ve);
+  /* The foot lies inside where V0 . E < 0 and -V0 . E < L |E|^2 */
+  bool inside = false;
+  if (ee.sign > 0 && ve.sign < 0)
+  {
+    wide_dyadic_mul(&L, &ee, &t1);
+    kneg = ve;
+    kneg.sign = - kneg.sign;
+    inside = wide_dyadic_cmp(&kneg, &t1) < 0;
+  }
+  if (inside)
+  {
+    WideDyadic cross;
+    wide_dyadic_mul(&v[0], &e[1], &sq0);
+    wide_dyadic_mul(&v[1], &e[0], &sq1);
+    sq1.sign = - sq1.sign;
+    wide_dyadic_add(&sq0, &sq1, &cross);
+    wide_dyadic_mul(&cross, &cross, nmin);
+    wide_dyadic_mul(&ee, dend, dmin);
+  }
+  else
+  {
+    *nmin = (wide_dyadic_cmp(nend0, nend1) <= 0) ? *nend0 : *nend1;
+    *dmin = *dend;
+  }
+  return;
+}
+
+/**
+ * @brief Return true where the root of `n / d` lies beyond the midpoint from
+ * the double @p c to its upper neighbour @p up, infinity standing for 2^1024,
+ * a tie being beyond where the last bit of @p c is odd
+ */
+static bool
+wide_dyadic_root_beyond(const WideDyadic *n, const WideDyadic *d, double c,
+  double up)
+{
+  WideDyadic wc, wu, mid, m2, rhs;
+  wide_dyadic_set_double(&wc, c);
+  if (isinf(up))
+  {
+    wu.sign = 1; wu.len = 1; wu.exp = 1024; wu.limb[0] = 1;
+  }
+  else
+    wide_dyadic_set_double(&wu, up);
+  wide_dyadic_add(&wc, &wu, &mid);
+  if (mid.sign != 0)
+    mid.exp -= 1;
+  wide_dyadic_mul(&mid, &mid, &m2);
+  wide_dyadic_mul(&m2, d, &rhs);
+  int s = wide_dyadic_cmp(n, &rhs);
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Return the double nearest the square root of `n / d >= 0`, a tie
+ * going to the even double
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * root does not pass (#wide_dyadic_root_beyond): a gallop from a candidate
+ * read on the leading limbs brackets it, then halving the bracket finds it, as
+ * #point_segment_distance_offset_exact finds its answer
+ */
+static double
+wide_dyadic_nearest_root(const WideDyadic *n, const WideDyadic *d)
+{
+  if (n->sign <= 0)
+    return 0.0;
+  int en, ed;
+  double mn = wide_dyadic_frexp(n, &en), md = wide_dyadic_frexp(d, &ed);
+  double ratio = mn / md;
+  int ex = en - ed;
+  if (ex % 2 != 0)
+  {
+    ratio *= 2.0;
+    ex -= 1;
+  }
+  double c = ldexp(sqrt(ratio), ex / 2);
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+#define WD_BEYOND(bb, res) \
+  do { \
+    double cc, nn; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nn, &b2, sizeof(nn)); \
+    (res) = wide_dyadic_root_beyond(n, d, cc, nn); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  WD_BEYOND(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (true)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      WD_BEYOND(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+        return 0.0;
+      lo = (hi > step) ? hi - step : 0;
+      WD_BEYOND(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      if (lo == 0)
+        return 0.0;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    WD_BEYOND(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef WD_BEYOND
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return result;
+}
+
+/**
+ * @brief Return the nearest approach of two points moving linearly over the
+ * interval [ta, tb], the double nearest its exact value
+ * @details Time is read as continuous: the least distance over the interval
+ * is an exact rational of the input doubles and the integer timestamps
+ * (#point_motion_squares), answered as the double nearest its root
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
+ */
+double
+point_motion_nad_exact(const double *p0, const double *p1, int64 s0,
+  int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
+  int64 tb)
+{
+  WideDyadic nmin, dmin, n0, n1, dend;
+  point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, &nmin, &dmin,
+    &n0, &n1, &dend);
+  return wide_dyadic_nearest_root(&nmin, &dmin);
+}
+
+/**
+ * @brief Return true if two points moving linearly over the interval
+ * [ta, tb] are within a distance at some instant of it (@p ever) or at every
+ * instant of it, decided exactly over continuous time
+ * @details Ever within holds where the least squared distance over the
+ * interval is at most `d^2`; always within where both ends are, the squared
+ * distance being a convex quadratic in time (#point_motion_squares)
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @param[in] d Distance, not negative
+ * @param[in] ever True for the ever semantics, false for the always one
+ * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
+ */
+bool
+point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
+  int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
+  int64 tb, double d, bool ever)
+{
+  WideDyadic nmin, dmin, n0, n1, dend, wd, dd, rhs;
+  point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, &nmin, &dmin,
+    &n0, &n1, &dend);
+  wide_dyadic_set_double(&wd, d);
+  wide_dyadic_mul(&wd, &wd, &dd);
+  if (ever)
+  {
+    wide_dyadic_mul(&dd, &dmin, &rhs);
+    return wide_dyadic_cmp(&nmin, &rhs) <= 0;
+  }
+  wide_dyadic_mul(&dd, &dend, &rhs);
+  return wide_dyadic_cmp(&n0, &rhs) <= 0 && wide_dyadic_cmp(&n1, &rhs) <= 0;
+}
+
 /**
  * @brief Return the sign of the squared distance of a point to the line of a
  * segment, times the squared length of the segment, less the square of
