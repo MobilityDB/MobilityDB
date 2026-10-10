@@ -1066,10 +1066,10 @@ arr_box(const Edge *e, double box[4])
     return;
   }
   double pad = 16.0 * DBL_EPSILON * (fabs(e->cx) + fabs(e->cy) + e->radius);
-  box[0] = nextafter(e->xmin - pad, -INFINITY);
-  box[1] = nextafter(e->xmax + pad, INFINITY);
-  box[2] = nextafter(e->ymin - pad, -INFINITY);
-  box[3] = nextafter(e->ymax + pad, INFINITY);
+  Ival x = ival_out(e->xmin - pad, e->xmax + pad);
+  Ival y = ival_out(e->ymin - pad, e->ymax + pad);
+  box[0] = x.lo; box[1] = x.hi;
+  box[2] = y.lo; box[3] = y.hi;
   return;
 }
 

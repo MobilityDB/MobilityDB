@@ -328,11 +328,12 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
  * three consecutive points of a circular string
  * @details The three points are the start, an intermediate point, and the end
  * of the arc. Three collinear points degenerate to straight segments and are
- * emitted as line edges
+ * emitted as line edges. The angles of the ends are read where @p angles is
+ * true, and left zero otherwise
  */
 static void
 emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
-  MeosArray *edges, EdgeType line_etype, EdgeType arc_etype)
+  MeosArray *edges, EdgeType line_etype, EdgeType arc_etype, bool angles)
 {
   /* The circumcentre below is read from the SQUARES of the coordinates, and
    * those squares then cancel down to a centre lying among the points
@@ -361,8 +362,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   {
     double mx = (ax + bx) / 2, my = (ay + by) / 2;
     double radius = hypot(ax - mx, ay - my);
-    double theta_a = atan2(ay - my, ax - mx);
-    double theta_b = atan2(by - my, bx - mx);
+    double theta_a = angles ? atan2(ay - my, ax - mx) : 0.0;
+    double theta_b = angles ? atan2(by - my, bx - mx) : 0.0;
     /* Carried back to where the points came from */
     mx += ox; my += oy;
     /* The points given, as the ends of an arc are */
@@ -442,8 +443,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
    * starts where this one ends, then does not meet it */
   e.x1 = pa->x; e.y1 = pa->y;
   e.x2 = pc->x; e.y2 = pc->y;
-  e.theta0 = atan2(e.y1 - e.cy, e.x1 - e.cx);
-  e.theta1 = atan2(e.y2 - e.cy, e.x2 - e.cx);
+  e.theta0 = angles ? atan2(e.y1 - e.cy, e.x1 - e.cx) : 0.0;
+  e.theta1 = angles ? atan2(e.y2 - e.cy, e.x2 - e.cx) : 0.0;
   /* Traversal orientation from the signed area of (start, mid, end) */
   e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
   e.dx = e.dy = e.length = 0;
@@ -457,14 +458,16 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
 /**
  * @brief Add to an edge array the arc of a surface's boundary through @p a,
  * @p m and @p b, as #geom_extract_edges reads one from a circular string:
- * three collinear points are the straight edges they lie on
+ * three collinear points are the straight edges they lie on. The angles of
+ * its ends, which an arrangement (#arrange_wound_surfaces) does not read, are
+ * left zero
  */
 void
 edges_add_arc(MeosArray *edges, const POINT2D *a, const POINT2D *m,
   const POINT2D *b)
 {
   assert(edges); assert(a); assert(m); assert(b);
-  emit_arc_edge(a, m, b, edges, EDGE_POLYSEG, EDGE_POLYARC);
+  emit_arc_edge(a, m, b, edges, EDGE_POLYSEG, EDGE_POLYARC, false);
   return;
 }
 
@@ -489,7 +492,7 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
   for (int i = 0; i + 2 < np; i += 2)
   {
     emit_arc_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1),
-      getPoint2d_cp(pa, i + 2), edges, line_etype, arc_etype);
+      getPoint2d_cp(pa, i + 2), edges, line_etype, arc_etype, true);
   }
   return;
 }
