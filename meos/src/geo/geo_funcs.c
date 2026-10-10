@@ -3878,13 +3878,18 @@ typedef struct
   double **blocks;
   int n;
   int cap;
+  bool unsafe;      /**< A product may have left the range where the
+                         arithmetic of expansions is exact */
 } ArcsegArena;
 
-/* An exact value: an expansion whose last component carries its sign */
+/* An exact value: an expansion whose last component carries its sign, and a
+ * bound on how far it may lie from the value, 0 unless a product's error
+ * term underflowed */
 typedef struct
 {
   int n;
   double *e;
+  double err;
 } ArcsegExact;
 
 static double *
@@ -3918,6 +3923,7 @@ arcseg_arena_free(ArcsegArena *arena)
     pfree(arena->blocks);
   arena->blocks = NULL;
   arena->n = arena->cap = arena->used = 0;
+  arena->unsafe = false;
   return;
 }
 
@@ -3987,6 +3993,7 @@ arcseg_x_diff(ArcsegArena *arena, double a, double b)
   r.e = arcseg_arena_alloc(arena, 2);
   double x, y;
   two_sum(a, - b, &x, &y);
+  r.err = 0.0;
   r.n = 0;
   if (y != 0.0)
     r.e[r.n++] = y;
@@ -4003,6 +4010,7 @@ arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   r.e = arcseg_arena_alloc(arena, cap);
   int hlen = expansion_sum(a.n, a.e, b.n, b.e, h, r.e);
   r.n = compress_expansion(hlen, h, r.e);
+  r.err = (a.err + b.err) * (1.0 + 0x1p-50);
   return r;
 }
 
@@ -4015,6 +4023,7 @@ arcseg_x_scale(ArcsegArena *arena, ArcsegExact a, double k)
   for (int i = 0; i < a.n; i++)
     r.e[i] = a.e[i] * k;
   r.n = a.n;
+  r.err = a.err * fabs(k);
   return r;
 }
 
@@ -4024,9 +4033,36 @@ arcseg_x_sub(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   return arcseg_x_add(arena, a, arcseg_x_scale(arena, b, -1.0));
 }
 
+/* The sum of the magnitudes of the components of an expansion, read as
+ * #arcseg_x_sign reads its last one */
+static double
+arcseg_x_mag(ArcsegExact a)
+{
+  double m = 0.0;
+  for (int i = 0; i < a.n; i++)
+    m += fabs(a.e[i]);
+  return m * (1.0 + 0x1p-50);
+}
+
 static ArcsegExact
 arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
 {
+  /* The product of two components is exact while its error term is a
+   * double: the units of their last places multiply to at least the
+   * smallest subnormal, 2^-1074, which holds where the product is at least
+   * 2^-968. Below it each of the products of two components may lose up to
+   * 2^-1074, which the bound of the result carries; above the largest double
+   * nothing is kept. The components grow in magnitude */
+  double under = 0.0;
+  if (a.n > 0 && b.n > 0)
+  {
+    double lo = fabs(a.e[0]) * fabs(b.e[0]);
+    double hi = fabs(a.e[a.n - 1]) * fabs(b.e[b.n - 1]);
+    if (hi > 0x1p+1000)
+      arena->unsafe = true;
+    if (lo != 0.0 && lo < 0x1p-968)
+      under = (double) a.n * (double) b.n * 0x1p-1072;
+  }
   int cap = 2 * a.n * b.n;
   double *h = arcseg_arena_alloc(arena, cap);
   double *part = arcseg_arena_alloc(arena, 2 * a.n);
@@ -4034,6 +4070,11 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   r.e = arcseg_arena_alloc(arena, cap);
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
+  r.err = 0.0;
+  if (a.err > 0.0 || b.err > 0.0)
+    r.err = (arcseg_x_mag(a) * b.err + arcseg_x_mag(b) * a.err +
+      a.err * b.err) * (1.0 + 0x1p-50);
+  r.err += under;
   return r;
 }
 
@@ -4042,6 +4083,23 @@ arcseg_x_sign(ArcsegExact a)
 {
   double last = a.n > 0 ? a.e[a.n - 1] : 0.0;
   return (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+}
+
+/* The sign of #arcseg_x_sign, recording in the arena where the bound of the
+ * expansion does not let the value's sign be told: the value is at least
+ * its last component less the others, which together are smaller than it */
+static int
+arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
+{
+  if (a.err > 0.0)
+  {
+    double low = (a.n > 0) ? fabs(a.e[a.n - 1]) : 0.0;
+    for (int i = 0; i + 1 < a.n; i++)
+      low -= fabs(a.e[i]);
+    if (low * (1.0 - 0x1p-50) <= a.err)
+      arena->unsafe = true;
+  }
+  return arcseg_x_sign(a);
 }
 
 /*
@@ -4120,6 +4178,7 @@ arcseg_polynomials_exact(ArcsegArena *arena, double ax, double ay, double bx,
   zero.e = arcseg_arena_alloc(arena, 1);
   zero.e[0] = 0.0;
   zero.n = 1;
+  zero.err = 0.0;
   ARCSEG_POLYNOMIALS(ArcsegExact, XDIFF, XADD, XSUB, XMUL, XSCALE, zero)
 #undef XDIFF
 #undef XADD
@@ -4204,6 +4263,7 @@ arcseg_signs_exact(double ax, double ay, double bx, double by,
 {
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
   arena_.blocks = NULL;
   ArcsegExact qa, qb, qc, h1, h0, side;
   arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &qa, &qb, &qc, &h1,
@@ -4267,6 +4327,7 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
     return;
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
   arena_.blocks = NULL;
   ArcsegExact xqa, xqb, xqc, xh1, xh0, xside;
   arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &xqa, &xqb, &xqc,
@@ -4563,6 +4624,7 @@ arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   assert(p); assert(q); assert(s1); assert(sp); assert(sq);
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
   arena_.blocks = NULL;
   ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
   arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
@@ -4626,6 +4688,7 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   assert(p); assert(q); assert(meet); assert(within);
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
   arena_.blocks = NULL;
   ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
   arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
@@ -4771,6 +4834,7 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
 {
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
   arena_.blocks = NULL;
   ArcsegExact ax, ay, bx, by;
   if (e1)
@@ -4814,6 +4878,408 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
       }
     }
   }
+  arcseg_arena_free(arena);
+  return result;
+}
+
+/* A point of the plane P = (X0 + X1 sqrt(H), Y0 + Y1 sqrt(H)) / W, every
+ * term exact, H not negative: where two edges meet */
+typedef struct
+{
+  ArcsegExact x0, x1, y0, y1, w, h;
+} MeetExact;
+
+/* The sign of U + W sqrt(H), H not negative */
+static int
+meet_root_sign(ArcsegArena *arena, ArcsegExact u, ArcsegExact w,
+  ArcsegExact h)
+{
+  int su = arcseg_x_sign_checked(arena, u), sw = arcseg_x_sign_checked(arena, w);
+  if (sw == 0 || arcseg_x_sign_checked(arena, h) == 0)
+    return su;
+  int sq = arcseg_x_sign_checked(arena, arcseg_x_sub(arena, arcseg_x_mul(arena, u, u),
+    arcseg_x_mul(arena, arcseg_x_mul(arena, w, w), h)));
+  return arcseg_root_sign(su, sw, sq);
+}
+
+/* The sign of X + Y sqrt(H1) + (Z + T sqrt(H1)) sqrt(H2): that of
+ * A + B sqrt(H2) with A and B in one radical, the larger term carrying it,
+ * which the sign of A^2 - B^2 H2 = (X^2 + Y^2 H1 - (Z^2 + T^2 H1) H2) +
+ * 2 (X Y - Z T H2) sqrt(H1) tells */
+static int
+meet_two_roots_sign(ArcsegArena *arena, ArcsegExact x, ArcsegExact y,
+  ArcsegExact h1, ArcsegExact z, ArcsegExact t, ArcsegExact h2)
+{
+  int sa = meet_root_sign(arena, x, y, h1);
+  if (arcseg_x_sign_checked(arena, h2) == 0)
+    return sa;
+  int sb = meet_root_sign(arena, z, t, h1);
+  if (sb == 0)
+    return sa;
+  if (sa == 0 || sa == sb)
+    return sb;
+  ArcsegExact p0 = arcseg_x_sub(arena, arcseg_x_add(arena,
+    arcseg_x_mul(arena, x, x), arcseg_x_mul(arena, arcseg_x_mul(arena, y, y),
+    h1)), arcseg_x_mul(arena, arcseg_x_add(arena, arcseg_x_mul(arena, z, z),
+    arcseg_x_mul(arena, arcseg_x_mul(arena, t, t), h1)), h2));
+  ArcsegExact p1 = arcseg_x_scale(arena, arcseg_x_sub(arena,
+    arcseg_x_mul(arena, x, y), arcseg_x_mul(arena, arcseg_x_mul(arena, z, t),
+    h2)), 2.0);
+  return sa * meet_root_sign(arena, p0, p1, h1);
+}
+
+/* An exact value of a double */
+static inline ArcsegExact
+meet_val(ArcsegArena *arena, double v)
+{
+  return arcseg_x_diff(arena, v, 0.0);
+}
+
+/* The point of a meeting, exactly: a vertex; two segments crossing at
+ * A + t R, t = ((C - A) x S) / (R x S); a segment crossing an arc at the
+ * root t = (-qb + sigma sqrt(qb^2 - 4 qa qc)) / (2 qa) of the quadratic of
+ * #arcsegm_meet_exact; two arcs at P = B + sigma f rot(d) of
+ * #arcarc_meet_exact, which with its terms is
+ * (M1 W + 2 Q L N1 + D1 (G d' + sigma sqrt(H) rot(d'))) / W, W = 2 Q L D1;
+ * or two arcs through a point J at its reflection J - 2 (d' x g) rot(d') /
+ * (D1 Q), g = D1 (J - M1) - N1, of #arcarc_shared_point_signs. Every point
+ * is taken from the origin O, so that no term carries the magnitude of the
+ * coordinates themselves, only that of their differences */
+static void
+meet_point_exact(ArcsegArena *arena, const MeetPoint *m, double ox,
+  double oy, MeetExact *r)
+{
+  ArcsegExact zero = meet_val(arena, 0.0), one = meet_val(arena, 1.0);
+  r->x1 = r->y1 = r->h = zero;
+  r->w = one;
+  switch (m->kind)
+  {
+    case MEET_VERTEX:
+      r->x0 = arcseg_x_diff(arena, m->x, ox);
+      r->y0 = arcseg_x_diff(arena, m->y, oy);
+      return;
+    case MEET_SEGSEG:
+    {
+      const Edge *p = m->p, *q = m->q;
+      ArcsegExact rx = arcseg_x_diff(arena, p->x2, p->x1);
+      ArcsegExact ry = arcseg_x_diff(arena, p->y2, p->y1);
+      ArcsegExact sx = arcseg_x_diff(arena, q->x2, q->x1);
+      ArcsegExact sy = arcseg_x_diff(arena, q->y2, q->y1);
+      ArcsegExact cx = arcseg_x_diff(arena, q->x1, p->x1);
+      ArcsegExact cy = arcseg_x_diff(arena, q->y1, p->y1);
+      ArcsegExact den = arcseg_x_sub(arena, arcseg_x_mul(arena, rx, sy),
+        arcseg_x_mul(arena, ry, sx));
+      ArcsegExact num = arcseg_x_sub(arena, arcseg_x_mul(arena, cx, sy),
+        arcseg_x_mul(arena, cy, sx));
+      r->w = den;
+      r->x0 = arcseg_x_add(arena, arcseg_x_mul(arena, arcseg_x_diff(arena,
+        p->x1, ox),
+        den), arcseg_x_mul(arena, rx, num));
+      r->y0 = arcseg_x_add(arena, arcseg_x_mul(arena, arcseg_x_diff(arena,
+        p->y1, oy),
+        den), arcseg_x_mul(arena, ry, num));
+      return;
+    }
+    case MEET_SEGARC:
+    {
+      const Edge *p = m->p;
+      ArcsegExact qa, qb, qc, h1, h0, side;
+      arcseg_polynomials_exact(arena, p->x1, p->y1, p->x2, p->y2, m->q, &qa,
+        &qb, &qc, &h1, &h0, &side);
+      ArcsegExact rx = arcseg_x_diff(arena, p->x2, p->x1);
+      ArcsegExact ry = arcseg_x_diff(arena, p->y2, p->y1);
+      r->w = arcseg_x_scale(arena, qa, 2.0);
+      r->h = arcseg_x_sub(arena, arcseg_x_mul(arena, qb, qb),
+        arcseg_x_scale(arena, arcseg_x_mul(arena, qa, qc), 4.0));
+      r->x0 = arcseg_x_sub(arena, arcseg_x_mul(arena, r->w,
+        arcseg_x_diff(arena, p->x1, ox)), arcseg_x_mul(arena, qb, rx));
+      r->y0 = arcseg_x_sub(arena, arcseg_x_mul(arena, r->w,
+        arcseg_x_diff(arena, p->y1, oy)), arcseg_x_mul(arena, qb, ry));
+      r->x1 = arcseg_x_scale(arena, rx, (double) m->sigma);
+      r->y1 = arcseg_x_scale(arena, ry, (double) m->sigma);
+      return;
+    }
+    default:
+    {
+      ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
+      arcarc_centre_exact(arena, m->p, &m1x, &m1y, &n1x, &n1y, &d1);
+      arcarc_centre_exact(arena, m->q, &m2x, &m2y, &n2x, &n2y, &d2);
+      ArcsegExact l = arcseg_x_mul(arena, d1, d2);
+      ArcsegExact dx = arcseg_x_add(arena,
+        arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2x, m1x)),
+        arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2x),
+          arcseg_x_mul(arena, d2, n1x)));
+      ArcsegExact dy = arcseg_x_add(arena,
+        arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2y, m1y)),
+        arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2y),
+          arcseg_x_mul(arena, d2, n1y)));
+      ArcsegExact qq = arcseg_x_add(arena, arcseg_x_mul(arena, dx, dx),
+        arcseg_x_mul(arena, dy, dy));
+      if (m->kind == MEET_ARCARC_REFLECT)
+      {
+        ArcsegExact jx = meet_val(arena, m->x), jy = meet_val(arena, m->y);
+        ArcsegExact gx = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+          arcseg_x_sub(arena, jx, m1x)), n1x);
+        ArcsegExact gy = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+          arcseg_x_sub(arena, jy, m1y)), n1y);
+        ArcsegExact k = arcseg_x_scale(arena, arcseg_x_sub(arena,
+          arcseg_x_mul(arena, dx, gy), arcseg_x_mul(arena, dy, gx)), 2.0);
+        r->w = arcseg_x_mul(arena, d1, qq);
+        /* J W - k rot(d'), rot(d') = (-dy, dx) */
+        r->x0 = arcseg_x_add(arena, arcseg_x_mul(arena,
+          arcseg_x_diff(arena, m->x, ox), r->w),
+          arcseg_x_mul(arena, k, dy));
+        r->y0 = arcseg_x_sub(arena, arcseg_x_mul(arena,
+          arcseg_x_diff(arena, m->y, oy), r->w),
+          arcseg_x_mul(arena, k, dx));
+        return;
+      }
+      ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+        arcseg_x_sub(arena, meet_val(arena, m->p->sx), m1x)), n1x);
+      ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+        arcseg_x_sub(arena, meet_val(arena, m->p->sy), m1y)), n1y);
+      ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
+        arcseg_x_sub(arena, meet_val(arena, m->q->sx), m2x)), n2x);
+      ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
+        arcseg_x_sub(arena, meet_val(arena, m->q->sy), m2y)), n2y);
+      ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
+        arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
+        arcseg_x_mul(arena, d2, d2));
+      ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
+        arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
+        arcseg_x_mul(arena, d1, d1));
+      ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
+      r->h = arcseg_x_sub(arena,
+        arcseg_x_scale(arena, arcseg_x_mul(arena, r1, qq), 4.0),
+        arcseg_x_mul(arena, g, g));
+      ArcsegExact ql2 = arcseg_x_scale(arena, arcseg_x_mul(arena, qq, l),
+        2.0);
+      r->w = arcseg_x_mul(arena, ql2, d1);
+      r->x0 = arcseg_x_add(arena, arcseg_x_add(arena,
+        arcseg_x_mul(arena, arcseg_x_sub(arena, m1x, meet_val(arena, ox)),
+        r->w), arcseg_x_mul(arena, ql2, n1x)),
+        arcseg_x_mul(arena, arcseg_x_mul(arena, g, d1), dx));
+      r->y0 = arcseg_x_add(arena, arcseg_x_add(arena,
+        arcseg_x_mul(arena, arcseg_x_sub(arena, m1y, meet_val(arena, oy)),
+        r->w), arcseg_x_mul(arena, ql2, n1y)),
+        arcseg_x_mul(arena, arcseg_x_mul(arena, g, d1), dy));
+      ArcsegExact sd1 = arcseg_x_scale(arena, d1, (double) m->sigma);
+      r->x1 = arcseg_x_scale(arena, arcseg_x_mul(arena, sd1, dy), -1.0);
+      r->y1 = arcseg_x_mul(arena, sd1, dx);
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Return the order of two meetings along an edge holding both,
+ * decided exactly
+ * @details Each meeting is a point (X0 + X1 sqrt(H), Y0 + Y1 sqrt(H)) / W,
+ * exact (#MeetPoint). Along a segment A -> B two points are ordered by
+ * (P2 - P1) . (B - A); along an arc of centre C = M + N / D from its start S
+ * by the half turn each lies in, the side of S - C the radius P - C stands
+ * on in the sense the arc turns, then by the cross product of their radii.
+ * Every one of these is the sign of X + Y sqrt(H1) + (Z + T sqrt(H1))
+ * sqrt(H2) with exact terms, which two squarings decide
+ * @param[in] e Edge holding both meetings, strictly within it
+ * @param[in] ccw Whether an arc turns counterclockwise
+ * @param[in] a,b The meetings
+ * @return -1 where @p a comes first along the edge, 1 where @p b does, 0
+ * where they are one point, 2 where a product of the coordinates would leave
+ * the range of doubles, scaled as they are by a power of two
+ */
+/* Multiply a coordinate by the two factors f of a power of two of
+ * #point_distance_scale; false where the product is not exact, which its
+ * inverse g tells */
+static inline bool
+coord_scale(double *v, double f1, double f2, double g1, double g2)
+{
+  double w = *v * f1 * f2;
+  bool exact = isfinite(w) && w * g1 * g2 == *v;
+  *v = w;
+  return exact;
+}
+
+/* An edge with every input coordinate scaled by #coord_scale; false where
+ * one is not scaled exactly */
+static bool
+edge_scale(const Edge *e, double f1, double f2, double g1, double g2,
+  Edge *out)
+{
+  *out = *e;
+  double *v[] = {&out->x1, &out->y1, &out->x2, &out->y2, &out->sx, &out->sy,
+    &out->mx, &out->my, &out->ex, &out->ey};
+  /* A segment carries only its ends */
+  size_t n = (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC) ?
+    sizeof(v) / sizeof(v[0]) : 4;
+  bool exact = true;
+  for (size_t i = 0; i < n; i++)
+    exact = coord_scale(v[i], f1, f2, g1, g2) && exact;
+  return exact;
+}
+
+/* Widen a box by the points of an edge, as #edge_scale reads them */
+static void
+edge_extent(const Edge *e, double box[4])
+{
+  double x[5] = {e->x1, e->x2, e->sx, e->mx, e->ex};
+  double y[5] = {e->y1, e->y2, e->sy, e->my, e->ey};
+  int n = (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC) ? 5 : 2;
+  for (int i = 0; i < n; i++)
+  {
+    box[0] = Min(box[0], x[i]); box[1] = Max(box[1], x[i]);
+    box[2] = Min(box[2], y[i]); box[3] = Max(box[3], y[i]);
+  }
+  return;
+}
+
+static int meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b);
+
+int
+meets_order_exact(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b)
+{
+  /* The terms are products of many differences of coordinates, exact while
+   * none leaves the range of doubles: the edges are read scaled by the power
+   * of two that brings their extent into [1, 2), which changes no sign */
+  double box[4] = {INFINITY, -INFINITY, INFINITY, -INFINITY};
+  edge_extent(e, box);
+  const MeetPoint *m[2] = {a, b};
+  for (int i = 0; i < 2; i++)
+  {
+    if (m[i]->p)
+      edge_extent(m[i]->p, box);
+    if (m[i]->q)
+      edge_extent(m[i]->q, box);
+  }
+  double extent = Max(box[1] - box[0], box[3] - box[2]);
+  if (! (extent > 0.0) || ! isfinite(extent))
+    return 2;
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(extent, &k, &f1, &f2, &g1, &g2);
+  Edge se, sp[2], sq[2];
+  MeetPoint sm[2];
+  bool exact = edge_scale(e, f1, f2, g1, g2, &se);
+  for (int i = 0; i < 2; i++)
+  {
+    sm[i] = *m[i];
+    exact = coord_scale(&sm[i].x, f1, f2, g1, g2) && exact;
+    exact = coord_scale(&sm[i].y, f1, f2, g1, g2) && exact;
+    if (m[i]->p)
+    {
+      exact = edge_scale(m[i]->p, f1, f2, g1, g2, &sp[i]) && exact;
+      sm[i].p = &sp[i];
+    }
+    if (m[i]->q)
+    {
+      exact = edge_scale(m[i]->q, f1, f2, g1, g2, &sq[i]) && exact;
+      sm[i].q = &sq[i];
+    }
+  }
+  /* A coordinate the scaling does not keep, a subnormal one, is not read */
+  if (! exact)
+    return 2;
+  return meets_order_scaled(&se, ccw, &sm[0], &sm[1]);
+}
+
+/* The order of #meets_order_exact, on edges of an extent near one */
+static int
+meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b)
+{
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
+  arena_.blocks = NULL;
+  MeetExact pa, pb;
+  double ox = e->x1, oy = e->y1;
+  meet_point_exact(arena, a, ox, oy, &pa);
+  meet_point_exact(arena, b, ox, oy, &pb);
+  int swa = arcseg_x_sign_checked(arena, pa.w), swb = arcseg_x_sign_checked(arena, pb.w);
+  int result;
+  if (e->etype != EDGE_POLYARC && e->etype != EDGE_LINEARC)
+  {
+    /* (Wa Xb - Wb Xa) . R over Wa Wb */
+    ArcsegExact rx = arcseg_x_diff(arena, e->x2, e->x1);
+    ArcsegExact ry = arcseg_x_diff(arena, e->y2, e->y1);
+#define MEET_DOT(ux, uy) arcseg_x_add(arena, arcseg_x_mul(arena, ux, rx), \
+  arcseg_x_mul(arena, uy, ry))
+    ArcsegExact x = arcseg_x_sub(arena,
+      arcseg_x_mul(arena, pa.w, MEET_DOT(pb.x0, pb.y0)),
+      arcseg_x_mul(arena, pb.w, MEET_DOT(pa.x0, pa.y0)));
+    ArcsegExact y = arcseg_x_scale(arena, arcseg_x_mul(arena, pb.w,
+      MEET_DOT(pa.x1, pa.y1)), -1.0);
+    ArcsegExact z = arcseg_x_mul(arena, pa.w, MEET_DOT(pb.x1, pb.y1));
+#undef MEET_DOT
+    int s = meet_two_roots_sign(arena, x, y, pa.h, z, meet_val(arena, 0.0),
+      pb.h) * swa * swb;
+    result = (s > 0) ? -1 : ((s < 0) ? 1 : 0);
+  }
+  else
+  {
+    ArcsegExact mx, my, nx, ny, d;
+    arcarc_centre_exact(arena, e, &mx, &my, &nx, &ny, &d);
+    /* (P - C) W D = D (X0 + X1 sqrt(H)) - W (M D + N), and (S - C) D, all
+     * from the origin */
+    ArcsegExact cx = arcseg_x_add(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, mx, meet_val(arena, ox)), d), nx);
+    ArcsegExact cy = arcseg_x_add(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, my, meet_val(arena, oy)), d), ny);
+    ArcsegExact ux = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_diff(arena, e->x1, ox), d), cx);
+    ArcsegExact uy = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_diff(arena, e->y1, oy), d), cy);
+    const MeetExact *pts[2] = {&pa, &pb};
+    ArcsegExact vx0[2], vy0[2], vx1[2], vy1[2];
+    int cls[2], turn = ccw ? 1 : -1;
+    for (int k = 0; k < 2; k++)
+    {
+      const MeetExact *pk = pts[k];
+      vx0[k] = arcseg_x_sub(arena, arcseg_x_mul(arena, d, pk->x0),
+        arcseg_x_mul(arena, pk->w, cx));
+      vy0[k] = arcseg_x_sub(arena, arcseg_x_mul(arena, d, pk->y0),
+        arcseg_x_mul(arena, pk->w, cy));
+      vx1[k] = arcseg_x_mul(arena, d, pk->x1);
+      vy1[k] = arcseg_x_mul(arena, d, pk->y1);
+      /* The side of S - C: its cross product with P - C, over W D^2 */
+      int side = meet_root_sign(arena, arcseg_x_sub(arena,
+        arcseg_x_mul(arena, ux, vy0[k]), arcseg_x_mul(arena, uy, vx0[k])),
+        arcseg_x_sub(arena, arcseg_x_mul(arena, ux, vy1[k]),
+        arcseg_x_mul(arena, uy, vx1[k])), pk->h) *
+        arcseg_x_sign_checked(arena, pk->w) * turn;
+      if (side == 0)
+      {
+        /* On the line of S and C: at S, or half a turn on */
+        int dot = meet_root_sign(arena, arcseg_x_add(arena,
+          arcseg_x_mul(arena, ux, vx0[k]), arcseg_x_mul(arena, uy, vy0[k])),
+          arcseg_x_add(arena, arcseg_x_mul(arena, ux, vx1[k]),
+          arcseg_x_mul(arena, uy, vy1[k])), pk->h) * arcseg_x_sign_checked(arena, pk->w);
+        cls[k] = (dot > 0) ? 0 : 1;
+      }
+      else
+        cls[k] = (side > 0) ? 0 : 1;
+    }
+    if (cls[0] != cls[1])
+      result = (cls[0] < cls[1]) ? -1 : 1;
+    else
+    {
+      /* Va x Vb = (Xa + Ya rHa) x (Xb + Yb rHb) over Wa Wb D^2 */
+#define MEET_CROSS(ax, ay, bx, by) arcseg_x_sub(arena, \
+  arcseg_x_mul(arena, ax, by), arcseg_x_mul(arena, ay, bx))
+      ArcsegExact x = MEET_CROSS(vx0[0], vy0[0], vx0[1], vy0[1]);
+      ArcsegExact y = MEET_CROSS(vx1[0], vy1[0], vx0[1], vy0[1]);
+      ArcsegExact z = MEET_CROSS(vx0[0], vy0[0], vx1[1], vy1[1]);
+      ArcsegExact t = MEET_CROSS(vx1[0], vy1[0], vx1[1], vy1[1]);
+#undef MEET_CROSS
+      int s = meet_two_roots_sign(arena, x, y, pa.h, z, t, pb.h) * swa *
+        swb * turn;
+      result = (s > 0) ? -1 : ((s < 0) ? 1 : 0);
+    }
+  }
+  if (arena->unsafe)
+    result = 2;
   arcseg_arena_free(arena);
   return result;
 }
