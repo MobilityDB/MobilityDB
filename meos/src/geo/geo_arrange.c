@@ -583,6 +583,15 @@ static ArrangeStatus
 arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
 {
   const Edge *p = &a->e[i], *q = &a->e[j];
+  /* Two segments sharing an end and not on one line meet at that end only,
+   * where both end already: their lines cross once */
+  if ((arr_same(p->x1, p->y1, q->x1, q->y1) ||
+       arr_same(p->x1, p->y1, q->x2, q->y2) ||
+       arr_same(p->x2, p->y2, q->x1, q->y1) ||
+       arr_same(p->x2, p->y2, q->x2, q->y2)) &&
+      cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
+        q->y2) != 0)
+    return ARR_ANSWERED;
   IntersectResult r = linesegm_intersect(p->x1, p->y1, p->x2, p->y2, q->x1,
     q->y1, q->x2, q->y2);
   if (r.type == INTERSECT_NONE)
