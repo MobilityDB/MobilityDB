@@ -8591,6 +8591,9 @@ buffer_ring_offset_edges(const POINTARRAY *ring, double radius,
     pfree(p);
     return false;
   }
+  /* The room the curve takes at most, in one step: the offset of every
+   * segment and two pieces at every vertex */
+  edge_array_reserve(edges, 3 * (size_t) n);
   /* The offsets of the two ends of every segment */
   POINT2D *os = palloc(sizeof(POINT2D) * n), *oe = palloc(sizeof(POINT2D) * n);
   double *ux = palloc(sizeof(double) * n), *uy = palloc(sizeof(double) * n);
