@@ -1686,6 +1686,10 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         const ArrPiece *p = &a->pieces[a->halves[k].piece];
         if (! arr_is_arc(&a->e[p->edge]))
           continue;
+        /* An arc whose box ends left of the rightmost point found holds no
+         * point further right */
+        if (a->box[p->edge][1] < ex.x.lo)
+          continue;
         Ival x;
         int holds = arr_piece_holds_right(a, p, &x);
         if (holds == 0)
