@@ -1437,7 +1437,7 @@ span_families:
   - group:
     - {sig: "spansetIntersection({v}, {ss})", ret: "{ss}", sym: Intersection_value_spanset}
     - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
-    - {sig: "spansetIntersection({ss}, {v})", ret: "{v}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{ss}", sym: Intersection_spanset_value}
     - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
     - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
     - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}

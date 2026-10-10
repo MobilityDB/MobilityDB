@@ -2682,7 +2682,7 @@ CREATE FUNCTION spanIntersection(datespan, datespanset)
   AS 'MODULE_PATHNAME', 'Intersection_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spansetIntersection(datespanset, date)
-  RETURNS date
+  RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spansetIntersection(datespanset, datespan)
