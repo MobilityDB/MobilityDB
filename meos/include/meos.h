@@ -626,8 +626,8 @@ extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
  *****************************************************************************/
 
 extern Set *bigint_to_set(int64 i);
-extern Span *bigint_to_span(int i);
-extern SpanSet *bigint_to_spanset(int i);
+extern Span *bigint_to_span(int64 i);
+extern SpanSet *bigint_to_spanset(int64 i);
 extern Set *date_to_set(DateADT d);
 extern Span *date_to_span(DateADT d);
 extern SpanSet *date_to_spanset(DateADT d);
