@@ -670,6 +670,9 @@ TRGEO_CONFIG = dict(
         # Casting to an instant needs an instant-subtype temporal; the default
         # trgeo_seq1 is a two-instant sequence.
         "trgeometry_as_tinstant":           {0: "(Temporal *) trgeo_inst1"},
+        # The value of a temporal is read off an instant; a sequence is refused
+        # ("The temporal value must be of subtype Instant").
+        "trgeometry_value":                 {0: "(Temporal *) trgeo_inst1"},
         # Append is not destructive — it reads its first argument and returns a
         # fresh value — but what it appends has to start after trgeo_seq1 ends,
         # otherwise only the increasing-timestamps check is exercised. The
@@ -923,6 +926,9 @@ TPOSE_CONFIG = dict(
         # 555_tposechain_geopose.test.sql: "A chain document carries one valid
         # time, so it is written from an instant").
         "tposechain_as_geopose":      {0: "tposechain_geod1"},
+        # The value of a temporal is read off an instant.
+        "tpose_value":                {0: "(Temporal *) tpose_inst1"},
+        "tposechain_value":           {0: "tposechain_geod1"},
         "tposechainarr_as_geopose":   {0: "tposechainarr1", 1: "2"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
@@ -1194,6 +1200,8 @@ TCBUFFER_CONFIG = dict(
     },
     override_args={
         "tdistance_tcbuffer_tpoint":     {1: "tpoint1"},
+        # The value of a temporal is read off an instant.
+        "tcbuffer_value":                {0: "(Temporal *) tcbuffer_inst1"},
         "nai_tcbuffer_tpoint":           {1: "tpoint1"},
         "shortestline_tcbuffer_tpoint":  {1: "tpoint1"},
         # tcbuffer_make(tpoint, tfloat): a temporal geometry point and a temporal
@@ -1368,6 +1376,8 @@ TNPOINT_CONFIG = dict(
     csv_data=["ways"],
     override_args={
         "tdistance_tnpoint_tpoint":     {1: "tpoint1"},
+        # The value of a temporal is read off an instant.
+        "tnpoint_value":                {0: "(Temporal *) tnpoint_inst1"},
         "nai_tnpoint_tpoint":           {1: "tpoint1"},
         "shortestline_tnpoint_tpoint":  {1: "tpoint1"},
         # Mapping a geometry onto the network needs a value that lies on a
@@ -1564,6 +1574,9 @@ TGEOMETRY_CONFIG = dict(
         # ensure_valid_tinstarr_common(); false matches the planar SRID.
         "tpointseq_make_coords": {0: "xcoords1", 1: "ycoords1",
             2: "zcoords1", 3: "times1", 4: "2", 5: "5676", 6: "false"},
+        # The value of a temporal is read off an instant; a sequence is refused
+        # ("The temporal value must be of subtype Instant").
+        "tgeo_value": {0: "(Temporal *) tgeo_inst1"},
         # WKB byte-buffer inputs, paired with their size: built from the
         # matching *_as_wkb() writer against a canned value (variant 0 is
         # plain little/big-native WKB, no hex encoding) rather than guessed.
@@ -2129,6 +2142,8 @@ TJSONB_CONFIG = dict(
     override_args={
         # ttext_to_tjsonb takes a ttext, not a tjsonb
         "ttext_to_tjsonb": {0: "ttext1"},
+        # The value of a temporal is read off an instant.
+        "tjsonb_value": {0: "(Temporal *) tjsonb_inst1"},
         # jsonpath_in needs a jsonpath string, not the jsonb document string
         "jsonpath_in": {0: "jp_str"},
         # jsonb_to_numeric needs a scalar-numeric jsonb document; the default

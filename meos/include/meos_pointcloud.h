@@ -511,6 +511,7 @@ extern TSequenceSet *tpcpointseqset_from_base_tstzspanset(const Pcpoint *pt, con
 extern Temporal *tpcpoint_from_base_temp(const Pcpoint *pt, const Temporal *temp);
 extern Pcpoint *tpcpoint_start_value(const Temporal *temp);
 extern Pcpoint *tpcpoint_end_value(const Temporal *temp);
+extern Pcpoint *tpcpoint_value(const Temporal *temp);
 extern bool tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result);
 extern Pcpoint **tpcpoint_values(const Temporal *temp, int *count);
 extern SpanSet **tpcpoint_unnest(const Temporal *temp, Pcpoint ***values, int *count);
@@ -525,6 +526,7 @@ extern TSequenceSet *tpcpatchseqset_from_base_tstzspanset(const Pcpatch *pa, con
 extern Temporal *tpcpatch_from_base_temp(const Pcpatch *pa, const Temporal *temp);
 extern Pcpatch *tpcpatch_start_value(const Temporal *temp);
 extern Pcpatch *tpcpatch_end_value(const Temporal *temp);
+extern Pcpatch *tpcpatch_value(const Temporal *temp);
 extern bool tpcpatch_value_n(const Temporal *temp, int n, Pcpatch **result);
 extern Pcpatch **tpcpatch_values(const Temporal *temp, int *count);
 extern SpanSet **tpcpatch_unnest(const Temporal *temp, Pcpatch ***values, int *count);
