@@ -57,6 +57,7 @@
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
@@ -883,12 +884,181 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
 }
 
 /**
+ * @brief Return the pose at @p t of a temporal rigid geometry sequence in its
+ * segment starting at instant @p k
+ * @details The pose is the one #tsegment_value_at_timestamptz gives, so that
+ * the motion of an interval of #tcont_tcont_merge_walk is that of the
+ * synchronized sequences of #trgeo_tdistance_temporal: the start pose of a
+ * constant segment and at the start of the segment, the end pose at its end,
+ * and the interpolated pose inside it
+ * @param[out] alloc True if the pose is allocated
+ */
+static const Pose *
+dist_seq_pose(const TSequence *seq, int k, TimestampTz t, bool *alloc)
+{
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, k);
+  const Pose *start = DatumGetPoseP(tinstant_value_p(inst1));
+  *alloc = false;
+  if (t == inst1->t || seq->count == 1)
+    return start;
+  const TInstant *inst2 = TSEQUENCE_INST_N(seq, k + 1);
+  const Pose *end = DatumGetPoseP(tinstant_value_p(inst2));
+  if (pose_eq(start, end))
+    return start;
+  if (t == inst2->t)
+    return end;
+  long double ratio = (long double) (t - inst1->t) /
+    (long double) (inst2->t - inst1->t);
+  *alloc = true;
+  return posesegm_interpolate(start, end, (double) ratio);
+}
+
+/**
+ * @brief The pose of one operand at the end of the last interval walked,
+ * which is its pose at the start of the next interval in the same segment
+ */
+typedef struct
+{
+  const TSequence *seq;        /**< Sequence */
+  int k;                       /**< Instant starting the segment */
+  TimestampTz t;               /**< Time of the pose */
+  const Pose *pose;            /**< Pose, or NULL */
+  bool alloc;                  /**< True if the pose is allocated */
+} DistPoseCache;
+
+/**
+ * @brief Return the pose of #dist_seq_pose, taken from the cache where it
+ * holds it, the cache then being emptied
+ */
+static const Pose *
+dist_seq_pose_cached(DistPoseCache *cache, const TSequence *seq, int k,
+  TimestampTz t, bool *alloc)
+{
+  if (cache->pose && cache->seq == seq && cache->k == k && cache->t == t)
+  {
+    const Pose *result = cache->pose;
+    *alloc = cache->alloc;
+    cache->pose = NULL;
+    return result;
+  }
+  return dist_seq_pose(seq, k, t, alloc);
+}
+
+/**
+ * @brief Keep a pose in the cache, freeing the one it held
+ */
+static void
+dist_pose_cache_set(DistPoseCache *cache, const TSequence *seq, int k,
+  TimestampTz t, const Pose *pose, bool alloc)
+{
+  if (cache->pose && cache->alloc)
+    pfree((Pose *) cache->pose);
+  cache->seq = seq;
+  cache->k = k;
+  cache->t = t;
+  cache->pose = pose;
+  cache->alloc = alloc;
+}
+
+/**
+ * @brief State of #trgeo_dwithin_interval
+ */
+typedef struct
+{
+  const DistOps *ops;          /**< Operands */
+  double dist;                 /**< Distance */
+  DistPair cf;                 /**< Closest feature at the instant @p cft */
+  TimestampTz cft;             /**< Instant of @p cf */
+  const TSequence *seq1;       /**< Sequences of @p cf */
+  const TSequence *seq2;
+  DistPoseCache cache1;        /**< Pose of each operand at the end of the */
+  DistPoseCache cache2;        /**< last interval walked */
+  DistEvents events;           /**< Events of the last interval walked */
+  bool failed;                 /**< True if a walk failed */
+} DistEverWalk;
+
+/**
+ * @brief Return true if two temporal rigid geometries are within a distance
+ * at some instant of an interval of #tcont_tcont_merge_walk
+ * @details The values compared with the distance are those #dist_ever_seq()
+ * reads on the same interval of the synchronized sequences: the walk of the
+ * segment from the poses at the bounds of the interval, see #dist_seq_pose(),
+ * or the distance of the placed bodies where the two share one instant. An
+ * interval the centers of the bodies keep apart, see #dist_segm_apart(), is
+ * not walked.
+ */
+static bool
+trgeo_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
+  int k2, TimestampTz lower, TimestampTz upper, void *state)
+{
+  DistEverWalk *dw = (DistEverWalk *) state;
+  bool alloc1, alloc2, alloc3, alloc4;
+  /* The poses at the start of the interval are those at the end of the last
+   * one where the segment is the same */
+  const Pose *p1 = dist_seq_pose_cached(&dw->cache1, seq1, k1, lower, &alloc1);
+  const Pose *p2 = dist_seq_pose_cached(&dw->cache2, seq2, k2, lower, &alloc2);
+  bool result = false;
+  if (lower == upper)
+  {
+    /* The two values share one instant: the distance of the placed bodies */
+    GSERIALIZED *geo1 = pose_apply_geo(p1, dw->ops->ref1);
+    GSERIALIZED *geo2 = pose_apply_geo(p2, dw->ops->ref2);
+    result = geom_distance2d(geo1, geo2) <= dw->dist;
+    pfree(geo1); pfree(geo2);
+  }
+  else
+  {
+    const Pose *q1 = dist_seq_pose(seq1, k1, upper, &alloc3);
+    const Pose *q2 = dist_seq_pose(seq2, k2, upper, &alloc4);
+    DistMotion ma, mb;
+    distmotion_from_pose(&ma, p1, q1);
+    distmotion_from_pose(&mb, p2, q2);
+    DistSegm dseg;
+    distsegm_set(&dseg, &ma, &mb);
+    if (dist_segm_apart(&dseg, &dw->ops->body1, &dw->ops->body2, dw->dist))
+      /* The closest feature at the start of the next interval is unknown */
+      dw->cf.kind = DISTPAIR_NONE;
+    else
+    {
+      /* The closest feature at the end of the last interval walked starts the
+       * walk of the interval that follows it in the same two sequences */
+      if (dw->cft != lower || dw->seq1 != seq1 || dw->seq2 != seq2)
+        dw->cf.kind = DISTPAIR_NONE;
+      dw->events.count = 0;
+      if (distwalk_segm(&dseg, &dw->ops->body1, &dw->ops->body2,
+          distwalk_ftol(&dseg, &dw->ops->body1, &dw->ops->body2),
+          dw->ops->level, &dw->cf, &dw->events) != DISTWALK_OK)
+      {
+        dw->failed = true;
+        result = true;
+      }
+      else
+      {
+        dw->cft = upper;
+        dw->seq1 = seq1;
+        dw->seq2 = seq2;
+        for (int i = 0; i < dw->events.count && ! result; i++)
+          result = dw->events.ev[i].dist <= dw->dist;
+      }
+    }
+    /* The poses at the end of the interval start the next one */
+    dist_pose_cache_set(&dw->cache1, seq1, k1, upper, q1, alloc3);
+    dist_pose_cache_set(&dw->cache2, seq2, k2, upper, q2, alloc4);
+  }
+  if (alloc1) pfree((Pose *) p1);
+  if (alloc2) pfree((Pose *) p2);
+  return result;
+}
+
+/**
  * @brief Return 1 if two temporal rigid geometries are ever within a distance,
  * 0 if not, -1 if they do not intersect in time
  * @details The answer is that of the minimum of their temporal distance, as
  * #trgeo_tdistance_trgeo() gives it: the values of that distance are read
  * until the first one at or below @p dist, and a segment that the centers of
- * the bodies keep apart is not walked, see #dist_ever_seq().
+ * the bodies keep apart is not walked, see #dist_ever_seq(). Two sequences
+ * with linear interpolation are walked over their merged instants without
+ * being synchronized, see #trgeo_dwithin_interval().
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @pre The arguments are valid and planar, as the external entry tests
@@ -917,9 +1087,37 @@ trgeo_edwithin_trgeo(const Temporal *temp1, const Temporal *temp2,
     return -1;
   }
 
+  int result = -1;
+  if (temp1->subtype != TINSTANT && temp2->subtype != TINSTANT &&
+      MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+  {
+    DistEverWalk dw;
+    memset(&dw, 0, sizeof(DistEverWalk));
+    dw.ops = &ops;
+    dw.dist = dist;
+    dw.cf.kind = DISTPAIR_NONE;
+    dw.cft = DT_NOBEGIN;
+    distevents_init(&dw.events);
+    bool shared;
+    bool found = tcont_tcont_merge_walk(temp1, temp2, &trgeo_dwithin_interval,
+      &dw, &shared);
+    dist_pose_cache_set(&dw.cache1, NULL, 0, 0, NULL, false);
+    dist_pose_cache_set(&dw.cache2, NULL, 0, 0, NULL, false);
+    distevents_free(&dw.events);
+    distrefpoly_free(&ops.body1);
+    distrefpoly_free(&ops.body2);
+    if (dw.failed)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "The temporal distance of a temporal rigid geometry failed");
+      return -1;
+    }
+    return shared ? (found ? 1 : 0) : -1;
+  }
+
   /* The synchronization of #trgeo_tdistance_temporal() */
   Temporal *sync1, *sync2;
-  int result = -1;
   if (intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
   {

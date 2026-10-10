@@ -108,8 +108,15 @@ correspondingly more expensive.
 
 `eDwithin(trgeometry, trgeometry, d)` answers whether the minimum of the temporal
 distance is at most `d`, and it answers without computing that distance. It
-walks the same synchronized segments with the same segment kernel as `tDistance`,
-and stops at the first value at most `d`. Before walking a segment, it bounds the
+walks the segments `tDistance` walks, with the same segment kernel, and stops at
+the first value at most `d`. Two values with linear interpolation are not
+synchronized first: `tcont_tcont_merge_walk` hands each interval between two
+consecutive merged instants to the walk, which reads the pose of an instant of
+either value as it is and interpolates a pose inside a segment as the
+synchronization interpolates it. The motion of each interval is thus that of the
+synchronized segments, bit for bit, and no copy of either value is built.
+Instants, discrete sequences and step interpolation are synchronized as for
+`tDistance`. Before walking a segment, it bounds the
 distance of the two bodies from below by the distance of their rotation centers
 minus the largest distance of each body's vertices to its center. The centers
 move linearly in a segment, so the smallest distance of the centers in the
@@ -124,10 +131,13 @@ real AIS trips, 4 come within 100 metres. A pair kept apart, which the full
 distance walks to its end, is then answered from the motion of the centers.
 Measured over those 300 pairs, `eDwithin` gives the same answer as
 `nearestApproachDistance(a, b) <= d` at 100, 300 and 500 metres, at the nearest
-approach itself and just below it, and takes 0.29 of the time of
-`nearestApproachDistance`. What remains is the synchronization of the two trips
-and their decompression. The always semantics `aDwithin` still needs the maximum
-of the distance, and computes it in full.
+approach itself and just below it. Over the whole trips of those pairs, at
+100, 300 and 500 metres and just either side of the nearest approach, walking
+the merged instants executes 0.51 of the instructions of the synchronized walk,
+whose synchronization alone is 0.82 of its instructions. Each interval reuses
+the poses at the end of the previous one in the same segments. The
+always semantics `aDwithin` still needs the maximum of the distance, and computes
+it in full.
 
 ## Durability and storage
 
