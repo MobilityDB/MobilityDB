@@ -5118,44 +5118,52 @@ static LWCOMPOUND *
 buffer_ring_write(const MeosArray *pieces, int32_t srid)
 {
   assert(pieces);
-  if (pieces->count == 0)
+  uint32_t n = pieces->count;
+  if (n == 0)
     return NULL;
+  const Edge *e = (const Edge *) pieces->elems;
+  bool *arc = palloc(sizeof(bool) * n);
+  for (uint32_t i = 0; i < n; i++)
+    arc[i] = e[i].etype == EDGE_POLYARC &&
+      cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
+        e[i].y1, e[i].mx, e[i].my) != 0;
   LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
-  POINTARRAY *line = NULL;
-  for (uint32_t i = 0; i < pieces->count; i++)
+  for (uint32_t i = 0; i < n; )
   {
-    const Edge *e = (const Edge *) meos_array_get_intl(pieces, i);
-    bool arc = e->etype == EDGE_POLYARC &&
-      cross_product_sign(e->x1, e->y1, e->x2, e->y2, e->x1, e->y1, e->mx,
-        e->my) != 0;
-    if (! arc)
+    /* A member, its points written at once into an array of their number */
+    POINTARRAY *pa;
+    LWGEOM *member;
+    if (arc[i])
     {
-      if (! line)
+      pa = ptarray_construct(LW_FALSE, LW_FALSE, 3);
+      double *d = (double *) pa->serialized_pointlist;
+      d[0] = e[i].x1; d[1] = e[i].y1; d[2] = e[i].mx; d[3] = e[i].my;
+      d[4] = e[i].x2; d[5] = e[i].y2;
+      member = lwcircstring_as_lwgeom(lwcircstring_construct(srid, NULL, pa));
+      i++;
+    }
+    else
+    {
+      uint32_t k = i;
+      while (k < n && ! arc[k])
+        k++;
+      pa = ptarray_construct(LW_FALSE, LW_FALSE, k - i + 1);
+      double *d = (double *) pa->serialized_pointlist;
+      d[0] = e[i].x1; d[1] = e[i].y1;
+      for (uint32_t m = i; m < k; m++)
       {
-        line = ptarray_construct_empty(LW_FALSE, LW_FALSE, 4);
-        buffer_append_point(line, e->x1, e->y1);
+        d[2 * (m - i + 1)] = e[m].x2;
+        d[2 * (m - i + 1) + 1] = e[m].y2;
       }
-      buffer_append_point(line, e->x2, e->y2);
-      continue;
+      member = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+      i = k;
     }
-    if (line)
-    {
-      lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid,
-        NULL, line)));
-      line = NULL;
-    }
-    POINTARRAY *pts = ptarray_construct_empty(LW_FALSE, LW_FALSE, 3);
-    buffer_append_point(pts, e->x1, e->y1);
-    buffer_append_point(pts, e->mx, e->my);
-    buffer_append_point(pts, e->x2, e->y2);
-    lwcompound_add_lwgeom(ring, lwcircstring_as_lwgeom(
-      lwcircstring_construct(srid, NULL, pts)));
+    lwcompound_add_lwgeom(ring, member);
   }
-  if (line)
-    lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid,
-      NULL, line)));
+  pfree(arc);
   return ring;
 }
+
 
 /**
  * @brief Normalize the orientation of one classified boundary ring
