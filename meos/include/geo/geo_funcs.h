@@ -215,6 +215,8 @@ extern double point_distance_offset_exact(const double *p, const double *q,
   int ndims, double r);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, double r);
+extern double segment_distance_exact(const double *a, const double *b,
+  const double *c, const double *d);
 extern double point_motion_nad_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb);

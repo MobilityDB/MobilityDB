@@ -1533,6 +1533,329 @@ pt_linepoly_distance2d(const GSERIALIZED *gpt, const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return true if a geometry of the type is one of straight edges whose
+ * distance #geom_distance2d_exact answers
+ */
+static bool
+geom_distance_straight_type(uint32_t type)
+{
+  return type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
+    type == MULTIPOINTTYPE || type == MULTILINETYPE || type == MULTIPOLYGONTYPE;
+}
+
+/**
+ * @brief Return the number of point arrays of a point, a line or a polygon,
+ * writing them in the last argument: one for a point or a line, the rings of a
+ * polygon, its exterior first
+ */
+static uint32_t
+geom_distance_arrays(const LWGEOM *part, POINTARRAY *const **arrays)
+{
+  if (part->type == POINTTYPE)
+  {
+    *arrays = &((const LWPOINT *) part)->point;
+    return 1;
+  }
+  if (part->type == LINETYPE)
+  {
+    *arrays = &((const LWLINE *) part)->points;
+    return 1;
+  }
+  *arrays = ((const LWPOLY *) part)->rings;
+  return ((const LWPOLY *) part)->nrings;
+}
+
+/**
+ * @brief Return the number of segments of a point array: a single point is a
+ * segment of no length
+ */
+static uint32_t
+geom_distance_nsegs(const POINTARRAY *pa)
+{
+  return (pa->npoints <= 1) ? pa->npoints : pa->npoints - 1;
+}
+
+/**
+ * @brief Return the ends of the segment of rank @p k of a point array
+ */
+static void
+geom_distance_seg(const POINTARRAY *pa, uint32_t k, const POINT2D **a,
+  const POINT2D **b)
+{
+  *a = getPoint2d_cp(pa, k);
+  *b = getPoint2d_cp(pa, (pa->npoints == 1) ? k : k + 1);
+}
+
+/**
+ * @brief Return the squared distance of a point to a segment in doubles
+ * @details Where #geom_distance2d_exact reads it, the coordinates are within a
+ * factor 2^400 of 1, so its root is within a few units in the last place of
+ * the largest coordinate of the exact distance, far below the margin that
+ * walk allows it: it passes over a pair and decides no answer
+ */
+static double
+geom_distance_pt_seg_sqr(const POINT2D *p, const POINT2D *a,
+  const POINT2D *b)
+{
+  double ux = b->x - a->x, uy = b->y - a->y, l2 = ux * ux + uy * uy;
+  double t = (l2 > 0.0) ? ((p->x - a->x) * ux + (p->y - a->y) * uy) / l2 : 0.0;
+  t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  double dx = p->x - (a->x + t * ux), dy = p->y - (a->y + t * uy);
+  return dx * dx + dy * dy;
+}
+
+/**
+ * @brief Return in the last two arguments the gaps of the boxes of two
+ * segments along x and along y, 0 where they overlap along it
+ */
+static void
+geom_distance_box_gaps(const POINT2D *a, const POINT2D *b, const POINT2D *c,
+  const POINT2D *d, double *gx, double *gy)
+{
+  *gx = fmax(fmax(fmin(c->x, d->x) - fmax(a->x, b->x),
+    fmin(a->x, b->x) - fmax(c->x, d->x)), 0.0);
+  *gy = fmax(fmax(fmin(c->y, d->y) - fmax(a->y, b->y),
+    fmin(a->y, b->y) - fmax(c->y, d->y)), 0.0);
+}
+
+/**
+ * @brief Return true if a point lies inside a ring, by the parity of the
+ * crossings of the ray from it towards growing x, the point not on the ring
+ * @details The ray crosses an edge whose ends lie on either side of its line
+ * where the point lies left of the edge oriented upwards, an exact
+ * orientation (#cross_product_sign)
+ */
+static bool
+geom_distance_ring_contains(const POINTARRAY *ring, const POINT2D *p)
+{
+  bool in = false;
+  for (uint32_t i = 0; i + 1 < ring->npoints; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(ring, i);
+    const POINT2D *b = getPoint2d_cp(ring, i + 1);
+    if ((a->y > p->y) == (b->y > p->y))
+      continue;
+    int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, p->x,
+      p->y);
+    if ((b->y > a->y) ? side > 0 : side < 0)
+      in = ! in;
+  }
+  return in;
+}
+
+/**
+ * @brief Return true if a point lies inside a polygon, inside its exterior and
+ * outside its holes, the point on none of its rings
+ */
+static bool
+geom_distance_poly_contains(const LWGEOM *part, const POINT2D *p)
+{
+  const LWPOLY *poly = (const LWPOLY *) part;
+  if (poly->nrings == 0 || ! geom_distance_ring_contains(poly->rings[0], p))
+    return false;
+  for (uint32_t i = 1; i < poly->nrings; i++)
+    if (geom_distance_ring_contains(poly->rings[i], p))
+      return false;
+  return true;
+}
+
+/**
+ * @brief Return the first point of a point, a line or a polygon, or NULL for
+ * an empty one
+ */
+static const POINT2D *
+geom_distance_first_point(const LWGEOM *part)
+{
+  POINTARRAY *const *arrays;
+  uint32_t n = geom_distance_arrays(part, &arrays);
+  return (n > 0 && arrays[0]->npoints > 0) ? getPoint2d_cp(arrays[0], 0) :
+    NULL;
+}
+
+/**
+ * @brief Return the double nearest the distance of two geometries of
+ * straight edges, 2D
+ * @details The geometries meet where two of their segments do or where a part
+ * of one lies inside a polygon of the other, and their distance is otherwise
+ * the least distance of two segments, one of each (#segment_distance_exact),
+ * a point being a segment of no length. Rounding is monotone, so the least of
+ * the doubles nearest the distances of the pairs is the double nearest the
+ * least distance, and a pair whose distance exceeds the least found cannot
+ * answer less. The search starts from the segments through the two vertices
+ * nearest in doubles, and passes over a pair whose boxes lie farther apart
+ * than the least found, their squared gap moved down past its rounding. Two
+ * segments meet only where their boxes overlap, which an exact intersection
+ * test decides (#linesegm_intersect), and two that do not meet are nearest at
+ * an end of one of them; where the coordinates are within a factor 2^400 of
+ * 1, the squared distance of the ends in doubles is within a few units in the
+ * last place of the largest coordinate of the exact one, so a pair it places
+ * farther than the least found by 2^-40 of that coordinate is passed over as
+ * well. Where no segment meets the other geometry, a part lies inside a
+ * polygon exactly where one of its points does
+ * @param[in] geom1,geom2 Geometries of the types #geom_distance_straight_type
+ * admits, not empty
+ */
+static double
+geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
+{
+  const LWGEOM *const *parts[2];
+  uint32_t nparts[2];
+  const LWGEOM *geoms[2] = {geom1, geom2};
+  for (int i = 0; i < 2; i++)
+  {
+    if (lwgeom_is_collection(geoms[i]))
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geoms[i];
+      parts[i] = (const LWGEOM *const *) coll->geoms;
+      nparts[i] = coll->ngeoms;
+    }
+    else
+    {
+      parts[i] = &geoms[i];
+      nparts[i] = 1;
+    }
+  }
+
+  /* The largest magnitude of a coordinate, which sizes the margin of the
+   * double evaluation */
+  double big = 0.0;
+  for (int g = 0; g < 2; g++)
+    for (uint32_t i = 0; i < nparts[g]; i++)
+    {
+      POINTARRAY *const *arr;
+      uint32_t n = geom_distance_arrays(parts[g][i], &arr);
+      for (uint32_t k = 0; k < n; k++)
+        for (uint32_t v = 0; v < arr[k]->npoints; v++)
+        {
+          const POINT2D *p = getPoint2d_cp(arr[k], v);
+          big = fmax(big, fmax(fabs(p->x), fabs(p->y)));
+        }
+    }
+  bool filter = big >= 0x1p-400 && big <= 0x1p400;
+  double margin = 0x1p-40 * big;
+
+  /* The two vertices nearest in doubles: a segment of each through them
+   * seeds the search */
+  const POINTARRAY *spa1 = NULL, *spa2 = NULL;
+  uint32_t sv1 = 0, sv2 = 0;
+  double sbest = INFINITY;
+  for (uint32_t i = 0; i < nparts[0]; i++)
+  {
+    POINTARRAY *const *arr1;
+    uint32_t n1 = geom_distance_arrays(parts[0][i], &arr1);
+    for (uint32_t j = 0; j < nparts[1]; j++)
+    {
+      POINTARRAY *const *arr2;
+      uint32_t n2 = geom_distance_arrays(parts[1][j], &arr2);
+      for (uint32_t k1 = 0; k1 < n1; k1++)
+        for (uint32_t k2 = 0; k2 < n2; k2++)
+          for (uint32_t v1 = 0; v1 < arr1[k1]->npoints; v1++)
+          {
+            const POINT2D *p = getPoint2d_cp(arr1[k1], v1);
+            for (uint32_t v2 = 0; v2 < arr2[k2]->npoints; v2++)
+            {
+              const POINT2D *q = getPoint2d_cp(arr2[k2], v2);
+              double dx = p->x - q->x, dy = p->y - q->y;
+              double v = dx * dx + dy * dy;
+              if (! spa1 || v < sbest)
+              {
+                sbest = v;
+                spa1 = arr1[k1]; sv1 = v1;
+                spa2 = arr2[k2]; sv2 = v2;
+              }
+            }
+          }
+    }
+  }
+  if (! spa1)
+    return DBL_MAX;
+  const POINT2D *a, *b, *c, *d;
+  geom_distance_seg(spa1, (sv1 + 1 < spa1->npoints || sv1 == 0) ? sv1 :
+    sv1 - 1, &a, &b);
+  geom_distance_seg(spa2, (sv2 + 1 < spa2->npoints || sv2 == 0) ? sv2 :
+    sv2 - 1, &c, &d);
+  double best = segment_distance_exact((const double *) a, (const double *) b,
+    (const double *) c, (const double *) d);
+
+  /* The squares the boxes and the double evaluation are compared with, moved
+   * up past their rounding */
+  double best2 = best * best * (1.0 + 0x1p-48) + 0x1p-1060;
+  double thr2 = filter ? (best + margin) * (best + margin) * (1.0 + 0x1p-48) :
+    INFINITY;
+  for (uint32_t i = 0; i < nparts[0] && best > 0.0; i++)
+  {
+    POINTARRAY *const *arr1;
+    uint32_t n1 = geom_distance_arrays(parts[0][i], &arr1);
+    for (uint32_t j = 0; j < nparts[1] && best > 0.0; j++)
+    {
+      POINTARRAY *const *arr2;
+      uint32_t n2 = geom_distance_arrays(parts[1][j], &arr2);
+      for (uint32_t k1 = 0; k1 < n1 && best > 0.0; k1++)
+        for (uint32_t k2 = 0; k2 < n2 && best > 0.0; k2++)
+        {
+          uint32_t m1 = geom_distance_nsegs(arr1[k1]);
+          uint32_t m2 = geom_distance_nsegs(arr2[k2]);
+          for (uint32_t l1 = 0; l1 < m1 && best > 0.0; l1++)
+          {
+            geom_distance_seg(arr1[k1], l1, &a, &b);
+            for (uint32_t l2 = 0; l2 < m2 && best > 0.0; l2++)
+            {
+              geom_distance_seg(arr2[k2], l2, &c, &d);
+              double gx, gy;
+              geom_distance_box_gaps(a, b, c, d, &gx, &gy);
+              if (gx > 0.0 || gy > 0.0)
+              {
+                double lb2 = (gx * gx + gy * gy) * (1.0 - 0x1p-48);
+                if (lb2 >= 0x1p-900 && lb2 > best2)
+                  continue;
+              }
+              else if (linesegm_intersect(a->x, a->y, b->x, b->y, c->x, c->y,
+                  d->x, d->y).type != INTERSECT_NONE)
+              {
+                best = 0.0;
+                break;
+              }
+              if (filter &&
+                  fmin(fmin(geom_distance_pt_seg_sqr(a, c, d),
+                    geom_distance_pt_seg_sqr(b, c, d)),
+                  fmin(geom_distance_pt_seg_sqr(c, a, b),
+                    geom_distance_pt_seg_sqr(d, a, b))) > thr2)
+                continue;
+              double v = segment_distance_exact((const double *) a,
+                (const double *) b, (const double *) c, (const double *) d);
+              if (v < best)
+              {
+                best = v;
+                best2 = best * best * (1.0 + 0x1p-48) + 0x1p-1060;
+                if (filter)
+                  thr2 = (best + margin) * (best + margin) * (1.0 + 0x1p-48);
+              }
+            }
+          }
+        }
+    }
+  }
+  if (best == 0.0)
+    return 0.0;
+
+  /* No segment meets the other geometry: a part lies inside a polygon of the
+   * other exactly where its first point does */
+  for (uint32_t i = 0; i < nparts[0]; i++)
+    for (uint32_t j = 0; j < nparts[1]; j++)
+    {
+      const LWGEOM *p1 = parts[0][i], *p2 = parts[1][j];
+      const POINT2D *q1 = geom_distance_first_point(p1);
+      const POINT2D *q2 = geom_distance_first_point(p2);
+      if (! q1 || ! q2)
+        continue;
+      if ((p2->type == POLYGONTYPE && geom_distance_poly_contains(p2, q1)) ||
+          (p1->type == POLYGONTYPE && geom_distance_poly_contains(p1, q2)))
+        return 0.0;
+    }
+  return best;
+}
+
+/**
  * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries
@@ -1550,6 +1873,24 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
+
+  /* Two geometries of straight edges: the double nearest their distance, two
+   * points from their coordinates without deserializing them */
+  uint32_t stype1 = gserialized_get_type(gs1);
+  uint32_t stype2 = gserialized_get_type(gs2);
+  if (geom_distance_straight_type(stype1) &&
+      geom_distance_straight_type(stype2))
+  {
+    if (stype1 == POINTTYPE && stype2 == POINTTYPE)
+      return point_distance_exact((const double *) GSERIALIZED_POINT2D_P(gs1),
+        (const double *) GSERIALIZED_POINT2D_P(gs2), 2);
+    LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
+    LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
+    double result = geom_distance2d_exact(sgeom1, sgeom2);
+    lwgeom_free(sgeom1);
+    lwgeom_free(sgeom2);
+    return result;
+  }
 
   /* Fast path: the distance between two points is computed from their
    * coordinates with the primitive that the general computation reaches, which

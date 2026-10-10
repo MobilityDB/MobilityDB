@@ -339,6 +339,19 @@ pair_entry(const char *trip1, const char *trip2, double expected, double d,
   free(temp2);
 }
 
+/* The distance of two static geometries, against the double nearest the exact
+ * one, asked in both orders; the static twin of #moving_entry */
+static void
+geometry_entry(const char *wkt1, const char *wkt2, double expected)
+{
+  GSERIALIZED *gs1 = geom_in(wkt1, -1), *gs2 = geom_in(wkt2, -1);
+  assert(gs1 != NULL && gs2 != NULL);
+  assert(geom_distance2d(gs1, gs2) == expected);
+  assert(geom_distance2d(gs2, gs1) == expected);
+  free(gs1);
+  free(gs2);
+}
+
 /* Main program */
 int main(void)
 {
@@ -605,6 +618,49 @@ int main(void)
   pair_entry("[POINT(0 0)@2001-01-01, POINT(1 0)@2001-01-02)",
     "[POINT(5 0)@2001-01-02, POINT(6 0)@2001-01-03]", DBL_MAX, 10.0, -1, -1);
   printf("%d pairs of moving points answered over continuous time\n", pairs);
+
+  /* Two static geometries of straight edges: two points beyond the range of a
+   * float and far apart in magnitude, a line against a polygon it lies in, a
+   * point in a polygon's hole at 2^0 and at 2^500, two segments crossing at
+   * 2^-500, and two lines of real AIS positions against a multipoint and a
+   * multilinestring */
+  int geometries = 9;
+  geometry_entry("POINT(0 0)", "POINT(1e39 0)", 1e39);
+  geometry_entry("POINT(0 0)", "POINT(1e200 1e200)", 1.414213562373095e+200);
+  geometry_entry("POINT(0 0)", "POINT(1e-200 1e-200)", 1.414213562373095e-200);
+  geometry_entry("LINESTRING(1 1,2 2)", "POLYGON((0 0,10 0,10 10,0 10,0 0))",
+    0.0);
+  geometry_entry("POINT(5 5)",
+    "POLYGON((0 0,10 0,10 10,0 10,0 0),(4 4,6 4,6 6,4 6,4 4))", 1.0);
+  geometry_entry("POINT(1.2445282628062274e+151 2.1381171882275312e+151)",
+    "POLYGON((-1.6931743662012546e+150 2.7056831548999972e+150, "
+    "3.1040731712760167e+151 2.7056831548999972e+150, "
+    "3.1040731712760167e+151 3.543958923386142e+151, "
+    "-1.6931743662012546e+150 3.543958923386142e+151, "
+    "-1.6931743662012546e+150 2.7056831548999972e+150), "
+    "(1.1400388065383313e+151 1.5799245586484565e+151, "
+    "1.1400388065383313e+151 2.2346026802276848e+151, "
+    "1.7947169281175597e+151 2.2346026802276848e+151, "
+    "1.7947169281175597e+151 1.5799245586484565e+151, "
+    "1.1400388065383313e+151 1.5799245586484565e+151))",
+    9.6485492000153623e+149);
+  geometry_entry("LINESTRING(-9.67067781140507e-152 1.536412426577711e-151, "
+    "-2.788347170337139e-151 -1.017739775748659e-151)",
+    "LINESTRING(-1.913382539786656e-151 -8.762380444905406e-152, "
+    "-2.3805884974161698e-151 7.744958453700465e-152)", 0.0);
+  geometry_entry("LINESTRING(553784.772 5014170.2423894415, "
+    "553834.772 5014177.18323765)",
+    "MULTIPOINT(553784.772 5014138.762584851, "
+    "553753.2921954093 5014170.2423894415, "
+    "553753.2921954093 5014170.2423894415)", 31.479804590344429);
+  geometry_entry("LINESTRING(516973.61699999997 5125761.68, "
+    "517023.61699999997 5125761.68, 517073.61699999997 5125761.68)",
+    "MULTILINESTRING((516959.3024971603 5126202.905882021, "
+    "517189.18848376896 5126202.905882021), "
+    "(516975.1315332763 5126202.90588202, "
+    "516981.1548022016 5126202.90588202))", 441.22588201984763);
+  printf("%d pairs of static geometries answered as the nearest double\n",
+    geometries);
 
   /* Finalize MEOS */
   meos_finalize();
