@@ -4433,6 +4433,26 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
   bool ashared = a_start || a_end, bshared = b_start || b_end;
   if (! ashared && ! bshared)
     return -1;
+  /* The two signs the shortcut below reads, the side h1 of the chord the
+   * segment runs to and the side of the arc's middle, are those of cross
+   * products of input points: asked first, at the cost of an orientation */
+  if (! (ashared && bshared))
+  {
+    int ch1 = cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, ax, ay,
+      bx, by);
+    int cside = arc->diameter ? (arc->ccw ? -1 : 1) :
+      cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx,
+        arc->sy, arc->mx, arc->my);
+    if (cside != 0 && ch1 != 0 && (ashared ? ch1 : - ch1) != cside)
+    {
+      out[0].kind = (a_start || b_start) ? ARCSEG_AT_ARC_START :
+        ARCSEG_AT_ARC_END;
+      out[0].t = ashared ? 0.0 : 1.0;
+      out[0].sigma = 0;
+      out[0].smaller = false;
+      return 1;
+    }
+  }
   int sqa, sqb, sab, s2ab, sh1, sside;
   arcseg_shared_signs(ax, ay, bx, by, arc, false, &sqa, &sqb, &sab, &s2ab,
     &sh1, &sside);
