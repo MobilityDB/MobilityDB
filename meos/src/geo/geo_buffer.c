@@ -8749,6 +8749,61 @@ buffer_poly_offset_edges(const LWPOLY *poly, double radius, MeosArray *edges)
   return true;
 }
 
+/*
+ * Merge into a box the one liblwgeom reads off the curve #buffer_ring_write
+ * writes from the pieces of a ring: the box of its points, and of each arc
+ * the box #lw_arc_calculate_gbox_cartesian_2d reads. That box reaches at
+ * most twice the radius, and a rounding of the coordinates, beyond the
+ * middle of the arc's chord, so an arc whose circle is that far within the
+ * box already read adds nothing to it and is passed over: the box is the
+ * one serializing the curve computes. The radius is read off the three
+ * points only where their cross product is far from the rounding of its
+ * terms, which holds it within a millionth
+ */
+static void
+buffer_ring_box(const MeosArray *pieces, GBOX *box)
+{
+  uint32_t n = pieces->count;
+  const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    box->xmin = Min(box->xmin, Min(e[i].x1, e[i].x2));
+    box->xmax = Max(box->xmax, Max(e[i].x1, e[i].x2));
+    box->ymin = Min(box->ymin, Min(e[i].y1, e[i].y2));
+    box->ymax = Max(box->ymax, Max(e[i].y1, e[i].y2));
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (! e[i].arc || cross_product_sign(e[i].x1, e[i].y1, e[i].x2,
+          e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0)
+      continue;
+    double ax = e[i].x1 - e[i].mx, ay = e[i].y1 - e[i].my;
+    double bx = e[i].x2 - e[i].mx, by = e[i].y2 - e[i].my;
+    double l = ax * by, r = ay * bx;
+    double cross = fabs(l - r);
+    if (cross > 1e-6 * (fabs(l) + fabs(r)))
+    {
+      double radius = hypot(ax, ay) * hypot(bx, by) *
+        hypot(bx - ax, by - ay) / (2.0 * cross);
+      double reach = 2.5 * radius + 1e-9 * (fabs(e[i].x1) + fabs(e[i].x2) +
+        fabs(e[i].y1) + fabs(e[i].y2));
+      double cx = 0.5 * (e[i].x1 + e[i].x2), cy = 0.5 * (e[i].y1 + e[i].y2);
+      if (cx - reach > box->xmin && cx + reach < box->xmax &&
+          cy - reach > box->ymin && cy + reach < box->ymax)
+        continue;
+    }
+    POINT2D p1 = {e[i].x1, e[i].y1}, p2 = {e[i].mx, e[i].my},
+      p3 = {e[i].x2, e[i].y2};
+    GBOX arcbox;
+    lw_arc_calculate_gbox_cartesian_2d(&p1, &p2, &p3, &arcbox);
+    box->xmin = Min(box->xmin, arcbox.xmin);
+    box->xmax = Max(box->xmax, arcbox.xmax);
+    box->ymin = Min(box->ymin, arcbox.ymin);
+    box->ymax = Max(box->ymax, arcbox.ymax);
+  }
+  return;
+}
+
 /**
  * @brief Return the region offset curves wind around, read off their
  * arrangement (#arrange_wound_surfaces), as a curve polygon where it is one
@@ -8797,6 +8852,12 @@ buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
     else
       lwcurvepoly_add_ring(polys[slot[owner[i]]], lwcompound_as_lwgeom(ring));
   }
+  /* The box of every ring, which serializing the result would read */
+  GBOX box;
+  box.xmin = box.ymin = INFINITY;
+  box.xmax = box.ymax = -INFINITY;
+  for (uint32_t i = 0; i < nrings && ok; i++)
+    buffer_ring_box(rings[i], &box);
   arrange_rings_free(rings, nrings);
   pfree(owner); pfree(slot);
   LWGEOM *result = NULL;
@@ -8814,6 +8875,13 @@ buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
     for (uint32_t i = 0; i < k; i++)
       lwgeom_free(lwcurvepoly_as_lwgeom(polys[i]));
   pfree(polys);
+  if (result && ! lwgeom_is_empty(result))
+  {
+    FLAGS_SET_BBOX(result->flags, 1);
+    result->bbox = gbox_new(result->flags);
+    result->bbox->xmin = box.xmin; result->bbox->xmax = box.xmax;
+    result->bbox->ymin = box.ymin; result->bbox->ymax = box.ymax;
+  }
   return result;
 }
 
