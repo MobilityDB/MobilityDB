@@ -444,6 +444,42 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
+ * @brief Minimum of [ dist(c(t), edge) - r ] for t in [0,1], where the centre
+ * moves from (cx1,cy1) to (cx2,cy2) and the radius r does not change
+ * @details The twin of #dist_moving_segment for a circular buffer: the path
+ * and the edge are two segments, and the disc stands clear of the edge exactly
+ * where their distance exceeds the radius. They meet or not by exact
+ * orientations (#linesegm_intersect); two that do not meet are nearest at an
+ * end of one of them, so the distance less the radius is the least of the
+ * four distances of an end to the other segment less the radius, each the
+ * double nearest the exact one (#point_segment_distance_offset_exact), and
+ * rounding is monotone, so the least of them is the double nearest the least.
+ * Where the disc reaches the edge, the value is the distance of the two
+ * segments as #dist_moving_segment answers it less the radius, not positive,
+ * which the callers read to rank overlaps
+ */
+static double
+dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
+  const Edge *e, double r)
+{
+  IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1, e->y1,
+    e->x2, e->y2);
+  if (meet.type == INTERSECT_NONE)
+  {
+    const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+    const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+    double clear = fmin(
+      fmin(point_segment_distance_offset_exact(c1, a, b, r),
+        point_segment_distance_offset_exact(c2, a, b, r)),
+      fmin(point_segment_distance_offset_exact(a, c1, c2, r),
+        point_segment_distance_offset_exact(b, c1, c2, r)));
+    if (clear > 0.0)
+      return clear;
+  }
+  return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL) - r;
+}
+
+/**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
@@ -466,6 +502,9 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A point moving against the edge */
   if (r1 == 0.0 && r2 == 0.0)
     return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL);
+  /* A circular buffer of constant radius moving against the edge */
+  if (r1 == r2)
+    return dist_moving_offset(cx1, cy1, cx2, cy2, e, r1);
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
