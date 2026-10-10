@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['k_0',['k',['../structintspan__record_a2b30654086ddd34545321c666dd9735e.html#a2b30654086ddd34545321c666dd9735e',1,'intspan_record::k()'],['../structtextset__record_ac88c7d6e48b23bf8555dd65424df702b.html#ac88c7d6e48b23bf8555dd65424df702b',1,'textset_record::k()'],['../structfloatspanset__record_a8fc262068a8888a0f65ae0f2420abe19.html#a8fc262068a8888a0f65ae0f2420abe19',1,'floatspanset_record::k()']]],
+  ['k_0',['k',['../structintspan__record_a2b30654086ddd34545321c666dd9735e.html#a2b30654086ddd34545321c666dd9735e',1,'intspan_record::k()'],['../structtextset__record_ac88c7d6e48b23bf8555dd65424df702b.html#ac88c7d6e48b23bf8555dd65424df702b',1,'textset_record::k()'],['../structDistPoseCache_a327f26459b1e25e7f53ba821a60a908e.html#a327f26459b1e25e7f53ba821a60a908e',1,'DistPoseCache::k()'],['../structfloatspanset__record_a8fc262068a8888a0f65ae0f2420abe19.html#a8fc262068a8888a0f65ae0f2420abe19',1,'floatspanset_record::k()']]],
   ['kd_5fbits_1',['kd_bits',['../structSPTree_a14e44438489f13dca89863ec13e205fb.html#a14e44438489f13dca89863ec13e205fb',1,'SPTree']]],
   ['kd_5fbits_5fbox_2',['kd_bits_box',['../structSPTree_a6dcfaf6e32c2b95a821f1b41fc830009.html#a6dcfaf6e32c2b95a821f1b41fc830009',1,'SPTree']]],
   ['kdtree_5fnext_3',['kdtree_next',['../structSPTree_a98e1075d976cf6c10b5eb36003f1a0ca.html#a98e1075d976cf6c10b5eb36003f1a0ca',1,'SPTree']]],

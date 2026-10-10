@@ -34,7 +34,7 @@ var searchData=
   ['etype_31',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge']]],
   ['ev_32',['ev',['../structDistEvents_a9fb733c82817afb26e17b938e4a26e75.html#a9fb733c82817afb26e17b938e4a26e75',1,'DistEvents']]],
   ['event_33',['event',['../trgeo__distance_8txt_ae133cc622c9cc578700f19573252741c.html#ae133cc622c9cc578700f19573252741c',1,'trgeo_distance.txt']]],
-  ['events_34',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'tpoint_geom_clip.c']]],
+  ['events_34',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'events():&#160;tpoint_geom_clip.c'],['../structDistEverWalk_a46fa13ab34caff6a22db134a082ba63d.html#a46fa13ab34caff6a22db134a082ba63d',1,'DistEverWalk::events()']]],
   ['ever_35',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo']]],
   ['ex_36',['ex',['../structDistRefEdge_a6603ebc0138a881f4c04003e351e1245.html#a6603ebc0138a881f4c04003e351e1245',1,'DistRefEdge::ex()'],['../structEdge_abb675272acf5d396d22957cb03319882.html#abb675272acf5d396d22957cb03319882',1,'Edge::ex()']]],
   ['exclude_5fnodata_37',['exclude_nodata',['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState']]],
