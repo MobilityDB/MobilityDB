@@ -5121,10 +5121,10 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
   uint32_t n = pieces->count;
   if (n == 0)
     return NULL;
-  const Edge *e = (const Edge *) pieces->elems;
+  const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
   bool *arc = palloc(sizeof(bool) * n);
   for (uint32_t i = 0; i < n; i++)
-    arc[i] = e[i].etype == EDGE_POLYARC &&
+    arc[i] = e[i].arc &&
       cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
         e[i].y1, e[i].mx, e[i].my) != 0;
   /* The members, counted first: every arc is one, and every run of
