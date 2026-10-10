@@ -1501,6 +1501,10 @@ arr_winding_at(const Arr *a, Ival px, double py, int *w)
     const ArrPiece *p = &a->pieces[k];
     if (p->right == INT_MIN)
       continue;
+    /* The box test of #arr_piece_ray, read here before the call */
+    const double *b = a->box[p->edge];
+    if (b[3] < py || b[2] > py || b[1] < px.lo)
+      continue;
     if (! arr_piece_ray(a, p, px, py, w, &c))
       return false;
   }
@@ -1995,9 +1999,15 @@ arr_ring_within(const Arr *a, const uint32_t *rp, const uint32_t *roff,
     }
     int w = 0, c = 0;
     bool told = true;
+    double vx = a->nodes[v].x, vy = a->nodes[v].y;
     for (uint32_t m = roff[y]; m < roff[y + 1] && told; m++)
-      told = arr_piece_ray(a, &a->pieces[rp[m]], ival(a->nodes[v].x),
-        a->nodes[v].y, &w, &c);
+    {
+      /* The box test of #arr_piece_ray, read here before the call */
+      const double *b = a->box[a->pieces[rp[m]].edge];
+      if (b[3] < vy || b[2] > vy || b[1] < vx)
+        continue;
+      told = arr_piece_ray(a, &a->pieces[rp[m]], ival(vx), vy, &w, &c);
+    }
     if (told)
       result = c % 2;
   }
