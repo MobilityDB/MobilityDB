@@ -397,7 +397,7 @@ SpanSet *
 tinstant_time(const TInstant *inst)
 {
   assert(inst);
-  return value_spanset(inst->t, T_TIMESTAMPTZ);
+  return value_spanset(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ);
 }
 
 /**

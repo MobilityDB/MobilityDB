@@ -219,7 +219,7 @@ tstzspanset_out(const SpanSet *ss)
 SpanSet *
 int_to_spanset(int i)
 {
-  return value_spanset(i, T_INT4);
+  return value_spanset(Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -229,9 +229,9 @@ int_to_spanset(int i)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-bigint_to_spanset(int i)
+bigint_to_spanset(int64 i)
 {
-  return value_spanset(i, T_INT8);
+  return value_spanset(Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -246,7 +246,7 @@ float_to_spanset(double d)
   /* Ensure the validity of the arguments */
   if (! ensure_not_nan(d))
     return NULL;
-  return value_spanset(d, T_FLOAT8);
+  return value_spanset(Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -258,7 +258,7 @@ float_to_spanset(double d)
 SpanSet *
 date_to_spanset(DateADT d)
 {
-  return value_spanset(d, T_DATE);
+  return value_spanset(DateADTGetDatum(d), T_DATE);
 }
 
 /**
@@ -270,7 +270,7 @@ date_to_spanset(DateADT d)
 SpanSet *
 timestamptz_to_spanset(TimestampTz t)
 {
-  return value_spanset(t, T_TIMESTAMPTZ);
+  return value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /*****************************************************************************
