@@ -8474,6 +8474,291 @@ buffer_ring_encloses_no_area(const LWCOMPOUND *ring, int32_t srid)
 }
 
 /**
+ * @brief Add to an edge array the offset curve of a closed ring with round
+ * joins on the right of the ring, read in reverse where @p reverse, the
+ * curve whose winding number is positive exactly over the ring's buffer on
+ * that side
+ * @details Every segment of the ring is offset by the radius to the
+ * buffered side, the offset of its two ends written once and shared by the
+ * pieces meeting there. At a vertex the turn of the ring, the exact sign of
+ * the cross product of its input segments (#cross_product_sign), decides the
+ * join: where the ring turns away from the buffered side the offsets are
+ * joined by the arc about the vertex; where it turns towards it and the two
+ * offsets cross within both, which #linesegm_intersect decides on their
+ * doubles, both end at that crossing, written once; where they turn towards
+ * it without crossing they are joined through the vertex itself, the
+ * closing segments of GEOS's offset
+ * curve, whose loop winds positively and lies within the buffer; where it
+ * runs straight on they are joined by the segment between them, if they are
+ * two doubles; and where it turns back on itself by the half circle about
+ * the vertex. The pieces are those #edges_add_segment and #edges_add_arc
+ * write, so no point is located again: the arrangement of the curve decides
+ * every crossing of it. This mirrors #buffer_ring, which writes the offset
+ * of a ring as a compound curve
+ * @return False where the ring has fewer than three distinct vertices
+ */
+static bool
+buffer_ring_offset_edges(const POINTARRAY *ring, double radius,
+  bool reverse, MeosArray *edges)
+{
+  /* The distinct vertices, the closing one dropped */
+  uint32_t m = ring->npoints;
+  POINT2D *p = palloc(sizeof(POINT2D) * Max(m, 1u));
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < m; i++)
+  {
+    const POINT2D *q = getPoint2d_cp(ring, reverse ? m - 1 - i : i);
+    if (n > 0 && p[n - 1].x == q->x && p[n - 1].y == q->y)
+      continue;
+    p[n++] = *q;
+  }
+  while (n > 1 && p[n - 1].x == p[0].x && p[n - 1].y == p[0].y)
+    n--;
+  if (n < 3)
+  {
+    pfree(p);
+    return false;
+  }
+  /* The offsets of the two ends of every segment */
+  POINT2D *os = palloc(sizeof(POINT2D) * n), *oe = palloc(sizeof(POINT2D) * n);
+  double *ux = palloc(sizeof(double) * n), *uy = palloc(sizeof(double) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *a = &p[i], *b = &p[(i + 1) % n];
+    double dx = b->x - a->x, dy = b->y - a->y;
+    double len = hypot(dx, dy);
+    ux[i] = dx / len; uy[i] = dy / len;
+    /* The normal on the right */
+    double nx = uy[i], ny = - ux[i];
+    os[i].x = a->x + radius * nx; os[i].y = a->y + radius * ny;
+    oe[i].x = b->x + radius * nx; oe[i].y = b->y + radius * ny;
+  }
+  /* The turn at every vertex, and the crossing of the two offsets meeting
+   * there where the ring turns towards the buffered side */
+  int *turns = palloc(sizeof(int) * n);
+  bool *trim = palloc(sizeof(bool) * n);
+  POINT2D *xp = palloc(sizeof(POINT2D) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t prev = (i + n - 1) % n, next = (i + 1) % n;
+    turns[i] = cross_product_sign(p[prev].x, p[prev].y, p[i].x, p[i].y,
+      p[i].x, p[i].y, p[next].x, p[next].y);
+    trim[i] = false;
+    if (turns[i] < 0)
+    {
+      const POINT2D *a = &os[prev], *b = &oe[prev], *c = &os[i], *d = &oe[i];
+      int oc = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x,
+        c->y);
+      int od = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, d->x,
+        d->y);
+      int oa = cross_product_sign(c->x, c->y, d->x, d->y, c->x, c->y, a->x,
+        a->y);
+      int ob = cross_product_sign(c->x, c->y, d->x, d->y, c->x, c->y, b->x,
+        b->y);
+      if (oc * od < 0 && oa * ob < 0)
+      {
+        IntersectResult r = linesegm_intersect(a->x, a->y, b->x, b->y, c->x,
+          c->y, d->x, d->y);
+        trim[i] = true;
+        xp[i].x = a->x + r.t0 * (b->x - a->x);
+        xp[i].y = a->y + r.t0 * (b->y - a->y);
+      }
+    }
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t prev = (i + n - 1) % n, next = (i + 1) % n;
+    const POINT2D *v = &p[i], *e = &oe[prev], *st = &os[i];
+    int turn = turns[i];
+    if (trim[i])
+      ;
+    else if (turn == 0)
+    {
+      /* Collinear segments run on, or turn back where their directions
+       * differ in the sign of a coordinate, each an exact difference */
+      bool back = (v->x - p[prev].x > 0.0) != (p[next].x - v->x > 0.0) ||
+        (v->y - p[prev].y > 0.0) != (p[next].y - v->y > 0.0) ||
+        (v->x - p[prev].x < 0.0) != (p[next].x - v->x < 0.0) ||
+        (v->y - p[prev].y < 0.0) != (p[next].y - v->y < 0.0);
+      if (back)
+      {
+        POINT2D mid = {v->x + radius * ux[prev], v->y + radius * uy[prev]};
+        edges_add_arc(edges, e, &mid, st);
+      }
+      else if (e->x != st->x || e->y != st->y)
+        edges_add_segment(edges, e, st);
+    }
+    else if (turn > 0)
+    {
+      /* A left turn opens the right side: the arc about the vertex, through
+       * the offset of the bisector of the two normals */
+      double bx = uy[prev] + uy[i], by = - ux[prev] - ux[i];
+      double blen = hypot(bx, by);
+      POINT2D mid = {v->x + radius * bx / blen, v->y + radius * by / blen};
+      edges_add_arc(edges, e, &mid, st);
+    }
+    else
+    {
+      edges_add_segment(edges, e, v);
+      edges_add_segment(edges, v, st);
+    }
+    /* The offset of the segment, from the crossing at either end where
+     * there is one */
+    const POINT2D *from = trim[i] ? &xp[i] : &os[i];
+    const POINT2D *to = trim[next] ? &xp[next] : &oe[i];
+    if (from->x != to->x || from->y != to->y)
+      edges_add_segment(edges, from, to);
+  }
+  pfree(p); pfree(os); pfree(oe); pfree(ux); pfree(uy);
+  pfree(turns); pfree(trim); pfree(xp);
+  return true;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of a polygon with round
+ * joins, whose winding number is positive exactly over its buffer
+ * @details The exterior ring is read counterclockwise and every hole
+ * clockwise, so that the buffered side is the right of each and the holes
+ * wind against the exterior whatever the orientation the polygon stores
+ * (#buffer_ring_offset_edges). A hole enclosing no area is left out as
+ * #geom_extract_edges leaves it. A hole the buffer closes is a loop whose
+ * winding adds to the exterior's rather than a region left out, so it needs
+ * no test of its own
+ * @return False where the exterior encloses no area or a ring cannot be
+ * offset
+ */
+static bool
+buffer_poly_offset_edges(const LWPOLY *poly, double radius, MeosArray *edges)
+{
+  if (poly->nrings == 0)
+    return true;
+  int sign = ring_area_sign(poly->rings[0]);
+  if (sign == 0)
+    return false;
+  if (! buffer_ring_offset_edges(poly->rings[0], radius, sign < 0, edges))
+    return false;
+  for (uint32_t i = 1; i < poly->nrings; i++)
+  {
+    int hs = ring_area_sign(poly->rings[i]);
+    if (hs == 0)
+      continue;
+    if (! buffer_ring_offset_edges(poly->rings[i], radius, hs > 0, edges))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the region offset curves wind around, read off their
+ * arrangement (#arrange_wound_surfaces), as a curve polygon where it is one
+ * surface and a multisurface otherwise
+ * @return NULL where the arrangement leaves the region unanswered
+ */
+static LWGEOM *
+buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
+{
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  ArrangeStatus st = arrange_wound_surfaces(edges, &rings, &nrings, &owner);
+  if (st != ARR_ANSWERED)
+    return NULL;
+  uint32_t nshells = 0;
+  for (uint32_t i = 0; i < nrings; i++)
+    if (owner[i] < 0)
+      nshells++;
+  LWCURVEPOLY **polys = palloc(sizeof(LWCURVEPOLY *) * Max(nshells, 1u));
+  int32_t *slot = palloc(sizeof(int32_t) * Max(nrings, 1u));
+  uint32_t k = 0;
+  bool ok = true;
+  /* Every shell first, then each hole into its shell's surface */
+  for (uint32_t i = 0; i < nrings && ok; i++)
+  {
+    if (owner[i] >= 0)
+      continue;
+    LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+    if (! ring)
+    {
+      ok = false;
+      break;
+    }
+    polys[k] = lwcurvepoly_construct_empty(srid, 0, 0);
+    buffer_curvepoly_add_ring(polys[k], ring);
+    slot[i] = (int32_t) k++;
+  }
+  for (uint32_t i = 0; i < nrings && ok; i++)
+  {
+    if (owner[i] < 0)
+      continue;
+    LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+    if (! ring)
+      ok = false;
+    else
+      buffer_curvepoly_add_ring(polys[slot[owner[i]]], ring);
+  }
+  arrange_rings_free(rings, nrings);
+  pfree(owner); pfree(slot);
+  LWGEOM *result = NULL;
+  if (ok && k == 1)
+    result = lwcurvepoly_as_lwgeom(polys[0]);
+  else if (ok)
+  {
+    LWCOLLECTION *coll = lwcollection_construct_empty(MULTISURFACETYPE,
+      srid, 0, 0);
+    for (uint32_t i = 0; i < k; i++)
+      lwcollection_add_lwgeom(coll, lwcurvepoly_as_lwgeom(polys[i]));
+    result = lwcollection_as_lwgeom(coll);
+  }
+  else
+    for (uint32_t i = 0; i < k; i++)
+      lwgeom_free(lwcurvepoly_as_lwgeom(polys[i]));
+  pfree(polys);
+  return result;
+}
+
+/**
+ * @brief Return the buffer of a polygon with round joins as the region its
+ * offset curves wind around, read off their arrangement in one step
+ * @return NULL where a ring cannot be offset or the arrangement leaves the
+ * region unanswered
+ */
+static LWGEOM *
+buffer_poly_arranged(const LWPOLY *poly, double radius, int32_t srid)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  LWGEOM *result = buffer_poly_offset_edges(poly, radius, edges) ?
+    buffer_surfaces_from_edges(edges, srid) : NULL;
+  meos_array_destroy(edges);
+  return result;
+}
+
+/**
+ * @brief Return the buffer of a multipolygon with round joins as the region
+ * the offset curves of all its polygons wind around, read off their
+ * arrangement in one step: where the buffers of two polygons overlap the
+ * winding numbers add, so the region is their union
+ * @return NULL where a ring cannot be offset or the arrangement leaves the
+ * region unanswered
+ */
+static LWGEOM *
+buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  bool ok = true;
+  for (uint32_t i = 0; i < mpoly->ngeoms && ok; i++)
+  {
+    const LWPOLY *poly = mpoly->geoms[i];
+    if (! poly || lwgeom_is_empty((const LWGEOM *) poly))
+      continue;
+    ok = buffer_poly_offset_edges(poly, radius, edges);
+  }
+  LWGEOM *result = (ok && edges->count > 0) ?
+    buffer_surfaces_from_edges(edges, srid) : NULL;
+  meos_array_destroy(edges);
+  return result;
+}
+
+/**
  * @brief Buffer a POLYGON
  * @details The exterior ring is expanded and interior rings are contracted.
  * Round joins are represented using exact circular arcs.
@@ -8494,6 +8779,15 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     LWCOLLECTION *result = lwcollection_construct_empty(MULTISURFACETYPE,
       srid, 0, 0);
     return lwcollection_as_lwgeom(result);
+  }
+
+  /* With round joins the buffer is the region the offset curves wind
+   * around, read off their arrangement in one step */
+  if (! inward && join_style == JOIN_ROUND)
+  {
+    LWGEOM *arranged = buffer_poly_arranged(poly, radius, srid);
+    if (arranged)
+      return arranged;
   }
 
   /* The first ring is the exterior ring, which a buffer expands and an
@@ -8628,6 +8922,15 @@ meos_buffer_mpoly(const LWMPOLY *mpoly, double radius, JoinStyle join_style,
     LWCOLLECTION *result = lwcollection_construct_empty(MULTISURFACETYPE,
       srid, 0, 0);
     return lwcollection_as_lwgeom(result);
+  }
+
+  /* With round joins the buffer is the region the offset curves of all the
+   * polygons wind around, read off their arrangement in one step */
+  if (join_style == JOIN_ROUND)
+  {
+    LWGEOM *arranged = buffer_mpoly_arranged(mpoly, radius, srid);
+    if (arranged)
+      return arranged;
   }
 
   LWGEOM **buffers = palloc(sizeof(LWGEOM *) * ngeoms);
