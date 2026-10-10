@@ -75,6 +75,17 @@ extern double nad_tcont_tcont_sync(const Temporal *temp1,
   seglb_func seglb, TimestampTz *tmin);
 extern double tpointseg_distance_lb(Datum start1, Datum end1, Datum start2,
   Datum end2);
+/**
+ * @brief Function applied to each interval of #tcont_tcont_merge_walk: the
+ * two sequences, the instant starting the segment of each, and the bounds of
+ * the interval; it returns true to stop the walk
+ */
+typedef bool (*mergewalk_func)(const TSequence *seq1, int k1,
+  const TSequence *seq2, int k2, TimestampTz lower, TimestampTz upper,
+  void *state);
+
+extern bool tcont_tcont_merge_walk(const Temporal *temp1,
+  const Temporal *temp2, mergewalk_func func, void *state, bool *shared);
 extern bool tpoint_motion_exact_applies(const Temporal *temp1,
   const Temporal *temp2);
 extern double nad_tpoint_tpoint_exact(const Temporal *temp1,
