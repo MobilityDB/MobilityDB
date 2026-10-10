@@ -557,6 +557,25 @@ arr_cut_vertex(Arr *a, uint32_t i, double x, double y)
   return;
 }
 
+/*
+ * The cross product (B - A) x (D - C) of differences of four doubles, as an
+ * interval: its value computed in doubles and the bound #cross_product_sign
+ * reads, (3 + 16 eps) eps (|left| + |right|) with eps the machine epsilon,
+ * widened for the rounding of the bound and of the ends of the interval and
+ * for products that underflow
+ */
+static inline Ival
+arr_cross_ival(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  double left = (bx - ax) * (dy - cy);
+  double right = (by - ay) * (dx - cx);
+  double det = left - right;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(left) + fabs(right)) * (1.0 + 4.0 * DBL_EPSILON) + 0x1p-1072;
+  return ival_out(det - bound, det + bound);
+}
+
 /**
  * @brief Node two segments where they meet
  */
@@ -595,18 +614,19 @@ arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
     q->x2, q->y2);
   uint32_t node = arr_node_new(a, x, y, false, -1);
   a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
-  /* The positions along each, t = (C - A) x S / (R x S) */
-  Ival ax = ival(p->x1), ay = ival(p->y1), cx = ival(q->x1), cy = ival(q->y1);
-  Ival rx = ival_sub(ival(p->x2), ax), ry = ival_sub(ival(p->y2), ay);
-  Ival sx = ival_sub(ival(q->x2), cx), sy = ival_sub(ival(q->y2), cy);
-  Ival den = ival_cross(rx, ry, sx, sy);
-  Ival tp = ival_div(ival_cross(ival_sub(cx, ax), ival_sub(cy, ay), sx, sy),
-    den);
-  Ival tq = ival_div(ival_cross(ival_sub(cx, ax), ival_sub(cy, ay), rx, ry),
-    den);
+  /* The positions along each, t = (C - A) x S / (R x S), every cross
+   * product of differences of the four ends held by its value and the bound
+   * of #arr_cross_ival */
+  Ival den = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
+    q->y2);
+  Ival tp = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, q->x1, q->y1,
+    q->x2, q->y2), den);
+  Ival tq = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, p->x1, p->y1,
+    p->x2, p->y2), den);
   ArrMeet m = {MEET_SEGSEG, i, j, 0, 0.0, 0.0};
-  a->nodes[node].bx = ival_add(ax, ival_mul(tp, rx));
-  a->nodes[node].by = ival_add(ay, ival_mul(tp, ry));
+  double rx = p->x2 - p->x1, ry = p->y2 - p->y1;
+  a->nodes[node].bx = ival_add(ival(p->x1), ival_mul(tp, ival_out(rx, rx)));
+  a->nodes[node].by = ival_add(ival(p->y1), ival_mul(tp, ival_out(ry, ry)));
   arr_cut(a, i, node, tp, m);
   arr_cut(a, j, node, tq, m);
   return ARR_ANSWERED;
