@@ -68,7 +68,8 @@
  * yields before it emits any. The room they need is taken in one step, at
  * least doubling so that many small rings still grow the array geometrically,
  * and an array holding no edge yet takes fresh room rather than copying slots
- * nothing was written to
+ * nothing was written to. The room is read in the array's own element size,
+ * so an array of any fixed-size element takes it the same way
  */
 void
 edge_array_reserve(MeosArray *edges, size_t n)
@@ -88,6 +89,17 @@ edge_array_reserve(MeosArray *edges, size_t n)
   return;
 }
 
+/* Add an edge to an edge array, copied as an edge rather than as bytes of
+ * the array's element size (#meos_array_add) */
+static inline void
+edge_array_add(MeosArray *edges, const Edge *e)
+{
+  if (edges->count >= edges->capacity)
+    edge_array_reserve(edges, 1);
+  ((Edge *) edges->elems)[edges->count++] = *e;
+  return;
+}
+
 /* Add to an edge array the straight edge from A to B */
 static void
 emit_segment_edge(const POINT2D *a, const POINT2D *b, MeosArray *edges,
@@ -102,7 +114,7 @@ emit_segment_edge(const POINT2D *a, const POINT2D *b, MeosArray *edges,
   e.length = e.dx * e.dx + e.dy * e.dy;
   e.etype = etype;
   edge_set_tolerance(&e);
-  meos_array_add(edges, &e);
+  edge_array_add(edges, &e);
   return;
 }
 
@@ -151,7 +163,7 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   e.dx = e.dy = e.length = 0;
   e.etype = EDGE_POINT;
   edge_set_tolerance(&e);
-  meos_array_add(edges, &e);
+  edge_array_add(edges, &e);
   return;
 }
 
@@ -389,7 +401,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       e.etype = arc_etype;
       arc_set_bbox(&e);
       edge_set_tolerance(&e);
-      meos_array_add(edges, &e);
+      edge_array_add(edges, &e);
     }
     return;
   }
@@ -417,7 +429,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       e.length = e.dx * e.dx + e.dy * e.dy;
       e.etype = line_etype;
       edge_set_tolerance(&e);
-      meos_array_add(edges, &e);
+      edge_array_add(edges, &e);
     }
     return;
   }
@@ -451,7 +463,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.etype = arc_etype;
   arc_set_bbox(&e);
   edge_set_tolerance(&e);
-  meos_array_add(edges, &e);
+  edge_array_add(edges, &e);
   return;
 }
 

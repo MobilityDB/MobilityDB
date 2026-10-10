@@ -1995,10 +1995,13 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
       ArrPiece *p = &a->pieces[cur];
       p->used = true;
       rp[np++] = cur;
-      ArrangePiece pe;
-      arr_piece_write(a, p, &pe);
-      if (pe.x1 != pe.x2 || pe.y1 != pe.y2)
-        meos_array_add(ring, &pe);
+      /* Written in place, kept where its ends differ */
+      if (ring->count >= ring->capacity)
+        edge_array_reserve(ring, 1);
+      ArrangePiece *pe = &((ArrangePiece *) ring->elems)[ring->count];
+      arr_piece_write(a, p, pe);
+      if (pe->x1 != pe->x2 || pe->y1 != pe->y2)
+        ring->count++;
       uint32_t v = p->flip ? p->from : p->to;
       ArrHalf *h = &a->halves[a->hoff[v]];
       uint32_t deg = a->hoff[v + 1] - a->hoff[v];
