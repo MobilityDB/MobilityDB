@@ -1302,10 +1302,10 @@ int main(void)
   float8_result = float_degrees(float8_in1, true);
   printf("float_degrees(%lf, true): %lf\n", float8_in1, float8_result);
 
-  /* Temporal **temparr_round(Temporal **temp, int count, int maxdd); */
+  /* Temporal **temparr_round(const Temporal **temparr, int count, int maxdd); */
   tfloatarray[0] = tfloat1;
   tfloatarray[1] = tfloat2;
-  tfloatarray_result = temparr_round(tfloatarray, 2, 6);
+  tfloatarray_result = temparr_round((const Temporal **) tfloatarray, 2, 6);
   printf("temparr_round({%s, %s}, 2, 6): {", tfloatinst1_out, tfloatinst2_out);
   for (int i = 0; i < 2; i++)
   {

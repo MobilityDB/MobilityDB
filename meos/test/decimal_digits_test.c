@@ -276,7 +276,7 @@ int main(void)
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
   Temporal *temparr[1] = {tfloat};
-  char **strarr = temparr_out(temparr, 1, -1);
+  char **strarr = temparr_out((const Temporal **) temparr, 1, -1);
   printf("temparr_out(temparr, 1, -1): %s, errno %d\n",
     strarr ? "a value" : "NULL", meos_errno());
   assert(strarr == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
