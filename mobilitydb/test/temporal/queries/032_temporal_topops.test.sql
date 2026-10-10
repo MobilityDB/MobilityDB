@@ -1015,3 +1015,39 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b ~= t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b -|- t2.b;
 
 -------------------------------------------------------------------------------
+
+-- Values stored compressed out of line: the operators read the box in their header
+CREATE TEMP TABLE tbl_tfloat_toast(k int, temp tfloat);
+INSERT INTO tbl_tfloat_toast
+SELECT 1, tfloatSeq(array_agg(tfloat(i % 97, timestamptz '2001-01-01' +
+  i * interval '1 minute') ORDER BY i))
+FROM generate_series(1, 5000) i
+UNION ALL
+SELECT 2, tfloatSeqSet(array_agg(seq ORDER BY j))
+FROM (SELECT j, tfloatSeq(array_agg(tfloat(i % 13 + j, timestamptz '2001-01-01' +
+  (j * 1000 + i) * interval '1 minute') ORDER BY i)) AS seq
+  FROM generate_series(1, 5) j, generate_series(1, 900) i GROUP BY j) s;
+SELECT k, pg_column_compression(temp) IS NOT NULL FROM tbl_tfloat_toast ORDER BY k;
+SELECT k, temp && b, b @> temp, temp &< b, temp && b = temp::tbox && b, b && temp = b && temp::tbox,
+  temp @> b = temp::tbox @> b, temp ~= b = temp::tbox ~= b,
+  temp -|- b = temp::tbox -|- b, temp << b = temp::tbox << b
+FROM tbl_tfloat_toast, (VALUES
+  (tbox 'TBOXFLOAT XT([10, 20],[2001-01-01, 2001-01-03])'),
+  (tbox 'TBOXFLOAT XT([-10, -1],[2001-01-01, 2001-01-03])'),
+  (tbox 'TBOXFLOAT XT([0, 100],[2001-01-01, 2001-01-30])')) v(b)
+ORDER BY k;
+SELECT k, temp && s = temp::floatspan && s, s @> temp = s @> temp::floatspan
+FROM tbl_tfloat_toast, (VALUES (floatspan '[10, 20]'),
+  (floatspan '[-10, -1]'), (floatspan '[0, 100]')) v(s)
+ORDER BY k;
+SELECT k, temp && p = temp::tstzspan && p, temp @> p = temp::tstzspan @> p,
+  temp <@ p = temp::tstzspan <@ p
+FROM tbl_tfloat_toast, (VALUES (tstzspan '[2001-01-01, 2001-01-02]'),
+  (tstzspan '[2002-01-01, 2002-01-02]'), (tstzspan '[2001-01-01, 2001-01-30]')) v(p)
+ORDER BY k;
+SELECT t1.k, t2.k, t1.temp && t2.temp = t1.temp::tbox && t2.temp::tbox,
+  t1.temp ~= t2.temp = t1.temp::tbox ~= t2.temp::tbox
+FROM tbl_tfloat_toast t1, tbl_tfloat_toast t2 ORDER BY 1, 2;
+DROP TABLE tbl_tfloat_toast;
+
+-------------------------------------------------------------------------------

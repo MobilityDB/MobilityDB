@@ -600,7 +600,7 @@ meos_get_datestyle(void)
   if (! result)
     return NULL;
   snprintf(result, DATESTYLE_STR_MAXLEN, "%s, %s", datestyle_string(DateStyle),
-    dateorder_string(DateStyle));
+    dateorder_string(DateOrder));
   return result;
 }
 
