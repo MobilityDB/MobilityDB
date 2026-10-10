@@ -4182,7 +4182,7 @@ arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
     *qa = ZERO; *qb = ZERO; *qc = ZERO;                                      \
     for (int k = 0; k < 3; k++)                                              \
     {                                                                        \
-      T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];           \
+      const T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];     \
       T lift = ADD(MUL(x[0], x[0]), MUL(x[1], x[1]));                        \
       T xr = ADD(MUL(x[0], rx), MUL(x[1], ry));                              \
       T yz = SUB(MUL(y[0], z[1]), MUL(y[1], z[0]));                          \
@@ -4411,7 +4411,7 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
   int sd = arcseg_x_sign(d);
   /* ((V - M) D - N).R for V = A and V = B */
   ArcsegExact va[2];
-  double vx[2] = {ax, bx}, vy[2] = {ay, by};
+  const double vx[2] = {ax, bx}, vy[2] = {ay, by};
   for (int i = 0; i < 2; i++)
   {
     ArcsegExact wx = arcseg_x_sub(arena, arcseg_x_mul(arena,
@@ -5108,11 +5108,13 @@ static int
 meet_root_sign(ArcsegArena *arena, ArcsegExact u, ArcsegExact w,
   ArcsegExact h)
 {
-  int su = arcseg_x_sign_checked(arena, u), sw = arcseg_x_sign_checked(arena, w);
+  int su = arcseg_x_sign_checked(arena, u);
+  int sw = arcseg_x_sign_checked(arena, w);
   if (sw == 0 || arcseg_x_sign_checked(arena, h) == 0)
     return su;
-  int sq = arcseg_x_sign_checked(arena, arcseg_x_sub(arena, arcseg_x_mul(arena, u, u),
-    arcseg_x_mul(arena, arcseg_x_mul(arena, w, w), h)));
+  int sq = arcseg_x_sign_checked(arena, arcseg_x_sub(arena,
+    arcseg_x_mul(arena, u, u), arcseg_x_mul(arena, arcseg_x_mul(arena, w, w),
+    h)));
   return arcseg_root_sign(su, sw, sq);
 }
 
@@ -5411,7 +5413,8 @@ meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
   double ox = e->x1, oy = e->y1;
   meet_point_exact(arena, a, ox, oy, &pa);
   meet_point_exact(arena, b, ox, oy, &pb);
-  int swa = arcseg_x_sign_checked(arena, pa.w), swb = arcseg_x_sign_checked(arena, pb.w);
+  int swa = arcseg_x_sign_checked(arena, pa.w);
+  int swb = arcseg_x_sign_checked(arena, pb.w);
   int result;
   if (e->etype != EDGE_POLYARC && e->etype != EDGE_LINEARC)
   {
@@ -5469,7 +5472,8 @@ meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
         int dot = meet_root_sign(arena, arcseg_x_add(arena,
           arcseg_x_mul(arena, ux, vx0[k]), arcseg_x_mul(arena, uy, vy0[k])),
           arcseg_x_add(arena, arcseg_x_mul(arena, ux, vx1[k]),
-          arcseg_x_mul(arena, uy, vy1[k])), pk->h) * arcseg_x_sign_checked(arena, pk->w);
+          arcseg_x_mul(arena, uy, vy1[k])), pk->h) *
+          arcseg_x_sign_checked(arena, pk->w);
         cls[k] = (dot > 0) ? 0 : 1;
       }
       else

@@ -696,8 +696,8 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
      * chord, its ends on that line: a segment with both ends strictly on
      * the other side meets none of it, decided exactly */
     int want = arr_arc_side(a, j);
-    if (want != 0 && cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx,
-          arc->sy, s->x1, s->y1) == - want &&
+    if (want != 0 && cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey,
+          arc->sx, arc->sy, s->x1, s->y1) == - want &&
         cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx,
           arc->sy, s->x2, s->y2) == - want)
       return ARR_ANSWERED;
@@ -1840,7 +1840,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       arr_label(p, ccw ? outside : outside - 1);
       if (first)
         *outer_piece = ex.piece;
-      uint32_t ends[2] = {p->from, p->to};
+      const uint32_t ends[2] = {p->from, p->to};
       for (int k = 0; k < 2; k++)
         if (! queued[ends[k]])
         {
@@ -2150,7 +2150,7 @@ arr_piece_clear(const Arr *a, const ArrPiece *p, double lox, double hix,
   double loy, double hiy)
 {
   const Edge *e = &a->e[p->edge];
-  double cx[4] = {lox, hix, lox, hix}, cy[4] = {loy, loy, hiy, hiy};
+  const double cx[4] = {lox, hix, lox, hix}, cy[4] = {loy, loy, hiy, hiy};
   int side[4];
   Ival pos[4];
   for (int k = 0; k < 4; k++)
