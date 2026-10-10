@@ -380,17 +380,11 @@ typedef struct
  * edge as an interval and the point it is, exactly */
 typedef struct
 {
+  uint32_t edge;
   uint32_t node;
   Ival pos;
   ArrMeet meet;
 } ArrCut;
-
-/* The cuts of one edge */
-typedef struct
-{
-  ArrCut *cuts;
-  uint32_t n, cap;
-} ArrCuts;
 
 /* A crossing of two edges interior to both, with the sign of the cross
  * product of their directions there, which orders the four pieces around it
@@ -432,7 +426,10 @@ typedef struct
   uint32_t nnodes, capnodes;
   uint32_t *start;        /**< The node each edge starts at */
   uint32_t *end;          /**< The node each edge ends at */
-  ArrCuts *cuts;
+  ArrCut *cuts;           /**< The cuts of all the edges, as they are made,
+                               then grouped by edge (#arr_pieces) */
+  uint32_t ncuts, capcuts;
+  uint32_t *coff;         /**< First cut of each edge, one past the last */
   ArrCross *cross;
   uint32_t ncross, capcross;
   /* The vertex nodes by their coordinates */
@@ -493,17 +490,17 @@ arr_vertex(Arr *a, double x, double y)
 static void
 arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos, ArrMeet meet)
 {
-  ArrCuts *c = &a->cuts[edge];
-  if (c->n == c->cap)
+  if (a->ncuts == a->capcuts)
   {
-    c->cap = c->cap ? 2 * c->cap : 4;
-    c->cuts = c->cuts ? repalloc(c->cuts, sizeof(ArrCut) * c->cap) :
-      palloc(sizeof(ArrCut) * c->cap);
+    a->capcuts = a->capcuts ? 2 * a->capcuts : 64;
+    a->cuts = a->cuts ? repalloc(a->cuts, sizeof(ArrCut) * a->capcuts) :
+      palloc(sizeof(ArrCut) * a->capcuts);
   }
-  c->cuts[c->n].node = node;
-  c->cuts[c->n].pos = pos;
-  c->cuts[c->n].meet = meet;
-  c->n++;
+  ArrCut *c = &a->cuts[a->ncuts++];
+  c->edge = edge;
+  c->node = node;
+  c->pos = pos;
+  c->meet = meet;
   return;
 }
 
@@ -1123,28 +1120,42 @@ arr_cut_order(const Arr *a, uint32_t edge, const ArrCut *c1,
 static ArrangeStatus
 arr_pieces(Arr *a)
 {
-  uint32_t cap = a->n;
-  for (uint32_t i = 0; i < a->n; i++)
-    cap += a->cuts[i].n;
-  a->pieces = palloc(sizeof(ArrPiece) * Max(cap, 1u));
+  /* The cuts grouped by edge, in the order they were made within each */
+  uint32_t n = a->n;
+  a->coff = palloc0(sizeof(uint32_t) * (n + 1));
+  for (uint32_t k = 0; k < a->ncuts; k++)
+    a->coff[a->cuts[k].edge + 1]++;
+  for (uint32_t i = 0; i < n; i++)
+    a->coff[i + 1] += a->coff[i];
+  ArrCut *grouped = palloc(sizeof(ArrCut) * Max(a->ncuts, 1u));
+  uint32_t *fill = palloc(sizeof(uint32_t) * Max(n, 1u));
+  memcpy(fill, a->coff, sizeof(uint32_t) * n);
+  for (uint32_t k = 0; k < a->ncuts; k++)
+    grouped[fill[a->cuts[k].edge]++] = a->cuts[k];
+  pfree(fill);
+  if (a->cuts)
+    pfree(a->cuts);
+  a->cuts = grouped;
+  a->pieces = palloc(sizeof(ArrPiece) * Max(n + a->ncuts, 1u));
   a->npieces = 0;
-  for (uint32_t i = 0; i < a->n; i++)
+  for (uint32_t i = 0; i < n; i++)
   {
-    ArrCuts *c = &a->cuts[i];
-    if (c->n > 1)
-      arr_cut_sort(c->cuts, c->n);
+    ArrCut *cuts = &a->cuts[a->coff[i]];
+    uint32_t ncut = a->coff[i + 1] - a->coff[i];
+    if (ncut > 1)
+      arr_cut_sort(cuts, ncut);
     /* Cuts whose intervals overlap are put in their exact order: the sort
      * by the lower ends leaves each within its run of overlapping ones */
-    for (uint32_t k = 1; k < c->n; k++)
+    for (uint32_t k = 1; k < ncut; k++)
       for (uint32_t m = k; m > 0; m--)
       {
-        int o = arr_cut_order(a, i, &c->cuts[m - 1], &c->cuts[m]);
+        int o = arr_cut_order(a, i, &cuts[m - 1], &cuts[m]);
         if (o == 2)
           return ARR_ORDER;
         if (o <= 0)
           break;
-        ArrCut t = c->cuts[m]; c->cuts[m] = c->cuts[m - 1];
-        c->cuts[m - 1] = t;
+        ArrCut t = cuts[m]; cuts[m] = cuts[m - 1];
+        cuts[m - 1] = t;
       }
     uint32_t from = a->start[i], end = a->end[i];
     /* A segment runs from 0 to 1 and an arc from 0 on, see
@@ -1152,9 +1163,9 @@ arr_pieces(Arr *a)
     Ival pfrom = ival(0.0);
     Ival pend = ival(arr_is_arc(&a->e[i]) ? INFINITY : 1.0);
     const ArrCut *prev = NULL;
-    for (uint32_t k = 0; k < c->n; k++)
+    for (uint32_t k = 0; k < ncut; k++)
     {
-      const ArrCut *cut = &c->cuts[k];
+      const ArrCut *cut = &cuts[k];
       if (prev && cut->node == prev->node)
         continue;
       ArrPiece *p = &a->pieces[a->npieces++];
@@ -1775,8 +1786,6 @@ arr_piece_edge(const Arr *a, const ArrPiece *p, Edge *out)
   {
     out->etype = EDGE_POLYARC;
     out->cx = e->cx; out->cy = e->cy; out->radius = e->radius;
-    out->theta0 = atan2(out->y1 - e->cy, out->x1 - e->cx);
-    out->theta1 = atan2(out->y2 - e->cy, out->x2 - e->cx);
     out->ccw = p->flip ? ! a->ccw[p->edge] : a->ccw[p->edge];
     /* The piece as an arc of three points, its ends and a middle: the
      * edge's own where the piece is the whole of an arc of three points,
@@ -2197,7 +2206,9 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     a.start[i] = arr_vertex(&a, a.e[i].x1, a.e[i].y1);
     a.end[i] = arr_vertex(&a, a.e[i].x2, a.e[i].y2);
   }
-  a.cuts = palloc0(sizeof(ArrCuts) * n);
+  a.cuts = NULL;
+  a.ncuts = a.capcuts = 0;
+  a.coff = NULL;
   /* Closed curves: as many edges start at every vertex as end there */
   ArrangeStatus st = ARR_ANSWERED;
   int32_t *balance = palloc0(sizeof(int32_t) * a.nnodes);
@@ -2249,10 +2260,11 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     }
   }
   /* Release */
-  for (uint32_t i = 0; i < n; i++)
-    if (a.cuts[i].cuts)
-      pfree(a.cuts[i].cuts);
-  pfree(a.cuts); pfree(a.start); pfree(a.end); pfree(a.vtab);
+  if (a.cuts)
+    pfree(a.cuts);
+  if (a.coff)
+    pfree(a.coff);
+  pfree(a.start); pfree(a.end); pfree(a.vtab);
   pfree(a.nodes);
   pfree(a.ccx); pfree(a.ccy); pfree(a.cr2); pfree(a.ccw);
   if (a.cross)
