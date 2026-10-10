@@ -129,11 +129,56 @@ ival_extremes(const double p[4])
   return ival_out(lo, hi);
 }
 
+/* The product: where the sign of either interval is known, its extremes are
+ * two of the four products of the bounds, which the signs name; where both
+ * hold zero within them, all four are read (#ival_extremes) */
 static inline Ival
 ival_mul(Ival a, Ival b)
 {
-  double p[4] = {a.lo * b.lo, a.lo * b.hi, a.hi * b.lo, a.hi * b.hi};
-  return ival_extremes(p);
+  double lo, hi;
+  if (a.lo >= 0.0 && b.lo >= 0.0)
+  {
+    lo = a.lo * b.lo; hi = a.hi * b.hi;
+  }
+  else if (a.lo >= 0.0 && b.hi <= 0.0)
+  {
+    lo = a.hi * b.lo; hi = a.lo * b.hi;
+  }
+  else if (a.lo >= 0.0)
+  {
+    lo = a.hi * b.lo; hi = a.hi * b.hi;
+  }
+  else if (a.hi <= 0.0 && b.lo >= 0.0)
+  {
+    lo = a.lo * b.hi; hi = a.hi * b.lo;
+  }
+  else if (a.hi <= 0.0 && b.hi <= 0.0)
+  {
+    lo = a.hi * b.hi; hi = a.lo * b.lo;
+  }
+  else if (a.hi <= 0.0)
+  {
+    lo = a.lo * b.hi; hi = a.lo * b.lo;
+  }
+  else if (b.lo >= 0.0)
+  {
+    lo = a.lo * b.hi; hi = a.hi * b.hi;
+  }
+  else if (b.hi <= 0.0)
+  {
+    lo = a.hi * b.lo; hi = a.lo * b.lo;
+  }
+  else
+  {
+    double p[4] = {a.lo * b.lo, a.lo * b.hi, a.hi * b.lo, a.hi * b.hi};
+    return ival_extremes(p);
+  }
+  if (isnan(lo) || isnan(hi))
+  {
+    Ival r = {-INFINITY, INFINITY};
+    return r;
+  }
+  return ival_out(lo, hi);
 }
 
 /* A divisor holding zero bounds nothing */
