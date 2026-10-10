@@ -313,6 +313,7 @@ CREATE FUNCTION getTime(tposechain)
 CREATE FUNCTION timeSpan(tposechain)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tposechain)

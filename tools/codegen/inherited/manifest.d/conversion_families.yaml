@@ -19,9 +19,9 @@ conversion_families:
   blocks:
   - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
   - fns:
-    - {sig: "valueSpan(tint)", ret: intspan, sym: Tnumber_to_span}
-    - {sig: "valueSpan(tbigint)", ret: bigintspan, sym: Tnumber_to_span}
-    - {sig: "valueSpan(tfloat)", ret: floatspan, sym: Tnumber_to_span}
+    - {sig: "valueSpan(tint)", ret: intspan, sym: Tnumber_to_span, cost: 5}
+    - {sig: "valueSpan(tbigint)", ret: bigintspan, sym: Tnumber_to_span, cost: 5}
+    - {sig: "valueSpan(tfloat)", ret: floatspan, sym: Tnumber_to_span, cost: 5}
   - lit: "\nCREATE CAST (tint AS intspan) WITH FUNCTION valueSpan(tint);\nCREATE CAST (tbigint AS bigintspan) WITH FUNCTION valueSpan(tbigint);\nCREATE CAST (tfloat AS floatspan) WITH FUNCTION valueSpan(tfloat);\n\n"
   - fns:
     - {sig: "tint(tbool)", ret: tint, sym: Tbool_to_tint}
@@ -35,9 +35,9 @@ conversion_families:
     - {sig: "tbigint(tfloat)", ret: tbigint, sym: Tfloat_to_tbigint}
   - lit: "\nCREATE CAST (tint AS tbigint) WITH FUNCTION tbigint(tint);\nCREATE CAST (tint AS tfloat) WITH FUNCTION tfloat(tint);\nCREATE CAST (tbigint AS tint) WITH FUNCTION tint(tbigint);\nCREATE CAST (tbigint AS tfloat) WITH FUNCTION tfloat(tbigint);\nCREATE CAST (tfloat AS tint) WITH FUNCTION tint(tfloat);\nCREATE CAST (tfloat AS tbigint) WITH FUNCTION tbigint(tfloat);\n\n"
   - fns:
-    - {sig: "tbox(tint)", ret: tbox, sym: Tnumber_to_tbox}
-    - {sig: "tbox(tbigint)", ret: tbox, sym: Tnumber_to_tbox}
-    - {sig: "tbox(tfloat)", ret: tbox, sym: Tnumber_to_tbox}
+    - {sig: "tbox(tint)", ret: tbox, sym: Tnumber_to_tbox, cost: 5}
+    - {sig: "tbox(tbigint)", ret: tbox, sym: Tnumber_to_tbox, cost: 5}
+    - {sig: "tbox(tfloat)", ret: tbox, sym: Tnumber_to_tbox, cost: 5}
   - lit: "\nCREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);\nCREATE CAST (tbigint AS tbox) WITH FUNCTION tbox(tbigint);\nCREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);\n\n"
 - family: cbuffer
   file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
@@ -100,7 +100,7 @@ conversion_families:
     - {sig: "tgeometry(trgeometry)", ret: tgeometry, sym: Trgeometry_to_tgeometry}
   - lit: "\nCREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);\nCREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);\nCREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);\n\n"
   - fns:
-    - {sig: "stbox(trgeometry)", ret: stbox, sym: Tspatial_to_stbox}
+    - {sig: "stbox(trgeometry)", ret: stbox, sym: Tspatial_to_stbox, cost: 5}
   - lit: "\nCREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);\n\nCREATE FUNCTION expandSpace(trgeometry, float)\n  RETURNS stbox\n  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - fns:
     - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
