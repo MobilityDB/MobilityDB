@@ -4206,3 +4206,25 @@ WITH s(temp) AS (
 SELECT numInstants(temp), numInstants(tfloatFromBinary(asBinary(temp))),
   asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
 FROM s;
+
+-------------------------------------------------------------------------------
+-- A restriction to a time returns its result in normal form, so the value
+-- read back from its binary form is the value the restriction returns. The
+-- value interpolated at 18:00 rounds to 1, which makes the instant at
+-- 2001-01-02 redundant
+
+WITH s(temp) AS (
+  SELECT atTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    tstzspan '[2001-01-01 18:00, 2001-01-03]') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    timestamptz '2001-01-01 18:00') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    tstzset '{2001-01-01 06:00, 2001-01-01 18:00}') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;

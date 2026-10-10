@@ -6121,3 +6121,47 @@ SELECT hash(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, 
  -591522621
 (1 row)
 
+WITH s(temp) AS (
+  SELECT atTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    tstzspan '[2001-01-01 23:59:59, 2001-01-03]') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+ numinstants | ?column? 
+-------------+----------
+           2 | t
+(1 row)
+
+WITH s(temp) AS (
+  SELECT minusTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    timestamptz '2001-01-01 23:59:59') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+ numinstants | ?column? 
+-------------+----------
+           3 | t
+(1 row)
+
+WITH s(temp) AS (
+  SELECT minusTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    tstzset '{2001-01-01 12:00, 2001-01-01 23:59:59}') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+ numinstants | ?column? 
+-------------+----------
+           4 | t
+(1 row)
+
+WITH s(temp) AS (
+  SELECT atStbox(tgeompoint '[POINT(0 1.0000000000000004)@2001-01-01,
+    POINT(1 1)@2001-01-02, POINT(2 1)@2001-01-03]',
+    stbox 'STBOX X((0.75,0),(3,2))') )
+SELECT numInstants(temp), asBinary(tgeompointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+ numinstants | ?column? 
+-------------+----------
+           2 | t
+(1 row)
+
