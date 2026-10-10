@@ -285,6 +285,11 @@ extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
   int within[2][2]);
 extern int edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1,
   const Edge *e2, bool ccw2, bool out2, double vx, double vy);
+extern void edges_add_segment(MeosArray *edges, const POINT2D *a,
+  const POINT2D *b);
+extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
+  const POINT2D *m, const POINT2D *b);
+extern int ring_area_sign(const POINTARRAY *pa);
 
 /* How a meeting of two edges arises, the data that place it exactly */
 typedef enum

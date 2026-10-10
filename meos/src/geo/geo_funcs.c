@@ -88,6 +88,24 @@ edge_array_reserve(MeosArray *edges, size_t n)
   return;
 }
 
+/* Add to an edge array the straight edge from A to B */
+static void
+emit_segment_edge(const POINT2D *a, const POINT2D *b, MeosArray *edges,
+  EdgeType etype)
+{
+  Edge e;
+  e.x1 = a->x; e.y1 = a->y;
+  e.x2 = b->x; e.y2 = b->y;
+  e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
+  e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
+  e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+  e.length = e.dx * e.dx + e.dy * e.dy;
+  e.etype = etype;
+  edge_set_tolerance(&e);
+  meos_array_add(edges, &e);
+  return;
+}
+
 /**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a ring
@@ -98,20 +116,20 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
   /* A ring of n points yields n - 1 edges */
   edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i < (int) pa->npoints - 1; i++)
-  {
-    const POINT2D *a = getPoint2d_cp(pa, i);
-    const POINT2D *b = getPoint2d_cp(pa, i + 1);
-    Edge e;
-    e.x1 = a->x; e.y1 = a->y;
-    e.x2 = b->x; e.y2 = b->y;
-    e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
-    e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
-    e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
-    e.length = e.dx * e.dx + e.dy * e.dy;
-    e.etype = etype;
-    edge_set_tolerance(&e);
-    meos_array_add(edges, &e);
-  }
+    emit_segment_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1), edges,
+      etype);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the straight edge of a surface's boundary from
+ * @p a to @p b, as #geom_extract_edges reads one from a ring
+ */
+void
+edges_add_segment(MeosArray *edges, const POINT2D *a, const POINT2D *b)
+{
+  assert(edges); assert(a); assert(b);
+  emit_segment_edge(a, b, edges, EDGE_POLYSEG);
   return;
 }
 
@@ -187,7 +205,7 @@ static inline int grow_expansion(int elen, const double *e, double b,
  * exactly (#two_product) and the parts are summed into an expansion
  * (#grow_expansion), whose largest component carries the exact sign.
  */
-static int
+int
 ring_area_sign(const POINTARRAY *pa)
 {
   uint32_t n = pa->npoints;
@@ -433,6 +451,20 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   arc_set_bbox(&e);
   edge_set_tolerance(&e);
   meos_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the arc of a surface's boundary through @p a,
+ * @p m and @p b, as #geom_extract_edges reads one from a circular string:
+ * three collinear points are the straight edges they lie on
+ */
+void
+edges_add_arc(MeosArray *edges, const POINT2D *a, const POINT2D *m,
+  const POINT2D *b)
+{
+  assert(edges); assert(a); assert(m); assert(b);
+  emit_arc_edge(a, m, b, edges, EDGE_POLYSEG, EDGE_POLYARC);
   return;
 }
 
