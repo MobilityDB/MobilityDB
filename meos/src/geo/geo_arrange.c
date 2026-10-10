@@ -306,12 +306,23 @@ typedef struct
   int32_t cross;     /**< The crossing it is, or -1 */
 } ArrNode;
 
+/* How the point of a cut arises, as #MeetPoint states it with the indices
+ * of the edges */
+typedef struct
+{
+  MeetKind kind;
+  uint32_t p, q;
+  int sigma;
+  double x, y;
+} ArrMeet;
+
 /* A cut of an edge at a node interior to it, with its position along the
- * edge as an interval */
+ * edge as an interval and the point it is, exactly */
 typedef struct
 {
   uint32_t node;
   Ival pos;
+  ArrMeet meet;
 } ArrCut;
 
 /* The cuts of one edge */
@@ -418,7 +429,7 @@ arr_vertex(Arr *a, double x, double y)
 }
 
 static void
-arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos)
+arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos, ArrMeet meet)
 {
   ArrCuts *c = &a->cuts[edge];
   if (c->n == c->cap)
@@ -429,6 +440,7 @@ arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos)
   }
   c->cuts[c->n].node = node;
   c->cuts[c->n].pos = pos;
+  c->cuts[c->n].meet = meet;
   c->n++;
   return;
 }
@@ -481,7 +493,8 @@ arr_cut_vertex(Arr *a, uint32_t i, double x, double y)
   Ival pos = arr_is_arc(e) ?
     arr_arc_position(e, a->ccx[i], a->ccy[i], ival(x), ival(y)) :
     arr_segment_position(e, ival(x), ival(y));
-  arr_cut(a, i, arr_vertex(a, x, y), pos);
+  ArrMeet m = {MEET_VERTEX, 0, 0, 0, x, y};
+  arr_cut(a, i, arr_vertex(a, x, y), pos, m);
   return;
 }
 
@@ -532,8 +545,9 @@ arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
     den);
   Ival tq = ival_div(ival_cross(ival_sub(cx, ax), ival_sub(cy, ay), rx, ry),
     den);
-  arr_cut(a, i, node, tp);
-  arr_cut(a, j, node, tq);
+  ArrMeet m = {MEET_SEGSEG, i, j, 0, 0.0, 0.0};
+  arr_cut(a, i, node, tp, m);
+  arr_cut(a, j, node, tq, m);
   return ARR_ANSWERED;
 }
 
@@ -594,9 +608,10 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
         a->nodes[node].cross = arr_cross_new(a, node, i, j, - st);
         Ival px = ival_add(ax, ival_mul(t, rx)), py = ival_add(ay,
           ival_mul(t, ry));
-        arr_cut(a, i, node, t);
+        ArrMeet am = {MEET_SEGARC, i, j, m[k].sigma, 0.0, 0.0};
+        arr_cut(a, i, node, t, am);
         arr_cut(a, j, node, arr_arc_position(arc, a->ccx[j], a->ccy[j], px,
-          py));
+          py), am);
         break;
       }
     }
@@ -643,7 +658,8 @@ arr_on_arc(const Arr *a, uint32_t j, Ival px, Ival py)
 
 /* A crossing of two arcs interior to both, at a point the intervals hold */
 static ArrangeStatus
-arr_arc_crossing(Arr *a, uint32_t i, uint32_t j, Ival px, Ival py, int sign)
+arr_arc_crossing(Arr *a, uint32_t i, uint32_t j, Ival px, Ival py, int sign,
+  int sigma)
 {
   if (! isfinite(px.lo) || ! isfinite(px.hi) || ! isfinite(py.lo) ||
       ! isfinite(py.hi))
@@ -651,10 +667,11 @@ arr_arc_crossing(Arr *a, uint32_t i, uint32_t j, Ival px, Ival py, int sign)
   uint32_t node = arr_node_new(a, 0.5 * (px.lo + px.hi),
     0.5 * (py.lo + py.hi), false, -1);
   a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
+  ArrMeet m = {MEET_ARCARC, i, j, sigma, 0.0, 0.0};
   arr_cut(a, i, node, arr_arc_position(&a->e[i], a->ccx[i], a->ccy[i], px,
-    py));
+    py), m);
   arr_cut(a, j, node, arr_arc_position(&a->e[j], a->ccx[j], a->ccy[j], px,
-    py));
+    py), m);
   return ARR_ANSWERED;
 }
 
@@ -694,7 +711,8 @@ arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
     int sigma = (r == 0) ? -1 : 1;
     Ival px = ival_add(bx, ival_mul(ival(-sigma), ival_mul(f, dy)));
     Ival py = ival_add(by, ival_mul(ival(sigma), ival_mul(f, dx)));
-    ArrangeStatus st = arr_arc_crossing(a, i, j, px, py, sigma * c12);
+    ArrangeStatus st = arr_arc_crossing(a, i, j, px, py, sigma * c12,
+      sigma);
     if (st != ARR_ANSWERED)
       return st;
   }
@@ -809,8 +827,9 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
     uint32_t node = arr_node_new(a, 0.5 * (qx.lo + qx.hi),
       0.5 * (qy.lo + qy.hi), false, -1);
     a->nodes[node].cross = arr_cross_new(a, node, i, j, - s1 * c1 * c2);
-    arr_cut(a, i, node, arr_arc_position(p, a->ccx[i], a->ccy[i], qx, qy));
-    arr_cut(a, j, node, arr_arc_position(q, a->ccx[j], a->ccy[j], qx, qy));
+    ArrMeet m = {MEET_ARCARC_REFLECT, i, j, 0, jx, jy};
+    arr_cut(a, i, node, arr_arc_position(p, a->ccx[i], a->ccy[i], qx, qy), m);
+    arr_cut(a, j, node, arr_arc_position(q, a->ccx[j], a->ccy[j], qx, qy), m);
     return ARR_ANSWERED;
   }
   Ival bx = ival_add(a->ccx[i], ival_mul(u, dx));
@@ -819,7 +838,7 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
   /* The crossings, gathered first: one the intervals cannot decide hands the
    * pair to the exact test, which decides both */
   Ival cpx[2], cpy[2];
-  int csign[2], nc = 0;
+  int csign[2], csigma[2], nc = 0;
   for (int side = -1; side <= 1; side += 2)
   {
     /* B + side f (-dy, dx) */
@@ -846,11 +865,12 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
     int sign = ival_sign(ival_cross(t1x, t1y, t2x, t2y));
     if (sign == 2 || sign == 0)
       return arr_meet_arcs_exact(a, i, j);
-    cpx[nc] = px; cpy[nc] = py; csign[nc] = sign; nc++;
+    cpx[nc] = px; cpy[nc] = py; csign[nc] = sign; csigma[nc] = side; nc++;
   }
   for (int c = 0; c < nc; c++)
   {
-    ArrangeStatus st = arr_arc_crossing(a, i, j, cpx[c], cpy[c], csign[c]);
+    ArrangeStatus st = arr_arc_crossing(a, i, j, cpx[c], cpy[c], csign[c],
+      csigma[c]);
     if (st != ARR_ANSWERED)
       return st;
   }
@@ -946,11 +966,44 @@ arr_cut_cmp(const void *a, const void *b)
   return (p->node < q->node) ? -1 : (p->node > q->node) ? 1 : 0;
 }
 
+/* The meeting of a cut as #meets_order_exact reads it */
+static MeetPoint
+arr_meet_point(const Arr *a, const ArrMeet *m)
+{
+  MeetPoint r;
+  r.kind = m->kind;
+  r.p = (m->kind == MEET_VERTEX) ? NULL : &a->e[m->p];
+  r.q = (m->kind == MEET_VERTEX) ? NULL : &a->e[m->q];
+  r.sigma = m->sigma;
+  r.x = m->x; r.y = m->y;
+  return r;
+}
+
+/* Return how two cuts of an edge are ordered along it: by their intervals,
+ * and where those overlap by #meets_order_exact; 0 for one node, 2 for two
+ * nodes at one point or an order that cannot be told */
+static int
+arr_cut_order(const Arr *a, uint32_t edge, const ArrCut *c1,
+  const ArrCut *c2)
+{
+  if (c1->node == c2->node)
+    return 0;
+  if (c1->pos.hi < c2->pos.lo)
+    return -1;
+  if (c2->pos.hi < c1->pos.lo)
+    return 1;
+  MeetPoint m1 = arr_meet_point(a, &c1->meet);
+  MeetPoint m2 = arr_meet_point(a, &c2->meet);
+  int c = meets_order_exact(&a->e[edge], a->ccw[edge], &m1, &m2);
+  return (c == 0) ? 2 : c;
+}
+
 /**
  * @brief Cut every edge into pieces at its nodes, in their order along it
  * @details A node cut twice into one edge is one cut. Two cuts at distinct
- * nodes whose intervals overlap are two meetings whose order the intervals
- * cannot tell, and the arrangement is left unanswered
+ * nodes whose intervals overlap are ordered exactly (#meets_order_exact);
+ * two distinct nodes at one point, or an order that cannot be told, leave
+ * the arrangement unanswered
  */
 static ArrangeStatus
 arr_pieces(Arr *a)
@@ -965,6 +1018,19 @@ arr_pieces(Arr *a)
     ArrCuts *c = &a->cuts[i];
     if (c->n > 1)
       qsort(c->cuts, c->n, sizeof(ArrCut), arr_cut_cmp);
+    /* Cuts whose intervals overlap are put in their exact order: the sort
+     * by the lower ends leaves each within its run of overlapping ones */
+    for (uint32_t k = 1; k < c->n; k++)
+      for (uint32_t m = k; m > 0; m--)
+      {
+        int o = arr_cut_order(a, i, &c->cuts[m - 1], &c->cuts[m]);
+        if (o == 2)
+          return ARR_ORDER;
+        if (o <= 0)
+          break;
+        ArrCut t = c->cuts[m]; c->cuts[m] = c->cuts[m - 1];
+        c->cuts[m - 1] = t;
+      }
     uint32_t from = a->start[i], end = a->end[i];
     /* A segment runs from 0 to 1 and an arc from 0 on, see
      * #arr_arc_position */
@@ -976,8 +1042,6 @@ arr_pieces(Arr *a)
       const ArrCut *cut = &c->cuts[k];
       if (prev && cut->node == prev->node)
         continue;
-      if (prev && prev->pos.hi >= cut->pos.lo)
-        return ARR_ORDER;
       ArrPiece *p = &a->pieces[a->npieces++];
       p->edge = i; p->from = from; p->to = cut->node;
       p->pfrom = pfrom; p->pto = cut->pos;

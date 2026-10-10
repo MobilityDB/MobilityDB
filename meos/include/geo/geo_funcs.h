@@ -284,6 +284,31 @@ extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
 extern int edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1,
   const Edge *e2, bool ccw2, bool out2, double vx, double vy);
 
+/* How a meeting of two edges arises, the data that place it exactly */
+typedef enum
+{
+  MEET_VERTEX,          /**< An input vertex, at (x, y) */
+  MEET_SEGSEG,          /**< Two segments p and q crossing */
+  MEET_SEGARC,          /**< Segment p crossing arc q at the root sigma of
+                             #arcsegm_meet_exact */
+  MEET_ARCARC,          /**< Arcs p and q crossing at the meeting sigma of
+                             #arcarc_meet_exact */
+  MEET_ARCARC_REFLECT   /**< Arcs p and q through the vertex (x, y),
+                             crossing at its reflection across the line of
+                             their centres */
+} MeetKind;
+
+typedef struct
+{
+  MeetKind kind;
+  const Edge *p, *q;
+  int sigma;
+  double x, y;
+} MeetPoint;
+
+extern int meets_order_exact(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b);
+
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
  * for a multi-surface — whose edges are those of the union of its members —
