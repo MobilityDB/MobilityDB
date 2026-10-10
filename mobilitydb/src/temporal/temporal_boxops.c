@@ -54,6 +54,7 @@
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
 /* MobilityDB */
+#include "pg_temporal/temporal.h"  /* temporal_slice */
 #include "pg_temporal/type_util.h"
 
 /*****************************************************************************
@@ -210,7 +211,7 @@ Boxop_tstzspan_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
   Span *box = PG_GETARG_SPAN_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_temporal_tstzspan(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -226,7 +227,7 @@ Datum
 Boxop_temporal_tstzspan(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(0));
   Span *box = PG_GETARG_SPAN_P(1);
   bool result = boxop_temporal_tstzspan(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -242,8 +243,8 @@ Datum
 Boxop_temporal_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp1 = temporal_slice(PG_GETARG_DATUM(0));
+  Temporal *temp2 = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_temporal_temporal(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -514,7 +515,7 @@ Boxop_numspan_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
   Span *box = PG_GETARG_SPAN_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_tnumber_numspan(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -530,7 +531,7 @@ Datum
 Boxop_tnumber_numspan(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(0));
   Span *box = PG_GETARG_SPAN_P(1);
   bool result = boxop_tnumber_numspan(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -547,7 +548,7 @@ Boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_tnumber_tbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -563,7 +564,7 @@ Datum
 Boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(0));
   TBox *box = PG_GETARG_TBOX_P(1);
   bool result = boxop_tnumber_tbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -579,8 +580,8 @@ Datum
 Boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp1 = temporal_slice(PG_GETARG_DATUM(0));
+  Temporal *temp2 = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_tnumber_tnumber(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

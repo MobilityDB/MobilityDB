@@ -4858,3 +4858,82 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b -|- t2.b;
      0
 (1 row)
 
+CREATE TEMP TABLE tbl_tfloat_toast(k int, temp tfloat);
+CREATE TABLE
+INSERT INTO tbl_tfloat_toast
+SELECT 1, tfloatSeq(array_agg(tfloat(i % 97, timestamptz '2001-01-01' +
+  i * interval '1 minute') ORDER BY i))
+FROM generate_series(1, 5000) i
+UNION ALL
+SELECT 2, tfloatSeqSet(array_agg(seq ORDER BY j))
+FROM (SELECT j, tfloatSeq(array_agg(tfloat(i % 13 + j, timestamptz '2001-01-01' +
+  (j * 1000 + i) * interval '1 minute') ORDER BY i)) AS seq
+  FROM generate_series(1, 5) j, generate_series(1, 900) i GROUP BY j) s;
+INSERT 0 2
+SELECT k, pg_column_compression(temp) IS NOT NULL FROM tbl_tfloat_toast ORDER BY k;
+ k | ?column? 
+---+----------
+ 1 | t
+ 2 | t
+(2 rows)
+
+SELECT k, temp && b, b @> temp, temp &< b, temp && b = temp::tbox && b, b && temp = b && temp::tbox,
+  temp @> b = temp::tbox @> b, temp ~= b = temp::tbox ~= b,
+  temp -|- b = temp::tbox -|- b, temp << b = temp::tbox << b
+FROM tbl_tfloat_toast, (VALUES
+  (tbox 'TBOXFLOAT XT([10, 20],[2001-01-01, 2001-01-03])'),
+  (tbox 'TBOXFLOAT XT([-10, -1],[2001-01-01, 2001-01-03])'),
+  (tbox 'TBOXFLOAT XT([0, 100],[2001-01-01, 2001-01-30])')) v(b)
+ORDER BY k;
+ k | ?column? | ?column? | ?column? | ?column? | ?column? | ?column? | ?column? | ?column? | ?column? 
+---+----------+----------+----------+----------+----------+----------+----------+----------+----------
+ 1 | t        | f        | f        | t        | t        | t        | t        | t        | t
+ 1 | f        | f        | f        | t        | t        | t        | t        | t        | t
+ 1 | t        | t        | t        | t        | t        | t        | t        | t        | t
+ 2 | t        | f        | t        | t        | t        | t        | t        | t        | t
+ 2 | f        | f        | f        | t        | t        | t        | t        | t        | t
+ 2 | t        | t        | t        | t        | t        | t        | t        | t        | t
+(6 rows)
+
+SELECT k, temp && s = temp::floatspan && s, s @> temp = s @> temp::floatspan
+FROM tbl_tfloat_toast, (VALUES (floatspan '[10, 20]'),
+  (floatspan '[-10, -1]'), (floatspan '[0, 100]')) v(s)
+ORDER BY k;
+ k | ?column? | ?column? 
+---+----------+----------
+ 1 | t        | t
+ 1 | t        | t
+ 1 | t        | t
+ 2 | t        | t
+ 2 | t        | t
+ 2 | t        | t
+(6 rows)
+
+SELECT k, temp && p = temp::tstzspan && p, temp @> p = temp::tstzspan @> p,
+  temp <@ p = temp::tstzspan <@ p
+FROM tbl_tfloat_toast, (VALUES (tstzspan '[2001-01-01, 2001-01-02]'),
+  (tstzspan '[2002-01-01, 2002-01-02]'), (tstzspan '[2001-01-01, 2001-01-30]')) v(p)
+ORDER BY k;
+ k | ?column? | ?column? | ?column? 
+---+----------+----------+----------
+ 1 | t        | t        | t
+ 1 | t        | t        | t
+ 1 | t        | t        | t
+ 2 | t        | t        | t
+ 2 | t        | t        | t
+ 2 | t        | t        | t
+(6 rows)
+
+SELECT t1.k, t2.k, t1.temp && t2.temp = t1.temp::tbox && t2.temp::tbox,
+  t1.temp ~= t2.temp = t1.temp::tbox ~= t2.temp::tbox
+FROM tbl_tfloat_toast t1, tbl_tfloat_toast t2 ORDER BY 1, 2;
+ k | k | ?column? | ?column? 
+---+---+----------+----------
+ 1 | 1 | t        | t
+ 1 | 2 | t        | t
+ 2 | 1 | t        | t
+ 2 | 2 | t        | t
+(4 rows)
+
+DROP TABLE tbl_tfloat_toast;
+DROP TABLE

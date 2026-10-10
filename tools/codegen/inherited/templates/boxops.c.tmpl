@@ -12,7 +12,7 @@ Boxop_{BOX}_{TSIDE}(FunctionCallInfo fcinfo,
   bool (*func)(const {BOXC} *, const {BOXC} *))
 {
   {BOXC} *box = {GETARG}(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
   bool result = {DISPBOX}(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -28,7 +28,7 @@ Datum
 Boxop_{TSIDE}_{BOX}(FunctionCallInfo fcinfo,
   bool (*func)(const {BOXC} *, const {BOXC} *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(0));
   {BOXC} *box = {GETARG}(1);
   bool result = {DISPBOX}(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -44,8 +44,8 @@ Datum
 Boxop_{TSIDE}_{TSIDE}(FunctionCallInfo fcinfo,
   bool (*func)(const {BOXC} *, const {BOXC} *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp1 = temporal_slice(PG_GETARG_DATUM(0));
+  Temporal *temp2 = temporal_slice(PG_GETARG_DATUM(1));
   bool result = {DISPTT}(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

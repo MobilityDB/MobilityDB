@@ -62,6 +62,8 @@
 #include "pointcloud/tpc_boxops.h"
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P */
 #include "temporal/temporal.h"
+/* MobilityDB */
+#include "pg_temporal/temporal.h"  /* temporal_slice */
 
 /* GENERATED-BOXOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.d/boxtypes.yaml and re-run. */
@@ -79,7 +81,7 @@ Boxop_tpcbox_tpointcloud(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_tpointcloud_tpcbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -95,7 +97,7 @@ Datum
 Boxop_tpointcloud_tpcbox(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp = temporal_slice(PG_GETARG_DATUM(0));
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   bool result = boxop_tpointcloud_tpcbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -111,8 +113,8 @@ Datum
 Boxop_tpointcloud_tpointcloud(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp1 = temporal_slice(PG_GETARG_DATUM(0));
+  Temporal *temp2 = temporal_slice(PG_GETARG_DATUM(1));
   bool result = boxop_tpointcloud_tpointcloud(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
