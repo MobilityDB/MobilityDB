@@ -875,6 +875,29 @@ arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
   Ival bx = ival_add(a->ccx[i], ival_mul(u, dx));
   Ival by = ival_add(a->ccy[i], ival_mul(u, dy));
   Ival f = ival_sqrt(ival_div(h2, d2));
+  /* Centres the intervals cannot tell apart, as of two join arcs about one
+   * vertex: the crossings are placed from the exact terms instead,
+   * P = M1 + N1 / D1 + (G d' + sigma sqrt(H) rot(d')) / (2 Q L) */
+  bool near = ival_sign(d2) != 1;
+  Ival c1x = ival(0.0), c1y = c1x, ex = c1x, ey = c1x, eg = c1x, eh = c1x,
+    eden = c1x;
+  if (near && meet != 0)
+  {
+    double t[ARCARC_NTERMS][2];
+    if (! arcarc_crossing_terms(&a->e[i], &a->e[j], t))
+      return ARR_MEETING;
+    Ival v[ARCARC_NTERMS];
+    for (int k = 0; k < ARCARC_NTERMS; k++)
+    {
+      v[k].lo = t[k][0];
+      v[k].hi = t[k][1];
+    }
+    c1x = ival_add(v[ARCARC_M1X], ival_div(v[ARCARC_N1X], v[ARCARC_D1]));
+    c1y = ival_add(v[ARCARC_M1Y], ival_div(v[ARCARC_N1Y], v[ARCARC_D1]));
+    ex = v[ARCARC_DX]; ey = v[ARCARC_DY]; eg = v[ARCARC_G];
+    eh = ival_sqrt(v[ARCARC_H]);
+    eden = ival_mul(ival(2.0), ival_mul(v[ARCARC_QQ], v[ARCARC_L]));
+  }
   int c12 = (a->ccw[i] ? 1 : -1) * (a->ccw[j] ? 1 : -1);
   for (int r = 0; r < 2; r++)
   {
@@ -884,8 +907,19 @@ arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
     if (meet == 0)
       return ARR_MEETING;
     int sigma = (r == 0) ? -1 : 1;
-    Ival px = ival_add(bx, ival_mul(ival(-sigma), ival_mul(f, dy)));
-    Ival py = ival_add(by, ival_mul(ival(sigma), ival_mul(f, dx)));
+    Ival px, py;
+    if (near)
+    {
+      px = ival_add(c1x, ival_div(ival_sub(ival_mul(eg, ex),
+        ival_mul(ival(sigma), ival_mul(eh, ey))), eden));
+      py = ival_add(c1y, ival_div(ival_add(ival_mul(eg, ey),
+        ival_mul(ival(sigma), ival_mul(eh, ex))), eden));
+    }
+    else
+    {
+      px = ival_add(bx, ival_mul(ival(-sigma), ival_mul(f, dy)));
+      py = ival_add(by, ival_mul(ival(sigma), ival_mul(f, dx)));
+    }
     ArrangeStatus st = arr_arc_crossing(a, i, j, px, py, sigma * c12,
       sigma);
     if (st != ARR_ANSWERED)

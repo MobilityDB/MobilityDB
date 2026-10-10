@@ -283,6 +283,16 @@ extern void arcarc_shared_point_signs(const Edge *p, const Edge *q,
   double jx, double jy, int *s1, int *sp, int *sq);
 extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
   int within[2][2]);
+
+/* The terms #arcarc_crossing_terms hands, in this order */
+typedef enum
+{
+  ARCARC_M1X, ARCARC_M1Y, ARCARC_N1X, ARCARC_N1Y, ARCARC_D1, ARCARC_L,
+  ARCARC_DX, ARCARC_DY, ARCARC_QQ, ARCARC_G, ARCARC_H, ARCARC_NTERMS
+} ArcarcTerm;
+
+extern bool arcarc_crossing_terms(const Edge *p, const Edge *q,
+  double terms[ARCARC_NTERMS][2]);
 extern int edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1,
   const Edge *e2, bool ccw2, bool out2, double vx, double vy);
 extern void edge_array_reserve(MeosArray *edges, size_t n);
