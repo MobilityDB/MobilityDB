@@ -8702,6 +8702,32 @@ buffer_ring_offset_edges(const POINTARRAY *ring, double radius,
  * @return False where the exterior encloses no area or a ring cannot be
  * offset
  */
+/*
+ * Return true where the buffer fills a hole whole: a point within the hole
+ * reaches its ring along the vertical within half the height of the ring's
+ * box, and along the horizontal within half its width, so where twice the
+ * radius exceeds either it lies nearer to the polygon than the radius. The
+ * buffer of the polygon with the hole filled is then the same, a point
+ * within the radius of the hole being within it of the hole's ring. The
+ * side is rounded up, which leaves a tie to the arrangement
+ */
+static bool
+buffer_hole_filled(const POINTARRAY *ring, double radius)
+{
+  if (! (radius > 0.0) || ring->npoints == 0)
+    return false;
+  const POINT2D *p = getPoint2d_cp(ring, 0);
+  double xmin = p->x, xmax = p->x, ymin = p->y, ymax = p->y;
+  for (uint32_t i = 1; i < ring->npoints; i++)
+  {
+    p = getPoint2d_cp(ring, i);
+    xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
+    ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
+  }
+  double side = Min(xmax - xmin, ymax - ymin);
+  return side + (side * 0x1p-52 + 0x1p-1074) < 2.0 * radius;
+}
+
 static bool
 buffer_poly_offset_edges(const LWPOLY *poly, double radius, MeosArray *edges)
 {
@@ -8715,7 +8741,7 @@ buffer_poly_offset_edges(const LWPOLY *poly, double radius, MeosArray *edges)
   for (uint32_t i = 1; i < poly->nrings; i++)
   {
     int hs = ring_area_sign(poly->rings[i]);
-    if (hs == 0)
+    if (hs == 0 || buffer_hole_filled(poly->rings[i], radius))
       continue;
     if (! buffer_ring_offset_edges(poly->rings[i], radius, hs > 0, edges))
       return false;
