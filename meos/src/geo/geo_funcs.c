@@ -4798,6 +4798,113 @@ arcarc_shared_point_signs(const Edge *p, const Edge *q, double jx, double jy,
   return;
 }
 
+/* The two circles of a pair of arcs, exactly, in the terms of
+ * #arcarc_meet_exact: the centre of the first as M1 + N1 / D1, D2,
+ * L = D1 D2, d' = L (C2 - C1), Q = |d'|^2, G = Q + R1' - R2' and
+ * H = 4 R1' Q - G^2 */
+typedef struct
+{
+  ArcsegExact m1x, m1y, n1x, n1y, d1, d2, l, dx, dy, qq, g, h;
+} ArcarcCircles;
+
+static void
+arcarc_circles_exact(ArcsegArena *arena, const Edge *p, const Edge *q,
+  ArcarcCircles *c)
+{
+  ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
+  arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
+  arcarc_centre_exact(arena, q, &m2x, &m2y, &n2x, &n2y, &d2);
+  ArcsegExact l = arcseg_x_mul(arena, d1, d2);
+  ArcsegExact dx = arcseg_x_add(arena,
+    arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2x, m1x)),
+    arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2x),
+      arcseg_x_mul(arena, d2, n1x)));
+  ArcsegExact dy = arcseg_x_add(arena,
+    arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2y, m1y)),
+    arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2y),
+      arcseg_x_mul(arena, d2, n1y)));
+  ArcsegExact qq = arcseg_x_add(arena, arcseg_x_mul(arena, dx, dx),
+    arcseg_x_mul(arena, dy, dy));
+  /* The squared radii, times L^2 */
+  ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sx, 0.0), m1x)), n1x);
+  ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sy, 0.0), m1y)), n1y);
+  ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sx, 0.0), m2x)), n2x);
+  ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sy, 0.0), m2y)), n2y);
+  ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
+    arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
+    arcseg_x_mul(arena, d2, d2));
+  ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
+    arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
+    arcseg_x_mul(arena, d1, d1));
+  ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
+  c->m1x = m1x; c->m1y = m1y; c->n1x = n1x; c->n1y = n1y;
+  c->d1 = d1; c->d2 = d2; c->l = l; c->dx = dx; c->dy = dy; c->qq = qq;
+  c->g = g;
+  c->h = arcseg_x_sub(arena,
+    arcseg_x_scale(arena, arcseg_x_mul(arena, r1, qq), 4.0),
+    arcseg_x_mul(arena, g, g));
+  return;
+}
+
+/* An interval holding an exact value: the sum of its components, which
+ * errs by at most the number of additions times half an epsilon of the sum
+ * of their magnitudes, widened by the bound on how far the expansion lies
+ * from the value and by a step outward for the rounding of its ends. False
+ * where the sum is not finite */
+static bool
+arcseg_x_bounds(ArcsegExact a, double out[2])
+{
+  double sum = 0.0, mag = 0.0;
+  for (int i = 0; i < a.n; i++)
+  {
+    sum += a.e[i];
+    mag += fabs(a.e[i]);
+  }
+  double b = ((double) a.n * DBL_EPSILON * mag + a.err) *
+    (1.0 + 4.0 * DBL_EPSILON) + 0x1p-1070;
+  out[0] = sum - b;
+  out[1] = sum + b;
+  out[0] -= fabs(out[0]) * 0x1p-52 + 0x1p-1074;
+  out[1] += fabs(out[1]) * 0x1p-52 + 0x1p-1074;
+  return isfinite(out[0]) && isfinite(out[1]);
+}
+
+/**
+ * @brief Return the terms placing where the circles of two arcs cross, each
+ * as an interval holding its exact value
+ * @details The terms of #arcarc_meet_exact: the meetings lie at
+ * P = M1 + N1 / D1 + (G d' + sigma sqrt(H) rot(d')) / (2 Q L), rot(x, y) =
+ * (-y, x), which hold however near the two centres lie, where the
+ * difference of centres read in intervals holds zero
+ * @param[in] p,q Arcs of two distinct circles
+ * @param[out] terms The intervals, indexed by #ArcarcTerm
+ * @return False where an interval is not finite or the arithmetic of
+ * expansions left its exact range
+ */
+bool
+arcarc_crossing_terms(const Edge *p, const Edge *q,
+  double terms[ARCARC_NTERMS][2])
+{
+  assert(p); assert(q); assert(terms);
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
+  arena_.blocks = NULL;
+  ArcarcCircles c;
+  arcarc_circles_exact(arena, p, q, &c);
+  const ArcsegExact *x[ARCARC_NTERMS] = {&c.m1x, &c.m1y, &c.n1x, &c.n1y,
+    &c.d1, &c.l, &c.dx, &c.dy, &c.qq, &c.g, &c.h};
+  bool ok = ! arena->unsafe;
+  for (int k = 0; k < ARCARC_NTERMS && ok; k++)
+    ok = arcseg_x_bounds(*x[k], terms[k]);
+  arcseg_arena_free(arena);
+  return ok;
+}
+
 /**
  * @brief Return where the circles of two arcs meet and whether each meeting
  * lies within both arcs, decided exactly
@@ -4825,40 +4932,12 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   arena_.used = arena_.n = arena_.cap = 0;
   arena_.unsafe = false;
   arena_.blocks = NULL;
-  ArcsegExact m1x, m1y, n1x, n1y, d1, m2x, m2y, n2x, n2y, d2;
-  arcarc_centre_exact(arena, p, &m1x, &m1y, &n1x, &n1y, &d1);
-  arcarc_centre_exact(arena, q, &m2x, &m2y, &n2x, &n2y, &d2);
-  ArcsegExact l = arcseg_x_mul(arena, d1, d2);
-  int sl = arcseg_x_sign(l);
-  ArcsegExact dx = arcseg_x_add(arena,
-    arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2x, m1x)),
-    arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2x),
-      arcseg_x_mul(arena, d2, n1x)));
-  ArcsegExact dy = arcseg_x_add(arena,
-    arcseg_x_mul(arena, l, arcseg_x_sub(arena, m2y, m1y)),
-    arcseg_x_sub(arena, arcseg_x_mul(arena, d1, n2y),
-      arcseg_x_mul(arena, d2, n1y)));
-  ArcsegExact qq = arcseg_x_add(arena, arcseg_x_mul(arena, dx, dx),
-    arcseg_x_mul(arena, dy, dy));
-  /* The squared radii, times L^2 */
-  ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sx, 0.0), m1x)), n1x);
-  ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sy, 0.0), m1y)), n1y);
-  ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sx, 0.0), m2x)), n2x);
-  ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sy, 0.0), m2y)), n2y);
-  ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
-    arcseg_x_mul(arena, d2, d2));
-  ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
-    arcseg_x_mul(arena, d1, d1));
-  ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
-  ArcsegExact h = arcseg_x_sub(arena,
-    arcseg_x_scale(arena, arcseg_x_mul(arena, r1, qq), 4.0),
-    arcseg_x_mul(arena, g, g));
+  ArcarcCircles cc;
+  arcarc_circles_exact(arena, p, q, &cc);
+  ArcsegExact m1x = cc.m1x, m1y = cc.m1y, n1x = cc.n1x, n1y = cc.n1y,
+    d1 = cc.d1, d2 = cc.d2, dx = cc.dx, dy = cc.dy, qq = cc.qq, g = cc.g,
+    h = cc.h;
+  int sl = arcseg_x_sign(cc.l);
   *meet = arcseg_x_sign(h);
   const Edge *arcs[2] = {p, q};
   for (int k = 0; k < 2; k++)
