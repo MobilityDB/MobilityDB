@@ -1548,21 +1548,27 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
  * @return false where the intervals cannot tell a crossing
  */
 static bool
-arr_winding_at(const Arr *a, Ival px, double py, int *w)
+arr_winding_at(const Arr *a, const uint32_t *cpieces, const uint32_t *coff,
+  const double (*cbox)[4], uint32_t ncomp, Ival px, double py, int *w)
 {
   *w = 0;
   int c = 0;
-  for (uint32_t k = 0; k < a->npieces; k++)
+  for (uint32_t m = 0; m < ncomp; m++)
   {
-    const ArrPiece *p = &a->pieces[k];
-    if (p->right == INT_MIN)
+    /* A component whose box the ray cannot meet is passed over whole */
+    const double *cb = cbox[m];
+    if (cb[3] < py || cb[2] > py || cb[1] < px.lo)
       continue;
-    /* The box test of #arr_piece_ray, read here before the call */
-    const double *b = a->box[p->edge];
-    if (b[3] < py || b[2] > py || b[1] < px.lo)
-      continue;
-    if (! arr_piece_ray(a, p, px, py, w, &c))
-      return false;
+    for (uint32_t k = coff[m]; k < coff[m + 1]; k++)
+    {
+      const ArrPiece *p = &a->pieces[cpieces[k]];
+      /* The box test of #arr_piece_ray, read here before the call */
+      const double *b = a->box[p->edge];
+      if (b[3] < py || b[2] > py || b[1] < px.lo)
+        continue;
+      if (! arr_piece_ray(a, p, px, py, w, &c))
+        return false;
+    }
   }
   return true;
 }
@@ -1582,6 +1588,13 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   uint32_t *comp = palloc(sizeof(uint32_t) * Max(nn, 1u));
   bool *incomp = palloc0(sizeof(bool) * Max(nn, 1u));
   uint32_t cursor = 0;
+  /* The pieces of every component labelled, component by component, and
+   * the box of each, which the rays of the later ones read */
+  uint32_t *cpieces = palloc(sizeof(uint32_t) * Max(a->npieces, 1u));
+  uint32_t ccap = 16, ncomp = 0;
+  uint32_t *coff = palloc(sizeof(uint32_t) * (ccap + 1));
+  double (*cbox)[4] = palloc(sizeof(double[4]) * ccap);
+  coff[0] = 0;
   ArrangeStatus st = ARR_ANSWERED;
   *outer_piece = UINT32_MAX;
   bool first = true;
@@ -1686,7 +1699,8 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
        * the one the whole component lies in, as it meets none of them */
       Ival px = ival(a->nodes[ex.node].x);
       double py = a->nodes[ex.node].y;
-      if (! arr_winding_at(a, px, py, &outside))
+      if (! arr_winding_at(a, cpieces, coff, (const double (*)[4]) cbox,
+          ncomp, px, py, &outside))
       {
         st = ARR_DEPTH;
         break;
@@ -1765,9 +1779,42 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       incomp[comp[c]] = false;
     if (st != ARR_ANSWERED)
       break;
+    /* The component's pieces, each leaving one of its nodes once, and its
+     * box, read by the rays of the components after it: none is read where
+     * no piece is left unlabelled */
+    while (cursor < a->npieces && a->pieces[cursor].right != INT_MIN)
+      cursor++;
+    if (cursor == a->npieces)
+      break;
+    if (ncomp == ccap)
+    {
+      ccap *= 2;
+      coff = repalloc(coff, sizeof(uint32_t) * (ccap + 1));
+      cbox = repalloc(cbox, sizeof(double[4]) * ccap);
+    }
+    double *cb = cbox[ncomp];
+    cb[0] = cb[2] = INFINITY;
+    cb[1] = cb[3] = -INFINITY;
+    uint32_t np = coff[ncomp];
+    for (uint32_t c = 0; c < cn; c++)
+    {
+      uint32_t v = comp[c];
+      for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
+      {
+        if (! a->halves[k].out)
+          continue;
+        uint32_t pc = a->halves[k].piece;
+        cpieces[np++] = pc;
+        const double *b = a->box[a->pieces[pc].edge];
+        cb[0] = fmin(cb[0], b[0]); cb[1] = fmax(cb[1], b[1]);
+        cb[2] = fmin(cb[2], b[2]); cb[3] = fmax(cb[3], b[3]);
+      }
+    }
+    coff[++ncomp] = np;
     first = false;
   }
   pfree(queued); pfree(queue); pfree(comp); pfree(incomp);
+  pfree(cpieces); pfree(coff); pfree(cbox);
   return st;
 }
 
