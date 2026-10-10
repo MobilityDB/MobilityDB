@@ -85,10 +85,28 @@ ival(double x)
   return r;
 }
 
+/* The double next above x, as nextafter(x, INFINITY) returns it, read off
+ * its bit pattern as #pow2_double writes one: the pattern grows with the
+ * double where it is positive and shrinks where it is negative, and both
+ * zeros step to the smallest subnormal */
+static inline double
+ival_next_up(double x)
+{
+  if (isnan(x) || x == INFINITY)
+    return x;
+  if (x == 0.0)
+    return 0x1p-1074;
+  uint64_t bits;
+  memcpy(&bits, &x, sizeof(bits));
+  bits = (x > 0.0) ? bits + 1 : bits - 1;
+  memcpy(&x, &bits, sizeof(bits));
+  return x;
+}
+
 static inline Ival
 ival_out(double lo, double hi)
 {
-  Ival r = {nextafter(lo, -INFINITY), nextafter(hi, INFINITY)};
+  Ival r = {- ival_next_up(- lo), ival_next_up(hi)};
   return r;
 }
 
