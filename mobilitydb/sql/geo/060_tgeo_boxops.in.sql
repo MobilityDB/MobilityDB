@@ -39,10 +39,12 @@
 CREATE FUNCTION stbox(tgeometry)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tgeography)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeometry AS stbox) WITH FUNCTION stbox(tgeometry);

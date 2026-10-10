@@ -2853,8 +2853,9 @@ def bootstrap_distance(filetext: str, fam: dict, rendered: str) -> str:
 # tpose/tgeompoint/tgeogpoint/tgeometry/stbox/geometry) plus the matching CREATE CAST
 # statements. Each CREATE FUNCTION is the SAME four-line skeleton
 # (templates/conversions.sql.tmpl); only the signature {SIG}, return {RET}, backing
-# symbol {SYM}, strictness ({STRICT}) and an optional leading comment ({PRE}) differ
-# — so ONE skeleton emits every wrapper. The CREATE CAST lines and the one irregular
+# symbol {SYM}, strictness ({STRICT}), an optional COST ({COST}, the `cost` of a row)
+# and an optional leading comment ({PRE}) differ — so ONE skeleton emits every
+# wrapper. The CREATE CAST lines and the one irregular
 # SQL wrapper (rgeo's expandSpace, LANGUAGE SQL not C) are NOT the CREATE-FUNCTION
 # skeleton, so they are reproduced BYTE-EXACT via `lit` blocks in the manifest,
 # exactly as the constructor surface reproduces its section headers and family-extra
@@ -2883,13 +2884,16 @@ def _conversions_markers(family: str):
     return begin, f"-- GENERATED-CONVERSIONS-END {family}\n"
 
 
-def _conv_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+def _conv_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str,
+                   cost=None) -> str:
     """One conversion CREATE FUNCTION from the shared skeleton (no trailing newline, so
     blocks can be joined with explicit newline control). `pre` is a leading comment line
-    or ""; `strict` toggles the ` STRICT` keyword."""
+    or ""; `strict` toggles the ` STRICT` keyword; `cost` is the declared COST of the
+    function, none for the default."""
     tmpl = read_template("conversions.sql.tmpl")
     return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
                 .replace("{SYM}", sym)
+                .replace("{COST}", f"  COST {cost}\n" if cost is not None else "")
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
 
 
@@ -2907,7 +2911,8 @@ def render_conversions(fam: dict) -> str:
             out += blk["lit"]
         else:
             out += "\n".join(_conv_skeleton(f["sig"], f["ret"], f["sym"],
-                                            f.get("strict", True), f.get("pre", ""))
+                                            f.get("strict", True), f.get("pre", ""),
+                                            f.get("cost"))
                              for f in blk["fns"]) + "\n"
     return out
 

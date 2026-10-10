@@ -43,21 +43,25 @@ CREATE FUNCTION spanBefore(tstzspan, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(tstzspan, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(tstzspan, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(tstzspan, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -91,21 +95,25 @@ CREATE FUNCTION tboxBefore(tstzspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tstzspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tstzspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tstzspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -139,21 +147,25 @@ CREATE FUNCTION tboxBefore(tstzspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tstzspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tstzspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tstzspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -187,21 +199,25 @@ CREATE FUNCTION tboxBefore(tstzspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tstzspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tstzspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tstzspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -235,21 +251,25 @@ CREATE FUNCTION spanBefore(tstzspan, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(tstzspan, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(tstzspan, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(tstzspan, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -285,21 +305,25 @@ CREATE FUNCTION tboxLeft(intspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(intspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(intspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(intspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -335,21 +359,25 @@ CREATE FUNCTION tboxLeft(bigintspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(bigintspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(bigintspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(bigintspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -385,21 +413,25 @@ CREATE FUNCTION tboxLeft(floatspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(floatspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(floatspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(floatspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -435,41 +467,49 @@ CREATE FUNCTION tboxLeft(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -525,41 +565,49 @@ CREATE FUNCTION tboxLeft(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -615,41 +663,49 @@ CREATE FUNCTION tboxLeft(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -707,21 +763,25 @@ CREATE FUNCTION spanBefore(tbool, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(tbool, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(tbool, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(tbool, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -755,21 +815,25 @@ CREATE FUNCTION spanBefore(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -805,21 +869,25 @@ CREATE FUNCTION tboxBefore(tint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -853,21 +921,25 @@ CREATE FUNCTION tboxLeft(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -901,41 +973,49 @@ CREATE FUNCTION tboxLeft(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -991,41 +1071,49 @@ CREATE FUNCTION tboxLeft(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1083,21 +1171,25 @@ CREATE FUNCTION tboxBefore(tbigint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbigint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbigint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbigint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1131,21 +1223,25 @@ CREATE FUNCTION tboxLeft(tbigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbigint, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1179,41 +1275,49 @@ CREATE FUNCTION tboxLeft(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbigint, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1269,41 +1373,49 @@ CREATE FUNCTION tboxLeft(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1361,21 +1473,25 @@ CREATE FUNCTION tboxBefore(tfloat, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tfloat, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tfloat, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tfloat, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1409,21 +1525,25 @@ CREATE FUNCTION tboxLeft(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1457,41 +1577,49 @@ CREATE FUNCTION tboxLeft(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1547,41 +1675,49 @@ CREATE FUNCTION tboxLeft(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverleft(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxRight(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverright(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxBefore(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverbefore(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxAfter(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboxOverafter(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   SUPPORT tnumber_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1639,21 +1775,25 @@ CREATE FUNCTION spanBefore(ttext, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(ttext, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(ttext, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(ttext, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1687,21 +1827,25 @@ CREATE FUNCTION spanBefore(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverbefore(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAfter(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverafter(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (

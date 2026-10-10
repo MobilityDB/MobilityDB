@@ -232,6 +232,7 @@ CREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);
 CREATE FUNCTION stbox(trgeometry)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);
@@ -326,6 +327,7 @@ CREATE FUNCTION getTime(trgeometry)
 CREATE FUNCTION timeSpan(trgeometry)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(trgeometry)
