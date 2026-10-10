@@ -61,6 +61,8 @@ typedef enum
 
 extern ArrangeStatus arrange_wound_boundary(const MeosArray *edges,
   MeosArray ***rings, uint32_t *nrings);
+extern ArrangeStatus arrange_wound_surfaces(const MeosArray *edges,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner);
 extern void arrange_rings_free(MeosArray **rings, uint32_t nrings);
 
 #endif /* __GEO_ARRANGE_H__ */
