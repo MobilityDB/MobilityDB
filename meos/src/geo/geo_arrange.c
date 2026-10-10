@@ -1718,6 +1718,13 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
       }
       cur = next;
     }
+    /* A ring every piece of which has ends written at one point bounds
+     * nothing the coordinates can state */
+    if (ring->count == 0)
+    {
+      meos_array_destroy(ring);
+      continue;
+    }
     if (n == cap)
     {
       cap *= 2;
