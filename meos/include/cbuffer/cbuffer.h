@@ -70,7 +70,8 @@ extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb);
 /* Collinear and interpolation functions */
 
 extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
-  const Cbuffer *cbuf3, double ratio);
+  const Cbuffer *cb3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
+  bool constructed);
 extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
   const Cbuffer *end, long double ratio);
 extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,

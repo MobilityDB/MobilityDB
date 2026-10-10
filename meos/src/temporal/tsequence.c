@@ -61,6 +61,7 @@
 #include "temporal/temporal_restrict.h"
 #include "temporal/type_util.h"
 #include "temporal/type_parser.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #if CBUFFER
@@ -94,17 +95,72 @@
  *****************************************************************************/
 
 /**
- * @brief Return true if the three values are collinear
- * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the timestamps
- * associated to `x1` and `x2` divided by the duration of the timestamps
- * associated to `x1` and `x3`
+ * @brief Split a duration into two doubles whose sum is the duration exactly
+ * @details The nearest double to a duration of 2^53 microseconds or more,
+ * some 285 years, drops its last bits, which the second double carries. The
+ * nearest double to a duration below 2^63 is at most 2^63, and its difference
+ * with the duration is computed without overflow
+ */
+static inline void
+duration_split(TimestampTz duration, double *hi, double *lo)
+{
+  *hi = (double) duration;
+  *lo = (*hi >= 0x1p63) ? (double) ((duration - PG_INT64_MAX) - 1) :
+    (double) (duration - (int64) *hi);
+  return;
+}
+
+/**
+ * @brief Return true if the value at the middle timestamp lies on the line
+ * through the other two, decided exactly
+ * @details The three values are collinear exactly where the cross product
+ * `(t2 - t1) * (x3 - x1) - (x2 - x1) * (t3 - t1)` is zero. Its operands are
+ * input values, so it has one answer, which #cross_product_sign gives: its
+ * filter decides where the double evaluation carries the sign, and the sign
+ * is decided exactly elsewhere, so a zero is an exact zero. Exact
+ * collinearity is transitive, which makes the normalization of a sequence
+ * its own fixed point. Each duration enters as two doubles whose sum is the
+ * duration exactly (#duration_split), and values so large that the product
+ * of their difference and a duration would overflow are scaled by a power of
+ * two, which leaves the sign unchanged. Values that are not all finite are
+ * collinear only where they are equal.
+ *
+ * A middle value the engine CONSTRUCTS, the value at which a restriction
+ * splits a segment, is rounded and lies on the line within that rounding
+ * only. It is collinear where it lies within the rounding of the value
+ * interpolated at its timestamp (#coordinate_tolerance)
+ * @param[in] x1,x2,x3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
+ * @note Exact where no product of a difference of the values and a duration
+ * underflows
  */
 bool
-float_collinear(double x1, double x2, double x3, double ratio)
+float_collinear(double x1, double x2, double x3, TimestampTz t1,
+  TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  double x = x1 + (x3 - x1) * ratio;
-  return (fabs(x2 - x) <= MEOS_EPSILON);
+  if (! isfinite(x1) || ! isfinite(x2) || ! isfinite(x3))
+    return (x1 == x2 && x2 == x3);
+  if (constructed)
+  {
+    double ratio = (double) (t2 - t1) / (double) (t3 - t1);
+    double x = x1 + (x3 - x1) * ratio;
+    return (fabs(x2 - x) <= coordinate_tolerance(Max(fabs(x1), fabs(x3)),
+      x2));
+  }
+  /* A duration is below 2^63 and the difference of two values below 2^959
+   * is below 2^960, so their product does not overflow */
+  if (Max(fabs(x1), Max(fabs(x2), fabs(x3))) > 0x1p958)
+  {
+    x1 = ldexp(x1, -128);
+    x2 = ldexp(x2, -128);
+    x3 = ldexp(x3, -128);
+  }
+  double hi2, lo2, hi3, lo3;
+  duration_split(t2 - t1, &hi2, &lo2);
+  duration_split(t3 - t1, &hi3, &lo3);
+  return (cross_product_sign(- lo2, x1, hi2, x2, - lo3, x1, hi3, x3) == 0);
 }
 
 /*****************************************************************************/
@@ -114,22 +170,22 @@ float_collinear(double x1, double x2, double x3, double ratio)
  * @param[in] value1,value2,value3 Input values
  * @param[in] basetype Type of the values
  * @param[in] t1,t2,t3 Input timestamps
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  */
 static bool
 datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
-  TimestampTz t1, TimestampTz t2, TimestampTz t3)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  double duration1 = (double) (t2 - t1);
-  double duration2 = (double) (t3 - t1);
-  double ratio = duration1 / duration2;
   switch (basetype)
   {
     case T_FLOAT8:
       return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2),
-        DatumGetFloat8(value3), ratio);
+        DatumGetFloat8(value3), t1, t2, t3, constructed);
     case T_DOUBLE2:
       return double2_collinear(DatumGetDouble2P(value1),
-        DatumGetDouble2P(value2), DatumGetDouble2P(value3), ratio);
+        DatumGetDouble2P(value2), DatumGetDouble2P(value3),
+        t1, t2, t3, constructed);
     /* The members of #geo_basetype */
     case T_GEOMETRY:
     case T_GEOGRAPHY:
@@ -137,31 +193,36 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
       GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
       bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
       bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-      return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
+      return geopoint_collinear(value1, value2, value3, t1, t2, t3, hasz,
+        geodetic, constructed);
     }
     case T_DOUBLE3:
       return double3_collinear(DatumGetDouble3P(value1),
-        DatumGetDouble3P(value2), DatumGetDouble3P(value3), ratio);
+        DatumGetDouble3P(value2), DatumGetDouble3P(value3),
+        t1, t2, t3, constructed);
     case T_DOUBLE4:
       return double4_collinear(DatumGetDouble4P(value1),
-        DatumGetDouble4P(value2), DatumGetDouble4P(value3), ratio);
+        DatumGetDouble4P(value2), DatumGetDouble4P(value3),
+        t1, t2, t3, constructed);
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_collinear(DatumGetCbufferP(value1),
-        DatumGetCbufferP(value2), DatumGetCbufferP(value3), ratio);
+        DatumGetCbufferP(value2), DatumGetCbufferP(value3),
+        t1, t2, t3, constructed);
 #endif
 #if NPOINT
     case T_NPOINT:
       return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
-        DatumGetNpointP(value3), ratio);
+        DatumGetNpointP(value3), t1, t2, t3, constructed);
 #endif
 #if POSE
     case T_POSE:
       return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
-        DatumGetPoseP(value3), ratio);
+        DatumGetPoseP(value3), t1, t2, t3, constructed);
     case T_POSECHAIN:
       return posechain_collinear(DatumGetPoseChainP(value1),
-        DatumGetPoseChainP(value2), DatumGetPoseChainP(value3), ratio);
+        DatumGetPoseChainP(value2), DatumGetPoseChainP(value3),
+        t1, t2, t3, constructed);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -365,7 +426,7 @@ tsequence_norm_test(Datum value1, Datum value2, Datum value3, MeosType basetype,
       ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
     */
     (interp == LINEAR && datum_collinear(value1, value2, value3, basetype,
-      t1, t2, t3))
+      t1, t2, t3, false))
     )
     return true;
   else
@@ -481,11 +542,13 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
        collinear, e.g., ..., 1@t1, 2@t2] (2@t2, 3@t3, ... which would wrongly
        remove the shared instant 2@t2. For step interpolation, the value at
        the shared boundary timestamp is the inclusive side's value and must
-       always survive the join.
+       always survive the join. The shared instant is the one at which a
+       restriction splits a segment, a value the engine constructs, so its
+       collinearity is that of a constructed middle value.
     */
     (interp == LINEAR && eq_last1_first1 &&
       datum_collinear(last2value, first1value, first2value, basetype,
-        last2->t, first1->t, first2->t))
+        last2->t, first1->t, first2->t, true))
     ))
   {
     /* Remove the last and first instants of the sequences */

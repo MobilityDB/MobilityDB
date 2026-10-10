@@ -4192,3 +4192,17 @@ SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
 -- of its times
 SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
   false@2001-01-02, true@2001-01-03}') AS rec) AS t;
+
+-------------------------------------------------------------------------------
+-- Normalization removes an instant exactly where it lies on the line through
+-- its neighbours, so a normalized sequence is its own normal form and a value
+-- read back from its binary form is the value written
+
+SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
+SELECT tfloat '[0.25@2001-01-01, 0.5@2001-01-02, 1@2001-01-04]';
+SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]';
+WITH s(temp) AS (
+  SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]' )
+SELECT numInstants(temp), numInstants(tfloatFromBinary(asBinary(temp))),
+  asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;

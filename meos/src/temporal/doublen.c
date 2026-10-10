@@ -51,6 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
+#include "temporal/tsequence.h"
 
 #include <utils/numeric.h>
 #include <utils/jsonb.h>
@@ -275,69 +276,59 @@ double4_eq(const double4 *d1, const double4 *d2)
 
 /**
  * @brief Return true if the three double2 values are collinear
- * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the timestamps
- * associated to `x1` and `x2` divided by the duration of the timestamps
- * associated to `x1` and `x3`
- * @pre The function supposes that the segments are not constant
+ * @details Every component is collinear, as #float_collinear decides it
+ * @param[in] x1,x2,x3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
-  double ratio)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  double2 x;
-  x.a = x1->a + (x3->a - x1->a) * ratio;
-  x.b = x1->b + (x3->b - x1->b) * ratio;
-  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
-    fabs(x2->b - x.b) <= MEOS_EPSILON);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed);
 }
 
 /**
- * @brief Return true if the three values are collinear
- * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the timestamps
- * associated to `x1` and `x2` divided by the duration of the timestamps
- * associated to `x1` and `x3`
- * @pre The function supposes that the segments are not constant
+ * @brief Return true if the three double3 values are collinear
+ * @details Every component is collinear, as #float_collinear decides it
+ * @param[in] x1,x2,x3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
-  double ratio)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  double3 x;
-  x.a = x1->a + (x3->a - x1->a) * ratio;
-  x.b = x1->b + (x3->b - x1->b) * ratio,
-  x.c = x1->c + (x3->c - x1->c) * ratio;
-  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
-    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed) &&
+    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3, constructed);
 }
 
 /**
- * @brief Return true if the three values are collinear
- * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the timestamps
- * associated to `x1` and `x2` divided by the duration of the timestamps
- * associated to `x1` and `x3`
- * @pre The function supposes that the segments are not constant
+ * @brief Return true if the three double4 values are collinear
+ * @details Every component is collinear, as #float_collinear decides it
+ * @param[in] x1,x2,x3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  * @note Function used for normalizing temporal values by removing redundant
  * instants
  */
 bool
 double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
-  double ratio)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  double4 x;
-  x.a = x1->a + (x3->a - x1->a) * ratio;
-  x.b = x1->b + (x3->b - x1->b) * ratio;
-  x.c = x1->c + (x3->c - x1->c) * ratio;
-  x.d = x1->d + (x3->d - x1->d) * ratio;
-  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
-    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON &&
-    fabs(x2->d - x.d) <= MEOS_EPSILON);
+  return float_collinear(x1->a, x2->a, x3->a, t1, t2, t3, constructed) &&
+    float_collinear(x1->b, x2->b, x3->b, t1, t2, t3, constructed) &&
+    float_collinear(x1->c, x2->c, x3->c, t1, t2, t3, constructed) &&
+    float_collinear(x1->d, x2->d, x3->d, t1, t2, t3, constructed);
 }
 
 /*****************************************************************************

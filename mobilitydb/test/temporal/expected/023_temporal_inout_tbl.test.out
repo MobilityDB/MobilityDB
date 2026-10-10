@@ -274,6 +274,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexW
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp IS NOT NULL AND
+  asBinary(tfloatFromBinary(asBinary(temp))) <> asBinary(temp);
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromText(asText(temp)) <> asText(temp)::tbool;
  count 
 -------

@@ -86,8 +86,9 @@ extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
 /* Collinear functions */
 
 extern bool srid_matches_ways(int32_t srid);
-extern bool npoint_collinear(const Npoint *np1, const Npoint *np2, 
-  const Npoint *np3, double ratio);
+extern bool npoint_collinear(const Npoint *np1, const Npoint *np2,
+  const Npoint *np3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
+  bool constructed);
 
 /* Interpolation functions */
 

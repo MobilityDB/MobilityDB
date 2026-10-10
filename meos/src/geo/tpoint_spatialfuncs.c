@@ -500,31 +500,46 @@ tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 
 /**
  * @brief Return true if the three values are collinear
- * @param[in] value1,value2,value3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `value1` and `value2` divided by the duration
- * of the timestamps associated to `value1` and `value3`
+ * @details A planar point interpolates its coordinates linearly, so each of
+ * them is collinear exactly as #float_collinear decides it. A geodetic point
+ * interpolates its longitude and latitude along the great circle through the
+ * other two, a point the engine CONSTRUCTS and rounds, so the middle point is
+ * on the path where it lies within the rounding of that construction of it
+ * (#coordinate_tolerance). A constructed middle point, the point at which a
+ * restriction splits a segment, is rounded as well and lies within that
+ * rounding of the interpolated point. The Z coordinate interpolates linearly
+ * and is collinear as #float_collinear decides it
+ * @param[in] value1,value2,value3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
  * @param[in] hasz True if the points have Z coordinates
  * @param[in] geodetic True for geography, false for geometry
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  */
 bool
 geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  double ratio, bool hasz, bool geodetic)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic,
+  bool constructed)
 {
-  POINT4D p1, p2, p3, p;
+  POINT4D p1, p2, p3;
   datum_point4d(value1, &p1);
   datum_point4d(value2, &p2);
   datum_point4d(value3, &p3);
+  if (hasz && ! float_collinear(p1.z, p2.z, p3.z, t1, t2, t3, constructed))
+    return false;
+  if (! geodetic && ! constructed)
+    return float_collinear(p1.x, p2.x, p3.x, t1, t2, t3, false) &&
+      float_collinear(p1.y, p2.y, p3.y, t1, t2, t3, false);
+  POINT4D p;
+  double ratio = (double) (t2 - t1) / (double) (t3 - t1);
   if (geodetic)
     interpolate_point4d_spheroid(&p1, &p3, &p, NULL, ratio);
   else
     interpolate_point4d(&p1, &p3, &p, ratio);
-
-  bool result = hasz ?
-    fabs(p2.x - p.x) <= MEOS_EPSILON && fabs(p2.y - p.y) <= MEOS_EPSILON &&
-      fabs(p2.z - p.z) <= MEOS_EPSILON :
-    fabs(p2.x - p.x) <= MEOS_EPSILON && fabs(p2.y - p.y) <= MEOS_EPSILON;
-  return result;
+  double maxcoord = Max(Max(fabs(p1.x), fabs(p1.y)),
+    Max(fabs(p3.x), fabs(p3.y)));
+  return (hypot(p2.x - p.x, p2.y - p.y) <= coordinate_tolerance(maxcoord,
+    Max(fabs(p2.x), fabs(p2.y))));
 }
 
 /*****************************************************************************

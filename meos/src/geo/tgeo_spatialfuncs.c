@@ -900,8 +900,11 @@ tgeomseq_tgeogseq(const TSequence *seq, bool oper)
       return NULL;
     }
   }
+  /* A geometry interpolates along a straight line and a geography along the
+   * great circle, so the instants redundant in one are not those redundant in
+   * the other, and the result is normalized for its own interpolation */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -928,7 +931,7 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
       return NULL;
     }
   }
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
