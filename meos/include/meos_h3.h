@@ -196,6 +196,7 @@ extern TSequenceSet *th3indexseqset_make(const TSequence **sequences, int count)
 /* Accessors */
 extern H3Index th3index_start_value(const Temporal *temp);
 extern H3Index th3index_end_value(const Temporal *temp);
+extern H3Index th3index_value(const Temporal *temp);
 extern bool th3index_value_n(const Temporal *temp, int n, H3Index *result);
 extern H3Index *th3index_values(const Temporal *temp, int *count);
 extern SpanSet **th3index_unnest(const Temporal *temp, H3Index **values, int *count);
