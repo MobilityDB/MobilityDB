@@ -641,6 +641,17 @@ arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
   return ARR_ANSWERED;
 }
 
+/* The side of the line of its chord, from its start to its end, an arc
+ * stands on: 1 to the left, -1 to the right */
+static inline int
+arr_arc_side(const Arr *a, uint32_t j)
+{
+  const Edge *arc = &a->e[j];
+  return arc->diameter ? (a->ccw[j] ? -1 : 1) :
+    cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx, arc->sy,
+      arc->mx, arc->my);
+}
+
 /**
  * @brief Node a segment and an arc where they meet
  */
@@ -679,6 +690,45 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
       Ival far = ival_sub(ival_mul(cr, cr), ival_mul(a->cr2[j],
         ival_dot(rx, ry, rx, ry)));
       if (far.lo > 0.0)
+        return ARR_ANSWERED;
+    }
+    /* The arc is the part of its circle on one side of the line of its
+     * chord, its ends on that line: a segment with both ends strictly on
+     * the other side meets none of it, decided exactly */
+    int want = arr_arc_side(a, j);
+    if (want != 0 && cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx,
+          arc->sy, s->x1, s->y1) == - want &&
+        cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx,
+          arc->sy, s->x2, s->y2) == - want)
+      return ARR_ANSWERED;
+    /* The roots of |A + t R - C|^2 = r^2, t = (-b -+ sqrt(b^2 - qa qc)) / qa
+     * with b = (A - C).R, held by intervals that hold the circle: where
+     * each lies off the segment, or at a point on the side of the chord
+     * the arc does not stand on, none meets the arc */
+    Ival rx = ival_sub(bx, ax), ry = ival_sub(by, ay);
+    Ival qa = ival_dot(rx, ry, rx, ry), qb = ival_dot(ax, ay, rx, ry);
+    Ival disc = ival_sub(ival_mul(qb, qb), ival_mul(qa, da));
+    if (disc.hi < 0.0)
+      return ARR_ANSWERED;
+    if (want != 0 && disc.lo > 0.0 && qa.lo > 0.0)
+    {
+      Ival sq = ival_sqrt(disc);
+      Ival cx = ival_sub(ival(arc->ex), ival(arc->sx));
+      Ival cy = ival_sub(ival(arc->ey), ival(arc->sy));
+      int k;
+      for (k = 0; k < 2; k++)
+      {
+        Ival t = ival_div(k == 0 ? ival_sub(ival_neg(qb), sq) :
+          ival_add(ival_neg(qb), sq), qa);
+        if (t.hi < 0.0 || t.lo > 1.0)
+          continue;
+        Ival px = ival_add(ival(s->x1), ival_mul(t, rx));
+        Ival py = ival_add(ival(s->y1), ival_mul(t, ry));
+        if (ival_sign(ival_cross(cx, cy, ival_sub(px, ival(arc->sx)),
+              ival_sub(py, ival(arc->sy)))) != - want)
+          break;
+      }
+      if (k == 2)
         return ARR_ANSWERED;
     }
   }
@@ -776,10 +826,7 @@ arr_on_arc(const Arr *a, uint32_t j, Ival px, Ival py)
     ival_sub(py, ival(arc->sy))));
   if (side == 2)
     return 2;
-  int want = arc->diameter ? (a->ccw[j] ? -1 : 1) :
-    cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx, arc->sy,
-      arc->mx, arc->my);
-  return side == want ? 1 : 0;
+  return side == arr_arc_side(a, j) ? 1 : 0;
 }
 
 /* A crossing of two arcs interior to both, at a point the intervals hold */
@@ -2283,8 +2330,11 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     a.start[i] = arr_vertex(&a, a.e[i].x1, a.e[i].y1);
     a.end[i] = arr_vertex(&a, a.e[i].x2, a.e[i].y2);
   }
-  a.cuts = NULL;
-  a.ncuts = a.capcuts = 0;
+  /* Room for a few cuts an edge, the doubling of #arr_cut taking over where
+   * the edges cross more */
+  a.capcuts = 4 * n + 64;
+  a.cuts = palloc(sizeof(ArrCut) * a.capcuts);
+  a.ncuts = 0;
   a.coff = NULL;
   /* Closed curves: as many edges start at every vertex as end there */
   ArrangeStatus st = ARR_ANSWERED;
