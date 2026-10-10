@@ -7,5 +7,6 @@ var searchData=
   ['meos_5fpc_5fschema_5ffn_5ft_4',['meos_pc_schema_fn_t',['../meos__schema__hook_8h_a42111cf47d0f98853027e36f1ca1085e.html#a42111cf47d0f98853027e36f1ca1085e',1,'meos_schema_hook.h']]],
   ['meos_5frealloc_5ffn_5',['meos_realloc_fn',['../meos_8h_a4470163d11d791cf7271c8863009b948.html#a4470163d11d791cf7271c8863009b948',1,'meos.h']]],
   ['meosarray_6',['MeosArray',['../meos_8h_a7985b4251ce7797272f57e8f732c5c36.html#a7985b4251ce7797272f57e8f732c5c36',1,'MeosArray():&#160;meos.h'],['../meos__internal_8h_a7985b4251ce7797272f57e8f732c5c36.html#a7985b4251ce7797272f57e8f732c5c36',1,'MeosArray():&#160;meos_internal.h']]],
-  ['meosprojsrscache_7',['MEOSPROJSRSCache',['../tspatial__transform__meos_8c_ab0bb703c710af522ac54701c9c414d80.html#ab0bb703c710af522ac54701c9c414d80',1,'tspatial_transform_meos.c']]]
+  ['meosprojsrscache_7',['MEOSPROJSRSCache',['../tspatial__transform__meos_8c_ab0bb703c710af522ac54701c9c414d80.html#ab0bb703c710af522ac54701c9c414d80',1,'tspatial_transform_meos.c']]],
+  ['mergewalk_5ffunc_8',['mergewalk_func',['../tgeo__distance_8h_ac8a5f971320be0e18de53b61d31d9f98.html#ac8a5f971320be0e18de53b61d31d9f98',1,'tgeo_distance.h']]]
 ];

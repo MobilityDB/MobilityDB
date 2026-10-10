@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['s_0',['s',['../structDistEarth_a5abf2efb02a70532c30824ed09900842.html#a5abf2efb02a70532c30824ed09900842',1,'DistEarth::s()'],['../trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f',1,'s():&#160;trgeo_distance.txt']]],
+  ['s_0',['s',['../structDistEarth_a5abf2efb02a70532c30824ed09900842.html#a5abf2efb02a70532c30824ed09900842',1,'DistEarth']]],
   ['s_1',['S',['../geos__fallback__sweep_8c_ad075ca243f2e86a9d3cea8af9956332a.html#ad075ca243f2e86a9d3cea8af9956332a',1,'geos_fallback_sweep.c']]],
-  ['s_2',['s',['../structSortedSpan_ab5569668489e436f985508057a94c8be.html#ab5569668489e436f985508057a94c8be',1,'SortedSpan']]],
+  ['s_2',['s',['../trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f',1,'s():&#160;trgeo_distance.txt'],['../structSortedSpan_ab5569668489e436f985508057a94c8be.html#ab5569668489e436f985508057a94c8be',1,'SortedSpan::s()']]],
   ['s0_3',['s0',['../structpg__prng__state_a1335caffb5e49b4457e9b99468f4bd0c.html#a1335caffb5e49b4457e9b99468f4bd0c',1,'pg_prng_state']]],
   ['s1_4',['s1',['../structpg__prng__state_a1bce6a27cf0a214774c337052426cc98.html#a1bce6a27cf0a214774c337052426cc98',1,'pg_prng_state']]],
   ['s2_5fcellops_5',['s2_cellops',['../meos_2src_2s2cell_2ts2cell__ops_8c_af82b969621c8122d3468a79d687ffcb3.html#af82b969621c8122d3468a79d687ffcb3',1,'ts2cell_ops.c']]],
