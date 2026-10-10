@@ -4302,6 +4302,10 @@ arcseg_root_sign(int su, int sw, int sq)
  * t (qa t + qb); with B shared, g(t) = (t - 1) (qa t + qa + qb). The shared
  * end lies on the chord, so the side of it is h1 times t, or h1 times t - 1
  */
+static void arcarc_centre_exact(ArcsegArena *arena, const Edge *e,
+  ArcsegExact *mx, ArcsegExact *my, ArcsegExact *nx, ArcsegExact *ny,
+  ArcsegExact *d);
+
 #define ARCSEG_SHARED_SIGNS(T, SIGN, ADD, SUB, MUL, SCALE)                    \
 {                                                                            \
   *sqa = SIGN(qa);                                                           \
@@ -4329,21 +4333,51 @@ arcseg_shared_signs(double ax, double ay, double bx, double by,
   arena_.used = arena_.n = arena_.cap = 0;
   arena_.unsafe = false;
   arena_.blocks = NULL;
-  ArcsegExact xqa, xqb, xqc, xh1, xh0, xside;
-  arcseg_polynomials_exact(arena, ax, ay, bx, by, arc, &xqa, &xqb, &xqc,
-    &xh1, &xh0, &xside);
-#define XADD(a, b) arcseg_x_add(arena, a, b)
-#define XSUB(a, b) arcseg_x_sub(arena, a, b)
-#define XMUL(a, b) arcseg_x_mul(arena, a, b)
-#define XSCALE(a, k) arcseg_x_scale(arena, a, k)
+  /* The quadratic is k (|P(t) - C|^2 - r^2) with k of the sign of the
+   * side of the arc's middle, 1 for a half circle on a diameter, so with
+   * R = B - A: qa = k |R|^2, qb = 2 k (A - C).R, qa + qb = k R.(A + B - 2C)
+   * and 2 qa + qb = 2 k R.(B - C). With the centre C = M + N / D of
+   * #arcarc_centre_exact, each dot product is that of (V - M) D - N with R,
+   * over D, for V = A, B or (A + B) / 2: degree four in the coordinates,
+   * where the coefficients of the quadratic are of degree six */
+  ArcsegExact rx = arcseg_x_diff(arena, bx, ax);
+  ArcsegExact ry = arcseg_x_diff(arena, by, ay);
+  ArcsegExact cx = arcseg_x_diff(arena, arc->ex, arc->sx);
+  ArcsegExact cy = arcseg_x_diff(arena, arc->ey, arc->sy);
+  *sh1 = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, cx, ry),
+    arcseg_x_mul(arena, cy, rx)));
+  int k;
+  if (arc->diameter)
   {
-    ArcsegExact qa = xqa, qb = xqb, h1 = xh1, side = xside;
-    ARCSEG_SHARED_SIGNS(ArcsegExact, arcseg_x_sign, XADD, XSUB, XMUL, XSCALE)
+    *sside = arc->ccw ? -1 : 1;
+    k = 1;
   }
-#undef XADD
-#undef XSUB
-#undef XMUL
-#undef XSCALE
+  else
+  {
+    *sside = arcseg_x_sign(arcseg_x_sub(arena, arcseg_x_mul(arena, cx,
+      arcseg_x_diff(arena, arc->my, arc->sy)), arcseg_x_mul(arena, cy,
+      arcseg_x_diff(arena, arc->mx, arc->sx))));
+    k = *sside;
+  }
+  ArcsegExact mx, my, nx, ny, d;
+  arcarc_centre_exact(arena, arc, &mx, &my, &nx, &ny, &d);
+  int sd = arcseg_x_sign(d);
+  /* ((V - M) D - N).R for V = A and V = B */
+  ArcsegExact va[2];
+  double vx[2] = {ax, bx}, vy[2] = {ay, by};
+  for (int i = 0; i < 2; i++)
+  {
+    ArcsegExact wx = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, arcseg_x_diff(arena, vx[i], 0.0), mx), d), nx);
+    ArcsegExact wy = arcseg_x_sub(arena, arcseg_x_mul(arena,
+      arcseg_x_sub(arena, arcseg_x_diff(arena, vy[i], 0.0), my), d), ny);
+    va[i] = arcseg_x_add(arena, arcseg_x_mul(arena, wx, rx),
+      arcseg_x_mul(arena, wy, ry));
+  }
+  *sqa = k;
+  *sqb = k * sd * arcseg_x_sign(va[0]);
+  *sab = k * sd * arcseg_x_sign(arcseg_x_add(arena, va[0], va[1]));
+  *s2ab = k * sd * arcseg_x_sign(va[1]);
   arcseg_arena_free(arena);
   return;
 }
