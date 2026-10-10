@@ -5104,6 +5104,60 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
 }
 
 /**
+ * @brief Construct a compound curve from the pieces of a ring an
+ * arrangement answers, as they are
+ * @details The pieces meet at the nodes they share, so the curve is written
+ * from their points alone: consecutive segments as one line, every arc as
+ * the circular string of its three points (#arrange_wound_surfaces gives an
+ * arc piece its ends and a middle). An arc whose three points are written on
+ * one line, which #cross_product_sign decides on the doubles, is a segment.
+ * This mirrors #buffer_build_ring_from_pieces, which writes pieces placed
+ * from their angles
+ */
+static LWCOMPOUND *
+buffer_ring_write(const MeosArray *pieces, int32_t srid)
+{
+  assert(pieces);
+  if (pieces->count == 0)
+    return NULL;
+  LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
+  POINTARRAY *line = NULL;
+  for (uint32_t i = 0; i < pieces->count; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get_intl(pieces, i);
+    bool arc = e->etype == EDGE_POLYARC &&
+      cross_product_sign(e->x1, e->y1, e->x2, e->y2, e->x1, e->y1, e->mx,
+        e->my) != 0;
+    if (! arc)
+    {
+      if (! line)
+      {
+        line = ptarray_construct_empty(LW_FALSE, LW_FALSE, 4);
+        buffer_append_point(line, e->x1, e->y1);
+      }
+      buffer_append_point(line, e->x2, e->y2);
+      continue;
+    }
+    if (line)
+    {
+      lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid,
+        NULL, line)));
+      line = NULL;
+    }
+    POINTARRAY *pts = ptarray_construct_empty(LW_FALSE, LW_FALSE, 3);
+    buffer_append_point(pts, e->x1, e->y1);
+    buffer_append_point(pts, e->mx, e->my);
+    buffer_append_point(pts, e->x2, e->y2);
+    lwcompound_add_lwgeom(ring, lwcircstring_as_lwgeom(
+      lwcircstring_construct(srid, NULL, pts)));
+  }
+  if (line)
+    lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid,
+      NULL, line)));
+  return ring;
+}
+
+/**
  * @brief Normalize the orientation of one classified boundary ring
  * @details Shells are normalized to counter-clockwise traversal and holes
  * to clockwise traversal.
@@ -7079,9 +7133,9 @@ buffer_ring_resolve(LWGEOM *raw, const LWGEOM *input, double radius,
     bool ok = true;
     for (uint32_t i = 0; i < nrings && ok; i++)
     {
-      LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+      LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
       if (ring)
-        buffer_curvepoly_add_ring(poly, ring);
+        lwcurvepoly_add_ring(poly, lwcompound_as_lwgeom(ring));
       else
         ok = false;
     }
@@ -8676,25 +8730,25 @@ buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
   {
     if (owner[i] >= 0)
       continue;
-    LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+    LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
     if (! ring)
     {
       ok = false;
       break;
     }
     polys[k] = lwcurvepoly_construct_empty(srid, 0, 0);
-    buffer_curvepoly_add_ring(polys[k], ring);
+    lwcurvepoly_add_ring(polys[k], lwcompound_as_lwgeom(ring));
     slot[i] = (int32_t) k++;
   }
   for (uint32_t i = 0; i < nrings && ok; i++)
   {
     if (owner[i] < 0)
       continue;
-    LWCOMPOUND *ring = buffer_build_ring_from_pieces(rings[i], srid);
+    LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
     if (! ring)
       ok = false;
     else
-      buffer_curvepoly_add_ring(polys[slot[owner[i]]], ring);
+      lwcurvepoly_add_ring(polys[slot[owner[i]]], lwcompound_as_lwgeom(ring));
   }
   arrange_rings_free(rings, nrings);
   pfree(owner); pfree(slot);
