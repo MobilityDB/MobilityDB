@@ -59,6 +59,19 @@ typedef enum
   ARR_SHELLS        /**< The boundary is not one shell and its holes */
 } ArrangeStatus;
 
+/**
+ * @brief A piece of a ring an arrangement answers, in the direction it is
+ * walked: a segment from its start to its end, or an arc through its start,
+ * a middle and its end
+ */
+typedef struct
+{
+  double x1, y1;   /**< Start */
+  double x2, y2;   /**< End */
+  double mx, my;   /**< Middle of an arc */
+  bool arc;        /**< An arc rather than a segment */
+} ArrangePiece;
+
 extern ArrangeStatus arrange_wound_boundary(const MeosArray *edges,
   MeosArray ***rings, uint32_t *nrings);
 extern ArrangeStatus arrange_wound_surfaces(const MeosArray *edges,

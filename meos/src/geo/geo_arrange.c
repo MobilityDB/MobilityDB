@@ -1854,61 +1854,51 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   return st;
 }
 
-/* The piece of an edge between two nodes, as an Edge in the direction it is
- * walked */
+/* The piece of an edge between two nodes, in the direction it is walked:
+ * its ends and, for an arc, a middle (#ArrangePiece) */
 static void
-arr_piece_edge(const Arr *a, const ArrPiece *p, Edge *out)
+arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
 {
   const Edge *e = &a->e[p->edge];
   const ArrNode *n1 = &a->nodes[p->flip ? p->to : p->from];
   const ArrNode *n2 = &a->nodes[p->flip ? p->from : p->to];
-  memset(out, 0, sizeof(Edge));
   out->x1 = n1->x; out->y1 = n1->y;
   out->x2 = n2->x; out->y2 = n2->y;
-  if (arr_is_arc(e))
+  out->arc = arr_is_arc(e);
+  out->mx = out->my = 0.0;
+  if (! out->arc)
+    return;
+  /* The edge's own middle where the piece is the whole of an arc of three
+   * points, else the point of its circle on the bisector of its ends, on the
+   * side the piece sweeps, written once */
+  if (! e->diameter && p->from == a->start[p->edge] &&
+      p->to == a->end[p->edge])
   {
-    out->etype = EDGE_POLYARC;
-    out->cx = e->cx; out->cy = e->cy; out->radius = e->radius;
-    out->ccw = p->flip ? ! a->ccw[p->edge] : a->ccw[p->edge];
-    /* The piece as an arc of three points, its ends and a middle: the
-     * edge's own where the piece is the whole of an arc of three points,
-     * else the point of its circle on the bisector of its ends, on the side
-     * the piece sweeps, written once */
-    out->sx = out->x1; out->sy = out->y1;
-    out->ex = out->x2; out->ey = out->y2;
-    if (! e->diameter && p->from == a->start[p->edge] &&
-        p->to == a->end[p->edge])
-    {
-      out->mx = e->mx; out->my = e->my;
-    }
-    else
-    {
-      double ax = out->x1 - e->cx, ay = out->y1 - e->cy;
-      double bx = out->x2 - e->cx, by = out->y2 - e->cy;
-      double sx = ax + bx, sy = ay + by;
-      double len = hypot(sx, sy);
-      double z = ax * by - ay * bx;
-      double dx, dy;
-      if (len > 0.0)
-      {
-        /* Within half a turn the middle lies on the side of the sum */
-        double k = ((out->ccw && z > 0.0) || (! out->ccw && z < 0.0)) ?
-          1.0 : -1.0;
-        dx = k * sx / len; dy = k * sy / len;
-      }
-      else
-      {
-        /* A half circle: a quarter turn on from the start */
-        double alen = hypot(ax, ay);
-        dx = (out->ccw ? - ay : ay) / alen;
-        dy = (out->ccw ? ax : - ax) / alen;
-      }
-      out->mx = e->cx + e->radius * dx;
-      out->my = e->cy + e->radius * dy;
-    }
+    out->mx = e->mx; out->my = e->my;
+    return;
+  }
+  bool ccw = p->flip ? ! a->ccw[p->edge] : a->ccw[p->edge];
+  double ax = out->x1 - e->cx, ay = out->y1 - e->cy;
+  double bx = out->x2 - e->cx, by = out->y2 - e->cy;
+  double sx = ax + bx, sy = ay + by;
+  double len = hypot(sx, sy);
+  double z = ax * by - ay * bx;
+  double dx, dy;
+  if (len > 0.0)
+  {
+    /* Within half a turn the middle lies on the side of the sum */
+    double k = ((ccw && z > 0.0) || (! ccw && z < 0.0)) ? 1.0 : -1.0;
+    dx = k * sx / len; dy = k * sy / len;
   }
   else
-    out->etype = EDGE_POLYSEG;
+  {
+    /* A half circle: a quarter turn on from the start */
+    double alen = hypot(ax, ay);
+    dx = (ccw ? - ay : ay) / alen;
+    dy = (ccw ? ax : - ax) / alen;
+  }
+  out->mx = e->cx + e->radius * dx;
+  out->my = e->cy + e->radius * dy;
   return;
 }
 
@@ -1947,15 +1937,15 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
     uint32_t k = (pass == 0) ? order0 : pass - 1;
     if (k >= a->npieces || ! a->pieces[k].result || a->pieces[k].used)
       continue;
-    MeosArray *ring = meos_array_create(sizeof(Edge));
+    MeosArray *ring = meos_array_create(sizeof(ArrangePiece));
     uint32_t cur = k, np0 = np;
     for (;;)
     {
       ArrPiece *p = &a->pieces[cur];
       p->used = true;
       rp[np++] = cur;
-      Edge pe;
-      arr_piece_edge(a, p, &pe);
+      ArrangePiece pe;
+      arr_piece_write(a, p, &pe);
       if (pe.x1 != pe.x2 || pe.y1 != pe.y2)
         meos_array_add(ring, &pe);
       uint32_t v = p->flip ? p->from : p->to;
@@ -2373,7 +2363,7 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
  * wind around at least once, in the sense the outermost curve turns. The
  * first ring answered is the one bounding it from outside, turning
  * counterclockwise; the others are its holes, turning clockwise. Each ring is
- * an array of pieces (#Edge), segments and arcs, in the order walked.
+ * an array of pieces (#ArrangePiece), segments and arcs, in the order walked.
  * @param[in] edges The edges of the curves
  * @param[out] rings,nrings The rings, released by #arrange_rings_free
  * @return #ARR_ANSWERED, or the question left unanswered
