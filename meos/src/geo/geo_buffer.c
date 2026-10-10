@@ -5127,7 +5127,14 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
     arc[i] = e[i].etype == EDGE_POLYARC &&
       cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
         e[i].y1, e[i].mx, e[i].my) != 0;
-  LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
+  /* The members, counted first: every arc is one, and every run of
+   * segments between two arcs */
+  uint32_t nmembers = 0;
+  for (uint32_t i = 0; i < n; i++)
+    if (arc[i] || i == 0 || arc[i - 1])
+      nmembers++;
+  LWGEOM **members = lwalloc(sizeof(LWGEOM *) * nmembers);
+  uint32_t k = 0;
   for (uint32_t i = 0; i < n; )
   {
     /* A member, its points written at once into an array of their number */
@@ -5144,24 +5151,27 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
     }
     else
     {
-      uint32_t k = i;
-      while (k < n && ! arc[k])
-        k++;
-      pa = ptarray_construct(LW_FALSE, LW_FALSE, k - i + 1);
+      uint32_t end = i;
+      while (end < n && ! arc[end])
+        end++;
+      pa = ptarray_construct(LW_FALSE, LW_FALSE, end - i + 1);
       double *d = (double *) pa->serialized_pointlist;
       d[0] = e[i].x1; d[1] = e[i].y1;
-      for (uint32_t m = i; m < k; m++)
+      for (uint32_t m = i; m < end; m++)
       {
         d[2 * (m - i + 1)] = e[m].x2;
         d[2 * (m - i + 1) + 1] = e[m].y2;
       }
       member = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
-      i = k;
+      i = end;
     }
-    lwcompound_add_lwgeom(ring, member);
+    members[k++] = member;
   }
   pfree(arc);
-  return ring;
+  /* The members meet end to end by construction, at the nodes the pieces
+   * share, so the curve is made of them at once */
+  return (LWCOMPOUND *) lwcollection_construct(COMPOUNDTYPE, srid, NULL,
+    nmembers, members);
 }
 
 
