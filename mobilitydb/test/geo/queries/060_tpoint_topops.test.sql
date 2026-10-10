@@ -1053,3 +1053,32 @@ SELECT tgeompoint 'Point(1 1 1)@2001-01-01' ~= tgeompoint 'Point(1 1)@2001-01-01
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2001-01-01' ~= tgeompoint 'Point(1 1)@2001-01-01';
 
 -------------------------------------------------------------------------------
+
+-- Values stored compressed out of line: the operators read the box in their header
+CREATE TEMP TABLE tbl_tgeompoint_toast(k int, temp tgeompoint);
+INSERT INTO tbl_tgeompoint_toast
+SELECT 1, tgeompointSeq(array_agg(tgeompoint(ST_MakePoint(i, i % 7, i % 11),
+  timestamptz '2001-01-01' + i * interval '1 minute') ORDER BY i))
+FROM generate_series(1, 5000) i
+UNION ALL
+SELECT 2, tgeompointSeqSet(array_agg(seq ORDER BY j))
+FROM (SELECT j, tgeompointSeq(array_agg(tgeompoint(ST_MakePoint(i, j, i % 5),
+  timestamptz '2001-01-01' + (j * 1000 + i) * interval '1 minute') ORDER BY i)) AS seq
+  FROM generate_series(1, 5) j, generate_series(1, 900) i GROUP BY j) s;
+SELECT k, pg_column_compression(temp) IS NOT NULL FROM tbl_tgeompoint_toast ORDER BY k;
+SELECT k, temp && b, b @> temp, temp &< b, temp && b = temp::stbox && b, b && temp = b && temp::stbox,
+  temp @> b = temp::stbox @> b, b <@ temp = b <@ temp::stbox,
+  temp ~= b = temp::stbox ~= b, temp -|- b = temp::stbox -|- b,
+  temp << b = temp::stbox << b, temp &> b = temp::stbox &> b
+FROM tbl_tgeompoint_toast, (VALUES
+  (stbox 'STBOX ZT(((100,0,0),(200,3,4)),[2001-01-01, 2001-01-03])'),
+  (stbox 'STBOX ZT(((-10,-10,-10),(-1,-1,-1)),[2001-01-01, 2001-01-03])'),
+  (stbox 'STBOX ZT(((0,0,0),(6000,7000,11)),[2001-01-01, 2001-01-30])')) v(b)
+ORDER BY k;
+SELECT t1.k, t2.k, t1.temp && t2.temp = t1.temp::stbox && t2.temp::stbox,
+  t1.temp @> t2.temp = t1.temp::stbox @> t2.temp::stbox,
+  t1.temp ~= t2.temp = t1.temp::stbox ~= t2.temp::stbox
+FROM tbl_tgeompoint_toast t1, tbl_tgeompoint_toast t2 ORDER BY 1, 2;
+DROP TABLE tbl_tgeompoint_toast;
+
+-------------------------------------------------------------------------------
