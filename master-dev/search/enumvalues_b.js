@@ -48,5 +48,8 @@ var searchData=
   ['meos_5fwkb_5ftsequenceset_45',['MEOS_WKB_TSEQUENCESET',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a5486d9d556dae3c052c0d2a20ecf011f',1,'temporal.h']]],
   ['minus_46',['MINUS',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97baf613d73b4e7b570ffd967df4a13c4225',1,'temporal.h']]],
   ['minus_5fop_47',['MINUS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dba70e3b26ad7f7ab25c44fc4b0a48c4417',1,'meos_catalog.h']]],
-  ['mul_48',['MUL',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a086ab1f2f4dac104b6826ebe0eaba8fd',1,'tnumber_mathfuncs.h']]]
+  ['motion_5falways_48',['MOTION_ALWAYS',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308aca15ca70aecec8422f90adbad20bb172',1,'tgeo_distance.c']]],
+  ['motion_5fever_49',['MOTION_EVER',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308ac55ebfdfad8d9a0f17db8e158bbcf4d1',1,'tgeo_distance.c']]],
+  ['motion_5fnad_50',['MOTION_NAD',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308a1bc178df1462f309b540e17cd1f7b111',1,'tgeo_distance.c']]],
+  ['mul_51',['MUL',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a086ab1f2f4dac104b6826ebe0eaba8fd',1,'tnumber_mathfuncs.h']]]
 ];
