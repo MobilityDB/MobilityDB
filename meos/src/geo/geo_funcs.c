@@ -4318,16 +4318,16 @@ static void arcarc_centre_exact(ArcsegArena *arena, const Edge *e,
 
 static void
 arcseg_shared_signs(double ax, double ay, double bx, double by,
-  const Edge *arc, int *sqa, int *sqb, int *sab, int *s2ab, int *sh1,
-  int *sside)
+  const Edge *arc, bool exact, int *sqa, int *sqb, int *sab, int *s2ab,
+  int *sh1, int *sside)
 {
   ArcsegFilter qa, qb, qc, h1, h0, side;
   arcseg_polynomials_filter(ax, ay, bx, by, arc, &qa, &qb, &qc, &h1, &h0,
     &side);
   ARCSEG_SHARED_SIGNS(ArcsegFilter, arcseg_f_sign, arcseg_f_add,
     arcseg_f_sub, arcseg_f_mul, arcseg_f_scale)
-  if (*sqa != 2 && *sqb != 2 && *sab != 2 && *s2ab != 2 && *sh1 != 2 &&
-      *sside != 2)
+  if (! exact || (*sqa != 2 && *sqb != 2 && *sab != 2 && *s2ab != 2 &&
+      *sh1 != 2 && *sside != 2))
     return;
   ArcsegArena arena_, *arena = &arena_;
   arena_.used = arena_.n = arena_.cap = 0;
@@ -4402,8 +4402,30 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
   if (! ashared && ! bshared)
     return -1;
   int sqa, sqb, sab, s2ab, sh1, sside;
-  arcseg_shared_signs(ax, ay, bx, by, arc, &sqa, &sqb, &sab, &s2ab, &sh1,
-    &sside);
+  arcseg_shared_signs(ax, ay, bx, by, arc, false, &sqa, &sqb, &sab, &s2ab,
+    &sh1, &sside);
+  if (sside == 0)
+    return -2;
+  /* A segment leaving the arc's end where the arc runs on, as an offset
+   * segment leaves its join arc: a second root strictly within the segment
+   * stands on the side h1 of the chord with A shared, -h1 with B shared,
+   * and one at the shared end is double. Where that side is not the arc's,
+   * the shared end is the only meeting, whatever the sign the filter
+   * cannot tell, which is that of a value within rounding of zero */
+  if (! (ashared && bshared) && sh1 != 2 && sh1 != 0 && sside != 2 &&
+      (ashared ? sh1 : - sh1) != sside)
+  {
+    out[0].kind = (a_start || b_start) ? ARCSEG_AT_ARC_START :
+      ARCSEG_AT_ARC_END;
+    out[0].t = ashared ? 0.0 : 1.0;
+    out[0].sigma = 0;
+    out[0].smaller = false;
+    return 1;
+  }
+  if (sqa == 2 || sqb == 2 || sab == 2 || s2ab == 2 || sh1 == 2 ||
+      sside == 2)
+    arcseg_shared_signs(ax, ay, bx, by, arc, true, &sqa, &sqb, &sab, &s2ab,
+      &sh1, &sside);
   if (sqa == 0 || sside == 0)
     return -2;
   /* Each meeting is classified as #arcsegm_meet_exact classifies a root; the
@@ -4413,9 +4435,9 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
     /* The segment is the chord: g(t) = qa t (t - 1), whose derivative is
      * -qa at A and qa at B, and nothing else meets it */
     out[0].kind = a_start ? ARCSEG_AT_ARC_START : ARCSEG_AT_ARC_END;
-    out[0].t = 0.0; out[0].sigma = - sqa; out[0].smaller = true;
+    out[0].t = 0.0; out[0].sigma = 0; out[0].smaller = false;
     out[1].kind = b_start ? ARCSEG_AT_ARC_START : ARCSEG_AT_ARC_END;
-    out[1].t = 1.0; out[1].sigma = sqa; out[1].smaller = false;
+    out[1].t = 1.0; out[1].sigma = 0; out[1].smaller = false;
     return 2;
   }
   /* The other root: t2 = -qb / qa with A shared, -(qa + qb) / qa with B
@@ -4440,8 +4462,8 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
   shared.kind = (a_start || b_start) ? ARCSEG_AT_ARC_START :
     ARCSEG_AT_ARC_END;
   shared.t = ashared ? 0.0 : 1.0;
-  shared.sigma = - sigma;
-  shared.smaller = sigma == 0 || sigma * sqa > 0;
+  shared.sigma = 0;
+  shared.smaller = false;
   ArcsegMeet m;
   m.kind = ARCSEG_INTERIOR;
   m.sigma = sigma;
@@ -4472,6 +4494,12 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
      * stands at its end */
     m.t = (m.kind == ARCSEG_AT_SEGMENT_START) ? 0.0 :
       (m.kind == ARCSEG_AT_SEGMENT_END) ? 1.0 : Min(Max(t, 0.0), 1.0);
+  }
+  /* A meeting at an end of either carries no root sign */
+  if (other && m.kind != ARCSEG_INTERIOR)
+  {
+    m.sigma = 0;
+    m.smaller = false;
   }
   int n = 0;
   if (ashared)
@@ -4577,6 +4605,12 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
       /* Interior to the segment exactly; its position is rounded once, and
        * a rounding that leaves the segment stands at its end */
       m.t = Min(Max(m.t, 0.0), 1.0);
+    }
+    /* A meeting at an end of either carries no root sign */
+    if (m.kind != ARCSEG_INTERIOR)
+    {
+      m.sigma = 0;
+      m.smaller = false;
     }
     out[n++] = m;
   }
