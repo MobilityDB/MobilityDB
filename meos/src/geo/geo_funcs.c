@@ -3557,6 +3557,39 @@ point_segment_distance_offset_exact(const double *p, const double *a,
 }
 
 /**
+ * @brief Return the double nearest the distance of two segments, 2D
+ * @details Two segments meet or not by exact orientations
+ * (#linesegm_intersect), and where they meet the distance is 0. Two segments
+ * that do not meet are nearest at an end of one of them, so the distance is
+ * the least of the distances of the two ends of each to the other, each the
+ * double nearest the exact one (#point_segment_distance_offset_exact), and
+ * rounding is monotone, so the least of them is the double nearest the least
+ * distance. A segment of no length is a point: it meets nothing in
+ * #linesegm_intersect, and its distance to the other is one of the four
+ * @param[in] a,b The two ends of the first segment, two coordinates each
+ * @param[in] c,d The two ends of the second segment, two coordinates each
+ */
+double
+segment_distance_exact(const double *a, const double *b, const double *c,
+  const double *d)
+{
+  IntersectResult meet = linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1],
+    d[0], d[1]);
+  if (meet.type != INTERSECT_NONE)
+    return 0.0;
+  double cand[4];
+  cand[0] = point_segment_distance_offset_exact(a, c, d, 0.0);
+  cand[1] = point_segment_distance_offset_exact(b, c, d, 0.0);
+  cand[2] = point_segment_distance_offset_exact(c, a, b, 0.0);
+  cand[3] = point_segment_distance_offset_exact(d, a, b, 0.0);
+  double best = cand[0];
+  for (int i = 1; i < 4; i++)
+    if (cand[i] < best)
+      best = cand[i];
+  return best;
+}
+
+/**
  * @brief Return the sign of the triple product `<p, q x r>` of three vectors,
  * computed exactly
  * @details The triple product is the determinant of the three vectors, a sum
