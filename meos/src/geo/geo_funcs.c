@@ -100,24 +100,6 @@ edge_array_add(MeosArray *edges, const Edge *e)
   return;
 }
 
-/* Add to an edge array the straight edge from A to B */
-static void
-emit_segment_edge(const POINT2D *a, const POINT2D *b, MeosArray *edges,
-  EdgeType etype)
-{
-  Edge e;
-  e.x1 = a->x; e.y1 = a->y;
-  e.x2 = b->x; e.y2 = b->y;
-  e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
-  e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
-  e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
-  e.length = e.dx * e.dx + e.dy * e.dy;
-  e.etype = etype;
-  edge_set_tolerance(&e);
-  edge_array_add(edges, &e);
-  return;
-}
-
 /**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a ring
@@ -128,20 +110,43 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
   /* A ring of n points yields n - 1 edges */
   edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i < (int) pa->npoints - 1; i++)
-    emit_segment_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1), edges,
-      etype);
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    Edge e;
+    e.x1 = a->x; e.y1 = a->y;
+    e.x2 = b->x; e.y2 = b->y;
+    e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
+    e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
+    e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+    e.length = e.dx * e.dx + e.dy * e.dy;
+    e.etype = etype;
+    edge_set_tolerance(&e);
+    edge_array_add(edges, &e);
+  }
   return;
 }
 
 /**
  * @brief Add to an edge array the straight edge of a surface's boundary from
  * @p a to @p b, as #geom_extract_edges reads one from a ring
+ * @details The edge is decided exactly by an arrangement
+ * (#arrange_wound_surfaces), which reads no tolerance of it, so none is
+ * read for it: every field it does not set is left zero
  */
 void
 edges_add_segment(MeosArray *edges, const POINT2D *a, const POINT2D *b)
 {
   assert(edges); assert(a); assert(b);
-  emit_segment_edge(a, b, edges, EDGE_POLYSEG);
+  Edge e = {0};
+  e.x1 = a->x; e.y1 = a->y;
+  e.x2 = b->x; e.y2 = b->y;
+  e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
+  e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
+  e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+  e.length = e.dx * e.dx + e.dy * e.dy;
+  e.etype = EDGE_POLYSEG;
+  edge_array_add(edges, &e);
   return;
 }
 
