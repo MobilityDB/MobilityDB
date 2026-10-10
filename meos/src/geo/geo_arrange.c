@@ -1741,6 +1741,42 @@ arr_piece_edge(const Arr *a, const ArrPiece *p, Edge *out)
     out->theta0 = atan2(out->y1 - e->cy, out->x1 - e->cx);
     out->theta1 = atan2(out->y2 - e->cy, out->x2 - e->cx);
     out->ccw = p->flip ? ! a->ccw[p->edge] : a->ccw[p->edge];
+    /* The piece as an arc of three points, its ends and a middle: the
+     * edge's own where the piece is the whole of an arc of three points,
+     * else the point of its circle on the bisector of its ends, on the side
+     * the piece sweeps, written once */
+    out->sx = out->x1; out->sy = out->y1;
+    out->ex = out->x2; out->ey = out->y2;
+    if (! e->diameter && p->from == a->start[p->edge] &&
+        p->to == a->end[p->edge])
+    {
+      out->mx = e->mx; out->my = e->my;
+    }
+    else
+    {
+      double ax = out->x1 - e->cx, ay = out->y1 - e->cy;
+      double bx = out->x2 - e->cx, by = out->y2 - e->cy;
+      double sx = ax + bx, sy = ay + by;
+      double len = hypot(sx, sy);
+      double z = ax * by - ay * bx;
+      double dx, dy;
+      if (len > 0.0)
+      {
+        /* Within half a turn the middle lies on the side of the sum */
+        double k = ((out->ccw && z > 0.0) || (! out->ccw && z < 0.0)) ?
+          1.0 : -1.0;
+        dx = k * sx / len; dy = k * sy / len;
+      }
+      else
+      {
+        /* A half circle: a quarter turn on from the start */
+        double alen = hypot(ax, ay);
+        dx = (out->ccw ? - ay : ay) / alen;
+        dy = (out->ccw ? ax : - ax) / alen;
+      }
+      out->mx = e->cx + e->radius * dx;
+      out->my = e->cy + e->radius * dy;
+    }
   }
   else
     out->etype = EDGE_POLYSEG;
