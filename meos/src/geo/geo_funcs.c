@@ -70,7 +70,7 @@
  * and an array holding no edge yet takes fresh room rather than copying slots
  * nothing was written to
  */
-static void
+void
 edge_array_reserve(MeosArray *edges, size_t n)
 {
   size_t need = edges->count + n;
