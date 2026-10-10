@@ -1569,16 +1569,17 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
     Ival s = ival_cross(ival_sub(ival(e->x2), ival(e->x1)),
       ival_sub(ival(e->y2), ival(e->y1)), ival_sub(px, ival(e->x1)),
       ival_sub(ival(py), ival(e->y1)));
+    /* Within the piece: the parameter of the meeting along the segment
+     * between those of the piece's ends. A meeting off the piece is passed
+     * over first, as where the point lies on another piece of the edge */
+    Ival t = ival_div(ival_sub(ival(py), ival(e->y1)),
+      ival_sub(ival(e->y2), ival(e->y1)));
+    if (t.hi < p->pfrom.lo || t.lo > p->pto.hi)
+      return true;
     int ss = ival_sign(s);
     if (ss == 2 || ss == 0)
       return false;
     if (up ? ss < 0 : ss > 0)
-      return true;
-    /* Within the piece: the parameter of the meeting along the segment
-     * between those of the piece's ends */
-    Ival t = ival_div(ival_sub(ival(py), ival(e->y1)),
-      ival_sub(ival(e->y2), ival(e->y1)));
-    if (t.hi < p->pfrom.lo || t.lo > p->pto.hi)
       return true;
     if (! (t.lo > p->pfrom.hi && t.hi < p->pto.lo))
       return false;
@@ -1600,20 +1601,22 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
   for (int side = -1; side <= 1; side += 2)
   {
     Ival qx = ival_add(a->ccx[j], side < 0 ? ival_neg(hx) : hx);
+    /* Within the piece, asked first: a point of the circle off the arc or
+     * off the piece is passed over wherever it stands against the point,
+     * as where the point lies on another piece of the edge */
+    int onarc = arr_on_arc(a, j, qx, ival(py));
+    if (onarc == 0)
+      continue;
+    Ival pos = arr_arc_position(e, a->ccx[j], a->ccy[j], qx, ival(py));
+    if (onarc == 1 && (pos.hi < p->pfrom.lo || pos.lo > p->pto.hi))
+      continue;
     int right = ival_sign(ival_sub(qx, px));
     if (right == 2 || right == 0)
       return false;
     if (right < 0)
       continue;
-    /* Within the piece */
-    Ival pos = arr_arc_position(e, a->ccx[j], a->ccy[j], qx, ival(py));
-    int onarc = arr_on_arc(a, j, qx, ival(py));
     if (onarc == 2)
       return false;
-    if (onarc == 0)
-      continue;
-    if (pos.hi < p->pfrom.lo || pos.lo > p->pto.hi)
-      continue;
     if (! (pos.lo > p->pfrom.hi && pos.hi < p->pto.lo))
       return false;
     /* Upward on the right of a counterclockwise circle */
