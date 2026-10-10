@@ -2449,10 +2449,16 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       instants2[ninsts - 1]->temptype, instants2[ninsts - 1]->t);
     tofree[nfree++] = instants2[ninsts - 1];
   }
-  *sync1 = tsequence_make(instants1, ninsts, inter.lower_inc, inter.upper_inc,
-    interp1, NORMALIZE_NO);
-  *sync2 = tsequence_make(instants2, ninsts, inter.lower_inc, inter.upper_inc,
-    interp2, NORMALIZE_NO);
+  /* The instants are those of two valid sequences or are interpolated in
+   * their segments, so the arrays are asserted valid, not tested again */
+  assert(tsequence_make_valid(instants1, ninsts, inter.lower_inc,
+    inter.upper_inc, interp1));
+  assert(tsequence_make_valid(instants2, ninsts, inter.lower_inc,
+    inter.upper_inc, interp2));
+  *sync1 = tsequence_make_exp1(instants1, ninsts, ninsts, inter.lower_inc,
+    inter.upper_inc, interp1, NORMALIZE_NO, NULL);
+  *sync2 = tsequence_make_exp1(instants2, ninsts, ninsts, inter.lower_inc,
+    inter.upper_inc, interp2, NORMALIZE_NO, NULL);
 
   pfree_array((void **) tofree, nfree);
   pfree(instants1); pfree(instants2);
