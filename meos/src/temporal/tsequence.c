@@ -2267,8 +2267,9 @@ tsegment_value_at_timestamptz(Datum start, Datum end, MeosType temptype,
 {
   assert(lower < upper);
   MeosType basetype = temptype_basetype(temptype);
-  /* Constant segment or t is equal to lower bound or step interpolation */
-  if (datum_eq(start, end, basetype || lower == t))
+  /* Constant segment, or t is the lower bound and thus the start of the
+   * segment, whose value is the start value */
+  if (datum_eq(start, end, basetype) || lower == t)
     return datum_copy(start, basetype);
 
   /* t is equal to upper bound */

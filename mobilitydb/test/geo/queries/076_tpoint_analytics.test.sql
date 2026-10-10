@@ -463,6 +463,26 @@ SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-04-10]'
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01', 'linear'));
 SELECT asText(tsample(tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+-- A sample at the lower bound of a segment is the start value of the segment,
+-- to the last bit, for a geography as for a geometry and a float, and for a
+-- constant segment
+WITH s(temp) AS (
+  SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]' UNION ALL
+  SELECT tgeogpoint '[Point(4.35 50.85)@2001-01-01, Point(4.41 50.83)@2001-01-05]' UNION ALL
+  SELECT tgeogpoint '[Point(4.35 50.85)@2001-01-01, Point(4.35 50.85)@2001-01-05]' )
+SELECT asText(startValue(tsample(temp, interval '2 days', '2001-01-01')), 17),
+  asEWKB(startValue(tsample(temp, interval '2 days', '2001-01-01'))) =
+    asEWKB(startValue(temp))
+FROM s;
+WITH s(temp) AS (
+  SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]' UNION ALL
+  SELECT tgeompoint '[Point(4.35 50.85)@2001-01-01, Point(4.41 50.83)@2001-01-05]' )
+SELECT asText(startValue(tsample(temp, interval '2 days', '2001-01-01')), 17),
+  asEWKB(startValue(tsample(temp, interval '2 days', '2001-01-01'))) =
+    asEWKB(startValue(temp))
+FROM s;
+SELECT startValue(tsample(tfloat '[0.1@2001-01-01, 0.7@2001-01-05]',
+  interval '2 days', '2001-01-01')) = 0.1;
 
 SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
 SELECT asText(tprecision(tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
