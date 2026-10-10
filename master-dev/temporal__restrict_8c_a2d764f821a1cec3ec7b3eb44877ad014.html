@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcontseq_at_tstzset</title>
+<title>MobilityDB: tcontseq_make_cut</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,11 +81,11 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a5f5a72ed76408432d8b92ba0976eb98c.html#a5f5a72ed76408432d8b92ba0976eb98c">tcontseq_after_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_ad9ff232cdc2b18587825980ccd38245a.html#ad9ff232cdc2b18587825980ccd38245a">tcontseq_at_timestamptz</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__restrict_8c_a1eb49fa6443b1cf73f0df052a19610dc.html#a1eb49fa6443b1cf73f0df052a19610dc">tcontseq_at_tstzset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a1eb49fa6443b1cf73f0df052a19610dc.html#a1eb49fa6443b1cf73f0df052a19610dc">tcontseq_at_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_aab89e674f53b2b6003e1c71f81177260.html#aab89e674f53b2b6003e1c71f81177260">tcontseq_at_tstzspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a5fa292fcd85be6301581abf249d014a9.html#a5fa292fcd85be6301581abf249d014a9">tcontseq_at_tstzspanset1</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a7639545ba7eafcf5c8088d13ff47ad64.html#a7639545ba7eafcf5c8088d13ff47ad64">tcontseq_before_timestamptz</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a2d764f821a1cec3ec7b3eb44877ad014.html#a2d764f821a1cec3ec7b3eb44877ad014">tcontseq_make_cut</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__restrict_8c_a2d764f821a1cec3ec7b3eb44877ad014.html#a2d764f821a1cec3ec7b3eb44877ad014">tcontseq_make_cut</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a56f021c9e6e9c256a984bc2ef5a2a341.html#a56f021c9e6e9c256a984bc2ef5a2a341">tcontseq_minus_timestamp_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a07318b9a043badf9bc6da6e19da0ba03.html#a07318b9a043badf9bc6da6e19da0ba03">tcontseq_minus_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__restrict_8c_a45af907cc214ebc312d5bfd0afe20e7e.html#a45af907cc214ebc312d5bfd0afe20e7e">tcontseq_minus_tstzset</a></td></tr>
@@ -168,23 +168,44 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1eb49fa6443b1cf73f0df052a19610dc" name="a1eb49fa6443b1cf73f0df052a19610dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1eb49fa6443b1cf73f0df052a19610dc">&#9670;&#160;</a></span>tcontseq_at_tstzset()</h2>
+<a id="a2d764f821a1cec3ec7b3eb44877ad014" name="a2d764f821a1cec3ec7b3eb44877ad014"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d764f821a1cec3ec7b3eb44877ad014">&#9670;&#160;</a></span>tcontseq_make_cut()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTSequence.html">TSequence</a> * tcontseq_at_tstzset </td>
+          <td class="memname">static <a class="el" href="structTSequence.html">TSequence</a> * tcontseq_make_cut </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> **&#160;</td>
+          <td class="paramname"><em>instants</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
-          <td class="paramname"><em>s</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>lower_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>upper_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a>&#160;</td>
+          <td class="paramname"><em>interp</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -192,9 +213,23 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Restrict a temporal sequence to a timestamptz set. </p>
+<p>Construct a continuous sequence from a cut of a normalized sequence. </p>
+<p >The first and the last instants are instants of the sequence or values interpolated on its segments, and the instants between them are consecutive instants of the sequence. The result keeps the instants that are not redundant. An interpolated value differs from the instant it replaces, so it can make the instants next to it redundant. Since no triple of consecutive instants of a normalized sequence is redundant, the triples with the first or the last instant are the only ones that <a class="el" href="tsequence_8h_aac8550f2783a43ad9d2f3a0d95dbbace.html#aac8550f2783a43ad9d2f3a0d95dbbace" title="Normalize the array of temporal instants.">tinstarr_normalize</a> can remove an instant from, and the result is the normal form of the instants. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">instants</td><td>Array of instants </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lower_inc,upper_inc</td><td>True when the bounds are inclusive </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">interp</td><td>Interpolation </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
