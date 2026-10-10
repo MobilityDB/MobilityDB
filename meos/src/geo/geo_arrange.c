@@ -132,7 +132,7 @@ ival_extremes(const double p[4])
 /* The product: where the sign of either interval is known, its extremes are
  * two of the four products of the bounds, which the signs name; where both
  * hold zero within them, all four are read (#ival_extremes) */
-static inline Ival
+static pg_attribute_always_inline Ival
 ival_mul(Ival a, Ival b)
 {
   double lo, hi;
@@ -182,7 +182,7 @@ ival_mul(Ival a, Ival b)
 }
 
 /* A divisor holding zero bounds nothing */
-static inline Ival
+static pg_attribute_always_inline Ival
 ival_div(Ival a, Ival b)
 {
   if (b.lo <= 0.0 && b.hi >= 0.0)
@@ -221,13 +221,13 @@ ival_sign(Ival a)
   return 2;
 }
 
-static inline Ival
+static pg_attribute_always_inline Ival
 ival_cross(Ival ax, Ival ay, Ival bx, Ival by)
 {
   return ival_sub(ival_mul(ax, by), ival_mul(ay, bx));
 }
 
-static inline Ival
+static pg_attribute_always_inline Ival
 ival_dot(Ival ax, Ival ay, Ival bx, Ival by)
 {
   return ival_add(ival_mul(ax, bx), ival_mul(ay, by));
