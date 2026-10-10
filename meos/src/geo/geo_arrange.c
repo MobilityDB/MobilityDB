@@ -1521,6 +1521,11 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   uint32_t nn = a->nnodes;
   bool *queued = palloc0(sizeof(bool) * Max(nn, 1u));
   uint32_t *queue = palloc(sizeof(uint32_t) * Max(nn, 1u));
+  /* The nodes of the component walked, cleared after each, and the first
+   * piece that may still be unlabelled */
+  uint32_t *comp = palloc(sizeof(uint32_t) * Max(nn, 1u));
+  bool *incomp = palloc0(sizeof(bool) * Max(nn, 1u));
+  uint32_t cursor = 0;
   ArrangeStatus st = ARR_ANSWERED;
   *outer_piece = UINT32_MAX;
   bool first = true;
@@ -1528,15 +1533,13 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   {
     /* The component of the first piece not labelled yet */
     uint32_t seed = UINT32_MAX;
-    for (uint32_t k = 0; k < a->npieces && seed == UINT32_MAX; k++)
-      if (a->pieces[k].right == INT_MIN)
-        seed = k;
+    for (; cursor < a->npieces && seed == UINT32_MAX; cursor++)
+      if (a->pieces[cursor].right == INT_MIN)
+        seed = cursor;
     if (seed == UINT32_MAX)
       break;
     /* Its nodes and pieces, by walking it */
     uint32_t qn = 0;
-    uint32_t *comp = palloc(sizeof(uint32_t) * Max(nn, 1u));
-    bool *incomp = palloc0(sizeof(bool) * Max(nn, 1u));
     uint32_t cn = 0;
     comp[cn++] = a->pieces[seed].from;
     incomp[a->pieces[seed].from] = true;
@@ -1615,7 +1618,6 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     if (unsure)
     {
       st = ARR_DEPTH;
-      pfree(comp); pfree(incomp);
       break;
     }
     /* The winding number outside the component: zero for the first, the one
@@ -1631,7 +1633,6 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       if (! arr_winding_at(a, px, py, &outside))
       {
         st = ARR_DEPTH;
-        pfree(comp); pfree(incomp);
         break;
       }
     }
@@ -1687,7 +1688,6 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       if (before == UINT32_MAX)
       {
         st = ARR_DEPTH;
-        pfree(comp); pfree(incomp);
         break;
       }
       ArrPiece *p = &a->pieces[h[before].piece];
@@ -1705,12 +1705,13 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     for (uint32_t q = 0; q < qn && st == ARR_ANSWERED; q++)
       if (! arr_label_node(a, queue[q], queue, &qn, queued))
         st = ARR_DEPTH;
-    pfree(comp); pfree(incomp);
+    for (uint32_t c = 0; c < cn; c++)
+      incomp[comp[c]] = false;
     if (st != ARR_ANSWERED)
       break;
     first = false;
   }
-  pfree(queued); pfree(queue);
+  pfree(queued); pfree(queue); pfree(comp); pfree(incomp);
   return st;
 }
 
