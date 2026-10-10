@@ -368,17 +368,13 @@ SELECT floatspansetFromHexWKB(
 			</listitem>
 
 			<listitem xml:id="setspan_FromEWKT">
-				<indexterm significance="normal"><primary><varname>spatialsettypeFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spatialsettypeFromEWKT</varname></primary></indexterm>
-				<para>Input from the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation of a spatial set</para>
+				<para>Input from the Extended Well-Known Text (EWKT) representation of a spatial set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-spatialsettypeFromText(text) → spatialset
 spatialsettypeFromEWKT(text) → spatialset
 </programlisting>
 				<para>There is one function per spatial set type, the name of the function has as prefix the name of the type. A stated SRID must be the one a cell index or point cloud set carries, and an error is raised otherwise.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(geomsetFromText('{"Point(1 1)", "Point(2 2)"}'));
--- {"POINT(1 1)", "POINT(2 2)"}
 SELECT asEWKT(geomsetFromEWKT('SRID=5676;{"Point(1 1)", "Point(2 2)"}'));
 -- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
 SELECT asEWKT(h3indexsetFromEWKT('SRID=4326;{8928308280fffff}'));

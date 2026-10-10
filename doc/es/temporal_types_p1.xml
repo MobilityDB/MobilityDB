@@ -648,7 +648,7 @@ SELECT tintFromText(t) FROM (VALUES (text '[1@2001-01-01, 2@2001-01-02]')) v(t);
 				<indexterm significance="normal"><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
 				<para>Entrada desde la representación JSON de características móviles (MF-JSON)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-ttypeFromMFJSON(bytea) → ttype
+ttypeFromMFJSON(text) → ttype
 </programlisting>
 				<para>Hay una función por tipo temporal, el nombre de esta función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
