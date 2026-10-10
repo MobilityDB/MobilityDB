@@ -46,7 +46,8 @@
 
 /* Collinear function */
 
-extern bool float_collinear(double x1, double x2, double x3, double ratio);
+extern bool float_collinear(double x1, double x2, double x3, TimestampTz t1,
+  TimestampTz t2, TimestampTz t3, bool constructed);
 
 /* Interpolation functions */
 

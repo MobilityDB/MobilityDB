@@ -20158,3 +20158,31 @@ SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
  t     | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST], [Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
 (2 rows)
 
+SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
+                              tfloat                              
+------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT tfloat '[0.25@2001-01-01, 0.5@2001-01-02, 1@2001-01-04]';
+                               tfloat                                
+---------------------------------------------------------------------
+ [0.25@Mon Jan 01 00:00:00 2001 PST, 1@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]';
+                                                                    tfloat                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [0.2@Tue Jan 02 00:00:00 2001 PST, 0.300001@Wed Jan 03 00:00:00 2001 PST, 0.5@Fri Jan 05 00:00:00 2001 PST, 1.8@Thu Jan 18 00:00:00 2001 PST]
+(1 row)
+
+WITH s(temp) AS (
+  SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]' )
+SELECT numInstants(temp), numInstants(tfloatFromBinary(asBinary(temp))),
+  asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+ numinstants | numinstants | ?column? 
+-------------+-------------+----------
+           4 |           4 | t
+(1 row)
+
