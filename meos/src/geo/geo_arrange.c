@@ -641,7 +641,14 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
   const Edge *s = &a->e[i], *arc = &a->e[j];
   /* A segment whose nearest point to the centre lies beyond the circle, or
    * whose two ends lie within it, meets none of its points: the disc is
-   * convex. Decided in intervals, and asked exactly otherwise */
+   * convex. Decided in intervals, and asked exactly otherwise. A segment
+   * sharing an end with the arc has that end on the circle, and goes to the
+   * exact meeting directly */
+  bool shared = arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
+    arr_same(s->x1, s->y1, arc->x2, arc->y2) ||
+    arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
+    arr_same(s->x2, s->y2, arc->x2, arc->y2);
+  if (! shared)
   {
     Ival ax = ival_sub(ival(s->x1), a->ccx[j]);
     Ival ay = ival_sub(ival(s->y1), a->ccy[j]);
