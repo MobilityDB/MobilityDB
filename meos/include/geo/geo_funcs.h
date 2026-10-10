@@ -270,9 +270,11 @@ typedef struct
 {
   ArcsegMeetKind kind;  /**< Where it stands */
   double t;             /**< Position along the segment, rounded once */
-  int sigma;            /**< The root: -1 or 1, the sign of the derivative of
-                             the quadratic there, or 0 where it is double */
-  bool smaller;         /**< The smaller of the two roots along the segment */
+  int sigma;            /**< For a meeting interior to both, the root: -1 or
+                             1, the sign of the derivative of the quadratic
+                             there, or 0 where it is double; 0 at an end */
+  bool smaller;         /**< For a meeting interior to both, the smaller of
+                             the two roots along the segment */
 } ArcsegMeet;
 
 extern int arcsegm_meet_exact(double ax, double ay, double bx, double by,
