@@ -154,7 +154,8 @@ extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,
   TimestampTz *t2);
 
 extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  double ratio, bool hasz, bool geodetic);
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz, bool geodetic,
+  bool constructed);
 
 /* Trajectory functions */
 

@@ -220,6 +220,49 @@ SELECT DISTINCT asText(tgeogpointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM
  t
 (1 row)
 
+SELECT count(*) FROM tbl_tgeompoint
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp::tgeogpoint))) <>
+    asEWKB(temp::tgeogpoint);
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_ais_tgeompoint WHERE asMFJSON(temp)::jsonb IS NULL;
  count 
 -------

@@ -1302,10 +1302,10 @@ int main(void)
   float8_result = float_degrees(float8_in1, true);
   printf("float_degrees(%lf, true): %lf\n", float8_in1, float8_result);
 
-  /* Temporal **temparr_round(Temporal **temp, int count, int maxdd); */
+  /* Temporal **temparr_round(const Temporal **temparr, int count, int maxdd); */
   tfloatarray[0] = tfloat1;
   tfloatarray[1] = tfloat2;
-  tfloatarray_result = temparr_round(tfloatarray, 2, 6);
+  tfloatarray_result = temparr_round((const Temporal **) tfloatarray, 2, 6);
   printf("temparr_round({%s, %s}, 2, 6): {", tfloatinst1_out, tfloatinst2_out);
   for (int i = 0; i < 2; i++)
   {
@@ -3462,13 +3462,13 @@ int main(void)
   free(tfloat_result); free(char_result);
 
   /* SkipList *tfloat_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv); */
-  sklist = tfloat_wsum_transfn(NULL, tfloat1, interv3);
-  sklist = tfloat_wsum_transfn(sklist, tfloat2, interv3);
+  sklist = tfloat_wsum_transfn(NULL, (Temporal *) tfloatinst1, interv3);
+  sklist = tfloat_wsum_transfn(sklist, (Temporal *) tfloatinst2, interv3);
   tfloat_result = temporal_tagg_finalfn(sklist);
   char_result = tfloat_out(tfloat_result, 6);
   printf("tfloat_wsum aggregate with interval = %s\n", interv3_out);
-  printf("%s\n", tfloat1_out);
-  printf("%s\n", tfloat2_out);
+  printf("%s\n", tfloatinst1_out);
+  printf("%s\n", tfloatinst2_out);
   printf("tfloat_wsum result\n");
   printf("%s\n", char_result);
   free(tfloat_result); free(char_result);

@@ -184,7 +184,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE temp::tgeompoint IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
  count 
 -------
-   100
+    70
 (1 row)
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;

@@ -541,14 +541,21 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings True if turning points are added in the segments
- * @note This function is directly called by the window sum aggregation for
- * temporal floats after verifying since the operation is not supported for
- * sequence (set) type
+ * @errval NULL
+ * @note The window sum of a temporal float with continuous interpolation is
+ * not supported
  */
 SkipList *
 temporal_wagg_transfn(SkipList *state, const Temporal *temp,
   const Interval *interv, datum_func2 func, bool min, bool crossings)
 {
+  if (temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags) &&
+      temp->temptype == T_TFLOAT && func == &datum_sum_float8)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation not supported for temporal continuous float sequences");
+    return NULL;
+  }
   int count;
   TSequence **sequences = temporal_extend(temp, interv, min, &count);
   SkipList *result = tcontseq_tagg_transfn(state, sequences[0], func,

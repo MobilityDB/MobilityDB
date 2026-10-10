@@ -46,6 +46,7 @@
   },
   "override_args": {
     "bigint_to_quadbin": {"0": "(int64) qcell1"},
+    "tquadbin_value": {"0": "tquadbin_inst1"},
     "quadbin_cell_to_children": {"1": "5"},
     "quadbin_cell_to_children_set": {"1": "5"},
     "quadbinset_uncompact_cells": {"1": "6"},
@@ -73,6 +74,8 @@
     "  Set *qset1 = quadbinset_make(qarr1, 2);",
     "  TSequence *tqseq1 = tquadbinseq_make(qarr_same1, tstzarr1, 2, true, true);",
     "  Temporal *tquadbin1 = (Temporal *) tqseq1;",
+    "  /* The value of a temporal is read off an instant. */",
+    "  Temporal *tquadbin_inst1 = (Temporal *) tquadbininst_make(qcell1, tstz1);",
     "  char *tqmfjson1 = temporal_as_mfjson(tquadbin1, 0, 0, 15, NULL);",
     "  /* 5206864856682070015 is the cell 48427fffffffffff as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5206864856682070015@2001-01-01, 5206864856682070015@2001-01-03]\");",
@@ -84,6 +87,7 @@
     "  int n_out = 0;"
   ],
   "cleanup": [
+    "  free(tquadbin_inst1);",
     "  /* tquadbin_unnest hands back its values through a non-final Quadbin **,",
     "   * which the generic emitter reads as an input array, so it is called here",
     "   * and both of its results are released. */",

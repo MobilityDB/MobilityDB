@@ -323,6 +323,49 @@ moving_entry(const char *trip, const char *wkt, double expected)
   free(temp);
 }
 
+/* The nearest approach of two moving points over continuous time, against the
+ * double nearest the exact one, and whether they are ever and always within a
+ * distance; the two-operand twin of #moving_entry */
+static void
+pair_entry(const char *trip1, const char *trip2, double expected, double d,
+  int ever, int always)
+{
+  Temporal *temp1 = tgeompoint_in(trip1), *temp2 = tgeompoint_in(trip2);
+  assert(temp1 != NULL && temp2 != NULL);
+  assert(nad_tgeo_tgeo(temp1, temp2, true) == expected);
+  assert(edwithin_tgeo_tgeo(temp1, temp2, d, true) == ever);
+  assert(adwithin_tgeo_tgeo(temp1, temp2, d, true) == always);
+  free(temp1);
+  free(temp2);
+}
+
+/* The distance of two static geometries, against the double nearest the exact
+ * one, asked in both orders; the static twin of #moving_entry */
+static void
+geometry_entry(const char *wkt1, const char *wkt2, double expected)
+{
+  GSERIALIZED *gs1 = geom_in(wkt1, -1), *gs2 = geom_in(wkt2, -1);
+  assert(gs1 != NULL && gs2 != NULL);
+  assert(geom_distance2d(gs1, gs2) == expected);
+  assert(geom_distance2d(gs2, gs1) == expected);
+  free(gs1);
+  free(gs2);
+}
+
+/* The nearest approach of a moving circular buffer of constant radius to a
+ * geometry, against the double nearest the exact one; the moving twin of
+ * #buffer_entry */
+static void
+moving_buffer_entry(const char *buffer, const char *wkt, double expected)
+{
+  Temporal *temp = tcbuffer_in(buffer);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  assert(temp != NULL && gs != NULL);
+  assert(nad_tcbuffer_geo(temp, gs) == expected);
+  free(gs);
+  free(temp);
+}
+
 /* Main program */
 int main(void)
 {
@@ -569,6 +612,116 @@ int main(void)
     0x1.03ef189b0a131p+159);
   printf("%d tie broken by a coordinate far below the others answered as the "
     "nearest double\n", unscaled);
+
+  /* Two moving points over continuous time: a point crossing a day against a
+   * point at rest 1 from its path, the foot between two microseconds, and two
+   * points meeting at a seventh of a day, each asked at a distance either
+   * side of its nearest approach */
+  int pairs = 4;
+  const char *fast = "[POINT(0 0)@2001-01-01, POINT(1000000 0)@2001-01-02]";
+  const char *rest = "[POINT(123456.789 1)@2001-01-01, "
+    "POINT(123456.789 1)@2001-01-02]";
+  pair_entry(fast, rest, 1.0, 1.0, 1, 0);
+  pair_entry(fast, rest, 1.0, 0.999999, 0, 0);
+  const char *east = "[POINT(0 0)@2001-01-01, POINT(7 0)@2001-01-02]";
+  const char *fall = "[POINT(0 1)@2001-01-01, POINT(7 -6)@2001-01-02]";
+  pair_entry(east, fall, 0.0, 6.0, 1, 1);
+  pair_entry(east, fall, 0.0, 5.999, 1, 0);
+  /* Two sequences touching only at an exclusive bound share no time */
+  pairs++;
+  pair_entry("[POINT(0 0)@2001-01-01, POINT(1 0)@2001-01-02)",
+    "[POINT(5 0)@2001-01-02, POINT(6 0)@2001-01-03]", DBL_MAX, 10.0, -1, -1);
+  printf("%d pairs of moving points answered over continuous time\n", pairs);
+
+  /* Two static geometries of straight edges: two points beyond the range of a
+   * float and far apart in magnitude, a line against a polygon it lies in, a
+   * point in a polygon's hole at 2^0 and at 2^500, two segments crossing at
+   * 2^-500, and two lines of real AIS positions against a multipoint and a
+   * multilinestring */
+  int geometries = 9;
+  geometry_entry("POINT(0 0)", "POINT(1e39 0)", 1e39);
+  geometry_entry("POINT(0 0)", "POINT(1e200 1e200)", 1.414213562373095e+200);
+  geometry_entry("POINT(0 0)", "POINT(1e-200 1e-200)", 1.414213562373095e-200);
+  geometry_entry("LINESTRING(1 1,2 2)", "POLYGON((0 0,10 0,10 10,0 10,0 0))",
+    0.0);
+  geometry_entry("POINT(5 5)",
+    "POLYGON((0 0,10 0,10 10,0 10,0 0),(4 4,6 4,6 6,4 6,4 4))", 1.0);
+  geometry_entry("POINT(1.2445282628062274e+151 2.1381171882275312e+151)",
+    "POLYGON((-1.6931743662012546e+150 2.7056831548999972e+150, "
+    "3.1040731712760167e+151 2.7056831548999972e+150, "
+    "3.1040731712760167e+151 3.543958923386142e+151, "
+    "-1.6931743662012546e+150 3.543958923386142e+151, "
+    "-1.6931743662012546e+150 2.7056831548999972e+150), "
+    "(1.1400388065383313e+151 1.5799245586484565e+151, "
+    "1.1400388065383313e+151 2.2346026802276848e+151, "
+    "1.7947169281175597e+151 2.2346026802276848e+151, "
+    "1.7947169281175597e+151 1.5799245586484565e+151, "
+    "1.1400388065383313e+151 1.5799245586484565e+151))",
+    9.6485492000153623e+149);
+  geometry_entry("LINESTRING(-9.67067781140507e-152 1.536412426577711e-151, "
+    "-2.788347170337139e-151 -1.017739775748659e-151)",
+    "LINESTRING(-1.913382539786656e-151 -8.762380444905406e-152, "
+    "-2.3805884974161698e-151 7.744958453700465e-152)", 0.0);
+  geometry_entry("LINESTRING(553784.772 5014170.2423894415, "
+    "553834.772 5014177.18323765)",
+    "MULTIPOINT(553784.772 5014138.762584851, "
+    "553753.2921954093 5014170.2423894415, "
+    "553753.2921954093 5014170.2423894415)", 31.479804590344429);
+  geometry_entry("LINESTRING(516973.61699999997 5125761.68, "
+    "517023.61699999997 5125761.68, 517073.61699999997 5125761.68)",
+    "MULTILINESTRING((516959.3024971603 5126202.905882021, "
+    "517189.18848376896 5126202.905882021), "
+    "(516975.1315332763 5126202.90588202, "
+    "516981.1548022016 5126202.90588202))", 441.22588201984763);
+  printf("%d pairs of static geometries answered as the nearest double\n",
+    geometries);
+
+  /* A moving circular buffer of constant radius: passing a segment one unit
+   * in the last place of its height clear of it at 2^0 and at 2^-60, touching
+   * it, a sequence set whose second sequence is the nearer, passing a polygon
+   * with a hole at 2^500, and a real AIS trip against a multipoint */
+  int buffers = 6;
+  moving_buffer_entry("[Cbuffer(Point(0.7266902312949124 0.22712147138954955),"
+    "0.2271214713895495)@2001-01-01 00:00:00+00, "
+    "Cbuffer(Point(2.1009173093824525 0.22712147138954955),"
+    "0.2271214713895495)@2001-01-01 00:10:00+00]",
+    "LINESTRING(0.6544057840391131 0.0, 2.0286328621266536 0.0)",
+    5.5511151231257827e-17);
+  moving_buffer_entry("[Cbuffer(Point(6.303033019951502e-19 "
+    "1.9699647415892317e-19),1.9699647415892312e-19)@2001-01-01 00:00:00+00, "
+    "Cbuffer(Point(1.8222552888358845e-18 1.9699647415892317e-19),"
+    "1.9699647415892312e-19)@2001-01-01 00:10:00+00]",
+    "LINESTRING(5.67606538193829e-19 0.0, 1.7595585250345637e-18 0.0)",
+    4.8148248609680896e-35);
+  moving_buffer_entry("[Cbuffer(Point(-0.01527982258779692 0.3393927481655001),"
+    "0.3393927481655001)@2001-01-01 00:00:00+00, "
+    "Cbuffer(Point(0.896726763373336 0.3393927481655001),"
+    "0.3393927481655001)@2001-01-01 00:10:00+00]",
+    "LINESTRING(0.7043827299826431 0.0, 1.6163893159437763 0.0)", 0.0);
+  moving_buffer_entry("{[Cbuffer(Point(0 9),0.5)@2001-01-01, "
+    "Cbuffer(Point(1 9),0.5)@2001-01-02], [Cbuffer(Point(0 2),0.5)@2001-01-03, "
+    "Cbuffer(Point(1 2),0.5)@2001-01-04]}", "LINESTRING(-5 0,5 0)", 1.5);
+  moving_buffer_entry("[Cbuffer(Point(-1.636695303948071e+151 "
+    "2.7765748011346417e+151),2.3407026591806264e+149)@2001-01-01 00:00:00+00, "
+    "Cbuffer(Point(-3.273390607896142e+150 2.874776519371526e+151),"
+    "2.3407026591806264e+149)@2001-01-01 00:10:00+00]",
+    "POLYGON((0.0 0.0, 3.273390607896142e+151 0.0, "
+    "3.273390607896142e+151 3.273390607896142e+151, "
+    "0.0 3.273390607896142e+151, 0.0 0.0), "
+    "(1.3093562431584567e+151 1.3093562431584567e+151, "
+    "1.3093562431584567e+151 1.964034364737685e+151, "
+    "1.964034364737685e+151 1.964034364737685e+151, "
+    "1.964034364737685e+151 1.3093562431584567e+151, "
+    "1.3093562431584567e+151 1.3093562431584567e+151))",
+    3.0393203419780794e+150);
+  moving_buffer_entry("[Cbuffer(Point(557196.104 5026245.457869001),47.0)"
+    "@2001-01-01 00:00:00+00, Cbuffer(Point(557246.104 5026242.658582471),"
+    "47.0)@2001-01-01 00:10:00+00]",
+    "MULTIPOINT(556854.257438268 5026245.457869001, "
+    "557196.104 5026587.3044307325, 557196.104 5025903.611307269, "
+    "557537.950561732 5026245.457869001)", 244.85998629456884);
+  printf("%d moving circular buffers of constant radius answered as the "
+    "nearest double\n", buffers);
 
   /* Finalize MEOS */
   meos_finalize();

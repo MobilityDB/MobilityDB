@@ -46,6 +46,7 @@
   },
   "override_args": {
     "bigint_to_s2cell": {"0": "(int64) s2cell1"},
+    "ts2cell_value": {"0": "ts2cell_inst1"},
     "s2cell_cell_to_child": {"1": "16", "2": "0"},
     "s2cell_cell_to_children": {"1": "16"},
     "s2cell_cell_to_children_set": {"1": "16"},
@@ -77,6 +78,8 @@
     "  Set *s2set1 = s2cellset_make(s2arr1, 2);",
     "  TSequence *ts2seq1 = ts2cellseq_make(s2arr_same1, tstzarr1, 2, true, true);",
     "  Temporal *ts2cell1 = (Temporal *) ts2seq1;",
+    "  /* The value of a temporal is read off an instant. */",
+    "  Temporal *ts2cell_inst1 = (Temporal *) ts2cellinst_make(s2cell1, tstz1);",
     "  char *ts2mfjson1 = temporal_as_mfjson(ts2cell1, 0, 0, 15, NULL);",
     "  /* 5171192596709507072 is the cell 47c3c444c0000000 as an integer. */",
     "  Temporal *tbigint1 = tbigint_in(\"[5171192596709507072@2001-01-01, 5171192596709507072@2001-01-03]\");",
@@ -90,6 +93,7 @@
     "  int n_out = 0;"
   ],
   "cleanup": [
+    "  free(ts2cell_inst1);",
     "  /* ts2cell_unnest hands back its values through a non-final S2CellId **,",
     "   * which the generic emitter reads as an input array, so it is called here",
     "   * and both of its results are released. */",

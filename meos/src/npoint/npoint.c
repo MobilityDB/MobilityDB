@@ -84,17 +84,20 @@
 
 /**
  * @brief Return true if the three values are collinear
- * @param[in] np1,np2,np3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `np1` and `np2` divided by the duration
- * of the timestamps associated to `np1` and `np3`
+ * @details A network point interpolates its position linearly, so it is
+ * collinear as #float_collinear decides it
+ * @param[in] np1,np2,np3 Values
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  */
 bool
 npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
-  double ratio)
+  TimestampTz t1, TimestampTz t2, TimestampTz t3, bool constructed)
 {
   assert(np1->rid == np2->rid); assert(np1->rid == np3->rid);
-  return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
+  return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3,
+    constructed);
 }
 
 /**

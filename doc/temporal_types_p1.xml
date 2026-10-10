@@ -81,7 +81,7 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 		</para>
 
 		<para>
-			Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
+			Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. This is decided exactly on the stored values, so that a value in normal form is its own normal form and a value read back from its binary representation is the value written. The interpolation of geodetic points follows the great circle, and a geodetic point is merged when it lies on that path within the rounding of the interpolated point. Examples of transformation into normal form are as follows.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 -- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)

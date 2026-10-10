@@ -1552,7 +1552,8 @@ Temporalarr_round(PG_FUNCTION_ARGS)
     resarr[i] = (temparr[i]->temptype == T_TRGEOMETRY) ?
       trgeometry_round(temparr[i], maxdd) : temporal_round(temparr[i], maxdd);
 #else
-  Temporal **resarr = temparr_round(temparr, count, maxdd);
+  Temporal **resarr = temparr_round((const Temporal **) temparr, count,
+    maxdd);
 #endif /* RGEO */
   ArrayType *result = temparr_to_array(resarr, count, FREE_ALL);
   pfree(temparr);

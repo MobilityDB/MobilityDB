@@ -545,19 +545,69 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
 
 /**
  * @brief Return true if the three values are collinear
+ * @details A pose interpolates its position linearly, so each coordinate of
+ * it is collinear exactly as #float_collinear decides it. It interpolates its
+ * orientation by an angle taken around the circle or by a spherical
+ * interpolation of its quaternion, a value the engine CONSTRUCTS and rounds,
+ * so the middle orientation is on the path where it lies within the rounding
+ * of that construction of it (#coordinate_tolerance). A constructed middle
+ * pose, the pose at which a restriction splits a segment, is rounded as well
+ * and has its position within that rounding of the interpolated position
  * @param[in] p1,p2,p3 Poses
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `p1` and `p2` divided by the duration
- * of the timestamps associated to `p1` and `p3`
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  */
 bool
-pose_collinear(const Pose *p1, const Pose *p2, const Pose *p3, double ratio)
+pose_collinear(const Pose *p1, const Pose *p2, const Pose *p3, TimestampTz t1,
+  TimestampTz t2, TimestampTz t3, bool constructed)
 {
-  assert(p1); assert(p2); assert(p3); 
-  Pose *p2_interpolated = posesegm_interpolate(p1, p3, ratio);
-  bool result = pose_same(p2, p2_interpolated);
-  pfree(p2_interpolated);
-  return result;
+  assert(p1); assert(p2); assert(p3);
+  bool hasz = MEOS_FLAGS_GET_Z(p1->flags);
+  /* The position is stated by data[0..1] in 2D and by data[0..2] in 3D, the
+   * orientation by the angle data[2] in 2D and by the quaternion data[3..6]
+   * in 3D */
+  int npos = hasz ? 3 : 2, nvalues = hasz ? 7 : 3;
+  if (! constructed)
+  {
+    for (int i = 0; i < npos; i++)
+      if (! float_collinear(p1->data[i], p2->data[i], p3->data[i], t1, t2, t3,
+          false))
+        return false;
+  }
+  double ratio = (double) (t2 - t1) / (double) (t3 - t1);
+  Pose *interp = posesegm_interpolate(p1, p3, ratio);
+  if (! interp)
+    return false;
+  if (constructed)
+  {
+    double posdist2 = 0.0, posmax = 0.0;
+    for (int i = 0; i < npos; i++)
+    {
+      double diff = p2->data[i] - interp->data[i];
+      posdist2 += diff * diff;
+      posmax = Max(posmax, Max(fabs(p1->data[i]), fabs(p3->data[i])));
+    }
+    if (sqrt(posdist2) > coordinate_tolerance(posmax, posmax))
+    {
+      pfree(interp);
+      return false;
+    }
+  }
+  double dist2 = 0.0, maxcoord = 0.0;
+  for (int i = npos; i < nvalues; i++)
+  {
+    double diff = p2->data[i] - interp->data[i];
+    /* Two angles a full turn apart state one orientation */
+    if (! hasz && diff > M_PI)
+      diff -= 2 * M_PI;
+    else if (! hasz && diff < - M_PI)
+      diff += 2 * M_PI;
+    dist2 += diff * diff;
+    maxcoord = Max(maxcoord, Max(fabs(p2->data[i]), fabs(interp->data[i])));
+  }
+  pfree(interp);
+  return sqrt(dist2) <= coordinate_tolerance(maxcoord, maxcoord);
 }
 
 /*****************************************************************************

@@ -276,6 +276,7 @@ extern TSequenceSet *tquadbinseqset_make(const TSequence **sequences, int count)
 
 extern Quadbin tquadbin_start_value(const Temporal *temp);
 extern Quadbin tquadbin_end_value(const Temporal *temp);
+extern Quadbin tquadbin_value(const Temporal *temp);
 extern bool tquadbin_value_n(const Temporal *temp, int n, Quadbin *result);
 extern Quadbin *tquadbin_values(const Temporal *temp, int *count);
 extern SpanSet **tquadbin_unnest(const Temporal *temp, Quadbin **values, int *count);

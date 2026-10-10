@@ -626,8 +626,8 @@ extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
  *****************************************************************************/
 
 extern Set *bigint_to_set(int64 i);
-extern Span *bigint_to_span(int i);
-extern SpanSet *bigint_to_spanset(int i);
+extern Span *bigint_to_span(int64 i);
+extern SpanSet *bigint_to_spanset(int64 i);
 extern Set *date_to_set(DateADT d);
 extern Span *date_to_span(DateADT d);
 extern SpanSet *date_to_spanset(DateADT d);
@@ -1468,6 +1468,7 @@ extern TBox *tnumber_to_tbox (const Temporal *temp);
 
 extern bool tbool_end_value(const Temporal *temp);
 extern bool tbool_start_value(const Temporal *temp);
+extern bool tbool_value(const Temporal *temp);
 extern bool tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, bool *value);
 extern bool tbool_value_n(const Temporal *temp, int n, bool *result);
 extern bool *tbool_values(const Temporal *temp, int *count);
@@ -1505,6 +1506,7 @@ extern double tfloat_end_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
 extern double tfloat_max_value(const Temporal *temp);
 extern double tfloat_start_value(const Temporal *temp);
+extern double tfloat_value(const Temporal *temp);
 extern bool tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, double *value);
 extern bool tfloat_value_n(const Temporal *temp, int n, double *result);
 extern double *tfloat_values(const Temporal *temp, int *count);
@@ -1518,6 +1520,8 @@ extern int tint_min_value(const Temporal *temp);
 extern int64 tbigint_min_value(const Temporal *temp);
 extern int tint_start_value(const Temporal *temp);
 extern int64 tbigint_start_value(const Temporal *temp);
+extern int tint_value(const Temporal *temp);
+extern int64 tbigint_value(const Temporal *temp);
 extern bool tbigint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, int64 *value);
 extern bool tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, int *value);
 extern bool tint_value_n(const Temporal *temp, int n, int *result);
@@ -1534,6 +1538,7 @@ extern text *ttext_end_value(const Temporal *temp);
 extern text *ttext_max_value(const Temporal *temp);
 extern text *ttext_min_value(const Temporal *temp);
 extern text *ttext_start_value(const Temporal *temp);
+extern text *ttext_value(const Temporal *temp);
 extern bool ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, text **value);
 extern bool ttext_value_n(const Temporal *temp, int n, text **result);
 extern text **ttext_values(const Temporal *temp, int *count);
@@ -1545,7 +1550,7 @@ extern SpanSet **ttext_unnest(const Temporal *temp, text ***values, int *count);
 
 extern double float_degrees(double value, bool normalize);
 extern double float_round(double d, int maxdd);
-extern Temporal **temparr_round(Temporal **temp, int count, int maxdd);
+extern Temporal **temparr_round(const Temporal **temparr, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);

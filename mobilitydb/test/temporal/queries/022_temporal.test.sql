@@ -4192,3 +4192,39 @@ SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
 -- of its times
 SELECT (rec).value, (rec).time FROM (SELECT unnest(tbool '{true@2001-01-01,
   false@2001-01-02, true@2001-01-03}') AS rec) AS t;
+
+-------------------------------------------------------------------------------
+-- Normalization removes an instant exactly where it lies on the line through
+-- its neighbours, so a normalized sequence is its own normal form and a value
+-- read back from its binary form is the value written
+
+SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
+SELECT tfloat '[0.25@2001-01-01, 0.5@2001-01-02, 1@2001-01-04]';
+SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]';
+WITH s(temp) AS (
+  SELECT tfloat '[0.2@2001-01-02, 0.300001@2001-01-03, 0.5@2001-01-05, 1.8@2001-01-18]' )
+SELECT numInstants(temp), numInstants(tfloatFromBinary(asBinary(temp))),
+  asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+
+-------------------------------------------------------------------------------
+-- A restriction to a time returns its result in normal form, so the value
+-- read back from its binary form is the value the restriction returns. The
+-- value interpolated at 18:00 rounds to 1, which makes the instant at
+-- 2001-01-02 redundant
+
+WITH s(temp) AS (
+  SELECT atTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    tstzspan '[2001-01-01 18:00, 2001-01-03]') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    timestamptz '2001-01-01 18:00') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tfloat '[1.0000000000000002@2001-01-01, 1@2001-01-02, 1@2001-01-03]',
+    tstzset '{2001-01-01 06:00, 2001-01-01 18:00}') )
+SELECT temp, asBinary(tfloatFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;

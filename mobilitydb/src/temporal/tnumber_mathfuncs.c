@@ -286,7 +286,7 @@ PGDLLEXPORT Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal multiplication of two temporal numbers
+ * @brief Return the temporal division of two temporal numbers
  * @sqlfn tDiv()
  * @sqlop @p /
  */

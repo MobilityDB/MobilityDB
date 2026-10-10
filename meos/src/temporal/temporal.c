@@ -917,7 +917,7 @@ temporal_out(const Temporal *temp, int maxdd)
  * @csqlfn #Temporalarr_as_text()
  */
 char **
-temparr_out(Temporal **temparr, int count, int maxdd)
+temparr_out(const Temporal **temparr, int count, int maxdd)
 {
   assert(temparr); assert(count > 0);
   /* Ensure the validity of the arguments */
@@ -1474,7 +1474,7 @@ temporal_round(const Temporal *temp, int maxdd)
  * @csqlfn #Temporalarr_round()
  */
 Temporal **
-temparr_round(Temporal **temparr, int count, int maxdd)
+temparr_round(const Temporal **temparr, int count, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temparr, NULL);

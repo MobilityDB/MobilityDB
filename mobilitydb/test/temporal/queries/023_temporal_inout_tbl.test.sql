@@ -100,6 +100,11 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 
+-- A value read back from its binary form is the value written, byte for byte:
+-- the normalization the reader applies is its own fixed point
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp IS NOT NULL AND
+  asBinary(tfloatFromBinary(asBinary(temp))) <> asBinary(temp);
+
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromText(asText(temp)) <> asText(temp)::tbool;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromText(asText(temp)) <> asText(temp)::tint;

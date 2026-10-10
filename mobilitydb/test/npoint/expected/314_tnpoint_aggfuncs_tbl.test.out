@@ -340,9 +340,9 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.4)@2001-01-04' UNION
   SELECT tnpoint 'Npoint(1, 0.5)@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
-                                      appendinstant                                       
-------------------------------------------------------------------------------------------
- [NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST]
+                                                                                                        appendinstant                                                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.3)@Wed Jan 03 00:00:00 2001 PST, NPoint(1,0.4)@Thu Jan 04 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
 WITH temp(inst) AS (
@@ -354,9 +354,9 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.4)@2001-01-04' UNION
   SELECT tnpoint 'Npoint(1, 0.5)@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
-                                      appendinstant                                       
-------------------------------------------------------------------------------------------
- [NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST]
+                                                                                                        appendinstant                                                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.3)@Wed Jan 03 00:00:00 2001 PST, NPoint(1,0.4)@Thu Jan 04 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
 WITH temp(inst) AS (
@@ -365,7 +365,7 @@ WITH temp(inst) AS (
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
  numinstants 
 -------------
-           2
+        7274
 (1 row)
 
 /* Errors */
@@ -417,9 +417,9 @@ temp2(k, seq) AS (
   FROM temp1
   GROUP BY k / 3)
 SELECT astext(appendSequence(seq ORDER BY seq)) FROM temp2;
-                                                                                                                                     astext                                                                                                                                     
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST], [NPoint(1,0.3)@Wed Jan 03 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST], [NPoint(1,0.6)@Sat Jan 06 00:00:00 2001 PST, NPoint(1,0.8)@Mon Jan 08 00:00:00 2001 PST]}
+                                                                                                                                                                                 astext                                                                                                                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.1)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST], [NPoint(1,0.3)@Wed Jan 03 00:00:00 2001 PST, NPoint(1,0.4)@Thu Jan 04 00:00:00 2001 PST, NPoint(1,0.5)@Fri Jan 05 00:00:00 2001 PST], [NPoint(1,0.6)@Sat Jan 06 00:00:00 2001 PST, NPoint(1,0.7)@Sun Jan 07 00:00:00 2001 PST, NPoint(1,0.8)@Mon Jan 08 00:00:00 2001 PST]}
 (1 row)
 
 WITH temp1(k, inst) AS (
@@ -433,6 +433,6 @@ temp2(seq) AS (
 SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
  numinstants 
 -------------
-           2
+        7274
 (1 row)
 

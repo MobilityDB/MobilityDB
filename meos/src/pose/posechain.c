@@ -947,21 +947,31 @@ posechainsegm_locate(const PoseChain *start, const PoseChain *end,
 
 /**
  * @brief Return true if the three pose chains are collinear
+ * @details A pose chain interpolates every link as a pose
+ * (#posechainsegm_interpolate), so it is collinear where every link is
+ * (#pose_collinear)
  * @param[in] pc1,pc2,pc3 Pose chains
- * @param[in] ratio Value in [0,1] representing the duration of the timestamps
- * associated to `pc1` and `pc2` divided by the duration of the timestamps
- * associated to `pc1` and `pc3`
+ * @param[in] t1,t2,t3 Timestamps of the values, in increasing order
+ * @param[in] constructed True when the middle value is constructed, false
+ * when the three values are input values
  */
 bool
 posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
-  const PoseChain *pc3, double ratio)
+  const PoseChain *pc3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
+  bool constructed)
 {
   assert(pc1); assert(pc2); assert(pc3);
-  PoseChain *interpolated = posechainsegm_interpolate(pc1, pc3, ratio);
-  if (interpolated == NULL)
+  if (pc1->count != pc2->count || pc1->count != pc3->count)
     return false;
-  bool result = posechain_same(pc2, interpolated);
-  pfree(interpolated);
+  bool result = true;
+  for (int i = 0; i < pc1->count && result; i++)
+  {
+    Pose *pose1 = posechain_link_pose(pc1, i, i == 0);
+    Pose *pose2 = posechain_link_pose(pc2, i, i == 0);
+    Pose *pose3 = posechain_link_pose(pc3, i, i == 0);
+    result = pose_collinear(pose1, pose2, pose3, t1, t2, t3, constructed);
+    pfree(pose1); pfree(pose2); pfree(pose3);
+  }
   return result;
 }
 

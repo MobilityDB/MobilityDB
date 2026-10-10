@@ -1661,3 +1661,36 @@ SELECT hash(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, P
 SELECT hash(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
 
 ------------------------------------------------------------------------------
+-- A restriction returns its result in normal form, so the value read back
+-- from its binary form is the value the restriction returns. A geodetic point
+-- whose middle position lies within the rounding of the great circle through
+-- the position interpolated one second before it and the last position, and
+-- a planar point whose position interpolated where it enters the box rounds
+-- onto the line of the instants after it
+
+WITH s(temp) AS (
+  SELECT atTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    tstzspan '[2001-01-01 23:59:59, 2001-01-03]') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    timestamptz '2001-01-01 23:59:59') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT minusTime(tgeogpoint '[POINT(4 50)@2001-01-01,
+    POINT(4.98941239 50.50428283)@2001-01-02, POINT(6 51)@2001-01-03]',
+    tstzset '{2001-01-01 12:00, 2001-01-01 23:59:59}') )
+SELECT numInstants(temp), asBinary(tgeogpointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+WITH s(temp) AS (
+  SELECT atStbox(tgeompoint '[POINT(0 1.0000000000000004)@2001-01-01,
+    POINT(1 1)@2001-01-02, POINT(2 1)@2001-01-03]',
+    stbox 'STBOX X((0.75,0),(3,2))') )
+SELECT numInstants(temp), asBinary(tgeompointFromBinary(asBinary(temp))) = asBinary(temp)
+FROM s;
+
+-------------------------------------------------------------------------------

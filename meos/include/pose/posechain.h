@@ -115,7 +115,8 @@ extern PoseChain *posechainsegm_interpolate(const PoseChain *start,
 extern long double posechainsegm_locate(const PoseChain *start,
   const PoseChain *end, const PoseChain *value);
 extern bool posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
-  const PoseChain *pc3, double ratio);
+  const PoseChain *pc3, TimestampTz t1, TimestampTz t2, TimestampTz t3,
+  bool constructed);
 
 /* Transformation functions */
 

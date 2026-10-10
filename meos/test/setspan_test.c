@@ -639,13 +639,13 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("bigint_to_set(%lu): %s\n", int64_in1, char_result);
   free(bset_result); free(char_result);
 
-  /* Span *bigint_to_span(int i); */
+  /* Span *bigint_to_span(int64 i); */
   bspan_result = bigint_to_span(int64_in1);
   char_result = bigintspan_out(bspan_result);
   printf("bigint_to_span(%lu): %s\n", int64_in1, char_result);
   free(bspan_result); free(char_result);
 
-  /* SpanSet *bigint_to_spanset(int i); */
+  /* SpanSet *bigint_to_spanset(int64 i); */
   bspanset_result = bigint_to_spanset(int64_in1);
   char_result = bigintspanset_out(bspanset_result);
   printf("bigint_to_spanset(%ld): %s\n", int64_in1, char_result);

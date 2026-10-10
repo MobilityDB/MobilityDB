@@ -72,6 +72,22 @@ SELECT DISTINCT asText(tgeompointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM
 SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
 SELECT DISTINCT asText(tgeogpointFromHexWKB(asHexWKB(temp))) = asText(temp) FROM tbl_tgeogpoint;
 
+-- A value read back from its binary form is the value written, byte for byte:
+-- the normalization the reader applies is its own fixed point
+SELECT count(*) FROM tbl_tgeompoint
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+SELECT count(*) FROM tbl_tgeogpoint
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+SELECT count(*) FROM tbl_tgeompoint3D
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+SELECT count(*) FROM tbl_tgeogpoint3D
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp::tgeogpoint))) <>
+    asEWKB(temp::tgeogpoint);
+
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal point values coming from real AIS data
 -- The AIS tables keep the full precision of the recorded positions, which is

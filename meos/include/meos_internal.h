@@ -1108,7 +1108,7 @@ extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(const char *str);
 extern Temporal *temporal_in(const char *str, MeosType temptype);
 extern char *temporal_out(const Temporal *temp, int maxdd);
-extern char **temparr_out(Temporal **temparr, int count, int maxdd);
+extern char **temparr_out(const Temporal **temparr, int count, int maxdd);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(const char *str);
 extern TSequence *tfloatseq_from_mfjson(json_object *mfjson, interpType interp);

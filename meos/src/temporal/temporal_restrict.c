@@ -2256,6 +2256,67 @@ tsequence_at_timestamptz(const TSequence *seq, TimestampTz t)
 /*****************************************************************************/
 
 /**
+ * @brief Construct a continuous sequence from a cut of a normalized sequence
+ * @details The first and the last instants are instants of the sequence or
+ * values interpolated on its segments, and the instants between them are
+ * consecutive instants of the sequence. The result keeps the instants that
+ * are not redundant. An interpolated value differs from
+ * the instant it replaces, so it can make the instants next to it redundant.
+ * Since no triple of consecutive instants of a normalized sequence is
+ * redundant, the triples with the first or the last instant are the only
+ * ones that #tinstarr_normalize can remove an instant from, and the result
+ * is the normal form of the instants.
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] lower_inc,upper_inc True when the bounds are inclusive
+ * @param[in] interp Interpolation
+ */
+static TSequence *
+tcontseq_make_cut(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp)
+{
+  assert(instants); assert(count > 0); assert(interp != DISCRETE);
+  if (count < 3)
+    return tsequence_make(instants, count, lower_inc, upper_inc, interp,
+      NORMALIZE_NO);
+
+  MeosType basetype = temptype_basetype(instants[0]->temptype);
+  TInstant **norminsts = palloc(sizeof(TInstant *) * count);
+  const TInstant *first = instants[0];
+  norminsts[0] = instants[0];
+  int ninsts = 1;
+  /* Remove the instants that the first instant makes redundant */
+  int i = 1;
+  while (i < count - 1 && tsequence_norm_test(tinstant_value_p(first),
+      tinstant_value_p(instants[i]), tinstant_value_p(instants[i + 1]),
+      basetype, interp, first->t, instants[i]->t, instants[i + 1]->t))
+    i++;
+  if (i < count - 1)
+  {
+    /* Keep the instants up to the one before the last instant, whose
+     * triples are triples of the normalized sequence */
+    for (int j = i; j < count - 2; j++)
+      norminsts[ninsts++] = instants[j];
+    /* Keep the instant before the last one unless the last instant makes it
+     * redundant */
+    const TInstant *inst1 = instants[count - 3];
+    const TInstant *inst2 = instants[count - 2];
+    const TInstant *inst3 = instants[count - 1];
+    if (i == count - 2 || ! tsequence_norm_test(tinstant_value_p(inst1),
+        tinstant_value_p(inst2), tinstant_value_p(inst3), basetype, interp,
+        inst1->t, inst2->t, inst3->t))
+      norminsts[ninsts++] = instants[count - 2];
+  }
+  norminsts[ninsts++] = instants[count - 1];
+  TSequence *result = tsequence_make(norminsts, ninsts, lower_inc, upper_inc,
+    interp, NORMALIZE_NO);
+  pfree(norminsts);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Restrict a temporal sequence to the complement of a timestamptz
  * (iterator function)
  * @param[in] seq Temporal sequence
@@ -2321,8 +2382,8 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
         tinstant_make(tinstant_value_p(inst1), inst1->temptype, t);
-      result[nseqs++] = tsequence_make(instants, n + 2,
-        seq->period.lower_inc, false, interp, NORMALIZE_NO);
+      result[nseqs++] = tcontseq_make_cut(instants, n + 2,
+        seq->period.lower_inc, false, interp);
       pfree(instants[n + 1]);
     }
   }
@@ -2334,8 +2395,8 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
     instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, t);
     for (i = 1; i < seq->count - n; i++)
       instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i + n);
-    result[nseqs++] = tsequence_make(instants, seq->count - n, false,
-      seq->period.upper_inc, interp, NORMALIZE_NO);
+    result[nseqs++] = tcontseq_make_cut(instants, seq->count - n, false,
+      seq->period.upper_inc, interp);
     pfree(instants[0]);
   }
   pfree(instants);
@@ -2498,8 +2559,8 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
           instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
-        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
-          interp, NORMALIZE_NO);
+        result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
+          false, interp);
         ninsts = 0;
       }
       /* If it is not the last instant start a new sequence */
@@ -2529,8 +2590,8 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
           value = tinstant_value_p(instants[ninsts - 1]);
         instants[ninsts] = tinstant_make(value, inst->temptype, t);
         tofree[nfree] = instants[ninsts++];
-        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
-          interp, NORMALIZE_NO);
+        result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
+          false, interp);
         /* Restart a new sequence */
         instants[0] = tofree[nfree++];
         ninsts = 1;
@@ -2547,8 +2608,8 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   }
   if (ninsts > 0)
   {
-    result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
-      seq->period.upper_inc, interp, NORMALIZE_NO);
+    result[nseqs++] = tcontseq_make_cut(instants, ninsts, lower_inc,
+      seq->period.upper_inc, interp);
   }
   pfree_array((void **) tofree, nfree);
   pfree(instants);
@@ -2634,10 +2695,8 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
     Datum value = tinstant_value_p(instants[ninsts - 1]);
     instants[ninsts++] = tinstant_make(value, seq->temptype, inter.upper);
   }
-  /* Since by definition the sequence is normalized it is not necessary to
-   * normalize the projection of the sequence to the period */
-  result = tsequence_make(instants, ninsts, inter.lower_inc, inter.upper_inc,
-    interp, NORMALIZE_NO);
+  result = tcontseq_make_cut(instants, ninsts, inter.lower_inc,
+    inter.upper_inc, interp);
 
   pfree(instants[0]); pfree(instants[ninsts - 1]); pfree(instants);
 

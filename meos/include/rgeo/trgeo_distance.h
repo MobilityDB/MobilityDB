@@ -46,6 +46,8 @@ extern Temporal *trgeo_tdistance_tpoint(const Temporal *temp1,
   const Temporal *temp2, double level);
 extern Temporal *trgeo_tdistance_trgeo(const Temporal *temp1,
   const Temporal *temp2, double level);
+extern int trgeo_edwithin_trgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist);
 
 /*****************************************************************************/
 

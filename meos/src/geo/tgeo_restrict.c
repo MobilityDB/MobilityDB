@@ -1202,6 +1202,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
       else
         makeseq = true;
     }
+    /* A sequence entering or leaving the box at a value interpolated on a
+     * segment can have a redundant instant next to it, so the sequences are
+     * normalized */
     if (makeseq && ninsts > 0)
     {
       /* We can occasionally have ninsts == 1 and lower_inc == upper_inc == false
@@ -1210,7 +1213,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
        * Don't create a sequence, but still reset ninsts and lower_inc */
       if (ninsts > 1 || lower_inc || upper_inc)
         sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
-          upper_inc, LINEAR, NORMALIZE_NO);
+          upper_inc, LINEAR, NORMALIZE);
       ninsts = 0;
       lower_inc = true;
     }
@@ -1220,7 +1223,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   /* See above for explanation of condition */
   if (ninsts > 0 && (ninsts > 1 || lower_inc || upper_inc))
     sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
-      LINEAR, NORMALIZE_NO);
+      LINEAR, NORMALIZE);
   pfree_array((void **) tofree, nfree);
   pfree(instants);
   if (nseqs == 0)

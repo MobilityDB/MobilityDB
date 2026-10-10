@@ -444,6 +444,42 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
+ * @brief Minimum of [ dist(c(t), edge) - r ] for t in [0,1], where the centre
+ * moves from (cx1,cy1) to (cx2,cy2) and the radius r does not change
+ * @details The twin of #dist_moving_segment for a circular buffer: the path
+ * and the edge are two segments, and the disc stands clear of the edge exactly
+ * where their distance exceeds the radius. They meet or not by exact
+ * orientations (#linesegm_intersect); two that do not meet are nearest at an
+ * end of one of them, so the distance less the radius is the least of the
+ * four distances of an end to the other segment less the radius, each the
+ * double nearest the exact one (#point_segment_distance_offset_exact), and
+ * rounding is monotone, so the least of them is the double nearest the least.
+ * Where the disc reaches the edge, the value is the distance of the two
+ * segments as #dist_moving_segment answers it less the radius, not positive,
+ * which the callers read to rank overlaps
+ */
+static double
+dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
+  const Edge *e, double r)
+{
+  IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1, e->y1,
+    e->x2, e->y2);
+  if (meet.type == INTERSECT_NONE)
+  {
+    const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+    const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+    double clear = fmin(
+      fmin(point_segment_distance_offset_exact(c1, a, b, r),
+        point_segment_distance_offset_exact(c2, a, b, r)),
+      fmin(point_segment_distance_offset_exact(a, c1, c2, r),
+        point_segment_distance_offset_exact(b, c1, c2, r)));
+    if (clear > 0.0)
+      return clear;
+  }
+  return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL) - r;
+}
+
+/**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
@@ -466,6 +502,9 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A point moving against the edge */
   if (r1 == 0.0 && r2 == 0.0)
     return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL);
+  /* A circular buffer of constant radius moving against the edge */
+  if (r1 == r2)
+    return dist_moving_offset(cx1, cy1, cx2, cy2, e, r1);
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -3279,6 +3318,230 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box, bool spheroid)
 }
 
 /**
+ * @brief Return true if the nearest approach and the ever and always dwithin
+ * of two temporal values are answered over continuous time by
+ * #point_motion_nad_exact and #point_motion_dwithin_exact: planar 2D temporal
+ * geometry points with linear interpolation
+ */
+bool
+tpoint_motion_exact_applies(const Temporal *temp1, const Temporal *temp2)
+{
+  return temp1->temptype == T_TGEOMPOINT && temp2->temptype == T_TGEOMPOINT &&
+    MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags) &&
+    ! MEOS_FLAGS_GET_Z(temp1->flags) && ! MEOS_FLAGS_GET_Z(temp2->flags);
+}
+
+/**
+ * @brief Set the segment of a temporal point sequence that starts at its
+ * instant @p k: its two points and their timestamps, a sequence of one
+ * instant read as a point at rest over one microsecond
+ */
+static void
+tpoint_motion_segment(const TSequence *seq, int k, double *p0, double *p1,
+  int64 *s0, int64 *s1)
+{
+  const TInstant *i0 = TSEQUENCE_INST_N(seq, k);
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(i0));
+  p0[0] = a->x; p0[1] = a->y;
+  *s0 = i0->t;
+  if (k + 1 < seq->count)
+  {
+    const TInstant *i1 = TSEQUENCE_INST_N(seq, k + 1);
+    const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(i1));
+    p1[0] = b->x; p1[1] = b->y;
+    *s1 = i1->t;
+  }
+  else
+  {
+    p1[0] = p0[0]; p1[1] = p0[1];
+    *s1 = *s0 + 1;
+  }
+  return;
+}
+
+/**
+ * @brief Walk the time two temporal values share over the merged instants of
+ * their sequences, applying a function to each interval between two
+ * consecutive merged instants until the function stops the walk
+ * @details Every pair of overlapping sequences is walked, and each interval
+ * lies within one segment of each operand: the function receives the two
+ * sequences, the instant starting the segment of each, and the bounds of the
+ * interval, so it reads the two segments as they are and no position between
+ * the instants of an operand is formed. Unlike #nad_tcont_tcont_sync, which
+ * interpolates each operand at the instants of the other, the walk builds no
+ * instant. A sequence of one instant is its instant 0
+ * @param[in] temp1,temp2 Temporal values with continuous interpolation
+ * @param[in] func Function applied to each interval
+ * @param[in,out] state State of the function
+ * @param[out] shared True where the operands share some time
+ * @return True if the function stops the walk
+ */
+bool
+tcont_tcont_merge_walk(const Temporal *temp1, const Temporal *temp2,
+  mergewalk_func func, void *state, bool *shared)
+{
+  int n1, n2;
+  const TSequence **seqs1 = temporal_sequences_p(temp1, &n1);
+  const TSequence **seqs2 = temporal_sequences_p(temp2, &n2);
+  *shared = false;
+  for (int i = 0; i < n1; i++)
+  {
+    for (int j = 0; j < n2; j++)
+    {
+      const TSequence *sa = seqs1[i], *sb = seqs2[j];
+      /* The time the two share, their bounds as they are: sequences touching
+       * at an exclusive bound share none */
+      Span inter;
+      if (! inter_span_span(&sa->period, &sb->period, &inter))
+        continue;
+      TimestampTz lo = DatumGetTimestampTz(inter.lower);
+      TimestampTz hi = DatumGetTimestampTz(inter.upper);
+      *shared = true;
+      /* The segments holding lo */
+      int ka = 0, kb = 0;
+      while (ka + 2 < sa->count && TSEQUENCE_INST_N(sa, ka + 1)->t <= lo)
+        ka++;
+      while (kb + 2 < sb->count && TSEQUENCE_INST_N(sb, kb + 1)->t <= lo)
+        kb++;
+      TimestampTz t = lo;
+      while (true)
+      {
+        /* The next merged instant, not beyond hi */
+        TimestampTz next = hi;
+        if (sa->count > 1)
+        {
+          TimestampTz ta1 = TSEQUENCE_INST_N(sa, ka + 1)->t;
+          if (ta1 > t && ta1 < next)
+            next = ta1;
+        }
+        if (sb->count > 1)
+        {
+          TimestampTz tb1 = TSEQUENCE_INST_N(sb, kb + 1)->t;
+          if (tb1 > t && tb1 < next)
+            next = tb1;
+        }
+        if (func(sa, ka, sb, kb, t, next, state))
+        {
+          pfree(seqs1); pfree(seqs2);
+          return true;
+        }
+        if (next >= hi)
+          break;
+        t = next;
+        /* Move to the following segment where t ends the current one */
+        if (ka + 2 < sa->count && TSEQUENCE_INST_N(sa, ka + 1)->t <= t)
+          ka++;
+        if (kb + 2 < sb->count && TSEQUENCE_INST_N(sb, kb + 1)->t <= t)
+          kb++;
+      }
+    }
+  }
+  pfree(seqs1); pfree(seqs2);
+  return false;
+}
+
+/** Questions #tpoint_motion_walk answers */
+typedef enum
+{
+  MOTION_NAD,      /**< Nearest approach distance */
+  MOTION_EVER,     /**< Ever within a distance */
+  MOTION_ALWAYS,   /**< Always within a distance */
+} MotionQuery;
+
+/** State of #tpoint_motion_interval */
+typedef struct
+{
+  MotionQuery query;   /**< Question asked */
+  double d;            /**< Distance for the ever and always questions */
+  double best;         /**< Least distance of the intervals walked */
+} MotionState;
+
+/**
+ * @brief Answer the question of a #MotionState on one interval of
+ * #tcont_tcont_merge_walk, returning true where the interval decides the
+ * ever or always question
+ */
+static bool
+tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
+  int k2, TimestampTz lower, TimestampTz upper, void *state)
+{
+  MotionState *ms = (MotionState *) state;
+  double p0[2], p1[2], q0[2], q1[2];
+  int64 s0, s1, r0, r1;
+  tpoint_motion_segment(seq1, k1, p0, p1, &s0, &s1);
+  tpoint_motion_segment(seq2, k2, q0, q1, &r0, &r1);
+  if (ms->query == MOTION_NAD)
+  {
+    double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
+      upper);
+    if (v < ms->best)
+      ms->best = v;
+    return false;
+  }
+  /* Ever within here, or not always within here: decided */
+  return point_motion_dwithin_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
+    upper, ms->d, ms->query == MOTION_EVER) == (ms->query == MOTION_EVER);
+}
+
+/**
+ * @brief Return the nearest approach of two temporal points, or whether they
+ * are ever or always within a distance, over the time they share, read as
+ * continuous
+ * @details The intervals of #tcont_tcont_merge_walk lie within one segment of
+ * each operand, so the kernels read the two segments as they are
+ * (#point_motion_nad_exact, #point_motion_dwithin_exact). The least of the
+ * nearest doubles of the intervals is the nearest double of the least
+ * distance, rounding to the nearest keeping the order
+ * @param[in] temp1,temp2 Temporal points (#tpoint_motion_exact_applies)
+ * @param[in] query Question asked
+ * @param[in] d Distance for the ever and always questions
+ * @param[out] shared True where the operands share some time
+ * @return The nearest approach for #MOTION_NAD, otherwise 1 or 0
+ */
+static double
+tpoint_motion_walk(const Temporal *temp1, const Temporal *temp2,
+  MotionQuery query, double d, bool *shared)
+{
+  MotionState ms = {query, d, DBL_MAX};
+  bool decided = tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval,
+    &ms, shared);
+  if (query == MOTION_NAD)
+    return ms.best;
+  if (query == MOTION_EVER)
+    return decided ? 1.0 : 0.0;
+  return decided ? 0.0 : 1.0;
+}
+
+/**
+ * @brief Return the nearest approach distance between two temporal points
+ * over continuous time, the double nearest its exact value, or DBL_MAX where
+ * they share no time (#tpoint_motion_walk)
+ */
+double
+nad_tpoint_tpoint_exact(const Temporal *temp1, const Temporal *temp2)
+{
+  bool shared;
+  double result = tpoint_motion_walk(temp1, temp2, MOTION_NAD, 0.0, &shared);
+  return shared ? result : DBL_MAX;
+}
+
+/**
+ * @brief Return 1 if two temporal points are ever (@p ever) or always within
+ * a distance over continuous time, 0 if not, -1 where they share no time,
+ * decided exactly (#tpoint_motion_walk)
+ */
+int
+ea_dwithin_tpoint_tpoint_exact(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool ever)
+{
+  bool shared;
+  double result = tpoint_motion_walk(temp1, temp2,
+    ever ? MOTION_EVER : MOTION_ALWAYS, dist, &shared);
+  return shared ? (int) result : -1;
+}
+
+/**
  * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
@@ -3299,6 +3562,11 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
       ! ensure_same_geodetic(temp1->flags, temp2->flags) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return DBL_MAX;
+
+  /* Two planar linearly moving points: the nearest approach over continuous
+   * time, the double nearest its exact value */
+  if (tpoint_motion_exact_applies(temp1, temp2))
+    return nad_tpoint_tpoint_exact(temp1, temp2);
 
   /* Fast path: linear temporal points via the time-synchronous running
    * minimum, avoiding the temporal distance materialization. A finite

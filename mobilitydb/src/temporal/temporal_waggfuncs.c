@@ -82,10 +82,6 @@ Temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   INPUT_AGG_TRANS_STATE_ARG(fcinfo, state, ctx);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ( temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags) &&
-      temp->temptype == T_TFLOAT && func == &datum_sum_float8)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Operation not supported for temporal continuous float sequences")));
   store_fcinfo(fcinfo);
   SkipList *result = temporal_wagg_transfn(state, temp, interval, func, min,
     crossings);
