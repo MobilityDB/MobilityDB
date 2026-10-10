@@ -7070,8 +7070,9 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
    * middle of the piece, which the splitting above leaves wholly on one side
    * of the question */
   double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
-  /* The pieces are chained as the overlay's are (#buffer_make_surfaces_from_pieces),
-   * which reads each as a #BufferSelected. The buffer reads no side of its
+  /* The pieces are chained as the overlay's are
+   * (#buffer_make_surfaces_from_pieces), which reads each as a
+   * #BufferSelected. The buffer reads no side of its
    * pieces, so every one carries the same: the ring takes its frame from its
    * first piece, and a candidate then keeps that frame exactly where it is
    * taken in the direction it is stored in, which is the direction the offset
@@ -8716,11 +8717,10 @@ buffer_hole_filled(const POINTARRAY *ring, double radius)
 {
   if (! (radius > 0.0) || ring->npoints == 0)
     return false;
-  const POINT2D *p = getPoint2d_cp(ring, 0);
-  double xmin = p->x, xmax = p->x, ymin = p->y, ymax = p->y;
-  for (uint32_t i = 1; i < ring->npoints; i++)
+  double xmin = INFINITY, xmax = -INFINITY, ymin = INFINITY, ymax = -INFINITY;
+  for (uint32_t i = 0; i < ring->npoints; i++)
   {
-    p = getPoint2d_cp(ring, i);
+    const POINT2D *p = getPoint2d_cp(ring, i);
     xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
     ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
   }
