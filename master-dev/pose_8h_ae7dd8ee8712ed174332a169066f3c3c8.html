@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a69460d82eff572c817d6acf8f6173ac6.html#a69460d82eff572c817d6acf8f6173ac6">lwgeom_apply_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a9627d704424d0de29e93eb544844027d.html#a9627d704424d0de29e93eb544844027d">PG_GETARG_POSE_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a2d9dff6c94b9bf99dacc7e24ed16b836.html#a2d9dff6c94b9bf99dacc7e24ed16b836">PG_RETURN_POSE_P</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose_8h_af2037f580678dd30295c29426659713b.html#af2037f580678dd30295c29426659713b">pose_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose_8h_ae7dd8ee8712ed174332a169066f3c3c8.html#ae7dd8ee8712ed174332a169066f3c3c8">pose_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a5173800fc567e71a6584dce11e05791e.html#a5173800fc567e71a6584dce11e05791e">pose_compose_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">pose_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">pose_enu_to_ecef_quaternion</a></td></tr>
@@ -127,8 +127,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af2037f580678dd30295c29426659713b" name="af2037f580678dd30295c29426659713b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2037f580678dd30295c29426659713b">&#9670;&#160;</a></span>pose_collinear()</h2>
+<a id="ae7dd8ee8712ed174332a169066f3c3c8" name="ae7dd8ee8712ed174332a169066f3c3c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7dd8ee8712ed174332a169066f3c3c8">&#9670;&#160;</a></span>pose_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -154,8 +154,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -166,10 +184,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A pose interpolates its position linearly, so each coordinate of it is collinear exactly as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it. It interpolates its orientation by an angle taken around the circle or by a spherical interpolation of its quaternion, a value the engine CONSTRUCTS and rounds, so the middle orientation is on the path where it lies within the rounding of that construction of it (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>). A constructed middle pose, the pose at which a restriction splits a segment, is rounded as well and has its position within that rounding of the interpolated position </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">p1,p2,p3</td><td>Poses </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>p1</code> and <code>p2</code> divided by the duration of the timestamps associated to <code>p1</code> and <code>p3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

@@ -92,7 +92,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_afc127e3d21b87da1f8d5d4f2f383ff64.html#afc127e3d21b87da1f8d5d4f2f383ff64">ensure_valid_tnpoint_npointset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a5f02c470a2cb6efc496d2d8a21a2186b.html#a5f02c470a2cb6efc496d2d8a21a2186b">ensure_valid_tnpoint_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_ab22ba536dffb591c803cbc3c66257c2e.html#ab22ba536dffb591c803cbc3c66257c2e">ensure_valid_tnpoint_tnpoint</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a0ec49815504951a46463aeea012f5f16.html#a0ec49815504951a46463aeea012f5f16">npoint_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tnpoint_8h_a2d67345ae11a800d03612e281a29b647.html#a2d67345ae11a800d03612e281a29b647">npoint_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__base__constructor_ga404d86c8ada734192a9d044646e83d6b.html#ga404d86c8ada734192a9d044646e83d6b">npoint_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tnpoint_8h_a6ce0bf80a277145d247126e10e1c5799.html#a6ce0bf80a277145d247126e10e1c5799">npoint_wkt_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__conversion_ga0bdc09e450def949ac0d9892a9479f18.html#ga0bdc09e450def949ac0d9892a9479f18">npointarr_geom</a></td></tr>
@@ -133,8 +133,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0ec49815504951a46463aeea012f5f16" name="a0ec49815504951a46463aeea012f5f16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ec49815504951a46463aeea012f5f16">&#9670;&#160;</a></span>npoint_collinear()</h2>
+<a id="a2d67345ae11a800d03612e281a29b647" name="a2d67345ae11a800d03612e281a29b647"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d67345ae11a800d03612e281a29b647">&#9670;&#160;</a></span>npoint_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -160,8 +160,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -172,10 +190,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A network point interpolates its position linearly, so it is collinear as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">np1,np2,np3</td><td>Input values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>np1</code> and <code>np2</code> divided by the duration of the timestamps associated to <code>np1</code> and <code>np3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">np1,np2,np3</td><td>Values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

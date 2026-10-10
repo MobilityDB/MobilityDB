@@ -98,7 +98,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__inout_gab55c8ff9581fbc9933c78ed1d0fd758e.html#gab55c8ff9581fbc9933c78ed1d0fd758e">posechain_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__inout_gad1fee9f2b3cf9825b5c8defcb1f1a3ee.html#gad1fee9f2b3cf9825b5c8defcb1f1a3ee">posechain_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_gac78a8f8a3be4e946e42b113ac0738e85.html#gac78a8f8a3be4e946e42b113ac0738e85">posechain_cmp</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2posechain_8c_a858c6c4f4886c5272c27965249c35744.html#a858c6c4f4886c5272c27965249c35744">posechain_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2posechain_8c_a0532ad3c6eafceb2f8a56c933fdab15d.html#a0532ad3c6eafceb2f8a56c933fdab15d">posechain_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__constructor_ga45717113777698455bf1abede60b90ef.html#ga45717113777698455bf1abede60b90ef">posechain_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__accessor_gac360e40da749d5051a5c0a14100ed83c.html#gac360e40da749d5051a5c0a14100ed83c">posechain_end_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga4af90f392be71ef2e9c5a77967dd7bb4.html#ga4af90f392be71ef2e9c5a77967dd7bb4">posechain_eq</a></td></tr>
@@ -144,8 +144,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a858c6c4f4886c5272c27965249c35744" name="a858c6c4f4886c5272c27965249c35744"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a858c6c4f4886c5272c27965249c35744">&#9670;&#160;</a></span>posechain_collinear()</h2>
+<a id="a0532ad3c6eafceb2f8a56c933fdab15d" name="a0532ad3c6eafceb2f8a56c933fdab15d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0532ad3c6eafceb2f8a56c933fdab15d">&#9670;&#160;</a></span>posechain_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -171,8 +171,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -183,10 +201,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three pose chains are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A pose chain interpolates every link as a pose (<a class="el" href="meos_2src_2pose_2posechain_8c_a255ad791ed42c64b8ddb5c5ac282f2e6.html#a255ad791ed42c64b8ddb5c5ac282f2e6" title="Return the pose chain interpolated from two pose chains and a ratio.">posechainsegm_interpolate</a>), so it is collinear where every link is (<a class="el" href="pose_8h_ae7dd8ee8712ed174332a169066f3c3c8.html#ae7dd8ee8712ed174332a169066f3c3c8" title="Return true if the three values are collinear.">pose_collinear</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pc1,pc2,pc3</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> chains </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>pc1</code> and <code>pc2</code> divided by the duration of the timestamps associated to <code>pc1</code> and <code>pc3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

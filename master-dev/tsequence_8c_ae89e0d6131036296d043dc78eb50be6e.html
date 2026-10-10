@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: float_collinear</title>
+<title>MobilityDB: datum_collinear</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,13 +80,14 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a82ad2c52b0954e554171396f5e5d5f95.html#a82ad2c52b0954e554171396f5e5d5f95">bbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_ac28f37abd43d59e06cccbeca3252de78.html#ac28f37abd43d59e06cccbeca3252de78">datum_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8c_ae89e0d6131036296d043dc78eb50be6e.html#ae89e0d6131036296d043dc78eb50be6e">datum_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_ab322321a1ad15defa1526fa12b6a0ed9.html#ab322321a1ad15defa1526fa12b6a0ed9">datumsegm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_af79398096177afb12cb858fe045ee7ac.html#af79398096177afb12cb858fe045ee7ac">datumsegm_locate</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_af8a650df80b0202a27afdcb65a4c62f7.html#af8a650df80b0202a27afdcb65a4c62f7">duration_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_af686b9d58cfbd3f457235685f0dba9b6.html#af686b9d58cfbd3f457235685f0dba9b6">ensure_increasing_timestamps</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a1754bd6c791c9727861ea8de89280177.html#a1754bd6c791c9727861ea8de89280177">ensure_valid_tinstarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a4ecf017d12a31b0f1def37e6c287d0d7.html#a4ecf017d12a31b0f1def37e6c287d0d7">ensure_valid_tinstarr_common</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8c_a67cea36de80f30b05f67f0eb53e06c08.html#a67cea36de80f30b05f67f0eb53e06c08">float_collinear</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7">float_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_add08b1765391fa989d07ff554a8fff47.html#add08b1765391fa989d07ff554a8fff47">floatsegm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_aa5006cc439784fd85fbd3355806071d4.html#aa5006cc439784fd85fbd3355806071d4">floatsegm_locate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_af5452c417f03be7074d6ef29baefff6e.html#af5452c417f03be7074d6ef29baefff6e">intersection_tcontseq_tdiscseq</a></td></tr>
@@ -168,35 +169,62 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a67cea36de80f30b05f67f0eb53e06c08" name="a67cea36de80f30b05f67f0eb53e06c08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67cea36de80f30b05f67f0eb53e06c08">&#9670;&#160;</a></span>float_collinear()</h2>
+<a id="ae89e0d6131036296d043dc78eb50be6e" name="ae89e0d6131036296d043dc78eb50be6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae89e0d6131036296d043dc78eb50be6e">&#9670;&#160;</a></span>datum_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool float_collinear </td>
+          <td class="memname">static bool datum_collinear </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x1</em>, </td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>value1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x2</em>, </td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>value2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x3</em>, </td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>value3</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
+          <td class="paramname"><em>basetype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -204,13 +232,20 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x1,x2,x3</td><td>Input values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>x1</code> and <code>x2</code> divided by the duration of the timestamps associated to <code>x1</code> and <code>x3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value1,value2,value3</td><td>Input values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">basetype</td><td>Type of the values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Input timestamps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

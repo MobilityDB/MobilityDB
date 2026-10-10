@@ -86,7 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__inout_gaaa1a49d950e9e16285e84ae79b2e3426.html#gaaa1a49d950e9e16285e84ae79b2e3426">cbuffer_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__inout_ga478f3232801d7aa175d2dee9b8139d0b.html#ga478f3232801d7aa175d2dee9b8139d0b">cbuffer_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__comp_ga955c2767b2ce6aa5c956ef3aabbb47d7.html#ga955c2767b2ce6aa5c956ef3aabbb47d7">cbuffer_cmp</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2cbuffer_8c_a28292f3b48bc863c76c4e4ae0c8ee862.html#a28292f3b48bc863c76c4e4ae0c8ee862">cbuffer_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2cbuffer_8c_a9da6665bb4792c59347eeb0ed47ce5ae.html#a9da6665bb4792c59347eeb0ed47ce5ae">cbuffer_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__base__rel_ga66a0c3d6435f8215b5051e77fe2054b9.html#ga66a0c3d6435f8215b5051e77fe2054b9">cbuffer_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__constructor_ga4ac1dc32d9cf08b0037f1f56e200ff09.html#ga4ac1dc32d9cf08b0037f1f56e200ff09">cbuffer_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__base__rel_ga38f19ce9d7714c2e84abbe0b22b0ce84.html#ga38f19ce9d7714c2e84abbe0b22b0ce84">cbuffer_covers</a></td></tr>
@@ -164,8 +164,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a28292f3b48bc863c76c4e4ae0c8ee862" name="a28292f3b48bc863c76c4e4ae0c8ee862"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28292f3b48bc863c76c4e4ae0c8ee862">&#9670;&#160;</a></span>cbuffer_collinear()</h2>
+<a id="a9da6665bb4792c59347eeb0ed47ce5ae" name="a9da6665bb4792c59347eeb0ed47ce5ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9da6665bb4792c59347eeb0ed47ce5ae">&#9670;&#160;</a></span>cbuffer_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -191,8 +191,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -203,10 +221,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A circular buffer interpolates its centre and its radius linearly, so each coordinate of them is collinear exactly as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it. A constructed middle buffer has its centre within the rounding of the interpolated centre (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>) and its radius as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">cb1,cb2,cb3</td><td>Input values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>cb1</code> and <code>cb2</code> divided by the duration of the timestamps associated to <code>cb1</code> and <code>cb3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb1,cb2,cb3</td><td>Values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

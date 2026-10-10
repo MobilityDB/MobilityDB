@@ -115,7 +115,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga8b95d1b2badb3923de1a5f9b7d7377da.html#ga8b95d1b2badb3923de1a5f9b7d7377da">pose_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__inout_ga9d33eb77211a5cf0c9bff0596e5783e4.html#ga9d33eb77211a5cf0c9bff0596e5783e4">pose_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__comp_ga537a28cc72c2c493fd9649c77fa93abf.html#ga537a28cc72c2c493fd9649c77fa93abf">pose_cmp</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_a0a60f1c77091664be3f55f27f52be854.html#a0a60f1c77091664be3f55f27f52be854">pose_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_a0925e2238b07de1a17e6a539886ad167.html#a0925e2238b07de1a17e6a539886ad167">pose_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__transf_gaca1489c7e93da24689d1374f268aca02.html#gaca1489c7e93da24689d1374f268aca02">pose_compose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a5173800fc567e71a6584dce11e05791e.html#a5173800fc567e71a6584dce11e05791e">pose_compose_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga03d273333d98e303b2f9d69cc486f5c3.html#ga03d273333d98e303b2f9d69cc486f5c3">pose_copy</a></td></tr>
@@ -185,8 +185,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0a60f1c77091664be3f55f27f52be854" name="a0a60f1c77091664be3f55f27f52be854"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a60f1c77091664be3f55f27f52be854">&#9670;&#160;</a></span>pose_collinear()</h2>
+<a id="a0925e2238b07de1a17e6a539886ad167" name="a0925e2238b07de1a17e6a539886ad167"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0925e2238b07de1a17e6a539886ad167">&#9670;&#160;</a></span>pose_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -212,8 +212,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -224,10 +242,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A pose interpolates its position linearly, so each coordinate of it is collinear exactly as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it. It interpolates its orientation by an angle taken around the circle or by a spherical interpolation of its quaternion, a value the engine CONSTRUCTS and rounds, so the middle orientation is on the path where it lies within the rounding of that construction of it (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>). A constructed middle pose, the pose at which a restriction splits a segment, is rounded as well and has its position within that rounding of the interpolated position </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">p1,p2,p3</td><td>Poses </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>p1</code> and <code>p2</code> divided by the duration of the timestamps associated to <code>p1</code> and <code>p3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

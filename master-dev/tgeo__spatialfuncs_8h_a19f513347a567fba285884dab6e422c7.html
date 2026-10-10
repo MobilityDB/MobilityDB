@@ -114,7 +114,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a617bd294fa43271426b8a7d6d2bbf78e.html#a617bd294fa43271426b8a7d6d2bbf78e">geo_distance_lfinfo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a8ec42a0bd0bb87e2e76b5bb729dc66c5.html#a8ec42a0bd0bb87e2e76b5bb729dc66c5">geo_values_collect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__spatial_ga1cca69a7ce41801a70c34079f082d7ff.html#ga1cca69a7ce41801a70c34079f082d7ff">geoarr_collect</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_aeb629c61830f6bbbc8473ecb7a76d02a.html#aeb629c61830f6bbbc8473ecb7a76d02a">geopoint_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_a19f513347a567fba285884dab6e422c7.html#a19f513347a567fba285884dab6e422c7">geopoint_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_ac8b01c081d1d6975364283e7e2370b2c.html#ac8b01c081d1d6975364283e7e2370b2c">lwline_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_acbeac9282eb0e0700dc3b3bea30aab8a.html#acbeac9282eb0e0700dc3b3bea30aab8a">pointsegm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a92b37fa580c0568b8215f5ee94e72975.html#a92b37fa580c0568b8215f5ee94e72975">pointsegm_locate</a></td></tr>
@@ -137,8 +137,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aeb629c61830f6bbbc8473ecb7a76d02a" name="aeb629c61830f6bbbc8473ecb7a76d02a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb629c61830f6bbbc8473ecb7a76d02a">&#9670;&#160;</a></span>geopoint_collinear()</h2>
+<a id="a19f513347a567fba285884dab6e422c7" name="a19f513347a567fba285884dab6e422c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19f513347a567fba285884dab6e422c7">&#9670;&#160;</a></span>geopoint_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,8 +164,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>, </td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -177,7 +189,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>geodetic</em>&#160;</td>
+          <td class="paramname"><em>geodetic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -188,12 +206,13 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A planar point interpolates its coordinates linearly, so each of them is collinear exactly as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it. A geodetic point interpolates its longitude and latitude along the great circle through the other two, a point the engine CONSTRUCTS and rounds, so the middle point is on the path where it lies within the rounding of that construction of it (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>). A constructed middle point, the point at which a restriction splits a segment, is rounded as well and lies within that rounding of the interpolated point. The Z coordinate interpolates linearly and is collinear as <a class="el" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7" title="Return true if the value at the middle timestamp lies on the line through the other two,...">float_collinear</a> decides it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">value1,value2,value3</td><td>Input values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>value1</code> and <code>value2</code> divided by the duration of the timestamps associated to <code>value1</code> and <code>value3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value1,value2,value3</td><td>Values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">hasz</td><td>True if the points have Z coordinates </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True for geography, false for geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>

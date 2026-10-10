@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_aed43f638448e12314ae536de3a388bc7.html#aed43f638448e12314ae536de3a388bc7">ensure_increasing_timestamps</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_aac7e3a218770f95004d191f51335509d.html#aac7e3a218770f95004d191f51335509d">ensure_valid_tinstarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a4ecf017d12a31b0f1def37e6c287d0d7.html#a4ecf017d12a31b0f1def37e6c287d0d7">ensure_valid_tinstarr_common</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8h_a67cea36de80f30b05f67f0eb53e06c08.html#a67cea36de80f30b05f67f0eb53e06c08">float_collinear</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8h_a3c8bfcdb29ca44344e40c5965fc8eba7.html#a3c8bfcdb29ca44344e40c5965fc8eba7">float_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_aa99a73b4d139dac4ee31865c7af0816c.html#aa99a73b4d139dac4ee31865c7af0816c">floatsegm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_ab07cbf98764ce05a77e8fdf417f1a64e.html#ab07cbf98764ce05a77e8fdf417f1a64e">floatsegm_locate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_af5452c417f03be7074d6ef29baefff6e.html#af5452c417f03be7074d6ef29baefff6e">intersection_tcontseq_tdiscseq</a></td></tr>
@@ -118,8 +118,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a67cea36de80f30b05f67f0eb53e06c08" name="a67cea36de80f30b05f67f0eb53e06c08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67cea36de80f30b05f67f0eb53e06c08">&#9670;&#160;</a></span>float_collinear()</h2>
+<a id="a3c8bfcdb29ca44344e40c5965fc8eba7" name="a3c8bfcdb29ca44344e40c5965fc8eba7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c8bfcdb29ca44344e40c5965fc8eba7">&#9670;&#160;</a></span>float_collinear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -145,8 +145,26 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ratio</em>&#160;</td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>t3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>constructed</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -156,14 +174,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if the three values are collinear. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if the value at the middle timestamp lies on the line through the other two, decided exactly. </p>
+<p >The three values are collinear exactly where the cross product <code>(t2 - t1) * (x3 - x1) - (x2 - x1) * (t3 - t1)</code> is zero. Its operands are input values, so it has one answer, which <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> gives: its filter decides where the double evaluation carries the sign, and the sign is decided exactly elsewhere, so a zero is an exact zero. Exact collinearity is transitive, which makes the normalization of a sequence its own fixed point. Each duration enters as two doubles whose sum is the duration exactly (<a class="el" href="tsequence_8c_af8a650df80b0202a27afdcb65a4c62f7.html#af8a650df80b0202a27afdcb65a4c62f7" title="Split a duration into two doubles whose sum is the duration exactly.">duration_split</a>), and values so large that the product of their difference and a duration would overflow are scaled by a power of two, which leaves the sign unchanged. Values that are not all finite are collinear only where they are equal.</p>
+<p >A middle value the engine CONSTRUCTS, the value at which a restriction splits a segment, is rounded and lies on the line within that rounding only. It is collinear where it lies within the rounding of the value interpolated at its timestamp (<a class="el" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b" title="Return the distance within which two coordinates of this size are the same point.">coordinate_tolerance</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x1,x2,x3</td><td>Input values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ratio</td><td>Value in [0,1] representing the duration of the timestamps associated to <code>x1</code> and <code>x2</code> divided by the duration of the timestamps associated to <code>x1</code> and <code>x3</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x1,x2,x3</td><td>Values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2,t3</td><td>Timestamps of the values, in increasing order </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">constructed</td><td>True when the middle value is constructed, false when the three values are input values </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>Exact where no product of a difference of the values and a duration underflows </dd></dl>
 
 </div>
 </div>
