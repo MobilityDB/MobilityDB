@@ -93,10 +93,13 @@ radius(cbuffer) → float
 SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 -- 0.3
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_round"></a><a class="indexterm" name="id8666"></a><p>Redondea el punto y el radio del búfer circular en el número de lugares decimales</p><pre class="programlisting">
-round(cbuffer,integer=0) → cbuffer
+round({cbuffer,cbuffer[]},integer=0) → {cbuffer,cbuffer[]}
 </pre><pre class="programlisting">
 SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Cbuffer(POINT(1.123457 1.123457),0.123457)
+SELECT asText(round(ARRAY[cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789),
+  cbuffer(ST_Point(2.987654321,2.987654321), 0.987654321)], 6));
+-- {"Cbuffer(POINT(1.123457 1.123457),0.123457)","Cbuffer(POINT(2.987654 2.987654),0.987654)"}
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_spatial_functions"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_SRID"></a><a class="indexterm" name="id8676"></a><a class="indexterm" name="id8679"></a><p>Devuelve o establece el identificador de referencia espacial</p><pre class="programlisting">
 SRID(cbuffer) → integer
 setSRID(cbuffer,integer) → cbuffer

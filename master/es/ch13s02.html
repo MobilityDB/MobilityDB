@@ -127,10 +127,13 @@ SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
 SELECT quaternion(pose 'Pose(Point(1 1), 0)');
 -- (1,0,0,0)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_round"></a><a class="indexterm" name="id9723"></a><p>Redondea el punto y la orientación de la pose al número de posiciones decimales</p><pre class="programlisting">
-round({pose,posechain},integer=0) → {pose,posechain}
+round({pose,pose[],posechain},integer=0) → {pose,pose[],posechain}
 </pre><pre class="programlisting">
 SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Pose(POINT(1.123457 1.123457),0.123457)
+SELECT asText(round(ARRAY[pose(ST_Point(1.123456789,1.123456789), 0.123456789),
+  pose(ST_Point(2.987654321,2.987654321), 0.987654321)], 6));
+-- {"Pose(POINT(1.123457 1.123457),0.123457)","Pose(POINT(2.987654 2.987654),0.987654)"}
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_srid"></a>Sistema de referencia espacial</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_SRID"></a><a class="indexterm" name="id9733"></a><a class="indexterm" name="id9736"></a><p>Devuelve o establece el identificador de referencia espacial, que para una cadena de poses es el identificador de su marco exterior</p><pre class="programlisting">
 SRID({pose,posechain}) → integer
 setSRID({pose,posechain},integer) → {pose,posechain}
