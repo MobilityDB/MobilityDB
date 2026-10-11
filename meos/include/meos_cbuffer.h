@@ -135,6 +135,7 @@ extern Cbuffer *geom_to_cbuffer(const GSERIALIZED *gs);
 
 extern uint32 cbuffer_hash(const Cbuffer *cb);
 extern uint64 cbuffer_hash_extended(const Cbuffer *cb, uint64 seed);
+extern int cbuffer_mem_size(const Cbuffer *cb);
 extern GSERIALIZED *cbuffer_point(const Cbuffer *cb);
 extern double cbuffer_radius(const Cbuffer *cb);
 

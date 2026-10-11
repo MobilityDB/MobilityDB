@@ -115,6 +115,7 @@ extern bool raquet_band_nodata_value(const Raquet *rq, double *result);
 extern uint8_t *raquet_pixels(const Raquet *rq, size_t *size_out);
 extern uint32 raquet_hash(const Raquet *rq);
 extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
+extern int raquet_mem_size(const Raquet *rq);
 
 /* Opaque structure to represent a PostGIS raster */
 
@@ -154,8 +155,13 @@ extern Raster *raster_from_hexwkb(const char *hexwkb);
 extern uint8_t *raster_as_wkb(const Raster *rast, uint8_t variant, size_t *size_out);
 extern char *raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out);
 
+/* Constructor functions for PostGIS rasters */
+
+extern Raster *raster_copy(const Raster *rast);
+
 /* Accessor functions for PostGIS rasters */
 
+extern int raster_mem_size(const Raster *rast);
 extern int raster_num_bands(const Raster *rast);
 extern int raster_width(const Raster *rast);
 extern int raster_height(const Raster *rast);

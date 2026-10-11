@@ -108,6 +108,7 @@ extern Jsonb *jsonb_extract_path(const Jsonb *jb, text **path_elems, int path_le
 extern text *jsonb_extract_path_text(const Jsonb *jb, text **path_elems, int path_len);
 extern uint32 jsonb_hash(const Jsonb *jb);
 extern uint64 jsonb_hash_extended(const Jsonb *jb, uint64 seed);
+extern int jsonb_mem_size(const Jsonb *jb);
 extern Jsonb *jsonb_object_field(const Jsonb *jb, const text *key);
 extern text *jsonb_object_field_text(const Jsonb *jb, const text *key);
 extern text **jsonb_object_keys(const Jsonb *jb, int *count);
@@ -145,6 +146,7 @@ extern Jsonb *jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp, const 
 extern Jsonb *jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern JsonPath *jsonpath_in(const char *str);
 extern JsonPath *jsonpath_copy(const JsonPath *jp);
+extern int jsonpath_mem_size(const JsonPath *jp);
 extern char *jsonpath_out(const JsonPath *jp);
 
 /*****************************************************************************/

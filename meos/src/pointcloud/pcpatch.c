@@ -540,6 +540,22 @@ pcpatch_copy(const Pcpatch *pa)
 
 /**
  * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the size in bytes of a pcpatch
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #pcpatch_copy duplicates
+ * @param[in] pa Pcpatch
+ * @errval INT_MAX
+ */
+int
+pcpatch_mem_size(const Pcpatch *pa)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, INT_MAX);
+  return (int) VARSIZE(pa);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the pcid (schema id) of a pcpatch
  * @csqlfn #Pcpatch_pcid()
  */

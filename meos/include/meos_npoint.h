@@ -137,7 +137,9 @@ extern char *nsegment_as_text(const Nsegment *ns, int maxdd);
 
 /* Constructor functions */
 
+extern Npoint *npoint_copy(const Npoint *np);
 extern Npoint *npoint_make(int64 rid, double pos);
+extern Nsegment *nsegment_copy(const Nsegment *ns);
 extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 
 /* Conversion functions */

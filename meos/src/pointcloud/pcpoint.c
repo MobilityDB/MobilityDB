@@ -406,6 +406,22 @@ pcpoint_copy(const Pcpoint *pt)
   return result;
 }
 
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the size in bytes of a pcpoint
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #pcpoint_copy duplicates
+ * @param[in] pt Pcpoint
+ * @errval INT_MAX
+ */
+int
+pcpoint_mem_size(const Pcpoint *pt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, INT_MAX);
+  return (int) VARSIZE(pt);
+}
+
 /*****************************************************************************
  * Accessors
  *****************************************************************************/
