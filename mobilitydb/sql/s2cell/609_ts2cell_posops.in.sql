@@ -45,21 +45,25 @@ CREATE FUNCTION stboxBefore(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbefore(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAfter(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverafter(tstzspan, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -93,61 +97,73 @@ CREATE FUNCTION stboxLeft(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverleft(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxRight(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverright(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBelow(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbelow(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAbove(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverabove(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBefore(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbefore(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAfter(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverafter(stbox, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -227,21 +243,25 @@ CREATE FUNCTION stboxBefore(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbefore(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAfter(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverafter(ts2cell, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -275,61 +295,73 @@ CREATE FUNCTION stboxLeft(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverleft(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxRight(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverright(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBelow(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbelow(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAbove(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverabove(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBefore(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbefore(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAfter(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverafter(ts2cell, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -407,61 +439,73 @@ CREATE FUNCTION stboxLeft(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverleft(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxRight(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverright(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBelow(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbelow(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAbove(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverabove(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxBefore(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverbefore(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxAfter(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stboxOverafter(ts2cell, ts2cell)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

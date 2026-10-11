@@ -254,6 +254,79 @@ extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
 extern int arc_circle_side(const Edge *e, double qx, double qy);
 extern bool arc_same_circle(const Edge *a, const Edge *b);
 
+/* Where a straight segment meets a circular arc: at the start or the end of
+ * the segment, at the start or the end of the arc, or interior to both */
+typedef enum
+{
+  ARCSEG_INTERIOR,
+  ARCSEG_AT_SEGMENT_START,
+  ARCSEG_AT_SEGMENT_END,
+  ARCSEG_AT_ARC_START,
+  ARCSEG_AT_ARC_END
+} ArcsegMeetKind;
+
+/* One meeting of a segment and an arc, and its position along the segment */
+typedef struct
+{
+  ArcsegMeetKind kind;  /**< Where it stands */
+  double t;             /**< Position along the segment, rounded once */
+  int sigma;            /**< For a meeting interior to both, the root: -1 or
+                             1, the sign of the derivative of the quadratic
+                             there, or 0 where it is double; 0 at an end */
+  bool smaller;         /**< For a meeting interior to both, the smaller of
+                             the two roots along the segment */
+} ArcsegMeet;
+
+extern int arcsegm_meet_exact(double ax, double ay, double bx, double by,
+  const Edge *arc, ArcsegMeet out[2]);
+extern void arcarc_shared_point_signs(const Edge *p, const Edge *q,
+  double jx, double jy, int *s1, int *sp, int *sq);
+extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
+  int within[2][2]);
+
+/* The terms #arcarc_crossing_terms hands, in this order */
+typedef enum
+{
+  ARCARC_M1X, ARCARC_M1Y, ARCARC_N1X, ARCARC_N1Y, ARCARC_D1, ARCARC_L,
+  ARCARC_DX, ARCARC_DY, ARCARC_QQ, ARCARC_G, ARCARC_H, ARCARC_NTERMS
+} ArcarcTerm;
+
+extern bool arcarc_crossing_terms(const Edge *p, const Edge *q,
+  double terms[ARCARC_NTERMS][2]);
+extern int edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1,
+  const Edge *e2, bool ccw2, bool out2, double vx, double vy);
+extern void edge_array_reserve(MeosArray *edges, size_t n);
+extern void edges_add_segment(MeosArray *edges, const POINT2D *a,
+  const POINT2D *b);
+extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
+  const POINT2D *m, const POINT2D *b);
+extern int ring_area_sign(const POINTARRAY *pa);
+
+/* How a meeting of two edges arises, the data that place it exactly */
+typedef enum
+{
+  MEET_VERTEX,          /**< An input vertex, at (x, y) */
+  MEET_SEGSEG,          /**< Two segments p and q crossing */
+  MEET_SEGARC,          /**< Segment p crossing arc q at the root sigma of
+                             #arcsegm_meet_exact */
+  MEET_ARCARC,          /**< Arcs p and q crossing at the meeting sigma of
+                             #arcarc_meet_exact */
+  MEET_ARCARC_REFLECT   /**< Arcs p and q through the vertex (x, y),
+                             crossing at its reflection across the line of
+                             their centres */
+} MeetKind;
+
+typedef struct
+{
+  MeetKind kind;
+  const Edge *p, *q;
+  int sigma;
+  double x, y;
+} MeetPoint;
+
+extern int meets_order_exact(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b);
+
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
  * for a multi-surface — whose edges are those of the union of its members —

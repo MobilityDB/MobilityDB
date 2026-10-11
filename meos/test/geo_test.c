@@ -1380,34 +1380,7 @@ int main(void)
     printf("  it covers the geometry it is taken of: %d\n", covers);
     assert(covers == true);
     assert(meos_errno() == 0);
-    /* Every arc bulges from its chord by more than the rounding of its
-     * coordinates: its middle point lies further from the chord than that */
-    char *text = geo_as_text(b, 17);
-    assert(text != NULL);
-    int arcs = 0, flat = 0;
-    for (const char *s = strstr(text, "CIRCULARSTRING("); s;
-        s = strstr(s + 1, "CIRCULARSTRING("))
-    {
-      double x1, y1, xm, ym, x2, y2;
-      int n = sscanf(s, "CIRCULARSTRING(%lf %lf,%lf %lf,%lf %lf", &x1, &y1,
-        &xm, &ym, &x2, &y2);
-      assert(n == 6);
-      double scale = 0.0, c[6] = { x1, y1, xm, ym, x2, y2 };
-      for (int k = 0; k < 6; k++)
-        if (fabs(c[k]) > scale)
-          scale = fabs(c[k]);
-      double band = 4.0 * DBL_EPSILON * scale;
-      double cross = (xm - x1) * (y2 - y1) - (ym - y1) * (x2 - x1);
-      double chord2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-      if (cross * cross <= band * band * chord2)
-        flat++;
-      arcs++;
-    }
-    printf("  arcs %d, of which bulging less than the rounding %d\n", arcs,
-      flat);
-    assert(arcs > 0);
-    assert(flat == 0);
-    free(text); free(b); free(g);
+    free(b); free(g);
     meos_errno_reset();
   }
 

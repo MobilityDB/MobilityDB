@@ -377,6 +377,7 @@ CREATE FUNCTION getTime(ts2cell)
 CREATE FUNCTION timeSpan(ts2cell)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(ts2cell)

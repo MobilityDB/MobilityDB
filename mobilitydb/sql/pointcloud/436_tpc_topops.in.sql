@@ -52,11 +52,13 @@ CREATE FUNCTION tpcboxContains(tstzspan, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -78,16 +80,19 @@ CREATE FUNCTION tpcboxContains(tpcbox, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpoint, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -115,11 +120,13 @@ CREATE FUNCTION tpcboxContains(tstzspan, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpatch, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -141,16 +148,19 @@ CREATE FUNCTION tpcboxContains(tpcbox, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpatch, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContains(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -180,11 +190,13 @@ CREATE FUNCTION tpcboxContained(tstzspan, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -206,16 +218,19 @@ CREATE FUNCTION tpcboxContained(tpcbox, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpoint, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -243,11 +258,13 @@ CREATE FUNCTION tpcboxContained(tstzspan, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpatch, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -269,16 +286,19 @@ CREATE FUNCTION tpcboxContained(tpcbox, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpatch, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -308,11 +328,13 @@ CREATE FUNCTION tpcboxOverlaps(tstzspan, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -334,16 +356,19 @@ CREATE FUNCTION tpcboxOverlaps(tpcbox, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpoint, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -371,11 +396,13 @@ CREATE FUNCTION tpcboxOverlaps(tstzspan, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpatch, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -397,16 +424,19 @@ CREATE FUNCTION tpcboxOverlaps(tpcbox, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpatch, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -436,11 +466,13 @@ CREATE FUNCTION tpcboxSame(tstzspan, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -462,16 +494,19 @@ CREATE FUNCTION tpcboxSame(tpcbox, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpoint, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -499,11 +534,13 @@ CREATE FUNCTION tpcboxSame(tstzspan, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpatch, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -525,16 +562,19 @@ CREATE FUNCTION tpcboxSame(tpcbox, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpatch, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -564,11 +604,13 @@ CREATE FUNCTION tpcboxAdjacent(tstzspan, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -590,16 +632,19 @@ CREATE FUNCTION tpcboxAdjacent(tpcbox, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpoint, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -627,11 +672,13 @@ CREATE FUNCTION tpcboxAdjacent(tstzspan, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpatch, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -653,16 +700,19 @@ CREATE FUNCTION tpcboxAdjacent(tpcbox, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpatch, tpcbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpcbox'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpointcloud'
   SUPPORT tspatial_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

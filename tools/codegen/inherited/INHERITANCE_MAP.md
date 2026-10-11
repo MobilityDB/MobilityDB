@@ -745,7 +745,7 @@ its last edit:
   the temporal geometry point at the SQL level instead (§3, §6, the `subtypes:`
   `spatialrels` bullet below) — and the pointcloud temptypes, members of this class since
   `tspatial_type` widened to 14, carry no native kernel either.
-- `conversion_families`, **15/19**: `tposechain`, `tgeography`, `tpcpoint`, `tpcpatch`.
+- `conversion_families`, **16/20**: `tposechain`, `tgeography`, `tpcpoint`, `tpcpatch`.
   ⛔ `tposechain`'s absence here is NOT a template gap and must not be closed by
   cloning `pose`: the two conversions differ in KIND, `tpose` answering a point
   (`tgeompoint`/`tgeogpoint` over `Tpose_to_tpoint`) where `tposechain` answers

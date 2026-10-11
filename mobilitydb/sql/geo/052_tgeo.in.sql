@@ -374,10 +374,12 @@ CREATE FUNCTION getTime(tgeography)
 CREATE FUNCTION timeSpan(tgeometry)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSpan(tgeography)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tgeometry)

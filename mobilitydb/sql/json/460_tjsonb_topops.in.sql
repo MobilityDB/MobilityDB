@@ -41,16 +41,19 @@ CREATE FUNCTION spanContains(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanContains(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanContains(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #@> (
@@ -80,16 +83,19 @@ CREATE FUNCTION spanContained(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanContained(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanContained(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@# (
@@ -119,16 +125,19 @@ CREATE FUNCTION spanOverlaps(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverlaps(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanOverlaps(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -158,16 +167,19 @@ CREATE FUNCTION spanSame(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanSame(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanSame(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -197,16 +209,19 @@ CREATE FUNCTION spanAdjacent(tstzspan, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAdjacent(tjsonb, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanAdjacent(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_temporal'
   SUPPORT temporal_supportfn
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

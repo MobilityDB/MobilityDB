@@ -320,6 +320,7 @@ CREATE FUNCTION getTime(tcbuffer)
 CREATE FUNCTION timeSpan(tcbuffer)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tcbuffer)

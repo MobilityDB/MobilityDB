@@ -47,6 +47,7 @@
 /* MEOS */
 #include "meos.h"
 #include "meos_internal_geo.h"
+#include "geo/geo_arrange.h"
 #include "geo/geo_funcs.h"
 #include "geo/geo_poly_clip.h"
 #include "geo/postgis_funcs.h"
@@ -2166,7 +2167,48 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
 }
 
 /**
+ * @brief Collect the ends of two straight buffer edges that lie on the other
+ * one, decided exactly
+ * @details An end is an input vertex, so whether it lies on the other edge is
+ * the sign of a cross product and comparisons of coordinates
+ * (#point_on_segment_exact). An end found twice, the joint two edges share,
+ * is collected once
+ * @param[in] e1,e2 Straight edges
+ * @param[out] ends Room for four points
+ * @return The number of ends collected
+ */
+static int
+buffer_segment_ends_on_segment(const Edge *e1, const Edge *e2, POINT2D *ends)
+{
+  assert(e1); assert(e2); assert(ends);
+  const Edge *edges[2] = {e1, e2};
+  int n = 0;
+  for (int k = 0; k < 4; k++)
+  {
+    const Edge *own = edges[k / 2], *other = edges[1 - k / 2];
+    POINT2D p = (k % 2 == 0) ? (POINT2D) {own->x1, own->y1} :
+      (POINT2D) {own->x2, own->y2};
+    if (! point_on_segment_exact(p.x, p.y, other->x1, other->y1, other->x2,
+          other->y2))
+      continue;
+    bool seen = false;
+    for (int m = 0; m < n && ! seen; m++)
+      seen = (ends[m].x == p.x && ends[m].y == p.y);
+    if (! seen)
+      ends[n++] = p;
+  }
+  return n;
+}
+
+/**
  * @brief Collect intersections between two straight buffer edges
+ * @details Two edges meeting at an end of one of them meet at that end, which
+ * is an input vertex and is collected as it is: rebuilt from its position
+ * along the other edge, it lands a rounding step away from itself, and the
+ * node it stands for is computed twice. Only a crossing interior to both
+ * edges is constructed, once, from its position along the first. Two edges
+ * overlapping along a stretch meet at its two ends, which are ends of the
+ * edges
  */
 static void
 buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
@@ -2175,21 +2217,17 @@ buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
   assert(e1); assert(e2); assert(points);
   IntersectResult result = linesegm_intersect(e1->x1, e1->y1,
     e1->x2, e1->y2, e2->x1, e2->y1, e2->x2, e2->y2);
-  if (result.type == INTERSECT_POINT)
+  if (result.type == INTERSECT_NONE)
+    return;
+  POINT2D ends[4];
+  int nends = buffer_segment_ends_on_segment(e1, e2, ends);
+  for (int k = 0; k < nends; k++)
+    buffer_add_intersection_point(points, ends[k].x, ends[k].y);
+  if (result.type == INTERSECT_POINT && nends == 0)
   {
     double x = e1->x1 + result.t0 * e1->dx;
     double y = e1->y1 + result.t0 * e1->dy;
     buffer_add_intersection_point(points, x, y);
-  }
-  else if (result.type == INTERSECT_OVERLAP)
-  {
-    /* For an overlapping segment there are two nodes */
-    double x0 = e1->x1 + result.t0 * e1->dx;
-    double y0 = e1->y1 + result.t0 * e1->dy;
-    double x1 = e1->x1 + result.t1 * e1->dx;
-    double y1 = e1->y1 + result.t1 * e1->dy;
-    buffer_add_intersection_point(points, x0, y0);
-    buffer_add_intersection_point(points, x1, y1);
   }
 }
 
@@ -4429,6 +4467,9 @@ buffer_chain_ring_infos(const MeosArray *pieces, int32_t srid,
   MeosArray *rings)
 {
   assert(pieces); assert(rings);
+  /* Every piece is read as a #BufferSelected, so an array of anything
+   * narrower would be read past each element */
+  assert(pieces->elem_size == sizeof(BufferSelected));
   if (pieces->count == 0)
     return true;
   bool *used = palloc0(sizeof(bool) * pieces->count);
@@ -5061,6 +5102,78 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
   }
   return ring;
 }
+
+/**
+ * @brief Construct a compound curve from the pieces of a ring an
+ * arrangement answers, as they are
+ * @details The pieces meet at the nodes they share, so the curve is written
+ * from their points alone: consecutive segments as one line, every arc as
+ * the circular string of its three points (#arrange_wound_surfaces gives an
+ * arc piece its ends and a middle). An arc whose three points are written on
+ * one line, which #cross_product_sign decides on the doubles, is a segment.
+ * This mirrors #buffer_build_ring_from_pieces, which writes pieces placed
+ * from their angles
+ */
+static LWCOMPOUND *
+buffer_ring_write(const MeosArray *pieces, int32_t srid)
+{
+  assert(pieces);
+  uint32_t n = pieces->count;
+  if (n == 0)
+    return NULL;
+  const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
+  bool *arc = palloc(sizeof(bool) * n);
+  for (uint32_t i = 0; i < n; i++)
+    arc[i] = e[i].arc &&
+      cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
+        e[i].y1, e[i].mx, e[i].my) != 0;
+  /* The members, counted first: every arc is one, and every run of
+   * segments between two arcs */
+  uint32_t nmembers = 0;
+  for (uint32_t i = 0; i < n; i++)
+    if (arc[i] || i == 0 || arc[i - 1])
+      nmembers++;
+  LWGEOM **members = lwalloc(sizeof(LWGEOM *) * nmembers);
+  uint32_t k = 0;
+  for (uint32_t i = 0; i < n; )
+  {
+    /* A member, its points written at once into an array of their number */
+    POINTARRAY *pa;
+    LWGEOM *member;
+    if (arc[i])
+    {
+      pa = ptarray_construct(LW_FALSE, LW_FALSE, 3);
+      double *d = (double *) pa->serialized_pointlist;
+      d[0] = e[i].x1; d[1] = e[i].y1; d[2] = e[i].mx; d[3] = e[i].my;
+      d[4] = e[i].x2; d[5] = e[i].y2;
+      member = lwcircstring_as_lwgeom(lwcircstring_construct(srid, NULL, pa));
+      i++;
+    }
+    else
+    {
+      uint32_t end = i;
+      while (end < n && ! arc[end])
+        end++;
+      pa = ptarray_construct(LW_FALSE, LW_FALSE, end - i + 1);
+      double *d = (double *) pa->serialized_pointlist;
+      d[0] = e[i].x1; d[1] = e[i].y1;
+      for (uint32_t m = i; m < end; m++)
+      {
+        d[2 * (m - i + 1)] = e[m].x2;
+        d[2 * (m - i + 1) + 1] = e[m].y2;
+      }
+      member = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+      i = end;
+    }
+    members[k++] = member;
+  }
+  pfree(arc);
+  /* The members meet end to end by construction, at the nodes the pieces
+   * share, so the curve is made of them at once */
+  return (LWCOMPOUND *) lwcollection_construct(COMPOUNDTYPE, srid, NULL,
+    nmembers, members);
+}
+
 
 /**
  * @brief Normalize the orientation of one classified boundary ring
@@ -6957,12 +7070,20 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
    * middle of the piece, which the splitting above leaves wholly on one side
    * of the question */
   double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
-  MeosArray *keep = meos_array_create(sizeof(Edge));
+  /* The pieces are chained as the overlay's are
+   * (#buffer_make_surfaces_from_pieces), which reads each as a
+   * #BufferSelected. The buffer reads no side of its
+   * pieces, so every one carries the same: the ring takes its frame from its
+   * first piece, and a candidate then keeps that frame exactly where it is
+   * taken in the direction it is stored in, which is the direction the offset
+   * runs */
+  MeosArray *keep = meos_array_create(sizeof(BufferSelected));
   RTree *index = buffer_edges_index(edges);
   MeosArray *found = index_result_create();
   for (int i = 0; i < meos_array_count(split); i++)
   {
-    Edge *piece = (Edge *) meos_array_get_intl(split, (uint32_t) i);
+    const Edge *piece = (const Edge *) meos_array_get_intl(split,
+      (uint32_t) i);
     POINT2D mid;
     if (! piece || ! buffer_piece_midpoint(piece, &mid))
       continue;
@@ -6976,7 +7097,12 @@ buffer_ring_rebuild_at_nodes(const MeosArray *arr, const MeosArray *edges,
     double mid_tol = Max(tol, coordinate_tolerance(mid.x, mid.y));
     if (! buffer_point_edges_nearer(mid.x, mid.y, edges, index,
         radius - mid_tol, found))
-      meos_array_add(keep, piece);
+    {
+      BufferSelected kept;
+      kept.e = *piece;
+      kept.answer_left = false;
+      meos_array_add(keep, &kept);
+    }
   }
   meos_array_destroy(found);
   rtree_free(index);
@@ -7015,6 +7141,31 @@ buffer_ring_resolve(LWGEOM *raw, const LWGEOM *input, double radius,
   {
     meos_array_destroy(arr);
     return raw;
+  }
+  /* The region the ring of offsets winds around, read off its arrangement */
+  MeosArray **rings;
+  uint32_t nrings;
+  ArrangeStatus ast = arrange_wound_boundary(arr, &rings, &nrings);
+  if (ast == ARR_ANSWERED)
+  {
+    LWCURVEPOLY *poly = lwcurvepoly_construct_empty(srid, 0, 0);
+    bool ok = true;
+    for (uint32_t i = 0; i < nrings && ok; i++)
+    {
+      LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
+      if (ring)
+        lwcurvepoly_add_ring(poly, lwcompound_as_lwgeom(ring));
+      else
+        ok = false;
+    }
+    arrange_rings_free(rings, nrings);
+    if (ok)
+    {
+      meos_array_destroy(arr);
+      lwgeom_free(raw);
+      return lwcurvepoly_as_lwgeom(poly);
+    }
+    lwgeom_free(lwcurvepoly_as_lwgeom(poly));
   }
   MeosArray *edges = geom_extract_edges(input);
   LWGEOM *result = edges ?
@@ -8396,6 +8547,387 @@ buffer_ring_encloses_no_area(const LWCOMPOUND *ring, int32_t srid)
 }
 
 /**
+ * @brief Add to an edge array the offset curve of a closed ring with round
+ * joins on the right of the ring, read in reverse where @p reverse, the
+ * curve whose winding number is positive exactly over the ring's buffer on
+ * that side
+ * @details Every segment of the ring is offset by the radius to the
+ * buffered side, the offset of its two ends written once and shared by the
+ * pieces meeting there. At a vertex the turn of the ring, the exact sign of
+ * the cross product of its input segments (#cross_product_sign), decides the
+ * join: where the ring turns away from the buffered side the offsets are
+ * joined by the arc about the vertex; where it turns towards it and the two
+ * offsets cross within both, which #linesegm_intersect decides on their
+ * doubles, both end at that crossing, written once; where they turn towards
+ * it without crossing they are joined through the vertex itself, the
+ * closing segments of GEOS's offset
+ * curve, whose loop winds positively and lies within the buffer; where it
+ * runs straight on they are joined by the segment between them, if they are
+ * two doubles; and where it turns back on itself by the half circle about
+ * the vertex. The pieces are those #edges_add_segment and #edges_add_arc
+ * write, so no point is located again: the arrangement of the curve decides
+ * every crossing of it. This mirrors #buffer_ring, which writes the offset
+ * of a ring as a compound curve
+ * @return False where the ring has fewer than three distinct vertices
+ */
+static bool
+buffer_ring_offset_edges(const POINTARRAY *ring, double radius,
+  bool reverse, MeosArray *edges)
+{
+  /* The distinct vertices, the closing one dropped */
+  uint32_t m = ring->npoints;
+  POINT2D *p = palloc(sizeof(POINT2D) * Max(m, 1u));
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < m; i++)
+  {
+    const POINT2D *q = getPoint2d_cp(ring, reverse ? m - 1 - i : i);
+    if (n > 0 && p[n - 1].x == q->x && p[n - 1].y == q->y)
+      continue;
+    p[n++] = *q;
+  }
+  while (n > 1 && p[n - 1].x == p[0].x && p[n - 1].y == p[0].y)
+    n--;
+  if (n < 3)
+  {
+    pfree(p);
+    return false;
+  }
+  /* The room the curve takes at most, in one step: the offset of every
+   * segment and two pieces at every vertex */
+  edge_array_reserve(edges, 3 * (size_t) n);
+  /* The offsets of the two ends of every segment */
+  POINT2D *os = palloc(sizeof(POINT2D) * n), *oe = palloc(sizeof(POINT2D) * n);
+  double *ux = palloc(sizeof(double) * n), *uy = palloc(sizeof(double) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *a = &p[i], *b = &p[(i + 1) % n];
+    double dx = b->x - a->x, dy = b->y - a->y;
+    double len = hypot(dx, dy);
+    ux[i] = dx / len; uy[i] = dy / len;
+    /* The normal on the right */
+    double nx = uy[i], ny = - ux[i];
+    os[i].x = a->x + radius * nx; os[i].y = a->y + radius * ny;
+    oe[i].x = b->x + radius * nx; oe[i].y = b->y + radius * ny;
+  }
+  /* The turn at every vertex, and the crossing of the two offsets meeting
+   * there where the ring turns towards the buffered side */
+  int *turns = palloc(sizeof(int) * n);
+  bool *trim = palloc(sizeof(bool) * n);
+  POINT2D *xp = palloc(sizeof(POINT2D) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t prev = (i + n - 1) % n, next = (i + 1) % n;
+    turns[i] = cross_product_sign(p[prev].x, p[prev].y, p[i].x, p[i].y,
+      p[i].x, p[i].y, p[next].x, p[next].y);
+    trim[i] = false;
+    if (turns[i] < 0)
+    {
+      const POINT2D *a = &os[prev], *b = &oe[prev], *c = &os[i], *d = &oe[i];
+      int oc = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x,
+        c->y);
+      int od = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, d->x,
+        d->y);
+      int oa = cross_product_sign(c->x, c->y, d->x, d->y, c->x, c->y, a->x,
+        a->y);
+      int ob = cross_product_sign(c->x, c->y, d->x, d->y, c->x, c->y, b->x,
+        b->y);
+      if (oc * od < 0 && oa * ob < 0)
+      {
+        IntersectResult r = linesegm_intersect(a->x, a->y, b->x, b->y, c->x,
+          c->y, d->x, d->y);
+        trim[i] = true;
+        xp[i].x = a->x + r.t0 * (b->x - a->x);
+        xp[i].y = a->y + r.t0 * (b->y - a->y);
+      }
+    }
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t prev = (i + n - 1) % n, next = (i + 1) % n;
+    const POINT2D *v = &p[i], *e = &oe[prev], *st = &os[i];
+    int turn = turns[i];
+    if (trim[i])
+      ;
+    else if (turn == 0)
+    {
+      /* Collinear segments run on, or turn back where their directions
+       * differ in the sign of a coordinate, each an exact difference */
+      bool back = (v->x - p[prev].x > 0.0) != (p[next].x - v->x > 0.0) ||
+        (v->y - p[prev].y > 0.0) != (p[next].y - v->y > 0.0) ||
+        (v->x - p[prev].x < 0.0) != (p[next].x - v->x < 0.0) ||
+        (v->y - p[prev].y < 0.0) != (p[next].y - v->y < 0.0);
+      if (back)
+      {
+        POINT2D mid = {v->x + radius * ux[prev], v->y + radius * uy[prev]};
+        edges_add_arc(edges, e, &mid, st);
+      }
+      else if (e->x != st->x || e->y != st->y)
+        edges_add_segment(edges, e, st);
+    }
+    else if (turn > 0)
+    {
+      /* A left turn opens the right side: the arc about the vertex, through
+       * the offset of the bisector of the two normals */
+      double bx = uy[prev] + uy[i], by = - ux[prev] - ux[i];
+      double blen = hypot(bx, by);
+      POINT2D mid = {v->x + radius * bx / blen, v->y + radius * by / blen};
+      edges_add_arc(edges, e, &mid, st);
+    }
+    else
+    {
+      edges_add_segment(edges, e, v);
+      edges_add_segment(edges, v, st);
+    }
+    /* The offset of the segment, from the crossing at either end where
+     * there is one */
+    const POINT2D *from = trim[i] ? &xp[i] : &os[i];
+    const POINT2D *to = trim[next] ? &xp[next] : &oe[i];
+    if (from->x != to->x || from->y != to->y)
+      edges_add_segment(edges, from, to);
+  }
+  pfree(p); pfree(os); pfree(oe); pfree(ux); pfree(uy);
+  pfree(turns); pfree(trim); pfree(xp);
+  return true;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of a polygon with round
+ * joins, whose winding number is positive exactly over its buffer
+ * @details The exterior ring is read counterclockwise and every hole
+ * clockwise, so that the buffered side is the right of each and the holes
+ * wind against the exterior whatever the orientation the polygon stores
+ * (#buffer_ring_offset_edges). A hole enclosing no area is left out as
+ * #geom_extract_edges leaves it. A hole the buffer closes is a loop whose
+ * winding adds to the exterior's rather than a region left out, so it needs
+ * no test of its own
+ * @return False where the exterior encloses no area or a ring cannot be
+ * offset
+ */
+/*
+ * Return true where the buffer fills a hole whole: a point within the hole
+ * reaches its ring along the vertical within half the height of the ring's
+ * box, and along the horizontal within half its width, so where twice the
+ * radius exceeds either it lies nearer to the polygon than the radius. The
+ * buffer of the polygon with the hole filled is then the same, a point
+ * within the radius of the hole being within it of the hole's ring. The
+ * side is rounded up, which leaves a tie to the arrangement
+ */
+static bool
+buffer_hole_filled(const POINTARRAY *ring, double radius)
+{
+  if (! (radius > 0.0) || ring->npoints == 0)
+    return false;
+  double xmin = INFINITY, xmax = -INFINITY, ymin = INFINITY, ymax = -INFINITY;
+  for (uint32_t i = 0; i < ring->npoints; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(ring, i);
+    xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
+    ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
+  }
+  double side = Min(xmax - xmin, ymax - ymin);
+  return side + (side * 0x1p-52 + 0x1p-1074) < 2.0 * radius;
+}
+
+static bool
+buffer_poly_offset_edges(const LWPOLY *poly, double radius, MeosArray *edges)
+{
+  if (poly->nrings == 0)
+    return true;
+  int sign = ring_area_sign(poly->rings[0]);
+  if (sign == 0)
+    return false;
+  if (! buffer_ring_offset_edges(poly->rings[0], radius, sign < 0, edges))
+    return false;
+  for (uint32_t i = 1; i < poly->nrings; i++)
+  {
+    int hs = ring_area_sign(poly->rings[i]);
+    if (hs == 0 || buffer_hole_filled(poly->rings[i], radius))
+      continue;
+    if (! buffer_ring_offset_edges(poly->rings[i], radius, hs > 0, edges))
+      return false;
+  }
+  return true;
+}
+
+/*
+ * Merge into a box the one liblwgeom reads off the curve #buffer_ring_write
+ * writes from the pieces of a ring: the box of its points, and of each arc
+ * the box #lw_arc_calculate_gbox_cartesian_2d reads. That box reaches at
+ * most twice the radius, and a rounding of the coordinates, beyond the
+ * middle of the arc's chord, so an arc whose circle is that far within the
+ * box already read adds nothing to it and is passed over: the box is the
+ * one serializing the curve computes. The radius is read off the three
+ * points only where their cross product is far from the rounding of its
+ * terms, which holds it within a millionth
+ */
+static void
+buffer_ring_box(const MeosArray *pieces, GBOX *box)
+{
+  uint32_t n = pieces->count;
+  const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    box->xmin = Min(box->xmin, Min(e[i].x1, e[i].x2));
+    box->xmax = Max(box->xmax, Max(e[i].x1, e[i].x2));
+    box->ymin = Min(box->ymin, Min(e[i].y1, e[i].y2));
+    box->ymax = Max(box->ymax, Max(e[i].y1, e[i].y2));
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (! e[i].arc || cross_product_sign(e[i].x1, e[i].y1, e[i].x2,
+          e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0)
+      continue;
+    double ax = e[i].x1 - e[i].mx, ay = e[i].y1 - e[i].my;
+    double bx = e[i].x2 - e[i].mx, by = e[i].y2 - e[i].my;
+    double l = ax * by, r = ay * bx;
+    double cross = fabs(l - r);
+    if (cross > 1e-6 * (fabs(l) + fabs(r)))
+    {
+      double radius = hypot(ax, ay) * hypot(bx, by) *
+        hypot(bx - ax, by - ay) / (2.0 * cross);
+      double reach = 2.5 * radius + 1e-9 * (fabs(e[i].x1) + fabs(e[i].x2) +
+        fabs(e[i].y1) + fabs(e[i].y2));
+      double cx = 0.5 * (e[i].x1 + e[i].x2), cy = 0.5 * (e[i].y1 + e[i].y2);
+      if (cx - reach > box->xmin && cx + reach < box->xmax &&
+          cy - reach > box->ymin && cy + reach < box->ymax)
+        continue;
+    }
+    POINT2D p1 = {e[i].x1, e[i].y1}, p2 = {e[i].mx, e[i].my},
+      p3 = {e[i].x2, e[i].y2};
+    GBOX arcbox;
+    lw_arc_calculate_gbox_cartesian_2d(&p1, &p2, &p3, &arcbox);
+    box->xmin = Min(box->xmin, arcbox.xmin);
+    box->xmax = Max(box->xmax, arcbox.xmax);
+    box->ymin = Min(box->ymin, arcbox.ymin);
+    box->ymax = Max(box->ymax, arcbox.ymax);
+  }
+  return;
+}
+
+/**
+ * @brief Return the region offset curves wind around, read off their
+ * arrangement (#arrange_wound_surfaces), as a curve polygon where it is one
+ * surface and a multisurface otherwise
+ * @return NULL where the arrangement leaves the region unanswered
+ */
+static LWGEOM *
+buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
+{
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  ArrangeStatus st = arrange_wound_surfaces(edges, &rings, &nrings, &owner);
+  if (st != ARR_ANSWERED)
+    return NULL;
+  uint32_t nshells = 0;
+  for (uint32_t i = 0; i < nrings; i++)
+    if (owner[i] < 0)
+      nshells++;
+  LWCURVEPOLY **polys = palloc(sizeof(LWCURVEPOLY *) * Max(nshells, 1u));
+  int32_t *slot = palloc(sizeof(int32_t) * Max(nrings, 1u));
+  uint32_t k = 0;
+  bool ok = true;
+  /* Every shell first, then each hole into its shell's surface */
+  for (uint32_t i = 0; i < nrings && ok; i++)
+  {
+    if (owner[i] >= 0)
+      continue;
+    LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
+    if (! ring)
+    {
+      ok = false;
+      break;
+    }
+    polys[k] = lwcurvepoly_construct_empty(srid, 0, 0);
+    lwcurvepoly_add_ring(polys[k], lwcompound_as_lwgeom(ring));
+    slot[i] = (int32_t) k++;
+  }
+  for (uint32_t i = 0; i < nrings && ok; i++)
+  {
+    if (owner[i] < 0)
+      continue;
+    LWCOMPOUND *ring = buffer_ring_write(rings[i], srid);
+    if (! ring)
+      ok = false;
+    else
+      lwcurvepoly_add_ring(polys[slot[owner[i]]], lwcompound_as_lwgeom(ring));
+  }
+  /* The box of every ring, which serializing the result would read */
+  GBOX box;
+  box.xmin = box.ymin = INFINITY;
+  box.xmax = box.ymax = -INFINITY;
+  for (uint32_t i = 0; i < nrings && ok; i++)
+    buffer_ring_box(rings[i], &box);
+  arrange_rings_free(rings, nrings);
+  pfree(owner); pfree(slot);
+  LWGEOM *result = NULL;
+  if (ok && k == 1)
+    result = lwcurvepoly_as_lwgeom(polys[0]);
+  else if (ok)
+  {
+    LWCOLLECTION *coll = lwcollection_construct_empty(MULTISURFACETYPE,
+      srid, 0, 0);
+    for (uint32_t i = 0; i < k; i++)
+      lwcollection_add_lwgeom(coll, lwcurvepoly_as_lwgeom(polys[i]));
+    result = lwcollection_as_lwgeom(coll);
+  }
+  else
+    for (uint32_t i = 0; i < k; i++)
+      lwgeom_free(lwcurvepoly_as_lwgeom(polys[i]));
+  pfree(polys);
+  if (result && ! lwgeom_is_empty(result))
+  {
+    FLAGS_SET_BBOX(result->flags, 1);
+    result->bbox = gbox_new(result->flags);
+    result->bbox->xmin = box.xmin; result->bbox->xmax = box.xmax;
+    result->bbox->ymin = box.ymin; result->bbox->ymax = box.ymax;
+  }
+  return result;
+}
+
+/**
+ * @brief Return the buffer of a polygon with round joins as the region its
+ * offset curves wind around, read off their arrangement in one step
+ * @return NULL where a ring cannot be offset or the arrangement leaves the
+ * region unanswered
+ */
+static LWGEOM *
+buffer_poly_arranged(const LWPOLY *poly, double radius, int32_t srid)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  LWGEOM *result = buffer_poly_offset_edges(poly, radius, edges) ?
+    buffer_surfaces_from_edges(edges, srid) : NULL;
+  meos_array_destroy(edges);
+  return result;
+}
+
+/**
+ * @brief Return the buffer of a multipolygon with round joins as the region
+ * the offset curves of all its polygons wind around, read off their
+ * arrangement in one step: where the buffers of two polygons overlap the
+ * winding numbers add, so the region is their union
+ * @return NULL where a ring cannot be offset or the arrangement leaves the
+ * region unanswered
+ */
+static LWGEOM *
+buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  bool ok = true;
+  for (uint32_t i = 0; i < mpoly->ngeoms && ok; i++)
+  {
+    const LWPOLY *poly = mpoly->geoms[i];
+    if (! poly || lwgeom_is_empty((const LWGEOM *) poly))
+      continue;
+    ok = buffer_poly_offset_edges(poly, radius, edges);
+  }
+  LWGEOM *result = (ok && edges->count > 0) ?
+    buffer_surfaces_from_edges(edges, srid) : NULL;
+  meos_array_destroy(edges);
+  return result;
+}
+
+/**
  * @brief Buffer a POLYGON
  * @details The exterior ring is expanded and interior rings are contracted.
  * Round joins are represented using exact circular arcs.
@@ -8416,6 +8948,15 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     LWCOLLECTION *result = lwcollection_construct_empty(MULTISURFACETYPE,
       srid, 0, 0);
     return lwcollection_as_lwgeom(result);
+  }
+
+  /* With round joins the buffer is the region the offset curves wind
+   * around, read off their arrangement in one step */
+  if (! inward && join_style == JOIN_ROUND)
+  {
+    LWGEOM *arranged = buffer_poly_arranged(poly, radius, srid);
+    if (arranged)
+      return arranged;
   }
 
   /* The first ring is the exterior ring, which a buffer expands and an
@@ -8550,6 +9091,15 @@ meos_buffer_mpoly(const LWMPOLY *mpoly, double radius, JoinStyle join_style,
     LWCOLLECTION *result = lwcollection_construct_empty(MULTISURFACETYPE,
       srid, 0, 0);
     return lwcollection_as_lwgeom(result);
+  }
+
+  /* With round joins the buffer is the region the offset curves of all the
+   * polygons wind around, read off their arrangement in one step */
+  if (join_style == JOIN_ROUND)
+  {
+    LWGEOM *arranged = buffer_mpoly_arranged(mpoly, radius, srid);
+    if (arranged)
+      return arranged;
   }
 
   LWGEOM **buffers = palloc(sizeof(LWGEOM *) * ngeoms);
