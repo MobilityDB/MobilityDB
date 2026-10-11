@@ -111,6 +111,19 @@ SELECT tgeometry '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05
 SELECT tgeography '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
 
 -------------------------------------------------------------------------------
+
+-- Interpolation
+
+SELECT asText(tgeometry 'Interp=Step;[Polygon((0 0,1 0,1 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 0))@2001-01-02]');
+SELECT asText(tgeography 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+/* Errors */
+SELECT tgeometry 'Interp=Linear;[Polygon((0 0,1 0,1 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 0))@2001-01-02]';
+SELECT tgeometry 'SRID=5676;Interp=Linear;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]';
+SELECT tgeometry 'Interp=Linear;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}';
+SELECT tgeography 'Interp=Linear;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]';
+SELECT tgeography 'Interp=Linear;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}';
+
+-------------------------------------------------------------------------------
 -- SRID
 -------------------------------------------------------------------------------
 
