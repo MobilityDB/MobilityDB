@@ -76,6 +76,8 @@ SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]}],"datetimes":"2001-01-01T00:00:00+01","interpolation":"None"}');
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]}],"datetimes":["XXXX"],"interpolation":"None"}');
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"Linear"}');
+SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}');
+SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","sequences":[{"values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
 SELECT tgeometryFromMFJSON(
 '{"type":"MovingGeometry","sequences":[{"values":{"type":"Point","coordinates":[1,1]},"datetimes":["2001-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","sequences":[],"interpolation":"Step"}');
@@ -92,6 +94,8 @@ SELECT asEWKT(tgeographyFromMFJSON(asMFJSON(tgeography 'Point(1 2)@2001-01-01'))
 SELECT asEWKT(tgeographyFromMFJSON(asMFJSON(tgeography '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02}')));
 SELECT asEWKT(tgeographyFromMFJSON(asMFJSON(tgeography '[Point(1 2)@2001-01-01, Point(3 4)@2001-01-02]')));
 SELECT asEWKT(tgeographyFromMFJSON(asMFJSON(tgeography '{[Point(1 2)@2001-01-01, Point(3 4)@2001-01-02],[Point(1 2)@2001-01-03, Point(3 4)@2001-01-04]}')));
+/* Errors */
+SELECT tgeographyFromMFJSON('{"type":"MovingGeometry","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}');
 
 -----------------------------------------------------------------------
 
@@ -112,6 +116,10 @@ select asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'SRID=5676;Point(1 1)@2001-01-0
 select asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'SRID=5676;Point(1 1 1)@2001-01-01', 'XDR')));
 /* Errors */
 select asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'ABC')));
+-- The hexadecimal WKB of a sequence of a temporal geometry and of a temporal
+-- geography whose interpolation flag states linear interpolation
+SELECT tgeometryFromHexEWKB('013C000E02000000030101000000000000000000F03F000000000000F03F009C57D3C11C000001010000000000000000000040000000000000004000FC2EF1D51C0000');
+SELECT tgeographyFromHexEWKB('013D002E02000000030101000000000000000000F03F000000000000F03F009C57D3C11C000001010000000000000000000040000000000000004000FC2EF1D51C0000');
 
 -------------------------------------------------------------------------------
 -- Output

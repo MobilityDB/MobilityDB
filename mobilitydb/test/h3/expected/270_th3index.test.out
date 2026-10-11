@@ -72,6 +72,11 @@ SELECT th3index 'Interp=Step;[8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6457ff
  [8a2a100d645ffff@Mon Jan 01 08:00:00 2001 PST, 8a2a100d6457fff@Mon Jan 01 08:05:00 2001 PST, 8a2a100d64effff@Mon Jan 01 08:06:00 2001 PST]
 (1 row)
 
+/* Errors */
+SELECT th3index 'Interp=Linear;[8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6457fff@2001-01-01 08:05:00,8a2a100d64effff@2001-01-01 08:06:00]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 2: SELECT th3index 'Interp=Linear;[8a2a100d645ffff@2001-01-01 0...
+                        ^
 SELECT th3index ' { [ 8a2a100d645ffff@2001-01-01 08:00:00 , 8a2a100d6457fff@2001-01-01 08:05:00 ] , [ 8a2a100d64effff@2001-01-01 08:10:00 , 8a2a100d67b7fff@2001-01-01 08:15:00 ] } ';
                                                                                            th3index                                                                                           
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

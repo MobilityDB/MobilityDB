@@ -163,6 +163,10 @@ SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","
 ERROR:  invalid input syntax for type timestamp with time zone: "XXXX"
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"Linear"}');
 ERROR:  The temporal type cannot have linear interpolation
+SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}');
+ERROR:  The temporal type cannot have linear interpolation
+SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","sequences":[{"values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
+ERROR:  The temporal type cannot have linear interpolation
 SELECT tgeometryFromMFJSON(
 '{"type":"MovingGeometry","sequences":[{"values":{"type":"Point","coordinates":[1,1]},"datetimes":["2001-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
 ERROR:  Invalid 'values' array in MFJSON string
@@ -202,6 +206,9 @@ SELECT asEWKT(tgeographyFromMFJSON(asMFJSON(tgeography '{[Point(1 2)@2001-01-01,
  SRID=4326;{[POINT(1 2)@Mon Jan 01 00:00:00 2001 PST, POINT(3 4)@Tue Jan 02 00:00:00 2001 PST], [POINT(1 2)@Wed Jan 03 00:00:00 2001 PST, POINT(3 4)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+/* Errors */
+SELECT tgeographyFromMFJSON('{"type":"MovingGeometry","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"type":"Point","coordinates":[1,1]},{"type":"Point","coordinates":[2,2]}],"datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}');
+ERROR:  The temporal type cannot have linear interpolation
 SELECT asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'Point(1 2)@2001-01-01')));
                  asewkt                  
 -----------------------------------------
@@ -283,6 +290,10 @@ select asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'SRID=5676;Point(1 1 1)@2001-01
 /* Errors */
 select asEWKT(tgeometryFromEWKB(asEWKB(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'ABC')));
 ERROR:  Invalid value for endian flag
+SELECT tgeometryFromHexEWKB('013C000E02000000030101000000000000000000F03F000000000000F03F009C57D3C11C000001010000000000000000000040000000000000004000FC2EF1D51C0000');
+ERROR:  The temporal type cannot have linear interpolation
+SELECT tgeographyFromHexEWKB('013D002E02000000030101000000000000000000F03F000000000000F03F009C57D3C11C000001010000000000000000000040000000000000004000FC2EF1D51C0000');
+ERROR:  The temporal type cannot have linear interpolation
 SELECT asText(tgeometry 'Point(1 1)@2001-01-01');
                  astext                  
 -----------------------------------------

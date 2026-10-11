@@ -242,6 +242,39 @@ SELECT tgeography '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:0
 ERROR:  Could not parse tgeography value: Extraneous characters at the end
 LINE 1: SELECT tgeography '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
+SELECT asText(tgeometry 'Interp=Step;[Polygon((0 0,1 0,1 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 0))@2001-01-02]');
+                                                       astext                                                       
+--------------------------------------------------------------------------------------------------------------------
+ [POLYGON((0 0,1 0,1 1,0 0))@Mon Jan 01 00:00:00 2001 PST, POLYGON((0 0,2 0,2 2,0 0))@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tgeography 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+/* Errors */
+SELECT tgeometry 'Interp=Linear;[Polygon((0 0,1 0,1 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 0))@2001-01-02]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 2: SELECT tgeometry 'Interp=Linear;[Polygon((0 0,1 0,1 1,0 0))@...
+                         ^
+SELECT tgeometry 'SRID=5676;Interp=Linear;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tgeometry 'SRID=5676;Interp=Linear;[Point(1 1)@2001-0...
+                         ^
+SELECT tgeometry 'Interp=Linear;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tgeometry 'Interp=Linear;{[Point(1 1)@2001-01-01, Poi...
+                         ^
+SELECT tgeography 'Interp=Linear;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tgeography 'Interp=Linear;[Point(1 1)@2001-01-01, Poi...
+                          ^
+SELECT tgeography 'Interp=Linear;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tgeography 'Interp=Linear;{[Point(1 1)@2001-01-01, Po...
+                          ^
 SELECT asEWKT(tgeometry 'SRID=4326;[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]');
                                             asewkt                                            
 ----------------------------------------------------------------------------------------------

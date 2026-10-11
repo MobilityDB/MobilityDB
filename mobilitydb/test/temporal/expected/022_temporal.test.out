@@ -270,6 +270,12 @@ SELECT tfloat 'Interp=Step;[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-0
  Interp=Step;[1@Mon Jan 01 08:00:00 2001 PST, 2@Mon Jan 01 08:05:00 2001 PST, 3@Mon Jan 01 08:06:00 2001 PST]
 (1 row)
 
+SELECT tfloat 'Interp=Linear;[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00]';
+                                              tfloat                                              
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 08:00:00 2001 PST, 2@Mon Jan 01 08:05:00 2001 PST, 3@Mon Jan 01 08:06:00 2001 PST]
+(1 row)
+
 SELECT ttext ' [ A@2001-01-01 08:00:00 , B@2001-01-01 08:05:00 , C@2001-01-01 08:06:00 ] ';
                                                  ttext                                                  
 --------------------------------------------------------------------------------------------------------
@@ -302,6 +308,22 @@ LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02';
 SELECT tbool '[true@2001-01-01, true@2001-01-02],';
 ERROR:  Could not parse tbool value: Extraneous characters at the end
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02],';
+                     ^
+SELECT tbool 'Interp=Linear;[true@2001-01-01 08:00:00,false@2001-01-01 08:05:00]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tbool 'Interp=Linear;[true@2001-01-01 08:00:00,false@...
+                     ^
+SELECT tint 'Interp=Linear;[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tint 'Interp=Linear;[1@2001-01-01 08:00:00,2@2001-01-...
+                    ^
+SELECT tbigint 'Interp=Linear;[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tbigint 'Interp=Linear;[1@2001-01-01 08:00:00,2@2001-...
+                       ^
+SELECT ttext 'Interp=Linear;[A@2001-01-01 08:00:00,B@2001-01-01 08:05:00,C@2001-01-01 08:06:00]';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT ttext 'Interp=Linear;[A@2001-01-01 08:00:00,B@2001-01...
                      ^
 SELECT tbool '  { [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ],
  [ true@2001-01-01 09:00:00 , false@2001-01-01 09:05:00 , true@2001-01-01 09:06:00 ] } ';
@@ -380,6 +402,13 @@ SELECT tfloat 'Interp=Step;{[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-
  Interp=Step;{[1@Mon Jan 01 08:00:00 2001 PST, 2@Mon Jan 01 08:05:00 2001 PST, 3@Mon Jan 01 08:06:00 2001 PST], [1@Mon Jan 01 09:00:00 2001 PST, 2@Mon Jan 01 09:05:00 2001 PST, 1@Mon Jan 01 09:06:00 2001 PST]}
 (1 row)
 
+SELECT tfloat 'Interp=Linear;{[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00],
+ [1@2001-01-01 09:00:00,2@2001-01-01 09:05:00,1@2001-01-01 09:06:00]}';
+                                                                                                tfloat                                                                                                
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 08:00:00 2001 PST, 2@Mon Jan 01 08:05:00 2001 PST, 3@Mon Jan 01 08:06:00 2001 PST], [1@Mon Jan 01 09:00:00 2001 PST, 2@Mon Jan 01 09:05:00 2001 PST, 1@Mon Jan 01 09:06:00 2001 PST]}
+(1 row)
+
 SELECT tfloatSeqSet(tfloat '[1@2001-01-01, 1@2001-01-02]', 'step');
                                   tfloatseqset                                  
 --------------------------------------------------------------------------------
@@ -429,6 +458,10 @@ SELECT tfloatSeqSet(tfloat '{[1@2001-01-01, 2@2001-01-03], [2@2001-01-02, 1@2001
 ERROR:  Could not parse tfloat value: Extraneous characters at the end
 LINE 1: SELECT tfloatSeqSet(tfloat '{[1@2001-01-01, 2@2001-01-03], [...
                                    ^
+SELECT tint 'Interp=Linear;{[1@2001-01-01 08:00:00,2@2001-01-01 08:05:00],[1@2001-01-01 09:00:00]}';
+ERROR:  The temporal type cannot have linear interpolation
+LINE 1: SELECT tint 'Interp=Linear;{[1@2001-01-01 08:00:00,2@2001-01...
+                    ^
 SELECT tfloatSeqSet(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Discrete');
 ERROR:  The temporal sequence set cannot have discrete interpolation
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;

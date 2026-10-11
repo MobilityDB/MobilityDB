@@ -616,14 +616,9 @@ tspatial_parse(const char **str, MeosType temptype)
   int temp_srid = SRID_UNKNOWN;
   srid_parse(str, &temp_srid);
 
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
-  /* Starts with "Interp=Step" */
-  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
-  {
-    /* Move str after the semicolon */
-    *str += 12;
-    interp = STEP;
-  }
+  interpType interp;
+  if (! interp_parse(str, temptype, &interp))
+    return NULL;
 
   /* Allow spaces after the SRID and/or Interpolation */
   p_whitespace(str);

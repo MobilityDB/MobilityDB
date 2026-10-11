@@ -469,6 +469,16 @@ SELECT tgeogpoint 'Interp=Step;
 			Los dos últimos instantes de un valor de secuencia con interpolación discreta y límite superior exclusivo deben tener el mismo valor base, como se muestra en el segundo y tercer ejemplo anteriores.
 		</para>
 		<para>
+			El prefijo <varname>Interp=Linear</varname> indica explícitamente la interpolación lineal por defecto. Un tipo temporal cuyos valores no pueden interpolarse linealmente, como <varname>tint</varname> o <varname>tgeometry</varname>, rechaza este prefijo, como se muestra a continuación:
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tfloat 'Interp=Linear;[2.5@2001-01-01 08:00:00, 3@2001-01-01 08:10:00]';
+-- [2.5@2001-01-01 08:00:00+01, 3@2001-01-01 08:10:00+01]
+SELECT tgeometry 'Interp=Linear;[Point(0 0)@2017-01-01 08:00:00,
+  Linestring(0 0,0 1)@2017-01-02 08:05:00]';
+ERROR:  The temporal type cannot have linear interpolation
+</programlisting>
+		<para>
 			Un <emphasis>valor de conjunto de secuencias</emphasis> es un conjunto <varname>{v1,...,vn}</varname> donde cada <varname>vi</varname> es un valor de secuencia. La interpolación de los valores conjunto de secuencias solo puede ser lineal o escalonada, no discreta. Todas las secuencias que componen un valor de conjunto de secuencias deben tener la misma interpolación. La extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos. Ejemplos de valores de conjunto de secuencias con interpolación lineal son los siguientes:
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
