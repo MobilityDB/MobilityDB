@@ -529,7 +529,6 @@ quadbin_cell_to_parent(Quadbin cell, uint32_t parent_resolution)
  * @param[in] children_resolution Target resolution (> resolution of @p cell)
  * @param[out] count Number of children returned
  * @return A palloc'd array of children cells, or NULL on invalid resolution
- * @csqlfn #Quadbin_cell_to_children()
  */
 Quadbin *
 quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,

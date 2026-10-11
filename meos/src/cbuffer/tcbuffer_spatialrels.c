@@ -1337,12 +1337,12 @@ edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 
 /**
  * @ingroup meos_cbuffer_rel_ever
- * @brief Return 1 if a temporal circular buffer and a geometry are always
- * disjoint, 0 if not, and -1 on error
+ * @brief Return 1 if a temporal circular buffer and a circular buffer are
+ * always disjoint, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
- * @csqlfn #Adisjoint_tcbuffer_geo()
+ * @csqlfn #Adisjoint_tcbuffer_cbuffer()
  */
 int
 adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
