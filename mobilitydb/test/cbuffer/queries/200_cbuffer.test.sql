@@ -94,6 +94,9 @@ SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -------------------------------------------------------------------------------
 
 SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(round(ARRAY[cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)',
+  cbuffer 'Cbuffer(Point(2.987654321 2.987654321), 0.987654321)'], 6));
+SELECT round(ARRAY[]::cbuffer[], 6);
 
 -------------------------------------------------------------------------------
 -- Cast functions 
