@@ -161,6 +161,7 @@ extern Pcpoint *pcpoint_copy(const Pcpoint *pt);
 extern uint32_t pcpoint_get_pcid(const Pcpoint *pt);
 extern uint32 pcpoint_hash(const Pcpoint *pt);
 extern uint64 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed);
+extern int pcpoint_mem_size(const Pcpoint *pt);
 
 /* Schema-aware coordinate accessors.  All write the result through @p out
  * and return @p true on success; @p false (without erroring) when the
@@ -252,6 +253,7 @@ extern Pcpoint *pcpatch_point_n(const Pcpatch *pa, int n);
 extern Pcpoint **pcpatch_points(const Pcpatch *pa, int *count);
 extern uint32 pcpatch_hash(const Pcpatch *pa);
 extern uint64 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed);
+extern int pcpatch_mem_size(const Pcpatch *pa);
 
 /* Conversion */
 

@@ -375,6 +375,12 @@ static JsonParseErrorType transform_string_values_scalar(void *state, char *toke
 Jsonb *
 jsonb_copy(const Jsonb *jb)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_copy(jb);
 }
 #endif /* MEOS */
@@ -385,6 +391,29 @@ pg_jsonb_copy(const Jsonb *jb)
   memcpy(result, jb, VARSIZE(jb));
   return result;
 }
+
+/**
+ * @ingroup meos_json_base_accessor
+ * @brief Return the size in bytes of a JSONB value
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #jsonb_copy duplicates
+ * @param[in] jb JSONB value
+ * @errval INT_MAX
+ * @note MEOS function
+ */
+#if MEOS
+int
+jsonb_mem_size(const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return INT_MAX;
+  }
+  return (int) VARSIZE(jb);
+}
+#endif /* MEOS */
 
 /*
  * pg_parse_json_or_errsave

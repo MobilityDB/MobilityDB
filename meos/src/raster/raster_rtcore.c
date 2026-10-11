@@ -399,8 +399,43 @@ raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out)
 }
 
 /*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a copy of a raster
+ * @param[in] rast Raster
+ */
+Raster *
+raster_copy(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  Raster *result = palloc(VARSIZE(rast));
+  memcpy(result, rast, VARSIZE(rast));
+  return result;
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the size in bytes of a raster
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #raster_copy duplicates
+ * @param[in] rast Raster
+ * @errval INT_MAX
+ */
+int
+raster_mem_size(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, INT_MAX);
+  return (int) VARSIZE(rast);
+}
 
 /**
  * @brief Return the header of a serialized raster, that is, its grid without

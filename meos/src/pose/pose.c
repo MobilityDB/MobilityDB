@@ -1314,6 +1314,22 @@ pose_copy(const Pose *pose)
   return result;
 }
 
+/**
+ * @ingroup meos_pose_base_accessor
+ * @brief Return the size in bytes of a pose
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #pose_copy duplicates
+ * @param[in] pose Pose
+ * @errval INT_MAX
+ */
+int
+pose_mem_size(const Pose *pose)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, INT_MAX);
+  return (int) VARSIZE(pose);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

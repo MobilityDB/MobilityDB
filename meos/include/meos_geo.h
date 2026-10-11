@@ -368,6 +368,7 @@ extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 
 extern bool geo_is_empty(const GSERIALIZED *gs);
 extern bool geo_is_unitary(const GSERIALIZED *gs);
+extern int geo_mem_size(const GSERIALIZED *gs);
 extern double geo_area(const GSERIALIZED *gs, bool spheroid);
 extern GSERIALIZED *geo_centroid(const GSERIALIZED *gs, bool spheroid);
 extern double geo_length(const GSERIALIZED *gs, bool spheroid);
