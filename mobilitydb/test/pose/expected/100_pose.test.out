@@ -226,6 +226,19 @@ SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6)
  Pose(POINT(1.123457 1.123457),0.123457)
 (1 row)
 
+SELECT asText(round(ARRAY[pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)',
+  pose 'Pose(Point Z(2.987654321 2.987654321 2.987654321), 1, 0, 0, 0)'], 6));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ {"Pose(POINT(1.123457 1.123457),0.123457)","Pose(POINT Z (2.987654 2.987654 2.987654),1,0,0,0)"}
+(1 row)
+
+SELECT round(ARRAY[]::pose[], 6);
+ round 
+-------
+ 
+(1 row)
+
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
         astext        
 ----------------------

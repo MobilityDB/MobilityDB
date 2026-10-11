@@ -340,11 +340,14 @@ SELECT quaternion(pose 'Pose(Point(1 1), 0)');
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Round the point and the orientation of the pose to the number of decimal places</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round({pose,posechain},integer=0) &#8594; {pose,posechain}
+round({pose,pose[],posechain},integer=0) &#8594; {pose,pose[],posechain}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Pose(POINT(1.123457 1.123457),0.123457)
+SELECT asText(round(ARRAY[pose(ST_Point(1.123456789,1.123456789), 0.123456789),
+  pose(ST_Point(2.987654321,2.987654321), 0.987654321)], 6));
+-- {"Pose(POINT(1.123457 1.123457),0.123457)","Pose(POINT(2.987654 2.987654),0.987654)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>

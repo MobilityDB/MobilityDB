@@ -194,6 +194,10 @@ CREATE FUNCTION round(cbuffer, integer DEFAULT 0)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(cbuffer[], integer DEFAULT 0)
+  RETURNS cbuffer[]
+  AS 'MODULE_PATHNAME', 'Cbufferarr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * SRID functions

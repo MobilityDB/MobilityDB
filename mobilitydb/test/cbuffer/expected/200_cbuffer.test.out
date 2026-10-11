@@ -168,6 +168,19 @@ SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789
  Cbuffer(POINT(1.123457 1.123457),0.123457)
 (1 row)
 
+SELECT asText(round(ARRAY[cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)',
+  cbuffer 'Cbuffer(Point(2.987654321 2.987654321), 0.987654321)'], 6));
+                                           astext                                            
+---------------------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1.123457 1.123457),0.123457)","Cbuffer(POINT(2.987654 2.987654),0.987654)"}
+(1 row)
+
+SELECT round(ARRAY[]::cbuffer[], 6);
+ round 
+-------
+ 
+(1 row)
+
 SELECT ST_AsText(round(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
                     st_astext                    
 -------------------------------------------------

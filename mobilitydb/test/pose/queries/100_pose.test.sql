@@ -132,6 +132,9 @@ SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)
 -------------------------------------------------------------------------------
 
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(round(ARRAY[pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)',
+  pose 'Pose(Point Z(2.987654321 2.987654321 2.987654321), 1, 0, 0, 0)'], 6));
+SELECT round(ARRAY[]::pose[], 6);
 
 -- A 2D pose is returned unchanged (it stores no quaternion to renormalize).
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
