@@ -620,6 +620,18 @@ SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]',
 SELECT aDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 1.5);
 SELECT aDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 6)@2001-01-01, Point(2 1 6)@2001-01-03]', 6.1);
 
+-- Two moving points exactly the distance apart are within it, ever and
+-- always, their boxes meeting once the second is grown by the distance; one
+-- unit in the last place farther apart the grown box misses the first and
+-- they are not; two whose periods interleave without sharing an instant
+-- answer NULL however far apart their boxes are
+SELECT eDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3)@2001-01-01, Point(10 3)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3)@2001-01-01, Point(10 3)@2001-01-02]', 2);
+SELECT eDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3.0000000000000004)@2001-01-01, Point(10 3.0000000000000004)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3.0000000000000004)@2001-01-01, Point(10 3.0000000000000004)@2001-01-02]', 2);
+SELECT eDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
+SELECT aDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
+
 -------------------------------------------------------------------------------
 
 -- One degree of meridian near the equator measures about 110575 m on the spheroid and 111195 m on the sphere
