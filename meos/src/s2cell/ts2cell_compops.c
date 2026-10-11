@@ -271,7 +271,6 @@ teq_s2cell_ts2cell(S2CellId cell, const Temporal *temp)
  * @ingroup meos_s2cell_comp_temp
  * @brief Return the temporal equality of two temporal S2 cells across the time
  * they share
- * @csqlfn #Teq_ts2cell_ts2cell()
  */
 Temporal *
 teq_ts2cell_ts2cell(const Temporal *temp1, const Temporal *temp2)
@@ -307,7 +306,6 @@ tne_s2cell_ts2cell(S2CellId cell, const Temporal *temp)
  * @ingroup meos_s2cell_comp_temp
  * @brief Return the temporal inequality of two temporal S2 cells across the time
  * they share
- * @csqlfn #Tne_ts2cell_ts2cell()
  */
 Temporal *
 tne_ts2cell_ts2cell(const Temporal *temp1, const Temporal *temp2)

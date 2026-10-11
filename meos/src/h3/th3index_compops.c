@@ -331,7 +331,6 @@ tne_h3index_th3index(H3Index cell, const Temporal *temp)
  * @ingroup meos_h3_comp_temp
  * @brief Return the temporal equality of two temporal H3 cells across their
  * shared time axis
- * @csqlfn #Teq_th3index_th3index()
  */
 Temporal *
 teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
@@ -346,7 +345,6 @@ teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_h3_comp_temp
  * @brief Return the temporal inequality of two temporal H3 cells across their
  * shared time axis
- * @csqlfn #Tne_th3index_th3index()
  */
 Temporal *
 tne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)

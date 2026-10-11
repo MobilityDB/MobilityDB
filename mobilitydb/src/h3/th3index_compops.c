@@ -122,20 +122,6 @@ Tcomp_th3index_h3index(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
-static Datum
-Tcomp_th3index_th3index(FunctionCallInfo fcinfo,
-  Temporal *(*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 /*****************************************************************************
  * Ever equal
  *****************************************************************************/
@@ -328,19 +314,6 @@ inline Datum
 Teq_th3index_h3index(PG_FUNCTION_ARGS)
 { return Tcomp_th3index_h3index(fcinfo, &teq_th3index_h3index); }
 
-PGDLLEXPORT Datum Teq_th3index_th3index(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_th3index_th3index);
-/**
- * @ingroup mobilitydb_h3_comp_temp
- * @brief Return the temporal equality of two temporal H3 cells across their
- * shared time axis
- * @sqlfn tEqual()
- * @sqlop @p #=
- */
-inline Datum
-Teq_th3index_th3index(PG_FUNCTION_ARGS)
-{ return Tcomp_th3index_th3index(fcinfo, &teq_th3index_th3index); }
-
 /*****************************************************************************
  * Temporal not equal
  *****************************************************************************/
@@ -368,18 +341,5 @@ PG_FUNCTION_INFO_V1(Tne_th3index_h3index);
 inline Datum
 Tne_th3index_h3index(PG_FUNCTION_ARGS)
 { return Tcomp_th3index_h3index(fcinfo, &tne_th3index_h3index); }
-
-PGDLLEXPORT Datum Tne_th3index_th3index(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_th3index_th3index);
-/**
- * @ingroup mobilitydb_h3_comp_temp
- * @brief Return the temporal inequality of two temporal H3 cells across
- * their shared time axis
- * @sqlfn tNotEqual()
- * @sqlop @p #<>
- */
-inline Datum
-Tne_th3index_th3index(PG_FUNCTION_ARGS)
-{ return Tcomp_th3index_th3index(fcinfo, &tne_th3index_th3index); }
 
 /*****************************************************************************/

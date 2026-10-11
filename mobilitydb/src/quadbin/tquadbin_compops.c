@@ -117,20 +117,6 @@ Tcomp_tquadbin_quadbin(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
-static Datum
-Tcomp_tquadbin_tquadbin(FunctionCallInfo fcinfo,
-  Temporal *(*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 /*****************************************************************************
  * Ever equal
  *****************************************************************************/
@@ -323,19 +309,6 @@ inline Datum
 Teq_tquadbin_quadbin(PG_FUNCTION_ARGS)
 { return Tcomp_tquadbin_quadbin(fcinfo, &teq_tquadbin_quadbin); }
 
-PGDLLEXPORT Datum Teq_tquadbin_tquadbin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_tquadbin_tquadbin);
-/**
- * @ingroup mobilitydb_quadbin_comp_temp
- * @brief Return the temporal equality of two temporal QUADBIN cells across their
- * shared time axis
- * @sqlfn tEqual()
- * @sqlop @p #=
- */
-inline Datum
-Teq_tquadbin_tquadbin(PG_FUNCTION_ARGS)
-{ return Tcomp_tquadbin_tquadbin(fcinfo, &teq_tquadbin_tquadbin); }
-
 /*****************************************************************************
  * Temporal not equal
  *****************************************************************************/
@@ -363,18 +336,5 @@ PG_FUNCTION_INFO_V1(Tne_tquadbin_quadbin);
 inline Datum
 Tne_tquadbin_quadbin(PG_FUNCTION_ARGS)
 { return Tcomp_tquadbin_quadbin(fcinfo, &tne_tquadbin_quadbin); }
-
-PGDLLEXPORT Datum Tne_tquadbin_tquadbin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_tquadbin_tquadbin);
-/**
- * @ingroup mobilitydb_quadbin_comp_temp
- * @brief Return the temporal inequality of two temporal QUADBIN cells across
- * their shared time axis
- * @sqlfn tNotEqual()
- * @sqlop @p #<>
- */
-inline Datum
-Tne_tquadbin_tquadbin(PG_FUNCTION_ARGS)
-{ return Tcomp_tquadbin_tquadbin(fcinfo, &tne_tquadbin_tquadbin); }
 
 /*****************************************************************************/
