@@ -23,22 +23,49 @@ SELECT geoPoseFrameSRID(3) IS NULL AS ltp_srid_null,
  t             | t
 (1 row)
 
-SELECT geoPoseFrameSRID(999) AS unknown_srid;
- unknown_srid 
---------------
-             
+SELECT frame_id, geoPoseFrameSRID(frame_id), geoPoseFrameName(frame_id),
+  geoPoseFrameIsGeographic(frame_id)
+FROM geoPoseFrames() ORDER BY frame_id;
+ frame_id | geoposeframesrid |                  geoposeframename                  | geoposeframeisgeographic 
+----------+------------------+----------------------------------------------------+--------------------------
+        1 |             4326 | WGS-84 geographic (lat/lon/h)                      | t
+        2 |             4978 | WGS-84 ECEF (Earth-Centred Earth-Fixed)            | f
+        3 |                  | Local Tangent Plane (East-North-Up)                | f
+        4 |                  | Right-handed body axes (default inner frame)       | f
+        5 |                  | GeoPose outer frame of a Composite Sequence Series | f
+        6 |                  | GeoPose inner frame of a Composite Sequence Series | f
+        7 |                  | GeoPose outer frame of a Chain                     | f
+        8 |                  | GeoPose inner frame of a Chain                     | f
+(8 rows)
+
+SELECT count(*) AS accessors_disagreeing_with_the_registry
+FROM geoPoseFrames() f
+WHERE geoPoseFrameSRID(f.frame_id) IS DISTINCT FROM f.srid
+   OR geoPoseFrameName(f.frame_id) IS DISTINCT FROM f.name
+   OR geoPoseFrameIsGeographic(f.frame_id) IS DISTINCT FROM f.is_geographic;
+ accessors_disagreeing_with_the_registry 
+-----------------------------------------
+                                       0
 (1 row)
 
+SELECT geoPoseFrameSRID(999);
+ERROR:  The GeoPose frame registry states no frame 999
+SELECT geoPoseFrameName(999);
+ERROR:  The GeoPose frame registry states no frame 999
+SELECT geoPoseFrameIsGeographic(999);
+ERROR:  The GeoPose frame registry states no frame 999
 INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic, description)
 VALUES (1000, 'CUSTOM', 'EXAMPLE', 'Example custom outer frame', 3857, false,
         'Web Mercator projection used for tile-aligned visualisation.');
 INSERT 0 1
-SELECT geoPoseFrameSRID(1000), geoPoseFrameName(1000);
- geoposeframesrid |      geoposeframename      
-------------------+----------------------------
-             3857 | Example custom outer frame
+SELECT srid, name, is_geographic FROM geopose_frames WHERE frame_id = 1000;
+ srid |            name            | is_geographic 
+------+----------------------------+---------------
+ 3857 | Example custom outer frame | f
 (1 row)
 
+SELECT geoPoseFrameName(1000);
+ERROR:  The GeoPose frame registry states no frame 1000
 DELETE FROM geopose_frames WHERE frame_id = 1000;
 DELETE 1
 SELECT count(*) FROM geopose_frames;
