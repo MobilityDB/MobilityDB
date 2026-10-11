@@ -61,6 +61,8 @@
  *-------------------------------------------------------------------------
  */
 
+#include <limits.h>
+
 #include "postgres.h"
 
 #include "catalog/pg_type.h"
@@ -158,16 +160,45 @@ pg_jsonpath_out(const JsonPath *jp)
 JsonPath *
 jsonpath_copy(const JsonPath *jp)
 {
+  /* Ensure the validity of the arguments */
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonpath_copy(jp);
 }
 #endif /* MEOS */
 JsonPath *
 pg_jsonpath_copy(const JsonPath *jp)
 {
-  JsonPath *result = palloc(sizeof(JsonPath));
-  memcpy(result, jp, sizeof(JsonPath));
+  JsonPath *result = palloc(VARSIZE(jp));
+  memcpy(result, jp, VARSIZE(jp));
   return result;
 }
+
+/**
+ * @ingroup meos_json_base_jsonpath
+ * @brief Return the size in bytes of a JSON path
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #jsonpath_copy duplicates
+ * @param[in] jp JSON path
+ * @errval INT_MAX
+ * @note MEOS function
+ */
+#if MEOS
+int
+jsonpath_mem_size(const JsonPath *jp)
+{
+  /* Ensure the validity of the arguments */
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return INT_MAX;
+  }
+  return (int) VARSIZE(jp);
+}
+#endif /* MEOS */
 
 /*
  * Recursively free a jsonpath parse-tree item and everything it owns.

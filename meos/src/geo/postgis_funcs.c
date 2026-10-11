@@ -483,6 +483,22 @@ geo_copy(const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_geo_base_accessor
+ * @brief Return the size in bytes of a geometry
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #geo_copy duplicates
+ * @param[in] gs Geometry
+ * @errval INT_MAX
+ */
+int
+geo_mem_size(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, INT_MAX);
+  return (int) VARSIZE(gs);
+}
+
+/**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 2D geometry point constructed from the arguments
  */

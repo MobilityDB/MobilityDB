@@ -214,6 +214,22 @@ posechain_copy(const PoseChain *pc)
 }
 
 /**
+ * @ingroup meos_posechain_base_accessor
+ * @brief Return the size in bytes of a pose chain
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #posechain_copy duplicates
+ * @param[in] pc Pose chain
+ * @errval INT_MAX
+ */
+int
+posechain_mem_size(const PoseChain *pc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, INT_MAX);
+  return (int) VARSIZE(pc);
+}
+
+/**
  * @ingroup meos_posechain_base_constructor
  * @brief Return a pose chain with a pose appended as its innermost link
  * @param[in] pc Pose chain

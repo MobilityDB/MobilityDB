@@ -573,6 +573,22 @@ cbuffer_copy(const Cbuffer *cb)
   return result;
 }
 
+/**
+ * @ingroup meos_cbuffer_base_accessor
+ * @brief Return the size in bytes of a circular buffer
+ * @details The size is the number of bytes of the flat memory image of the
+ * value, which #cbuffer_copy duplicates
+ * @param[in] cb Circular buffer
+ * @errval INT_MAX
+ */
+int
+cbuffer_mem_size(const Cbuffer *cb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, INT_MAX);
+  return (int) VARSIZE(cb);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

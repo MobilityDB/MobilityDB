@@ -173,6 +173,7 @@ extern STBox *pose_to_stbox(const Pose *pose);
 
 extern uint32 pose_hash(const Pose *pose);
 extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
+extern int pose_mem_size(const Pose *pose);
 extern double *pose_quaternion(const Pose *pose, int *count);
 extern double *pose_ypr(const Pose *pose, int *count);
 extern double pose_yaw(const Pose *pose);
@@ -466,6 +467,7 @@ extern Pose *posechain_pose_n(const PoseChain *pc, int n);
 extern Pose **posechain_poses(const PoseChain *pc, int *count);
 extern uint32 posechain_hash(const PoseChain *pc);
 extern uint64 posechain_hash_extended(const PoseChain *pc, uint64 seed);
+extern int posechain_mem_size(const PoseChain *pc);
 
 /* Transformation functions */
 

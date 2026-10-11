@@ -897,6 +897,36 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
   return;
 }
 
+/**
+ * @ingroup meos_npoint_base_constructor
+ * @brief Return a copy of a network point
+ * @param[in] np Network point
+ */
+Npoint *
+npoint_copy(const Npoint *np)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL);
+  Npoint *result = palloc(sizeof(Npoint));
+  memcpy(result, np, sizeof(Npoint));
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_base_constructor
+ * @brief Return a copy of a network segment
+ * @param[in] ns Network segment
+ */
+Nsegment *
+nsegment_copy(const Nsegment *ns)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL);
+  Nsegment *result = palloc(sizeof(Nsegment));
+  memcpy(result, ns, sizeof(Nsegment));
+  return result;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
