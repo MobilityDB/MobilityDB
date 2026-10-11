@@ -244,13 +244,10 @@ geopose_frame_registered(int32_t frame_id)
 /**
  * @ingroup meos_pose_base_geopose
  * @brief Return the name of a frame of the OGC GeoPose registry
- * @details The PostgreSQL function of the same name reads the table the
- * registry seeds, which also holds the frames a user registers, as
- * #meos_pc_schema_srid answers what `pointCloudSchemaSRID` reads from its table
  * @param[in] frame_id Identifier of the frame
  * @return A copy of the name, which the caller frees
  * @errval NULL
- * @sqlfn geoPoseFrameName()
+ * @csqlfn #Geopose_frame_name()
  */
 char *
 geopose_frame_name(int32_t frame_id)
@@ -263,13 +260,11 @@ geopose_frame_name(int32_t frame_id)
  * @ingroup meos_pose_base_geopose
  * @brief Return the spatial reference system of a frame of the OGC GeoPose
  * registry, 0 for a frame parameterised at runtime
- * @details The PostgreSQL function of the same name reads the table the
- * registry seeds, which also holds the frames a user registers, and answers
- * NULL where this function answers 0; an unknown frame answers `SRID_INVALID`,
- * the miss value of #meos_pc_schema_srid
+ * @details The SQL function answers NULL where this function answers 0; an
+ * unknown frame answers `SRID_INVALID`, the miss value of #meos_pc_schema_srid
  * @param[in] frame_id Identifier of the frame
  * @errval SRID_INVALID
- * @sqlfn geoPoseFrameSRID()
+ * @csqlfn #Geopose_frame_srid()
  */
 int32_t
 geopose_frame_srid(int32_t frame_id)
@@ -282,11 +277,9 @@ geopose_frame_srid(int32_t frame_id)
  * @ingroup meos_pose_base_geopose
  * @brief Return true if a frame of the OGC GeoPose registry is a geographic
  * (latitude, longitude, height) frame
- * @details The PostgreSQL function of the same name reads the table the
- * registry seeds, which also holds the frames a user registers
  * @param[in] frame_id Identifier of the frame
  * @errval false
- * @sqlfn geoPoseFrameIsGeographic()
+ * @csqlfn #Geopose_frame_is_geographic()
  */
 bool
 geopose_frame_is_geographic(int32_t frame_id)

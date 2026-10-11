@@ -383,6 +383,66 @@ Geopose_frames(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
 }
 
+PGDLLEXPORT Datum Geopose_frame_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geopose_frame_srid);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return the spatial reference system of a frame of the OGC GeoPose
+ *   registry, NULL for a frame parameterised at runtime
+ * @details The frames are the rows #Geopose_frames emits, and the answer is
+ * the one its `srid` column states; a frame the registry does not state
+ * raises an error
+ * @sqlfn geoPoseFrameSRID()
+ */
+Datum
+Geopose_frame_srid(PG_FUNCTION_ARGS)
+{
+  int32 frame_id = PG_GETARG_INT32(0);
+  int32_t result = geopose_frame_srid(frame_id);
+  /* A frame parameterised at runtime states no reference system */
+  if (result == 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Geopose_frame_name(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geopose_frame_name);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return the name of a frame of the OGC GeoPose registry
+ * @details The frames are the rows #Geopose_frames emits; a frame the
+ * registry does not state raises an error
+ * @sqlfn geoPoseFrameName()
+ */
+Datum
+Geopose_frame_name(PG_FUNCTION_ARGS)
+{
+  int32 frame_id = PG_GETARG_INT32(0);
+  char *result = geopose_frame_name(frame_id);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
+PGDLLEXPORT Datum Geopose_frame_is_geographic(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geopose_frame_is_geographic);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return true if a frame of the OGC GeoPose registry is a geographic
+ *   (latitude, longitude, height) frame
+ * @details The frames are the rows #Geopose_frames emits; a frame the
+ * registry does not state raises an error
+ * @sqlfn geoPoseFrameIsGeographic()
+ */
+Datum
+Geopose_frame_is_geographic(PG_FUNCTION_ARGS)
+{
+  int32 frame_id = PG_GETARG_INT32(0);
+  PG_RETURN_BOOL(geopose_frame_is_geographic(frame_id));
+}
+
 PGDLLEXPORT Datum Pose_as_geopose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_as_geopose);
 /**

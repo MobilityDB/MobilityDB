@@ -2167,11 +2167,11 @@ SELECT count(*) FROM geoPoseFrames();
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para>Three SQL helpers provide a stable lookup interface that is independent of the table layout, and read the table so that a frame a user registers is found too:</para>
+			<para>Three functions answer for a frame MEOS registers, one of the rows <varname>geoPoseFrames</varname> returns, and raise an error for any other identifier; a frame a user registers is read from the table <varname>geopose_frames</varname> directly:</para>
 			<itemizedlist>
 				<listitem xml:id="pose_geopose_frame_srid">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>
-					<para>Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
+					<para>Return the SRID of a frame MEOS registers, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameSRID(integer) → integer
 </programlisting>
@@ -2184,7 +2184,7 @@ SELECT geoPoseFrameSRID(3);
 				</listitem>
 				<listitem xml:id="pose_geopose_frame_name">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
-					<para>Return the human-readable name of a frame</para>
+					<para>Return the human-readable name of a frame MEOS registers</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameName(integer) → text
 </programlisting>
@@ -2197,7 +2197,7 @@ SELECT geoPoseFrameName(2), geoPoseFrameName(3);
 				</listitem>
 				<listitem xml:id="pose_geopose_frame_is_geographic">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
-					<para>Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
+					<para>Return <varname>true</varname> for a lat/lon/h frame MEOS registers, <varname>false</varname> for a Cartesian or projected one</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameIsGeographic(integer) → boolean
 </programlisting>

@@ -90,19 +90,22 @@ INSERT INTO geopose_frames(frame_id, authority, code, name, srid,
 SELECT frame_id, authority, code, name, srid, is_geographic, description
 FROM geoPoseFrames();
 
-/* Helper SQL functions to query the registry without exposing the schema. */
+/* The three accessors answer for the frames MEOS registers, the rows
+ * geoPoseFrames() emits, and raise an error for a frame it does not register.
+ * A frame a user registers (authority CUSTOM) is read from the table
+ * geopose_frames directly. */
 
 CREATE FUNCTION geoPoseFrameSRID(frame_id integer) RETURNS integer
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT srid FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
+  AS 'MODULE_PATHNAME', 'Geopose_frame_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoPoseFrameName(frame_id integer) RETURNS text
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT name FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
+  AS 'MODULE_PATHNAME', 'Geopose_frame_name'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoPoseFrameIsGeographic(frame_id integer) RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT is_geographic FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
+  AS 'MODULE_PATHNAME', 'Geopose_frame_is_geographic'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Mark the catalog as a configuration table so pg_dump preserves the row
  * data (the seed) but lets users edit it in place. */
