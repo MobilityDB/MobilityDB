@@ -333,7 +333,6 @@ tne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @ingroup meos_quadbin_comp_temp
  * @brief Return the temporal equality of two temporal QUADBIN cells across
  * their shared time axis
- * @csqlfn #Teq_tquadbin_tquadbin()
  */
 Temporal *
 teq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
@@ -347,7 +346,6 @@ teq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_quadbin_comp_temp
  * @brief Return the temporal inequality of two temporal QUADBIN cells across
  * their shared time axis
- * @csqlfn #Tne_tquadbin_tquadbin()
  */
 Temporal *
 tne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)

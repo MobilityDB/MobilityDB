@@ -6,12 +6,5 @@
 # shrinks: a new unreachable wrapper fails the check. Regenerate with
 # --rebaseline after a fix.
 Cbufferarr_round round()
-Jsonb_as_text text()
 Posearr_round round()
 Posechain_from_text posechainFromText()
-Teq_th3index_th3index tEqual()
-Teq_tquadbin_tquadbin tEqual()
-Teq_ts2cell_ts2cell tEqual()
-Tne_th3index_th3index tNotEqual()
-Tne_tquadbin_tquadbin tNotEqual()
-Tne_ts2cell_ts2cell tNotEqual()
