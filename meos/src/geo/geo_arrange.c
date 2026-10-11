@@ -687,9 +687,9 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
       if (ta.lo > 0.0 || tb.hi < 0.0)
         return ARR_ANSWERED;
       Ival cr = ival_cross(ax, ay, rx, ry);
-      Ival far = ival_sub(ival_mul(cr, cr), ival_mul(a->cr2[j],
+      Ival beyond = ival_sub(ival_mul(cr, cr), ival_mul(a->cr2[j],
         ival_dot(rx, ry, rx, ry)));
-      if (far.lo > 0.0)
+      if (beyond.lo > 0.0)
         return ARR_ANSWERED;
     }
     /* The arc is the part of its circle on one side of the line of its
@@ -878,10 +878,10 @@ arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
   /* Centres the intervals cannot tell apart, as of two join arcs about one
    * vertex: the crossings are placed from the exact terms instead,
    * P = M1 + N1 / D1 + (G d' + sigma sqrt(H) rot(d')) / (2 Q L) */
-  bool near = ival_sign(d2) != 1;
+  bool concentric = ival_sign(d2) != 1;
   Ival c1x = ival(0.0), c1y = c1x, ex = c1x, ey = c1x, eg = c1x, eh = c1x,
     eden = c1x;
-  if (near && meet != 0)
+  if (concentric && meet != 0)
   {
     double t[ARCARC_NTERMS][2];
     if (! arcarc_crossing_terms(&a->e[i], &a->e[j], t))
@@ -908,7 +908,7 @@ arr_meet_arcs_exact(Arr *a, uint32_t i, uint32_t j)
       return ARR_MEETING;
     int sigma = (r == 0) ? -1 : 1;
     Ival px, py;
-    if (near)
+    if (concentric)
     {
       px = ival_add(c1x, ival_div(ival_sub(ival_mul(eg, ex),
         ival_mul(ival(sigma), ival_mul(eh, ey))), eden));
