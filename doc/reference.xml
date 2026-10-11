@@ -1812,13 +1812,13 @@
 						<para><link linkend="pose_geopose_frames_fn"><varname>geoPoseFrames</varname></link>: Return every frame the standard and the encoders name</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_geopose_frame_srid"><varname>geoPoseFrameSRID</varname></link>: Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
+						<para><link linkend="pose_geopose_frame_srid"><varname>geoPoseFrameSRID</varname></link>: Return the SRID of a frame MEOS registers, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_geopose_frame_name"><varname>geoPoseFrameName</varname></link>: Return the human-readable name of a frame</para>
+						<para><link linkend="pose_geopose_frame_name"><varname>geoPoseFrameName</varname></link>: Return the human-readable name of a frame MEOS registers</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_geopose_frame_is_geographic"><varname>geoPoseFrameIsGeographic</varname></link>: Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
+						<para><link linkend="pose_geopose_frame_is_geographic"><varname>geoPoseFrameIsGeographic</varname></link>: Return <varname>true</varname> for a lat/lon/h frame MEOS registers, <varname>false</varname> for a Cartesian or projected one</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

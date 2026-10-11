@@ -2161,11 +2161,11 @@ SELECT count(*) FROM geoPoseFrames();
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para>Tres funciones auxiliares SQL proporcionan una interfaz de consulta estable que es independiente de la disposición de la tabla, y leen la tabla para que también se encuentre un marco que registre un usuario:</para>
+			<para>Tres funciones responden para un marco que MEOS registra, una de las filas que devuelve <varname>geoPoseFrames</varname>, y generan un error para cualquier otro identificador; un marco que registra un usuario se lee directamente de la tabla <varname>geopose_frames</varname>:</para>
 			<itemizedlist>
 				<listitem xml:id="pose_geopose_frame_srid">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>
-					<para>Devuelve el SRID de un marco, o <varname>NULL</varname> si el marco es paramétrico (LTP, BODY)</para>
+					<para>Devuelve el SRID de un marco que MEOS registra, o <varname>NULL</varname> si el marco es paramétrico (LTP, BODY)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameSRID(integer) → integer
 </programlisting>
@@ -2178,7 +2178,7 @@ SELECT geoPoseFrameSRID(3);
 				</listitem>
 				<listitem xml:id="pose_geopose_frame_name">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
-					<para>Devuelve el nombre legible del marco</para>
+					<para>Devuelve el nombre legible de un marco que MEOS registra</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameName(integer) → text
 </programlisting>
@@ -2191,7 +2191,7 @@ SELECT geoPoseFrameName(2), geoPoseFrameName(3);
 				</listitem>
 				<listitem xml:id="pose_geopose_frame_is_geographic">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
-					<para>Devuelve <varname>true</varname> para los marcos lat/lon/h, <varname>false</varname> para los cartesianos o proyectados</para>
+					<para>Devuelve <varname>true</varname> para un marco lat/lon/h que MEOS registra, <varname>false</varname> para uno cartesiano o proyectado</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameIsGeographic(integer) → boolean
 </programlisting>
