@@ -146,7 +146,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal circular buffer and a geometry are always disjoint, 0 if not, and -1 on error. </p>
+<p>Return 1 if a temporal circular buffer and a circular buffer are always disjoint, 0 if not, and -1 on error. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
@@ -154,7 +154,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>aDisjoint(a, b) is equivalent to NOT eIntersects(a, b) @csqlfn <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga0f4f41f7c2907825d49de30c66adb710.html#ga0f4f41f7c2907825d49de30c66adb710" title="Return true if a temporal circular buffer and a geometry are always disjoint @sqlfn aDisjoint()">Adisjoint_tcbuffer_geo()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>aDisjoint(a, b) is equivalent to NOT eIntersects(a, b) @csqlfn <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga5d2dd5e9cf59f3f6131205b882cfd56b.html#ga5d2dd5e9cf59f3f6131205b882cfd56b" title="Return true if a temporal circular buffer and a circular buffer are always disjoint @sqlfn aDisjoint(...">Adisjoint_tcbuffer_cbuffer()</a> </dd></dl>
 
 </div>
 </div>
