@@ -65,6 +65,8 @@ extern bool span_parse(const char **str, MeosType spantype, bool end,
 extern SpanSet *spanset_parse(const char **str, MeosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
+extern bool interp_parse(const char **str, MeosType temptype,
+  interpType *result);
 extern TInstant *tinstant_parse(const char **str, MeosType temptype, bool end);
 extern TSequence *tdiscseq_parse(const char **str, MeosType temptype);
 extern TSequence *tcontseq_parse(const char **str, MeosType temptype, 

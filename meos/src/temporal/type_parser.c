@@ -702,6 +702,37 @@ error:
 /* Temporal Types */
 
 /**
+ * @brief Parse the interpolation prefix of a temporal value from the buffer
+ * @details The prefix `Interp=Step;` or `Interp=Linear;` states the
+ * interpolation of a sequence (set). Without a prefix, the interpolation is
+ * linear for a temporal type that supports it and step otherwise. A temporal
+ * type whose values cannot be interpolated linearly refuses the linear prefix
+ * as its constructors refuse a linear interpolation
+ * @param[in,out] str Input string, advanced past what is read
+ * @param[in] temptype Temporal type
+ * @param[out] result Interpolation
+ * @errval false
+ */
+bool
+interp_parse(const char **str, MeosType temptype, interpType *result)
+{
+  *result = temptype_supports_linear(temptype) ? LINEAR : STEP;
+  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
+  {
+    *str += 12;
+    *result = STEP;
+  }
+  else if (pg_strncasecmp(*str, "Interp=Linear;", 14) == 0)
+  {
+    if (! ensure_valid_interp(temptype, LINEAR))
+      return false;
+    *str += 14;
+    *result = LINEAR;
+  }
+  return true;
+}
+
+/**
  * @brief Parse a temporal instant value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -918,14 +949,9 @@ temporal_parse(const char **str, MeosType temptype)
       tpoint_parse(str, temptype) : tspatial_parse(str, temptype);
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
-  /* Starts with "Interp=Step;" */
-  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
-  {
-    /* Move str after the semicolon */
-    *str += 12;
-    interp = STEP;
-  }
+  interpType interp;
+  if (! interp_parse(str, temptype, &interp))
+    return NULL;
 
   /* Allow spaces after Interp */
   p_whitespace(str);
