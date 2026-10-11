@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['w_0',['w',['../structDistMotion_ab8421e4ed47d8c6758905e2d1a9055b8.html#ab8421e4ed47d8c6758905e2d1a9055b8',1,'DistMotion::w()'],['../structRecipe_a7f476099e32718a640a37c41163f5f06.html#a7f476099e32718a640a37c41163f5f06',1,'Recipe::w()'],['../structDistFunTerm_ac80e040fefa1ea139a806522ce799321.html#ac80e040fefa1ea139a806522ce799321',1,'DistFunTerm::w()']]],
+  ['w_0',['w',['../structDistMotion_ab8421e4ed47d8c6758905e2d1a9055b8.html#ab8421e4ed47d8c6758905e2d1a9055b8',1,'DistMotion::w()'],['../structMeetExact_aef66891b4c784987e2ff7069e0107884.html#aef66891b4c784987e2ff7069e0107884',1,'MeetExact::w()'],['../structRecipe_a7f476099e32718a640a37c41163f5f06.html#a7f476099e32718a640a37c41163f5f06',1,'Recipe::w()'],['../structDistFunTerm_ac80e040fefa1ea139a806522ce799321.html#ac80e040fefa1ea139a806522ce799321',1,'DistFunTerm::w()']]],
   ['want_1',['want',['../trgeo__distwalk__degen__unit_8c_a912df5138dbf86103bea0bfbf8a5daba.html#a912df5138dbf86103bea0bfbf8a5daba',1,'trgeo_distwalk_degen_unit.c']]],
   ['way_2',['way',['../trgeo__distance_8txt_a1e76ab176308b477e844fc7b241048e2.html#a1e76ab176308b477e844fc7b241048e2',1,'trgeo_distance.txt']]],
   ['ways_5fcsv_3',['WAYS_CSV',['../ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d',1,'ways_meos.c']]],

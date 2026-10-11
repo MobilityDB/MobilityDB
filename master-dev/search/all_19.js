@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['w_0',['w',['../structDistFunTerm_ac80e040fefa1ea139a806522ce799321.html#ac80e040fefa1ea139a806522ce799321',1,'DistFunTerm::w()'],['../structDistMotion_ab8421e4ed47d8c6758905e2d1a9055b8.html#ab8421e4ed47d8c6758905e2d1a9055b8',1,'DistMotion::w()'],['../structRecipe_a7f476099e32718a640a37c41163f5f06.html#a7f476099e32718a640a37c41163f5f06',1,'Recipe::w()']]],
+  ['w_0',['w',['../structRecipe_a7f476099e32718a640a37c41163f5f06.html#a7f476099e32718a640a37c41163f5f06',1,'Recipe::w()'],['../structDistFunTerm_ac80e040fefa1ea139a806522ce799321.html#ac80e040fefa1ea139a806522ce799321',1,'DistFunTerm::w()'],['../structDistMotion_ab8421e4ed47d8c6758905e2d1a9055b8.html#ab8421e4ed47d8c6758905e2d1a9055b8',1,'DistMotion::w()'],['../structMeetExact_aef66891b4c784987e2ff7069e0107884.html#aef66891b4c784987e2ff7069e0107884',1,'MeetExact::w()']]],
   ['walk_5farea_1',['WALK_AREA',['../postgis__funcs_8c_a57a1e2f771da2e2b36bd9fbf11cbfef2.html#a57a1e2f771da2e2b36bd9fbf11cbfef2a05089b80084276545a7536e17aef438f',1,'postgis_funcs.c']]],
   ['walk_5fbefore_2',['walk_before',['../trgeo__distwalk_8c_af83bd6ed2ae8fd61579d38098c504f90.html#af83bd6ed2ae8fd61579d38098c504f90',1,'trgeo_distwalk.c']]],
   ['walk_5fcandidate_3',['walk_candidate',['../trgeo__distwalk_8c_a1aee54efc432c3d0de8a54fcb7fe22ec.html#a1aee54efc432c3d0de8a54fcb7fe22ec',1,'trgeo_distwalk.c']]],

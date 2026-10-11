@@ -2,5 +2,21 @@ var searchData=
 [
   ['affine_0',['AFFINE',['../structAFFINE.html',1,'']]],
   ['ais_5frecord_1',['AIS_record',['../structAIS__record.html',1,'']]],
-  ['arcturn_2',['ArcTurn',['../structArcTurn.html',1,'']]]
+  ['arcarccircles_2',['ArcarcCircles',['../structArcarcCircles.html',1,'']]],
+  ['arcsegarena_3',['ArcsegArena',['../structArcsegArena.html',1,'']]],
+  ['arcsegexact_4',['ArcsegExact',['../structArcsegExact.html',1,'']]],
+  ['arcsegfilter_5',['ArcsegFilter',['../structArcsegFilter.html',1,'']]],
+  ['arcsegmeet_6',['ArcsegMeet',['../structArcsegMeet.html',1,'']]],
+  ['arcsegsigns_7',['ArcsegSigns',['../structArcsegSigns.html',1,'']]],
+  ['arcturn_8',['ArcTurn',['../structArcTurn.html',1,'']]],
+  ['arr_9',['Arr',['../structArr.html',1,'']]],
+  ['arrangepiece_10',['ArrangePiece',['../structArrangePiece.html',1,'']]],
+  ['arrcross_11',['ArrCross',['../structArrCross.html',1,'']]],
+  ['arrcut_12',['ArrCut',['../structArrCut.html',1,'']]],
+  ['arrextreme_13',['ArrExtreme',['../structArrExtreme.html',1,'']]],
+  ['arrhalf_14',['ArrHalf',['../structArrHalf.html',1,'']]],
+  ['arrmeet_15',['ArrMeet',['../structArrMeet.html',1,'']]],
+  ['arrnode_16',['ArrNode',['../structArrNode.html',1,'']]],
+  ['arrpiece_17',['ArrPiece',['../structArrPiece.html',1,'']]],
+  ['arrsweep_18',['ArrSweep',['../structArrSweep.html',1,'']]]
 ];

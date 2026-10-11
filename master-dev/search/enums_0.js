@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['clipoper_0',['ClipOper',['../geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4',1,'geo_poly_clip.h']]],
-  ['compoper_1',['CompOper',['../meos_2include_2temporal_2temporal_8h_ae8ccf22e7a234d746205612bfa9a235a.html#ae8ccf22e7a234d746205612bfa9a235a',1,'temporal.h']]]
+  ['arcarcterm_0',['ArcarcTerm',['../geo__funcs_8h_afdff9c5fe2991305c9d2b4b09d44d860.html#afdff9c5fe2991305c9d2b4b09d44d860',1,'geo_funcs.h']]],
+  ['arcsegmeetkind_1',['ArcsegMeetKind',['../geo__funcs_8h_a2ae62c202395d52e91e55cf34ae0caab.html#a2ae62c202395d52e91e55cf34ae0caab',1,'geo_funcs.h']]],
+  ['arrangestatus_2',['ArrangeStatus',['../geo__arrange_8h_ae26635688daa537d290b17522c400d82.html#ae26635688daa537d290b17522c400d82',1,'geo_arrange.h']]]
 ];
