@@ -116,13 +116,13 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the spatial reference system of a frame of the OGC GeoPose registry, 0 for a frame parameterised at runtime. </p>
-<p >The PostgreSQL function of the same name reads the table the registry seeds, which also holds the frames a user registers, and answers NULL where this function answers 0; an unknown frame answers <code>SRID_INVALID</code>, the miss value of <a class="el" href="group__meos__pointcloud__schema__cache_gad25dfa4d16192376b7d3e3e6df47f2a0.html#gad25dfa4d16192376b7d3e3e6df47f2a0" title="Return the cached SRID for a pcid (SRID_INVALID on miss)">meos_pc_schema_srid</a> </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The SQL function answers NULL where this function answers 0; an unknown frame answers <code>SRID_INVALID</code>, the miss value of <a class="el" href="group__meos__pointcloud__schema__cache_gad25dfa4d16192376b7d3e3e6df47f2a0.html#gad25dfa4d16192376b7d3e3e6df47f2a0" title="Return the cached SRID for a pcid (SRID_INVALID on miss)">meos_pc_schema_srid</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">frame_id</td><td>Identifier of the frame </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return SRID_INVALID @sqlfn geoPoseFrameSRID() </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return SRID_INVALID @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_gae9e04c2a3efd0113ee2acf9cb66b153d.html#gae9e04c2a3efd0113ee2acf9cb66b153d" title="Return the spatial reference system of a frame of the OGC GeoPose registry, NULL for a frame paramete...">Geopose_frame_srid()</a> </dd></dl>
 
 </div>
 </div>

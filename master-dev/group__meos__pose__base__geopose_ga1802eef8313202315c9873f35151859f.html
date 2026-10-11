@@ -116,7 +116,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the name of a frame of the OGC GeoPose registry. </p>
-<p >The PostgreSQL function of the same name reads the table the registry seeds, which also holds the frames a user registers, as <a class="el" href="group__meos__pointcloud__schema__cache_gad25dfa4d16192376b7d3e3e6df47f2a0.html#gad25dfa4d16192376b7d3e3e6df47f2a0" title="Return the cached SRID for a pcid (SRID_INVALID on miss)">meos_pc_schema_srid</a> answers what <code>pointCloudSchemaSRID</code> reads from its table </p><dl class="params"><dt>Parameters</dt><dd>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">frame_id</td><td>Identifier of the frame </td></tr>
   </table>
@@ -124,7 +124,7 @@ $(function() {
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A copy of the name, which the caller frees </dd>
 <dd>
-On error return NULL @sqlfn geoPoseFrameName() </dd></dl>
+On error return NULL @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_ga5dcbca5308099244c3a8ae661b4a7beb.html#ga5dcbca5308099244c3a8ae661b4a7beb" title="Return the name of a frame of the OGC GeoPose registry.">Geopose_frame_name()</a> </dd></dl>
 
 </div>
 </div>
