@@ -1853,6 +1853,42 @@ SELECT eDwithin(tgeompoint '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Poi
  
 (1 row)
 
+SELECT eDwithin(tgeompoint '[Point(-1000000 1)@2001-01-01, Point(1500000 1)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 1);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(-1000000 1)@2001-01-01, Point(1500000 1)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 0.9999999999999999);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(9000000 10000001)@2001-01-01, Point(11500000 10000001)@2001-01-02]', tgeompoint '[Point(10000000 10000000)@2001-01-01, Point(10000000 10000000)@2001-01-02]', 1);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '[Point(9000000 10000001)@2001-01-01, Point(11500000 10000001)@2001-01-02]', tgeompoint '[Point(10000000 10000000)@2001-01-01, Point(10000000 10000000)@2001-01-02]', 0.9999999999999999);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(tgeompoint '[Point(3 4)@2001-01-01, Point(-4 3)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 5);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(tgeompoint '[Point(3 4)@2001-01-01, Point(-4 3)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 4.999999999999999);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT eDwithin(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(1 1 1)@2001-01-01', 2);
  edwithin 
 ----------
