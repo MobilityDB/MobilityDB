@@ -231,11 +231,14 @@ SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Redondea el punto y el radio del búfer circular en el número de lugares decimales</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round(cbuffer,integer=0) → cbuffer
+round({cbuffer,cbuffer[]},integer=0) → {cbuffer,cbuffer[]}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Cbuffer(POINT(1.123457 1.123457),0.123457)
+SELECT asText(round(ARRAY[cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789),
+  cbuffer(ST_Point(2.987654321,2.987654321), 0.987654321)], 6));
+-- {"Cbuffer(POINT(1.123457 1.123457),0.123457)","Cbuffer(POINT(2.987654 2.987654),0.987654)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>
