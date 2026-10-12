@@ -312,6 +312,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8c7c150ee032d76c797920948aa89b59.html#a8c7c150ee032d76c797920948aa89b59">meos_spatialrel_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a55d863c47fa63a20f1e73c23d1f8dd9d.html#a55d863c47fa63a20f1e73c23d1f8dd9d">MOTION_FILTER_MAXMAG</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad0c09addfadf923a0c66ce04f714cd5f.html#ad0c09addfadf923a0c66ce04f714cd5f">MOTION_FILTER_MINMAG</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0de4d3963740243ada9dfcf55e9a384f.html#a0de4d3963740243ada9dfcf55e9a384f">MOTION_FILTER_SLACK</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aea1fd25607ffd48796dc3473143e396f.html#aea1fd25607ffd48796dc3473143e396f">MOTION_FILTER_TINY</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a148cae15c245e67847e40ebdcfd8a766.html#a148cae15c245e67847e40ebdcfd8a766">mrr_add_edge_directions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac22ae71f1e717a5d93c8c8c967c2a5bc.html#ac22ae71f1e717a5d93c8c8c967c2a5bc">mrr_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0eb8a94f7f5812181debdca3ac43369a.html#a0eb8a94f7f5812181debdca3ac43369a">mrr_arc_rectangle</a></td></tr>
@@ -334,6 +338,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a30e29ffb0b74a323a95dbae9bc80bc10.html#a30e29ffb0b74a323a95dbae9bc80bc10">point_distance_square_terms</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7f5d5db534f188d362a9c4d086567c6b.html#a7f5d5db534f188d362a9c4d086567c6b">point_in_rings_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a2193502197c9c8a6a58f31ba823363d0.html#a2193502197c9c8a6a58f31ba823363d0">point_motion_dwithin_exact</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_acfaf308a08cd906c5005b1ee9841b7c4.html#acfaf308a08cd906c5005b1ee9841b7c4">point_motion_dwithin_filter</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3913168d81a9bbd03302179f21a26a81.html#a3913168d81a9bbd03302179f21a26a81">point_motion_filter_exceeds</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad72eeadfc0c13dd139beefba8d6f5797.html#ad72eeadfc0c13dd139beefba8d6f5797">point_motion_nad_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac0b3664a3713f28926837638c34cbd32.html#ac0b3664a3713f28926837638c34cbd32">point_motion_squares</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a9b5e17f41811b6ed88f0f272624bae2a.html#a9b5e17f41811b6ed88f0f272624bae2a">point_on_arc_circle</a></td></tr>
@@ -600,8 +606,8 @@ $(function() {
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="meos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4.html#a5867d5cee709779a86621b62fb522ae4">arcseg_x_add</a>(arena, <a class="code hl_function" href="meos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a.html#a5da7c4e294a4dd4d02c0c1758e84727a">arcseg_x_mul</a>(arena, ux, rx), \</div>
 <div class="line">  <a class="code hl_function" href="meos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a.html#a5da7c4e294a4dd4d02c0c1758e84727a">arcseg_x_mul</a>(arena, uy, ry))</div>
-<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4_html_a5867d5cee709779a86621b62fb522ae4"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4.html#a5867d5cee709779a86621b62fb522ae4">arcseg_x_add</a></div><div class="ttdeci">static ArcsegExact arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:4057</div></div>
-<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a_html_a5da7c4e294a4dd4d02c0c1758e84727a"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a.html#a5da7c4e294a4dd4d02c0c1758e84727a">arcseg_x_mul</a></div><div class="ttdeci">static ArcsegExact arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:4100</div></div>
+<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4_html_a5867d5cee709779a86621b62fb522ae4"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_a5867d5cee709779a86621b62fb522ae4.html#a5867d5cee709779a86621b62fb522ae4">arcseg_x_add</a></div><div class="ttdeci">static ArcsegExact arcseg_x_add(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:4256</div></div>
+<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a_html_a5da7c4e294a4dd4d02c0c1758e84727a"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_a5da7c4e294a4dd4d02c0c1758e84727a.html#a5da7c4e294a4dd4d02c0c1758e84727a">arcseg_x_mul</a></div><div class="ttdeci">static ArcsegExact arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:4299</div></div>
 </div><!-- fragment -->
 </div>
 </div>
