@@ -122,6 +122,9 @@ tempspatialrel_families:
           - {l: geometry,   r: tgeompoint}
           - {l: tgeompoint, r: geometry}
           - {l: tgeompoint, r: tgeompoint}
+          - {l: geography,  r: tgeogpoint, spheroid: true}
+          - {l: tgeogpoint, r: geography,  spheroid: true}
+          - {l: tgeogpoint, r: tgeogpoint, spheroid: true}
 
   # ---- cast: delegate to tgeo's tContains..tDwithin above via a cast
   # expression (cast-only spatial uniformization; no family below has

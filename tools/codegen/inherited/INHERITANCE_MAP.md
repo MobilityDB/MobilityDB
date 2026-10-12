@@ -253,6 +253,13 @@ predicates a temporal geography declares, dropping contains, covers, touches and
 `tIntersects` between two cells, the spatiotemporal predicates a temporal geography
 declares.
 
+**`spheroid: true` on a direction reads the earth model from a final argument.** A
+`tDwithin` direction between temporal geography points, or between a temporal geography
+point and a geography, sets `spheroid: true`, and `tempspatialrels_native.sql.tmpl` then
+declares a final `spheroid boolean DEFAULT true` after the distance, as `eDwithin` of
+temporal geography points declares it. The `tpoint` family states its three geodetic
+directions this way.
+
 **Box-type axis (`boxtypes:`)** — the C bounding-box dispatchers are per *box type*,
 not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
 `tstzspan` (temporal-only), `tpcbox` (pointcloud). One `stbox` impl serves every
