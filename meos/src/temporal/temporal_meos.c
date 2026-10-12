@@ -451,7 +451,7 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
  * @brief Return the array of base values of a temporal boolean
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
+ * @csqlfn #Tbool_values()
  */
 bool *
 tbool_values(const Temporal *temp, int *count)
@@ -504,7 +504,6 @@ tbool_unnest(const Temporal *temp, bool **values, int *count)
  * @brief Return the array of base values of a temporal integer
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 int *
 tint_values(const Temporal *temp, int *count)
@@ -557,7 +556,6 @@ tint_unnest(const Temporal *temp, int **values, int *count)
  * @brief Return the array of base values of a temporal big integer
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 int64 *
 tbigint_values(const Temporal *temp, int *count)
@@ -610,7 +608,6 @@ tbigint_unnest(const Temporal *temp, int64 **values, int *count)
  * @brief Return the array of base values of a temporal float
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 double *
 tfloat_values(const Temporal *temp, int *count)
@@ -663,7 +660,6 @@ tfloat_unnest(const Temporal *temp, double **values, int *count)
  * @brief Return the array of copies of base values of a temporal text
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 text **
 ttext_values(const Temporal *temp, int *count)

@@ -438,7 +438,6 @@ th3index_value_n(const Temporal *temp, int n, H3Index *result)
  * @param[in] temp Temporal H3 cell
  * @param[out] count Number of distinct values
  * @return Allocated array of `count` H3Index values. Caller owns.
- * @csqlfn #Temporal_valueset()
  */
 H3Index *
 th3index_values(const Temporal *temp, int *count)

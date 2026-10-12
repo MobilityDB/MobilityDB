@@ -21,7 +21,7 @@ accessor_families:
     file:      mobilitydb/sql/temporal/022_temporal.in.sql
     reference: true
     types:
-      - {temp: tbool,   base: boolean, baseset: "boolean[]"}
+      - {temp: tbool,   base: boolean, baseset: "boolean[]", gvsym: Tbool_values}
       - {temp: tint,    base: integer, baseset: intspanset,    valueset: intset,    gvsym: Tnumber_valuespans}
       - {temp: tbigint, base: bigint,  baseset: bigintspanset, valueset: bigintset, gvsym: Tnumber_valuespans}
       - {temp: tfloat,  base: float,   baseset: floatspanset,  valueset: floatset,  gvsym: Tnumber_valuespans}

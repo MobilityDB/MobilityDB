@@ -1091,7 +1091,6 @@ tpose_value_n(const Temporal *temp, int n, Pose **result)
  * @brief Return the array of copies of base values of a temporal pose
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Pose **
 tpose_values(const Temporal *temp, int *count)

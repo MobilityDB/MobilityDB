@@ -421,7 +421,6 @@ ts2cell_value_n(const Temporal *temp, int n, S2CellId *result)
  * @param[in] temp Temporal S2 cell
  * @param[out] count Number of distinct values
  * @return Allocated array of @p count cells, owned by the caller
- * @csqlfn #Temporal_valueset()
  */
 S2CellId *
 ts2cell_values(const Temporal *temp, int *count)

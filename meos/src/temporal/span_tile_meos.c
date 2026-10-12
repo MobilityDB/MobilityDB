@@ -272,6 +272,7 @@ tstzspanset_bins(const SpanSet *ss, const Interval *duration,
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
  */
 Span *
 tint_value_bins(const Temporal *temp, int vsize, int vorigin, bool border_inc,
@@ -313,6 +314,7 @@ tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
  */
 Span *
 tfloat_value_bins(const Temporal *temp, double vsize, double vorigin,

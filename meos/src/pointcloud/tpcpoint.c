@@ -307,7 +307,6 @@ tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result)
  * point
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Pcpoint **
 tpcpoint_values(const Temporal *temp, int *count)
