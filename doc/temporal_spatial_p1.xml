@@ -199,10 +199,12 @@ perimeter(geography,spheroid boolean=true) → float
 centroid(geometry) → geometry
 centroid(geography,spheroid boolean=true) → geography
 </programlisting>
-				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, without calling GEOS. A geography is measured in square meters or in meters on the WGS 84 spheroid by default, and on the sphere, a faster calculation, if the last argument is false. On the sphere, the area is the one the great circles joining the vertices bound, which <varname>ST_Area</varname> over a geography on the sphere approximates: for the square of one degree at the equator below, the approximation is 0.67 percent smaller.</para>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>, without calling GEOS, except that the area of a surface bounded by circular arcs is measured on its arcs, by the closed form of the circular segment each arc adds to its chord: for the disc of radius 1 below the area is π, which <varname>ST_Area</varname>, replacing each quarter circle by 32 segments, reads as 3.1403. A geography is measured in square meters or in meters on the WGS 84 spheroid by default, and on the sphere, a faster calculation, if the last argument is false. On the sphere, the area is the one the great circles joining the vertices bound, which <varname>ST_Area</varname> over a geography on the sphere approximates: for the square of one degree at the equator below, the approximation is 0.67 percent smaller.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT area(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 -- 16
+SELECT area(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+-- 3.141592653589793
 SELECT ST_AsText(centroid(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
 -- POINT(2 2)
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);

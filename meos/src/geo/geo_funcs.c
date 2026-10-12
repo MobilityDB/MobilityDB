@@ -17618,4 +17618,27 @@ meos_centroid(const LWGEOM *geom)
   return lwpoint_as_lwgeom(lwpoint_make(srid, hasz, hasm, &mean));
 }
 
+/**
+ * @brief Return the area of a geometry, on its circular arcs
+ * @details The area is the weight #meos_centroid accumulates for the surfaces
+ * of the geometry: each ring is read as the polygon of its chords, an arc
+ * standing as the segment joining its ends, plus the circular segment
+ * @p r^2 (theta - sin theta) / 2 each arc adds to, or takes from, its chord
+ * (#centroid_add_ring). The first ring of a surface adds and every later one,
+ * a hole, takes away, whatever their winding (#centroid_fold_ring), and a
+ * point or a curve encloses nothing. Where @p lwgeom_area replaces each
+ * quarter circle by 32 segments, the area of a disc of radius 1 is @p pi.
+ * @param[in] geom Geometry
+ */
+double
+meos_area(const LWGEOM *geom)
+{
+  assert(geom);
+  if (lwgeom_is_empty(geom))
+    return 0.0;
+  CentroidAcc areal = {0}, lineal = {0}, punctual = {0};
+  centroid_add_geo(geom, &areal, &lineal, &punctual);
+  return areal.weight;
+}
+
 /*****************************************************************************/

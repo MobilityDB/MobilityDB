@@ -190,6 +190,7 @@ extern LWGEOM *meos_areal_difference(const LWGEOM *geom1,
   const LWGEOM *geom2);
 extern LWGEOM *meos_linear_union(const LWGEOM *geom);
 extern LWGEOM *meos_centroid(const LWGEOM *geom);
+extern double meos_area(const LWGEOM *geom);
 extern LWGEOM *meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms,
   int count);
 extern bool meos_is_simple(const LWGEOM *geom, bool *result);

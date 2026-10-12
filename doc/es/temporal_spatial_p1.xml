@@ -199,10 +199,12 @@ perimeter(geography,spheroid boolean=true) → float
 centroid(geometry) → geometry
 centroid(geography,spheroid boolean=true) → geography
 </programlisting>
-				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname>, sin llamar a GEOS. Una geografía se mide en metros cuadrados o en metros sobre el esferoide WGS 84 por defecto, y sobre la esfera, un cálculo más rápido, si el último argumento es falso. Sobre la esfera, el área es la que delimitan los círculos máximos que unen los vértices, que <varname>ST_Area</varname> sobre una geografía en la esfera aproxima: para el cuadrado de un grado en el ecuador a continuación, la aproximación es un 0,67 por ciento menor.</para>
+				<para>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <varname>ST_</varname>, sin llamar a GEOS, salvo que el área de una superficie delimitada por arcos de circunferencia se mide sobre sus arcos, por la forma cerrada del segmento circular que cada arco añade a su cuerda: para el disco de radio 1 a continuación el área es π, que <varname>ST_Area</varname>, al reemplazar cada cuarto de circunferencia por 32 segmentos, da como 3,1403. Una geografía se mide en metros cuadrados o en metros sobre el esferoide WGS 84 por defecto, y sobre la esfera, un cálculo más rápido, si el último argumento es falso. Sobre la esfera, el área es la que delimitan los círculos máximos que unen los vértices, que <varname>ST_Area</varname> sobre una geografía en la esfera aproxima: para el cuadrado de un grado en el ecuador a continuación, la aproximación es un 0,67 por ciento menor.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT area(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 -- 16
+SELECT area(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+-- 3.141592653589793
 SELECT ST_AsText(centroid(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
 -- POINT(2 2)
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
