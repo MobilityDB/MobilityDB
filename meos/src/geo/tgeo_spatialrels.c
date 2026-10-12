@@ -2455,16 +2455,17 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
 
-  /* Two planar linearly moving points: the exact sign over continuous time */
-  if (tpoint_motion_exact_applies(temp1, temp2))
-    return ea_dwithin_tpoint_tpoint_exact(temp1, temp2, dist, ever);
-
   /* Bounding box test with distance expansion: the two share time, so if the
    * box of the first does not meet the box of the second expanded by the
    * distance, every common instant holds them farther apart than the distance
    * and they are neither ever nor always within it. The reject is exact because
    * a temporal geo never leaves its box, and the expansion grows the second box
-   * by the distance along each axis. This mirrors the constant-time reject the
+   * by the distance along each axis: a coordinate within the distance of the
+   * second box is a double no less than the exact lower bound of that box less
+   * the distance, hence no less than that bound rounded, rounding to the
+   * nearest keeping the order, and likewise for the upper bound. The reject
+   * comes before the exact walk of two moving points, which it spares every
+   * pair it rejects. This mirrors the constant-time reject the
    * circular buffers carry in #ea_dwithin_tcbuffer_tcbuffer. Geodetic input
    * keeps the lifted path, its box being in degrees where the distance is in
    * metres, as #ea_dwithin_tgeo_geo also leaves it. */
@@ -2477,6 +2478,10 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
     if (! overlaps_stbox_stbox(&box1, &box2_exp))
       return 0;
   }
+
+  /* Two planar linearly moving points: the exact sign over continuous time */
+  if (tpoint_motion_exact_applies(temp1, temp2))
+    return ea_dwithin_tpoint_tpoint_exact(temp1, temp2, dist, ever);
 
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;

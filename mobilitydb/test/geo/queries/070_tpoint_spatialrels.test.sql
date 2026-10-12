@@ -497,6 +497,17 @@ SELECT eDwithin(tgeompoint '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Poi
 SELECT eDwithin(tgeompoint '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(1 1)@2001-01-06]}', tgeompoint '[Point(1 1)@2001-01-04, Point(2 2)@2001-01-05]', 10);
 SELECT eDwithin(tgeompoint '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(1 1)@2001-01-06]}', tgeompoint '{[Point(1 1)@2001-01-01],[Point(1 1)@2001-01-04, Point(2 2)@2001-01-05]}', 10);
 
+-- Two moving points exactly the distance apart, which doubles cannot tell
+-- from one unit in the last place nearer or farther: a point passing 1 from
+-- one at rest, at the origin and among projected coordinates, and a point
+-- whose ends lie on a 3-4-5 triangle 5 from one at rest
+SELECT eDwithin(tgeompoint '[Point(-1000000 1)@2001-01-01, Point(1500000 1)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 1);
+SELECT eDwithin(tgeompoint '[Point(-1000000 1)@2001-01-01, Point(1500000 1)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 0.9999999999999999);
+SELECT eDwithin(tgeompoint '[Point(9000000 10000001)@2001-01-01, Point(11500000 10000001)@2001-01-02]', tgeompoint '[Point(10000000 10000000)@2001-01-01, Point(10000000 10000000)@2001-01-02]', 1);
+SELECT eDwithin(tgeompoint '[Point(9000000 10000001)@2001-01-01, Point(11500000 10000001)@2001-01-02]', tgeompoint '[Point(10000000 10000000)@2001-01-01, Point(10000000 10000000)@2001-01-02]', 0.9999999999999999);
+SELECT aDwithin(tgeompoint '[Point(3 4)@2001-01-01, Point(-4 3)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 5);
+SELECT aDwithin(tgeompoint '[Point(3 4)@2001-01-01, Point(-4 3)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 4.999999999999999);
+
 SELECT eDwithin(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(1 1 1)@2001-01-01', 2);
 SELECT eDwithin(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint 'Point(1 1 1)@2001-01-01', 2);
 SELECT eDwithin(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint 'Point(1 1 1)@2001-01-01', 2);
@@ -619,6 +630,18 @@ SELECT eDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]',
 SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 5)@2001-01-01, Point(2 1 5)@2001-01-03]', 1.2);
 SELECT aDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', 1.5);
 SELECT aDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 6)@2001-01-01, Point(2 1 6)@2001-01-03]', 6.1);
+
+-- Two moving points exactly the distance apart are within it, ever and
+-- always, their boxes meeting once the second is grown by the distance; one
+-- unit in the last place farther apart the grown box misses the first and
+-- they are not; two whose periods interleave without sharing an instant
+-- answer NULL however far apart their boxes are
+SELECT eDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3)@2001-01-01, Point(10 3)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3)@2001-01-01, Point(10 3)@2001-01-02]', 2);
+SELECT eDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3.0000000000000004)@2001-01-01, Point(10 3.0000000000000004)@2001-01-02]', 2);
+SELECT aDwithin(tgeompoint '[Point(0 1)@2001-01-01, Point(10 1)@2001-01-02]', tgeompoint '[Point(0 3.0000000000000004)@2001-01-01, Point(10 3.0000000000000004)@2001-01-02]', 2);
+SELECT eDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
+SELECT aDwithin(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02],[Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '[Point(100 100)@2001-01-03, Point(101 100)@2001-01-04]', 2);
 
 -------------------------------------------------------------------------------
 

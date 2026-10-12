@@ -2835,14 +2835,47 @@ wide_dyadic_add(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
 
 /**
  * @brief Return the sign of the difference of two #WideDyadic, exactly
+ * @details Values of different signs are ordered by their signs, magnitudes
+ * whose highest bits differ in weight by those weights, and the others on
+ * their limbs aligned to the lower of their two lowest bits
  */
 static int
 wide_dyadic_cmp(const WideDyadic *a, const WideDyadic *b)
 {
-  WideDyadic nb = *b, d;
-  nb.sign = - nb.sign;
-  wide_dyadic_add(a, &nb, &d);
-  return d.sign;
+  if (a->sign != b->sign)
+    return (a->sign > b->sign) ? 1 : -1;
+  if (a->sign == 0)
+    return 0;
+  /* Same sign: the magnitude whose highest bit weighs more is the larger */
+  int top[2];
+  const WideDyadic *v[2] = {a, b};
+  for (int k = 0; k < 2; k++)
+  {
+    uint64_t hl = v[k]->limb[v[k]->len - 1];
+    int bits = 0;
+    while (hl)
+    {
+      bits++;
+      hl >>= 1;
+    }
+    top[k] = v[k]->exp + 64 * (v[k]->len - 1) + bits;
+  }
+  if (top[0] != top[1])
+    return (top[0] > top[1]) ? a->sign : - a->sign;
+  /* Otherwise the magnitudes are compared on the lower of their lowest bits */
+  uint64_t x[WIDE_DYADIC_LIMBS], y[WIDE_DYADIC_LIMBS];
+  int e = (a->exp < b->exp) ? a->exp : b->exp;
+  int nx = wide_dyadic_aligned(a, e, x), ny = wide_dyadic_aligned(b, e, y);
+  if (nx < 0 || ny < 0)
+    return 0;
+  int n = (nx > ny) ? nx : ny;
+  for (int i = n - 1; i >= 0; i--)
+  {
+    uint64_t xi = (i < nx) ? x[i] : 0, yi = (i < ny) ? y[i] : 0;
+    if (xi != yi)
+      return (xi > yi) ? a->sign : - a->sign;
+  }
+  return 0;
 }
 
 /**
@@ -3135,13 +3168,175 @@ point_motion_nad_exact(const double *p0, const double *p1, int64 s0,
   return wide_dyadic_nearest_root(&nmin, &dmin);
 }
 
+/** Relative slack on either side of a comparison
+ * #point_motion_dwithin_filter certifies, above the relative error of the at
+ * most a few dozen roundings forming each side, about 2^-48 */
+#define MOTION_FILTER_SLACK 0x1p-40
+/** Absolute margin of a comparison #point_motion_dwithin_filter certifies,
+ * above the error a gradual underflow adds to either side */
+#define MOTION_FILTER_TINY 0x1p-1000
+/** Greatest magnitude of a coordinate or a distance
+ * #point_motion_dwithin_filter reads, so that none of its products overflows */
+#define MOTION_FILTER_MAXMAG 0x1p250
+/** Least magnitude of the coordinates #point_motion_dwithin_filter reads, so
+ * that the error of the ends dominates every underflow */
+#define MOTION_FILTER_MINMAG 0x1p-300
+
+/**
+ * @brief Return true if @p lo, a lower bound computed in doubles, certainly
+ * exceeds @p hi, an upper bound computed in doubles, each widened by
+ * #MOTION_FILTER_SLACK of its magnitude and the two by #MOTION_FILTER_TINY
+ */
+static inline bool
+point_motion_filter_exceeds(double lo, double hi)
+{
+  return lo - MOTION_FILTER_SLACK * fabs(lo) >
+    hi + MOTION_FILTER_SLACK * fabs(hi) + MOTION_FILTER_TINY;
+}
+
+/**
+ * @brief Return 1 or 0 where two points moving linearly over the interval
+ * [ta, tb] are certainly or certainly not within a distance at some instant
+ * (@p ever) or at every instant of it, -1 where doubles cannot decide
+ * @details The difference of the two positions is linear over the interval,
+ * from `A` at @p ta to `C` at @p tb, so with `N0 = |A|^2`, `N1 = |C|^2`,
+ * `G = A . C`, `X = A x C` and `D = |C - A|^2` the pair is ever within `d`
+ * where `min(N0, N1) <= d^2`, or where the foot of the origin on the segment
+ * from `A` to `C` falls inside it, `N0 > G` and `N1 > G`, and
+ * `X^2 <= d^2 D`; it is not where `X^2 > d^2 D`, the line from `A` to `C`
+ * being farther than `d`, or where both ends are farther than `d` and the
+ * foot falls outside; it is always within where both ends are. Each is
+ * decided on doubles with a bound on its error, and certified only where it
+ * holds over the whole width of the bounds.
+ *
+ * The bounds, with `u = 2^-53` and `g_k = k u / (1 - k u)`, rounding to the
+ * nearest, a fused multiply-add only lowering them:
+ * - Each coordinate of a position is `p0 + (p1 - p0) l` with `l` the exact
+ *   fraction of the segment's duration, in [0, 1]. Its computed form is
+ *   `l (1 + t3)`, `|t3| <= g3`, two conversions and a division, so the
+ *   product is within `g5 |p1 - p0| l <= 2 g5 M` of `(p1 - p0) l`, `M` the
+ *   largest magnitude of the eight input coordinates, and the position, of
+ *   magnitude at most `M`, within `2 g5 M + u (1 + 2 g5) M <= 3 g6 M`.
+ * - The difference of the two positions is then within
+ *   `6 g6 M + u (2 + 6 g6) M <= 7 g7 M <= 2^-47 M = e` of the exact `A`, per
+ *   coordinate, and likewise `C`.
+ * - A product of two such coordinates is within `e (|a| + |c| + e)` of the
+ *   exact one, `a` and `c` the computed coordinates; a sum of two products
+ *   is within `g2` of its terms' magnitudes, and a sum of two squares
+ *   within `g3 <= 2^-51` of its computed value. So `N0` is within
+ *   `e (2 |Ax| + 2 |Ay| + 2 e) + 2^-51 N0`, `X` and `G` within
+ *   `e (|Ax| + |Ay| + |Cx| + |Cy| + 2 e)` plus `2^-51` of the magnitudes of
+ *   their two products, each coordinate of `C - A` within
+ *   `e' = 2 e + 2^-52 |C - A|`, `D` within `e' (2 |C - A| + e')` per
+ *   coordinate plus `2^-51 D`, and `d^2` within `2^-52 d^2`.
+ * Each bound is widened by #MOTION_FILTER_SLACK before it is added or
+ * subtracted, covering the roundings that form it, and each comparison by
+ * that slack and #MOTION_FILTER_TINY (#point_motion_filter_exceeds). The
+ * filter answers -1 outside the magnitudes #MOTION_FILTER_MINMAG and
+ * #MOTION_FILTER_MAXMAG bound.
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @param[in] d Distance, not negative
+ * @param[in] ever True for the ever semantics, false for the always one
+ * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
+ */
+static int
+point_motion_dwithin_filter(const double *p0, const double *p1, int64 s0,
+  int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
+  int64 tb, double d, bool ever)
+{
+  const double *pts[4] = {p0, p1, q0, q1};
+  double M = 0.0;
+  for (int i = 0; i < 4; i++)
+    for (int c = 0; c < 2; c++)
+    {
+      double m = fabs(pts[i][c]);
+      /* The negation also refuses a NaN */
+      if (! (m <= MOTION_FILTER_MAXMAG))
+        return -1;
+      if (m > M)
+        M = m;
+    }
+  if (M < MOTION_FILTER_MINMAG || ! (d <= MOTION_FILTER_MAXMAG))
+    return -1;
+  const double sl = 1.0 + MOTION_FILTER_SLACK;
+  const double e = ldexp(M, -47);
+  /* The two ends of the difference of the positions */
+  double dp = (double) (s1 - s0), dq = (double) (r1 - r0);
+  double la = (double) (ta - s0) / dp, lb = (double) (tb - s0) / dp;
+  double ma = (double) (ta - r0) / dq, mb = (double) (tb - r0) / dq;
+  double A[2], C[2], B[2];
+  for (int c = 0; c < 2; c++)
+  {
+    double up = p1[c] - p0[c], uq = q1[c] - q0[c];
+    A[c] = (p0[c] + up * la) - (q0[c] + uq * ma);
+    C[c] = (p0[c] + up * lb) - (q0[c] + uq * mb);
+    B[c] = C[c] - A[c];
+  }
+  double ax = fabs(A[0]), ay = fabs(A[1]), cx = fabs(C[0]), cy = fabs(C[1]);
+  double n0 = A[0] * A[0] + A[1] * A[1];
+  double n1 = C[0] * C[0] + C[1] * C[1];
+  double bn0 = sl * (e * (2.0 * (ax + ay) + 2.0 * e) + 0x1p-51 * n0);
+  double bn1 = sl * (e * (2.0 * (cx + cy) + 2.0 * e) + 0x1p-51 * n1);
+  double dd = d * d, bdd = sl * 0x1p-52 * dd;
+  double dd_lo = dd - bdd, dd_hi = dd + bdd;
+  if (! ever)
+  {
+    /* Always within where both ends are, not where either is not */
+    if (point_motion_filter_exceeds(dd_lo, n0 + bn0) &&
+        point_motion_filter_exceeds(dd_lo, n1 + bn1))
+      return 1;
+    if (point_motion_filter_exceeds(n0 - bn0, dd_hi) ||
+        point_motion_filter_exceeds(n1 - bn1, dd_hi))
+      return 0;
+    return -1;
+  }
+  /* Ever within where an end is */
+  if (point_motion_filter_exceeds(dd_lo, n0 + bn0) ||
+      point_motion_filter_exceeds(dd_lo, n1 + bn1))
+    return 1;
+  double ecross = e * (ax + ay + cx + cy + 2.0 * e);
+  double x = A[0] * C[1] - A[1] * C[0];
+  double bx = sl * (ecross + 0x1p-51 * (ax * cy + ay * cx));
+  double g = A[0] * C[0] + A[1] * C[1];
+  double bg = sl * (ecross + 0x1p-51 * (ax * cx + ay * cy));
+  double bd = 0x1p-51 * (B[0] * B[0] + B[1] * B[1]);
+  double dlen = B[0] * B[0] + B[1] * B[1];
+  for (int c = 0; c < 2; c++)
+  {
+    double eb = 2.0 * e + 0x1p-52 * fabs(B[c]);
+    bd += eb * (2.0 * fabs(B[c]) + eb);
+  }
+  bd *= sl;
+  double x_hi = fabs(x) + bx, x_lo = fabs(x) - bx;
+  double dlen_lo = dlen - bd, dlen_hi = dlen + bd;
+  /* Within where the foot falls inside and the line is within */
+  if (point_motion_filter_exceeds(n0 - bn0, g + bg) &&
+      point_motion_filter_exceeds(n1 - bn1, g + bg) &&
+      dd_lo > 0.0 && dlen_lo > 0.0 &&
+      point_motion_filter_exceeds(dd_lo * dlen_lo, x_hi * x_hi))
+    return 1;
+  /* Not within where the line is farther than the distance */
+  if (x_lo > 0.0 && point_motion_filter_exceeds(x_lo * x_lo, dd_hi * dlen_hi))
+    return 0;
+  /* Not within where both ends are farther and the foot falls outside */
+  if (point_motion_filter_exceeds(n0 - bn0, dd_hi) &&
+      point_motion_filter_exceeds(n1 - bn1, dd_hi) &&
+      (point_motion_filter_exceeds(g - bg, n0 + bn0) ||
+       point_motion_filter_exceeds(g - bg, n1 + bn1)))
+    return 0;
+  return -1;
+}
+
 /**
  * @brief Return true if two points moving linearly over the interval
  * [ta, tb] are within a distance at some instant of it (@p ever) or at every
  * instant of it, decided exactly over continuous time
  * @details Ever within holds where the least squared distance over the
  * interval is at most `d^2`; always within where both ends are, the squared
- * distance being a convex quadratic in time (#point_motion_squares)
+ * distance being a convex quadratic in time (#point_motion_squares). The
+ * filter #point_motion_dwithin_filter answers where doubles decide it.
  * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
  * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
  * @param[in] ta,tb Interval, within both segments
@@ -3154,6 +3349,10 @@ point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
   int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
   int64 tb, double d, bool ever)
 {
+  int filter = point_motion_dwithin_filter(p0, p1, s0, s1, q0, q1, r0, r1, ta,
+    tb, d, ever);
+  if (filter >= 0)
+    return filter == 1;
   WideDyadic nmin, dmin, n0, n1, dend, wd, dd, rhs;
   point_motion_squares(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb, &nmin, &dmin,
     &n0, &n1, &dend);
