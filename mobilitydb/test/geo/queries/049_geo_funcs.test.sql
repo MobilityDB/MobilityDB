@@ -310,7 +310,7 @@ WITH g(geom) AS (VALUES
   (geometry 'Polygon empty'), (geometry 'MultiPolygon empty'),
   (geometry 'Linestring Z(0 0 0,3 4 12)'), (geometry 'MultiLinestring((0 0,3 4),(1 1,1 2))'),
   (geometry 'MultiCurve(CircularString(0 0,1 1,2 0),(2 0,3 0))'))
-SELECT count(*) FILTER (WHERE area(geom) IS DISTINCT FROM ST_Area(geom)) AS area,
+SELECT count(*) FILTER (WHERE NOT ST_HasArc(geom) AND area(geom) IS DISTINCT FROM ST_Area(geom)) AS area,
   count(*) FILTER (WHERE perimeter(geom) IS DISTINCT FROM ST_Perimeter(geom)) AS perimeter,
   count(*) FILTER (WHERE length(geom) IS DISTINCT FROM CASE WHEN ST_Zmflag(geom) IN (2, 3)
     THEN ST_3DLength(geom) ELSE ST_Length(geom) END) AS length,
@@ -321,6 +321,31 @@ FROM g;
 /* A curve polygon is a surface and has no length, as a polygon */
 SELECT length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))'),
   ST_Length(geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))');
+
+-- A surface bounded by circular arcs is measured on its arcs, against the
+-- closed form of each area: a disc, a disc less its concentric half, a half
+-- disc and a quarter disc closed by straight sides, a square whose bottom side
+-- bulges in and top side out by the same half disc, a disc beside a triangle,
+-- and a disc at projected coordinates. ST_Area replaces each quarter circle by
+-- 32 segments, and reads less on all but the square, whose two half discs lose
+-- the same area
+WITH g(name, geom, exact) AS (VALUES
+  ('disc', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0))', pi()),
+  ('annulus', geometry 'CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0),'
+    'CircularString(0.5 0,1 0.5,1.5 0,1 -0.5,0.5 0))', 0.75 * pi()),
+  ('half disc', geometry 'CurvePolygon(CompoundCurve(CircularString(-1 0,0 1,1 0),(1 0,-1 0)))',
+    pi() / 2),
+  ('quarter disc', geometry 'CurvePolygon(CompoundCurve((0 0,2 0),'
+    'CircularString(2 0,1.4142135623730951 1.4142135623730951,0 2),(0 2,0 0)))', pi()),
+  ('square', geometry 'CurvePolygon(CompoundCurve(CircularString(-1 -1,0 0,1 -1),'
+    '(1 -1,1 1),CircularString(1 1,0 2,-1 1),(-1 1,-1 -1)))', 4.0),
+  ('multisurface', geometry 'MultiSurface(CurvePolygon(CircularString(0 0,1 1,2 0,1 -1,0 0)),'
+    '((3 0,4 0,3 1,3 0)))', pi() + 0.5),
+  ('projected disc', geometry 'CurvePolygon(CircularString(627900 6355000,628000 6355100,'
+    '628100 6355000,628000 6354900,627900 6355000))', 10000 * pi()))
+SELECT name, abs(area(geom) - exact) <= 1e-12 * exact AS area_exact,
+  ST_Area(geom) < exact AS st_area_less
+FROM g;
 
 -- The measures above are not all zero: the total of each over the same values
 WITH g(id, geom) AS (VALUES

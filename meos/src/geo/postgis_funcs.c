@@ -1196,7 +1196,7 @@ lwgeom_length_lines(const LWGEOM *geom)
 /**
  * @brief Return the measure of a geometry other than a polygon, read on its
  * serialized form by #geo_walk_measure, or on its deserialized form when it
- * holds a curve, as #lwgeom_area, #lwgeom_length_lines and
+ * holds a curve, as #meos_area, #lwgeom_length_lines and
  * #lwgeom_perimeter_2d measure it
  * @errval DBL_MAX
  */
@@ -1213,7 +1213,7 @@ geom_walk_measure_any(const GSERIALIZED *gs, const uint8_t *p, lwflags_t flags,
     return result;
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   if (measure == WALK_AREA)
-    result = lwgeom_area(lwgeom);
+    result = meos_area(lwgeom);
   else if (measure == WALK_LENGTH)
     result = lwgeom_length_lines(lwgeom);
   else
@@ -1258,6 +1258,7 @@ geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
  *   - area(point) = 0
  *   - area(line) = 0
  *   - area(polygon) = the area it encloses, its holes taken out
+ *   - area(curve polygon) = the same, read on its circular arcs (#meos_area)
  *
  * Uses Euclidean 2D computation even if input is 3D.
  * @param[in] gs Geometry
