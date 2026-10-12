@@ -1166,7 +1166,6 @@ tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
  * @brief Return the array of copies of base values of a temporal circular buffer
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)

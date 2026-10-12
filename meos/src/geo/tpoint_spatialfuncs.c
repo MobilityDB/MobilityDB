@@ -271,7 +271,7 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
  * @param[in] f Fraction
  * @param[out] p Result
  */
-static void
+void
 interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
   POINT4D *p, const SPHEROID *s, double f)
 {

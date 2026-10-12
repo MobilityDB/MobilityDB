@@ -381,7 +381,6 @@ tjsonb_value_n(const Temporal *temp, int n, Jsonb **result)
  * @brief Return an array of copies of base values of a temporal JSONB
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Jsonb **
 tjsonb_values(const Temporal *temp, int *count)

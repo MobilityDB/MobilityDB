@@ -141,6 +141,8 @@ extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 extern Datum pointsegm_interpolate(Datum start, Datum end,
   long double ratio);
+extern void interpolate_point4d_spheroid(const POINT4D *p1,
+  const POINT4D *p2, POINT4D *p, const SPHEROID *s, double f);
 extern long double pointsegm_locate(Datum start, Datum end, Datum point,
   double *dist);
 

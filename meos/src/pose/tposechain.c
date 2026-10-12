@@ -416,7 +416,6 @@ tposechain_num_poses(const Temporal *temp)
  * @brief Return the array of copies of base values of a temporal pose chain
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 PoseChain **
 tposechain_values(const Temporal *temp, int *count)

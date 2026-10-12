@@ -253,6 +253,13 @@ predicates a temporal geography declares, dropping contains, covers, touches and
 `tIntersects` between two cells, the spatiotemporal predicates a temporal geography
 declares.
 
+**`spheroid: true` on a direction reads the earth model from a final argument.** A
+`tDwithin` direction between temporal geography points, or between a temporal geography
+point and a geography, sets `spheroid: true`, and `tempspatialrels_native.sql.tmpl` then
+declares a final `spheroid boolean DEFAULT true` after the distance, as `eDwithin` of
+temporal geography points declares it. The `tpoint` family states its three geodetic
+directions this way.
+
 **Box-type axis (`boxtypes:`)** — the C bounding-box dispatchers are per *box type*,
 not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
 `tstzspan` (temporal-only), `tpcbox` (pointcloud). One `stbox` impl serves every
@@ -403,15 +410,16 @@ each family fills the **value** rows:
 | token | meaning | example |
 |---|---|---|
 | `base` | scalar base value (getValue/startValue/endValue/valueN/valueAtTimestamp) | tcbuffer→`cbuffer`, tint→`integer` |
-| `baseset` | the `getValues` return — a **set** for most, a **spanset for numbers** | tcbuffer→`cbufferset`, tfloat→`floatspanset` |
-| `gvsym` | getValues C symbol when it differs (numbers → value spanset) | `Tnumber_valuespans` |
+| `baseset` | the `getValues` return — a **set** for most, a **spanset for numbers**, an **array** for tbool | tcbuffer→`cbufferset`, tfloat→`floatspanset`, tbool→`boolean[]` |
+| `gvsym` | getValues C symbol when it differs from `Temporal_valueset` (numbers → value spanset, tbool → value array) | `Tnumber_valuespans`, `Tbool_values` |
 | `valueset` | the **discrete** `valueSet` return — emitted **only** when `numeric`/`orderable` | tint→`intset` |
 | `numeric` / `orderable` | the two **presence classes**, gating the TNumber/orderable-only extras: `valueSet`, `minValue`, `maxValue`, `avgValue`, `minInstant`, `maxInstant`, and the min/max restrictions `atMin`, `atMax`, `minusMin`, `minusMax`. They are not manifest flags — `PRESENCE_CLASSES` maps each to a catalog class and `load_manifest()` reads the membership out of the `classes:` block, so a type joining `torder_type` in `meos_catalog.c` reaches every gated surface at once | `numeric` = `tnumber_type` (tint/tbigint/tfloat); `orderable` = `torder_type` (those + ttext) |
 | `valret` / `valsym` | **value-materializing override**: value accessors return this type via that symbol family instead of the base | trgeometry→`geometry` / `Trgeometry` |
 
 ⭐ Canonical (user-corrected twice — do NOT re-derive from code frequency):
 `getValues` returns the value **SET** for every type, the value **SPANSET** only for
-`TNumber` (`gvsym: Tnumber_valuespans`); `valueSet` exists **only at `TNumber`/orderable**
+`TNumber` (`gvsym: Tnumber_valuespans`), and for `tbool`, whose values have no set type,
+the value **ARRAY** (`gvsym: Tbool_values`); `valueSet` exists **only at `TNumber`/orderable**
 to name the plain set vs the spanset. `trgeometry` is the sole family whose value
 accessors are overridden (`valret: geometry`, `valsym: Trgeometry`) — it stores a pose
 + appended reference geometry, so getValue/getValues expose the raw pose while

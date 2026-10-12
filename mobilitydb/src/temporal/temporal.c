@@ -875,20 +875,30 @@ Datum
 Temporal_valueset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int count;
-  Datum *values = temporal_values_p(temp, &count);
-  MeosType basetype = temptype_basetype(temp->temptype);
-  /* Currently, there is no boolset type */
-  if (temp->temptype == T_TBOOL)
-  {
-    ArrayType *result = datumarr_to_array(values, count, basetype);
-    pfree(values);
-    PG_FREE_IF_COPY(temp, 0);
-    PG_RETURN_ARRAYTYPE_P(result);
-  }
-  Set *result = set_make_free(values, count, basetype, ORDER_NO);
+  Set *result = temporal_valueset(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Tbool_values(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbool_values);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the base values of a temporal Boolean as an array, there
+ * being no set of Booleans
+ * @sqlfn getValues()
+ * @see #Temporal_valueset, the base values of the other temporal types
+ */
+Datum
+Tbool_values(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  Datum *values = temporal_values_p(temp, &count);
+  ArrayType *result = datumarr_to_array(values, count, T_BOOL);
+  pfree(values);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_valuespans(PG_FUNCTION_ARGS);

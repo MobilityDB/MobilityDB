@@ -1505,6 +1505,7 @@ extern SpanSet *temporal_time(const Temporal *temp);
 extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
 extern bool temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result);
 extern bool temporal_upper_inc(const Temporal *temp);
+extern Set *temporal_valueset(const Temporal *temp);
 extern double tfloat_end_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
 extern double tfloat_max_value(const Temporal *temp);

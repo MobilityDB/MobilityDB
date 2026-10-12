@@ -126,3 +126,18 @@ CREATE FUNCTION tDwithin(tgeompoint, tgeompoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(geography, tgeogpoint, dist float,
+    spheroid boolean DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeogpoint, geography, dist float,
+    spheroid boolean DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeogpoint, tgeogpoint, dist float,
+    spheroid boolean DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

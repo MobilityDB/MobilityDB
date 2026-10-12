@@ -426,7 +426,6 @@ tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
  * @param[in] temp Temporal quadbin cell
  * @param[out] count Number of distinct values
  * @return Allocated array of `count` Quadbin values. Caller owns.
- * @csqlfn #Temporal_valueset()
  */
 Quadbin *
 tquadbin_values(const Temporal *temp, int *count)

@@ -754,7 +754,6 @@ tnpoint_value_n(const Temporal *temp, int n, Npoint **result)
  * @brief Return the array of copies of base values of a temporal network point
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Npoint **
 tnpoint_values(const Temporal *temp, int *count)

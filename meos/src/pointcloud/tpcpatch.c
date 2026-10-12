@@ -310,7 +310,6 @@ tpcpatch_value_n(const Temporal *temp, int n, Pcpatch **result)
  * patch
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
  */
 Pcpatch **
 tpcpatch_values(const Temporal *temp, int *count)
