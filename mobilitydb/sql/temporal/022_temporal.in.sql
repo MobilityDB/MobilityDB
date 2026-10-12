@@ -629,7 +629,7 @@ CREATE FUNCTION getTimestamp(ttext)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tbool)
   RETURNS boolean[]
-  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  AS 'MODULE_PATHNAME', 'Tbool_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
   RETURNS intspanset

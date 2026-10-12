@@ -2180,6 +2180,33 @@ temporal_unnest(const Temporal *temp, Datum **values, int *count)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the base values of a temporal value as a set
+ * @details A temporal Boolean has no set of its values, there being no set
+ * of Booleans; #tbool_values returns its values as an array
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_valueset()
+ */
+Set *
+temporal_valueset(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (temp->temptype == T_TBOOL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The values of a temporal Boolean have no set type");
+    return NULL;
+  }
+
+  int count;
+  Datum *values = temporal_values_p(temp, &count);
+  return set_make_free(values, count, temptype_basetype(temp->temptype),
+    ORDER_NO);
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the base values of a temporal number as a span set
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_valuespans()
