@@ -25,16 +25,26 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
 </pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id7256"></a><p>Temporal distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
-</pre><pre class="programlisting">
+tDwithin({geography,tgeogpoint},{geography,tgeogpoint},float,spheroid boolean=true) → tbool
+</pre><p>For temporal geography points, the other argument is a geography point or a temporal geography point. The distance is measured on the WGS 84 spheroid by default. If the last argument is false, it is measured on the sphere. A segment of a temporal geography point moves along a great circle, and the result changes its value at every instant at which the geodetic distance crosses the given distance, which a segment may cross several times.</p><pre class="programlisting">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
 --  {[t@2001-01-01, t@2001-01-03)}
 SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
   tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(1 3)@2001-01-05]', 1);
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
-</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id7270"></a><p>Temporal intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+SELECT tDwithin(geography 'Point(1 0.1)',
+  tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 15000);
+/* {[f@2001-01-01, t@2001-01-01 21:48:53.195554, t@2001-01-02 02:11:06.804445],
+   (f@2001-01-02 02:11:06.804445, f@2001-01-03]} */
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
+  tgeogpoint '[Point(1 1)@2001-01-01, Point(1 -1)@2001-01-03]', 20000, false);
+/* {[f@2001-01-01, t@2001-01-01 20:56:51.37512, t@2001-01-02 03:03:08.624879],
+   (f@2001-01-02 03:03:08.624879, f@2001-01-03]} */
+</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id7278"></a><p>Temporal intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
@@ -46,7 +56,7 @@ SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
 SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
-</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id7292"></a><p>Temporal touches</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id7300"></a><p>Temporal touches</p><pre class="programlisting">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
 </pre><pre class="programlisting">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
