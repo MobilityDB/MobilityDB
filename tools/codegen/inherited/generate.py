@@ -962,8 +962,12 @@ def render_tempspatialrels(fam: dict) -> str:
         for d in directions:
             if d.get("comment"):
                 lines.append(f"-- {d['comment']}")
+            # A geodetic direction reads its earth model from argument
+            # `spheroid`, as eDwithin of temporal geography points does
+            ddist = dist + (",\n    spheroid boolean DEFAULT true"
+                            if d.get("spheroid") else "")
             lines.append(_NATIVE_TSR_FN.format(
-                PRED=name, LEFT=d["l"], RIGHT=d["r"], DIST=dist,
+                PRED=name, LEFT=d["l"], RIGHT=d["r"], DIST=ddist,
                 STRICT="STRICT" if d.get("strict", True) else "",
                 SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}"))
         units.append(banner.replace("{PRED}", name) + "\n\n" + "\n".join(lines))

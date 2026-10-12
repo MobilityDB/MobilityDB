@@ -174,6 +174,14 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
+-- Geographies, on the spheroid and on the sphere
+SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint
+  WHERE tDwithin(g, temp, 500000) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point
+  WHERE tDwithin(temp, g, 500000, false) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+  WHERE tDwithin(t1.temp, t2.temp, 500000) IS NOT NULL;
+
 -------------------------------------------------------------------------------
 -- Robustness test
 
@@ -195,6 +203,16 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
+
+-- Geographies, on the spheroid and on the sphere
+SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint
+  WHERE tDwithin(g, temp, 500000) ?= true <> eDwithin(g, temp, 500000);
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point
+  WHERE tDwithin(temp, g, 500000, false) ?= true <>
+    eDwithin(temp, g, 500000, false);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+  WHERE tDwithin(t1.temp, t2.temp, 500000) ?= true <>
+    eDwithin(t1.temp, t2.temp, 500000);
 
 -------------------------------------------------------------------------------
 -- END;

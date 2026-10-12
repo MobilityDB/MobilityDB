@@ -52,6 +52,7 @@
 /* PostgreSQL */
 /* PostGIS */
 #include <liblwgeom.h>
+#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -1189,9 +1190,13 @@ tdwithin_run_flush(TDwithinRun *run)
   if (! run->held)
     return;
   tinstant_set(run->instants[0], run->value, run->lower);
-  tinstant_set(run->instants[1], run->value, run->upper);
-  run->result[run->nseqs++] = tsequence_make(run->instants, 2, run->lower_inc,
-    run->upper_inc, STEP, NORMALIZE_NO);
+  /* A held instant, the touch of a distance at a single instant, is a
+   * sequence of one instant */
+  int ninsts = 1;
+  if (run->upper != run->lower)
+    tinstant_set(run->instants[ninsts++], run->value, run->upper);
+  run->result[run->nseqs++] = tsequence_make(run->instants, ninsts,
+    run->lower_inc, run->upper_inc, STEP, NORMALIZE_NO);
   run->held = false;
   return;
 }
@@ -1600,9 +1605,464 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base,
 }
 
 /*****************************************************************************
+ * Temporal dwithin of temporal geography points
+ *****************************************************************************/
+
+/**
+ * @brief Maximum number of crossings of a distance that the geodetic distance
+ * of two geography point segments may have in one segment
+ */
+#define GEOG_DWITHIN_MAXCROSS 64
+
+/**
+ * @brief Two geography point segments over the same period
+ * @details A geography point segment moves along the great circle of its ends
+ * at a constant angular speed, where #interpolate_point4d_spheroid places it
+ * for #pointsegm_interpolate: at the fraction f of the segment it stands at
+ * A cos(om f) + C sin(om f)
+ * on the unit sphere, A being its start, C the unit vector orthogonal to A in
+ * the plane of the great circle toward its end, and om the angle between its
+ * ends. A constant segment has om = 0.
+ */
+typedef struct
+{
+  POINT2D s1, e1;   /**< Ends of the first segment, longitude and latitude */
+  POINT2D s2, e2;   /**< Ends of the second segment */
+  POINT3D A1, C1;   /**< Great circle of the first segment */
+  POINT3D A2, C2;   /**< Great circle of the second segment */
+  double om1, om2;  /**< Angles the segments sweep */
+  SPHEROID s;       /**< Model of the earth on which the distance is measured */
+  bool sphere;      /**< True when the distance is measured on the sphere */
+} GeogSegmPair;
+
+/**
+ * @brief Set the great circle on which a geography point segment moves
+ * @return False when the ends of the segment are antipodal, which states no
+ * great circle
+ */
+static bool
+geogsegm_circle(const POINT2D *p1, const POINT2D *p2, POINT3D *A, POINT3D *C,
+  double *om)
+{
+  GEOGRAPHIC_POINT g1, g2;
+  POINT3D B;
+  geographic_point_init(p1->x, p1->y, &g1);
+  geographic_point_init(p2->x, p2->y, &g2);
+  geog2cart(&g1, A);
+  geog2cart(&g2, &B);
+  double dot = A->x * B.x + A->y * B.y + A->z * B.z;
+  double crx = A->y * B.z - A->z * B.y;
+  double cry = A->z * B.x - A->x * B.z;
+  double crz = A->x * B.y - A->y * B.x;
+  double crn = sqrt(crx * crx + cry * cry + crz * crz);
+  C->x = B.x - dot * A->x;
+  C->y = B.y - dot * A->y;
+  C->z = B.z - dot * A->z;
+  double norm = sqrt(C->x * C->x + C->y * C->y + C->z * C->z);
+  if (crn == 0.0 || norm == 0.0)
+  {
+    C->x = C->y = C->z = 0.0;
+    *om = 0.0;
+    return dot > 0.0;
+  }
+  C->x /= norm; C->y /= norm; C->z /= norm;
+  *om = atan2(crn, dot);
+  return true;
+}
+
+/**
+ * @brief Return the derivative with respect to the fraction of the segments of
+ * the cosine of the angle between the positions of two geography point
+ * segments, the positions being P(f) = A cos(om f) + C sin(om f)
+ */
+static double
+geogsegmpair_dcos(const GeogSegmPair *sp, double f)
+{
+  double c1 = cos(sp->om1 * f), s1 = sin(sp->om1 * f);
+  double c2 = cos(sp->om2 * f), s2 = sin(sp->om2 * f);
+  POINT3D P1 = { sp->A1.x * c1 + sp->C1.x * s1, sp->A1.y * c1 + sp->C1.y * s1,
+    sp->A1.z * c1 + sp->C1.z * s1 };
+  POINT3D P2 = { sp->A2.x * c2 + sp->C2.x * s2, sp->A2.y * c2 + sp->C2.y * s2,
+    sp->A2.z * c2 + sp->C2.z * s2 };
+  POINT3D D1 = { sp->om1 * (sp->C1.x * c1 - sp->A1.x * s1),
+    sp->om1 * (sp->C1.y * c1 - sp->A1.y * s1),
+    sp->om1 * (sp->C1.z * c1 - sp->A1.z * s1) };
+  POINT3D D2 = { sp->om2 * (sp->C2.x * c2 - sp->A2.x * s2),
+    sp->om2 * (sp->C2.y * c2 - sp->A2.y * s2),
+    sp->om2 * (sp->C2.z * c2 - sp->A2.z * s2) };
+  return D1.x * P2.x + D1.y * P2.y + D1.z * P2.z +
+    P1.x * D2.x + P1.y * D2.y + P1.z * D2.z;
+}
+
+/**
+ * @brief Return the distance between the positions of two geography point
+ * segments at a fraction of the segments, measured as #geog_dwithin measures
+ * the distance of two points
+ */
+static double
+geogsegmpair_dist(const GeogSegmPair *sp, double f)
+{
+  POINT4D s1 = { sp->s1.x, sp->s1.y, 0.0, 0.0 };
+  POINT4D e1 = { sp->e1.x, sp->e1.y, 0.0, 0.0 };
+  POINT4D s2 = { sp->s2.x, sp->s2.y, 0.0, 0.0 };
+  POINT4D e2 = { sp->e2.x, sp->e2.y, 0.0, 0.0 };
+  POINT4D p1, p2;
+  GEOGRAPHIC_POINT g1, g2;
+  interpolate_point4d_spheroid(&s1, &e1, &p1, NULL, f);
+  interpolate_point4d_spheroid(&s2, &e2, &p2, NULL, f);
+  geographic_point_init(p1.x, p1.y, &g1);
+  geographic_point_init(p2.x, p2.y, &g2);
+  return sp->sphere ? sp->s.radius * sphere_distance(&g1, &g2) :
+    spheroid_distance(&g1, &g2, &sp->s);
+}
+
+/**
+ * @brief Return in @p crit the fractions of the segments, in increasing order,
+ * at which the angle between the positions of two geography point segments
+ * stops increasing or decreasing
+ * @details The cosine g of the angle is the sum of two sinusoids of the
+ * fraction, of amplitude Rs and frequency om1 + om2 and of amplitude Rd and
+ * frequency |om1 - om2|, so that its second derivative is bounded by
+ * L = Rs (om1 + om2)^2 + Rd (om1 - om2)^2. An interval [lo, hi] on which the
+ * derivative at the middle exceeds L (hi - lo) / 2 in absolute value holds no
+ * zero of the derivative, so that splitting the other intervals isolates
+ * every zero. The planar turning-point functions #tpointsegm_tdwithin_turnpt
+ * and #tcbuffersegm_length_roots solve a quadratic with at most two roots;
+ * no closed form bounds the number of zeros here, hence the isolation.
+ * @return Number of fractions found, -1 when they cannot be isolated
+ */
+static int
+geogsegmpair_critical(const GeogSegmPair *sp, double *crit, int maxcrit)
+{
+  /* With P(f) = A cos(om f) + C sin(om f), the product P1.P2 is
+   * ((AA + CC) cos(d) + (CA - AC) sin(d) + (AA - CC) cos(s) + (AC + CA) sin(s))
+   * / 2, where d and s are the difference and the sum of the two angles */
+  double AA = sp->A1.x * sp->A2.x + sp->A1.y * sp->A2.y + sp->A1.z * sp->A2.z;
+  double CC = sp->C1.x * sp->C2.x + sp->C1.y * sp->C2.y + sp->C1.z * sp->C2.z;
+  double AC = sp->A1.x * sp->C2.x + sp->A1.y * sp->C2.y + sp->A1.z * sp->C2.z;
+  double CA = sp->C1.x * sp->A2.x + sp->C1.y * sp->A2.y + sp->C1.z * sp->A2.z;
+  double Rd = hypot(AA + CC, CA - AC) / 2, Rs = hypot(AA - CC, AC + CA) / 2;
+  double ws = sp->om1 + sp->om2, wd = sp->om1 - sp->om2;
+  double L = Rs * ws * ws + Rd * wd * wd;
+  if (L == 0.0)
+    return 0;
+  /* The evaluation of the derivative carries an error bounded by noise, the
+   * angles it subtracts cancelling near a zero, so that an interval is set
+   * aside only when the derivative at its middle exceeds the bound by more
+   * than the error, and the zeros are located to the width over which the
+   * error hides the sign of the derivative */
+  double noise = 64 * DBL_EPSILON * (sp->om1 + sp->om2);
+  double leafw = fmin(1.0 / 64, fmax(1e-12, 4 * noise / L));
+  /* A distance constant over the segment has no critical point: the
+   * derivative is then zero up to the error of its evaluation */
+  bool flat = true;
+  for (int i = 0; i <= 8 && flat; i++)
+    flat = fabs(geogsegmpair_dcos(sp, i / 8.0)) <= noise;
+  if (flat)
+    return 0;
+  double stlo[128], sthi[128];
+  int top = 0, ncrit = 0, nvisit = 0;
+  stlo[top] = 0.0; sthi[top++] = 1.0;
+  while (top > 0)
+  {
+    top--;
+    double lo = stlo[top], hi = sthi[top];
+    if (++nvisit > 1000000)
+      return -1;
+    double mid = lo + (hi - lo) / 2, half = (hi - lo) / 2;
+    if (fabs(geogsegmpair_dcos(sp, mid)) > L * half + noise)
+      continue;
+    if (hi - lo <= leafw)
+    {
+      if (ncrit == 0 || mid - crit[ncrit - 1] > 2 * leafw)
+      {
+        if (ncrit == maxcrit)
+          return -1;
+        crit[ncrit++] = mid;
+      }
+      continue;
+    }
+    if (top + 2 > 128)
+      return -1;
+    /* The upper half is pushed first so that the fractions come in order */
+    stlo[top] = mid; sthi[top++] = hi;
+    stlo[top] = lo; sthi[top++] = mid;
+  }
+  return ncrit;
+}
+
+/**
+ * @brief Return the fraction at which the distance between two geography point
+ * segments reaches its extremum within a window, by a golden-section search
+ * @param[in] sp Segments
+ * @param[in] a,b Window, on which the distance has a single extremum
+ * @param[in] min True for a minimum, false for a maximum
+ */
+static double
+geogsegmpair_extremum(const GeogSegmPair *sp, double a, double b, bool min)
+{
+  const double ratio = 0.6180339887498949;
+  double x1 = b - ratio * (b - a), x2 = a + ratio * (b - a);
+  double f1 = geogsegmpair_dist(sp, x1), f2 = geogsegmpair_dist(sp, x2);
+  for (int i = 0; i < 100 && b - a > 4 * DBL_EPSILON; i++)
+  {
+    if (min ? f1 <= f2 : f1 >= f2)
+    {
+      b = x2; x2 = x1; f2 = f1;
+      x1 = b - ratio * (b - a);
+      f1 = geogsegmpair_dist(sp, x1);
+    }
+    else
+    {
+      a = x1; x1 = x2; f1 = f2;
+      x2 = a + ratio * (b - a);
+      f2 = geogsegmpair_dist(sp, x2);
+    }
+  }
+  return a + (b - a) / 2;
+}
+
+/**
+ * @brief Return in @p cross the fractions of the segments, in increasing order,
+ * at which the distance between two geography point segments crosses a
+ * distance, n of them in general
+ * @details The distance is monotone between two critical points of the angle
+ * between the positions, each critical point being moved to the extremum of
+ * the distance measured on the model of the earth near it. On each monotone
+ * piece whose ends lie on different sides of the distance, the crossing is
+ * bisected until its two bounds are consecutive doubles, on the predicate
+ * distance <= dist that #geog_dwithin decides, and the bound within the
+ * distance is kept.
+ * @return Number of crossings, -1 when the critical points cannot be isolated
+ */
+static int
+geogsegmpair_crossings(const GeogSegmPair *sp, double dist, double *cross)
+{
+  double crit[GEOG_DWITHIN_MAXCROSS];
+  int ncrit = geogsegmpair_critical(sp, crit, GEOG_DWITHIN_MAXCROSS - 2);
+  if (ncrit < 0)
+    return -1;
+  double split[GEOG_DWITHIN_MAXCROSS];
+  int nsplit = 0;
+  split[nsplit++] = 0.0;
+  for (int k = 0; k < ncrit; k++)
+  {
+    double prev = (k == 0) ? 0.0 : crit[k - 1];
+    double next = (k == ncrit - 1) ? 1.0 : crit[k + 1];
+    double a = prev + (crit[k] - prev) / 2, b = crit[k] + (next - crit[k]) / 2;
+    double da = geogsegmpair_dist(sp, a), db = geogsegmpair_dist(sp, b);
+    double dc = geogsegmpair_dist(sp, crit[k]);
+    double c = crit[k];
+    if (dc <= da && dc <= db)
+      c = geogsegmpair_extremum(sp, a, b, true);
+    else if (dc >= da && dc >= db)
+      c = geogsegmpair_extremum(sp, a, b, false);
+    if (c > split[nsplit - 1] && c < 1.0)
+      split[nsplit++] = c;
+  }
+  split[nsplit++] = 1.0;
+
+  int ncross = 0;
+  bool in0 = geogsegmpair_dist(sp, 0.0) <= dist;
+  for (int k = 0; k < nsplit - 1; k++)
+  {
+    double lo = split[k], hi = split[k + 1];
+    bool inhi = geogsegmpair_dist(sp, hi) <= dist;
+    if (in0 != inhi)
+    {
+      bool inlo = in0;
+      for (int i = 0; i < 200; i++)
+      {
+        double mid = lo + (hi - lo) / 2;
+        if (mid <= lo || mid >= hi)
+          break;
+        if ((geogsegmpair_dist(sp, mid) <= dist) == inlo)
+          lo = mid;
+        else
+          hi = mid;
+      }
+      if (ncross == GEOG_DWITHIN_MAXCROSS)
+        return -1;
+      cross[ncross++] = inlo ? lo : hi;
+    }
+    in0 = inhi;
+  }
+  return ncross;
+}
+
+/**
+ * @brief Add to a walk the result of the temporal dwithin of one segment of
+ * two geography points, from the crossings of the distance in the segment
+ * @details Each crossing is an instant at which the two points are within the
+ * distance, dated by truncation as #tpointsegm_tdwithin_turnpt dates one, and
+ * the value between two consecutive instants is the one at their middle
+ */
+static bool
+tdwithin_geogsegm_run(const GeogSegmPair *sp, double dist,
+  TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc,
+  double dend, TDwithinRun *run)
+{
+  const Datum datum_true = BoolGetDatum(true);
+  double cross[GEOG_DWITHIN_MAXCROSS];
+  int ncross = geogsegmpair_crossings(sp, dist, cross);
+  if (ncross < 0)
+    return false;
+  double duration = (double) (upper - lower);
+  if (lower_inc)
+    tdwithin_run_add(run, BoolGetDatum(geogsegmpair_dist(sp, 0.0) <= dist),
+      lower, lower, true, true);
+  TimestampTz prev = lower;
+  for (int k = 0; k < ncross; k++)
+  {
+    TimestampTz t = lower + (TimestampTz) (duration * cross[k]);
+    if (t <= prev || t >= upper)
+      continue;
+    double fmid = (double) ((prev + (t - prev) / 2) - lower) / duration;
+    tdwithin_run_add(run, BoolGetDatum(geogsegmpair_dist(sp, fmid) <= dist),
+      prev, t, false, false);
+    tdwithin_run_add(run, datum_true, t, t, true, true);
+    prev = t;
+  }
+  double fmid = (double) ((prev + (upper - prev) / 2) - lower) / duration;
+  tdwithin_run_add(run, BoolGetDatum(geogsegmpair_dist(sp, fmid) <= dist),
+    prev, upper, false, false);
+  if (upper_inc)
+    tdwithin_run_add(run, BoolGetDatum(dend <= dist), upper, upper, true,
+      true);
+  return true;
+}
+
+/**
+ * @brief Return the longitude and latitude of the point of an instant of a
+ * temporal geography point
+ */
+static inline const POINT2D *
+tgeogpointinst_point2d(const TInstant *inst)
+{
+  return GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
+}
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal geography
+ * point and a geography point, or two synchronized temporal geography points,
+ * are within a distance, from the crossings of their geodetic distance
+ * @param[in] temp1 Temporal geography point with linear interpolation, or
+ * one of two synchronized temporal geography points
+ * @param[in] temp2 The other synchronized temporal geography point, or NULL
+ * @param[in] gs Geography point when @p temp2 is NULL
+ * @param[in] dist Distance
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere, as #geog_dwithin measures
+ * @pre The temporal values are sequences or sequence sets
+ */
+static Temporal *
+tdwithin_tgeogpoint_geogpoint(const Temporal *temp1, const Temporal *temp2,
+  const GSERIALIZED *gs, double dist, bool spheroid)
+{
+  assert(temp1); assert((temp2 == NULL) != (gs == NULL));
+  assert(MEOS_FLAGS_GET_GEODETIC(temp1->flags)); assert(dist >= 0.0);
+  GeogSegmPair sp;
+  memset(&sp, 0, sizeof(GeogSegmPair));
+  spheroid_init_from_srid(tspatial_srid(temp1), &sp.s);
+  if (! spheroid)
+    sp.s.a = sp.s.b = sp.s.radius;
+  sp.sphere = (sp.s.a == sp.s.b);
+  int nseqs1 = (temp1->subtype == TSEQUENCE) ? 1 :
+    ((const TSequenceSet *) temp1)->count;
+  int totalcount = (temp1->subtype == TSEQUENCE) ?
+    ((const TSequence *) temp1)->count :
+    ((const TSequenceSet *) temp1)->totalcount;
+  int size = totalcount * 4 + 4;
+  TSequence **sequences = palloc(sizeof(TSequence *) * size);
+  TInstant *instants[3];
+  instants[0] = tinstant_make(BoolGetDatum(true), T_TBOOL,
+    temporal_start_timestamptz(temp1));
+  instants[1] = tinstant_copy(instants[0]);
+  instants[2] = tinstant_copy(instants[0]);
+  TDwithinRun run = { .result = sequences, .nseqs = 0, .instants = instants,
+    .held = false };
+  const POINT2D *pt = gs ? GSERIALIZED_POINT2D_P(gs) : NULL;
+  bool ok = true;
+  for (int j = 0; j < nseqs1 && ok; j++)
+  {
+    const TSequence *seq1 = (temp1->subtype == TSEQUENCE) ?
+      (const TSequence *) temp1 : TSEQUENCESET_SEQ_N((TSequenceSet *) temp1, j);
+    const TSequence *seq2 = ! temp2 ? NULL : (temp2->subtype == TSEQUENCE) ?
+      (const TSequence *) temp2 : TSEQUENCESET_SEQ_N((TSequenceSet *) temp2, j);
+    bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+    bool linear2 = seq2 && MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+    /* Room for the pieces of the segments of the sequence */
+    int need = run.nseqs + seq1->count * (2 * GEOG_DWITHIN_MAXCROSS + 4);
+    if (need > size)
+    {
+      size = need;
+      sequences = repalloc(sequences, sizeof(TSequence *) * size);
+      run.result = sequences;
+    }
+    for (int i = 0; i < seq1->count && ok; i++)
+    {
+      const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
+      const TInstant *inst2 = seq2 ? TSEQUENCE_INST_N(seq2, i) : NULL;
+      if (seq1->count == 1)
+      {
+        sp.s1 = sp.e1 = *tgeogpointinst_point2d(inst1);
+        sp.s2 = sp.e2 = inst2 ? *tgeogpointinst_point2d(inst2) : *pt;
+        tdwithin_run_add(&run, BoolGetDatum(geogsegmpair_dist(&sp, 0.0) <=
+          dist), inst1->t, inst1->t, true, true);
+        break;
+      }
+      if (i == seq1->count - 1)
+        break;
+      const TInstant *end1 = TSEQUENCE_INST_N(seq1, i + 1);
+      const TInstant *end2 = seq2 ? TSEQUENCE_INST_N(seq2, i + 1) : NULL;
+      sp.s1 = *tgeogpointinst_point2d(inst1);
+      sp.e1 = linear1 ? *tgeogpointinst_point2d(end1) : sp.s1;
+      sp.s2 = inst2 ? *tgeogpointinst_point2d(inst2) : *pt;
+      sp.e2 = (inst2 && linear2) ? *tgeogpointinst_point2d(end2) : sp.s2;
+      bool upper_inc = (i == seq1->count - 2) ? seq1->period.upper_inc : false;
+      /* The distance at the end of the last segment is the one of the values
+       * of the two instants, which a step segment reaches only there */
+      double dend = 0.0;
+      if (upper_inc)
+      {
+        GeogSegmPair last = sp;
+        last.s1 = last.e1 = *tgeogpointinst_point2d(end1);
+        last.s2 = last.e2 = end2 ? *tgeogpointinst_point2d(end2) : *pt;
+        dend = geogsegmpair_dist(&last, 0.0);
+      }
+      if (! geogsegm_circle(&sp.s1, &sp.e1, &sp.A1, &sp.C1, &sp.om1) ||
+          ! geogsegm_circle(&sp.s2, &sp.e2, &sp.A2, &sp.C2, &sp.om2))
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "A segment between antipodal positions states no great circle");
+        ok = false;
+        break;
+      }
+      bool lower_inc = (i == 0) ? seq1->period.lower_inc : true;
+      if (! tdwithin_geogsegm_run(&sp, dist, inst1->t, end1->t, lower_inc,
+          upper_inc, dend, &run))
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "The crossings of the distance of two geography points could not "
+          "be isolated");
+        ok = false;
+      }
+    }
+  }
+  tdwithin_run_flush(&run);
+  pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
+  if (! ok)
+  {
+    pfree_array((void **) run.result, run.nseqs);
+    return NULL;
+  }
+  return (Temporal *) tsequenceset_make_free(run.result, run.nseqs, NORMALIZE);
+}
+
+/*****************************************************************************
  * Temporal dwithin
  *****************************************************************************/
- 
+
 /**
  * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and
@@ -1619,9 +2079,9 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #edwithin_tgeo_geo reads it
  * @csqlfn #Tdwithin_tgeo_geo()
- * @note The function is available for temporal geographies but not for
- * temporal geography points since this requires to compute the solutions of
- * the quadatric equation for each segment of the temporal point
+ * @note A temporal geography point is answered against a geography point
+ * only, from the crossings of their geodetic distance, which a segment may
+ * cross several times
  */
 Temporal *
 tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -1630,13 +2090,21 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* Ensure the validity of the arguments. ensure_valid_tspatial_geo
    * already enforces that the temporal geo and the geometry have the
    * same geodetic flag, so geodetic coordinates are supported here the
-   * same way as in #Tdistance_tgeo_geo. A temporal point against a
-   * geodetic geometry is rejected; non-point geometries are routed
-   * through the polygonal buffer below. */
+   * same way as in #Tdistance_tgeo_geo. A temporal geography point against
+   * a geography other than a point is rejected; non-point geometries are
+   * routed through the polygonal buffer below. */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      (tpoint_type(temp->temptype) && ! ensure_not_geodetic_geo(gs)) ||
+      (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE &&
+        ! ensure_not_geodetic_geo(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
+
+  /* A temporal geography point moving along great circles and a geography
+   * point are within the distance between the crossings of their geodetic
+   * distance */
+  if (tpoint_type(temp->temptype) && MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      temp->subtype != TINSTANT && MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return tdwithin_tgeogpoint_geogpoint(temp, NULL, gs, dist, spheroid);
 
   /* For a temporal point against a non-point geometry, prefer the native
    * within engine when the temporal geometry point has linear interpolation,
@@ -1787,9 +2255,8 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #edwithin_tgeo_tgeo reads it
  * @csqlfn #Tdwithin_tgeo_tgeo()
- * @note The function is available for temporal geographies but not for
- * temporal geography points since this requires to compute the solutions of
- * the quadatric equation for each pair of segments of the temporal points
+ * @note Two temporal geography points are answered from the crossings of
+ * their geodetic distance, which a pair of segments may cross several times
  */
 Temporal *
 tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
@@ -1806,6 +2273,19 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
     return NULL;
+
+  /* Two temporal geography points, one of which moves along great circles,
+   * are within the distance between the crossings of their geodetic
+   * distance */
+  if (tpoint_type(sync1->temptype) && MEOS_FLAGS_GET_GEODETIC(sync1->flags) &&
+      sync1->subtype != TINSTANT && (MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
+        MEOS_FLAGS_LINEAR_INTERP(sync2->flags)))
+  {
+    Temporal *result = tdwithin_tgeogpoint_geogpoint(sync1, sync2, NULL, dist,
+      spheroid);
+    pfree(sync1); pfree(sync2);
+    return result;
+  }
 
   /* Call the generic function passing the distance and the turning point
    * functions to be applied */

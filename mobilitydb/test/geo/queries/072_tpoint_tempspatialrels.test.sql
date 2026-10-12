@@ -416,4 +416,21 @@ SELECT tDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03]', tge
 SELECT tDwithin(tgeompoint '[Point(0 0 5)@2001-01-01, Point(2 0 5)@2001-01-03]', geometry 'Point(1 1)', 1.2);
 SELECT tDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]', tgeompoint '[Point(0 1 5)@2001-01-01, Point(2 1 5)@2001-01-03]', 1.2);
 
+-- Temporal geography points, the crossings of the geodetic distance on the
+-- spheroid and on the sphere
+SELECT tDwithin(geography 'Point(1 0.1)', tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 15000);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0.1)', 15000, false);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 2)@2001-01-03]', geography 'Point(0.1 1)', 15000);
+SELECT tDwithin(tgeogpoint '{[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03], [Point(2 0)@2001-01-04, Point(0 0)@2001-01-06]}', geography 'Point(1 0.1)', 15000);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeogpoint '[Point(1 1)@2001-01-01, Point(1 -1)@2001-01-03]', 20000, false);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeogpoint 'Interp=Step;[Point(1 0.1)@2001-01-01, Point(1 0.1)@2001-01-03]', 15000);
+-- A pass grazing the distance, a distance at a single instant, and no crossing
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0.1)', 11058.42769490227);
+SELECT tDwithin(tgeogpoint 'Point(1 0)@2001-01-01', geography 'Point(1 0.1)', 15000);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0.5)', 15000);
+-- A segment between antipodal positions moves as the temporal point interpolates it
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(180 0)@2001-01-03]', geography 'Point(1 0.1)', 15000);
+/* Errors */
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Polygon((0 1,1 1,1 2,0 1))', 15000);
+
 -------------------------------------------------------------------------------

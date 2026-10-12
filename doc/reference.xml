@@ -1232,7 +1232,7 @@
 					<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within &Z_support;</para>
+					<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Temporal intersects &Z_support; &geography_support;</para>
