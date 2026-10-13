@@ -571,4 +571,41 @@ tquadbin_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_restrict
+ * @brief Return a temporal QUADBIN cell restricted to a QUADBIN cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tquadbin_at_value(const Temporal *temp, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tquadbin_quadbin(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, QuadbinGetDatum(cell), REST_AT);
+}
+
+/**
+ * @ingroup meos_quadbin_restrict
+ * @brief Return a temporal QUADBIN cell restricted to the complement of a
+ * QUADBIN cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tquadbin_minus_value(const Temporal *temp, Quadbin cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tquadbin_quadbin(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, QuadbinGetDatum(cell), REST_MINUS);
+}
+
 /*****************************************************************************/

@@ -581,4 +581,40 @@ th3index_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_restrict
+ * @brief Return a temporal H3 cell restricted to an H3 cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+th3index_at_value(const Temporal *temp, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_th3index_h3index(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, H3IndexGetDatum(cell), REST_AT);
+}
+
+/**
+ * @ingroup meos_h3_restrict
+ * @brief Return a temporal H3 cell restricted to the complement of an H3 cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+th3index_minus_value(const Temporal *temp, H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_th3index_h3index(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, H3IndexGetDatum(cell), REST_MINUS);
+}
+
 /*****************************************************************************/

@@ -190,6 +190,10 @@
  * @ingroup meos_posechain
  * @brief Transformation functions for temporal pose chains
  *
+ * @defgroup meos_posechain_restrict Restriction functions
+ * @ingroup meos_posechain
+ * @brief Restriction functions for temporal pose chains
+ *
  * @defgroup meos_posechain_comp Comparison functions
  * @ingroup meos_posechain
  * @brief Comparison functions for temporal pose chains

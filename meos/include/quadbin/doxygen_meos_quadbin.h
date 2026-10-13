@@ -66,6 +66,10 @@
  * @ingroup meos_quadbin
  * @brief Transformation functions for temporal QUADBIN cell indices
  *
+ * @defgroup meos_quadbin_restrict Restriction functions
+ * @ingroup meos_quadbin
+ * @brief Restriction functions for temporal QUADBIN cell indices
+ *
  * @defgroup meos_quadbin_comp Comparison functions
  * @ingroup meos_quadbin
  * @brief Comparison functions for temporal QUADBIN cell indices

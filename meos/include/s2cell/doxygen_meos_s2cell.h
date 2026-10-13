@@ -66,6 +66,10 @@
  * @ingroup meos_s2cell
  * @brief Transformation functions for temporal S2 cell indices
  *
+ * @defgroup meos_s2cell_restrict Restriction functions
+ * @ingroup meos_s2cell
+ * @brief Restriction functions for temporal S2 cell indices
+ *
  * @defgroup meos_s2cell_comp Comparison functions
  * @ingroup meos_s2cell
  * @brief Comparison functions for temporal S2 cell indices
