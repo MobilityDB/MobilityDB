@@ -562,4 +562,40 @@ ts2cell_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_restrict
+ * @brief Return a temporal S2 cell restricted to an S2 cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+ts2cell_at_value(const Temporal *temp, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_ts2cell_s2cell(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, S2CellGetDatum(cell), REST_AT);
+}
+
+/**
+ * @ingroup meos_s2cell_restrict
+ * @brief Return a temporal S2 cell restricted to the complement of an S2 cell
+ * @param[in] temp Temporal value
+ * @param[in] cell Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+ts2cell_minus_value(const Temporal *temp, S2CellId cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_ts2cell_s2cell(temp, cell))
+    return NULL;
+  return temporal_restrict_value(temp, S2CellGetDatum(cell), REST_MINUS);
+}
+
 /*****************************************************************************/

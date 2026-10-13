@@ -585,4 +585,41 @@ tposechain_rotate_z(const Temporal *temp, double angle)
   return tposechain_rotate(temp, angle, 0.0, 0.0);
 }
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_posechain_restrict
+ * @brief Return a temporal pose chain restricted to a pose chain
+ * @param[in] temp Temporal value
+ * @param[in] pc Pose chain
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tposechain_at_value(const Temporal *temp, const PoseChain *pc)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tposechain_posechain(temp, pc))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(pc), REST_AT);
+}
+
+/**
+ * @ingroup meos_posechain_restrict
+ * @brief Return a temporal pose chain restricted to the complement of a pose
+ * chain
+ * @param[in] temp Temporal value
+ * @param[in] pc Pose chain
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tposechain_minus_value(const Temporal *temp, const PoseChain *pc)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tposechain_posechain(temp, pc))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(pc), REST_MINUS);
+}
+
 /*****************************************************************************/

@@ -1596,6 +1596,8 @@ extern Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, b
  * Restriction functions for temporal types
  *****************************************************************************/
 
+extern Temporal *tbigint_at_value(const Temporal *temp, int64 i);
+extern Temporal *tbigint_minus_value(const Temporal *temp, int64 i);
 extern Temporal *tbool_at_value(const Temporal *temp, bool b);
 extern Temporal *tbool_minus_value(const Temporal *temp, bool b);
 extern Temporal *temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
