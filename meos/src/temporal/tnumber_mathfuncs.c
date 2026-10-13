@@ -611,7 +611,6 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
  * @ingroup meos_temporal_math
  * @brief Return the angular difference of a temporal number
  * @param[in] temp Temporal value
- * @csqlfn #Tpoint_angular_difference()
  */
 Temporal *
 tnumber_angular_difference(const Temporal *temp)

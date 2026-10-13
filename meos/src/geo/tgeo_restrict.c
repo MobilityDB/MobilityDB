@@ -66,7 +66,6 @@
  * @brief Return a temporal point restricted to a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
- * @csqlfn #Temporal_at_value()
  */
 Temporal *
 tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
@@ -96,7 +95,6 @@ tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
  * @brief Return a temporal point restricted to the complement of a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
- * @csqlfn #Temporal_minus_value()
  */
 Temporal *
 tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
@@ -2740,7 +2738,6 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return a temporal point restricted to a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #Tgeo_at_geom()
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
@@ -2768,7 +2765,6 @@ tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return a temporal point restricted to the complement of a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #Tgeo_minus_geom()
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
