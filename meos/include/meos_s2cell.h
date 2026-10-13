@@ -297,6 +297,11 @@ extern Temporal **tgeogpoint_s2cell_split(const Temporal *temp, int32 level,
 extern Temporal **tgeompoint_s2cell_split(const Temporal *temp, int32 level,
   bool border_inc, Datum **cells, int *count);
 
+/* Restriction functions */
+
+extern Temporal *ts2cell_at_value(const Temporal *temp, S2CellId cell);
+extern Temporal *ts2cell_minus_value(const Temporal *temp, S2CellId cell);
+
 /* Ever, always and temporal comparisons */
 
 extern int ever_eq_s2cell_ts2cell(S2CellId cell, const Temporal *temp);

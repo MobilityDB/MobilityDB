@@ -81,6 +81,21 @@ tint_at_value(const Temporal *temp, int i)
 
 /**
  * @ingroup meos_temporal_restrict
+ * @brief Return a temporal big integer restricted to a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tbigint_at_value(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return temporal_restrict_value(temp, Int64GetDatum(i), REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
  * @brief Return a temporal float restricted to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
@@ -139,6 +154,22 @@ tint_minus_value(const Temporal *temp, int i)
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); 
   return temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal big integer restricted to the complement of a big
+ * integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tbigint_minus_value(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return temporal_restrict_value(temp, Int64GetDatum(i), REST_MINUS);
 }
 
 /**

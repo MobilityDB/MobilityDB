@@ -69,6 +69,10 @@
  * @ingroup meos_h3
  * @brief Transformation functions for temporal H3 cell indices
  *
+ * @defgroup meos_h3_restrict Restriction functions
+ * @ingroup meos_h3
+ * @brief Restriction functions for temporal H3 cell indices
+ *
  * @defgroup meos_h3_inspection Index-inspection functions
  * @ingroup meos_h3
  * @brief Per-instant inspection of the underlying H3 cell payload

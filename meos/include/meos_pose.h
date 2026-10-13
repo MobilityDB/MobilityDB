@@ -574,6 +574,11 @@ extern Temporal *tposechain_rotate_y(const Temporal *temp, double angle);
 extern Temporal *tposechain_rotate_z(const Temporal *temp, double angle);
 extern Temporal *tposechain_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 
+/* Restriction functions */
+
+extern Temporal *tposechain_at_value(const Temporal *temp, const PoseChain *pc);
+extern Temporal *tposechain_minus_value(const Temporal *temp, const PoseChain *pc);
+
 /* Ever/always and temporal comparison functions */
 
 extern int always_eq_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);

@@ -208,6 +208,13 @@ extern Temporal *tbigint_to_th3index(const Temporal *temp);
 extern Temporal *th3index_to_tbigint(const Temporal *temp);
 
 /*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+extern Temporal *th3index_at_value(const Temporal *temp, H3Index cell);
+extern Temporal *th3index_minus_value(const Temporal *temp, H3Index cell);
+
+/*****************************************************************************
  * Ever/always comparison operators
  *****************************************************************************/
 

@@ -289,6 +289,11 @@ extern Set *quadbin_to_set(Quadbin cell);
 extern Temporal *tbigint_to_tquadbin(const Temporal *temp);
 extern Temporal *tquadbin_to_tbigint(const Temporal *temp);
 
+/* Restriction functions */
+
+extern Temporal *tquadbin_at_value(const Temporal *temp, Quadbin cell);
+extern Temporal *tquadbin_minus_value(const Temporal *temp, Quadbin cell);
+
 /* Ever/always + temporal comparison operators (eq/ne) */
 
 extern int ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
