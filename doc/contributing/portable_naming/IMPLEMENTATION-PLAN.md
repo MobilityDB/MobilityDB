@@ -405,6 +405,78 @@ infrastructure, and the commits of the one MobilityDB pull request that delivers
 lifting kernel's equality and the dimension of the base relationships first. Its `@altsqlfn`
 names (`geoX`, `cbufferX`) reach Flink and Spark with the tags of R9 and A1.
 
+## Part VI — MobilityDuck generated from the catalog
+
+A user who knows MobilityDB calls the same function, under the same name and over the same types,
+in DuckDB, and every registration of MobilityDuck is written by its generator
+(`tools/codegen_duck_udfs.py`) from the catalog: no registration by hand. The generator retires a
+hand group by naming it in `RETIRED_GROUPS`, its safety check failing the build while a signature
+MobilityDB declares for the group is not generated.
+
+### Measured
+
+At MobilityDuck `4f343c62f` (the head of D2) over MobilityDB master `57fac5e427`, on 2026-10-13.
+The surface is the loaded extension's `duckdb_functions()`, read twice, with and without the
+generated registrations; a hand row is one the second read still holds that carries a MobilityDuck
+type or name.
+
+| | Overloads | Names |
+|---|---|---|
+| Hand scalar overloads | 1,829 | 422 |
+| Hand overloads, every kind, under a name MobilityDB does not declare | 356 | 107 |
+| of them spelled with an underscore | 265 | 80 |
+| (name, parameters) registered twice with concrete types | 12 | 8 |
+
+The names MobilityDB does not declare, by class, each against the name MobilityDB master
+declares for the same signature:
+
+| Hand names | Overloads | MobilityDB's name |
+|---|---|---|
+| `temporal_eq`, `_ne`, `_lt`, `_le`, `_gt`, `_ge`, `_cmp` | 77 | `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `cmp` (63 `CREATE FUNCTION eq`, 0 `temporal_eq`) |
+| `set_union`, `set_minus`, `set_intersection` | 48 | `setUnion`, `setMinus`, `setIntersection` (54 operators each) |
+| `span_union`, `span_minus`, `span_intersection` | 45 | `spanUnion`, `spanMinus`, `spanIntersection`, and `spanset…` over span sets |
+| `stbox_*` (30), `tbox_*` (22) | 52 | the comparison names above and the class-prefixed topology and position names of A2 |
+| `tnumber_add`, `_sub`, `_mult`, `_div` | 24 | `tAdd`, `tSub`, `tMul`, `tDiv` |
+| `tbool_and`, `tbool_or`, `ttext_cat`, `textset_cat` | 12 | `tAnd`, `tOr`, `tConcat`, `setConcat` |
+| aggregates `…Agg` (13 names) | 51 | the name the catalog states for the aggregate, its `Agg` spelling where DuckDB also has a scalar of the name, which fails at load (decision 0.1, `mergeAgg`) |
+| `tempUnnest`, `SetUnnest` | 19 | `temporalUnnest`, `setUnnest` (D1) |
+| others (`nad`, `tempDump`, `trajectory_gs`, `collect_gs`, `distance_gs`, `quadbinCellToTileX`, …) | 28 | each checked against MobilityDB; one MobilityDB does not declare is removed or named in MEOS first |
+
+The 12 duplicates: `atGeometry`, `atValue`, `minusGeometry` and `minusValue` over `tgeompoint`
+and `tgeogpoint`, which the catalog declares through both `tgeo_*` and `tpoint_*`
+(`meos_geo_restrict`); `<->`, `|=|`, `tDistance` and `nearestApproachDistance` over two
+`trgeometry` (`meos_rgeo_dist`).
+
+The hand overloads left by the catalog group of their SQL name, the largest first:
+`meos_temporal_modif` 177 (`appendInstant`, `appendSequence`, `deleteTime`, `insert`, `update`,
+`merge`), `meos_rgeo_restrict` 174, `meos_temporal_restrict` 170, `meos_rgeo_modif` 133,
+`meos_setspan_accessor` 127, `meos_geo_accessor` 72; a name several groups declare counts in each.
+
+### MobilityDB
+
+| PR | Topic | What it changes |
+|---|---|---|
+| G61 | Tag `tnumber_angular_difference` with no SQL wrapper | `meos/src/temporal/tnumber_mathfuncs.c` tags it `@csqlfn #Tpoint_angular_difference()`, the wrapper of `angularDifference(tgeompoint)` and `(tgeogpoint)`; MobilityDB declares `angularDifference` over the points and `(float, float)` alone, so the catalog gives the temporal number function the points' signatures and the generator must narrow it by hand; the tag is removed, as for every MEOS function no SQL function calls; branch `meos/angular-difference-no-wrapper` |
+
+### MobilityDuck
+
+| PR | Topic | What it changes |
+|---|---|---|
+| D2 | The pin at MobilityDB `57fac5e427` and the temporal accessors generated | MobilityDuck #430, branch `tooling/refresh-generated-surface`: `abfcf2b8d` generates the subtype, duration and set-valued accessors, `4f343c62f` retires `meos_temporal_accessor`, 252 hand overloads, 33 executors and `bindings.hpp` deleted; `segmentMinDuration`/`segmentMaxDuration` answer a `tbool`, `valueAtTimestamp(tint)` an `integer`, `angularDifference(tgeompoint)` a `tfloat`, the `trgeometry` accessors their reference geometry; open and mergeable at `4f343c62f`, its 9 checks succeeding (run 38399638768) |
+| D3 | Retire the restrictions | `meos_temporal_restrict`, `meos_geo_restrict` and `meos_rgeo_restrict` in `RETIRED_GROUPS`, their hand registrations and executors deleted; removes the 8 restriction duplicates; on G61 and D2 |
+| D4 | Retire the trgeometry distances | `meos_rgeo_dist`; removes the other 4 duplicates |
+| D5 | Retire the modifications | `meos_temporal_modif` and `meos_rgeo_modif` |
+| D6 | Retire the spatial accessors | `meos_geo_accessor`; `valueN` over the spatial temporal types then takes the `integer` MobilityDB declares, not a `BIGINT`, as D2 does for `tbigint` |
+| D7 | Register the operator-backing functions under MobilityDB's names | the generator registers `eq` … `cmp`, `setUnion` …, `spanUnion` …, `tAdd` … from the catalog's `sqlfn` and `portableAliases` (`reg_names`, which already registers both for a generated function) for every signature an operator of MobilityDB carries, and the 265 hand overloads spelled with an underscore are deleted; the tests call MobilityDB's names |
+| D8 | The cell sets | `valueN` over `quadbinset` and `s2cellset` raises "unsupported set base type", `numValues(h3indexset)` and `getValues` of a cell set are not registered; the MEOS side first, a G row if MEOS lacks the function |
+| D9 | The groups left | each remaining hand group retired in the same way, one PR per group, until the hand surface is empty |
+
+### Order
+
+G61 first, then D2's merge; D3–D6 on it in that order, each on the one before it once green; D7
+after D3–D6, since the operators of the restricted and modified values reach it; D8 on its own;
+D9 last.
+
 ## Acceptance of the whole
 
 - Every pull request of the plan names its branch in its row or its family document, and these
@@ -424,3 +496,5 @@ names (`geoX`, `cbufferX`) reach Flink and Spark with the tags of R9 and A1.
   the I/O matrix (`io_matrix.py`) reads yes in every cell but the n/a ones.
 - After Part IV: J19's ledgers are empty for Flink and Spark, but for a signature whose meaning
   is undefined for an engine, each argued and decided on its own.
+- After Part VI: the second read of MobilityDuck's `duckdb_functions()`, without the generated
+  registrations, holds no MobilityDuck row, and no (name, parameters) is registered twice.
