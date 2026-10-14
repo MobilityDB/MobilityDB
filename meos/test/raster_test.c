@@ -143,6 +143,20 @@ static const char *raster_plane =
   "084000000000000000000000000000000000e6100000030003000a0000000000000000"
   "0000803f00000040000000000000803f00000040000000000000803f00000040";
 
+/* A 3x3 raster with a 32BF band holding 1.24, 1.26, nodata / 2, 2, 2 / 3,
+ * 1.24, 2, with -9999 as its nodata value, the value count cases, written by
+ * PostGIS */
+static const char *raster_counts =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000e6100000030003004a003c1cc652b89e3f"
+  "ae47a13f003c1cc60000004000000040000000400000404052b89e3f00000040";
+
+/* A 2x2 raster whose 32BF band states that every pixel is nodata, -9999 */
+static const char *raster_all_nodata =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "004000000000000000000000000000000000e6100000020002006a003c1cc6003c1cc6"
+  "003c1cc6003c1cc6003c1cc6";
+
 /* Main program */
 int main(void)
 {
@@ -1540,6 +1554,99 @@ int main(void)
   assert(raster_slope(plane, 1, NULL, NULL, "DEGREES", 1.0, false) == NULL);
   assert(meos_errno() != 0);
   free(plane); free(dem);
+
+  /* The histogram of a band: raster_counts holds 1.24, 1.26, nodata / 2, 2,
+   * 2 / 3, 1.24, 2 in a 32BF band, so its values are the float images of
+   * those numbers. Every row below is the one PostGIS 3.6.4 answers for
+   * ST_ValueCount and ST_ValuePercent over the same raster */
+  Raster *counts = raster_from_hexwkb(raster_counts);
+  assert(counts != NULL);
+  int nvc = 0;
+  meos_errno_reset();
+  ValueCount *vc = raster_value_count(counts, 1, true, NULL, 0, 0.0, &nvc);
+  assert(vc != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_value_count(counts):");
+  for (int i = 0; i < nvc; i++)
+    printf(" (%g, %u, %g)", vc[i].value, vc[i].count, vc[i].percent);
+  printf("\n");
+  assert(nvc == 4);
+  double vcsum = 0.0;
+  for (int i = 0; i < nvc; i++)
+  {
+    if (vc[i].value == (double) 1.24f)
+      assert(vc[i].count == 2 && vc[i].percent == 0.25);
+    else if (vc[i].value == (double) 1.26f)
+      assert(vc[i].count == 1 && vc[i].percent == 0.125);
+    else if (vc[i].value == 2.0)
+      assert(vc[i].count == 4 && vc[i].percent == 0.5);
+    else
+      assert(vc[i].value == 3.0 && vc[i].count == 1);
+    vcsum += vc[i].percent;
+  }
+  assert(vcsum == 1.0);
+  free(vc);
+
+  /* The nodata pixel is a value where nodata is not excluded */
+  vc = raster_value_count(counts, 1, false, NULL, 0, 0.0, &nvc);
+  assert(vc != NULL && nvc == 5);
+  bool nodata_row = false;
+  for (int i = 0; i < nvc; i++)
+    if (vc[i].value == -9999.0)
+      nodata_row = (vc[i].count == 1);
+  assert(nodata_row);
+  free(vc);
+
+  /* Rounded to tenths, 1.24 and 1.26 are 1.2 and 1.3 */
+  vc = raster_value_count(counts, 1, true, NULL, 0, 0.1, &nvc);
+  assert(vc != NULL && nvc == 4);
+  printf("raster_value_count(counts, roundto 0.1):");
+  for (int i = 0; i < nvc; i++)
+    printf(" (%g, %u)", vc[i].value, vc[i].count);
+  printf("\n");
+  bool tenths = false;
+  for (int i = 0; i < nvc; i++)
+    if (fabs(vc[i].value - 1.3) < 1e-9)
+      tenths = (vc[i].count == 1);
+  assert(tenths);
+  free(vc);
+
+  /* Search values answer one row each, in their order, a value no pixel
+   * holds counting 0 */
+  double search[2] = {2.0, 7.0};
+  vc = raster_value_count(counts, 1, true, search, 2, 0.0, &nvc);
+  assert(vc != NULL && nvc == 2);
+  printf("raster_value_count(counts, {2, 7}): (%g, %u, %g) (%g, %u, %g)\n",
+    vc[0].value, vc[0].count, vc[0].percent, vc[1].value, vc[1].count,
+    vc[1].percent);
+  assert(vc[0].value == 2.0 && vc[0].count == 4 && vc[0].percent == 0.5);
+  assert(vc[1].value == 7.0 && vc[1].count == 0 && vc[1].percent == 0.0);
+  free(vc);
+
+  /* A band stating that every pixel is nodata answers no row where nodata is
+   * excluded, and the nodata value over every pixel otherwise */
+  Raster *allnodata = raster_from_hexwkb(raster_all_nodata);
+  assert(allnodata != NULL);
+  meos_errno_reset();
+  vc = raster_value_count(allnodata, 1, true, NULL, 0, 0.0, &nvc);
+  assert(vc == NULL && nvc == 0);
+  assert(meos_errno() == 0);
+  vc = raster_value_count(allnodata, 1, false, NULL, 0, 0.0, &nvc);
+  assert(vc != NULL && nvc == 1);
+  printf("raster_value_count(all nodata, nodata kept): (%g, %u, %g)\n",
+    vc[0].value, vc[0].count, vc[0].percent);
+  assert(vc[0].value == -9999.0 && vc[0].count == 4 && vc[0].percent == 1.0);
+  free(vc); free(allnodata);
+
+  /* A band the raster does not have, search values left unstated and a null
+   * argument are refused */
+  meos_errno_reset();
+  assert(raster_value_count(counts, 2, true, NULL, 0, 0.0, &nvc) == NULL);
+  assert(raster_value_count(counts, 1, true, NULL, 2, 0.0, &nvc) == NULL);
+  assert(raster_value_count(NULL, 1, true, NULL, 0, 0.0, &nvc) == NULL);
+  assert(raster_value_count(counts, 1, true, NULL, 0, 0.0, NULL) == NULL);
+  assert(meos_errno() != 0);
+  free(counts);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

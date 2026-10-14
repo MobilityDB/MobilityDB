@@ -2188,4 +2188,94 @@ SELECT tpi(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1,
   ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
 
+-------------------------------------------------------------------------------
+-- Value count of rasters
+-------------------------------------------------------------------------------
+
+-- The rows of every distinct value of a band, with nodata left out and kept,
+-- rounded to tenths, and of the values searched.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT 'all' AS form, round(value::numeric, 6) AS value, count
+FROM rast, valueCount(r)
+UNION ALL
+SELECT 'nodata kept', round(value::numeric, 6), count
+FROM rast, valueCount(r, 1, false)
+UNION ALL
+SELECT 'tenths', round(value::numeric, 6), count
+FROM rast, valueCount(r, 1, true, NULL::float[], 0.1)
+UNION ALL
+SELECT 'searched', round(value::numeric, 6), count
+FROM rast, valueCount(r, ARRAY[2, 7]::float[])
+ORDER BY 1, 2;
+
+-- Every form answers what PostGIS answers over the same raster.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT
+  (SELECT array_agg((value, count) ORDER BY value) FROM valueCount(r)) =
+  (SELECT array_agg((value, count) ORDER BY value) FROM ST_ValueCount(r))
+    AS count_rows,
+  (SELECT array_agg((value, count) ORDER BY value)
+     FROM valueCount(r, 1, ARRAY[2, 3]::float[])) =
+  (SELECT array_agg((value, count) ORDER BY value)
+     FROM ST_ValueCount(r, 1, ARRAY[2, 3]::double precision[]))
+    AS count_band_searched,
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM valuePercent(r, 1, false)) =
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM ST_ValuePercent(r, 1, false)) AS percent_rows,
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM valuePercent(r, ARRAY[2]::float[], 0.5)) =
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM ST_ValuePercent(r, ARRAY[2]::double precision[], 0.5))
+    AS percent_searched,
+  valueCount(r, 2::float) = ST_ValueCount(r, 2::double precision)
+    AS count_value,
+  valueCount(r, 1, 7::float) = ST_ValueCount(r, 1, 7::double precision)
+    AS count_absent_value,
+  valuePercent(r, 1, false, 2::float) =
+    ST_ValuePercent(r, 1, false, 2::double precision) AS percent_value
+FROM rast;
+
+-- The share of each value, and of one value.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT round(value::numeric, 6) AS value, percent,
+  valuePercent(r, 2::float) AS percent_of_two
+FROM rast, valuePercent(r)
+ORDER BY 1;
+
+-- A band stating that every pixel is nodata answers no row where nodata is
+-- left out, and the nodata value over every pixel where it is kept.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, -9999.0::float8, -9999.0::float8) AS r
+)
+SELECT (SELECT count(*) FROM valueCount(r)) AS rows_nodata_left_out,
+  (SELECT array_agg((value, count)) FROM valueCount(r, 1, false))
+    AS rows_nodata_kept,
+  valueCount(r, -9999::float) AS count_of_nodata
+FROM rast;
+
+-- A band the raster does not have is an error, where PostGIS answers NULL.
+SELECT * FROM valueCount(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
+  -1.0, 0.0, 0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2);
+
 /*****************************************************************************/
