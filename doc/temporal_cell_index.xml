@@ -2641,6 +2641,48 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterAdd">
+				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>/</varname></primary></indexterm>
+				<para>Addition, subtraction, multiplication, and division of rasters, pixel by pixel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{float,raster} {+, -, *, /} {float,raster} → raster
+</programlisting>
+				<para>A raster takes the arithmetic operators of a temporal number, so a derived raster is written as the expression it is, such as <varname>(nir - red) / (nir + red)</varname> or <varname>depth - 8.5</varname>, where PostGIS writes it as the expression of <varname>ST_MapAlgebra</varname>. Every band of the result has the pixel type <varname>64BF</varname>, whatever the pixel types of the operands, so a pixel holds the arithmetic as computed: a negative difference of two unsigned bands, a product beyond their range, and a ratio between zero and one are kept rather than clamped or truncated, and <link linkend="raster_reclass"><varname>reclass</varname></link> narrows the result where a smaller pixel type is needed. Two rasters are operated band by band over the pixels they share, as two temporal numbers are over the time they share: they are to have the same reference system, the same grid, and the same number of bands, and two rasters sharing no pixel have no result. A pixel that is nodata in either operand is nodata in the result, which takes the nodata value of the first operand stating one and states none when neither does, so a result of zero is a value. A division by zero raises an error, whether the divisor is a number or a pixel. The functions behind the operators are <varname>rasterAdd</varname>, <varname>rasterSub</varname>, <varname>rasterMul</varname>, and <varname>rasterDiv</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The normalized difference of two unsigned 16-bit bands
+WITH bands AS (
+  SELECT
+    ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+      4326), '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[3000, 500, 2000], [4000, 1000, 6000], [100, 0, 65535]]
+        ::double precision[][]) AS nir,
+    ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+      4326), '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[1000, 1500, 2000], [1000, 3000, 2000], [300, 1, 0]]
+        ::double precision[][]) AS red )
+SELECT ST_BandPixelType((nir - red) / (nir + red), 1),
+  ST_DumpValues((nir - red) / (nir + red), 1)
+FROM bands;
+-- 64BF | {{0.5,-0.5,0},{0.6,-0.5,0.5},{-0.5,-1,1}}
+-- Read a derived raster along a trajectory: the depth under a vessel of draught 8.5
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS depth )
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', depth - 8.5)::text
+FROM rast;
+-- Interp=Step;[1.5@2001-01-01 00:00:00+00, 11.5@2001-01-01 06:00:00+00,
+--   21.5@2001-01-01 18:00:00+00, 41.5@2001-01-02 06:00:00+00,
+--   61.5@2001-01-02 18:00:00+00, 61.5@2001-01-03 00:00:00+00]
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_clip">
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Return a raster keeping the pixels of another that a geometry covers</para>

@@ -899,4 +899,123 @@ CREATE FUNCTION stbox(raster)
 
 CREATE CAST (raster AS stbox) WITH FUNCTION stbox(raster);
 
+/******************************************************************************
+ * Arithmetic of rasters
+ *
+ * A raster takes the arithmetic operators of a temporal number, computed
+ * pixel by pixel into 64-bit float bands, so a derived raster such as
+ * (nir - red) / (nir + red) is written as the expression it is. PostGIS
+ * raster defines none of these operators.
+ *****************************************************************************/
+
+CREATE FUNCTION rasterAdd(float, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Add_float_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterAdd(raster, float)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Add_raster_float'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterAdd(raster, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Add_raster_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR + (
+  PROCEDURE = rasterAdd,
+  LEFTARG = float, RIGHTARG = raster,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = rasterAdd,
+  LEFTARG = raster, RIGHTARG = float,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = rasterAdd,
+  LEFTARG = raster, RIGHTARG = raster,
+  COMMUTATOR = +
+);
+
+CREATE FUNCTION rasterSub(float, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Sub_float_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterSub(raster, float)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Sub_raster_float'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterSub(raster, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Sub_raster_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = rasterSub,
+  LEFTARG = float, RIGHTARG = raster
+);
+CREATE OPERATOR - (
+  PROCEDURE = rasterSub,
+  LEFTARG = raster, RIGHTARG = float
+);
+CREATE OPERATOR - (
+  PROCEDURE = rasterSub,
+  LEFTARG = raster, RIGHTARG = raster
+);
+
+CREATE FUNCTION rasterMul(float, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Mul_float_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterMul(raster, float)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Mul_raster_float'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterMul(raster, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Mul_raster_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+  PROCEDURE = rasterMul,
+  LEFTARG = float, RIGHTARG = raster,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = rasterMul,
+  LEFTARG = raster, RIGHTARG = float,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = rasterMul,
+  LEFTARG = raster, RIGHTARG = raster,
+  COMMUTATOR = *
+);
+
+CREATE FUNCTION rasterDiv(float, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Div_float_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterDiv(raster, float)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Div_raster_float'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterDiv(raster, raster)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Div_raster_raster'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR / (
+  PROCEDURE = rasterDiv,
+  LEFTARG = float, RIGHTARG = raster
+);
+CREATE OPERATOR / (
+  PROCEDURE = rasterDiv,
+  LEFTARG = raster, RIGHTARG = float
+);
+CREATE OPERATOR / (
+  PROCEDURE = rasterDiv,
+  LEFTARG = raster, RIGHTARG = raster
+);
+
 /*****************************************************************************/

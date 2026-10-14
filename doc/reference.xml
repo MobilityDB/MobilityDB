@@ -3434,6 +3434,9 @@
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Addition, subtraction, multiplication, and division of rasters, pixel by pixel</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Return a raster keeping the pixels of another that a geometry covers</para>
 				</listitem>
 				<listitem>

@@ -263,10 +263,10 @@
 					</row>
 				</thead>
 				<tbody>
-					<row><entry>+</entry><entry><indexterm significance="normal"><primary><varname>tAdd</varname></primary></indexterm>tAdd(a, b)</entry></row>
-					<row><entry>-</entry><entry><indexterm significance="normal"><primary><varname>tSub</varname></primary></indexterm>tSub(a, b)</entry></row>
-					<row><entry>*</entry><entry><indexterm significance="normal"><primary><varname>tMul</varname></primary></indexterm>tMul(a, b)</entry></row>
-					<row><entry>/</entry><entry><indexterm significance="normal"><primary><varname>tDiv</varname></primary></indexterm>tDiv(a, b)</entry></row>
+					<row><entry>+</entry><entry><indexterm significance="normal"><primary><varname>tAdd</varname></primary></indexterm><indexterm significance="normal"><primary><varname>rasterAdd</varname></primary></indexterm>tAdd / rasterAdd (a, b)</entry></row>
+					<row><entry>-</entry><entry><indexterm significance="normal"><primary><varname>tSub</varname></primary></indexterm><indexterm significance="normal"><primary><varname>rasterSub</varname></primary></indexterm>tSub / rasterSub (a, b)</entry></row>
+					<row><entry>*</entry><entry><indexterm significance="normal"><primary><varname>tMul</varname></primary></indexterm><indexterm significance="normal"><primary><varname>rasterMul</varname></primary></indexterm>tMul / rasterMul (a, b)</entry></row>
+					<row><entry>/</entry><entry><indexterm significance="normal"><primary><varname>tDiv</varname></primary></indexterm><indexterm significance="normal"><primary><varname>rasterDiv</varname></primary></indexterm>tDiv / rasterDiv (a, b)</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>
