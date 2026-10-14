@@ -61,6 +61,38 @@ Measured on MobilityDB master `bc5713429c` and on master `4d55aaf18d`, which hol
 | `geo_distance_fn` for every other pair of geometries (liblwgeom) | liblwgeom's walk | no |
 | the geodetic distances (`datum_geog_distance`) | the spheroid by iteration | the exact answer needs its own definition |
 
+## What the exact kernels cost
+
+Measured on the circular buffer benchmark: 100 AIS trips of 1 January 2025 kept twice, as a
+temporal point and as a temporal circular buffer on the same instants, against 100 protected areas
+(10000 pairs) and against each other (9628 pairs). Each figure is the time of the query on one
+build divided by its time on master `d9f6a105a0`, which precedes ED1, the builds interleaved round
+by round on the same database; the result counts are the same on every build.
+
+| Query | ED1 to ED8 merged (`6685673243`) | with the first PR of ED6 |
+|---|---|---|
+| `ST_Centroid(geom) <-> tcbuffer` | 3.04 | 1.33 |
+| `geom \|=\| tcbuffer` | 2.40 | 1.21 |
+| `tCovers(geom, tcbuffer)` | 1.90 | 1.17 |
+| `tContains(geom, tcbuffer)` | 1.85 | 1.11 |
+| `eIntersects(geom, tcbuffer)` | 1.83 | 1.10 |
+| `tTouches(geom, tcbuffer)` | 1.82 | 1.17 |
+| `tDwithin(cbuffer, tcbuffer, 100)` | 2.05 | 1.13 |
+| `atGeometry(tcbuffer, geom)` | 1.37 | 1.05 |
+| the same queries on the temporal point | 0.93 to 1.02 | 0.97 |
+
+The cost of the first column lies in `point_distance_offset_exact` and its segment twin, which
+take 13% to 57% of these queries: on master neither carries a first test in doubles, so every
+call runs the exact search, two or three times. What the first PR leaves is the exact answer
+itself where the double does not clear its bound, and `float_collinear`, the exact redundant-instant test of
+`e2f64b1f1c`, which already reads a filtered sign.
+
+Between two moving points, `t1 |=| t2` over the 9628 pairs takes 45.0 s on `d9f6a105a0`, 229.9 s
+once ED5 (`bdc4e41234`) walks every interval in exact arithmetic with nothing skipped, and 32.5 s
+with the second PR of ED6, whose answers are the same as ED5's on all 9628 pairs. No other
+operator between two moving points is slower: `nearestApproachInstant`, `shortestLine` and `<->`
+cost the same, and `eDwithin`, `aDwithin` and `tDwithin` the same or less.
+
 ## The plan
 
 Each pull request is built on the one its last column names, and adds to the code and the
@@ -79,7 +111,7 @@ reviewer reads each one alone.
 | ED10 | A moving circular buffer whose radius changes | the swept-disc engine reads a disc whose radius changes by a quadratic in rounded doubles (`dist_minfun`) behind two absolute bands that decide answers: an edge whose squared length is at most 1e-24 is read as its first end, and the parameters where the foot leaves the edge are sought only where the dot product of the path and the edge exceeds 1e-18. The distance less a radius that changes linearly in time is exact on the input doubles, so it is answered exactly as ED8's constant radius is | after ED8 |
 | ED9 | The points and instants the engine constructs | the end of a shortest line is a rational point, each coordinate rounded to its nearest double from the exact quotient, so the judge's band becomes the nearest double; the instant at which a `dwithin` begins or ends is a root of a quadratic with rational coefficients, decided by exact signs as ED4 decides a distance, then converted by MEOS's dating convention | after ED5 |
 | ED11 | The union of surfaces bounded by circular arcs, which the dissolved traversed area of a temporal circular buffer reads | the overlay of `meos_areal_union` (`geo_buffer.c`) decides where two boundaries meet and which pieces bound the union by bands: two arcs lie on one circle where their computed centres and radii agree within 1e-12 (`buffer_collect_arc_arc_intersections`, `buffer_arcs_same_circle`), a node lies on an arc within the rounding of a coordinate (`buffer_piece_contains_point`), two ends are one point within 1e-12 (`buffer_piece_points_equal`) or within `buffer_node_tolerance` (the chaining walk), and a piece is located by its constructed midpoint (`buffer_classify_piece`). Consecutive pieces of a traversed area carry one circle, each computing it from its own three points, and a straight side tangent to it, so each band reads either side: on master `ebf26ad0da` 115 of 150 dwelling trips (30 seeds, 3 to 20 instants) and the trip of the Vol. 2 chapter 3 case study reach the GEOS fall-through, which replaces every arc by a chain of segments. A circle through three doubles has a rational centre and squared radius, and the meeting of a line or a circle with a circle lies in Q(√D) with D rational, so every question of the overlay is the sign of an expression of the input doubles: one circle (`arc_same_circle`, by identity where the traversed area builds each instant's circle once and every piece shares it), one meeting, the order of two meetings along an arc, the side of a curve a piece lies on. Each is decided as ED8 decides a distance, in doubles with error bounds, then double-double, then `WideDyadic`, and only the vertices of the answer are rounded, each to its nearest double. The judge is CGAL's exact circular-arc traits (`Arr_circle_segment_traits_2`) on the same doubles, by which the chapter 3 trip covers 182.778 km² | after ED8 |
-| ED6 | The cost | a filter for `point_distance_offset_exact` and `point_segment_distance_offset_exact` as `point_distance_exact` has; the circular buffer benchmark run after the correctness of ED1 to ED5 and ED7 to ED9, never as a way of deciding it | last |
+| ED6 | The cost | the exact kernels of ED1, ED4, ED5 and ED8 are reached on every call, so the cost they add is measured on the circular buffer benchmark (see [What the exact kernels cost](#what-the-exact-kernels-cost)) and removed without moving an answer, in three PRs. The first puts a first test in doubles in front of `point_distance_offset_exact`, `point_segment_distance_offset_exact` and `cbuffer_gap_sign`, as `point_distance_exact` has one: an error bound computed from the operands, an answer only where the double clears it, and every tie, out-of-range or non-finite case sent to the unchanged exact path; CGAL agrees with all 236964 answers of its head over 14 corpora, among them 2226 rows where `hypot` less the radius is not the nearest double and 625 where the unfiltered sign of two discs is wrong. The second skips, in the ED5 walk of two moving points, the intervals whose nearest approach the existing `dwithin` filter proves above the least distance an approximate walk in doubles finds, widened by 2^-20, or above the exact least distance found so far; a skipped interval cannot lower the minimum, and the whole walk is read again if the exact answer comes out above that bound, so the approximation never decides one. The third skips, in `tcbuffer_disc_signed_boundary` and the nearest-approach search, an edge whose proven lower bound exceeds the running minimum. The full benchmark reads the cost of the merged kernels; it never decides an answer | the first, `perf/offset-distance-filter` at `728d4d834f` on master `78bd2ea2e1`, CGAL agreeing; the second, `perf/nad-tpoint-motion-prune` at `d39ac7c972` on the same master, its CGAL judge pending; the third, after the first |
 
 The geodetic distances are not in the plan: an exact answer on the spheroid needs a definition
 first, which the [geodetic boxes](GEODETIC-BOXES.md) share.
