@@ -3782,6 +3782,197 @@ point_segment_quarter_rounds(const double *p, const double *a,
 }
 
 /**
+ * @brief Return the sign of `X^2 - (a + b1 + b2)^2 L`, or 0 where a filter on
+ * doubles cannot tell, setting in @p value the double it reads
+ * @details The twin of #point_distance_offset_filter_sign for a point and a
+ * segment: `X` is the cross product of the point less the segment's start and
+ * the segment, held as `xs + xlo` within @p ex, and `L` the squared length of
+ * the segment, held as `ls + llo` within @p el. The square of `xs` and of `a`
+ * are split by #two_square and `a*a*ls` by #two_product, so the value is
+ * `(x - q) + (y + 2*xs*xlo + xlo^2 - qe - a^2 llo - P (ls + llo))`, with
+ * `P = ya + 2ab + b^2` and `b` the rounded `b1 + b2`. The first difference is
+ * exact where one term is within a factor of two of the other (Sterbenz).
+ * The bound adds the error that `ex` and `el` carry into the squares, the
+ * rounding of `b` (`|2(a + b)(b - b1 - b2)| <= 2 DBL_EPSILON (|ab| + b^2)`
+ * times `L`), and the rounding of every product and sum, each below
+ * `DBL_EPSILON` times the magnitudes it reads, with a factor of 32 over the
+ * count of operations, and an absolute `4 DBL_MIN` for the products that
+ * underflow
+ * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
+ * never the sign of an exact tie, which the caller reads exactly
+ */
+static inline int
+point_segment_offset_filter_sign(double xs, double xlo, double ex, double ls,
+  double llo, double el, double a, double b1, double b2, double *value)
+{
+  double x, y, xa, ya, q, qe;
+  two_square(xs, &x, &y);
+  two_square(a, &xa, &ya);
+  two_product(xa, ls, &q, &qe);
+  double b = b1 + b2;
+  double ab2 = 2.0 * a * b, bb = b * b;
+  double pp = (ya + ab2) + bb;
+  double t1 = 2.0 * xs * xlo, t2 = xlo * xlo;
+  double t3 = xa * llo, t4 = pp * ls, t5 = pp * llo;
+  double hi = x - q;
+  bool hiexact = (x >= 0.5 * q && x <= 2.0 * q);
+  double v = hi + (((((y + t1) + t2) - qe) - t3) - (t4 + t5));
+  double lsum = ls + fabs(llo) + el;
+  double bound = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
+    2.0 * (fabs(xs) + fabs(xlo)) * ex + ex * ex +
+    (xa + fabs(pp)) * el * (1.0 + 4.0 * DBL_EPSILON) +
+    4.0 * DBL_EPSILON * (fabs(ab2) + bb) * lsum +
+    32.0 * DBL_EPSILON * (fabs(y) + fabs(t1) + t2 + fabs(qe) + fabs(t3) +
+      fabs(t4) + fabs(t5) + (fabs(ya) + fabs(ab2) + bb) * lsum + fabs(v)) +
+    4.0 * DBL_MIN;
+  *value = v;
+  if (v > bound)
+    return 1;
+  if (v < - bound)
+    return -1;
+  return 0;
+}
+
+/**
+ * @brief Answer the distance of a point to a segment less a radius on doubles
+ * where a filter settles it, returning false where it does not
+ * @details The first test of #point_segment_distance_offset_exact, the twin
+ * of #point_distance_offset_filter. It reads the coordinate differences as
+ * they are, where each largest one lies from 2^-120 to 2^120 and the radius
+ * below 2^122, so that no product of four of them overflows. With `w` the
+ * point less the segment's start and `u` the segment, each held exactly as a
+ * rounded difference and its error, the signs of `w . u` and of
+ * `w . u - u . u` are read in doubles against Shewchuk's bound, the error
+ * terms of the differences adding at most 2^-52 of each product: an end is
+ * answered by #point_distance_offset_exact, and the foot as follows. The
+ * cross product `X = w x u` and the squared length `L` are formed from
+ * #two_product and #two_square as a double and the double of its small
+ * terms, within a bound of 16 DBL_EPSILON of the magnitude of those terms.
+ * The squared distance to the line is `X^2 / L`, so the answer is 0 where
+ * `X^2 - r^2 L` is certainly not positive, and otherwise the double `c` for
+ * which `X^2 - (r + c + h)^2 L` is positive at the lower midpoint and
+ * negative at the upper one, each read by #point_segment_offset_filter_sign
+ * with `r + c` split by #two_sum and `h` half a gap, exact for a candidate of
+ * at least 2^-900. The candidate starts at `(X^2 - r^2 L) / (L (|X| / sqrt(L)
+ * + r))`, whose numerator keeps its precision however much the distance and
+ * the radius cancel, and moves while a side certainly says so, at most four
+ * times. Any sign the filter cannot tell, which every tie is, returns false,
+ * and the exact search answers
+ * @param[in] dw,ew,du,eu Differences of the point and of the segment's end
+ * from its start, and the errors of their rounding
+ * @param[in] maxw,maxu Largest absolute differences
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] r Radius, not negative
+ * @param[out] result The answer where the function returns true
+ */
+static bool
+point_segment_offset_filter(const double *dw, const double *ew,
+  const double *du, const double *eu, double maxw, double maxu,
+  const double *p, const double *a, const double *b, double r, double *result)
+{
+  if (! (maxw >= 0x1p-120 && maxw <= 0x1p120 && maxu >= 0x1p-120 &&
+      maxu <= 0x1p120 && r < 0x1p122))
+    return false;
+  /* The nearest point of the segment: the start, the end or the foot */
+  double m0 = fabs(dw[0] * du[0]), m1 = fabs(dw[1] * du[1]);
+  double l0 = du[0] * du[0], l1 = du[1] * du[1];
+  double dot = dw[0] * du[0] + dw[1] * du[1];
+  double dbound = 8.0 * DBL_EPSILON * (m0 + m1) + 4.0 * DBL_MIN;
+  if (dot < - dbound)
+  {
+    *result = point_distance_offset_exact(p, a, 2, r);
+    return true;
+  }
+  if (dot <= dbound)
+    return false;
+  double dl = dot - (l0 + l1);
+  double dlbound = 8.0 * DBL_EPSILON * (m0 + m1 + l0 + l1 + fabs(dl)) +
+    4.0 * DBL_MIN;
+  if (dl > dlbound)
+  {
+    *result = point_distance_offset_exact(p, b, 2, r);
+    return true;
+  }
+  if (dl >= - dlbound)
+    return false;
+
+  /* The foot. X = w x u as xs + xlo within ex */
+  double p1, e1, p2, e2, xs, t;
+  two_product(dw[0], du[1], &p1, &e1);
+  two_product(dw[1], du[0], &p2, &e2);
+  two_sum(p1, - p2, &xs, &t);
+  double c1 = dw[0] * eu[1], c2 = ew[0] * du[1], c3 = dw[1] * eu[0],
+    c4 = ew[1] * du[0], c5 = ew[0] * eu[1], c6 = ew[1] * eu[0];
+  double xlo = (((t + e1) - e2) + ((c1 + c2) - (c3 + c4))) + (c5 - c6);
+  double ex = 16.0 * DBL_EPSILON * (fabs(t) + fabs(e1) + fabs(e2) +
+    fabs(c1) + fabs(c2) + fabs(c3) + fabs(c4) + fabs(c5) + fabs(c6)) +
+    4.0 * DBL_MIN;
+  /* L = u . u as ls + llo within el */
+  double ls = 0.0, llo = 0.0, lmag = 0.0;
+  for (int i = 0; i < 2; i++)
+  {
+    double x, y, s;
+    two_square(du[i], &x, &y);
+    two_sum(ls, x, &ls, &s);
+    double de = 2.0 * du[i] * eu[i], ee = eu[i] * eu[i];
+    llo += (s + y) + (de + ee);
+    lmag += fabs(s) + fabs(y) + fabs(de) + ee;
+  }
+  double el = 32.0 * DBL_EPSILON * lmag + 4.0 * DBL_MIN;
+  if (! (ls > 0.0))
+    return false;
+
+  /* The side of X^2 - r^2 L */
+  double num;
+  int side = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, r,
+    0.0, 0.0, &num);
+  if (side == 0)
+    return false;
+  if (side < 0)
+  {
+    *result = 0.0;
+    return true;
+  }
+  double c = num / (ls * (fabs(xs) / sqrt(ls) + r));
+  for (int move = 0; move < 4; move++)
+  {
+    if (! (c >= 0x1p-900) || ! isfinite(c))
+      return false;
+    uint64_t bits;
+    memcpy(&bits, &c, sizeof(bits));
+    uint64_t ubits = bits + 1, dbits = bits - 1;
+    double cu, cd;
+    memcpy(&cu, &ubits, sizeof(cu));
+    memcpy(&cd, &dbits, sizeof(cd));
+    if (! isfinite(cu))
+      return false;
+    double m, m1e, v;
+    two_sum(r, c, &m, &m1e);
+    int su = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, m,
+      m1e, 0.5 * (cu - c), &v);
+    if (su > 0)
+    {
+      c = cu;
+      continue;
+    }
+    int sd = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, m,
+      m1e, - 0.5 * (c - cd), &v);
+    if (sd < 0)
+    {
+      c = cd;
+      continue;
+    }
+    if (su < 0 && sd > 0)
+    {
+      *result = c;
+      return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/**
  * @brief Return the distance of a point to a segment less a radius, computed
  * exactly and rounded once, or 0 where the point is no farther from the
  * segment than the radius
@@ -3818,6 +4009,15 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   /* A degenerate segment is a point, exactly */
   if (du[0] == 0.0 && du[1] == 0.0)
     return point_distance_offset_exact(p, a, 2, r);
+  /* The first test on doubles, which settles every pair but those near a
+   * midpoint, a tie or an end, as #point_distance_offset_exact does */
+  if (sw == 0 && su == 0)
+  {
+    double result;
+    if (point_segment_offset_filter(dw, ew, du, eu, maxw, maxu, p, a, b, r,
+        &result))
+      return result;
+  }
   /* A difference beyond the largest double where a quarter of a coordinate
    * or of the radius would round: every sign on the input coordinates */
   if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, r))
