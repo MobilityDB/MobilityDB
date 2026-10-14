@@ -586,6 +586,7 @@ meos_set_datestyle(const char *newval, void *extra)
   int *myextra = (int *) extra;
   DateStyle = myextra[0];
   DateOrder = myextra[1];
+  pfree(myextra);
   return true;
 }
 
