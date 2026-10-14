@@ -1170,6 +1170,37 @@ static int
 cbuffer_gap_sign(const Cbuffer *cb1, const Cbuffer *cb2, const double *lterms,
   int nterms)
 {
+  /* First test in doubles. With u = DBL_EPSILON / 2, each rounded difference
+   * is the exact one times (1 + d), |d| <= u, so its square is within
+   * 2.01 u of the exact square, and the squaring and the sum add u each: the
+   * rounded sum of squares sq lies within 4 u sq of the exact one. The rounded
+   * length l, a sum of at most three doubles, lies within 2 u lmag of the
+   * exact one, lmag the sum of their magnitudes, so its square lies within
+   * (2 |l| + 2 u lmag) 2 u lmag of the exact square, and squaring adds
+   * u l*l; the subtraction adds u |v|. The bound below doubles each term and
+   * adds an absolute 4 DBL_MIN for the products that underflow. A value within
+   * the bound, a tie among them, and any value that is not finite go to the
+   * exact sums */
+  double dx = cb1->x - cb2->x, dy = cb1->y - cb2->y;
+  double l = 0.0, lmag = 0.0;
+  for (int i = 0; i < nterms; i++)
+  {
+    l += lterms[i];
+    lmag += fabs(lterms[i]);
+  }
+  double sq = dx * dx + dy * dy, ll = l * l;
+  double v = sq - ll;
+  double bound = 4.0 * DBL_EPSILON * (sq + ll + fabs(v)) +
+    4.0 * DBL_EPSILON * lmag * (fabs(l) + DBL_EPSILON * lmag) +
+    4.0 * DBL_MIN;
+  if (isfinite(v) && isfinite(bound))
+  {
+    if (v > bound)
+      return 1;
+    if (v < - bound)
+      return -1;
+  }
+
   /* Exact sums: the differences of the coordinates and the length */
   ExactSum sums[3];
   double t[2];
