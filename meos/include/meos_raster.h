@@ -199,6 +199,21 @@ extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
   const char *pixeltype, bool has_nodata, double nodataval);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
 
+/* Mathematical functions for PostGIS rasters */
+
+extern Raster *add_float_raster(double d, const Raster *rast);
+extern Raster *add_raster_float(const Raster *rast, double d);
+extern Raster *add_raster_raster(const Raster *rast1, const Raster *rast2);
+extern Raster *div_float_raster(double d, const Raster *rast);
+extern Raster *div_raster_float(const Raster *rast, double d);
+extern Raster *div_raster_raster(const Raster *rast1, const Raster *rast2);
+extern Raster *mul_float_raster(double d, const Raster *rast);
+extern Raster *mul_raster_float(const Raster *rast, double d);
+extern Raster *mul_raster_raster(const Raster *rast1, const Raster *rast2);
+extern Raster *sub_float_raster(double d, const Raster *rast);
+extern Raster *sub_raster_float(const Raster *rast, double d);
+extern Raster *sub_raster_raster(const Raster *rast1, const Raster *rast2);
+
 /* Conversion functions for Raquet tiles */
 
 extern STBox *raquet_to_stbox(const Raquet *rq);

@@ -53,6 +53,7 @@
 #include <assert.h>
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,6 +82,45 @@ static const char *raster_values =
   "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
   "084000000000000000000000000000000000e6100000030003004a003c1cc600002041"
   "003c1cc60000f04100002042000048420000704200008c420000a0420000b442";
+
+/* A 3x3 raster on the grid of raster_values with an unsigned 16-bit band
+ * holding 3000, 500, 2000 / 4000, 1000, 6000 / 100, 0, 65535, the near
+ * infrared band of the arithmetic cases, written by PostGIS */
+static const char *raster_nir =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000e610000003000300060000b80bf401d007"
+  "a00fe803701764000000ffff";
+
+/* The red band of the arithmetic cases, unsigned 16-bit, holding 1000, 1500,
+ * 2000 / 1000, 3000, 2000 / 300, 1, 0 */
+static const char *raster_red =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000e610000003000300060000e803dc05d007"
+  "e803b80bd0072c0101000000";
+
+/* A 32BF band of ones on the grid of raster_values one pixel to the east */
+static const char *raster_east1 =
+  "0100000100000000000000f03f000000000000f0bf000000000000f03f000000000000"
+  "084000000000000000000000000000000000e6100000030003000a000000000000803f"
+  "0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f";
+
+/* The same band half a pixel to the east, on a grid of its own */
+static const char *raster_easthalf =
+  "0100000100000000000000f03f000000000000f0bf000000000000e03f000000000000"
+  "084000000000000000000000000000000000e6100000030003000a000000000000803f"
+  "0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f";
+
+/* The same band ten pixels to the east, sharing no pixel with raster_values */
+static const char *raster_east10 =
+  "0100000100000000000000f03f000000000000f0bf0000000000002440000000000000"
+  "084000000000000000000000000000000000e6100000030003000a000000000000803f"
+  "0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f";
+
+/* The same band on the grid of raster_values in SRID 3857 */
+static const char *raster_srid3857 =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000110f0000030003000a000000000000803f"
+  "0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f";
 
 /* Main program */
 int main(void)
@@ -1123,6 +1163,225 @@ int main(void)
   assert(raster_reclass(rast_values, 1, NULL, "32BF", true, 0.0) == NULL);
   assert(raster_reclass(rast_values, 1, "0-50:1", NULL, true, 0.0) == NULL);
   assert(meos_errno() != 0);
+
+  /* The arithmetic of rasters is computed pixel by pixel into 64-bit float
+   * bands, so the normalized difference of two unsigned 16-bit bands is the
+   * ratio itself. The near infrared and the red bands hold 3000, 500, 2000 /
+   * 4000, 1000, 6000 / 100, 0, 65535 and 1000, 1500, 2000 / 1000, 3000, 2000
+   * / 300, 1, 0, so (nir - red) / (nir + red) is 0.5, -0.5, 0 / 0.6, -0.5,
+   * 0.5 / -0.5, -1, 1. PostGIS's ST_MapAlgebra over the same two
+   * rasters with the '64BF' pixel type answers these values, but for the 0,
+   * which it reads as nodata since it takes the minimum of a band stating no
+   * nodata value, 0 for 16BUI, as the nodata value of the result. The bands
+   * here state none, so the result states none either and the 0 is a value:
+   * nine pixels summing to 0.1 */
+  meos_errno_reset();
+  Raster *nir = raster_from_hexwkb(raster_nir);
+  Raster *red = raster_from_hexwkb(raster_red);
+  assert(nir != NULL && red != NULL);
+  Raster *nir_minus_red = sub_raster_raster(nir, red);
+  Raster *nir_plus_red = add_raster_raster(nir, red);
+  assert(nir_minus_red != NULL && nir_plus_red != NULL);
+  Raster *ndvi = div_raster_raster(nir_minus_red, nir_plus_red);
+  assert(ndvi != NULL);
+  assert(meos_errno() == 0);
+  char *ndvi_pixtype = raster_band_pixel_type(ndvi, 1);
+  assert(ndvi_pixtype != NULL);
+  assert(strcmp(ndvi_pixtype, "float64") == 0);
+  assert(! raster_band_has_nodata_value(ndvi, 1));
+  BandStats *ndvist = raster_summary_stats(ndvi, 1, true);
+  assert(ndvist != NULL);
+  printf("div_raster_raster(nir - red, nir + red): %s, count %u, sum %.17g, "
+    "min %g, max %g\n", ndvi_pixtype, ndvist->count, ndvist->sum,
+    ndvist->min, ndvist->max);
+  assert(ndvist->count == 9);
+  assert(fabs(ndvist->sum - 0.1) < 1e-12);
+  assert(ndvist->min == -1.0);
+  assert(ndvist->max == 1.0);
+  free(ndvist); free(ndvi_pixtype); free(ndvi);
+
+  /* The difference keeps its sign and the product its magnitude, which an
+   * unsigned 16-bit band would clamp to 0 and to 65535: nir - red runs from
+   * -2000 to 65535, and nir * red reaches 6000 * 2000 */
+  BandStats *diffst = raster_summary_stats(nir_minus_red, 1, true);
+  assert(diffst != NULL);
+  printf("sub_raster_raster(nir, red): min %g, max %g\n", diffst->min,
+    diffst->max);
+  assert(diffst->min == -2000.0);
+  assert(diffst->max == 65535.0);
+  free(diffst);
+  Raster *nir_times_red = mul_raster_raster(nir, red);
+  assert(nir_times_red != NULL);
+  BandStats *mulst = raster_summary_stats(nir_times_red, 1, true);
+  assert(mulst != NULL);
+  printf("mul_raster_raster(nir, red): max %g\n", mulst->max);
+  assert(mulst->max == 12000000.0);
+  free(mulst); free(nir_times_red); free(nir_minus_red); free(nir_plus_red);
+
+  /* A raster and a number: the band of raster_values holds 10, 30, 40, 50,
+   * 60, 70, 80 and 90 outside its nodata pixel, which stays nodata in the
+   * result, with the nodata value of the operand */
+  meos_errno_reset();
+  Raster *rv_sub = sub_raster_float(rast_values, 10.0);
+  assert(rv_sub != NULL);
+  assert(meos_errno() == 0);
+  double rv_nodata;
+  assert(raster_band_nodata_value(rv_sub, 1, &rv_nodata));
+  assert(rv_nodata == -9999.0);
+  BandStats *rvst = raster_summary_stats(rv_sub, 1, true);
+  assert(rvst != NULL);
+  printf("sub_raster_float(raster, 10): count %u, sum %g, min %g, max %g\n",
+    rvst->count, rvst->sum, rvst->min, rvst->max);
+  assert(rvst->count == 8);
+  assert(rvst->sum == 430.0 - 80.0);
+  assert(rvst->min == 0.0);
+  assert(rvst->max == 80.0);
+  free(rvst); free(rv_sub);
+
+  /* The number first is the number the operation starts from */
+  Raster *rv_fsub = sub_float_raster(100.0, rast_values);
+  assert(rv_fsub != NULL);
+  rvst = raster_summary_stats(rv_fsub, 1, true);
+  assert(rvst != NULL);
+  printf("sub_float_raster(100, raster): count %u, sum %g, min %g, max %g\n",
+    rvst->count, rvst->sum, rvst->min, rvst->max);
+  assert(rvst->count == 8);
+  assert(rvst->sum == 800.0 - 430.0);
+  assert(rvst->min == 10.0);
+  assert(rvst->max == 90.0);
+  free(rvst); free(rv_fsub);
+
+  Raster *rv_add = add_float_raster(1.0, rast_values);
+  Raster *rv_mul = mul_raster_float(rast_values, 2.0);
+  Raster *rv_div = div_raster_float(rast_values, 10.0);
+  Raster *rv_fdiv = div_float_raster(360.0, rast_values);
+  assert(rv_add != NULL && rv_mul != NULL && rv_div != NULL &&
+    rv_fdiv != NULL);
+  BandStats *addst = raster_summary_stats(rv_add, 1, true);
+  BandStats *mulrst = raster_summary_stats(rv_mul, 1, true);
+  BandStats *divst = raster_summary_stats(rv_div, 1, true);
+  BandStats *fdivst = raster_summary_stats(rv_fdiv, 1, true);
+  printf("add_float_raster(1, raster): sum %g; mul_raster_float(raster, 2): "
+    "sum %g; div_raster_float(raster, 10): sum %g; div_float_raster(360, "
+    "raster): min %g, max %g\n", addst->sum, mulrst->sum, divst->sum,
+    fdivst->min, fdivst->max);
+  assert(addst->count == 8 && addst->sum == 438.0);
+  assert(mulrst->count == 8 && mulrst->sum == 860.0);
+  assert(divst->count == 8 && divst->sum == 43.0);
+  assert(fdivst->count == 8 && fdivst->min == 4.0 && fdivst->max == 36.0);
+  free(addst); free(mulrst); free(divst); free(fdivst);
+  free(rv_add); free(rv_mul); free(rv_div); free(rv_fdiv);
+
+  /* Two rasters: a pixel nodata in either operand is nodata in the result */
+  Raster *rv_twice = add_raster_raster(rast_values, rast_values);
+  assert(rv_twice != NULL);
+  BandStats *twicest = raster_summary_stats(rv_twice, 1, true);
+  assert(twicest != NULL);
+  printf("add_raster_raster(raster, raster): count %u, sum %g\n",
+    twicest->count, twicest->sum);
+  assert(twicest->count == 8);
+  assert(twicest->sum == 860.0);
+  free(twicest); free(rv_twice);
+
+  /* A division by zero is an error, as it is for a temporal number, whether
+   * the divisor is a number or a pixel: the raster minus itself is a band of
+   * zeros outside its nodata pixel */
+  meos_errno_reset();
+  assert(div_raster_float(rast_values, 0.0) == NULL);
+  assert(meos_errno() == MEOS_ERR_DIVISION_BY_ZERO);
+  Raster *zeros = sub_raster_raster(rast_values, rast_values);
+  assert(zeros != NULL);
+  meos_errno_reset();
+  assert(div_float_raster(1.0, zeros) == NULL);
+  assert(meos_errno() == MEOS_ERR_DIVISION_BY_ZERO);
+  meos_errno_reset();
+  assert(div_raster_raster(rast_values, zeros) == NULL);
+  assert(meos_errno() == MEOS_ERR_DIVISION_BY_ZERO);
+  /* Zero divided by a number is not */
+  meos_errno_reset();
+  Raster *zeros_div = div_raster_float(zeros, 2.0);
+  assert(zeros_div != NULL);
+  assert(meos_errno() == 0);
+  free(zeros_div); free(zeros);
+
+  /* Two rasters are operated over the pixels they share, as two temporal
+   * numbers are over the time they share: the grid one pixel to the east
+   * shares the last two columns of raster_values, nodata, 30 / 50, 60 / 80,
+   * 90, and a band of ones adds 1 to each value */
+  Raster *east1 = raster_from_hexwkb(raster_east1);
+  assert(east1 != NULL);
+  meos_errno_reset();
+  Raster *shared = add_raster_raster(rast_values, east1);
+  assert(shared != NULL);
+  assert(meos_errno() == 0);
+  BandStats *sharedst = raster_summary_stats(shared, 1, true);
+  assert(sharedst != NULL);
+  printf("add_raster_raster(raster, raster one pixel east): %dx%d from "
+    "(%g, %g), count %u, sum %g\n", raster_width(shared),
+    raster_height(shared), raster_upper_left_x(shared),
+    raster_upper_left_y(shared), sharedst->count, sharedst->sum);
+  assert(raster_width(shared) == 2);
+  assert(raster_height(shared) == 3);
+  assert(raster_upper_left_x(shared) == 1.0);
+  assert(raster_upper_left_y(shared) == 3.0);
+  assert(raster_srid(shared) == 4326);
+  assert(sharedst->count == 5);
+  assert(sharedst->sum == 30.0 + 50.0 + 60.0 + 80.0 + 90.0 + 5.0);
+  free(sharedst); free(shared); free(east1);
+
+  /* Rasters sharing no pixel have no result, and no error */
+  Raster *east10 = raster_from_hexwkb(raster_east10);
+  assert(east10 != NULL);
+  meos_errno_reset();
+  assert(add_raster_raster(rast_values, east10) == NULL);
+  assert(meos_errno() == 0);
+  free(east10);
+
+  /* Rasters on different grids, in different reference systems, or with
+   * different numbers of bands are not operated */
+  Raster *easthalf = raster_from_hexwkb(raster_easthalf);
+  Raster *rast_3857 = raster_from_hexwkb(raster_srid3857);
+  Raster *two_bands = raster_from_hexwkb(raster_two_bands);
+  assert(easthalf != NULL && rast_3857 != NULL && two_bands != NULL);
+  meos_errno_reset();
+  Raster *bad = add_raster_raster(rast_values, easthalf);
+  printf("add_raster_raster(raster, raster half a pixel east): %s, errno %d\n",
+    bad ? "a raster" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  bad = add_raster_raster(rast_values, rast_3857);
+  printf("add_raster_raster(raster SRID 4326, raster SRID 3857): %s, "
+    "errno %d\n", bad ? "a raster" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  bad = add_raster_raster(rast_values, two_bands);
+  printf("add_raster_raster(raster of 1 band, raster of 2 bands): %s, "
+    "errno %d\n", bad ? "a raster" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+
+  /* Band by band: two rasters of two bands answer two bands */
+  meos_errno_reset();
+  Raster *two_twice = add_raster_raster(two_bands, two_bands);
+  assert(two_twice != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_num_bands(two_twice) == 2);
+  char *band2_pixtype = raster_band_pixel_type(two_twice, 2);
+  assert(band2_pixtype != NULL);
+  assert(strcmp(band2_pixtype, "float64") == 0);
+  free(band2_pixtype); free(two_twice);
+  free(easthalf); free(rast_3857); free(two_bands);
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(add_raster_raster(NULL, rast_values) == NULL);
+  assert(add_raster_raster(rast_values, NULL) == NULL);
+  assert(add_raster_float(NULL, 1.0) == NULL);
+  assert(add_float_raster(1.0, NULL) == NULL);
+  assert(meos_errno() != 0);
+  free(nir); free(red);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

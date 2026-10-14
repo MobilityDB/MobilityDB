@@ -1935,4 +1935,151 @@ SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857))
 SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &&
        stbox 'SRID=4326;STBOX X((1,1),(2,2))' AS overlaps_region;
 
+-------------------------------------------------------------------------------
+-- Arithmetic of rasters
+-------------------------------------------------------------------------------
+
+-- The normalized difference of two unsigned 16-bit bands is the ratio itself,
+-- since the result is a 64-bit float band: a negative difference, a ratio
+-- between zero and one, and the 0 where the two bands agree are kept.
+WITH bands AS (
+  SELECT
+    ST_SetValues(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[3000, 500, 2000], [4000, 1000, 6000], [100, 0, 65535]]
+        ::double precision[][]) AS nir,
+    ST_SetValues(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[1000, 1500, 2000], [1000, 3000, 2000], [300, 1, 0]]
+        ::double precision[][]) AS red
+)
+SELECT ST_BandPixelType((nir - red) / (nir + red), 1) AS pixeltype,
+  ST_DumpValues((nir - red) / (nir + red), 1) AS ndvi,
+  ST_DumpValues(nir - red, 1) AS difference,
+  ST_DumpValues(nir * red, 1) AS product
+FROM bands;
+
+-- The function forms answer what the operators answer.
+WITH bands AS (
+  SELECT
+    ST_SetValues(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[3000, 500, 2000], [4000, 1000, 6000], [100, 0, 65535]]
+        ::double precision[][]) AS nir,
+    ST_SetValues(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[1000, 1500, 2000], [1000, 3000, 2000], [300, 1, 0]]
+        ::double precision[][]) AS red
+)
+SELECT ST_DumpValues(rasterAdd(nir, red), 1) = ST_DumpValues(nir + red, 1)
+    AS add_agrees,
+  ST_DumpValues(rasterSub(nir, red), 1) = ST_DumpValues(nir - red, 1)
+    AS sub_agrees,
+  ST_DumpValues(rasterMul(nir, red), 1) = ST_DumpValues(nir * red, 1)
+    AS mul_agrees,
+  ST_DumpValues(rasterDiv(nir, nir + red), 1) =
+    ST_DumpValues(nir / (nir + red), 1)
+    AS div_agrees
+FROM bands;
+
+-- A raster and a number, the number on either side; an integer literal is
+-- read as the float it stands for. The nodata pixel stays nodata, with the
+-- nodata value of the raster.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, -9999.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT ST_DumpValues(r - 10, 1) AS minus_ten,
+  ST_DumpValues(100 - r, 1) AS hundred_minus,
+  ST_DumpValues(r * 0.5, 1) AS half,
+  ST_DumpValues(2520.0 / r, 1) AS divided_into,
+  ST_DumpValues(r + r, 1) AS twice,
+  ST_BandNoDataValue(r - 10, 1) AS nodata
+FROM rast;
+
+-- A derived raster is read along a trajectory as any raster is: the depth
+-- minus the draught of a vessel.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS depth
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', depth - 8.5)::text
+  AS clearance
+FROM rast;
+
+-- Two rasters are operated over the pixels they share: the grid one pixel to
+-- the east shares two columns, and grids sharing no pixel have no result.
+WITH rast AS (
+  SELECT ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 1.0::float8, NULL::float8) AS r,
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 2.0::float8, NULL::float8) AS east1,
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 10.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 2.0::float8, NULL::float8) AS east10
+)
+SELECT ST_MetaData(r + east1) AS shared_grid,
+  ST_DumpValues(r + east1, 1) AS shared_values,
+  (r + east10) IS NULL AS disjoint_is_null
+FROM rast;
+
+-- A division by zero is an error, whether the divisor is a number or a pixel.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8) AS r
+)
+SELECT r / 0 FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8) AS r
+)
+SELECT r / (r - r) FROM rast;
+
+-- Rasters on different grids, in different reference systems or with
+-- different numbers of bands are not operated.
+SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8) +
+  ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8);
+SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8) +
+  ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, NULL::float8);
+SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8) +
+  ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8),
+    '32BF'::text, 1.0::float8, NULL::float8);
+
 /*****************************************************************************/

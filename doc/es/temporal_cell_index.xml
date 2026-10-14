@@ -2640,6 +2640,48 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterAdd">
+				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>/</varname></primary></indexterm>
+				<para>Adición, resta, multiplicación y división de rásteres, píxel a píxel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{float,raster} {+, -, *, /} {float,raster} → raster
+</programlisting>
+				<para>Un ráster tiene los operadores aritméticos de un número temporal, de modo que un ráster derivado se escribe como la expresión que es, como <varname>(nir - red) / (nir + red)</varname> o <varname>depth - 8.5</varname>, donde PostGIS lo escribe como la expresión de <varname>ST_MapAlgebra</varname>. Toda banda del resultado tiene el tipo de píxel <varname>64BF</varname>, cualesquiera que sean los tipos de píxel de los operandos, de modo que un píxel contiene la aritmética tal como se calcula: una diferencia negativa de dos bandas sin signo, un producto más allá de su rango y una razón entre cero y uno se conservan en lugar de recortarse o truncarse, y <link linkend="raster_reclass"><varname>reclass</varname></link> reduce el resultado donde se necesita un tipo de píxel menor. Dos rásteres se operan banda a banda sobre los píxeles que comparten, como dos números temporales sobre el tiempo que comparten: deben tener el mismo sistema de referencia, la misma malla y el mismo número de bandas, y dos rásteres que no comparten ningún píxel no tienen resultado. Un píxel sin datos en cualquiera de los operandos no tiene datos en el resultado, que toma el valor sin datos del primer operando que declara uno y no declara ninguno cuando ninguno lo hace, de modo que un resultado igual a cero es un valor. Una división por cero produce un error, sea el divisor un número o un píxel. Las funciones detrás de los operadores son <varname>rasterAdd</varname>, <varname>rasterSub</varname>, <varname>rasterMul</varname> y <varname>rasterDiv</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The normalized difference of two unsigned 16-bit bands
+WITH bands AS (
+  SELECT
+    ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+      4326), '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[3000, 500, 2000], [4000, 1000, 6000], [100, 0, 65535]]
+        ::double precision[][]) AS nir,
+    ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+      4326), '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+      ARRAY[[1000, 1500, 2000], [1000, 3000, 2000], [300, 1, 0]]
+        ::double precision[][]) AS red )
+SELECT ST_BandPixelType((nir - red) / (nir + red), 1),
+  ST_DumpValues((nir - red) / (nir + red), 1)
+FROM bands;
+-- 64BF | {{0.5,-0.5,0},{0.6,-0.5,0.5},{-0.5,-1,1}}
+-- Read a derived raster along a trajectory: the depth under a vessel of draught 8.5
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS depth )
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', depth - 8.5)::text
+FROM rast;
+-- Interp=Step;[1.5@2001-01-01 00:00:00+00, 11.5@2001-01-01 06:00:00+00,
+--   21.5@2001-01-01 18:00:00+00, 41.5@2001-01-02 06:00:00+00,
+--   61.5@2001-01-02 18:00:00+00, 61.5@2001-01-03 00:00:00+00]
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_clip">
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
