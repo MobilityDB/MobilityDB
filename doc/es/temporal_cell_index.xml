@@ -2662,6 +2662,47 @@ SELECT valuePercent(r, 2::float), valuePercent(r, 3::float) FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_sameAlignment">
+				<indexterm significance="normal"><primary><varname>sameAlignment</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>sameAlignmentAgg</varname></primary></indexterm>
+				<para>Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+sameAlignment(rast1 raster,rast2 raster) → boolean
+sameAlignmentAgg(raster) → boolean
+sameAlignment(raster) → boolean
+</programlisting>
+				<para>La prueba de <varname>ST_SameAlignment</varname> de PostGIS: dos rásteres están alineados cuando tienen la misma escala y la misma inclinación y una esquina de píxel de uno cae sobre una esquina de píxel del otro, de modo que sus píxeles pueden combinarse uno a uno. El agregado responde si cada ráster de una columna está alineado con el primero, omitiendo un ráster <varname>NULL</varname> como <varname>setUnion</varname> omite un conjunto <varname>NULL</varname>, donde PostGIS responde <varname>NULL</varname>; sobre ningún ráster responde <varname>NULL</varname>. Rásteres de SRID distintos producen un error, donde PostGIS responde falso con un aviso.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (SELECT
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
+  ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
+  ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf)
+SELECT sameAlignment(base, east1), sameAlignment(base, easthalf),
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+FROM r;
+-- t | f | f
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_notSameAlignmentReason">
+				<indexterm significance="normal"><primary><varname>notSameAlignmentReason</varname></primary></indexterm>
+				<para>Devuelve por qué dos rásteres no están sobre la misma rejilla</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+notSameAlignmentReason(rast1 raster,rast2 raster) → text
+</programlisting>
+				<para>La razón de <varname>ST_NotSameAlignmentReason</varname> de PostGIS, en sus palabras: la primera propiedad en la que difieren las rejillas, o que los rásteres están alineados.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH r AS (SELECT
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
+  ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf,
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 2.0, -1.0, 0.0, 0.0, 4326) AS scalex2)
+SELECT notSameAlignmentReason(base, easthalf), notSameAlignmentReason(base, scalex2)
+FROM r;
+-- The rasters (pixel corner coordinates) are not aligned |
+--   The rasters have different scales on the X axis
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_reclass">
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>

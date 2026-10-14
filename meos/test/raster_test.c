@@ -1648,6 +1648,83 @@ int main(void)
   assert(meos_errno() != 0);
   free(counts);
 
+  /* Two rasters lie on the same grid where one is a whole number of pixels
+   * away from the other, as PostGIS's ST_SameAlignment answers for the grid
+   * of raster_values one pixel and half a pixel to the east */
+  Raster *al_base = raster_from_hexwkb(raster_values);
+  Raster *al_east1 = raster_from_hexwkb(raster_east1);
+  Raster *al_easthalf = raster_from_hexwkb(raster_easthalf);
+  Raster *al_3857 = raster_from_hexwkb(raster_srid3857);
+  assert(al_base && al_east1 && al_easthalf && al_3857);
+  meos_errno_reset();
+  assert(raster_same_alignment(al_base, al_east1));
+  assert(! raster_same_alignment(al_base, al_easthalf));
+  assert(meos_errno() == 0);
+  char *al_reason = raster_not_same_alignment_reason(al_base, al_east1);
+  char *al_reason2 = raster_not_same_alignment_reason(al_base, al_easthalf);
+  printf("raster_not_same_alignment_reason: \"%s\", \"%s\"\n", al_reason,
+    al_reason2);
+  assert(strcmp(al_reason, "The rasters are aligned") == 0);
+  assert(strcmp(al_reason2,
+    "The rasters (pixel corner coordinates) are not aligned") == 0);
+  free(al_reason); free(al_reason2);
+
+  /* Two reference systems raise, where PostGIS answers false */
+  meos_errno_reset();
+  assert(! raster_same_alignment(al_base, al_3857));
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_not_same_alignment_reason(al_base, al_3857) == NULL);
+  assert(meos_errno() != 0);
+
+  /* The aggregate keeps the grid of the first raster and whether every later
+   * one is aligned with it; a NULL raster leaves the state as it is */
+  meos_errno_reset();
+  RasterAlignState *al_state = raster_same_alignment_transfn(NULL, al_base);
+  al_state = raster_same_alignment_transfn(al_state, NULL);
+  al_state = raster_same_alignment_transfn(al_state, al_east1);
+  assert(al_state != NULL && al_state->aligned);
+  assert(meos_errno() == 0);
+
+  /* The state crosses as bytes and is read back as it was */
+  size_t al_size;
+  uint8_t *al_bytes = rasteralignstate_serialize(al_state, &al_size);
+  assert(al_bytes != NULL && al_size > 1);
+  RasterAlignState *al_copy = rasteralignstate_deserialize(al_bytes,
+    al_size);
+  assert(al_copy != NULL && al_copy->aligned);
+  assert(raster_same_alignment(al_copy->grid, al_base));
+  free(al_bytes);
+
+  /* A misaligned raster makes the state false, and combining it with an
+   * aligned state keeps it false */
+  RasterAlignState *al_bad = raster_same_alignment_transfn(NULL, al_base);
+  al_bad = raster_same_alignment_transfn(al_bad, al_easthalf);
+  assert(al_bad != NULL && ! al_bad->aligned);
+  al_copy = raster_same_alignment_combinefn(al_copy, al_bad);
+  assert(! al_copy->aligned);
+  printf("raster_same_alignment_finalfn: aligned %d, misaligned %d, "
+    "none %d\n", raster_same_alignment_finalfn(al_state),
+    raster_same_alignment_finalfn(al_copy),
+    raster_same_alignment_finalfn(NULL));
+  assert(! raster_same_alignment_finalfn(al_bad));
+
+  /* A raster in another reference system raises inside the aggregate too */
+  meos_errno_reset();
+  RasterAlignState *al_mixed = raster_same_alignment_transfn(NULL, al_base);
+  assert(raster_same_alignment_transfn(al_mixed, al_3857) == NULL);
+  assert(meos_errno() != 0);
+  assert(raster_same_alignment_finalfn(al_mixed));
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(! raster_same_alignment(NULL, al_base));
+  assert(raster_not_same_alignment_reason(al_base, NULL) == NULL);
+  assert(rasteralignstate_serialize(NULL, &al_size) == NULL);
+  assert(rasteralignstate_deserialize(NULL, 4) == NULL);
+  assert(meos_errno() != 0);
+  free(al_base); free(al_east1); free(al_easthalf); free(al_3857);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();

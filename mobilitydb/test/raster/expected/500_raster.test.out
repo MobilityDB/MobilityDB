@@ -2339,4 +2339,68 @@ FROM rast;
 SELECT * FROM valueCount(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
   -1.0, 0.0, 0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2);
 ERROR:  The raster has no band 2, it has 1
+WITH r AS (SELECT
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
+  ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
+  ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf,
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 2.0, -1.0, 0.0, 0.0, 4326) AS scalex2)
+SELECT sameAlignment(base, east1) AS east1,
+  sameAlignment(base, easthalf) AS easthalf,
+  notSameAlignmentReason(base, east1) AS reason_east1,
+  notSameAlignmentReason(base, easthalf) AS reason_easthalf,
+  notSameAlignmentReason(base, scalex2) AS reason_scalex2,
+  notSameAlignmentReason(base, scalex2) =
+    ST_NotSameAlignmentReason(base, scalex2) AS reason_as_postgis
+FROM r;
+ east1 | easthalf |      reason_east1       |                    reason_easthalf                     |                 reason_scalex2                  | reason_as_postgis 
+-------+----------+-------------------------+--------------------------------------------------------+-------------------------------------------------+-------------------
+ t     | f        | The rasters are aligned | The rasters (pixel corner coordinates) are not aligned | The rasters have different scales on the X axis | t
+(1 row)
+
+WITH r AS (SELECT
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
+  ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
+  ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf)
+SELECT
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1)) t(x))
+    AS aligned,
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+    AS misaligned,
+  (SELECT sameAlignment(x) FROM (VALUES (base), (east1)) t(x)) AS bare_name,
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+    = (SELECT ST_SameAlignment(x) FROM (VALUES (base), (east1), (easthalf))
+    t(x)) AS as_postgis,
+  (SELECT sameAlignmentAgg(x) FROM (SELECT base WHERE false) t(x)) IS NULL
+    AS empty_is_null
+FROM r;
+NOTICE:  The rasters (pixel corner coordinates) are not aligned
+ aligned | misaligned | bare_name | as_postgis | empty_is_null 
+---------+------------+-----------+------------+---------------
+ t       | f          | t         | t          | t
+(1 row)
+
+WITH r AS (SELECT
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
+  ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1)
+SELECT
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (NULL::raster), (east1))
+    t(x)) AS null_skipped,
+  (SELECT ST_SameAlignment(x) FROM (VALUES (base), (NULL::raster), (east1))
+    t(x)) IS NULL AS postgis_null,
+  (SELECT sameAlignmentAgg(x) FROM (VALUES (NULL::raster), (NULL::raster))
+    t(x)) IS NULL AS all_null_is_null
+FROM r;
+ null_skipped | postgis_null | all_null_is_null 
+--------------+--------------+------------------
+ t            | t            | t
+(1 row)
+
+SELECT sameAlignment(
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857));
+ERROR:  Operation on mixed SRID
+SELECT sameAlignmentAgg(x) FROM (VALUES
+  (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)),
+  (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857))) t(x);
+ERROR:  Operation on mixed SRID
 /*****************************************************************************/

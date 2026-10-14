@@ -3437,6 +3437,12 @@
 					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Return the share of the pixels of a raster band holding each value</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname>, <varname>sameAlignmentAgg</varname></link>: Return true if rasters lie on the same grid</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Return why two rasters do not lie on the same grid</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
 				</listitem>
 				<listitem>

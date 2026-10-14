@@ -161,6 +161,17 @@ typedef struct
   double percent;   /**< Their share of the pixels read, between 0 and 1 */
 } ValueCount;
 
+/**
+ * @brief State of the aggregate testing whether rasters lie on the same grid
+ * @details The shape PostGIS states as its @p agg_samealignment type: the grid
+ * of the first raster read, and whether every later raster is aligned with it
+ */
+typedef struct
+{
+  Raster *grid;    /**< Grid of the first raster, one pixel and no band */
+  bool aligned;    /**< True while every raster read is aligned with it */
+} RasterAlignState;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -236,6 +247,24 @@ extern Raster *mul_raster_raster(const Raster *rast1, const Raster *rast2);
 extern Raster *sub_float_raster(double d, const Raster *rast);
 extern Raster *sub_raster_float(const Raster *rast, double d);
 extern Raster *sub_raster_raster(const Raster *rast1, const Raster *rast2);
+
+/* Comparison functions for PostGIS rasters */
+
+extern bool raster_same_alignment(const Raster *rast1, const Raster *rast2);
+extern char *raster_not_same_alignment_reason(const Raster *rast1,
+  const Raster *rast2);
+
+/* Aggregate functions for PostGIS rasters */
+
+extern RasterAlignState *raster_same_alignment_combinefn(
+  RasterAlignState *state1, const RasterAlignState *state2);
+extern bool raster_same_alignment_finalfn(RasterAlignState *state);
+extern RasterAlignState *raster_same_alignment_transfn(
+  RasterAlignState *state, const Raster *rast);
+extern RasterAlignState *rasteralignstate_deserialize(const uint8_t *bytes,
+  size_t size);
+extern uint8_t *rasteralignstate_serialize(const RasterAlignState *state,
+  size_t *size_out);
 
 /* Conversion functions for Raquet tiles */
 
