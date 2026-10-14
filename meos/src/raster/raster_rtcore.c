@@ -2370,7 +2370,7 @@ raster_arith_callback(rt_iterator_arg arg, void *userarg, double *value,
  * @param[out] reason Why the rasters are not aligned, set where they are not
  */
 static bool
-raster_same_alignment(rt_raster raster1, rt_raster raster2,
+raster_grids_aligned(rt_raster raster1, rt_raster raster2,
   const char **reason)
 {
   if (FLT_NEQ(fabs(rt_raster_get_x_scale(raster1)),
@@ -2407,6 +2407,276 @@ raster_same_alignment(rt_raster raster1, rt_raster raster2,
     return false;
   }
   return true;
+}
+
+/**
+ * @brief Read the alignment of two rasters, refusing two reference systems
+ * @param[in] rast1,rast2 Rasters
+ * @param[out] aligned True where the rasters are aligned
+ * @param[out] reason Why they are not, or that they are
+ * @return True when the alignment is read
+ * @errval false
+ */
+static bool
+raster_alignment(const Raster *rast1, const Raster *rast2, bool *aligned,
+  const char **reason)
+{
+  /* Only the grids are read, so the headers suffice */
+  rt_raster raster1 = raster_header(rast1);
+  if (! raster1)
+    return false;
+  rt_raster raster2 = raster_header(rast2);
+  if (! raster2)
+  {
+    rt_raster_destroy(raster1);
+    return false;
+  }
+  /* Two rasters in different reference systems are refused, as every
+   * operation over two spatial values is */
+  bool valid = ensure_same_srid((int32_t) rt_raster_get_srid(raster1),
+    (int32_t) rt_raster_get_srid(raster2));
+  if (valid)
+  {
+    *reason = "The rasters are aligned";
+    *aligned = raster_grids_aligned(raster1, raster2, reason);
+  }
+  rt_raster_destroy(raster1); rt_raster_destroy(raster2);
+  return valid;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters lie on the same grid
+ * @details The test of PostGIS's `ST_SameAlignment`: the scales and the skews
+ * are equal, and the upper left corner of the first raster is a corner of the
+ * pixels of the second. Two rasters in different reference systems raise an
+ * error, where PostGIS answers false
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @csqlfn #Raster_same_alignment()
+ */
+bool
+raster_same_alignment(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  bool aligned = false;
+  const char *reason = NULL;
+  if (! raster_alignment(rast1, rast2, &aligned, &reason))
+    return false;
+  return aligned;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return why two rasters do not lie on the same grid
+ * @details The reason of PostGIS's `ST_NotSameAlignmentReason`, which states
+ * that the rasters are aligned where they are. Two rasters in different
+ * reference systems raise an error, where PostGIS states it as the reason
+ * @param[in] rast1,rast2 Rasters
+ * @errval NULL
+ * @csqlfn #Raster_not_same_alignment_reason()
+ */
+char *
+raster_not_same_alignment_reason(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
+  bool aligned = false;
+  const char *reason = NULL;
+  if (! raster_alignment(rast1, rast2, &aligned, &reason))
+    return NULL;
+  return pstrdup(reason);
+}
+
+/**
+ * @brief Return the grid of a raster as a raster of one pixel and no band
+ * @param[in] rast Raster
+ * @errval NULL
+ */
+static Raster *
+raster_grid(const Raster *rast)
+{
+  rt_raster header = raster_header(rast);
+  if (! header)
+    return NULL;
+  rt_raster grid = rt_raster_new(1, 1);
+  if (! grid)
+  {
+    rt_raster_destroy(header);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the grid of the raster");
+    return NULL;
+  }
+  rt_raster_set_scale(grid, rt_raster_get_x_scale(header),
+    rt_raster_get_y_scale(header));
+  rt_raster_set_skews(grid, rt_raster_get_x_skew(header),
+    rt_raster_get_y_skew(header));
+  rt_raster_set_offsets(grid, rt_raster_get_x_offset(header),
+    rt_raster_get_y_offset(header));
+  rt_raster_set_srid(grid, rt_raster_get_srid(header));
+  rt_raster_destroy(header);
+  return raster_serialize_destroy(grid);
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Transition function of the aggregate testing whether rasters lie on
+ * the same grid
+ * @details The aggregate of PostGIS's `ST_SameAlignment(raster)`, in the
+ * shape of #set_union_transfn: the state keeps the grid of the first raster
+ * and whether every raster read is aligned with it, so a raster is tested
+ * only while every one before it is aligned. A NULL raster leaves the state as
+ * it is, and two rasters in different reference systems raise an error
+ * @param[in,out] state Current aggregate state, NULL before the first raster
+ * @param[in] rast Raster
+ * @errval NULL
+ * @csqlfn #Raster_same_alignment_transfn()
+ * @csqlaggfn #sameAlignmentAggTransition()
+ */
+RasterAlignState *
+raster_same_alignment_transfn(RasterAlignState *state, const Raster *rast)
+{
+  /* Null raster: return state */
+  if (! rast)
+    return state;
+  if (! state)
+  {
+    Raster *grid = raster_grid(rast);
+    if (! grid)
+      return NULL;
+    state = palloc(sizeof(RasterAlignState));
+    state->grid = grid;
+    state->aligned = true;
+    return state;
+  }
+  if (state->aligned)
+  {
+    const char *reason = NULL;
+    if (! raster_alignment(state->grid, rast, &state->aligned, &reason))
+      return NULL;
+  }
+  return state;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Combine function of the aggregate testing whether rasters lie on
+ * the same grid
+ * @details The two states are aligned where each is and their grids are,
+ * as #set_union_combinefn combines two sets
+ * @param[in,out] state1 Current aggregate state
+ * @param[in] state2 Aggregate state to combine with the first one
+ * @return The first state, or a copy of the second where the first is NULL;
+ * the second state is left to the caller
+ * @errval NULL
+ * @csqlfn #Raster_same_alignment_combinefn()
+ */
+RasterAlignState *
+raster_same_alignment_combinefn(RasterAlignState *state1,
+  const RasterAlignState *state2)
+{
+  if (! state2)
+    return state1;
+  if (! state1)
+  {
+    RasterAlignState *result = palloc(sizeof(RasterAlignState));
+    result->grid = raster_copy(state2->grid);
+    result->aligned = state2->aligned;
+    return result;
+  }
+  if (state1->aligned)
+  {
+    if (! state2->aligned)
+      state1->aligned = false;
+    else
+    {
+      const char *reason = NULL;
+      if (! raster_alignment(state1->grid, state2->grid, &state1->aligned,
+          &reason))
+        return NULL;
+    }
+  }
+  return state1;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Final function of the aggregate testing whether rasters lie on the
+ * same grid
+ * @details The state is freed, as #set_union_finalfn frees its own. A NULL
+ * state, an aggregate over no raster, answers false
+ * @param[in] state Aggregate state
+ * @csqlfn #Raster_same_alignment_finalfn()
+ * @csqlaggfn #sameAlignmentAggFinal()
+ */
+bool
+raster_same_alignment_finalfn(RasterAlignState *state)
+{
+  if (! state)
+    return false;
+  bool result = state->aligned;
+  pfree(state->grid);
+  pfree(state);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the bytes of the state of the aggregate testing whether
+ * rasters lie on the same grid, read back by #rasteralignstate_deserialize
+ * @details The bytes are a byte stating whether the rasters read are aligned,
+ * followed by the Well-Known Binary of the grid, as #setstate_serialize writes
+ * the Well-Known Binary of its set
+ * @param[in] state State
+ * @param[out] size_out Size of the result in bytes
+ * @errval NULL
+ * @csqlfn #Rasteralignstate_serialize()
+ */
+uint8_t *
+rasteralignstate_serialize(const RasterAlignState *state, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  size_t wkb_size;
+  uint8_t *wkb = raster_as_wkb(state->grid, 0, &wkb_size);
+  if (! wkb)
+    return NULL;
+  uint8_t *result = palloc(wkb_size + 1);
+  result[0] = state->aligned ? 1 : 0;
+  memcpy(result + 1, wkb, wkb_size);
+  pfree(wkb);
+  *size_out = wkb_size + 1;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the state of the aggregate testing whether rasters lie on
+ * the same grid, written by #rasteralignstate_serialize
+ * @param[in] bytes Bytes
+ * @param[in] size Size of the bytes
+ * @errval NULL
+ * @csqlfn #Rasteralignstate_deserialize()
+ */
+RasterAlignState *
+rasteralignstate_deserialize(const uint8_t *bytes, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(bytes, NULL);
+  if (size < 2)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of an alignment state are too short");
+    return NULL;
+  }
+  Raster *grid = raster_from_wkb(bytes + 1, size - 1);
+  if (! grid)
+    return NULL;
+  RasterAlignState *result = palloc(sizeof(RasterAlignState));
+  result->grid = grid;
+  result->aligned = bytes[0] != 0;
+  return result;
 }
 
 /**
@@ -2475,7 +2745,7 @@ raster_arithop(const Raster *rast1, const Raster *rast2, double d,
         "The rasters have %d and %d bands", numbands, numbands2);
       valid = false;
     }
-    if (valid && ! raster_same_alignment(raster1, raster2, &reason))
+    if (valid && ! raster_grids_aligned(raster1, raster2, &reason))
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", reason);
       valid = false;
@@ -3058,7 +3328,7 @@ raster_terrain(const Raster *rast, int band, const Raster *customextent,
       return NULL;
     }
     if (! ensure_same_srid(srid, (int32_t) rt_raster_get_srid(extent)) ||
-        ! raster_same_alignment(raster, extent, &reason))
+        ! raster_grids_aligned(raster, extent, &reason))
     {
       rt_raster_destroy(extent); raster_destroy(raster);
       if (reason)

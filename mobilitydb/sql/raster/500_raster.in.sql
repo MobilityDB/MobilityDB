@@ -1070,6 +1070,76 @@ CREATE FUNCTION valuePercent(rast raster, searchvalue float,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Alignment of rasters
+ *
+ * Whether rasters lie on the same grid, the test of PostGIS's
+ * ST_SameAlignment and ST_NotSameAlignmentReason and of its aggregate, under
+ * their names without ST_. The aggregate carries the Agg suffix, since its
+ * name also denotes the function over two rasters, and keeps the bare name.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if two rasters lie on the same grid
+ */
+CREATE FUNCTION sameAlignment(rast1 raster, rast2 raster)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raster_same_alignment'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return why two rasters do not lie on the same grid
+ */
+CREATE FUNCTION notSameAlignmentReason(rast1 raster, rast2 raster)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raster_not_same_alignment_reason'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The functions are not STRICT
+CREATE FUNCTION raster_same_alignment_transfn(internal, raster)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_same_alignment_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION raster_same_alignment_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_same_alignment_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION rasteralignstate_serialize(internal)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Rasteralignstate_serialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasteralignstate_deserialize(bytea, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Rasteralignstate_deserialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION raster_same_alignment_finalfn(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raster_same_alignment_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE sameAlignmentAgg(raster) (
+  SFUNC = raster_same_alignment_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_same_alignment_combinefn,
+  FINALFUNC = raster_same_alignment_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasteralignstate_serialize,
+  DESERIALFUNC = rasteralignstate_deserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE sameAlignment(raster) (
+  SFUNC = raster_same_alignment_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_same_alignment_combinefn,
+  FINALFUNC = raster_same_alignment_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasteralignstate_serialize,
+  DESERIALFUNC = rasteralignstate_deserialize,
+  PARALLEL = safe
+);
+
+/******************************************************************************
  * Arithmetic of rasters
  *
  * A raster takes the arithmetic operators of a temporal number, computed
