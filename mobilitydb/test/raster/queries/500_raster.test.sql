@@ -2082,4 +2082,110 @@ SELECT ST_AddBand(
     '32BF'::text, 1.0::float8, NULL::float8),
     '32BF'::text, 1.0::float8, NULL::float8);
 
+-------------------------------------------------------------------------------
+-- Terrain of rasters
+-------------------------------------------------------------------------------
+
+-- The ruggedness and the topographic position of each pixel from its eight
+-- neighbours; the nodata pixel stays nodata, and a nodata neighbour takes the
+-- value of the pixel it surrounds.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_DumpValues(tri(r), 1) AS tri, ST_DumpValues(tpi(r), 1) AS tpi,
+  ST_BandPixelType(tri(r), 1) AS pixeltype
+FROM dem;
+
+-- Interpolating the nodata pixel first gives it the mean of its neighbours
+-- weighted by the inverse of their distances, 35.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_DumpValues(tri(r, interpolate_nodata => true), 1) AS tri,
+  ST_DumpValues(tpi(r, interpolate_nodata => true), 1) AS tpi
+FROM dem;
+
+-- Every function answers what PostGIS answers over the same raster, but the
+-- slope in radians: PostGIS compares the units in upper case to 'rad', so its
+-- radians are degrees.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT
+  round(((ST_SummaryStats(slope(r, 1, '64BF'))).sum)::numeric, 9) =
+    round(((ST_SummaryStats(ST_Slope(r, 1, '64BF'))).sum)::numeric, 9)
+    AS slope_degrees,
+  round(((ST_SummaryStats(slope(r, 1, '64BF', 'PERCENT'))).sum)::numeric, 9) =
+    round(((ST_SummaryStats(ST_Slope(r, 1, '64BF', 'PERCENT'))).sum)::numeric,
+    9) AS slope_percent,
+  round(((ST_SummaryStats(slope(r, 1, '64BF', scale => 2.0))).sum)::numeric,
+    9) = round(((ST_SummaryStats(ST_Slope(r, 1, '64BF', scale => 2.0))).sum)
+    ::numeric, 9) AS slope_scale,
+  round(((ST_SummaryStats(slope(r, 1, '64BF', interpolate_nodata => true)))
+    .sum)::numeric, 9) = round(((ST_SummaryStats(ST_Slope(r, 1, '64BF',
+    interpolate_nodata => true))).sum)::numeric, 9) AS slope_interpolated,
+  ST_DumpValues(tri(r, 1, '64BF'), 1) =
+    ST_DumpValues(ST_TRI(r, 1, '64BF'), 1) AS tri,
+  ST_DumpValues(tpi(r, 1, '64BF', true), 1) =
+    ST_DumpValues(ST_TPI(r, 1, '64BF', true), 1) AS tpi_interpolated
+FROM dem;
+
+-- A plane rising by 1 for each pixel to the east: 45 degrees, 100 percent,
+-- and pi/4 radians, where PostGIS answers 45.
+WITH plane AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 1, 2], [0, 1, 2], [0, 1, 2]]::double precision[][]) AS r
+)
+SELECT ST_Value(slope(r), 2, 2) AS degrees,
+  ST_Value(slope(r, units => 'PERCENT'), 2, 2) AS percent,
+  round(ST_Value(slope(r, 1, '64BF', 'RADIANS'), 2, 2)::numeric, 9) =
+    round((pi() / 4)::numeric, 9) AS radians_quarter_pi,
+  ST_Value(ST_Slope(r, 1, '32BF', 'RADIANS'), 2, 2) AS postgis_radians
+FROM plane;
+
+-- A custom extent decides the grid of the result, and one left NULL is the
+-- extent of the raster.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_MetaData(tri(r, 1, ST_MakeEmptyRaster(2, 2, 1.0, 3.0, 1.0, -1.0,
+    0.0, 0.0, 3857))) AS grid,
+  ST_DumpValues(tri(r, 1, ST_MakeEmptyRaster(2, 2, 1.0, 3.0, 1.0, -1.0,
+    0.0, 0.0, 3857)), 1) AS tri,
+  ST_DumpValues(tri(r, 1, NULL::raster), 1) = ST_DumpValues(tri(r), 1)
+    AS null_extent
+FROM dem;
+
+-- Units, a pixel type or a band the raster does not have, a zero scale and a
+-- custom extent on another grid are refused.
+SELECT slope(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), units => 'furlongs');
+SELECT slope(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), pixeltype => '99XX');
+SELECT tri(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2);
+SELECT slope(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), scale => 0.0);
+SELECT tpi(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1,
+  ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
+
 /*****************************************************************************/

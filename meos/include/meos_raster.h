@@ -197,6 +197,13 @@ extern BandStats *raster_summary_stats(const Raster *rast, int band,
   bool exclude_nodata);
 extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
   const char *pixeltype, bool has_nodata, double nodataval);
+extern Raster *raster_slope(const Raster *rast, int band,
+  const Raster *customextent, const char *pixeltype, const char *units,
+  double scale, bool interpolate_nodata);
+extern Raster *raster_tpi(const Raster *rast, int band,
+  const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
+extern Raster *raster_tri(const Raster *rast, int band,
+  const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
 
 /* Mathematical functions for PostGIS rasters */

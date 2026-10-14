@@ -3437,6 +3437,15 @@
 					<para><link linkend="raster_rasterAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Addition, subtraction, multiplication, and division of rasters, pixel by pixel</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_slope"><varname>slope</varname></link>: Return the slope of a raster band, pixel by pixel</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_tri"><varname>tri</varname></link>: Return the terrain ruggedness index of a raster band, pixel by pixel</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_tpi"><varname>tpi</varname></link>: Return the topographic position index of a raster band, pixel by pixel</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Return a raster keeping the pixels of another that a geometry covers</para>
 				</listitem>
 				<listitem>
