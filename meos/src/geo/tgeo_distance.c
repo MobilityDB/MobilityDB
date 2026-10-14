@@ -3445,6 +3445,7 @@ tcont_tcont_merge_walk(const Temporal *temp1, const Temporal *temp2,
 typedef enum
 {
   MOTION_NAD,      /**< Nearest approach distance */
+  MOTION_NAD_APPROX, /**< Nearest approach distance estimated in doubles */
   MOTION_EVER,     /**< Ever within a distance */
   MOTION_ALWAYS,   /**< Always within a distance */
 } MotionQuery;
@@ -3453,7 +3454,9 @@ typedef enum
 typedef struct
 {
   MotionQuery query;   /**< Question asked */
-  double d;            /**< Distance for the ever and always questions */
+  double d;            /**< Distance for the ever and always questions, and
+                            for #MOTION_NAD the bound above which an interval
+                            is skipped, DBL_MAX skipping none */
   double best;         /**< Least distance of the intervals walked */
 } MotionState;
 
@@ -3471,8 +3474,24 @@ tpoint_motion_interval(const TSequence *seq1, int k1, const TSequence *seq2,
   int64 s0, s1, r0, r1;
   tpoint_motion_segment(seq1, k1, p0, p1, &s0, &s1);
   tpoint_motion_segment(seq2, k2, q0, q1, &r0, &r1);
+  if (ms->query == MOTION_NAD_APPROX)
+  {
+    double v = point_motion_nad_approx(p0, p1, s0, s1, q0, q1, r0, r1, lower,
+      upper);
+    if (v < ms->best)
+      ms->best = v;
+    return false;
+  }
   if (ms->query == MOTION_NAD)
   {
+    /* Skip an interval whose least distance certainly exceeds the bound or
+     * the least distance of the intervals already walked, both doubles: its
+     * nearest double is then not below them, rounding to the nearest keeping
+     * the order */
+    double bound = (ms->best < ms->d) ? ms->best : ms->d;
+    if (bound < DBL_MAX && point_motion_nad_exceeds(p0, p1, s0, s1, q0, q1,
+          r0, r1, lower, upper, bound))
+      return false;
     double v = point_motion_nad_exact(p0, p1, s0, s1, q0, q1, r0, r1, lower,
       upper);
     if (v < ms->best)
@@ -3503,11 +3522,36 @@ static double
 tpoint_motion_walk(const Temporal *temp1, const Temporal *temp2,
   MotionQuery query, double d, bool *shared)
 {
+  if (query == MOTION_NAD)
+  {
+    /* The least distance estimated in doubles bounds the intervals the
+     * exact kernel reads: an interval whose least distance certainly exceeds
+     * the bound is skipped (#point_motion_nad_exceeds). Where the exact least
+     * distance of the intervals read is not above the bound, every skipped
+     * interval answers no less; otherwise the estimate missed and every
+     * interval is read */
+    MotionState est = {MOTION_NAD_APPROX, 0.0, DBL_MAX};
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &est,
+      shared);
+    if (! *shared)
+      return DBL_MAX;
+    double bound = (est.best < DBL_MAX / 2.0) ?
+      est.best + ldexp(est.best, -20) : DBL_MAX;
+    MotionState ms = {MOTION_NAD, bound, DBL_MAX};
+    tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+      shared);
+    if (ms.best > bound)
+    {
+      ms.d = DBL_MAX;
+      ms.best = DBL_MAX;
+      tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval, &ms,
+        shared);
+    }
+    return ms.best;
+  }
   MotionState ms = {query, d, DBL_MAX};
   bool decided = tcont_tcont_merge_walk(temp1, temp2, &tpoint_motion_interval,
     &ms, shared);
-  if (query == MOTION_NAD)
-    return ms.best;
   if (query == MOTION_EVER)
     return decided ? 1.0 : 0.0;
   return decided ? 0.0 : 1.0;
