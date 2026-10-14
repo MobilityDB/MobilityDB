@@ -122,6 +122,27 @@ static const char *raster_srid3857 =
   "084000000000000000000000000000000000110f0000030003000a000000000000803f"
   "0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f";
 
+/* A 4x4 raster of elevations over 1 unit pixels in SRID 3857, a 32BF band
+ * holding 10, 20, 30, 40 / 15, 25, nodata, 45 / 20, 30, 40, 50 / 25, 35, 45,
+ * 55, with -9999 as its nodata value, written by PostGIS */
+static const char *raster_dem =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "104000000000000000000000000000000000110f0000040004004a003c1cc600002041"
+  "0000a0410000f04100002042000070410000c841003c1cc6000034420000a0410000f0"
+  "4100002042000048420000c84100000c420000344200005c42";
+
+/* The 2x2 extent from (1, 3) on the grid of raster_dem, with no band */
+static const char *raster_dem_square =
+  "0100000000000000000000f03f000000000000f0bf000000000000f03f000000000000"
+  "084000000000000000000000000000000000110f000002000200";
+
+/* A 3x3 plane rising by 1 for each pixel to the east, a 32BF band holding
+ * 0, 1, 2 on every row */
+static const char *raster_plane =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000e6100000030003000a0000000000000000"
+  "0000803f00000040000000000000803f00000040000000000000803f00000040";
+
 /* Main program */
 int main(void)
 {
@@ -1382,6 +1403,143 @@ int main(void)
   assert(add_float_raster(1.0, NULL) == NULL);
   assert(meos_errno() != 0);
   free(nir); free(red);
+
+  /* The terrain functions read each pixel with its eight neighbours. The
+   * elevations of raster_dem are 10, 20, 30, 40 / 15, 25, nodata, 45 / 20,
+   * 30, 40, 50 / 25, 35, 45, 55 over 1 unit pixels, and every statistic below
+   * is the one PostGIS 3.6.4 answers for ST_Slope, ST_TRI and ST_TPI over the
+   * same raster with the 64BF pixel type: the nodata pixel stays nodata, and a
+   * neighbour that is nodata or lies outside the raster takes the value of the
+   * pixel it surrounds */
+  Raster *dem = raster_from_hexwkb(raster_dem);
+  assert(dem != NULL);
+  meos_errno_reset();
+  Raster *slope_deg = raster_slope(dem, 1, NULL, "64BF", "DEGREES", 1.0, false);
+  assert(slope_deg != NULL);
+  assert(meos_errno() == 0);
+  BandStats *terst = raster_summary_stats(slope_deg, 1, true);
+  assert(terst != NULL);
+  printf("raster_slope(dem, DEGREES): count %u, sum %.6f, min %.6f, max %.6f\n",
+    terst->count, terst->sum, terst->min, terst->max);
+  assert(terst->count == 15);
+  assert(fabs(terst->sum - 1196.94882782578) < 1e-9);
+  assert(fabs(terst->min - 70.31426989758563) < 1e-9);
+  assert(fabs(terst->max - 84.77393068530789) < 1e-9);
+  double tnodata;
+  assert(raster_band_nodata_value(slope_deg, 1, &tnodata));
+  assert(tnodata == -9999.0);
+  char *tpixtype = raster_band_pixel_type(slope_deg, 1);
+  assert(strcmp(tpixtype, "float64") == 0);
+  free(tpixtype); free(terst); free(slope_deg);
+
+  Raster *slope_per = raster_slope(dem, 1, NULL, "64BF", "percent", 1.0, false);
+  assert(slope_per != NULL);
+  terst = raster_summary_stats(slope_per, 1, true);
+  printf("raster_slope(dem, percent): sum %.6f, max %.6f\n", terst->sum,
+    terst->max);
+  assert(fabs(terst->sum - 9708.753762847418) < 1e-9);
+  assert(fabs(terst->max - 1093.3034802834939) < 1e-9);
+  free(terst); free(slope_per);
+
+  /* The scale divides the gradient, as PostGIS's does */
+  Raster *slope_scale = raster_slope(dem, 1, NULL, "64BF", "DEG", 2.0, false);
+  assert(slope_scale != NULL);
+  terst = raster_summary_stats(slope_scale, 1, true);
+  printf("raster_slope(dem, DEG, scale 2): sum %.6f\n", terst->sum);
+  assert(fabs(terst->sum - 1057.240068859269) < 1e-9);
+  free(terst); free(slope_scale);
+
+  /* Interpolating the nodata pixel first gives it the mean of its eight
+   * neighbours weighted by the inverse of their distances, 35, so every pixel
+   * has a slope */
+  Raster *slope_interp = raster_slope(dem, 1, NULL, "64BF", "DEGREES", 1.0,
+    true);
+  assert(slope_interp != NULL);
+  terst = raster_summary_stats(slope_interp, 1, true);
+  printf("raster_slope(dem, interpolated): count %u, sum %.6f, max %.6f\n",
+    terst->count, terst->sum, terst->max);
+  assert(terst->count == 16);
+  assert(fabs(terst->sum - 1298.4430188481429) < 1e-9);
+  assert(fabs(terst->max - 84.88891030471129) < 1e-9);
+  free(terst); free(slope_interp);
+
+  Raster *tri = raster_tri(dem, 1, NULL, "64BF", false);
+  Raster *tpi = raster_tpi(dem, 1, NULL, "64BF", false);
+  Raster *tri_interp = raster_tri(dem, 1, NULL, "64BF", true);
+  Raster *tpi_interp = raster_tpi(dem, 1, NULL, "64BF", true);
+  assert(tri && tpi && tri_interp && tpi_interp);
+  BandStats *tristat = raster_summary_stats(tri, 1, true);
+  BandStats *tpistat = raster_summary_stats(tpi, 1, true);
+  BandStats *triistat = raster_summary_stats(tri_interp, 1, true);
+  BandStats *tpiistat = raster_summary_stats(tpi_interp, 1, true);
+  printf("raster_tri(dem): count %u, sum %g, min %g, max %g; raster_tpi(dem): "
+    "sum %g, min %g, max %g\n", tristat->count, tristat->sum, tristat->min,
+    tristat->max, tpistat->sum, tpistat->min, tpistat->max);
+  printf("raster_tri(dem, interpolated): count %u, sum %g, max %g; "
+    "raster_tpi(dem, interpolated): count %u, sum %g\n", triistat->count,
+    triistat->sum, triistat->max, tpiistat->count, tpiistat->sum);
+  assert(tristat->count == 15 && tristat->sum == 72.5);
+  assert(tristat->min == 1.875 && tristat->max == 8.125);
+  assert(tpistat->count == 15 && tpistat->sum == 0.0);
+  assert(tpistat->min == -3.75 && tpistat->max == 3.75);
+  assert(triistat->count == 16 && triistat->sum == 90.0);
+  assert(triistat->max == 8.75);
+  assert(tpiistat->count == 16 && fabs(tpiistat->sum) < 1e-12);
+  free(tristat); free(tpistat); free(triistat); free(tpiistat);
+  free(tri); free(tpi); free(tri_interp); free(tpi_interp);
+
+  /* A custom extent decides the grid of the result: the 2x2 square from
+   * (1, 3) reads the four pixels it covers, the nodata one among them */
+  Raster *square = raster_from_hexwkb(raster_dem_square);
+  assert(square != NULL);
+  meos_errno_reset();
+  Raster *slope_square = raster_slope(dem, 1, square, "64BF", "DEGREES", 1.0,
+    false);
+  assert(slope_square != NULL);
+  assert(meos_errno() == 0);
+  terst = raster_summary_stats(slope_square, 1, true);
+  printf("raster_slope(dem, 2x2 extent): %dx%d from (%g, %g), count %u, "
+    "sum %.6f\n", raster_width(slope_square), raster_height(slope_square),
+    raster_upper_left_x(slope_square), raster_upper_left_y(slope_square),
+    terst->count, terst->sum);
+  assert(raster_width(slope_square) == 2 && raster_height(slope_square) == 2);
+  assert(raster_upper_left_x(slope_square) == 1.0);
+  assert(raster_upper_left_y(slope_square) == 3.0);
+  assert(terst->count == 3);
+  assert(fabs(terst->sum - (83.66949059883729 + 84.77393068530789 +
+    84.6508249017144)) < 1e-9);
+  free(terst); free(slope_square); free(square);
+
+  /* A plane rising by 1 for each pixel to the east has a gradient of 1: 45
+   * degrees, 100 percent, and pi/4 radians, where PostGIS 3.6.4 answers 45,
+   * comparing the units in upper case to 'rad' */
+  Raster *plane = raster_from_hexwkb(raster_plane);
+  assert(plane != NULL);
+  Raster *plane_rad = raster_slope(plane, 1, NULL, "64BF", "RADIANS", 1.0,
+    false);
+  Raster *plane_deg = raster_slope(plane, 1, NULL, "64BF", "DEGREES", 1.0,
+    false);
+  assert(plane_rad != NULL && plane_deg != NULL);
+  BandStats *radst = raster_summary_stats(plane_rad, 1, true);
+  BandStats *degst = raster_summary_stats(plane_deg, 1, true);
+  printf("raster_slope(plane): %.6f radians, %.6f degrees at the center\n",
+    radst->max, degst->max);
+  assert(fabs(radst->max - M_PI / 4.0) < 1e-12);
+  assert(fabs(degst->max - 45.0) < 1e-12);
+  free(radst); free(degst); free(plane_rad); free(plane_deg);
+
+  /* Units, a pixel type or a band the raster does not have, a zero scale, a
+   * custom extent on another grid and a null argument are refused */
+  meos_errno_reset();
+  assert(raster_slope(plane, 1, NULL, "64BF", "furlongs", 1.0, false) == NULL);
+  assert(raster_slope(plane, 1, NULL, "99XX", "DEGREES", 1.0, false) == NULL);
+  assert(raster_slope(plane, 2, NULL, "64BF", "DEGREES", 1.0, false) == NULL);
+  assert(raster_slope(plane, 1, NULL, "64BF", "DEGREES", 0.0, false) == NULL);
+  assert(raster_tri(plane, 1, dem, "64BF", false) == NULL);
+  assert(raster_tpi(NULL, 1, NULL, "64BF", false) == NULL);
+  assert(raster_slope(plane, 1, NULL, NULL, "DEGREES", 1.0, false) == NULL);
+  assert(meos_errno() != 0);
+  free(plane); free(dem);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

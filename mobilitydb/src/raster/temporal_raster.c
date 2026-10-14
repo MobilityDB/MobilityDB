@@ -2047,6 +2047,153 @@ Div_raster_raster(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: terrain functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_slope(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_slope);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the slope of a raster band, pixel by pixel
+ * @sqlfn slope()
+ */
+Datum
+Raster_slope(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_P(2));
+  char *units = text_to_cstring(PG_GETARG_TEXT_P(3));
+  double scale = PG_GETARG_FLOAT8(4);
+  bool interpolate_nodata = PG_GETARG_BOOL(5);
+  Raster *result = raster_slope(rast, band, NULL, pixeltype, units, scale,
+    interpolate_nodata);
+  pfree(pixeltype); pfree(units);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_slope_extent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_slope_extent);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the slope of a raster band over the extent of another raster
+ * @sqlfn slope()
+ */
+Datum
+Raster_slope_extent(PG_FUNCTION_ARGS)
+{
+  /* The function is not STRICT, so that a custom extent left NULL is the
+   * extent of the raster, as for PostGIS; every other argument is tested */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(3) ||
+      PG_ARGISNULL(4) || PG_ARGISNULL(5) || PG_ARGISNULL(6))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  Raster *extent = PG_ARGISNULL(2) ? NULL :
+    (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(2));
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_P(3));
+  char *units = text_to_cstring(PG_GETARG_TEXT_P(4));
+  double scale = PG_GETARG_FLOAT8(5);
+  bool interpolate_nodata = PG_GETARG_BOOL(6);
+  Raster *result = raster_slope(rast, band, extent, pixeltype, units, scale,
+    interpolate_nodata);
+  pfree(pixeltype); pfree(units);
+  PG_FREE_IF_COPY(rast, 0);
+  if (extent)
+    PG_FREE_IF_COPY(extent, 2);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Return a terrain index of a raster band
+ * @details The wrappers of #raster_tri and #raster_tpi, which take the same
+ * arguments
+ * @param[in] fcinfo Arguments of the function
+ * @param[in] has_extent True where the second argument is the custom extent
+ * @param[in] func MEOS function computing the index
+ */
+static Datum
+Raster_terrain_index(FunctionCallInfo fcinfo, bool has_extent,
+  Raster * (*func)(const Raster *, int, const Raster *, const char *, bool))
+{
+  int i = has_extent ? 1 : 0;
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2 + i) ||
+      PG_ARGISNULL(3 + i))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  Raster *extent = (has_extent && ! PG_ARGISNULL(2)) ?
+    (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(2)) : NULL;
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_P(2 + i));
+  bool interpolate_nodata = PG_GETARG_BOOL(3 + i);
+  Raster *result = func(rast, band, extent, pixeltype, interpolate_nodata);
+  pfree(pixeltype);
+  PG_FREE_IF_COPY(rast, 0);
+  if (extent)
+    PG_FREE_IF_COPY(extent, 2);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_tri(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tri);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the terrain ruggedness index of a raster band, pixel by pixel
+ * @sqlfn tri()
+ */
+Datum
+Raster_tri(PG_FUNCTION_ARGS)
+{
+  return Raster_terrain_index(fcinfo, false, &raster_tri);
+}
+
+PGDLLEXPORT Datum Raster_tri_extent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tri_extent);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the terrain ruggedness index of a band over a custom extent
+ * @sqlfn tri()
+ */
+Datum
+Raster_tri_extent(PG_FUNCTION_ARGS)
+{
+  return Raster_terrain_index(fcinfo, true, &raster_tri);
+}
+
+PGDLLEXPORT Datum Raster_tpi(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tpi);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the topographic position index of a raster band
+ * @sqlfn tpi()
+ */
+Datum
+Raster_tpi(PG_FUNCTION_ARGS)
+{
+  return Raster_terrain_index(fcinfo, false, &raster_tpi);
+}
+
+PGDLLEXPORT Datum Raster_tpi_extent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tpi_extent);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the topographic position index of a band over a custom extent
+ * @sqlfn tpi()
+ */
+Datum
+Raster_tpi_extent(PG_FUNCTION_ARGS)
+{
+  return Raster_terrain_index(fcinfo, true, &raster_tpi);
+}
+
+/*****************************************************************************
  * Raster type: conversions
  *****************************************************************************/
 

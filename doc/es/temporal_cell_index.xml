@@ -2682,6 +2682,70 @@ FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_slope">
+				<indexterm significance="normal"><primary><varname>slope</varname></primary></indexterm>
+				<para>Devuelve la pendiente de una banda de un ráster, píxel a píxel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+slope(rast raster,nband integer=1,pixeltype text='32BF',units text='DEGREES',
+  scale float=1.0,interpolate_nodata boolean=false) → raster
+slope(rast raster,nband integer,customextent raster,pixeltype text='32BF',
+  units text='DEGREES',scale float=1.0,interpolate_nodata boolean=false) → raster
+</programlisting>
+				<para>La pendiente de <varname>ST_Slope</varname> de PostGIS, con sus argumentos y valores por defecto: los gradientes de cada píxel se leen de sus ocho vecinos, tomando un vecino sin datos o fuera del ráster el valor del píxel, y un píxel sin datos sigue sin datos. Las unidades son <varname>DEGREES</varname>, <varname>RADIANS</varname> o <varname>PERCENT</varname>, leídas por sus tres primeras letras sin distinguir mayúsculas, y otras unidades producen un error; PostGIS devuelve los radianes en grados. La escala es la razón entre las unidades verticales y las horizontales, como 111120 para elevaciones en metros sobre una malla en grados. Cuando <varname>interpolate_nodata</varname> es verdadero, un píxel sin datos toma primero la media de sus vecinos ponderada por el inverso de sus distancias, como la calcula <varname>ST_InvDistWeight4ma</varname> de PostGIS. El resultado toma la malla de <varname>customextent</varname> cuando se da.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A plane rising by 1 for each pixel to the east
+WITH plane AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 1, 2], [0, 1, 2], [0, 1, 2]]::double precision[][]) AS r )
+SELECT ST_Value(slope(r), 2, 2), ST_Value(slope(r, units => 'PERCENT'), 2, 2)
+FROM plane;
+-- 45 | 100
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_tri">
+				<indexterm significance="normal"><primary><varname>tri</varname></primary></indexterm>
+				<para>Devuelve el índice de rugosidad del terreno de una banda de un ráster, píxel a píxel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tri(rast raster,nband integer=1,pixeltype text='32BF',interpolate_nodata boolean=false)
+  → raster
+tri(rast raster,nband integer,customextent raster,pixeltype text='32BF',
+  interpolate_nodata boolean=false) → raster
+</programlisting>
+				<para>El índice de <varname>ST_TRI</varname> de PostGIS, con sus argumentos y valores por defecto: la media de las diferencias absolutas entre un píxel y sus ocho vecinos, leídos como los lee <link linkend="raster_slope"><varname>slope</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+    [25, 35, 45, 55]]::double precision[][]) AS r )
+SELECT ST_DumpValues(tri(r), 1) FROM dem;
+-- {{3.75,3.75,5,1.875},{5,7.5,NULL,3.75},{5,8.125,8.125,3.125},{2.5,5.625,5.625,3.75}}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_tpi">
+				<indexterm significance="normal"><primary><varname>tpi</varname></primary></indexterm>
+				<para>Devuelve el índice de posición topográfica de una banda de un ráster, píxel a píxel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpi(rast raster,nband integer=1,pixeltype text='32BF',interpolate_nodata boolean=false)
+  → raster
+tpi(rast raster,nband integer,customextent raster,pixeltype text='32BF',
+  interpolate_nodata boolean=false) → raster
+</programlisting>
+				<para>El índice de <varname>ST_TPI</varname> de PostGIS, con sus argumentos y valores por defecto: el valor de un píxel menos la media de sus ocho vecinos, leídos como los lee <link linkend="raster_slope"><varname>slope</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+    [25, 35, 45, 55]]::double precision[][]) AS r )
+SELECT ST_DumpValues(tpi(r, interpolate_nodata => true), 1) FROM dem;
+-- {{-3.75,-1.875,-1.875,1.25},{-3.75,0,0,3.75},{-3.75,0,0,3.75},{-1.25,1.875,1.875,3.75}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_clip">
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>

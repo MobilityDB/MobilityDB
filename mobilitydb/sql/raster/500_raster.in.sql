@@ -900,6 +900,80 @@ CREATE FUNCTION stbox(raster)
 CREATE CAST (raster AS stbox) WITH FUNCTION stbox(raster);
 
 /******************************************************************************
+ * Terrain of rasters
+ *
+ * The slope, the terrain ruggedness index and the topographic position index
+ * of PostGIS's ST_Slope, ST_TRI and ST_TPI, under their names without ST_ and
+ * with their arguments and defaults, computed by MEOS from each pixel and its
+ * eight neighbours.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the slope of a raster band over the extent of another raster
+ * @note Not STRICT: a custom extent left NULL is the extent of the raster
+ */
+CREATE FUNCTION slope(rast raster, nband integer, customextent raster,
+    pixeltype text DEFAULT '32BF', units text DEFAULT 'DEGREES',
+    scale float DEFAULT 1.0, interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_slope_extent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the slope of a raster band, pixel by pixel
+ */
+CREATE FUNCTION slope(rast raster, nband integer DEFAULT 1,
+    pixeltype text DEFAULT '32BF', units text DEFAULT 'DEGREES',
+    scale float DEFAULT 1.0, interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_slope'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the terrain ruggedness index of a band over a custom extent
+ * @note Not STRICT: a custom extent left NULL is the extent of the raster
+ */
+CREATE FUNCTION tri(rast raster, nband integer, customextent raster,
+    pixeltype text DEFAULT '32BF', interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_tri_extent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the terrain ruggedness index of a raster band, pixel by pixel
+ */
+CREATE FUNCTION tri(rast raster, nband integer DEFAULT 1,
+    pixeltype text DEFAULT '32BF', interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_tri'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the topographic position index of a band over a custom extent
+ * @note Not STRICT: a custom extent left NULL is the extent of the raster
+ */
+CREATE FUNCTION tpi(rast raster, nband integer, customextent raster,
+    pixeltype text DEFAULT '32BF', interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_tpi_extent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the topographic position index of a raster band
+ */
+CREATE FUNCTION tpi(rast raster, nband integer DEFAULT 1,
+    pixeltype text DEFAULT '32BF', interpolate_nodata boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_tpi'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Arithmetic of rasters
  *
  * A raster takes the arithmetic operators of a temporal number, computed
