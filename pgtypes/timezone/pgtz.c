@@ -359,16 +359,9 @@ pg_tzset(const char *name)
 
   /* MEOS: Look for timezone in the cache */
   tzentry *entry = tzcache_lookup(timezone_cache, uppername);
-  if (entry) {
-    /* Timezone found in cache, create copy and return */
-    pg_tz *cached = (pg_tz *) entry->data;
-
-    pg_tz *tz = palloc(sizeof(pg_tz));
-    strcpy(tz->TZname, cached->TZname);
-    memcpy(&tz->state, &cached->state, sizeof(tzstate));
-
-    return tz;
-  }
+  /* The zone belongs to the cache, as for PostgreSQL: no caller frees it */
+  if (entry)
+    return (pg_tz *) entry->data;
 
   /*
    * "GMT" is always sent to tzparse(), as per discussion above.
@@ -396,12 +389,7 @@ pg_tzset(const char *name)
     strcpy(canonname, uppername);
   }
 
-  /* Create timezone object */
-  pg_tz *tz = palloc(sizeof(pg_tz));
-  strcpy(tz->TZname, canonname);
-  memcpy(&tz->state, &tzstate, sizeof(tzstate));
-
-  /* Create copy for cache */
+  /* Create the timezone object the cache keeps */
   pg_tz *cached_tz = palloc(sizeof(pg_tz));
   strcpy(cached_tz->TZname, canonname);
   memcpy(&cached_tz->state, &tzstate, sizeof(tzstate));
@@ -413,7 +401,7 @@ pg_tzset(const char *name)
   {
     entry->key = strdup(uppername);
     entry->data = cached_tz;
-    return tz;
+    return cached_tz;
   }
 
   return NULL;
@@ -456,6 +444,20 @@ pg_tzset_offset(long gmtoffset)
     snprintf(tzname, sizeof(tzname), "<+%s>-%s", offsetstr, offsetstr);
 
   return pg_tzset(tzname);
+}
+
+/*
+ * MEOS: Return a copy of a timezone its holder owns, for a holder that
+ * outlives the per-thread cache the zones of #pg_tzset belong to; the copy is
+ * the one #pg_tzset makes of a zone it loads into the cache
+ */
+pg_tz *
+pg_tz_copy(const pg_tz *tz)
+{
+  pg_tz *result = palloc(sizeof(pg_tz));
+  strcpy(result->TZname, tz->TZname);
+  memcpy(&result->state, &tz->state, sizeof(result->state));
+  return result;
 }
 
 /*
@@ -521,11 +523,9 @@ meos_initialize_timezone(const char *tz_str)
       "Failed to install the time zone abbreviations");
 #endif
 
-  /* Free the existing timezone entry */
-  if (session_timezone)
-    pfree(session_timezone); 
+  /* The previous zone stays in the cache, which owns it */
   session_timezone = pg_tzset(tz_str);
-  /* The cache of timezone abbreviations may hold the zone just freed, as
+  /* The cache of timezone abbreviations may hold the zone just replaced, as
    * PostgreSQL's assign_timezone clears it after a change of timezone */
   ClearTimeZoneAbbrevCache();
   if (! session_timezone)
@@ -563,7 +563,7 @@ meos_finalize_timezone(void)
    * meos_finalize() call does not double-free. */
   if (session_timezone)
   {
-    pfree(session_timezone);
+    /* The zone belongs to the cache destroyed below */
     session_timezone = NULL;
     ClearTimeZoneAbbrevCache();
   }

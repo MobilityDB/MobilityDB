@@ -91,6 +91,7 @@ extern void pg_timezone_initialize(void);
 extern void meos_ensure_timezone(void);
 extern pg_tz *pg_tzset(const char *tzname);
 extern pg_tz *pg_tzset_offset(long gmtoffset);
+extern pg_tz *pg_tz_copy(const pg_tz *tz);
 
 extern pg_tzenum *pg_tzenumerate_start(void);
 extern pg_tz *pg_tzenumerate_next(pg_tzenum *dir);

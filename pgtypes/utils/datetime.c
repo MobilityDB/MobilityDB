@@ -4920,14 +4920,17 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp,
   pg_tz *tz = __atomic_load_n(&dtza->tz, __ATOMIC_ACQUIRE);
   if (tz == NULL)
   {
-    tz = pg_tzset(dtza->zone);
-    if (tz == NULL)
+    pg_tz *cached = pg_tzset(dtza->zone);
+    if (cached == NULL)
     {
       /* Ooops, bogus zone name in config file entry */
       extra->dtee_timezone = dtza->zone;
       extra->dtee_abbrev = tp->token;
       return NULL;
     }
+    /* The zone of pg_tzset belongs to this thread's cache, while the table
+     * serves every thread, so the table keeps a copy of its own */
+    tz = pg_tz_copy(cached);
     pg_tz *expected = NULL;
     if (! __atomic_compare_exchange_n(&dtza->tz, &expected, tz, false,
           __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))

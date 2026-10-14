@@ -478,7 +478,6 @@ parse_sane_timezone(struct pg_tm *tm, text *zone)
       /* full zone name */
       tz = DetermineTimeZoneOffset(tm, tzp);
     }
-    pfree(tzp);
   }
   return tz;
 }
@@ -3212,7 +3211,6 @@ add_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   pg_tz *attimezone = lookup_timezone((text *) zone);
   Timestamp result = timestamptz_pl_interval_internal(ts, (Interval *) interv,
     attimezone);
-  pfree(attimezone);
   return result;
 }
 
@@ -3229,7 +3227,6 @@ minus_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   pg_tz *attimezone = lookup_timezone((text *) zone);
   Timestamp result = timestamptz_mi_interval_internal(ts, (Interval *) interv,
     attimezone);
-  pfree(attimezone);
   return result;
 }
 
@@ -4543,7 +4540,6 @@ pg_timestamptz_trunc_zone(TimestampTz ts, const text *units,
    */
   pg_tz *tzp = lookup_timezone((text *) zone);
   TimestampTz result = timestamptz_trunc_internal(ts, (text *) units, tzp);
-  pfree(tzp);
   return result;
 }
 
@@ -5826,7 +5822,6 @@ pg_timestamp_zone(Timestamp ts, const text *zone)
       return DT_NOEND;
     }
   }
-  pfree(tzp);
 
   if (!IS_VALID_TIMESTAMP(result))
   {
@@ -6067,7 +6062,6 @@ pg_timestamptz_zone(TimestampTz tstz, const text *zone)
       return DT_NOEND;
     }
   }
-  pfree(tzp);
   if (!IS_VALID_TIMESTAMP(result))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
