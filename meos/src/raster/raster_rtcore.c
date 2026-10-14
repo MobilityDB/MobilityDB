@@ -67,6 +67,7 @@
 #include "raster/raquet.h"
 #include "raster/raster_quadbin.h"
 #include "temporal/temporal.h"
+#include "temporal/tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Input and output functions
@@ -2158,6 +2159,525 @@ raster_reclass(const Raster *rast, int band, const char *expr,
   rt_band_destroy(oldband);
   return raster_serialize_destroy(raster);
 }
+
+/*****************************************************************************
+ * Mathematical functions
+ *****************************************************************************/
+
+/**
+ * @brief Arguments of the callback computing the arithmetic of rasters
+ */
+typedef struct
+{
+  TArithmetic oper;   /**< Operation */
+  bool number;        /**< True where the second operand is a number */
+  bool invert;        /**< True where the number is the first operand */
+  double value;       /**< The number, read only where @p number is true */
+  bool divzero;       /**< Set where a pixel is divided by zero */
+} RasterArithArg;
+
+/**
+ * @brief Compute a pixel of an arithmetic operation over rasters
+ * @details The callback of #raster_clip_callback's shape: a pixel is nodata in
+ * the result where it is nodata in either operand. A division by zero is
+ * recorded in the arguments rather than reported here, so that the iteration
+ * ends with an answer the caller turns into the error, and rt_core writes no
+ * message of its own
+ */
+static int
+raster_arith_callback(rt_iterator_arg arg, void *userarg, double *value,
+  int *nodata)
+{
+  RasterArithArg *args = (RasterArithArg *) userarg;
+  *value = 0.0;
+  if (arg->nodata[0][0][0] || (! args->number && arg->nodata[1][0][0]))
+  {
+    *nodata = 1;
+    return 1;
+  }
+  double x = arg->values[0][0][0];
+  double y = args->number ? args->value : arg->values[1][0][0];
+  if (args->invert)
+  {
+    double swap = x;
+    x = y;
+    y = swap;
+  }
+  switch (args->oper)
+  {
+    case ADD:
+      *value = x + y;
+      break;
+    case SUB:
+      *value = x - y;
+      break;
+    case MUL:
+      *value = x * y;
+      break;
+    default: /* DIV */
+      if (y == 0.0)
+      {
+        args->divzero = true;
+        *nodata = 1;
+        return 1;
+      }
+      *value = x / y;
+  }
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Return true if two rasters of the same reference system lie on the
+ * same grid
+ * @details The test of #rt_raster_same_alignment, which rt_core states in a
+ * file answering other relationships with GEOS, read here over the
+ * conversions of rt_raster.c, which reach none: the scales and the skews are
+ * equal and the upper left corner of the first raster is a corner of the
+ * pixels of the second
+ * @param[in] raster1,raster2 Rasters
+ * @param[out] reason Why the rasters are not aligned, set where they are not
+ */
+static bool
+raster_same_alignment(rt_raster raster1, rt_raster raster2,
+  const char **reason)
+{
+  if (FLT_NEQ(fabs(rt_raster_get_x_scale(raster1)),
+      fabs(rt_raster_get_x_scale(raster2))))
+  {
+    *reason = "The rasters have different scales on the X axis";
+    return false;
+  }
+  if (FLT_NEQ(fabs(rt_raster_get_y_scale(raster1)),
+      fabs(rt_raster_get_y_scale(raster2))))
+  {
+    *reason = "The rasters have different scales on the Y axis";
+    return false;
+  }
+  if (FLT_NEQ(rt_raster_get_x_skew(raster1), rt_raster_get_x_skew(raster2)))
+  {
+    *reason = "The rasters have different skews on the X axis";
+    return false;
+  }
+  if (FLT_NEQ(rt_raster_get_y_skew(raster1), rt_raster_get_y_skew(raster2)))
+  {
+    *reason = "The rasters have different skews on the Y axis";
+    return false;
+  }
+  double ulx = rt_raster_get_x_offset(raster1);
+  double uly = rt_raster_get_y_offset(raster1);
+  double xr, yr, xw, yw;
+  if (rt_raster_geopoint_to_cell(raster2, ulx, uly, &xr, &yr, NULL) !=
+        ES_NONE ||
+      rt_raster_cell_to_geopoint(raster2, xr, yr, &xw, &yw, NULL) != ES_NONE ||
+      ! FLT_EQ(xw, ulx) || ! FLT_EQ(yw, uly))
+  {
+    *reason = "The rasters (pixel corner coordinates) are not aligned";
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return an arithmetic operation over rasters, pixel by pixel
+ * @details The operands are two rasters, or a raster and a number. The raster
+ * counterpart of #arithop_tnumber_tnumber and
+ * #arithop_tnumber_number, its bands iterated as #raster_clip iterates them.
+ * Every band of the result is a 64-bit float band, since a pixel holds the
+ * arithmetic as computed: a difference of two unsigned bands that is negative,
+ * a product beyond the range of the operands, or a ratio between zero and
+ * one, all of which a band of the type of the operands would clamp or
+ * truncate. Two rasters are operated band by band over the extent they share,
+ * as temporal numbers are over the time they share, so they are to have the
+ * same reference system, the same grid and the same number of bands
+ * @param[in] rast1,rast2 Rasters, @p rast2 being NULL where the second
+ * operand is the number
+ * @param[in] d Number, read only where @p rast2 is NULL
+ * @param[in] oper Operation
+ * @param[in] invert True where the number is the first operand
+ * @return NULL, with no error, where the two rasters share no pixel
+ * @errval NULL
+ */
+static Raster *
+raster_arithop(const Raster *rast1, const Raster *rast2, double d,
+  TArithmetic oper, bool invert)
+{
+  /* A division by a number is tested once, before any pixel is read, as a
+   * temporal number divided by a number is */
+  if (! rast2 && oper == DIV && ! invert && fabs(d) < MEOS_EPSILON)
+  {
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
+    return NULL;
+  }
+
+  /* The bands are read, so the operands are deserialized in full */
+  rt_raster raster1 = rt_raster_deserialize((void *) rast1, 0);
+  rt_raster raster2 = rast2 ? rt_raster_deserialize((void *) rast2, 0) : NULL;
+  if (! raster1 || (rast2 && ! raster2))
+  {
+    if (raster1) raster_destroy(raster1);
+    if (raster2) raster_destroy(raster2);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+
+  int32_t srid = (int32_t) rt_raster_get_srid(raster1);
+  int numbands = (int) rt_raster_get_num_bands(raster1);
+  if (numbands < 1)
+  {
+    raster_destroy(raster1);
+    if (raster2) raster_destroy(raster2);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster carries no band to operate on");
+    return NULL;
+  }
+  if (raster2)
+  {
+    int numbands2 = (int) rt_raster_get_num_bands(raster2);
+    const char *reason = NULL;
+    bool valid = ensure_same_srid(srid,
+      (int32_t) rt_raster_get_srid(raster2));
+    if (valid && numbands != numbands2)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The rasters have %d and %d bands", numbands, numbands2);
+      valid = false;
+    }
+    if (valid && ! raster_same_alignment(raster1, raster2, &reason))
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", reason);
+      valid = false;
+    }
+    if (! valid)
+    {
+      raster_destroy(raster1); raster_destroy(raster2);
+      return NULL;
+    }
+    /* Two rasters sharing no pixel have no result, as two temporal numbers
+     * sharing no time have none */
+    rt_raster shared = NULL;
+    if (rt_raster_from_two_rasters(raster1, raster2, ET_INTERSECTION, &shared,
+        NULL) != ES_NONE || ! shared)
+    {
+      raster_destroy(raster1); raster_destroy(raster2);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not compute the extent the rasters share");
+      return NULL;
+    }
+    bool empty = rt_raster_is_empty(shared);
+    rt_raster_destroy(shared);
+    if (empty)
+    {
+      raster_destroy(raster1); raster_destroy(raster2);
+      return NULL;
+    }
+  }
+
+  RasterArithArg args;
+  args.oper = oper;
+  args.number = (raster2 == NULL);
+  args.invert = invert;
+  args.value = d;
+  args.divzero = false;
+
+  rt_raster result = NULL;
+  for (int i = 0; i < numbands; i++)
+  {
+    rt_band band1 = rt_raster_get_band(raster1, (uint32_t) i);
+    rt_band band2 = raster2 ? rt_raster_get_band(raster2, (uint32_t) i) :
+      NULL;
+    if (! band1 || (raster2 && ! band2))
+    {
+      raster_destroy(raster1);
+      if (raster2) raster_destroy(raster2);
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not read band %d of the rasters", i + 1);
+      return NULL;
+    }
+    /* The result states a nodata value where an operand does, that of the
+     * first operand having one */
+    int hasnodata = 0;
+    double nodataval = 0.0;
+    if (rt_band_get_hasnodata_flag(band1))
+    {
+      hasnodata = 1;
+      rt_band_get_nodata(band1, &nodataval);
+    }
+    else if (band2 && rt_band_get_hasnodata_flag(band2))
+    {
+      hasnodata = 1;
+      rt_band_get_nodata(band2, &nodataval);
+    }
+
+    struct rt_iterator_t itrset[2];
+    itrset[0].raster = raster1;
+    itrset[0].nband = (uint16_t) i;
+    itrset[0].nbnodata = 1;
+    if (raster2)
+    {
+      itrset[1].raster = raster2;
+      itrset[1].nband = (uint16_t) i;
+      itrset[1].nbnodata = 1;
+    }
+
+    rt_raster banded = NULL;
+    if (rt_raster_iterator(itrset, raster2 ? 2 : 1,
+        raster2 ? ET_INTERSECTION : ET_FIRST, NULL, PT_64BF,
+        (uint8_t) hasnodata, nodataval, 0, 0, NULL, &args,
+        raster_arith_callback, &banded) != ES_NONE || ! banded)
+    {
+      raster_destroy(raster1);
+      if (raster2) raster_destroy(raster2);
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not compute band %d of the result", i + 1);
+      return NULL;
+    }
+    if (args.divzero)
+    {
+      raster_destroy(banded); raster_destroy(raster1);
+      if (raster2) raster_destroy(raster2);
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
+      return NULL;
+    }
+
+    if (! result)
+      /* The first band states the grid every later one is added to */
+      result = banded;
+    else
+    {
+      rt_band addband = rt_raster_get_band(banded, 0);
+      if (! addband || rt_raster_add_band(result, addband, i) < 0)
+      {
+        raster_destroy(banded); raster_destroy(raster1);
+        if (raster2) raster_destroy(raster2);
+        raster_destroy(result);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not add band %d to the result", i + 1);
+        return NULL;
+      }
+      /* The band is held by the result now, so only its carrier is released */
+      rt_raster_destroy(banded);
+    }
+  }
+
+  raster_destroy(raster1);
+  if (raster2) raster_destroy(raster2);
+  rt_raster_set_srid(result, srid);
+  return raster_serialize_destroy(result);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the addition of a float and a raster, pixel by pixel
+ * @param[in] d Value
+ * @param[in] rast Raster
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Add_float_raster()
+ */
+Raster *
+add_float_raster(double d, const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, ADD, INVERT);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the addition of a raster and a float, pixel by pixel
+ * @param[in] rast Raster
+ * @param[in] d Value
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Add_raster_float()
+ */
+Raster *
+add_raster_float(const Raster *rast, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, ADD, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the addition of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @param[in] rast1,rast2 Rasters
+ * @return A raster of 64-bit float bands, or NULL where the rasters share no
+ * pixel
+ * @errval NULL
+ * @csqlfn #Add_raster_raster()
+ */
+Raster *
+add_raster_raster(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
+  return raster_arithop(rast1, rast2, 0.0, ADD, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the subtraction of a float and a raster, pixel by pixel
+ * @param[in] d Value
+ * @param[in] rast Raster
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Sub_float_raster()
+ */
+Raster *
+sub_float_raster(double d, const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, SUB, INVERT);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the subtraction of a raster and a float, pixel by pixel
+ * @param[in] rast Raster
+ * @param[in] d Value
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Sub_raster_float()
+ */
+Raster *
+sub_raster_float(const Raster *rast, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, SUB, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the subtraction of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @param[in] rast1,rast2 Rasters
+ * @return A raster of 64-bit float bands, or NULL where the rasters share no
+ * pixel
+ * @errval NULL
+ * @csqlfn #Sub_raster_raster()
+ */
+Raster *
+sub_raster_raster(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
+  return raster_arithop(rast1, rast2, 0.0, SUB, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the multiplication of a float and a raster, pixel by pixel
+ * @param[in] d Value
+ * @param[in] rast Raster
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Mul_float_raster()
+ */
+Raster *
+mul_float_raster(double d, const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, MUL, INVERT);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the multiplication of a raster and a float, pixel by pixel
+ * @param[in] rast Raster
+ * @param[in] d Value
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Mul_raster_float()
+ */
+Raster *
+mul_raster_float(const Raster *rast, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, MUL, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the multiplication of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @param[in] rast1,rast2 Rasters
+ * @return A raster of 64-bit float bands, or NULL where the rasters share no
+ * pixel
+ * @errval NULL
+ * @csqlfn #Mul_raster_raster()
+ */
+Raster *
+mul_raster_raster(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
+  return raster_arithop(rast1, rast2, 0.0, MUL, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the division of a float and a raster, pixel by pixel
+ * @param[in] d Value
+ * @param[in] rast Raster
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Div_float_raster()
+ */
+Raster *
+div_float_raster(double d, const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, DIV, INVERT);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the division of a raster and a float, pixel by pixel
+ * @param[in] rast Raster
+ * @param[in] d Value
+ * @return A raster of 64-bit float bands
+ * @errval NULL
+ * @csqlfn #Div_raster_float()
+ */
+Raster *
+div_raster_float(const Raster *rast, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL);
+  return raster_arithop(rast, NULL, d, DIV, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_raster_base_math
+ * @brief Return the division of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @param[in] rast1,rast2 Rasters
+ * @return A raster of 64-bit float bands, or NULL where the rasters share no
+ * pixel
+ * @errval NULL
+ * @csqlfn #Div_raster_raster()
+ */
+Raster *
+div_raster_raster(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
+  return raster_arithop(rast1, rast2, 0.0, DIV, INVERT_NO);
+}
+
 
 /*****************************************************************************
  * Conversion functions

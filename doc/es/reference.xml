@@ -3425,6 +3425,9 @@
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Adición, resta, multiplicación y división de rásteres, píxel a píxel</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
 				</listitem>
 				<listitem>

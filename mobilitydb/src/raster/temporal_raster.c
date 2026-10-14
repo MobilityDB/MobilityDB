@@ -1795,6 +1795,258 @@ Raquet_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: mathematical functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Add_float_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Add_float_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the addition of a float and a raster, pixel by pixel
+ * @sqlfn rasterAdd()
+ * @sqlop @p +
+ */
+Datum
+Add_float_raster(PG_FUNCTION_ARGS)
+{
+  double d = PG_GETARG_FLOAT8(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = add_float_raster(d, rast);
+  PG_FREE_IF_COPY(rast, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Add_raster_float(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Add_raster_float);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the addition of a raster and a float, pixel by pixel
+ * @sqlfn rasterAdd()
+ * @sqlop @p +
+ */
+Datum
+Add_raster_float(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  double d = PG_GETARG_FLOAT8(1);
+  Raster *result = add_raster_float(rast, d);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Add_raster_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Add_raster_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the addition of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @sqlfn rasterAdd()
+ * @sqlop @p +
+ */
+Datum
+Add_raster_raster(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = add_raster_raster(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Sub_float_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Sub_float_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the subtraction of a float and a raster, pixel by pixel
+ * @sqlfn rasterSub()
+ * @sqlop @p -
+ */
+Datum
+Sub_float_raster(PG_FUNCTION_ARGS)
+{
+  double d = PG_GETARG_FLOAT8(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = sub_float_raster(d, rast);
+  PG_FREE_IF_COPY(rast, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Sub_raster_float(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Sub_raster_float);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the subtraction of a raster and a float, pixel by pixel
+ * @sqlfn rasterSub()
+ * @sqlop @p -
+ */
+Datum
+Sub_raster_float(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  double d = PG_GETARG_FLOAT8(1);
+  Raster *result = sub_raster_float(rast, d);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Sub_raster_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Sub_raster_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the subtraction of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @sqlfn rasterSub()
+ * @sqlop @p -
+ */
+Datum
+Sub_raster_raster(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = sub_raster_raster(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Mul_float_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mul_float_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the multiplication of a float and a raster, pixel by pixel
+ * @sqlfn rasterMul()
+ * @sqlop @p *
+ */
+Datum
+Mul_float_raster(PG_FUNCTION_ARGS)
+{
+  double d = PG_GETARG_FLOAT8(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = mul_float_raster(d, rast);
+  PG_FREE_IF_COPY(rast, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Mul_raster_float(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mul_raster_float);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the multiplication of a raster and a float, pixel by pixel
+ * @sqlfn rasterMul()
+ * @sqlop @p *
+ */
+Datum
+Mul_raster_float(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  double d = PG_GETARG_FLOAT8(1);
+  Raster *result = mul_raster_float(rast, d);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Mul_raster_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mul_raster_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the multiplication of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @sqlfn rasterMul()
+ * @sqlop @p *
+ */
+Datum
+Mul_raster_raster(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = mul_raster_raster(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Div_float_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Div_float_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the division of a float and a raster, pixel by pixel
+ * @sqlfn rasterDiv()
+ * @sqlop @p /
+ */
+Datum
+Div_float_raster(PG_FUNCTION_ARGS)
+{
+  double d = PG_GETARG_FLOAT8(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = div_float_raster(d, rast);
+  PG_FREE_IF_COPY(rast, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Div_raster_float(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Div_raster_float);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the division of a raster and a float, pixel by pixel
+ * @sqlfn rasterDiv()
+ * @sqlop @p /
+ */
+Datum
+Div_raster_float(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  double d = PG_GETARG_FLOAT8(1);
+  Raster *result = div_raster_float(rast, d);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Div_raster_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Div_raster_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the division of two rasters, pixel by pixel
+ * @details The rasters are operated over the extent they share
+ * @sqlfn rasterDiv()
+ * @sqlop @p /
+ */
+Datum
+Div_raster_raster(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  Raster *result = div_raster_raster(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Raster type: conversions
  *****************************************************************************/
 

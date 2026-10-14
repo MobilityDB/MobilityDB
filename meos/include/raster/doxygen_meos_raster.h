@@ -65,6 +65,10 @@
  * @ingroup meos_raster_base
  * @brief Transformation functions for static rasters
  *
+ * @defgroup meos_raster_base_math Mathematical functions
+ * @ingroup meos_raster_base
+ * @brief Mathematical functions for static rasters
+ *
  * @defgroup meos_raster_base_comp Comparison functions
  * @ingroup meos_raster_base
  * @brief Comparison functions for static rasters
