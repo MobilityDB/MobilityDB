@@ -3422,6 +3422,12 @@
 					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Lee una banda de ráster a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_valueCount"><varname>valueCount</varname></link>: Devuelve el número de píxeles de una banda de un ráster que contienen cada valor</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				</listitem>
 				<listitem>

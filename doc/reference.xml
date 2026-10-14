@@ -3431,6 +3431,12 @@
 					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Read a raster band along a trajectory</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_valueCount"><varname>valueCount</varname></link>: Return the number of pixels of a raster band holding each value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Return the share of the pixels of a raster band holding each value</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
 				</listitem>
 				<listitem>

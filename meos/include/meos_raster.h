@@ -148,6 +148,19 @@ typedef struct
   double max;      /**< Largest of their values */
 } BandStats;
 
+/**
+ * @brief How many pixels of a raster band hold a value
+ * @details The shape PostGIS states as the rows of its @p ST_ValueCount and
+ * @p ST_ValuePercent: a value, the number of pixels holding it and their share
+ * of the pixels read
+ */
+typedef struct
+{
+  double value;     /**< The value */
+  uint32_t count;   /**< Number of pixels holding it */
+  double percent;   /**< Their share of the pixels read, between 0 and 1 */
+} ValueCount;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -195,6 +208,9 @@ extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,
   bool exclude_nodata, int *count);
 extern BandStats *raster_summary_stats(const Raster *rast, int band,
   bool exclude_nodata);
+extern ValueCount *raster_value_count(const Raster *rast, int band,
+  bool exclude_nodata, const double *searchvalues, int nsearch, double roundto,
+  int *count);
 extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
   const char *pixeltype, bool has_nodata, double nodataval);
 extern Raster *raster_slope(const Raster *rast, int band,

@@ -974,6 +974,102 @@ CREATE FUNCTION tpi(rast raster, nband integer DEFAULT 1,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Value count of rasters
+ *
+ * The histogram of a band, in the six forms of PostGIS's ST_ValueCount and
+ * ST_ValuePercent, under their names without ST_ and with their arguments and
+ * defaults: the rows of every distinct value or of the values searched, and
+ * the count or the share of one value. The forms reading a raster column of a
+ * table stay PostGIS's, since they query the database.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of a raster band holding each value
+ * @note Not STRICT: search values left NULL count every value
+ */
+CREATE FUNCTION valueCount(rast raster, nband integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true,
+    searchvalues float[] DEFAULT NULL, roundto float DEFAULT 0,
+    OUT value float, OUT count integer)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_count'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION valueCount(rast raster, nband integer, searchvalues float[],
+    roundto float DEFAULT 0, OUT value float, OUT count integer)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_count'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION valueCount(rast raster, searchvalues float[],
+    roundto float DEFAULT 0, OUT value float, OUT count integer)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_count'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of a raster band holding a value
+ */
+CREATE FUNCTION valueCount(rast raster, nband integer,
+    exclude_nodata_value boolean, searchvalue float, roundto float DEFAULT 0)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_value_count_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueCount(rast raster, nband integer, searchvalue float,
+    roundto float DEFAULT 0)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_value_count_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueCount(rast raster, searchvalue float,
+    roundto float DEFAULT 0)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_value_count_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the share of the pixels of a raster band holding each value
+ * @note Not STRICT: search values left NULL count every value
+ */
+CREATE FUNCTION valuePercent(rast raster, nband integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true,
+    searchvalues float[] DEFAULT NULL, roundto float DEFAULT 0,
+    OUT value float, OUT percent float)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_percent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION valuePercent(rast raster, nband integer, searchvalues float[],
+    roundto float DEFAULT 0, OUT value float, OUT percent float)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_percent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION valuePercent(rast raster, searchvalues float[],
+    roundto float DEFAULT 0, OUT value float, OUT percent float)
+  RETURNS SETOF record
+  AS 'MODULE_PATHNAME', 'Raster_value_percent'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the share of the pixels of a raster band holding a value
+ */
+CREATE FUNCTION valuePercent(rast raster, nband integer,
+    exclude_nodata_value boolean, searchvalue float, roundto float DEFAULT 0)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Raster_value_percent_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valuePercent(rast raster, nband integer, searchvalue float,
+    roundto float DEFAULT 0)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Raster_value_percent_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valuePercent(rast raster, searchvalue float,
+    roundto float DEFAULT 0)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Raster_value_percent_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Arithmetic of rasters
  *
  * A raster takes the arithmetic operators of a temporal number, computed

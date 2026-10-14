@@ -2194,6 +2194,198 @@ Raster_tpi_extent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: value count
+ *****************************************************************************/
+
+/**
+ * @brief Read the arguments of a value count, in the three forms of PostGIS's
+ * @p ST_ValueCount and @p ST_ValuePercent
+ * @details The forms take the band and whether nodata is excluded, the band
+ * alone, or neither, before the search values and the rounding, and are told
+ * apart by their number of arguments, 5, 4 or 3. The search values are read
+ * as #Raster_clip_bands reads its nodata values. A band left out is 1 and an
+ * exclusion left out is true, as for PostGIS
+ * @param[in] fcinfo Arguments of the function
+ * @param[in] scalar True where the search value is one number, false where it
+ * is an array
+ * @param[out] band Number of the band
+ * @param[out] exclude_nodata Whether nodata is excluded
+ * @param[out] searchvalues Search values, NULL for every value
+ * @param[out] nsearch Number of search values
+ * @param[out] roundto Multiple the values are rounded to
+ * @return False where an argument the function requires is NULL
+ */
+static bool
+value_count_args(FunctionCallInfo fcinfo, bool scalar, int *band,
+  bool *exclude_nodata, double **searchvalues, int *nsearch, double *roundto)
+{
+  int nargs = PG_NARGS();
+  /* The search values stand before the rounding, the last argument */
+  int s = nargs - 2;
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(nargs - 1) ||
+      (nargs >= 4 && PG_ARGISNULL(1)) || (nargs == 5 && PG_ARGISNULL(2)) ||
+      (scalar && PG_ARGISNULL(s)))
+    return false;
+  *band = nargs >= 4 ? PG_GETARG_INT32(1) : 1;
+  *exclude_nodata = nargs == 5 ? PG_GETARG_BOOL(2) : true;
+  *roundto = PG_GETARG_FLOAT8(nargs - 1);
+  *searchvalues = NULL;
+  *nsearch = 0;
+  if (scalar)
+  {
+    *searchvalues = palloc(sizeof(double));
+    (*searchvalues)[0] = PG_GETARG_FLOAT8(s);
+    *nsearch = 1;
+  }
+  else if (! PG_ARGISNULL(s))
+  {
+    Datum *elems = datumarr_extract(PG_GETARG_ARRAYTYPE_P(s), nsearch);
+    if (*nsearch > 0)
+    {
+      *searchvalues = palloc(sizeof(double) * (size_t) *nsearch);
+      for (int i = 0; i < *nsearch; i++)
+        (*searchvalues)[i] = DatumGetFloat8(elems[i]);
+    }
+    pfree(elems);
+  }
+  return true;
+}
+
+/**
+ * @brief Return the rows of a value count, with the count or with the share
+ * of each value
+ * @details The rows are returned as #Raster_dump_as_polygons returns its
+ * polygons
+ * @param[in] fcinfo Arguments of the function
+ * @param[in] percent True for the share, false for the count
+ */
+static Datum
+Raster_value_count_rows(FunctionCallInfo fcinfo, bool percent)
+{
+  FuncCallContext *funcctx;
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* The rows are kept across the calls, so they are computed in the
+     * context that outlives them */
+    MemoryContext oldctx = MemoryContextSwitchTo(
+      funcctx->multi_call_memory_ctx);
+    int band, nsearch, count = 0;
+    bool exclude_nodata;
+    double *searchvalues, roundto;
+    ValueCount *rows = NULL;
+    if (value_count_args(fcinfo, false, &band, &exclude_nodata, &searchvalues,
+        &nsearch, &roundto))
+    {
+      Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+      rows = raster_value_count(rast, band, exclude_nodata, searchvalues,
+        nsearch, roundto, &count);
+    }
+    funcctx->user_fctx = (void *) rows;
+    funcctx->max_calls = count;
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldctx);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+  const ValueCount *row = &((ValueCount *) funcctx->user_fctx)[
+    funcctx->call_cntr];
+  Datum values[2];
+  bool isnull[2] = {false, false};
+  values[0] = Float8GetDatum(row->value);
+  values[1] = percent ? Float8GetDatum(row->percent) :
+    Int32GetDatum(row->count);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+PGDLLEXPORT Datum Raster_value_count(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_count);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of a raster band holding each value
+ * @sqlfn valueCount()
+ */
+Datum
+Raster_value_count(PG_FUNCTION_ARGS)
+{
+  return Raster_value_count_rows(fcinfo, false);
+}
+
+PGDLLEXPORT Datum Raster_value_percent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_percent);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the share of the pixels of a raster band holding each value
+ * @sqlfn valuePercent()
+ */
+Datum
+Raster_value_percent(PG_FUNCTION_ARGS)
+{
+  return Raster_value_count_rows(fcinfo, true);
+}
+
+/**
+ * @brief Return the value count of one search value, with the count or with
+ * the share of the pixels
+ * @param[in] fcinfo Arguments of the function
+ * @param[in] percent True for the share, false for the count
+ */
+static Datum
+Raster_value_count_one(FunctionCallInfo fcinfo, bool percent)
+{
+  int band, nsearch, count = 0;
+  bool exclude_nodata;
+  double *searchvalues, roundto;
+  if (! value_count_args(fcinfo, true, &band, &exclude_nodata, &searchvalues,
+      &nsearch, &roundto))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  ValueCount *rows = raster_value_count(rast, band, exclude_nodata,
+    searchvalues, nsearch, roundto, &count);
+  pfree(searchvalues);
+  PG_FREE_IF_COPY(rast, 0);
+  /* A band answering no row holds the value in no pixel */
+  ValueCount row = {0.0, 0, 0.0};
+  if (rows && count > 0)
+    row = rows[0];
+  if (rows)
+    pfree(rows);
+  if (percent)
+    PG_RETURN_FLOAT8(row.percent);
+  PG_RETURN_INT32(row.count);
+}
+
+PGDLLEXPORT Datum Raster_value_count_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_count_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of a raster band holding a value
+ * @sqlfn valueCount()
+ */
+Datum
+Raster_value_count_value(PG_FUNCTION_ARGS)
+{
+  return Raster_value_count_one(fcinfo, false);
+}
+
+PGDLLEXPORT Datum Raster_value_percent_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_percent_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the share of the pixels of a raster band holding a value
+ * @sqlfn valuePercent()
+ */
+Datum
+Raster_value_percent_value(PG_FUNCTION_ARGS)
+{
+  return Raster_value_count_one(fcinfo, true);
+}
+
+/*****************************************************************************
  * Raster type: conversions
  *****************************************************************************/
 
