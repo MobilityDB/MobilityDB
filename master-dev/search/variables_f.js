@@ -58,10 +58,11 @@ var searchData=
   ['num_5frecords_55',['num_records',['../structtrip__record_a682006289b08cd62e2403460e34afe3a.html#a682006289b08cd62e2403460e34afe3a',1,'trip_record']]],
   ['num_5fsog_5finstants_56',['num_SOG_instants',['../structtrip__record_a9e4e091089bf67b17e566cbc5946829e.html#a9e4e091089bf67b17e566cbc5946829e',1,'trip_record']]],
   ['num_5ftrip_5finstants_57',['num_trip_instants',['../structtrip__record_abdb7d6d1675264ef41656e00afde0e4c.html#abdb7d6d1675264ef41656e00afde0e4c',1,'trip_record']]],
-  ['numinstants_58',['numinstants',['../structtrip__record_a75efa4e47c1b5cd78f77b623336b7cec.html#a75efa4e47c1b5cd78f77b623336b7cec',1,'trip_record']]],
-  ['numparam_59',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]],
-  ['nvert_60',['nvert',['../structDistRefPoly_abeb6995089eefbde2640397b0f110a9c.html#abeb6995089eefbde2640397b0f110a9c',1,'DistRefPoly']]],
-  ['nwide_61',['nwide',['../structEdgeIndex_a1ad860d259de61ac2c2efacd94e0c2c2.html#a1ad860d259de61ac2c2efacd94e0c2c2',1,'EdgeIndex']]],
-  ['nx_62',['nx',['../structDistArc_a59649b59c51d57be731cef714011426a.html#a59649b59c51d57be731cef714011426a',1,'DistArc']]],
-  ['ny_63',['ny',['../structDistArc_a86fa0fcdc99bb7d289380d16f59f9c6f.html#a86fa0fcdc99bb7d289380d16f59f9c6f',1,'DistArc']]]
+  ['number_58',['number',['../structRasterArithArg_abe3f54cd3bca048c6e61ead2712a3b11.html#abe3f54cd3bca048c6e61ead2712a3b11',1,'RasterArithArg']]],
+  ['numinstants_59',['numinstants',['../structtrip__record_a75efa4e47c1b5cd78f77b623336b7cec.html#a75efa4e47c1b5cd78f77b623336b7cec',1,'trip_record']]],
+  ['numparam_60',['numparam',['../structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146',1,'LiftedFunctionInfo']]],
+  ['nvert_61',['nvert',['../structDistRefPoly_abeb6995089eefbde2640397b0f110a9c.html#abeb6995089eefbde2640397b0f110a9c',1,'DistRefPoly']]],
+  ['nwide_62',['nwide',['../structEdgeIndex_a1ad860d259de61ac2c2efacd94e0c2c2.html#a1ad860d259de61ac2c2efacd94e0c2c2',1,'EdgeIndex']]],
+  ['nx_63',['nx',['../structDistArc_a59649b59c51d57be731cef714011426a.html#a59649b59c51d57be731cef714011426a',1,'DistArc']]],
+  ['ny_64',['ny',['../structDistArc_a86fa0fcdc99bb7d289380d16f59f9c6f.html#a86fa0fcdc99bb7d289380d16f59f9c6f',1,'DistArc']]]
 ];

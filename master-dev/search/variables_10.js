@@ -6,7 +6,7 @@ var searchData=
   ['om2_3',['om2',['../structGeogSegmPair_a94de48a3e88b51584d825ace3a3cd4fa.html#a94de48a3e88b51584d825ace3a3cd4fa',1,'GeogSegmPair']]],
   ['on_5farc_4',['on_arc',['../structArrExtreme_ac127516ce8e60699cb8ec6351afbca40.html#ac127516ce8e60699cb8ec6351afbca40',1,'ArrExtreme']]],
   ['op_5',['op',['../structRelateOperands_a9811a7883c525e0c7760499f1b9b0938.html#a9811a7883c525e0c7760499f1b9b0938',1,'RelateOperands::op()'],['../structRelateCtx_afc8640daa7ab7dff0000d31bf8b9c0b5.html#afc8640daa7ab7dff0000d31bf8b9c0b5',1,'RelateCtx::op()'],['../structOpCase_ad8fddd17b768de4720834f04fe22076e.html#ad8fddd17b768de4720834f04fe22076e',1,'OpCase::op()']]],
-  ['oper_6',['oper',['../structoid__meosoper__entry_a34ca3f2cf760bec93ede077b2b608c0d.html#a34ca3f2cf760bec93ede077b2b608c0d',1,'oid_meosoper_entry']]],
+  ['oper_6',['oper',['../structoid__meosoper__entry_a34ca3f2cf760bec93ede077b2b608c0d.html#a34ca3f2cf760bec93ede077b2b608c0d',1,'oid_meosoper_entry::oper()'],['../structRasterArithArg_a395a18808bdc65ee13eb100f3e1905f9.html#a395a18808bdc65ee13eb100f3e1905f9',1,'RasterArithArg::oper()']]],
   ['oper_5foid_5fargs_7',['oper_oid_args',['../structmobilitydb__constants_af4ab4f29e78da5f82aed2d0dabd54281.html#af4ab4f29e78da5f82aed2d0dabd54281',1,'mobilitydb_constants']]],
   ['oproid_8',['oproid',['../structoid__meosoper__entry_a8adb88a8e52a4e728f5419dd633eb78a.html#a8adb88a8e52a4e728f5419dd633eb78a',1,'oid_meosoper_entry']]],
   ['ops_9',['ops',['../structDistEverWalk_a5ec9a352855cc7f493d3bb54f9792eb8.html#a5ec9a352855cc7f493d3bb54f9792eb8',1,'DistEverWalk']]],
