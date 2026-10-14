@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['varlena_0',['varlena',['../structvarlena.html',1,'']]]
+  ['valuecount_0',['ValueCount',['../structValueCount.html',1,'']]],
+  ['varlena_1',['varlena',['../structvarlena.html',1,'']]]
 ];
