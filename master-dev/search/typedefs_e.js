@@ -8,9 +8,10 @@ var searchData=
   ['raster_5fpixel_5ffn_5',['raster_pixel_fn',['../raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c',1,'raster_quadbin.h']]],
   ['raster_5fpoint_5ffn_6',['raster_point_fn',['../raster__quadbin_8h_a2d93fafd5797ff86e8b0fde841bb152d.html#a2d93fafd5797ff86e8b0fde841bb152d',1,'raster_quadbin.h']]],
   ['rastergridops_7',['RasterGridOps',['../raster__quadbin_8h_addb16eddd3035ecea62f83d39a5a4c9a.html#addb16eddd3035ecea62f83d39a5a4c9a',1,'raster_quadbin.h']]],
-  ['residual_5ffn_8',['residual_fn',['../meos_2src_2rgeo_2trgeo__geom__clip_8c_a56035d2d4d20fa3229c263a28ff3a7dc.html#a56035d2d4d20fa3229c263a28ff3a7dc',1,'trgeo_geom_clip.c']]],
-  ['rtree_9',['RTree',['../meos_8h_a3dbd73b6367ac05a5b7a41205de49460.html#a3dbd73b6367ac05a5b7a41205de49460',1,'meos.h']]],
-  ['rtreenncursor_10',['RTreeNNCursor',['../meos_8h_a1a246a111be2aaddf6a8a458906ee4b6.html#a1a246a111be2aaddf6a8a458906ee4b6',1,'meos.h']]],
-  ['rtreennentry_11',['RTreeNNEntry',['../temporal__rtree_8c_aa0e2f15c4fc62314de4552df6fc15b31.html#aa0e2f15c4fc62314de4552df6fc15b31',1,'temporal_rtree.c']]],
-  ['rtreenode_12',['RTreeNode',['../temporal__rtree_8h_afe479577f2d312dc7122eeb5e6d51a4d.html#afe479577f2d312dc7122eeb5e6d51a4d',1,'temporal_rtree.h']]]
+  ['rasterpixelfn_8',['RasterPixelFn',['../raster__rtcore_8c_a49e42bffb5258e7ab86f7b3b93a112dc.html#a49e42bffb5258e7ab86f7b3b93a112dc',1,'raster_rtcore.c']]],
+  ['residual_5ffn_9',['residual_fn',['../meos_2src_2rgeo_2trgeo__geom__clip_8c_a56035d2d4d20fa3229c263a28ff3a7dc.html#a56035d2d4d20fa3229c263a28ff3a7dc',1,'trgeo_geom_clip.c']]],
+  ['rtree_10',['RTree',['../meos_8h_a3dbd73b6367ac05a5b7a41205de49460.html#a3dbd73b6367ac05a5b7a41205de49460',1,'meos.h']]],
+  ['rtreenncursor_11',['RTreeNNCursor',['../meos_8h_a1a246a111be2aaddf6a8a458906ee4b6.html#a1a246a111be2aaddf6a8a458906ee4b6',1,'meos.h']]],
+  ['rtreennentry_12',['RTreeNNEntry',['../temporal__rtree_8c_aa0e2f15c4fc62314de4552df6fc15b31.html#aa0e2f15c4fc62314de4552df6fc15b31',1,'temporal_rtree.c']]],
+  ['rtreenode_13',['RTreeNode',['../temporal__rtree_8h_afe479577f2d312dc7122eeb5e6d51a4d.html#afe479577f2d312dc7122eeb5e6d51a4d',1,'temporal_rtree.h']]]
 ];
