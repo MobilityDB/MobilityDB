@@ -2161,6 +2161,130 @@ raster_reclass(const Raster *rast, int band, const char *expr,
 }
 
 /*****************************************************************************
+ * Value count
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the number of pixels of a raster band holding each value
+ * @details The histogram of PostGIS's `ST_ValueCount` and `ST_ValuePercent`,
+ * read by `rt_band_get_value_count`: one row for each distinct value of the
+ * band, or one for each search value where some are given, with the number of
+ * pixels holding it and their share of the pixels read. A value is rounded to
+ * the nearest multiple of @p roundto before it is counted, where @p roundto is
+ * positive. A band whose every pixel is nodata, as the band itself states it,
+ * answers no row where nodata is excluded, and one row holding the nodata
+ * value otherwise. Where no pixel is read, the share of a search value is
+ * zero divided by zero, NaN, as for PostGIS
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the nodata pixels out
+ * @param[in] searchvalues Values to count, or NULL to count every value
+ * @param[in] nsearch Number of search values
+ * @param[in] roundto Multiple the values are rounded to, 0 for none
+ * @param[out] count Number of rows of the result
+ * @return An array of value counts, which may be empty
+ * @errval NULL
+ * @csqlfn #Raster_value_count(), #Raster_value_percent()
+ */
+ValueCount *
+raster_value_count(const Raster *rast, int band, bool exclude_nodata,
+  const double *searchvalues, int nsearch, double roundto, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  if (nsearch < 0 || (nsearch > 0 && ! searchvalues))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The search values of a value count are not stated");
+    return NULL;
+  }
+
+  /* The pixels are read, so the subject is deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  /* A band the raster does not have is an error, as it is for every other
+   * accessor of this family, rather than the NULL PostGIS answers */
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  if (! rtband)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read band %d of the raster", band);
+    return NULL;
+  }
+
+  /* A band stating that every pixel is nodata is answered here: rt_core
+   * warns and leaves the count unset where nodata is excluded, and writes the
+   * share of the first search value alone where it is not */
+  if (rt_band_get_hasnodata_flag(rtband) &&
+      rt_band_get_isnodata_flag(rtband))
+  {
+    ValueCount *result = NULL;
+    if (! exclude_nodata)
+    {
+      double nodataval;
+      rt_band_get_nodata(rtband, &nodataval);
+      uint32_t npixels = (uint32_t) (rt_band_get_width(rtband) *
+        rt_band_get_height(rtband));
+      int n = nsearch > 0 ? nsearch : 1;
+      result = palloc(sizeof(ValueCount) * n);
+      for (int i = 0; i < n; i++)
+      {
+        result[i].value = nsearch > 0 ? searchvalues[i] : nodataval;
+        bool match = nsearch == 0 || searchvalues[i] == nodataval;
+        result[i].count = match ? npixels : 0;
+        result[i].percent = match ? 1.0 : 0.0;
+      }
+      *count = n;
+    }
+    raster_destroy(raster);
+    return result;
+  }
+
+  uint32_t nrows = 0;
+  rt_valuecount vcnts = rt_band_get_value_count(rtband,
+    exclude_nodata ? 1 : 0, (double *) searchvalues, (uint32_t) nsearch,
+    roundto, NULL, &nrows);
+  raster_destroy(raster);
+  if (! vcnts && nrows > 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not count the values of band %d of the raster", band);
+    return NULL;
+  }
+  ValueCount *result = NULL;
+  if (nrows > 0)
+  {
+    result = palloc(sizeof(ValueCount) * nrows);
+    for (uint32_t i = 0; i < nrows; i++)
+    {
+      result[i].value = vcnts[i].value;
+      result[i].count = vcnts[i].count;
+      result[i].percent = vcnts[i].percent;
+    }
+  }
+  if (vcnts)
+    rtdealloc(vcnts);
+  *count = (int) nrows;
+  return result;
+}
+
+/*****************************************************************************
  * Mathematical functions
  *****************************************************************************/
 

@@ -2227,4 +2227,116 @@ SELECT tpi(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1,
   ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
 ERROR:  The rasters (pixel corner coordinates) are not aligned
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT 'all' AS form, round(value::numeric, 6) AS value, count
+FROM rast, valueCount(r)
+UNION ALL
+SELECT 'nodata kept', round(value::numeric, 6), count
+FROM rast, valueCount(r, 1, false)
+UNION ALL
+SELECT 'tenths', round(value::numeric, 6), count
+FROM rast, valueCount(r, 1, true, NULL::float[], 0.1)
+UNION ALL
+SELECT 'searched', round(value::numeric, 6), count
+FROM rast, valueCount(r, ARRAY[2, 7]::float[])
+ORDER BY 1, 2;
+    form     |    value     | count 
+-------------+--------------+-------
+ all         |     1.240000 |     2
+ all         |     1.260000 |     1
+ all         |     2.000000 |     4
+ all         |     3.000000 |     1
+ nodata kept | -9999.000000 |     1
+ nodata kept |     1.240000 |     2
+ nodata kept |     1.260000 |     1
+ nodata kept |     2.000000 |     4
+ nodata kept |     3.000000 |     1
+ searched    |     2.000000 |     4
+ searched    |     7.000000 |     0
+ tenths      |     1.200000 |     2
+ tenths      |     1.300000 |     1
+ tenths      |     2.000000 |     4
+ tenths      |     3.000000 |     1
+(15 rows)
+
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT
+  (SELECT array_agg((value, count) ORDER BY value) FROM valueCount(r)) =
+  (SELECT array_agg((value, count) ORDER BY value) FROM ST_ValueCount(r))
+    AS count_rows,
+  (SELECT array_agg((value, count) ORDER BY value)
+     FROM valueCount(r, 1, ARRAY[2, 3]::float[])) =
+  (SELECT array_agg((value, count) ORDER BY value)
+     FROM ST_ValueCount(r, 1, ARRAY[2, 3]::double precision[]))
+    AS count_band_searched,
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM valuePercent(r, 1, false)) =
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM ST_ValuePercent(r, 1, false)) AS percent_rows,
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM valuePercent(r, ARRAY[2]::float[], 0.5)) =
+  (SELECT array_agg((value, percent) ORDER BY value)
+     FROM ST_ValuePercent(r, ARRAY[2]::double precision[], 0.5))
+    AS percent_searched,
+  valueCount(r, 2::float) = ST_ValueCount(r, 2::double precision)
+    AS count_value,
+  valueCount(r, 1, 7::float) = ST_ValueCount(r, 1, 7::double precision)
+    AS count_absent_value,
+  valuePercent(r, 1, false, 2::float) =
+    ST_ValuePercent(r, 1, false, 2::double precision) AS percent_value
+FROM rast;
+ count_rows | count_band_searched | percent_rows | percent_searched | count_value | count_absent_value | percent_value 
+------------+---------------------+--------------+------------------+-------------+--------------------+---------------
+ t          | t                   | t            | t                | t           | t                  | t
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][])
+    AS r
+)
+SELECT round(value::numeric, 6) AS value, percent,
+  valuePercent(r, 2::float) AS percent_of_two
+FROM rast, valuePercent(r)
+ORDER BY 1;
+  value   | percent | percent_of_two 
+----------+---------+----------------
+ 1.240000 |    0.25 |            0.5
+ 1.260000 |   0.125 |            0.5
+ 2.000000 |     0.5 |            0.5
+ 3.000000 |   0.125 |            0.5
+(4 rows)
+
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, -9999.0::float8, -9999.0::float8) AS r
+)
+SELECT (SELECT count(*) FROM valueCount(r)) AS rows_nodata_left_out,
+  (SELECT array_agg((value, count)) FROM valueCount(r, 1, false))
+    AS rows_nodata_kept,
+  valueCount(r, -9999::float) AS count_of_nodata
+FROM rast;
+ rows_nodata_left_out | rows_nodata_kept | count_of_nodata 
+----------------------+------------------+-----------------
+                    0 | {"(-9999,4)"}    |               0
+(1 row)
+
+SELECT * FROM valueCount(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
+  -1.0, 0.0, 0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2);
+ERROR:  The raster has no band 2, it has 1
 /*****************************************************************************/

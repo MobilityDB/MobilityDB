@@ -2606,6 +2606,62 @@ FROM t, r, ST_Tile(rast, 2, 2) AS tile;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_valueCount">
+				<indexterm significance="normal"><primary><varname>valueCount</varname></primary></indexterm>
+				<para>Devuelve el número de píxeles de una banda de un ráster que contienen cada valor</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+valueCount(rast raster,nband integer=1,exclude_nodata_value boolean=true,
+  searchvalues float[]=NULL,roundto float=0) → setof (value float,count integer)
+valueCount(rast raster,nband integer,searchvalues float[],roundto float=0)
+  → setof (value float,count integer)
+valueCount(rast raster,searchvalues float[],roundto float=0)
+  → setof (value float,count integer)
+valueCount(rast raster,nband integer,exclude_nodata_value boolean,searchvalue float,
+  roundto float=0) → integer
+valueCount(rast raster,nband integer,searchvalue float,roundto float=0) → integer
+valueCount(rast raster,searchvalue float,roundto float=0) → integer
+</programlisting>
+				<para>El histograma de <varname>ST_ValueCount</varname> de PostGIS, con sus argumentos y valores por defecto: una fila por cada valor distinto de la banda, o una por cada valor buscado, que cuenta cero cuando ningún píxel lo contiene, y el número de píxeles que contienen un valor en las formas que toman un único valor buscado. Un valor se redondea al múltiplo más cercano de <varname>roundto</varname> antes de contarse cuando <varname>roundto</varname> es positivo. Una banda cuyos píxeles no tienen datos no devuelve ninguna fila cuando se excluyen los píxeles sin datos, y una banda que el ráster no tiene produce un error donde PostGIS devuelve <varname>NULL</varname>. Las formas de PostGIS que leen una columna ráster de una tabla consultan la base de datos, por lo que siguen siendo de PostGIS.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][]) AS r )
+SELECT round(value::numeric, 2), count
+FROM rast, valueCount(r, 1, true, NULL::float[], 0.1) ORDER BY 1;
+-- 1.20 | 2
+-- 1.30 | 1
+-- 2.00 | 4
+-- 3.00 | 1
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_valuePercent">
+				<indexterm significance="normal"><primary><varname>valuePercent</varname></primary></indexterm>
+				<para>Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+valuePercent(rast raster,nband integer=1,exclude_nodata_value boolean=true,
+  searchvalues float[]=NULL,roundto float=0) → setof (value float,percent float)
+valuePercent(rast raster,nband integer,searchvalues float[],roundto float=0)
+  → setof (value float,percent float)
+valuePercent(rast raster,searchvalues float[],roundto float=0)
+  → setof (value float,percent float)
+valuePercent(rast raster,nband integer,exclude_nodata_value boolean,
+  searchvalue float,roundto float=0) → float
+valuePercent(rast raster,nband integer,searchvalue float,roundto float=0) → float
+valuePercent(rast raster,searchvalue float,roundto float=0) → float
+</programlisting>
+				<para>La proporción de <varname>ST_ValuePercent</varname> de PostGIS, entre 0 y 1, de los píxeles que lee <link linkend="raster_valueCount"><varname>valueCount</varname></link>, con los mismos argumentos y formas. Cuando no se lee ningún píxel, la proporción de un valor buscado es cero dividido por cero, <varname>NaN</varname>, como para PostGIS.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][]) AS r )
+SELECT valuePercent(r, 2::float), valuePercent(r, 3::float) FROM rast;
+-- 0.5 | 0.125
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_reclass">
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
