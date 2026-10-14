@@ -113,20 +113,27 @@ raster_serialize_destroy(rt_raster raster)
       "Could not parse the Well-Known Binary (WKB) representation of a raster");
     return NULL;
   }
-  Raster *result = (Raster *) rt_raster_serialize(raster);
+  void *serialized = rt_raster_serialize(raster);
   raster_destroy(raster);
-  if (! result)
+  if (! serialized)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Could not serialize raster");
     return NULL;
   }
+  /* rt_core allocates through its own allocator, which is not the one MEOS
+   * answers from, so the caller receives a copy it frees as every other MEOS
+   * value, as #raster_wkb copies the bytes rt_core writes */
+  size_t size = ((struct rt_raster_serialized_t *) serialized)->size;
+  Raster *result = palloc(size);
+  memcpy(result, serialized, size);
+  rtdealloc(serialized);
   /* The serialized form opens with its own length, which is where the varlena
    * header stands, and rt_core writes that length as a plain number. A reader
    * that takes it as a varlena header -- which is every reader on the
    * PostgreSQL side -- needs it encoded as one, so it is stamped here, where
    * the form is produced, rather than by each caller. Without it a raster this
    * function answers reads as a band of no width and no height. */
-  SET_VARSIZE(result, ((struct rt_raster_serialized_t *) result)->size);
+  SET_VARSIZE(result, size);
   return result;
 }
 
