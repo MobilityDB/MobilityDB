@@ -61,7 +61,7 @@ tpcpatch_transform_tnpoints(const Temporal *temp, int *count)
   TInstant **result = palloc(sizeof(TInstant *) * n);
   for (int i = 0; i < n; i++)
   {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
+    const TInstant *inst = temporal_inst_n(temp, i + 1);
     const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(
       tinstant_value_p(inst));
     int32 npts = pcpatch_npoints(pa);
@@ -85,7 +85,7 @@ tpcpatch_transform_tdensity(const Temporal *temp, int *count)
   TInstant **result = palloc(sizeof(TInstant *) * n);
   for (int i = 0; i < n; i++)
   {
-    const TInstant *inst = temporal_instant_n(temp, i + 1);
+    const TInstant *inst = temporal_inst_n(temp, i + 1);
     const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(
       tinstant_value_p(inst));
     double xrange = pa->bounds[1] - pa->bounds[0];
