@@ -522,6 +522,9 @@ meos_pc_schema_clear(void)
   {
     for (int i = 0; i < cache_count; i++)
     {
+      /* The cache owns the schemas it stores, as cache_expire frees them */
+      if (cache_buf[i].schema)
+        pc_schema_free(cache_buf[i].schema);
       if (cache_buf[i].xml_text)
         pfree(cache_buf[i].xml_text);
     }
