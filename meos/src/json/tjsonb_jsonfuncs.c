@@ -1008,6 +1008,15 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
   k.val.string.len = strlen(key);
   k.val.string.val = (char *) key;
   v = findJsonbValueFromContainer(&((Jsonb *) jb)->root, JB_FOBJECT, &k);
+  /* The value found points into the container, so a copy of it outlives the
+   * allocation the lookup returns */
+  JsonbValue found;
+  if (v)
+  {
+    found = *v;
+    pfree(v);
+    v = &found;
+  }
 
   /* If value is NULL */
   if (! v)
