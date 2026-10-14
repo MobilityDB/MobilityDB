@@ -2680,6 +2680,430 @@ div_raster_raster(const Raster *rast1, const Raster *rast2)
 
 
 /*****************************************************************************
+ * Terrain functions
+ *****************************************************************************/
+
+/**
+ * @brief Callback of rt_raster_iterator computing a pixel
+ */
+typedef int (*RasterPixelFn)(rt_iterator_arg arg, void *userarg,
+  double *value, int *nodata);
+
+/**
+ * @brief Units of a slope
+ */
+typedef enum
+{
+  SLOPE_DEGREES,
+  SLOPE_RADIANS,
+  SLOPE_PERCENT,
+} SlopeUnits;
+
+/**
+ * @brief Arguments of the callback computing the slope of a pixel
+ */
+typedef struct
+{
+  double pixwidth;    /**< Width of a pixel in the units of the raster */
+  double pixheight;   /**< Height of a pixel in the units of the raster */
+  double scale;       /**< Ratio of the vertical units to the horizontal ones */
+  SlopeUnits units;   /**< Units of the result */
+} RasterSlopeArg;
+
+/**
+ * @brief Read the 3x3 window of a pixel for a terrain function
+ * @details The window of PostGIS's `_st_slope4ma`, `_st_tri4ma` and
+ * `_st_tpi4ma`: a neighbour that is nodata, or that lies outside the raster,
+ * takes the value of the center pixel, so an edge pixel has a value
+ * @param[in] arg Neighbourhood the iterator reads, of one raster
+ * @param[out] z Values of the window, row by row from the north
+ * @return False where the center pixel is nodata, and the result with it
+ */
+static bool
+raster_terrain_window(rt_iterator_arg arg, double z[3][3])
+{
+  if (arg->nodata[0][1][1])
+    return false;
+  double center = arg->values[0][1][1];
+  for (int row = 0; row < 3; row++)
+    for (int col = 0; col < 3; col++)
+      z[row][col] = arg->nodata[0][row][col] ? center :
+        arg->values[0][row][col];
+  return true;
+}
+
+/**
+ * @brief Compute the slope of a pixel
+ * @details The formula of PostGIS's `_st_slope4ma`: the gradients are Horn's,
+ * the rows weighted 1, 2, 1 across the pixel height and the columns across its
+ * width, and the slope is their norm divided by 8 and by the scale. PostGIS
+ * compares the upper case units to `'rad'`, so its radians answer degrees;
+ * here they answer radians
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+raster_slope_callback(rt_iterator_arg arg, void *userarg, double *value,
+  int *nodata)
+{
+  const RasterSlopeArg *args = (const RasterSlopeArg *) userarg;
+  double z[3][3];
+  *value = 0.0;
+  if (! raster_terrain_window(arg, z))
+  {
+    *nodata = 1;
+    return 1;
+  }
+  double dz_dy = ((z[2][0] + 2.0 * z[2][1] + z[2][2]) -
+    (z[0][0] + 2.0 * z[0][1] + z[0][2])) / args->pixheight;
+  double dz_dx = ((z[0][2] + 2.0 * z[1][2] + z[2][2]) -
+    (z[0][0] + 2.0 * z[1][0] + z[2][0])) / args->pixwidth;
+  double slope = sqrt(dz_dx * dz_dx + dz_dy * dz_dy) / (8.0 * args->scale);
+  switch (args->units)
+  {
+    case SLOPE_PERCENT:
+      *value = 100.0 * slope;
+      break;
+    case SLOPE_RADIANS:
+      *value = atan(slope);
+      break;
+    default: /* SLOPE_DEGREES */
+      *value = atan(slope) * 180.0 / M_PI;
+  }
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Compute the topographic position index of a pixel
+ * @details The formula of PostGIS's `_st_tpi4ma`: the value of the pixel
+ * minus the mean of its eight neighbours
+ */
+static int
+raster_tpi_callback(rt_iterator_arg arg,
+  void *userarg __attribute__((unused)), double *value, int *nodata)
+{
+  double z[3][3];
+  *value = 0.0;
+  if (! raster_terrain_window(arg, z))
+  {
+    *nodata = 1;
+    return 1;
+  }
+  double sum = 0.0;
+  for (int row = 0; row < 3; row++)
+    for (int col = 0; col < 3; col++)
+      if (row != 1 || col != 1)
+        sum += z[row][col];
+  *value = z[1][1] - sum / 8.0;
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Compute the terrain ruggedness index of a pixel
+ * @details The formula of PostGIS's `_st_tri4ma`: the mean of the absolute
+ * differences between the pixel and its eight neighbours
+ */
+static int
+raster_tri_callback(rt_iterator_arg arg,
+  void *userarg __attribute__((unused)), double *value, int *nodata)
+{
+  double z[3][3];
+  *value = 0.0;
+  if (! raster_terrain_window(arg, z))
+  {
+    *nodata = 1;
+    return 1;
+  }
+  double sum = 0.0;
+  for (int row = 0; row < 3; row++)
+    for (int col = 0; col < 3; col++)
+      if (row != 1 || col != 1)
+        sum += fabs(z[row][col] - z[1][1]);
+  *value = sum / 8.0;
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Interpolate a nodata pixel from its neighbours
+ * @details The formula of PostGIS's `st_invdistweight4ma` with the arguments
+ * its terrain functions pass, a power of 1 and no weight for the center
+ * pixel: a pixel with a value keeps it, and a nodata pixel takes the mean of
+ * the neighbours with a value, each weighted by the inverse of its distance to
+ * the pixel, or stays nodata where none has one
+ */
+static int
+raster_idw_callback(rt_iterator_arg arg,
+  void *userarg __attribute__((unused)), double *value, int *nodata)
+{
+  *value = 0.0;
+  if (! arg->nodata[0][1][1])
+  {
+    *value = arg->values[0][1][1];
+    *nodata = 0;
+    return 1;
+  }
+  double sum = 0.0, weights = 0.0;
+  for (int row = 0; row < 3; row++)
+  {
+    for (int col = 0; col < 3; col++)
+    {
+      if ((row == 1 && col == 1) || arg->nodata[0][row][col])
+        continue;
+      double weight = 1.0 / hypot((double) (col - 1), (double) (row - 1));
+      sum += weight * arg->values[0][row][col];
+      weights += weight;
+    }
+  }
+  if (weights == 0.0)
+  {
+    *nodata = 1;
+    return 1;
+  }
+  *value = sum / weights;
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Return a terrain function of a raster band, pixel by pixel
+ * @details The terrain functions of PostGIS, `ST_Slope`, `ST_TRI` and
+ * `ST_TPI`, read each pixel with its eight neighbours through
+ * `rt_raster_iterator`, as #raster_arithop reads one pixel. Where nodata
+ * pixels are interpolated, the band is first read by #raster_idw_callback, as
+ * PostGIS reads it by `st_invdistweight4ma`, and the terrain function then
+ * reads the interpolated band. The result keeps the nodata value of the band
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] customextent Raster whose extent the result takes, or NULL for
+ * the extent of @p rast
+ * @param[in] pixeltype Name of the pixel type of the result
+ * @param[in] interpolate_nodata True to interpolate the nodata pixels first
+ * @param[in] callback Terrain function of a pixel
+ * @param[in] userarg Arguments of @p callback
+ * @errval NULL
+ */
+static Raster *
+raster_terrain(const Raster *rast, int band, const Raster *customextent,
+  const char *pixeltype, bool interpolate_nodata, RasterPixelFn callback,
+  void *userarg)
+{
+  rt_pixtype pixtype = rt_pixtype_index_from_name(pixeltype);
+  if (pixtype == PT_END)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown pixel type: %s", pixeltype);
+    return NULL;
+  }
+
+  /* The bands are read, so the rasters are deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+  int32_t srid = (int32_t) rt_raster_get_srid(raster);
+
+  rt_raster extent = NULL;
+  if (customextent)
+  {
+    /* Only the extent is read, so the header suffices */
+    extent = raster_header(customextent);
+    const char *reason = NULL;
+    if (! extent)
+    {
+      raster_destroy(raster);
+      return NULL;
+    }
+    if (! ensure_same_srid(srid, (int32_t) rt_raster_get_srid(extent)) ||
+        ! raster_same_alignment(raster, extent, &reason))
+    {
+      rt_raster_destroy(extent); raster_destroy(raster);
+      if (reason)
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", reason);
+      return NULL;
+    }
+  }
+
+  /* The result states a nodata value where the band does */
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  int hasnodata = rtband ? rt_band_get_hasnodata_flag(rtband) : 0;
+  double nodataval = 0.0;
+  if (hasnodata)
+    rt_band_get_nodata(rtband, &nodataval);
+
+  struct rt_iterator_t itrset[1];
+  itrset[0].raster = raster;
+  itrset[0].nband = (uint16_t) (band - 1);
+  itrset[0].nbnodata = 1;
+
+  rt_raster interpolated = NULL;
+  if (interpolate_nodata)
+  {
+    if (rt_raster_iterator(itrset, 1, ET_FIRST, NULL, pixtype,
+        (uint8_t) hasnodata, nodataval, 1, 1, NULL, NULL,
+        raster_idw_callback, &interpolated) != ES_NONE || ! interpolated)
+    {
+      if (extent) rt_raster_destroy(extent);
+      raster_destroy(raster);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not interpolate the nodata pixels of band %d", band);
+      return NULL;
+    }
+    itrset[0].raster = interpolated;
+    itrset[0].nband = 0;
+  }
+
+  rt_raster result = NULL;
+  rt_errorstate status = rt_raster_iterator(itrset, 1,
+    extent ? ET_CUSTOM : ET_FIRST, extent, pixtype, (uint8_t) hasnodata,
+    nodataval, 1, 1, NULL, userarg, callback, &result);
+  if (interpolated) raster_destroy(interpolated);
+  if (extent) rt_raster_destroy(extent);
+  raster_destroy(raster);
+  if (status != ES_NONE || ! result)
+  {
+    if (result) raster_destroy(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute band %d of the result", band);
+    return NULL;
+  }
+  rt_raster_set_srid(result, srid);
+  return raster_serialize_destroy(result);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the slope of a raster band, pixel by pixel
+ * @details The slope of PostGIS's `ST_Slope`, from the gradients of each pixel
+ * and its eight neighbours, in degrees, radians or percent. The units are read
+ * as PostGIS reads them, by their first three letters regardless of case,
+ * and units it does not know raise an error
+ * @param[in] rast Raster of elevations
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] customextent Raster whose extent the result takes, or NULL for
+ * the extent of @p rast
+ * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
+ * @param[in] units Units of the result: `DEGREES`, `RADIANS` or `PERCENT`
+ * @param[in] scale Ratio of the vertical units to the horizontal ones, such as
+ * 111120 for elevations in meters over a grid in degrees
+ * @param[in] interpolate_nodata True to interpolate the nodata pixels first
+ * @errval NULL
+ * @csqlfn #Raster_slope(), #Raster_slope_extent()
+ */
+Raster *
+raster_slope(const Raster *rast, int band, const Raster *customextent,
+  const char *pixeltype, const char *units, double scale,
+  bool interpolate_nodata)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
+  VALIDATE_NOT_NULL(units, NULL);
+  if (scale == 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The scale of a slope cannot be zero");
+    return NULL;
+  }
+
+  /* PostGIS reads the first three letters of the units after any leading
+   * space */
+  const char *start = units;
+  while (*start == ' ')
+    start++;
+  char prefix[4] = {0};
+  for (int i = 0; i < 3 && start[i]; i++)
+    prefix[i] = (char) toupper((unsigned char) start[i]);
+  RasterSlopeArg args;
+  if (strcmp(prefix, "DEG") == 0)
+    args.units = SLOPE_DEGREES;
+  else if (strcmp(prefix, "RAD") == 0)
+    args.units = SLOPE_RADIANS;
+  else if (strcmp(prefix, "PER") == 0)
+    args.units = SLOPE_PERCENT;
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown units of a slope: %s", units);
+    return NULL;
+  }
+
+  /* The width and the height of a pixel are those of PostGIS's ST_PixelWidth
+   * and ST_PixelHeight, which a skew lengthens */
+  rt_raster header = raster_header(rast);
+  if (! header)
+    return NULL;
+  args.pixwidth = hypot(rt_raster_get_x_scale(header),
+    rt_raster_get_y_skew(header));
+  args.pixheight = hypot(rt_raster_get_y_scale(header),
+    rt_raster_get_x_skew(header));
+  rt_raster_destroy(header);
+  args.scale = scale;
+
+  return raster_terrain(rast, band, customextent, pixeltype,
+    interpolate_nodata, raster_slope_callback, &args);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the terrain ruggedness index of a raster band, pixel by pixel
+ * @details The index of PostGIS's `ST_TRI`: the mean of the absolute
+ * differences between a pixel and its eight neighbours
+ * @param[in] rast Raster of elevations
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] customextent Raster whose extent the result takes, or NULL for
+ * the extent of @p rast
+ * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
+ * @param[in] interpolate_nodata True to interpolate the nodata pixels first
+ * @errval NULL
+ * @csqlfn #Raster_tri(), #Raster_tri_extent()
+ */
+Raster *
+raster_tri(const Raster *rast, int band, const Raster *customextent,
+  const char *pixeltype, bool interpolate_nodata)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
+  return raster_terrain(rast, band, customextent, pixeltype,
+    interpolate_nodata, raster_tri_callback, NULL);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the topographic position index of a raster band
+ * @details The index of PostGIS's `ST_TPI`: the value of a pixel minus the
+ * mean of its eight neighbours
+ * @param[in] rast Raster of elevations
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] customextent Raster whose extent the result takes, or NULL for
+ * the extent of @p rast
+ * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
+ * @param[in] interpolate_nodata True to interpolate the nodata pixels first
+ * @errval NULL
+ * @csqlfn #Raster_tpi(), #Raster_tpi_extent()
+ */
+Raster *
+raster_tpi(const Raster *rast, int band, const Raster *customextent,
+  const char *pixeltype, bool interpolate_nodata)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
+  return raster_terrain(rast, band, customextent, pixeltype,
+    interpolate_nodata, raster_tpi_callback, NULL);
+}
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
