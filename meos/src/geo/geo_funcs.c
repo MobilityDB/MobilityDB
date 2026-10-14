@@ -3368,6 +3368,58 @@ point_motion_dwithin_exact(const double *p0, const double *p1, int64 s0,
 }
 
 /**
+ * @brief Return the least distance of two points moving linearly over the
+ * interval [ta, tb], computed in doubles
+ * @details An estimate, not the nearest double of the exact value: it only
+ * chooses the bound #point_motion_nad_exceeds tests the intervals against, so
+ * that #point_motion_nad_exact runs on the few intervals that may hold the
+ * least distance. Its error decides no answer.
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
+ */
+double
+point_motion_nad_approx(const double *p0, const double *p1, int64 s0,
+  int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
+  int64 tb)
+{
+  double dp = (double) (s1 - s0), dq = (double) (r1 - r0);
+  double la = (double) (ta - s0) / dp, lb = (double) (tb - s0) / dp;
+  double ma = (double) (ta - r0) / dq, mb = (double) (tb - r0) / dq;
+  double A[2], B[2];
+  for (int c = 0; c < 2; c++)
+  {
+    double up = p1[c] - p0[c], uq = q1[c] - q0[c];
+    A[c] = (p0[c] + up * la) - (q0[c] + uq * ma);
+    B[c] = ((p0[c] + up * lb) - (q0[c] + uq * mb)) - A[c];
+  }
+  double dlen = B[0] * B[0] + B[1] * B[1];
+  double g = - (A[0] * B[0] + A[1] * B[1]);
+  double f = (dlen > 0.0 && g > 0.0) ? ((g < dlen) ? g / dlen : 1.0) : 0.0;
+  return hypot(A[0] + f * B[0], A[1] + f * B[1]);
+}
+
+/**
+ * @brief Return true if the least distance of two points moving linearly
+ * over the interval [ta, tb] certainly exceeds a distance, false where it
+ * does not or doubles cannot decide (#point_motion_dwithin_filter)
+ * @param[in] p0,p1,s0,s1 Segment of the first point and its timestamps
+ * @param[in] q0,q1,r0,r1 Segment of the second point and its timestamps
+ * @param[in] ta,tb Interval, within both segments
+ * @param[in] d Distance, not negative
+ * @pre `s0 < s1`, `r0 < r1`, the interval within both segments, 2D points
+ */
+bool
+point_motion_nad_exceeds(const double *p0, const double *p1, int64 s0,
+  int64 s1, const double *q0, const double *q1, int64 r0, int64 r1, int64 ta,
+  int64 tb, double d)
+{
+  return point_motion_dwithin_filter(p0, p1, s0, s1, q0, q1, r0, r1, ta, tb,
+    d, true) == 0;
+}
+
+/**
  * @brief Return the sign of the squared distance of a point to the line of a
  * segment, times the squared length of the segment, less the square of
  * `r + c + g/2` times that squared length, computed exactly for any finite
