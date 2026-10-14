@@ -72,6 +72,10 @@
  * @defgroup meos_raster_base_comp Comparison functions
  * @ingroup meos_raster_base
  * @brief Comparison functions for static rasters
+ *
+ * @defgroup meos_raster_base_agg Aggregate functions
+ * @ingroup meos_raster_base
+ * @brief Aggregate functions for static rasters
  */
 
 /*****************************************************************************/

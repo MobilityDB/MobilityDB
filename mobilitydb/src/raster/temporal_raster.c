@@ -2194,6 +2194,182 @@ Raster_tpi_extent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: alignment
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_same_alignment(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_same_alignment);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if two rasters lie on the same grid
+ * @details The two rasters are read as #Add_raster_raster reads them
+ * @sqlfn sameAlignment()
+ */
+Datum
+Raster_same_alignment(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  bool result = raster_same_alignment(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raster_not_same_alignment_reason(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_not_same_alignment_reason);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return why two rasters do not lie on the same grid
+ * @details The text is returned as #Raster_band_pixel_type returns the name
+ * of a pixel type
+ * @sqlfn notSameAlignmentReason()
+ */
+Datum
+Raster_not_same_alignment_reason(PG_FUNCTION_ARGS)
+{
+  Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  char *reason = raster_not_same_alignment_reason(rast1, rast2);
+  PG_FREE_IF_COPY(rast1, 0);
+  PG_FREE_IF_COPY(rast2, 1);
+  if (! reason)
+    PG_RETURN_NULL();
+  text *result = cstring_to_text(reason);
+  pfree(reason);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Raster_same_alignment_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_same_alignment_transfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Transition function of the aggregate testing whether rasters lie on
+ * the same grid
+ * @details The state lives in the aggregate context, as #Set_union_transfn
+ * keeps its own
+ * @sqlfn raster_same_alignment_transfn()
+ * @sqlaggfn sameAlignmentAgg()
+ */
+Datum
+Raster_same_alignment_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_same_alignment_transfn called in non-aggregate context");
+  RasterAlignState *state = PG_ARGISNULL(0) ? NULL :
+    (RasterAlignState *) PG_GETARG_POINTER(0);
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = raster_same_alignment_transfn(state, rast);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Raster_same_alignment_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_same_alignment_combinefn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Combine function of the aggregate testing whether rasters lie on the
+ * same grid
+ * @details The states are combined as #Set_union_combinefn combines its own
+ * @sqlfn raster_same_alignment_combinefn()
+ * @sqlaggfn sameAlignmentAgg()
+ */
+Datum
+Raster_same_alignment_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR,
+      "Raster_same_alignment_combinefn called in non-aggregate context");
+  RasterAlignState *state1 = PG_ARGISNULL(0) ? NULL :
+    (RasterAlignState *) PG_GETARG_POINTER(0);
+  RasterAlignState *state2 = PG_ARGISNULL(1) ? NULL :
+    (RasterAlignState *) PG_GETARG_POINTER(1);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterAlignState *result = raster_same_alignment_combinefn(state1, state2);
+  MemoryContextSwitchTo(oldctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_same_alignment_finalfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_same_alignment_finalfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Final function of the aggregate testing whether rasters lie on the
+ * same grid
+ * @details An aggregate over no raster answers NULL, as for PostGIS
+ * @sqlfn raster_same_alignment_finalfn()
+ * @sqlaggfn sameAlignmentAgg()
+ */
+Datum
+Raster_same_alignment_finalfn(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  RasterAlignState *state = (RasterAlignState *) PG_GETARG_POINTER(0);
+  PG_RETURN_BOOL(raster_same_alignment_finalfn(state));
+}
+
+PGDLLEXPORT Datum Rasteralignstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasteralignstate_serialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Serialize the state of the aggregate testing whether rasters lie on
+ * the same grid
+ * @details The bytes are wrapped as #Setstate_serialize wraps its own
+ * @sqlfn rasteralignstate_serialize()
+ * @sqlaggfn sameAlignmentAgg()
+ */
+Datum
+Rasteralignstate_serialize(PG_FUNCTION_ARGS)
+{
+  RasterAlignState *state = (RasterAlignState *) PG_GETARG_POINTER(0);
+  size_t size;
+  uint8_t *bytes = rasteralignstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Rasteralignstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasteralignstate_deserialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Deserialize the state of the aggregate testing whether rasters lie
+ * on the same grid
+ * @details The state is built in the aggregate context, as
+ * #Setstate_deserialize builds its own
+ * @sqlfn rasteralignstate_deserialize()
+ * @sqlaggfn sameAlignmentAgg()
+ */
+Datum
+Rasteralignstate_deserialize(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR,
+      "Rasteralignstate_deserialize called in non-aggregate context");
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterAlignState *result = rasteralignstate_deserialize(
+    (uint8_t *) VARDATA(data), VARSIZE(data) - VARHDRSZ);
+  MemoryContextSwitchTo(oldctx);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Raster type: value count
  *****************************************************************************/
 

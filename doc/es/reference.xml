@@ -3428,6 +3428,12 @@
 					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname>, <varname>sameAlignmentAgg</varname></link>: Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Devuelve por qué dos rásteres no están sobre la misma rejilla</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				</listitem>
 				<listitem>
