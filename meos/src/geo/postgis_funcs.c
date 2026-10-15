@@ -3713,8 +3713,14 @@ geo_union_parts(GSERIALIZED **parts, int nparts, int32_t srid)
 {
   GSERIALIZED *result;
   if (nparts == 0)
-    result = geo_serialize((LWGEOM *) lwcollection_construct_empty(
+  {
+    /* Serializing copies, so the geometry built to be serialized is this
+     * function's to release, as in clip_empty_areal */
+    LWGEOM *empty = lwcollection_as_lwgeom(lwcollection_construct_empty(
       COLLECTIONTYPE, srid, 0, 0));
+    result = geo_serialize(empty);
+    lwgeom_free(empty);
+  }
   else if (nparts == 1)
     result = geo_copy(parts[0]);
   else
