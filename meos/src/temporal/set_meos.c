@@ -243,7 +243,7 @@ intset_make(const int *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -264,7 +264,7 @@ bigintset_make(const int64 *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -285,7 +285,7 @@ floatset_make(const double *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -306,7 +306,7 @@ textset_make(text **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -327,7 +327,7 @@ dateset_make(const DateADT *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -348,7 +348,7 @@ tstzset_make(const TimestampTz *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);

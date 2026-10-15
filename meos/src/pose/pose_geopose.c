@@ -2312,7 +2312,7 @@ char *
 tposechainarr_as_geopose(const Temporal **temparr, int count, int precision)
 {
   VALIDATE_NOT_NULL(temparr, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   /* A graph carries one valid time, so every chain is read at one instant and

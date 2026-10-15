@@ -1198,7 +1198,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(instants, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);

@@ -116,7 +116,7 @@ jsonbset_make(const Jsonb **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);

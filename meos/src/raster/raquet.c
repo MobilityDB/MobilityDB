@@ -1041,7 +1041,7 @@ raster_tile_value_array(const Temporal *traj, const Raquet **rqarr, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   /* The tiles answer from the finest zoom down, the array order breaking a

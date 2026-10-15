@@ -118,24 +118,6 @@ store_fcinfo(FunctionCallInfo fcinfo)
 }
 
 /*****************************************************************************
- * Parameter tests
- *****************************************************************************/
-
-/**
- * @brief Ensure that the array is not empty
- * @note Used for the constructor functions
- */
-bool
-ensure_not_empty_array(ArrayType *array)
-{
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) > 0)
-    return true;
-  ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-    errmsg("The input array cannot be empty")));
-  return false;
-}
-
-/*****************************************************************************
  * Typmod functions
  *****************************************************************************/
 
@@ -431,7 +413,6 @@ Datum
 Tsequence_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
@@ -461,7 +442,6 @@ Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temparr_extract(array, &count);
   TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
@@ -486,7 +466,6 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
   MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
@@ -1942,7 +1921,6 @@ Datum
 Temporal_merge_array(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temparr_extract(array, &count);
   Temporal *result = temporal_merge_array(temparr, count);

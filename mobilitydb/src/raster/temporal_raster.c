@@ -1463,7 +1463,6 @@ Raster_tile_value_array(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-  ensure_not_empty_array(array);
   int count;
   Raquet **rqarr = raquetarr_extract(array, &count);
   Temporal *result = raster_tile_value_array(traj, (const Raquet **) rqarr,

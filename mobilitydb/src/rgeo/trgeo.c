@@ -299,9 +299,9 @@ Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
     lower_inc = PG_GETARG_BOOL(2);
   if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
     upper_inc = PG_GETARG_BOOL(3);
-  ensure_not_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
+  ensure_not_empty_array(count);
   Temporal *result = (Temporal *) trgeometryseq_make(trgeoinst_geom_p(instants[0]),
     instants, count, lower_inc, upper_inc, interp,
     NORMALIZE);
@@ -322,9 +322,9 @@ Datum
 Trgeometry_seqset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temparr_extract(array, &count);
+  ensure_not_empty_array(count);
   Temporal *result = (Temporal *) trgeometryseqset_make(
     trgeoseq_geom_p(sequences[0]), sequences, count, NORMALIZE);
   pfree(sequences);
@@ -348,7 +348,6 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
   MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
@@ -370,6 +369,7 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
   /* Extract the array of instants */
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
+  ensure_not_empty_array(count);
   TSequenceSet *result = trgeometryseqset_make_gaps(trgeoinst_geom_p(instants[0]),
     instants, count, interp, maxt, maxdist);
   pfree(instants);
