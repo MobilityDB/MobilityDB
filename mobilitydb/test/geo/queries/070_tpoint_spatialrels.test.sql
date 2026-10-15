@@ -275,6 +275,12 @@ SELECT eIntersects(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, P
 -- quantifier: the two never meet, so they are always disjoint
 SELECT aDisjoint(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02], [Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '{[Point(0 5)@2001-01-04, Point(1 5)@2001-01-07]}');
 SELECT eIntersects(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02], [Point(0 0)@2001-01-05, Point(1 0)@2001-01-06]}', tgeompoint '{[Point(0 5)@2001-01-04, Point(1 5)@2001-01-07]}');
+-- Two discrete values that meet at their second common instant only, and stay apart at their
+-- third: every common instant is read
+SELECT eIntersects(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}');
+SELECT eDwithin(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}', 1);
+SELECT aDisjoint(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}');
+SELECT aDwithin(tgeompoint '{Point(0 0)@2001-01-01, Point(9 9)@2001-01-02}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 1);
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2001-01-01');

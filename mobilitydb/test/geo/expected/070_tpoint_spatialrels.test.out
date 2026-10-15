@@ -943,6 +943,30 @@ SELECT eIntersects(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02], 
  f
 (1 row)
 
+SELECT eIntersects(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDwithin(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}', 1);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT aDisjoint(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}');
+ adisjoint 
+-----------
+ f
+(1 row)
+
+SELECT aDwithin(tgeompoint '{Point(0 0)@2001-01-01, Point(9 9)@2001-01-02}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 1);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2001-01-01');
  eintersects 
 -------------
