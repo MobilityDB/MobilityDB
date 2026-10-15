@@ -2724,7 +2724,10 @@ eafunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
         return 1;
       else if (! lfinfo->ever && ! res)
         return 0;
-      i++;
+      /* Both values move on to their next instant, as #tfunc_tdiscseq_tdiscseq
+       * does, so that every common instant is read */
+      inst1 = TSEQUENCE_INST_N(seq1, ++i);
+      inst2 = TSEQUENCE_INST_N(seq2, ++j);
     }
     else if (cmp < 0)
       inst1 = TSEQUENCE_INST_N(seq1, ++i);
