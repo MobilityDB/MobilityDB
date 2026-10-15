@@ -2193,6 +2193,52 @@ Raster_tpi_extent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: statistics over a neighbourhood
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_map_algebra(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_map_algebra);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a statistic of the neighbourhood of each pixel of a band
+ * @sqlfn mapAlgebra()
+ */
+Datum
+Raster_map_algebra(PG_FUNCTION_ARGS)
+{
+  /* The function is not STRICT, so that a pixel type and a custom extent
+   * left NULL reach MEOS, as for PostGIS, as #Raster_slope_extent lets a
+   * custom extent through; every other argument is tested */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2) ||
+      PG_ARGISNULL(6) || PG_ARGISNULL(7))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  char *stat = text_to_cstring(PG_GETARG_TEXT_P(2));
+  char *pixeltype = PG_ARGISNULL(3) ? NULL :
+    text_to_cstring(PG_GETARG_TEXT_P(3));
+  char *extenttype = PG_ARGISNULL(4) ? NULL :
+    text_to_cstring(PG_GETARG_TEXT_P(4));
+  Raster *extent = PG_ARGISNULL(5) ? NULL :
+    (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(5));
+  int32 distancex = PG_GETARG_INT32(6);
+  int32 distancey = PG_GETARG_INT32(7);
+  Raster *result = raster_map_algebra(rast, band, stat, pixeltype, extenttype,
+    extent, distancex, distancey);
+  pfree(stat);
+  if (pixeltype)
+    pfree(pixeltype);
+  if (extenttype)
+    pfree(extenttype);
+  PG_FREE_IF_COPY(rast, 0);
+  if (extent)
+    PG_FREE_IF_COPY(extent, 5);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Raster type: alignment
  *****************************************************************************/
 

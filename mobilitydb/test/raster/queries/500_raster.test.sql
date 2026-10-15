@@ -2189,6 +2189,113 @@ SELECT tpi(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
   ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
 
 -------------------------------------------------------------------------------
+-- Statistics over a neighbourhood
+-------------------------------------------------------------------------------
+
+-- The mean of the 3x3 neighbourhood of each pixel, whose nodata pixels and
+-- those outside the raster are skipped.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_DumpValues(mapAlgebra(r, 1, 'MEAN', '64BF', distancex => 1,
+  distancey => 1), 1)::numeric(20,6)[] AS mean
+FROM dem;
+
+-- Every statistic, over every neighbourhood up to 2 pixels on each side, is
+-- the raster PostGIS answers by ST_MapAlgebra with its 4ma callback, byte for
+-- byte.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT stat, count(*) AS cases,
+  count(*) FILTER (WHERE ST_AsHexWKB(mapAlgebra(r, 1, stat, '64BF', 'FIRST',
+    NULL, dx, dy)) = ST_AsHexWKB(ST_MapAlgebra(r, 1,
+    ('st_' || lower(stat) || '4ma(double precision[], integer[], text[])')
+    ::regprocedure, '64BF', 'FIRST', NULL, dx, dy))) AS same
+FROM dem, unnest(ARRAY['MIN', 'MAX', 'SUM', 'MEAN', 'RANGE', 'STDDEV']) stat,
+  generate_series(0, 2) dx, generate_series(0, 2) dy
+GROUP BY stat ORDER BY stat;
+
+-- A neighbourhood whose distance is zero along one axis only is the pixel
+-- alone, as for PostGIS, which reads it through the same iterator; the sum of
+-- the nodata pixel is 0.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_DumpValues(mapAlgebra(r, 1, 'SUM', '64BF', distancex => 0,
+  distancey => 2), 1) AS sum
+FROM dem;
+
+-- A pixel type left NULL is the one of the band, every extent type but CUSTOM
+-- is the extent of the raster, and CUSTOM takes the grid of its extent.
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT ST_BandPixelType(mapAlgebra(r, 1, 'mean', distancex => 1,
+    distancey => 1), 1) AS pixeltype,
+  ST_MetaData(mapAlgebra(r, 1, 'MEAN', '64BF', 'union', NULL, 1, 1)) AS union,
+  ST_MetaData(mapAlgebra(r, 1, 'SUM', '64BF', 'CUSTOM',
+    ST_MakeEmptyRaster(2, 2, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857), 1, 1))
+    AS custom,
+  ST_DumpValues(mapAlgebra(r, 1, 'SUM', '64BF', 'CUSTOM',
+    ST_MakeEmptyRaster(2, 2, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857), 1, 1), 1)
+    AS custom_sum
+FROM dem;
+
+-- A band stating no nodata value lends its minimum value to the result.
+WITH plane AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[0, 1, 2], [0, 1, 2], [0, 1, 2]]::double precision[][]) AS r
+)
+SELECT ST_BandNoDataValue(mapAlgebra(r, 1, 'MAX', '64BF', distancex => 1,
+    distancey => 1), 1)::float4 AS nodata,
+  ST_DumpValues(mapAlgebra(r, 1, 'MAX', '64BF', distancex => 1,
+    distancey => 1), 1) AS max
+FROM plane;
+
+-- A statistic, an extent type, a pixel type or a band the raster does not
+-- have, a negative distance, CUSTOM without an extent and a custom extent on
+-- another grid are refused.
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'DISTINCT');
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'MEAN',
+  extenttype => 'BOGUS');
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'MEAN', '99XX');
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 2, 'MEAN');
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'MEAN',
+  distancex => -1);
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'MEAN',
+  extenttype => 'CUSTOM');
+SELECT mapAlgebra(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 1.0::float8, NULL::float8), 1, 'MEAN',
+  extenttype => 'CUSTOM',
+  customextent => ST_MakeEmptyRaster(2, 2, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0,
+  4326));
+
+-------------------------------------------------------------------------------
 -- Value count of rasters
 -------------------------------------------------------------------------------
 

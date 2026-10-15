@@ -974,6 +974,29 @@ CREATE FUNCTION tpi(rast raster, nband integer DEFAULT 1,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Statistics over a neighbourhood
+ *
+ * The focal statistics of PostGIS's ST_MapAlgebra with the callbacks
+ * st_min4ma, st_max4ma, st_sum4ma, st_mean4ma, st_range4ma and st_stddev4ma,
+ * under its name without ST_ and with its arguments and defaults, the
+ * callback named by its statistic, computed by MEOS.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a statistic of the neighbourhood of each pixel of a band
+ * @note Not STRICT: a pixel type and a custom extent left NULL are the pixel
+ * type of the band and no custom extent
+ */
+CREATE FUNCTION mapAlgebra(rast raster, nband integer, stat text,
+    pixeltype text DEFAULT NULL, extenttype text DEFAULT 'FIRST',
+    customextent raster DEFAULT NULL, distancex integer DEFAULT 0,
+    distancey integer DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_map_algebra'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/******************************************************************************
  * Value count of rasters
  *
  * The histogram of a band, in the six forms of PostGIS's ST_ValueCount and
