@@ -445,6 +445,14 @@ SELECT eDwithin(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
 SELECT eDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]',  geometry 'Linestring empty', 2);
 SELECT eDwithin(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}',  geometry 'Linestring empty', 2);
 
+-- A point whose distance to another exceeds the bound by less than half a unit in the last
+-- place, so that the distance rounds onto the bound: false at the bound, true at the next double
+SELECT eDwithin(tgeompoint 'Point(3521230.2205715757 3699095.11558644)@2001-01-01', geometry 'Point(3520706.499939835 3700978.1645263466)', 1954.522092531518);
+SELECT eDwithin(tgeompoint '[Point(3521230.2205715757 3699095.11558644)@2001-01-01, Point(3521230.2205715757 3699095.11558644)@2001-01-02]', geometry 'Point(3520706.499939835 3700978.1645263466)', 1954.522092531518);
+SELECT eDwithin(tgeompoint '[Point(3521230.2205715757 3699095.11558644)@2001-01-01, Point(3521230.2205715757 3699095.11558644)@2001-01-02]', geometry 'Point(3520706.499939835 3700978.1645263466)', 1954.5220925315182);
+SELECT aDwithin(tgeompoint '[Point(3521230.2205715757 3699095.11558644)@2001-01-01, Point(3521230.2205715757 3699095.11558644)@2001-01-02]', geometry 'Point(3520706.499939835 3700978.1645263466)', 1954.522092531518);
+SELECT aDwithin(tgeompoint '[Point(3521230.2205715757 3699095.11558644)@2001-01-01, Point(3521230.2205715757 3699095.11558644)@2001-01-02]', geometry 'Point(3520706.499939835 3700978.1645263466)', 1954.5220925315182);
+
 SELECT eDwithin(tgeompoint 'Point(1 1 1)@2001-01-01',  geometry 'Linestring(1 1 1,2 2 2)', 2);
 SELECT eDwithin(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}',  geometry 'Linestring(1 1 1,2 2 2)', 2);
 SELECT eDwithin(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]',  geometry 'Linestring(1 1 1,2 2 2)', 2);
