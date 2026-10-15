@@ -34,6 +34,6 @@ SELECT tDisjoint(th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-
   th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
                             tdisjoint                             
 ------------------------------------------------------------------
- {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 

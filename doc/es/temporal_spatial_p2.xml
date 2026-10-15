@@ -448,6 +448,33 @@ SELECT round(tDistance(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tgeo_geodetic">
+		<title>Cálculos planos y geodésicos</title>
+		<para>Las coordenadas de una geometría temporal (<varname>tgeometry</varname> o <varname>tgeompoint</varname>) se interpretan en el plano de su sistema de referencia espacial, y las de una geografía temporal (<varname>tgeography</varname> o <varname>tgeogpoint</varname>) como longitudes y latitudes sobre el elipsoide WGS 84. Qué operaciones admite una geografía temporal, y con qué exactitud, se deduce de tres reglas.</para>
+		<orderedlist>
+			<listitem>
+				<para>Una operación está disponible para las geografías cuando está definida sobre el elipsoide. Es el caso de las operaciones métricas, como la distancia, la distancia dentro de un umbral, la longitud, el área, el acimut o el centroide, que se calculan sobre el esferoide WGS 84, o sobre la esfera, más rápido, cuando su argumento <varname>spheroid</varname> es falso. Es también el caso de la intersección y de la disyunción, ya que dos geografías se intersecan cuando su distancia es cero. No es el caso de <varname>contains</varname>, <varname>covers</varname> y <varname>touches</varname>, que se definen mediante el modelo de nueve intersecciones extendido dimensionalmente de la topología plana, ni de las construcciones planas, como la unión o la intersección de dos geometrías, que PostGIS tampoco define para las geografías. Estas funciones producen un error para las geografías.</para>
+			</listitem>
+			<listitem>
+				<para>Las versiones alguna vez, siempre y temporal de una operación disponible para las geografías se calculan de forma exacta. El valor de una geografía temporal, y el de un punto geográfico temporal con interpolación discreta o escalonada, es constante entre dos instantes, por lo que la operación se evalúa en cada instante. Un punto geográfico temporal con interpolación lineal se desplaza a lo largo de un círculo máximo entre dos instantes, y el resultado de una relación temporal cambia en los instantes en que su distancia geodésica al otro argumento cruza la distancia dada. Estos instantes se calculan cuando el otro argumento es un punto geográfico o un punto geográfico temporal. Para otras geografías, como líneas y polígonos, las relaciones temporales <varname>tIntersects</varname>, <varname>tDisjoint</varname> y <varname>tDwithin</varname> de un punto geográfico temporal con interpolación lineal producen un error.</para>
+			</listitem>
+			<listitem>
+				<para>Una relación temporal disponible para las geografías acepta una geografía o una geografía temporal en cualquiera de sus argumentos, como su versión plana acepta una geometría o una geometría temporal.</para>
+			</listitem>
+		</orderedlist>
+		<para>Una geometría temporal en el SRID 4326 se convierte en una geografía temporal con los mismos valores mediante la conversión <varname>::tgeography</varname>, y a la inversa mediante la conversión <varname>::tgeometry</varname>. La función <varname>transform</varname> la reproyecta en cambio a un sistema de referencia espacial plano cuya unidad es el metro, en el que las distancias y las áreas son planas.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
+  4.40 50.84,4.40 50.88,4.35 50.84))@2001-01-01, Point(4.37 50.85)@2001-01-02]',
+  geometry 'SRID=4326;Point(4.45 50.84)')::numeric, 4);
+-- 0.0500
+SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
+  4.40 50.84,4.40 50.88,4.35 50.84))@2001-01-01, Point(4.37 50.85)@2001-01-02]'
+  ::tgeography, geography 'Point(4.45 50.84)')::numeric, 1);
+-- 3521.9
+</programlisting>
+	</sect1>
+
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Relaciones siempre y alguna vez</title>
 		<itemizedlist>
@@ -606,7 +633,7 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
 </programlisting>
-					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
+					<para>La función es la negación de <varname>tIntersects</varname>. Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
@@ -621,9 +648,9 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 					<para>Está a distancia de temporal &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
-tDwithin({geography,tgeogpoint},{geography,tgeogpoint},float,spheroid boolean=true) → tbool
+tDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → tbool
 </programlisting>
-					<para>Para puntos geográficos temporales, el otro argumento es un punto geográfico o un punto geográfico temporal. La distancia se mide en el esferoide WGS 84 por defecto. Si el último argumento es falso, se mide en la esfera. Un segmento de un punto geográfico temporal se desplaza a lo largo de un círculo máximo, y el resultado cambia de valor en cada instante en que la distancia geodésica cruza la distancia dada, que un segmento puede cruzar varias veces.</para>
+					<para>Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>: para un punto geográfico temporal con interpolación lineal, el otro argumento es un punto geográfico o un punto geográfico temporal. La distancia se mide en el esferoide WGS 84 por defecto. Si el último argumento es falso, se mide en la esfera. Un segmento de un punto geográfico temporal se desplaza a lo largo de un círculo máximo, y el resultado cambia de valor en cada instante en que la distancia geodésica cruza la distancia dada, que un segmento puede cruzar varias veces.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
@@ -639,6 +666,10 @@ SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
   tgeogpoint '[Point(1 1)@2001-01-01, Point(1 -1)@2001-01-03]', 20000, false);
 /* {[f@2001-01-01, t@2001-01-01 20:56:51.37512, t@2001-01-02 03:03:08.624879],
    (f@2001-01-02 03:03:08.624879, f@2001-01-03]} */
+SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]',
+  geography 'Point(1 1)', 200000);
+-- [t@2001-01-01, f@2001-01-02, t@2001-01-03]
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tIntersects">
@@ -647,7 +678,7 @@ SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
 </programlisting>
-					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
+					<para>Dos puntos temporales se intersecan en los instantes en que son iguales. Dos geometrías o geografías temporales, cuyos valores son constantes entre sus instantes, se intersecan en los instantes en que sus valores se intersecan, y dos geografías se intersecan donde su distancia es cero. Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
@@ -656,6 +687,13 @@ SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
 SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
+SELECT tIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Point(3 3)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
+-- [t@2001-01-01, f@2001-01-02]
+SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]',
+  geography 'Point(1 1)');
+-- [t@2001-01-01, f@2001-01-02, f@2001-01-03]
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tTouches">

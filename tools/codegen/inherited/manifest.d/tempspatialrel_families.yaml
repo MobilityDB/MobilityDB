@@ -43,11 +43,15 @@ tempspatialrel_families:
   # tgeo is the base of the delegation chain: h3/quadbin/pose/rgeo's SQL
   # cast-wrappers (templates/tempspatialrels.sql.tmpl) all convert their operand
   # to tgeometry and call these same tContains..tDwithin functions. Its predicate
-  # matrix is not uniform across directions (tContains/tCovers have no geodetic
-  # direction; tDisjoint/tIntersects add a tgeography/tgeography direction that
-  # aliases the temporal (in)equality operators; tDwithin's t-vs-geo direction is
-  # not strict), so each of those three predicates overrides the family-wide
-  # `directions` default that tCovers/tContains/tTouches reuse unchanged.
+  # matrix is not uniform across directions, so each of tDisjoint, tIntersects
+  # and tDwithin overrides the family-wide `directions` default that
+  # tCovers/tContains/tTouches reuse unchanged. The geodetic directions are
+  # those the ellipsoid defines: tDisjoint, tIntersects (dwithin at distance 0)
+  # and tDwithin, each with a geography on either side and between two
+  # temporal geographies, while tContains, tCovers and tTouches, which need the
+  # planar DE-9IM matrix, have none. A temporal geography has step
+  # interpolation, so each of them is answered exactly at every instant.
+  # tDwithin's tgeometry-vs-geometry direction is not strict.
   - family:  tgeo
     impl:    native
     file:    mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql
@@ -65,6 +69,8 @@ tempspatialrel_families:
           - {l: tgeometry, r: geometry}
           - {l: tgeometry, r: tgeometry,
              comment: "Alias for temporal not equals, that is, geo_tne or #<>"}
+          - {l: geography,  r: tgeography}
+          - {l: tgeography, r: geography}
           - {l: tgeography, r: tgeography}
       - name: tIntersects
         directions:
@@ -72,6 +78,8 @@ tempspatialrel_families:
           - {l: tgeometry, r: geometry}
           - {l: tgeometry, r: tgeometry,
              comment: "Alias for temporal equals, that is, tgeo_teq or #="}
+          - {l: geography,  r: tgeography}
+          - {l: tgeography, r: geography}
           - {l: tgeography, r: tgeography}
       - tTouches
       - name: tDwithin
@@ -80,6 +88,9 @@ tempspatialrel_families:
           - {l: tgeometry, r: geometry, strict: false,
              comment: "The function is not strict"}
           - {l: tgeometry, r: tgeometry}
+          - {l: geography,  r: tgeography, spheroid: true}
+          - {l: tgeography, r: geography,  spheroid: true}
+          - {l: tgeography, r: tgeography, spheroid: true}
 
   # tpoint (tgeompoint/tgeogpoint) shares the tgeo native C symbols (a point
   # temporalizes the same tgeo_* kernel — see _NATIVE_TSR_SUPERCLASS), but its

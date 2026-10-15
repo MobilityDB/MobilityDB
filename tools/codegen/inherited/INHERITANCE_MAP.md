@@ -258,7 +258,12 @@ declares.
 point and a geography, sets `spheroid: true`, and `tempspatialrels_native.sql.tmpl` then
 declares a final `spheroid boolean DEFAULT true` after the distance, as `eDwithin` of
 temporal geography points declares it. The `tpoint` family states its three geodetic
-directions this way.
+directions this way, and the `tgeo` family the three `tDwithin` directions of a temporal
+geography, with a geography on either side and between two temporal geographies. The `tgeo`
+family also declares `tDisjoint` and `tIntersects` between a temporal geography and a
+geography, in both orders, beside the direction between two temporal geographies: the
+relationships the ellipsoid defines, which a temporal geography, constant between its
+instants, answers exactly at each instant.
 
 **Box-type axis (`boxtypes:`)** — the C bounding-box dispatchers are per *box type*,
 not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
