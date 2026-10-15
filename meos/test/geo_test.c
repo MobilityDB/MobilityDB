@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_internal.h>
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_quadbin.h>
@@ -2643,8 +2644,13 @@ int main(void)
   SkipList *cs2 = tpoint_tcentroid_transfn(NULL, tp2);
   SkipList *csall = tpoint_tcentroid_transfn(NULL, tp);
   csall = tpoint_tcentroid_transfn(csall, tp2);
-  cs1 = tpoint_tcentroid_combinefn(cs1, cs2);
-  Temporal *ccomb = tpoint_tcentroid_finalfn(cs1);
+  SkipList *cscomb = tpoint_tcentroid_combinefn(cs1, cs2);
+  /* The combine answers the state it keeps, and the other is the caller's */
+  if (cs1 != cscomb)
+    skiplist_free(cs1);
+  if (cs2 != cscomb)
+    skiplist_free(cs2);
+  Temporal *ccomb = tpoint_tcentroid_finalfn(cscomb);
   Temporal *call = tpoint_tcentroid_finalfn(csall);
   assert(ccomb != NULL && call != NULL && temporal_eq(ccomb, call));
   assert(meos_errno() == 0);
