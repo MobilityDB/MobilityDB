@@ -430,6 +430,11 @@ SELECT tDwithin(tgeogpoint 'Point(1 0)@2001-01-01', geography 'Point(1 0.1)', 15
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0.5)', 15000);
 -- A segment between antipodal positions moves as the temporal point interpolates it
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(180 0)@2001-01-03]', geography 'Point(1 0.1)', 15000);
+-- At a distance of zero the point is where it is equal: on the equator it
+-- reaches Point(1 0) at 2001-01-02 and at no other instant
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0)', 0);
+SELECT tDwithin(geography 'Point(1 0)', tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 0);
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeogpoint '[Point(1 0)@2001-01-01, Point(1 0)@2001-01-03]', 0);
 /* Errors */
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Polygon((0 1,1 1,1 2,0 1))', 15000);
 

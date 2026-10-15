@@ -1506,6 +1506,24 @@ SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(180 0)@2001-01-03]', g
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 00:14:32.591061 2001 PST, t@Mon Jan 01 00:17:27.408938 2001 PST], (f@Mon Jan 01 00:17:27.408938 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0)', 0);
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDwithin(geography 'Point(1 0)', tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 0);
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeogpoint '[Point(1 0)@2001-01-01, Point(1 0)@2001-01-03]', 0);
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
 /* Errors */
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Polygon((0 1,1 1,1 2,0 1))', 15000);
 ERROR:  Only planar coordinates supported

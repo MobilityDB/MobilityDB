@@ -330,6 +330,28 @@ SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(0 0)', -1);
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(0 0 0)', -1);
 
 -------------------------------------------------------------------------------
+-- Regions: two temporal geometries or geographies intersect where their values
+-- intersect, not only where they are equal; geographies on the ellipsoid
+-------------------------------------------------------------------------------
+
+SELECT tIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT tDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT tIntersects(tgeometry '{Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Linestring(5 5,6 6)@2001-01-02}', tgeometry '{Linestring(1 -1,1 3)@2001-01-01, Point(0 0)@2001-01-02}');
+SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeography '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT tDisjoint(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeography '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
+
+SELECT tIntersects(geography 'Point(1 1)', tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]');
+SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]', geography 'Point(1 1)');
+SELECT tDisjoint(geography 'Point(1 1)', tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]');
+SELECT tDisjoint(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', geography 'Point(1 1)');
+SELECT tDwithin(geography 'Point(1 1)', tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]', 200000);
+SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02, Polygon((2 2,4 2,4 4,2 4,2 2))@2001-01-03]', geography 'Point(1 1)', 200000, false);
+SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', tgeography '[Point(1 3)@2001-01-01, Point(5 5)@2001-01-02]', 200000);
+
+/* Errors */
+SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Point(3 3)@2001-01-02]', geography 'SRID=4269;Point(1 1)');
+
+-------------------------------------------------------------------------------
 -- Set-set spatial join
 -------------------------------------------------------------------------------
 

@@ -523,7 +523,14 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
    * geodetic-capable tdwithin kernel. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
   {
-    Temporal *res = tdwithin_tgeo_geo(temp, gs, 0.0, true);
+    /* A temporal geography point meets a geography point exactly where it
+     * equals it, an instant the temporal equality finds on the great circle,
+     * whereas a distance of zero is a degenerate crossing of the geodetic
+     * distance */
+    Temporal *res = (tpoint_type(temp->temptype) &&
+        gserialized_get_type(gs) == POINTTYPE) ?
+      tcomp_temporal_base(temp, PointerGetDatum(gs), &datum2_eq) :
+      tdwithin_tgeo_geo(temp, gs, 0.0, true);
     if (! res || tinter)
       return res;
     Temporal *result = tnot_tbool(res);
@@ -573,9 +580,32 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2))
     return NULL;
-  return tinter ?
-    tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
-    tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+  /* Two temporal points intersect exactly where they are equal */
+  if (tpoint_type(temp1->temptype) && tpoint_type(temp2->temptype))
+    return tinter ?
+      tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
+      tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+  /* The values of two temporal geometries or geographies are constant
+   * between their instants, which have step or discrete interpolation, so
+   * they intersect at an instant where their values intersect: in the plane,
+   * by the intersection of the two geometries, and on the ellipsoid, where
+   * the distance of the two geographies is zero */
+  Temporal *res;
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    res = tdwithin_tgeo_tgeo(temp1, temp2, 0.0, true);
+  else
+  {
+    varfunc func = (MEOS_FLAGS_GET_Z(temp1->flags) &&
+      MEOS_FLAGS_GET_Z(temp2->flags)) ?
+      (varfunc) &datum_geom_intersects3d : (varfunc) &datum_geo_intersects2d;
+    res = tspatialrel_tspatial_tspatial(temp1, temp2, NULL, func, 0,
+      INVERT_NO);
+  }
+  if (! res || tinter)
+    return res;
+  Temporal *result = tnot_tbool(res);
+  pfree(res);
+  return result;
 }
 
 /*****************************************************************************
@@ -2101,10 +2131,12 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 
   /* A temporal geography point moving along great circles and a geography
    * point are within the distance between the crossings of their geodetic
-   * distance */
+   * distance; at a distance of zero they are where they are equal */
   if (tpoint_type(temp->temptype) && MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       temp->subtype != TINSTANT && MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    return tdwithin_tgeogpoint_geogpoint(temp, NULL, gs, dist, spheroid);
+    return (dist == 0.0) ?
+      tcomp_temporal_base(temp, PointerGetDatum(gs), &datum2_eq) :
+      tdwithin_tgeogpoint_geogpoint(temp, NULL, gs, dist, spheroid);
 
   /* For a temporal point against a non-point geometry, prefer the native
    * within engine when the temporal geometry point has linear interpolation,
@@ -2281,8 +2313,10 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
       sync1->subtype != TINSTANT && (MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
         MEOS_FLAGS_LINEAR_INTERP(sync2->flags)))
   {
-    Temporal *result = tdwithin_tgeogpoint_geogpoint(sync1, sync2, NULL, dist,
-      spheroid);
+    /* At a distance of zero they are where they are equal */
+    Temporal *result = (dist == 0.0) ?
+      tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
+      tdwithin_tgeogpoint_geogpoint(sync1, sync2, NULL, dist, spheroid);
     pfree(sync1); pfree(sync2);
     return result;
   }
