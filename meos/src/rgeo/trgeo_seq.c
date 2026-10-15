@@ -261,7 +261,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(instants, NULL);
-  if (! ensure_positive(count) ||
+  if (! ensure_not_empty_array(count) ||
       ! trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
           interp))
     return NULL;

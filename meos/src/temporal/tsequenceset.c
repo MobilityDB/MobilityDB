@@ -425,7 +425,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sequences, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
   return tsequenceset_make_exp(sequences, count, count, normalize);
 }
@@ -564,7 +564,7 @@ tsequenceset_make_gaps(TInstant **instants, int count, interpType interp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(instants, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   TSequence *seq;

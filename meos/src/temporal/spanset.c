@@ -338,6 +338,9 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
 /**
  * @ingroup meos_setspan_constructor
  * @brief Return a span set from an array of disjoint spans
+ * @details Raise an error when the spans are not increasing, two spans that
+ * share a bound both include counting as overlapping; adjacent spans are
+ * merged
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @csqlfn #Spanset_constructor()
@@ -347,9 +350,9 @@ spanset_make(Span *spans, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(spans, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
-  return spanset_make_exp(spans, count, count, true, true);
+  return spanset_make_exp(spans, count, count, NORMALIZE, ORDER_NO);
 }
 
 /**

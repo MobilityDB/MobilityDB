@@ -178,7 +178,6 @@ extern text *Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value,
 
 /* Parameter tests */
 
-extern bool ensure_not_empty_array(ArrayType *array);
 
 /* Comparison functions */
 
