@@ -1601,9 +1601,11 @@ int
 ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
+  /* Two discs may meet strictly between two instants at which they are apart,
+   * so the walk reads inside each segment where the gap between them reaches
+   * zero, which is the within-distance turning point at a zero distance */
   return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2,
-    &datum_cbuffer_intersects, NULL, 0.0, ever, true);
-
+    &datum_cbuffer_intersects, &tcbuffersegm_dwithin_turnpt, 0.0, ever, true);
 }
 
 /**
