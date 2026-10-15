@@ -2843,6 +2843,28 @@ SELECT ST_DumpValues(tpi(r, interpolate_nodata => true), 1) FROM dem;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_mapAlgebra">
+				<indexterm significance="normal"><primary><varname>mapAlgebra</varname></primary></indexterm>
+				<para>Devuelve una estadística del vecindario de cada píxel de una banda de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mapAlgebra(rast raster,nband integer,stat text,pixeltype text=NULL,
+  extenttype text='FIRST',customextent raster=NULL,distancex integer=0,
+  distancey integer=0) → raster
+</programlisting>
+				<para>Las estadísticas focales de <varname>ST_MapAlgebra</varname> de PostGIS con las funciones de retorno <varname>ST_Min4ma</varname>, <varname>ST_Max4ma</varname>, <varname>ST_Sum4ma</varname>, <varname>ST_Mean4ma</varname>, <varname>ST_Range4ma</varname> y <varname>ST_StdDev4ma</varname>, con sus argumentos y valores por defecto, la función de retorno nombrada por su estadística: <varname>MIN</varname>, <varname>MAX</varname>, <varname>SUM</varname>, <varname>MEAN</varname>, <varname>RANGE</varname> o <varname>STDDEV</varname>, sin distinguir mayúsculas de minúsculas, como <varname>ST_Union</varname> nombra sus operaciones. El vecindario de un píxel se extiende <varname>distancex</varname> píxeles al oeste y al este y <varname>distancey</varname> píxeles al norte y al sur; sus píxeles sin datos, y los que quedan fuera del ráster, se omiten. La suma de ningún píxel es 0, toda otra estadística de ningún píxel es sin datos, y la desviación estándar es la muestral. Como en PostGIS, un vecindario cuya distancia es cero solo a lo largo de un eje es el píxel solo. Un tipo de píxel dejado en NULL es el de la banda, y el resultado conserva el valor sin datos de la banda, o su valor mínimo cuando no indica ninguno. Todo tipo de extensión salvo <varname>CUSTOM</varname> es la extensión del ráster, y <varname>CUSTOM</varname> toma la grilla de <varname>customextent</varname>. Una estadística o un tipo de extensión fuera de estos produce un error, donde PostGIS lee un tipo de extensión desconocido como <varname>INTERSECTION</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+    [25, 35, 45, 55]]::double precision[][]) AS r )
+SELECT ST_DumpValues(mapAlgebra(r, 1, 'MEAN', '64BF', distancex => 1, distancey => 1), 1)
+FROM dem;
+-- {{17.5,20,32,38.333333333333336},{20,23.75,35,41},{25,29.375,40.625,47},
+--  {27.5,32.5,42.5,47.5}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_clip">
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>

@@ -3449,6 +3449,9 @@
 					<para><link linkend="raster_tpi"><varname>tpi</varname></link>: Devuelve el índice de posición topográfica de una banda de un ráster, píxel a píxel</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_mapAlgebra"><varname>mapAlgebra</varname></link>: Devuelve una estadística del vecindario de cada píxel de una banda de un ráster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
 				</listitem>
 				<listitem>

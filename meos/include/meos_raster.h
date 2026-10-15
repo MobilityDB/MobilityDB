@@ -231,6 +231,9 @@ extern Raster *raster_tpi(const Raster *rast, int band,
   const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
 extern Raster *raster_tri(const Raster *rast, int band,
   const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
+extern Raster *raster_map_algebra(const Raster *rast, int band,
+  const char *stat, const char *pixeltype, const char *extenttype,
+  const Raster *customextent, int32 distancex, int32 distancey);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
 
 /* Mathematical functions for PostGIS rasters */
