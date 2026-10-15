@@ -2108,6 +2108,24 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
     }
   }
 
+  /* A temporal point against a point is a pair of points at every instant of
+   * which the second rests, so the point made constant over the time frame of
+   * the temporal point turns the pair into two temporal points, which
+   * #ea_dwithin_tgeo_tgeo answers by the exact sign over continuous time. The
+   * nearest approach distance of the reduction below is the double nearest the
+   * exact one, which decides every distance but itself: where the two are
+   * equal the exact distance lies on either side of it */
+  if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      gserialized_get_type(gs) == POINTTYPE && ! gserialized_is_empty(gs) &&
+      MEOS_FLAGS_GET_Z(temp->flags) == (bool) FLAGS_GET_Z(gs->gflags))
+  {
+    Temporal *point = temporal_from_base_temp(PointerGetDatum(gs),
+      temp->temptype, temp);
+    int result = ea_dwithin_tgeo_tgeo(temp, point, dist, spheroid, ever);
+    pfree(point);
+    return result;
+  }
+
   /* The ever quantifier is the running minimum of the distance: a temporal geo
    * is ever within @p dist of the geometry exactly when the smallest distance
    * it ever attains is at most @p dist, which is the nearest approach distance.
