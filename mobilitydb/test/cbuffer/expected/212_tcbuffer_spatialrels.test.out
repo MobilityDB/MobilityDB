@@ -495,6 +495,18 @@ SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point
  t
 (1 row)
 
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(5 1.5),1)@2001-01-01, Cbuffer(Point(5 1.5),1)@2001-01-02]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(5 1.5),1)@2001-01-01, Cbuffer(Point(5 1.5),1)@2001-01-02]');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2001-01-01, Cbuffer(Point(4 3),2.5)@2001-01-03]');
  eintersects 
 -------------
