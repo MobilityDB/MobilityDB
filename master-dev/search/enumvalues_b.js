@@ -56,5 +56,6 @@ var searchData=
   ['motion_5falways_53',['MOTION_ALWAYS',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308aca15ca70aecec8422f90adbad20bb172',1,'tgeo_distance.c']]],
   ['motion_5fever_54',['MOTION_EVER',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308ac55ebfdfad8d9a0f17db8e158bbcf4d1',1,'tgeo_distance.c']]],
   ['motion_5fnad_55',['MOTION_NAD',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308a1bc178df1462f309b540e17cd1f7b111',1,'tgeo_distance.c']]],
-  ['mul_56',['MUL',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a086ab1f2f4dac104b6826ebe0eaba8fd',1,'tnumber_mathfuncs.h']]]
+  ['motion_5fnad_5fapprox_56',['MOTION_NAD_APPROX',['../meos_2src_2geo_2tgeo__distance_8c_a8ad4c968baa6513d7a63c1b6443a5308.html#a8ad4c968baa6513d7a63c1b6443a5308a089eabc1933fdc1e91be59910109f9e3',1,'tgeo_distance.c']]],
+  ['mul_57',['MUL',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a086ab1f2f4dac104b6826ebe0eaba8fd',1,'tnumber_mathfuncs.h']]]
 ];
