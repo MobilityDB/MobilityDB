@@ -477,6 +477,7 @@ extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal
 extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
+extern bool ensure_not_empty_array(int count);
 /**
  * @brief Ensure that a number is not NaN
  * @details A NaN has no position among the numbers, so a value, a span bound

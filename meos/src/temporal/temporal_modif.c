@@ -808,7 +808,7 @@ temporal_merge_array(Temporal **temparr, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temparr, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
 
   if (count == 1)

@@ -204,7 +204,6 @@ Tposechainarr_as_geopose(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   int precision = PG_GETARG_INT32(1);
-  ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temparr_extract(array, &count);
   char *result = tposechainarr_as_geopose((const Temporal **) temparr, count,

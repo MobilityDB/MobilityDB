@@ -102,7 +102,7 @@ cbufferset_make(const Cbuffer *values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
-  if (! ensure_positive(count))
+  if (! ensure_not_empty_array(count))
     return NULL;
   for (int i = 0; i < count; ++i)
     if (! ensure_not_negative_datum(Float8GetDatum(values[i].radius),

@@ -596,13 +596,18 @@ int main(void)
   free(ispanset_result); free(char_result);
 
   /* SpanSet *spanset_make(Span *spans, int count); */
+  /* The spans of a span set are disjoint, so the second one starts after
+   * ispan1 ends */
+  Span *ispan_after = intspan_in("[5,7]");
+  char *ispan_after_out = intspan_out(ispan_after);
   Span ispanarray[2];
   ispanarray[0] = *ispan1;
-  ispanarray[1] = *ispan2;
+  ispanarray[1] = *ispan_after;
   ispanset_result = spanset_make(ispanarray, 2);
   char_result = intspanset_out(ispanset_result);
-  printf("spanset_make({%s, %s}): %s\n", ispan1_out, ispan2_out, char_result);
+  printf("spanset_make({%s, %s}): %s\n", ispan1_out, ispan_after_out, char_result);
   free(ispanset_result); free(char_result);
+  free(ispan_after); free(ispan_after_out);
 
   /* Set *textset_make(text **values, int count); */
   text *textarray[2];

@@ -431,6 +431,23 @@ ensure_positive(int i)
 }
 
 /**
+ * @brief Ensure that an array of values has elements
+ * @details The test of #ensure_positive over the length of an array, with the
+ * message the constructors of MobilityDB raise for an empty array
+ * @param[in] count Number of elements in the array
+ * @note Used for the constructor functions
+ */
+bool
+ensure_not_empty_array(int count)
+{
+  if (count > 0)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The input array cannot be empty");
+  return false;
+}
+
+/**
  * @brief Return true if a number is not negative
  */
 bool
