@@ -149,6 +149,10 @@ The operations that read a geodetic box as something other than the longitude/la
 the manual defines, measured, and the pull requests that correct them, deferred while the target is
 the Spark and Flink surfaces: [Geodetic boxes](GEODETIC-BOXES.md).
 
+The rules that decide which operations a temporal geography supports and how exactly, the places
+where MobilityDB departs from them, measured against PostGIS geography, and the branches that
+correct them: [Geodetic operations](GEODETIC-OPERATIONS.md).
+
 Every distance MEOS computes, measured against the double nearest the exact distance, the oracle
 that judges it, and the pull requests that make each one answer that double:
 [Exact distance](EXACT-DISTANCE.md).
