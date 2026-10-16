@@ -39,7 +39,7 @@ var searchData=
   ['events_36',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'events():&#160;tpoint_geom_clip.c'],['../structDistEverWalk_a46fa13ab34caff6a22db134a082ba63d.html#a46fa13ab34caff6a22db134a082ba63d',1,'DistEverWalk::events()']]],
   ['ever_37',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo']]],
   ['ex_38',['ex',['../structDistRefEdge_a6603ebc0138a881f4c04003e351e1245.html#a6603ebc0138a881f4c04003e351e1245',1,'DistRefEdge::ex()'],['../structEdge_abb675272acf5d396d22957cb03319882.html#abb675272acf5d396d22957cb03319882',1,'Edge::ex()']]],
-  ['exclude_5fnodata_39',['exclude_nodata',['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState']]],
+  ['exclude_5fnodata_39',['exclude_nodata',['../structRasterValuesState_ad3226e52881ecb2d2fee116f2c6dc5ea.html#ad3226e52881ecb2d2fee116f2c6dc5ea',1,'RasterValuesState::exclude_nodata()'],['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState::exclude_nodata()']]],
   ['exp_40',['exp',['../structWideDyadic_a9f6190481e7c4507424a9d6587729eca.html#a9f6190481e7c4507424a9d6587729eca',1,'WideDyadic']]],
   ['expand_5farg_41',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
   ['extent_42',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],
