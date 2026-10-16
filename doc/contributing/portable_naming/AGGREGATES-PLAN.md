@@ -23,13 +23,25 @@ MobilityDuck `ac6557cf7`: the catalog states 358 `CREATE AGGREGATE` over 25 aggr
 twin is folded into its `Agg` name, and every role of every one of them names a public MEOS
 function (G24, G26).
 
+## The constraint
+
+**MobilityDB's user SQL does not change.** Every aggregate, function and operator users call keeps
+its name and its signatures, and no name users call is added: a portable spelling another engine
+needs is the catalog's to state, as `altSqlName`, never a new MobilityDB name. The functions a
+`CREATE AGGREGATE` names are not user SQL: no query calls them, so they take the names and the
+declarations chapter 18 gives them, as the functions behind the operators took theirs.
+
 ## The end state
 
-1. **One name per aggregate, the same in every engine.** An aggregate whose name is also a scalar
-   function's takes the `Agg` suffix as its canonical name, the bare name staying in MobilityDB
-   alone, where PostgreSQL lets an aggregate share a name with a function and DuckDB, Spark and
-   Flink do not. This is the rule of `tMinAgg`, `tMaxAgg`, `mergeAgg`, `appendInstantAgg`,
-   `appendSequenceAgg` and `sameAlignmentAgg`.
+1. **One name per aggregate in each engine, stated by the catalog.** MobilityDB keeps the names it
+   has. An engine holding one function per name (DuckDB, Spark, Flink) cannot take an aggregate
+   name that a function also holds, and calls that aggregate by the name with `Agg`: the
+   MobilityDB twin where one exists (`tMinAgg`, `tMaxAgg`, `mergeAgg`, `appendInstantAgg`,
+   `appendSequenceAgg`, `sameAlignmentAgg`), else the name the catalog states as the aggregate's
+   `altSqlName` (`tAndAgg`, `tOrAgg`, `setUnionAgg`, `spanUnionAgg`, `spansetUnionAgg`), as it
+   states `floatRound` for the `round` a function of those engines holds, read from the same
+   `@altsqlfn` tag: on the PostgreSQL wrapper of the aggregate's transition, beside its
+   `@sqlaggfn`, since a transition serves one aggregate.
 2. **Every aggregate in every engine**: the 25 in MobilityDB, MobilityDuck, the typed Spark and
    Flink surfaces, under the names of 1.
 3. **Each role one function, named after its aggregate and its role.** The transition
@@ -51,9 +63,9 @@ function (G24, G26).
 |---|---|---|---|---|
 | `tCount`, `tSum`, `tAvg`, `tCentroid`, `tMinAgg`, `tMaxAgg`, `mergeAgg` | yes | yes | yes | yes |
 | `tnpoints`, `tdensity` | yes | yes | yes | no |
-| `tAnd`, `tOr` | yes, no `Agg` name | as `tAndAgg`, `tOrAgg` | as `tAndAgg`, `tOrAgg` | as `tAndAgg`, `tOrAgg` |
-| `setUnion`, `spanUnion` | yes, no `Agg` name | as `setUnionAgg`, `spanUnionAgg` | no | as `setUnionAgg`, `spanUnionAgg` |
-| `spansetUnion` | yes, no `Agg` name | as `spansetUnionAgg` | no | no |
+| `tAnd`, `tOr` | yes, as `tAnd`, `tOr` | as `tAndAgg`, `tOrAgg` | as `tAndAgg`, `tOrAgg` | as `tAndAgg`, `tOrAgg` |
+| `setUnion`, `spanUnion` | yes, as `setUnion`, `spanUnion` | as `setUnionAgg`, `spanUnionAgg` | no | as `setUnionAgg`, `spanUnionAgg` |
+| `spansetUnion` | yes, as `spansetUnion` | as `spansetUnionAgg` | no | no |
 | `extent` | yes | yes | no | yes |
 | `wCount`, `wSum`, `wAvg`, `wMin`, `wMax` | yes | yes | no | yes |
 | `appendInstantAgg`, `appendSequenceAgg` | yes | yes | no | yes |
@@ -62,7 +74,11 @@ function (G24, G26).
 - MobilityDB: `tAnd`, `tOr`, `setUnion`, `spanUnion` and `spansetUnion` are each both a function
   and an aggregate (3/1, 3/1, 54/36, 20/5, 20/5 `CREATE FUNCTION`/`CREATE AGGREGATE`), and
   none has an `Agg` aggregate (0 each). DuckDB, Spark and Flink, holding one function per name,
-  take the `Agg` spelling, so no query names these five the same way in every engine.
+  take the `Agg` spelling, each generator appending it by its own rule (`name += 'Agg'` in
+  `_catalog_aggregates` of JMEOS `tools/codegen_jvm.py`), since the catalog states no
+  `altSqlName` for an aggregate: `attach_alt_sql_names` (`parser/altsqlfn.py`) pairs `@altsqlfn`
+  with the `@sqlfn` names of a wrapper and sets it on the SQL signatures of functions, and reads
+  no `@sqlaggfn`.
 - Spark and Flink, typed surfaces: J18 records both registering every aggregate of the catalog
   over MobilityDB `b2dcdf7d84`, 22 aggregates of 260 overloads. The three raster aggregates came
   after it, and JMEOS #181 lists the raster union functions as unreached by the Spark UDF
@@ -89,25 +105,27 @@ function (G24, G26).
 
 | | repository | change | waits on |
 |---|---|---|---|
-| AG1 | MobilityDB | `tAndAgg`, `tOrAgg`, `setUnionAgg`, `spanUnionAgg` and `spansetUnionAgg` beside the bare aggregates, as `tMinAgg` beside `tMin`, with their manual entries EN and ES | ruling R1 |
+| AG1 | MobilityDB, MEOS-API | MobilityDB: `@altsqlfn tAndAgg()`, `tOrAgg()`, `setUnionAgg()`, `spanUnionAgg()`, `spansetUnionAgg()` on the transition wrappers of the five, beside their `@sqlaggfn` (`Tbool_tand_transfn`: `@sqlfn tAndTransition()`, `@sqlaggfn tAnd()`, `@altsqlfn tAndAgg()`), doc comments only, its SQL unchanged; MEOS-API: `attach_alt_sql_names` reads it into `altSqlName` on every entry of the `aggregates` section whose transition is that wrapper, the `@altsqlfn` of a wrapper carrying `@sqlaggfn` naming the aggregate, never the transition | ruling R1 |
 | AG2 | MobilityDB | the finals: each aggregate declares `<agg>Final` once per type of value with `FINALFUNC_EXTRA`, over the C function the final calls today; the 46 underscored finals go | — |
 | AG3 | MobilityDB | the combines: one public MEOS combine per aggregate for the seven whose per-type combines collide (`tMinAgg`, `tMaxAgg`, `tSum`, `wMin`, `wMax`, `wSum`, `wCount`), choosing its comparison from the base type of the state and validating its states at entry, its PostgreSQL wrapper `<agg>Combine`; the other combines renamed to `<agg>Combine`, a forwarder per aggregate where one serves several | ruling R2 |
 | AG4 | MEOS-API | the catalog states AG2's finals and AG3's combines: one public MEOS function per combine and final role of an aggregate, `FINALFUNC_EXTRA` read into the final's signature (`attach_aggregates` reads it) | AG2, AG3 |
-| AG5 | JMEOS | both typed surfaces and the Spark UDF surface carry the one combine and final of an aggregate in place of their per-type arrays, and the three raster aggregates; the UDF surface scope per ruling R3 | AG4, R3 |
-| AG6 | MobilityDuck | the aggregates generated from the catalog's `aggregates` section, as JMEOS's are, one registration per entry with its own `args`, `ret` and `sqlName`, the form every catalog-generated Duck function takes; the hand files retired; the six missing aggregates arrive with them | AG1, AG4 |
-| AG7 | MobilityDB | chapter 18, "Aggregations", for users, stating the end state above (draft: branch `doc/portable-chapter-for-users`), EN and ES | AG1, AG2, AG3 |
+| AG5 | JMEOS | both typed surfaces and the Spark UDF surface register each aggregate under its `altSqlName` where it has one, in place of the `Agg` rule of `_catalog_aggregates`, carry the one combine and final of an aggregate in place of their per-type arrays, and the three raster aggregates; the UDF surface scope per ruling R3 | AG1, AG4, R3 |
+| AG6 | MobilityDuck | the aggregates generated from the catalog's `aggregates` section, as JMEOS's are, one registration per entry with its own `args`, `ret` and name (its `altSqlName` where it has one), the form every catalog-generated Duck function takes; the hand files retired; the six missing aggregates arrive with them | AG1, AG4 |
+| AG7 | MobilityDB | chapter 18, "Aggregations", for users, stating the end state above, the eleven aggregates whose name a function also holds listed with the name DuckDB, Spark and Flink call them by, as "Names the Engines Own" lists `floatRound` (draft: branch `doc/portable-chapter-for-users`), EN and ES | AG1, AG2, AG3 |
 | AG8 | MobilitySpark, MobilityFlink, MobilityDuck | one test per aggregate and engine, each answer compared with MobilityDB's over the same rows, and a check that the set of aggregates each engine registers equals the catalog's | AG5, AG6 |
 
 The aggregate work ends with AG8: every engine registers the catalog's 25 aggregates under the
-same names, and answers as MobilityDB does.
+names the catalog states for it, and answers as MobilityDB does.
 
 ## Rulings owed
 
-- **R1 — the five dual-name aggregates take an `Agg` name in MobilityDB.** Five aggregate names
-  are added to the SQL API, the bare names staying, as for `tMinAgg`. It is the only way one
-  query names them the same in every engine.
+- **R1 — the engines' name of the five dual-name aggregates comes from `@altsqlfn`.**
+  MobilityDB keeps `tAnd`, `tOr`, `setUnion`, `spanUnion` and `spansetUnion`; the tag on their
+  transition wrappers states `tAndAgg`, `tOrAgg`, `setUnionAgg`, `spanUnionAgg` and
+  `spansetUnionAgg`, the names DuckDB, Spark and Flink already use, the catalog reads it as it
+  reads `floatRound`, and every generator registers it in place of its own `Agg` rule.
 - **R2 — seven public MEOS combines.** `temporal_tmin_combinefn` and its six siblings are added to
-  the public MEOS API; the catalog refuses an aggregate whose combine role two public MEOS
+  the public MEOS C API, which the constraint leaves open, MobilityDB's user SQL unchanged; the catalog refuses an aggregate whose combine role two public MEOS
   functions carry under one SQL signature, so four per-type combines cannot stand behind one
   `tMinAggCombine(internal, internal)`.
 - **R3 — the scope of the Spark UDF surface.** It carries the aggregates over one temporal value
