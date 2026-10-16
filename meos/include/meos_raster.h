@@ -205,6 +205,25 @@ typedef struct
                           `RANGE` only, NULL where none is built */
 } RasterUnionState;
 
+/**
+ * @brief State of the aggregate summarizing the pixels of rasters
+ * @details The shape of PostGIS's state of @p ST_SummaryStatsAgg: the band
+ * read and whether nodata is left out, what the pixels read amount to, and
+ * the running mean and sum of squared deviations from which the standard
+ * deviation is taken in one pass
+ */
+typedef struct
+{
+  int band;             /**< Band read, starting at 1 */
+  bool exclude_nodata;  /**< True when nodata pixels are left out */
+  uint64 count;         /**< Number of pixels read */
+  double sum;           /**< Sum of their values */
+  double min;           /**< Smallest of their values */
+  double max;           /**< Largest of their values */
+  double mean;          /**< Running mean of their values */
+  double q;             /**< Running sum of squared deviations from the mean */
+} RasterStatsState;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -302,6 +321,11 @@ extern RasterAlignState *raster_same_alignment_combinefn(
 extern bool raster_same_alignment_finalfn(RasterAlignState *state);
 extern RasterAlignState *raster_same_alignment_transfn(
   RasterAlignState *state, const Raster *rast);
+extern RasterStatsState *raster_summary_stats_combinefn(
+  RasterStatsState *state1, const RasterStatsState *state2);
+extern BandStats *raster_summary_stats_finalfn(RasterStatsState *state);
+extern RasterStatsState *raster_summary_stats_transfn(RasterStatsState *state,
+  const Raster *rast, int band, bool exclude_nodata);
 extern RasterUnionState *raster_union_combinefn(RasterUnionState *state1,
   const RasterUnionState *state2);
 extern Raster *raster_union_finalfn(RasterUnionState *state);
@@ -310,6 +334,10 @@ extern RasterUnionState *raster_union_transfn(RasterUnionState *state,
 extern RasterAlignState *rasteralignstate_deserialize(const uint8_t *bytes,
   size_t size);
 extern uint8_t *rasteralignstate_serialize(const RasterAlignState *state,
+  size_t *size_out);
+extern RasterStatsState *rasterstatsstate_deserialize(const uint8_t *bytes,
+  size_t size);
+extern uint8_t *rasterstatsstate_serialize(const RasterStatsState *state,
   size_t *size_out);
 extern RasterUnionState *rasterunionstate_deserialize(const uint8_t *bytes,
   size_t size);
