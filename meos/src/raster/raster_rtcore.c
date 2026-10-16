@@ -2802,7 +2802,6 @@ raster_same_alignment_combinefn(RasterAlignState *state1,
  * state, an aggregate over no raster, answers false
  * @param[in] state Aggregate state
  * @csqlfn #Raster_same_alignment_finalfn()
- * @csqlaggfn #sameAlignmentAggFinal()
  */
 bool
 raster_same_alignment_finalfn(RasterAlignState *state)
@@ -4604,7 +4603,6 @@ raster_union_combinefn(RasterUnionState *state1,
  * @param[in] state Aggregate state
  * @errval NULL
  * @csqlfn #Raster_union_finalfn()
- * @csqlaggfn #rasterUnionFinal()
  */
 Raster *
 raster_union_finalfn(RasterUnionState *state)
