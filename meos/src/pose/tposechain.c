@@ -431,6 +431,56 @@ tposechain_values(const Temporal *temp, int *count)
 }
 
 /**
+ * @ingroup meos_posechain_accessor
+ * @brief Return a copy of the start value of a temporal pose chain
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_start_value()
+ */
+PoseChain *
+tposechain_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  return DatumGetPoseChainP(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_posechain_accessor
+ * @brief Return a copy of the end value of a temporal pose chain
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_end_value()
+ */
+PoseChain *
+tposechain_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  return DatumGetPoseChainP(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_posechain_accessor
+ * @brief Return a copy of the n-th value of a temporal pose chain
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tposechain_value_n(const Temporal *temp, int n, PoseChain **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetPoseChainP(dresult);
+  return true;
+}
+
+/**
  * @ingroup meos_posechain_transf
  * @brief Return the distinct values of a temporal pose chain, each with the span set on
  * which it is taken
