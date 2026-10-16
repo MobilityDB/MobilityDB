@@ -201,6 +201,15 @@ SELECT asText(round(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0
 SELECT asText(round(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
 SELECT asText(round(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
 
+-- The temporal point a temporal pose is cast to has at every instant the
+-- position of the pose, between its instants included, in 2D and 3D
+SELECT ST_AsText(point(valueAtTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', '2001-01-01'))) =
+  ST_AsText(valueAtTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, '2001-01-01'));
+SELECT ST_AsText(point(valueAtTimestamp(tpose '[Pose(Point(0 0), 0)@2001-01-01, Pose(Point(2 2), 0.5)@2001-01-03]', '2001-01-02'))) =
+  ST_AsText(valueAtTimestamp(tpose '[Pose(Point(0 0), 0)@2001-01-01, Pose(Point(2 2), 0.5)@2001-01-03]'::tgeompoint, '2001-01-02'));
+SELECT ST_AsText(point(valueAtTimestamp(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 2 2), 0.7071067811865476, 0, 0, 0.7071067811865475)@2001-01-03]', '2001-01-02'))) =
+  ST_AsText(valueAtTimestamp(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 2 2), 0.7071067811865476, 0, 0, 0.7071067811865475)@2001-01-03]'::tgeompoint, '2001-01-02'));
+
 SELECT round(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tfloat, 6);
 SELECT round(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tfloat, 6);
 SELECT round(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tfloat, 6);
@@ -427,6 +436,17 @@ SELECT asText(valueAtTimestamp(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', '2001-0
 SELECT asText(valueAtTimestamp(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}', '2001-01-01'));
 SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', '2001-01-01'));
 SELECT asText(valueAtTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', '2001-01-01'));
+
+-- Between two instants the rotation is interpolated along the shorter arc:
+-- in 2D from 3 to -3 radians through pi, in 3D by the spherical linear
+-- interpolation of the quaternions, which keeps two equal rotations unchanged
+-- and turns the quaternions (0.5, 0.866, 0, 0) and (0.5, -0.866, 0, 0), which
+-- are 120 degrees apart, through the rotation of 180 degrees about the X axis
+SELECT asText(valueAtTimestamp(tpose '[Pose(Point(0 0), 3)@2001-01-01, Pose(Point(2 2), -3)@2001-01-03]', '2001-01-02'), 6);
+SELECT asText(valueAtTimestamp(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2001-01-01, Pose(Point(2 2 2), 0.5, 0.5, 0.5, 0.5)@2001-01-03]', '2001-01-02'), 6);
+SELECT round(degrees(2 * acos(abs((q).W)))::numeric, 6) AS angle,
+  round(abs((q).X)::numeric, 6) AS x
+FROM (SELECT quaternion(valueAtTimestamp(tpose '[Pose(Point(0 0 0), 0.5, 0.8660254037844386, 0, 0)@2001-01-01, Pose(Point(0 0 0), 0.5, -0.8660254037844386, 0, 0)@2001-01-03]', '2001-01-02')) AS q) t;
 
 SELECT asText(minusTime(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', timestamptz '2001-01-01'));
 SELECT asText(minusTime(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}', timestamptz '2001-01-01'));
