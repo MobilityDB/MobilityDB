@@ -129,6 +129,10 @@ ctest -R '021_tbox'
 				To run a set of given test files you can use wildcards
 			</p><pre class="programlisting">
 ctest -R '022_*'
+</pre><p>
+				The tests run on a temporary PostgreSQL cluster in the directory <code class="varname">tmptest</code> of the build directory, whose server listens on a Unix-domain socket in that directory. Since PostgreSQL does not start when the path of the socket exceeds 107 bytes, a build directory deep in the file system needs a shorter directory for the cluster, which the variable <code class="varname">MOBILITYDB_TEST_TMPDIR</code> gives at configure time
+			</p><pre class="programlisting">
+cmake -DMOBILITYDB_TEST_TMPDIR=/tmp/mobilitydb-test ..
 </pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="documentation"></a>Documentation</h3></div></div></div><p>
 				MobilityDB user's documentation can be generated in HTML, PDF, and EPUB format. Furthermore, the documentation is available in English and in other languages (currently, only in Spanish). The user's documentation can be generated in all formats and in all languages, or specific formats and/or languages can be specified. MobilityDB developer's documentation can only be generated in HTML format and in English.
 			</p><p>
