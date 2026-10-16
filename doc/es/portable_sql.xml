@@ -311,9 +311,8 @@
 		<para>Algunos tipos base de MobilityDB los provee en PostgreSQL la propia base de datos o una extensión que MobilityDB requiere: <varname>jsonb</varname> y <varname>jsonpath</varname> PostgreSQL, <varname>h3index</varname> la extensión <varname>h3</varname>, y <varname>pcpoint</varname> y <varname>pcpatch</varname> la extensión <varname>pointcloud</varname>. Los operadores y funciones del proveedor conservan su escritura, y todos los motores, PostgreSQL incluido, invocan además estas operaciones con los nombres siguientes. Sus comparaciones son las funciones de <xref linkend="portable_sql_comparisons_traditional"/> junto con <varname>cmp</varname>, y sus funciones hash son <varname>hash</varname> y <varname>hashExtended</varname>, que Apache Spark y Apache Flink llaman <varname>jsonbHash</varname>, <varname>jsonbHashExtended</varname>, <varname>h3indexHash</varname> y <varname>h3indexHashExtended</varname>, como llaman las funciones hash de todos los demás tipos por el nombre del tipo. Un valor se lee de su texto con <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname> y <varname>h3indexFromText</varname> y se escribe con <varname>asText</varname>, a los que en PostgreSQL llegan un literal y una conversión desde y hacia <varname>text</varname>. El texto de un <varname>pcpoint</varname> y de un <varname>pcpatch</varname> es el hexadecimal de su representación binaria conocida, que leen <varname>pcpointFromHexWKB</varname> y <varname>pcpatchFromHexWKB</varname> y escribe <varname>asHexWKB</varname>.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
-				<colspec colnum="1" colname="col1" colwidth="3*"/>
-				<colspec colnum="2" colname="col2" colwidth="4*"/>
 				<thead>
 					<row>
 						<entry>PostgreSQL</entry>
@@ -378,7 +377,7 @@
 	<sect1 xml:id="portable_sql_aggregates">
 		<title>Agregaciones</title>
 
-		<para>Las funciones de agregación siguen el mismo principio y se enumeran en su propia tabla a continuación, de modo que un motor pueda localizar la maquinaria que necesita sin rastrear el texto. Una agregación SQL se compone de hasta tres funciones de la maquinaria de PostgreSQL, cada una expuesta bajo un nombre canónico formado a partir del nombre de la agregación y su rol: una función de transición <varname>&lt;agregación&gt;Transition</varname> (siempre presente), una función de combinación <varname>&lt;agregación&gt;Combine</varname> usada para la agregación en paralelo, y una función final <varname>&lt;agregación&gt;Final</varname>. Los roles de combinación y final son opcionales: una agregación cuyo estado de transición ya es su resultado no tiene función final (por ejemplo <varname>extent</varname>), y una agregación que no admite la agregación parcial no tiene función de combinación (por ejemplo las agregaciones de anexado). Los roles se mantienen distintos y con un nombre uniforme para que cada <foreignphrase>binding</foreignphrase> pueda reconstruir la agregación a partir del catálogo. La siguiente tabla enumera cada agregación y sus funciones de maquinaria; un guion (—) indica un rol que la agregación no define.</para>
+		<para>Las funciones de agregación siguen el mismo principio y se enumeran en su propia tabla a continuación, de modo que un motor pueda localizar la maquinaria que necesita sin rastrear el texto. Una agregación SQL se compone de hasta tres funciones de la maquinaria de PostgreSQL, cada una expuesta bajo un nombre canónico formado a partir del nombre de la agregación y su rol: una función de transición <varname>&lt;agregación&gt;Transition</varname> (siempre presente), una función de combinación <varname>&lt;agregación&gt;Combine</varname> usada para la agregación en paralelo, y una función final <varname>&lt;agregación&gt;Final</varname>. Los roles de combinación y final son opcionales: una agregación cuyo estado de transición ya es su resultado no tiene función final (por ejemplo <varname>extent</varname>), y una agregación que no admite la agregación parcial no tiene función de combinación (por ejemplo las agregaciones de anexado). Los roles se mantienen distintos y con un nombre uniforme para que cada <foreignphrase>binding</foreignphrase> pueda reconstruir la agregación a partir del catálogo. La siguiente tabla enumera cada agregación y sus funciones de maquinaria; un guion (—) indica un rol que la agregación no define. MobilityDB declara además las agregaciones <varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname> y <varname>sameAlignmentAgg</varname> bajo el nombre sin <varname>Agg</varname>, que PostgreSQL permite a una agregación compartir con una función y los demás motores no.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2 3 4"?>
@@ -398,8 +397,8 @@
 						<row><entry></entry><entry>wSumTransition</entry><entry>wSumCombine</entry><entry>wSumFinal</entry></row>
 						<row><entry>Promedio</entry><entry>tAvgTransition</entry><entry>tAvgCombine</entry><entry>tAvgFinal</entry></row>
 						<row><entry></entry><entry>wAvgTransition</entry><entry>wAvgCombine</entry><entry>wAvgFinal</entry></row>
-						<row><entry>Mínimo / máximo</entry><entry>tMinTransition</entry><entry>tMinCombine</entry><entry>tMinFinal</entry></row>
-						<row><entry></entry><entry>tMaxTransition</entry><entry>tMaxCombine</entry><entry>tMaxFinal</entry></row>
+						<row><entry>Mínimo / máximo</entry><entry>tMinAggTransition</entry><entry>tMinAggCombine</entry><entry>tMinAggFinal</entry></row>
+						<row><entry></entry><entry>tMaxAggTransition</entry><entry>tMaxAggCombine</entry><entry>tMaxAggFinal</entry></row>
 						<row><entry></entry><entry>wMinTransition</entry><entry>wMinCombine</entry><entry>wMinFinal</entry></row>
 						<row><entry></entry><entry>wMaxTransition</entry><entry>wMaxCombine</entry><entry>wMaxFinal</entry></row>
 						<row><entry>Booleano</entry><entry>tAndTransition</entry><entry>tAndCombine</entry><entry>tAndFinal</entry></row>
@@ -411,9 +410,12 @@
 						<row><entry>Unión</entry><entry>setUnionTransition</entry><entry>setUnionCombine</entry><entry>setUnionFinal</entry></row>
 						<row><entry></entry><entry>spanUnionTransition</entry><entry>spanUnionCombine</entry><entry>spanUnionFinal</entry></row>
 						<row><entry></entry><entry>spansetUnionTransition</entry><entry>spansetUnionCombine</entry><entry>spansetUnionFinal</entry></row>
-						<row><entry>Fusión</entry><entry>mergeTransition</entry><entry>mergeCombine</entry><entry>mergeFinal</entry></row>
-						<row><entry>Anexado</entry><entry>appendInstantTransition</entry><entry>—</entry><entry>appendInstantFinal</entry></row>
-						<row><entry></entry><entry>appendSequenceTransition</entry><entry>—</entry><entry>appendSequenceFinal</entry></row>
+						<row><entry>Fusión</entry><entry>mergeAggTransition</entry><entry>mergeAggCombine</entry><entry>mergeAggFinal</entry></row>
+						<row><entry>Anexado</entry><entry>appendInstantAggTransition</entry><entry>—</entry><entry>appendInstantAggFinal</entry></row>
+						<row><entry></entry><entry>appendSequenceAggTransition</entry><entry>—</entry><entry>appendSequenceAggFinal</entry></row>
+						<row><entry>Ráster</entry><entry>rasterUnionTransition</entry><entry>rasterUnionCombine</entry><entry>rasterUnionFinal</entry></row>
+						<row><entry></entry><entry>sameAlignmentAggTransition</entry><entry>sameAlignmentAggCombine</entry><entry>sameAlignmentAggFinal</entry></row>
+						<row><entry></entry><entry>summaryStatsAggTransition</entry><entry>summaryStatsAggCombine</entry><entry>summaryStatsAggFinal</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>

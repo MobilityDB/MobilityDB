@@ -311,9 +311,8 @@
 		<para>Some base types of MobilityDB are provided in PostgreSQL by the database itself or by an extension MobilityDB requires: <varname>jsonb</varname> and <varname>jsonpath</varname> by PostgreSQL, <varname>h3index</varname> by the <varname>h3</varname> extension, and <varname>pcpoint</varname> and <varname>pcpatch</varname> by the <varname>pointcloud</varname> extension. The operators and functions of the provider keep their spelling, and every engine, PostgreSQL included, also calls these operations by the names below. Their comparisons are the functions of <xref linkend="portable_sql_comparisons_traditional"/> together with <varname>cmp</varname>, and their hash functions are <varname>hash</varname> and <varname>hashExtended</varname>, which Apache Spark and Apache Flink call <varname>jsonbHash</varname>, <varname>jsonbHashExtended</varname>, <varname>h3indexHash</varname> and <varname>h3indexHashExtended</varname>, as they call the hash functions of every other type by the name of the type. A value is read from its text by <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname> and <varname>h3indexFromText</varname> and written by <varname>asText</varname>, which a literal and a cast from and to <varname>text</varname> reach in PostgreSQL. The text of a <varname>pcpoint</varname> and of a <varname>pcpatch</varname> is the hex of its Well-Known Binary, read by <varname>pcpointFromHexWKB</varname> and <varname>pcpatchFromHexWKB</varname> and written by <varname>asHexWKB</varname>.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
-				<colspec colnum="1" colname="col1" colwidth="3*"/>
-				<colspec colnum="2" colname="col2" colwidth="4*"/>
 				<thead>
 					<row>
 						<entry>PostgreSQL</entry>
@@ -378,7 +377,7 @@
 	<sect1 xml:id="portable_sql_aggregates">
 		<title>Aggregations</title>
 
-		<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define.</para>
+		<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define. MobilityDB also declares the aggregates <varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname> and <varname>sameAlignmentAgg</varname> under the name without <varname>Agg</varname>, which PostgreSQL lets an aggregate share with a function and the other engines do not.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2 3 4"?>
@@ -398,8 +397,8 @@
 						<row><entry></entry><entry>wSumTransition</entry><entry>wSumCombine</entry><entry>wSumFinal</entry></row>
 						<row><entry>Average</entry><entry>tAvgTransition</entry><entry>tAvgCombine</entry><entry>tAvgFinal</entry></row>
 						<row><entry></entry><entry>wAvgTransition</entry><entry>wAvgCombine</entry><entry>wAvgFinal</entry></row>
-						<row><entry>Minimum / maximum</entry><entry>tMinTransition</entry><entry>tMinCombine</entry><entry>tMinFinal</entry></row>
-						<row><entry></entry><entry>tMaxTransition</entry><entry>tMaxCombine</entry><entry>tMaxFinal</entry></row>
+						<row><entry>Minimum / maximum</entry><entry>tMinAggTransition</entry><entry>tMinAggCombine</entry><entry>tMinAggFinal</entry></row>
+						<row><entry></entry><entry>tMaxAggTransition</entry><entry>tMaxAggCombine</entry><entry>tMaxAggFinal</entry></row>
 						<row><entry></entry><entry>wMinTransition</entry><entry>wMinCombine</entry><entry>wMinFinal</entry></row>
 						<row><entry></entry><entry>wMaxTransition</entry><entry>wMaxCombine</entry><entry>wMaxFinal</entry></row>
 						<row><entry>Boolean</entry><entry>tAndTransition</entry><entry>tAndCombine</entry><entry>tAndFinal</entry></row>
@@ -411,9 +410,12 @@
 						<row><entry>Union</entry><entry>setUnionTransition</entry><entry>setUnionCombine</entry><entry>setUnionFinal</entry></row>
 						<row><entry></entry><entry>spanUnionTransition</entry><entry>spanUnionCombine</entry><entry>spanUnionFinal</entry></row>
 						<row><entry></entry><entry>spansetUnionTransition</entry><entry>spansetUnionCombine</entry><entry>spansetUnionFinal</entry></row>
-						<row><entry>Merge</entry><entry>mergeTransition</entry><entry>mergeCombine</entry><entry>mergeFinal</entry></row>
-						<row><entry>Append</entry><entry>appendInstantTransition</entry><entry>—</entry><entry>appendInstantFinal</entry></row>
-						<row><entry></entry><entry>appendSequenceTransition</entry><entry>—</entry><entry>appendSequenceFinal</entry></row>
+						<row><entry>Merge</entry><entry>mergeAggTransition</entry><entry>mergeAggCombine</entry><entry>mergeAggFinal</entry></row>
+						<row><entry>Append</entry><entry>appendInstantAggTransition</entry><entry>—</entry><entry>appendInstantAggFinal</entry></row>
+						<row><entry></entry><entry>appendSequenceAggTransition</entry><entry>—</entry><entry>appendSequenceAggFinal</entry></row>
+						<row><entry>Raster</entry><entry>rasterUnionTransition</entry><entry>rasterUnionCombine</entry><entry>rasterUnionFinal</entry></row>
+						<row><entry></entry><entry>sameAlignmentAggTransition</entry><entry>sameAlignmentAggCombine</entry><entry>sameAlignmentAggFinal</entry></row>
+						<row><entry></entry><entry>summaryStatsAggTransition</entry><entry>summaryStatsAggCombine</entry><entry>summaryStatsAggFinal</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>
