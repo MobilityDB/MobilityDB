@@ -156,6 +156,25 @@ SELECT tbigint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
+-- The interpolation of a temporal float is the one asked, linear by default
+SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-03]', text 'b');
+SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-03]', text 'b', 'step');
+SELECT tfloat(tjsonb '{[{"b":1}@2001-01-01, {"b":3}@2001-01-03], [{"b":5}@2001-01-05, {"b":4}@2001-01-06]}', text 'b');
+-- A key missing at an instant ends a linear sequence at the previous instant
+SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-02, {"c":0}@2001-01-03, {"b":5}@2001-01-04, {"b":4}@2001-01-05]', text 'b', 'linear', 'delete_key');
+SELECT tfloat(tjsonb '[{"b":1}@2001-01-01, {"b":3}@2001-01-02, {"c":0}@2001-01-03, {"b":5}@2001-01-04, {"b":4}@2001-01-05]', text 'b', 'step', 'delete_key');
+-- A boolean is false or true whatever the JSON value it is read from
+SELECT tbool(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbool(tjsonb '[{"a":true}@2001-01-01, {"a":false}@2001-01-02, {"a":true}@2001-01-03]', text 'a');
+SELECT tbool(tjsonb '"{\"a\":0, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbool(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbool(tjsonb '"{\"a\":\"true\", \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbool(tjsonb '"{\"a\":\"false\", \"b\":2.5}"@2001-01-01', text 'a');
+-- Text is read from a number, a string and a boolean
+SELECT ttext(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT ttext(tjsonb '"{\"a\":\"x\", \"b\":2.5}"@2001-01-01', text 'a');
+SELECT ttext(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT ttext(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
 /* Errors */
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'xxx');
 SELECT tint(tjsonb '"{\"a\":\"xxx\", \"b\":2.5}"@2001-01-01', text 'a');
