@@ -203,7 +203,7 @@ CREATE FUNCTION setUnionFinal(internal, jsonbset)
 CREATE AGGREGATE setUnion(jsonb) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -214,7 +214,7 @@ CREATE AGGREGATE setUnion(jsonb) (
 CREATE AGGREGATE setUnion(jsonbset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

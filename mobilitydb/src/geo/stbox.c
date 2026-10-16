@@ -1653,7 +1653,7 @@ PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
  * @ingroup mobilitydb_geo_agg
  * @brief Combine function for extent aggregation of spatiotemporal boxes
  * and spatiotemporal values
- * @sqlfn stbox_extent_combinefn()
+ * @sqlfn extentCombine()
  * @sqlaggfn extent()
  */
 Datum

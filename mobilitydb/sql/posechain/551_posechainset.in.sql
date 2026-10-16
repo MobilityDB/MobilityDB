@@ -249,7 +249,7 @@ CREATE FUNCTION setUnionFinal(internal, posechainset)
 CREATE AGGREGATE setUnion(posechain) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -260,7 +260,7 @@ CREATE AGGREGATE setUnion(posechain) (
 CREATE AGGREGATE setUnion(posechainset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

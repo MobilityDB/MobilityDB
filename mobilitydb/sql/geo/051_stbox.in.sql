@@ -683,7 +683,7 @@ CREATE FUNCTION extentTransition(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
+CREATE FUNCTION extentCombine(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -691,7 +691,7 @@ CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
 CREATE AGGREGATE extent(stbox) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 

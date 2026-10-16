@@ -508,7 +508,7 @@ CREATE FUNCTION setUnionFinal(internal, pcpointset)
 CREATE AGGREGATE setUnion(pcpoint) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -519,7 +519,7 @@ CREATE AGGREGATE setUnion(pcpoint) (
 CREATE AGGREGATE setUnion(pcpointset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -925,7 +925,7 @@ CREATE FUNCTION setUnionFinal(internal, pcpatchset)
 CREATE AGGREGATE setUnion(pcpatch) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -936,7 +936,7 @@ CREATE AGGREGATE setUnion(pcpatch) (
 CREATE AGGREGATE setUnion(pcpatchset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

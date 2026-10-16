@@ -138,7 +138,7 @@ PG_FUNCTION_INFO_V1(Set_union_combinefn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Combine function for union aggregation of sets
- * @sqlfn set_union_combinefn()
+ * @sqlfn setUnionCombine()
  * @sqlaggfn setUnion()
  */
 Datum

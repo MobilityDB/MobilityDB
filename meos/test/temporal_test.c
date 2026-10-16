@@ -37,6 +37,7 @@
  * @endcode
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -3400,6 +3401,37 @@ int main(void)
   printf("temporal_tcount combined from two partial results\n");
   printf("%s\n", char_result);
   free(tint_part1); free(tint_part2); free(tint_result); free(char_result);
+
+  /* SkipList *temporal_tmin_combinefn(SkipList *state1, SkipList *state2); */
+  /* SkipList *temporal_tmax_combinefn(SkipList *state1, SkipList *state2); */
+  /* SkipList *tnumber_tsum_combinefn(SkipList *state1, SkipList *state2); */
+  /* Each combine reads the type of the values from the states, and answers
+   * the aggregate of both values as the transition over both answers it */
+  SkipList *(*combines[])(SkipList *, SkipList *) = {
+    &temporal_tmin_combinefn, &temporal_tmax_combinefn,
+    &tnumber_tsum_combinefn };
+  SkipList *(*transfns[])(SkipList *, const Temporal *) = {
+    &tfloat_tmin_transfn, &tfloat_tmax_transfn, &tfloat_tsum_transfn };
+  const char *combnames[] = { "temporal_tmin_combinefn",
+    "temporal_tmax_combinefn", "tnumber_tsum_combinefn" };
+  for (int i = 0; i < 3; i++)
+  {
+    Temporal *part1 = temporal_tagg_finalfn(transfns[i](NULL, tfloat1));
+    Temporal *part2 = temporal_tagg_finalfn(transfns[i](NULL, tfloat2));
+    sklist1 = temporal_to_taggstate(part1);
+    sklist2 = temporal_to_taggstate(part2);
+    sklist = combines[i](sklist1, sklist2);
+    free(temporal_tagg_finalfn(sklist == sklist1 ? sklist2 : sklist1));
+    tfloat_result = temporal_tagg_finalfn(sklist);
+    Temporal *both = temporal_tagg_finalfn(transfns[i](transfns[i](NULL,
+      tfloat1), tfloat2));
+    char_result = tfloat_out(tfloat_result, 6);
+    printf("%s of two partial results\n", combnames[i]);
+    printf("%s\n", char_result);
+    assert(temporal_eq(tfloat_result, both));
+    free(part1); free(part2); free(both); free(tfloat_result);
+    free(char_result);
+  }
 
   /* SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp); */
   sklist = tfloat_tmax_transfn(NULL, tfloat1);

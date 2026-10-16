@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_extent_combinefn);
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Combine function for the extent aggregates over tpcbox, tpcpoint
  * and tpcpatch values
- * @sqlfn tpcbox_extent_combinefn()
+ * @sqlfn extentCombine()
  * @sqlaggfn extent()
  */
 Datum

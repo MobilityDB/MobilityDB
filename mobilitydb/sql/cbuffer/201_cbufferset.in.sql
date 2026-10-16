@@ -251,7 +251,7 @@ CREATE FUNCTION setUnionFinal(internal, cbufferset)
 CREATE AGGREGATE setUnion(cbuffer) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -262,7 +262,7 @@ CREATE AGGREGATE setUnion(cbuffer) (
 CREATE AGGREGATE setUnion(cbufferset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

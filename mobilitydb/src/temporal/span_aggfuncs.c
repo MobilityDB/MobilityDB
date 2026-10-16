@@ -77,7 +77,7 @@ PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Combine function for extent aggregation of spans
- * @sqlfn extent()
+ * @sqlfn extentCombine()
  * @sqlaggfn extent()
  */
 Datum
@@ -235,7 +235,7 @@ PG_FUNCTION_INFO_V1(Spanset_union_combinefn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Combine function for union aggregation of spans and span sets
- * @sqlfn spanset_union_combinefn()
+ * @sqlfn spansetUnionCombine(), spanUnionCombine()
  * @sqlaggfn spanUnion(), spansetUnion()
  */
 Datum
