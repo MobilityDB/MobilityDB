@@ -434,20 +434,28 @@ quadbin_cell_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 
 /**
  * @ingroup meos_quadbin
- * @brief Return the Web-Mercator tile of a quadbin cell
+ * @brief Return the Web-Mercator tile of a quadbin cell as the array of its
+ * column, row and zoom
+ * @details The column and the row of a tile at zoom `z` lie below `2^z`, and
+ * the zoom of a cell is at most 31, so the three fit an integer
  * @param[in] cell Quadbin cell
- * @param[out] x,y,z Tile column, row, and zoom
- * @errval false
+ * @param[out] count Number of elements in the output array, which is 3
+ * @errval NULL
  * @csqlfn #Quadbin_cell_to_tile()
  */
-bool
-quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
+int *
+quadbin_cell_to_tile(Quadbin cell, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(x, false); VALIDATE_NOT_NULL(y, false);
-  VALIDATE_NOT_NULL(z, false);
-  quadbin_cell_tile(cell, x, y, z);
-  return true;
+  VALIDATE_NOT_NULL(count, NULL);
+  uint32_t x, y, z;
+  quadbin_cell_tile(cell, &x, &y, &z);
+  int *result = palloc(sizeof(int) * 3);
+  result[0] = (int) x;
+  result[1] = (int) y;
+  result[2] = (int) z;
+  *count = 3;
+  return result;
 }
 
 /**

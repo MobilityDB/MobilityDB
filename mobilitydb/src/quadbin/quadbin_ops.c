@@ -483,14 +483,14 @@ Datum
 Quadbin_cell_to_tile(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  int count;
+  int *tile = quadbin_cell_to_tile(cell, &count);
   Datum elems[3];
-  elems[0] = Int32GetDatum((int32) x);
-  elems[1] = Int32GetDatum((int32) y);
-  elems[2] = Int32GetDatum((int32) z);
-  ArrayType *result = construct_array(elems, 3, INT4OID, sizeof(int32), true,
-    TYPALIGN_INT);
+  for (int i = 0; i < count; i++)
+    elems[i] = Int32GetDatum(tile[i]);
+  ArrayType *result = construct_array(elems, count, INT4OID, sizeof(int32),
+    true, TYPALIGN_INT);
+  pfree(tile);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
