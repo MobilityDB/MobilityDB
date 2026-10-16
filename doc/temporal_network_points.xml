@@ -782,12 +782,11 @@ SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]',
 
 			<listitem xml:id="tnpoint_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Merge the temporal network points</para>
+								<para>Merge the temporal network points</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(tnpoint,tnpoint) → tnpoint
 merge(tnpoint[]) → tnpoint
-mergeAgg(tnpoint) → tnpoint
+merge(tnpoint) → tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
@@ -801,7 +800,7 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.1)@2001-01-01' UNION
   SELECT tnpoint 'Npoint(1, 0.2)@2001-01-02' UNION
   SELECT tnpoint 'Npoint(1, 0.3)@2001-01-03' )
-SELECT asText(mergeAgg(inst)) FROM temp;
+SELECT asText(merge(inst)) FROM temp;
 -- {NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02, NPoint(1,0.3)@2001-01-03}
 </programlisting>
 			</listitem>

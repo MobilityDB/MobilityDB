@@ -764,13 +764,13 @@
 					<para><link linkend="ttype_deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Append a temporal instant to a temporal value</para>
+					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname></link>: Append a temporal instant to a temporal value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal sequence to a temporal value</para>
+					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname></link>: Append a temporal sequence to a temporal value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal values</para>
+					<para><link linkend="ttype_merge"><varname>merge</varname></link>: Merge the temporal values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1379,7 +1379,7 @@
 					<para><link linkend="tbool_tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Temporal and, temporal or</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_tMin"><varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
+					<para><link linkend="ttype_tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_wCount"><varname>wCount</varname></link>: Window count</para>
@@ -1628,7 +1628,7 @@
 						<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal poses</para>
+						<para><link linkend="tpose_merge"><varname>merge</varname></link>: Merge the temporal poses</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tposechain_insert"><varname>insert</varname>, <varname>update</varname>, <varname>deleteTime</varname></link>: Insert or update the second temporal pose chain into the first one, or delete a time value from it</para>
@@ -1740,10 +1740,10 @@
 						<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Bounding box extent</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Append the aggregated instants into a sequence</para>
+						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstant</varname></link>: Append the aggregated instants into a sequence</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Append the aggregated sequences into a sequence set</para>
+						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequence</varname></link>: Append the aggregated sequences into a sequence set</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2022,7 +2022,7 @@
 						<para><link linkend="tnpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tnpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal network points</para>
+						<para><link linkend="tnpoint_merge"><varname>merge</varname></link>: Merge the temporal network points</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2324,7 +2324,7 @@
 						<para><link linkend="tcbuffer_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbuffer_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal circular buffers</para>
+						<para><link linkend="tcbuffer_merge"><varname>merge</varname></link>: Merge the temporal circular buffers</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2602,7 +2602,7 @@
 					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Append an entire sequence to an existing trgeometry</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine two trgeometries with the same reference geometry into a single sequence-set</para>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname></link>: Combine two trgeometries with the same reference geometry into a single sequence-set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3297,7 +3297,7 @@
 					<para><link linkend="tcell_wCount"><varname>wCount</varname></link>: Window count</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_agg_twins"><varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Aggregate a set of temporal cells by merging them, or by assembling them into a sequence or a sequence set</para>
+					<para><link linkend="tcell_agg_twins"><varname>merge</varname>, <varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Aggregate a set of temporal cells by merging them, or by assembling them into a sequence or a sequence set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3437,7 +3437,7 @@
 					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Return the share of the pixels of a raster band holding each value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname>, <varname>sameAlignmentAgg</varname></link>: Return true if rasters lie on the same grid</para>
+					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname></link>: Return true if rasters lie on the same grid</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Return why two rasters do not lie on the same grid</para>
@@ -4071,10 +4071,10 @@
 					<para><link linkend="tpcpatch_tdensity"><varname>tdensity</varname></link>: Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_mergeAgg"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine multiple temporal values into a single one with all input instants merged in temporal order</para>
+					<para><link linkend="tpcpoint_mergeAgg"><varname>merge</varname></link>: Combine multiple temporal values into a single one with all input instants merged in temporal order</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_appendInstantAgg"><varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set</para>
+					<para><link linkend="tpcpoint_appendInstantAgg"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

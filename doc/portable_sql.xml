@@ -377,7 +377,7 @@
 	<sect1 xml:id="portable_sql_aggregates">
 		<title>Aggregations</title>
 
-		<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define. MobilityDB also declares the aggregates <varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname> and <varname>sameAlignmentAgg</varname> under the name without <varname>Agg</varname>, which PostgreSQL lets an aggregate share with a function and the other engines do not.</para>
+		<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define. The aggregates <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>sameAlignment</varname>, <varname>tAnd</varname>, <varname>tOr</varname>, <varname>setUnion</varname>, <varname>spanUnion</varname> and <varname>spansetUnion</varname> share their name with a function, which PostgreSQL allows and DuckDB, Apache Spark and Apache Flink do not: those engines call them by the name with <varname>Agg</varname> (<xref linkend="portable_sql_porting_names"/>).</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2 3 4"?>
@@ -397,8 +397,8 @@
 						<row><entry></entry><entry>wSumTransition</entry><entry>wSumCombine</entry><entry>wSumFinal</entry></row>
 						<row><entry>Average</entry><entry>tAvgTransition</entry><entry>tAvgCombine</entry><entry>tAvgFinal</entry></row>
 						<row><entry></entry><entry>wAvgTransition</entry><entry>wAvgCombine</entry><entry>wAvgFinal</entry></row>
-						<row><entry>Minimum / maximum</entry><entry>tMinAggTransition</entry><entry>tMinAggCombine</entry><entry>tMinAggFinal</entry></row>
-						<row><entry></entry><entry>tMaxAggTransition</entry><entry>tMaxAggCombine</entry><entry>tMaxAggFinal</entry></row>
+						<row><entry>Minimum / maximum</entry><entry>tMinTransition</entry><entry>tMinCombine</entry><entry>tMinFinal</entry></row>
+						<row><entry></entry><entry>tMaxTransition</entry><entry>tMaxCombine</entry><entry>tMaxFinal</entry></row>
 						<row><entry></entry><entry>wMinTransition</entry><entry>wMinCombine</entry><entry>wMinFinal</entry></row>
 						<row><entry></entry><entry>wMaxTransition</entry><entry>wMaxCombine</entry><entry>wMaxFinal</entry></row>
 						<row><entry>Boolean</entry><entry>tAndTransition</entry><entry>tAndCombine</entry><entry>tAndFinal</entry></row>
@@ -410,11 +410,11 @@
 						<row><entry>Union</entry><entry>setUnionTransition</entry><entry>setUnionCombine</entry><entry>setUnionFinal</entry></row>
 						<row><entry></entry><entry>spanUnionTransition</entry><entry>spanUnionCombine</entry><entry>spanUnionFinal</entry></row>
 						<row><entry></entry><entry>spansetUnionTransition</entry><entry>spansetUnionCombine</entry><entry>spansetUnionFinal</entry></row>
-						<row><entry>Merge</entry><entry>mergeAggTransition</entry><entry>mergeAggCombine</entry><entry>mergeAggFinal</entry></row>
-						<row><entry>Append</entry><entry>appendInstantAggTransition</entry><entry>—</entry><entry>appendInstantAggFinal</entry></row>
-						<row><entry></entry><entry>appendSequenceAggTransition</entry><entry>—</entry><entry>appendSequenceAggFinal</entry></row>
+						<row><entry>Merge</entry><entry>mergeTransition</entry><entry>mergeCombine</entry><entry>mergeFinal</entry></row>
+						<row><entry>Append</entry><entry>appendInstantTransition</entry><entry>—</entry><entry>appendInstantFinal</entry></row>
+						<row><entry></entry><entry>appendSequenceTransition</entry><entry>—</entry><entry>appendSequenceFinal</entry></row>
 						<row><entry>Raster</entry><entry>rasterUnionTransition</entry><entry>rasterUnionCombine</entry><entry>rasterUnionFinal</entry></row>
-						<row><entry></entry><entry>sameAlignmentAggTransition</entry><entry>sameAlignmentAggCombine</entry><entry>sameAlignmentAggFinal</entry></row>
+						<row><entry></entry><entry>sameAlignmentTransition</entry><entry>sameAlignmentCombine</entry><entry>sameAlignmentFinal</entry></row>
 						<row><entry></entry><entry>summaryStatsAggTransition</entry><entry>summaryStatsAggCombine</entry><entry>summaryStatsAggFinal</entry></row>
 				</tbody>
 			</tgroup>
@@ -489,7 +489,9 @@
 						<row><entry>transform</entry><entry>geometry, geography</entry><entry>geoTransform</entry></row>
 						<row><entry>hash, hashExtended</entry><entry>set, span, span set, box, temporal, base type</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, and their …HashExtended</entry></row>
 						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
-						<row><entry>merge (the aggregate)</entry><entry>temporal</entry><entry>mergeAgg</entry></row>
+						<row><entry>tMin, tMax, merge, appendInstant, appendSequence, tAnd, tOr (the aggregates)</entry><entry>temporal</entry><entry>tMinAgg, tMaxAgg, mergeAgg, appendInstantAgg, appendSequenceAgg, tAndAgg, tOrAgg</entry></row>
+						<row><entry>setUnion, spanUnion, spansetUnion (the aggregates)</entry><entry>base value, set, span, span set</entry><entry>setUnionAgg, spanUnionAgg, spansetUnionAgg</entry></row>
+						<row><entry>sameAlignment (the aggregate)</entry><entry>raster</entry><entry>sameAlignmentAgg</entry></row>
 						<row><entry>unnest</entry><entry>set, temporal</entry><entry>setUnnest, temporalUnnest</entry></row>
 						<row><entry>set (the constructor)</entry><entry>any</entry><entry>setMake</entry></row>
 					</tbody>

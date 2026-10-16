@@ -1276,14 +1276,13 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]',
 
 			<listitem xml:id="tpose_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Fusiona las poses temporales</para>
+								<para>Fusiona las poses temporales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge({tpose,tposechain},{tpose,tposechain}) &#8594; {tpose,tposechain}
 merge({tpose,tposechain}[]) &#8594; {tpose,tposechain}
-mergeAgg({tpose,tposechain}) &#8594; {tpose,tposechain}
+merge({tpose,tposechain}) &#8594; {tpose,tposechain}
 </programlisting>
-				<para>La forma de agregación de la función es <varname>mergeAgg</varname>.</para>
+				<para>El nombre <varname>merge</varname> designa también una agregación, que fusiona los valores de un conjunto de filas.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01,
   Pose(Point(2 2 2),0,1,0,0)@2001-01-02]',
@@ -1303,7 +1302,7 @@ WITH temp(inst) AS (
 SELECT asText(merge(inst)) FROM temp;
 /* {Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02, 
    Pose(POINT(3 3),0.3)@2001-01-03} */
-SELECT asText(mergeAgg(temp)) FROM (VALUES
+SELECT asText(merge(temp)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
 /* {PoseChain(Pose(POINT(1 1),0.1))@2001-01-01,
@@ -1863,14 +1862,13 @@ SELECT extent(temp) FROM (VALUES (NULL::tposechain),
 			</listitem>
 
 			<listitem xml:id="tposechain_appendInstantAgg">
-				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Agrega los instantes agregados en una secuencia</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-appendInstantAgg({tpose,tposechain}) &#8594; {tpose,tposechain}
+appendInstant({tpose,tposechain}) &#8594; {tpose,tposechain}
 </programlisting>
-				<para>El nombre <varname>appendInstant</varname> denota la misma agregación</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendInstantAgg(inst)) FROM (VALUES
+SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(inst);
 /* [PoseChain(Pose(POINT(1 1),0.1))@2001-01-01,
@@ -1879,14 +1877,13 @@ SELECT asText(appendInstantAgg(inst)) FROM (VALUES
 			</listitem>
 
 			<listitem xml:id="tposechain_appendSequenceAgg">
-				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Agrega las secuencias agregadas en un conjunto de secuencias</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-appendSequenceAgg({tpose,tposechain}) &#8594; {tpose,tposechain}
+appendSequence({tpose,tposechain}) &#8594; {tpose,tposechain}
 </programlisting>
-				<para>El nombre <varname>appendSequence</varname> denota la misma agregación</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
+SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);
 /* {[PoseChain(Pose(POINT(1 1),0.1))@2001-01-01],

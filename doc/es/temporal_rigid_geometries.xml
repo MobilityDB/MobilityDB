@@ -658,11 +658,10 @@ SELECT asText(appendSequence(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			</listitem>
 			<listitem xml:id="trgeometry_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Combina dos trgeometries con la misma geometría de referencia en un único conjunto de secuencias</para>
+								<para>Combina dos trgeometries con la misma geometría de referencia en un único conjunto de secuencias</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(trgeometry,trgeometry) → trgeometry
-mergeAgg(trgeometry) → trgeometry
+merge(trgeometry) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));

@@ -764,13 +764,13 @@
 					<para><link linkend="ttype_deleteTime"><varname>deleteTime</varname></link>: Elimina de un valor temporal un valor de tiempo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Anexa un instante temporal a un valor temporal</para>
+					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname></link>: Anexa un instante temporal a un valor temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Anexa una secuencia temporal a un valor temporal</para>
+					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname></link>: Anexa una secuencia temporal a un valor temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusiona los valores temporales</para>
+					<para><link linkend="ttype_merge"><varname>merge</varname></link>: Fusiona los valores temporales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1379,7 +1379,7 @@
 					<para><link linkend="tbool_tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Y, o temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_tMin"><varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Mínimo, máximo, suma y promedio temporal</para>
+					<para><link linkend="ttype_tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Mínimo, máximo, suma y promedio temporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
@@ -1626,7 +1626,7 @@
 					<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agrega un instante temporal o una secuencia temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpose_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusiona las poses temporales</para>
+					<para><link linkend="tpose_merge"><varname>merge</varname></link>: Fusiona las poses temporales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tposechain_insert"><varname>insert</varname>, <varname>update</varname>, <varname>deleteTime</varname></link>: Inserta o actualizar la segunda cadena de poses temporal en la primera, o eliminar de ella un valor de tiempo</para>
@@ -1738,10 +1738,10 @@
 					<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Agrega los instantes agregados en una secuencia</para>
+					<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstant</varname></link>: Agrega los instantes agregados en una secuencia</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Agrega las secuencias agregadas en un conjunto de secuencias</para>
+					<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequence</varname></link>: Agrega las secuencias agregadas en un conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2017,7 +2017,7 @@
 					<para><link linkend="tnpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agrega un instante temporal o una secuencia temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusiona los puntos de red temporales</para>
+					<para><link linkend="tnpoint_merge"><varname>merge</varname></link>: Fusiona los puntos de red temporales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2316,7 +2316,7 @@
 					<para><link linkend="tcbuffer_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agrega un instante temporal o una secuencia temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcbuffer_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusiona los búferes circulares temporales</para>
+					<para><link linkend="tcbuffer_merge"><varname>merge</varname></link>: Fusiona los búferes circulares temporales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2593,7 +2593,7 @@
 					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Agrega una secuencia completa a una trgeometry existente</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un único conjunto de secuencias</para>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un único conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3288,7 +3288,7 @@
 					<para><link linkend="tcell_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_agg_twins"><varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Agregar un conjunto de celdas temporales fusionándolas, o ensamblándolas en una secuencia o en un conjunto de secuencias</para>
+					<para><link linkend="tcell_agg_twins"><varname>merge</varname>, <varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agregar un conjunto de celdas temporales fusionándolas, o ensamblándolas en una secuencia o en un conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3428,7 +3428,7 @@
 					<para><link linkend="raster_valuePercent"><varname>valuePercent</varname></link>: Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname>, <varname>sameAlignmentAgg</varname></link>: Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
+					<para><link linkend="raster_sameAlignment"><varname>sameAlignment</varname></link>: Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Devuelve por qué dos rásteres no están sobre la misma rejilla</para>
@@ -4062,10 +4062,10 @@
 					<para><link linkend="tpcpatch_tdensity"><varname>tdensity</varname></link>: Densidad de puntos por instante (<varname>numPoints / área-bbox-xy</varname>) sumada a través de las filas</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_mergeAgg"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</para>
+					<para><link linkend="tpcpoint_mergeAgg"><varname>merge</varname></link>: Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_appendInstantAgg"><varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias</para>
+					<para><link linkend="tpcpoint_appendInstantAgg"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
