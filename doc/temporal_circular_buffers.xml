@@ -889,12 +889,11 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]',
 
 			<listitem xml:id="tcbuffer_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Merge the temporal circular buffers</para>
+								<para>Merge the temporal circular buffers</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(tcbuffer,tcbuffer) → tcbuffer
 merge(tcbuffer[]) → tcbuffer
-mergeAgg(tcbuffer) → tcbuffer
+merge(tcbuffer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
@@ -908,7 +907,7 @@ SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
 WITH temp(inst) AS (
   SELECT tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01' UNION
   SELECT tcbuffer 'Cbuffer(Point(2 2), 0.2)@2001-01-02' )
-SELECT asText(mergeAgg(inst)) FROM temp;
+SELECT asText(merge(inst)) FROM temp;
 -- {Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02}
 </programlisting>
 			</listitem>
