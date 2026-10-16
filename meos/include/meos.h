@@ -1243,18 +1243,23 @@ extern Set *timestamptz_union_transfn(Set *state, TimestampTz t);
 
 extern int64 bigint_get_bin(int64 value, int64 vsize, int64 vorigin);
 extern Span *bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, bool border_inc, int *count);
+extern Span *bigintspan_get_bin(int64 value, int64 vsize, int64 vorigin);
 extern Span *bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin, bool border_inc, int *count);
 extern DateADT date_get_bin(DateADT d, const Interval *duration, DateADT torigin);
 extern Span *datespan_bins(const Span *s, const Interval *duration, DateADT torigin, bool border_inc, int *count);
+extern Span *datespan_get_bin(DateADT d, const Interval *duration, DateADT torigin);
 extern Span *datespanset_bins(const SpanSet *ss, const Interval *duration, DateADT torigin, bool border_inc, int *count);
 extern double float_get_bin(double value, double vsize, double vorigin);
 extern Span *floatspan_bins(const Span *s, double vsize, double vorigin, bool border_inc, int *count);
+extern Span *floatspan_get_bin(double value, double vsize, double vorigin);
 extern Span *floatspanset_bins(const SpanSet *ss, double vsize, double vorigin, bool border_inc, int *count);
 extern int int_get_bin(int value, int vsize, int vorigin);
 extern Span *intspan_bins(const Span *s, int vsize, int vorigin, bool border_inc, int *count);
+extern Span *intspan_get_bin(int value, int vsize, int vorigin);
 extern Span *intspanset_bins(const SpanSet *ss, int vsize, int vorigin, bool border_inc, int *count);
 extern TimestampTz timestamptz_get_bin(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Span *tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
+extern Span *tstzspan_get_bin(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Span *tstzspanset_bins(const SpanSet *ss, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 
 /*===========================================================================*
@@ -2137,6 +2142,9 @@ extern Temporal **tbigint_value_time_split(const Temporal *temp, int64 vsize, co
 extern TBox *tbigintbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 extern TBox *tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin, bool border_inc, int *count);
 extern TBox *tbigintbox_value_time_tiles(const TBox *box, int64 vsize, const Interval *duration, int64 vorigin, TimestampTz torigin, bool border_inc, int *count);
+extern TBox *tbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin);
+extern TBox *tbox_get_value_tile(double value, double vsize, double vorigin);
+extern TBox *tbox_get_value_time_tile(double value, TimestampTz t, double vsize, const Interval *duration, double vorigin, TimestampTz torigin);
 extern TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 extern Span *tfloat_value_bins(const Temporal *temp, double vsize, double vorigin, bool border_inc, int *count);
 extern TBox *tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin, bool border_inc, int *count);

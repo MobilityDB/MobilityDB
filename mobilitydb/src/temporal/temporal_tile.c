@@ -122,13 +122,17 @@ PG_FUNCTION_INFO_V1(Value_bin);
 Datum
 Value_bin(PG_FUNCTION_ARGS)
 {
-  Datum value = PG_GETARG_DATUM(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Datum origin = PG_GETARG_DATUM(2);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum lower = datum_bin(value, size, origin, basetype);
-  Datum upper = datum_add(lower, size, basetype);
-  Span *result = span_make(lower, upper, true, false, basetype);
+  Span *result;
+  if (basetype == T_INT4)
+    result = intspan_get_bin(PG_GETARG_INT32(0), PG_GETARG_INT32(1),
+      PG_GETARG_INT32(2));
+  else if (basetype == T_INT8)
+    result = bigintspan_get_bin(PG_GETARG_INT64(0), PG_GETARG_INT64(1),
+      PG_GETARG_INT64(2));
+  else /* basetype == T_FLOAT8 */
+    result = floatspan_get_bin(PG_GETARG_FLOAT8(0), PG_GETARG_FLOAT8(1),
+      PG_GETARG_FLOAT8(2));
   PG_RETURN_SPAN_P(result);
 }
 
@@ -145,12 +149,7 @@ Date_bin(PG_FUNCTION_ARGS)
   DateADT d = PG_GETARG_DATEADT(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   DateADT origin = PG_GETARG_DATEADT(2);
-  DateADT lower = date_get_bin(d, duration, origin);
-  int32 ndays = (int32) (interval_units(duration) / USECS_PER_DAY);
-  DateADT upper = add_date_int(lower, ndays);
-  Span *result = span_make(DateADTGetDatum(lower), DateADTGetDatum(upper),
-    true, false, T_DATE);
-  PG_RETURN_SPAN_P(result);
+  PG_RETURN_SPAN_P(datespan_get_bin(d, duration, origin));
 }
 
 PGDLLEXPORT Datum Timestamptz_bin(PG_FUNCTION_ARGS);
@@ -166,12 +165,7 @@ Timestamptz_bin(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz lower = timestamptz_get_bin(t, duration, origin);
-  int64 tunits = interval_units(duration);
-  TimestampTz upper = lower + tunits;
-  Span *result = span_make(TimestampTzGetDatum(lower), Int64GetDatum(upper),
-    true, false, T_TIMESTAMPTZ);
-  PG_RETURN_SPAN_P(result);
+  PG_RETURN_SPAN_P(tstzspan_get_bin(t, duration, origin));
 }
 
 /*****************************************************************************/
@@ -353,77 +347,56 @@ Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/**
- * @brief Return a tile in a multidimensional grid for temporal numbers
- * (external function)
- */
-Datum
-Tbox_get_value_time_tile_common(FunctionCallInfo fcinfo, bool valuetile,
-  bool timetile)
-{
-  assert(valuetile || timetile);
-
-  /* Initialize to 0 missing dimensions */
-  Datum value = (Datum) 0, vsize = (Datum) 0, vorigin = (Datum) 0;
-  Interval *duration = NULL;
-  TimestampTz t = 0, torigin = 0;
-  /* Get input parameters */
-  int i = 0;
-  if (valuetile)
-    value = PG_GETARG_DATUM(i++);
-  if (timetile)
-    t = PG_GETARG_TIMESTAMPTZ(i++);
-  if (valuetile)
-    vsize = PG_GETARG_DATUM(i++);
-  if (timetile)
-    duration = PG_GETARG_INTERVAL_P(i++);
-  if (valuetile)
-    vorigin = PG_GETARG_DATUM(i++);
-  if (timetile)
-    torigin = PG_GETARG_TIMESTAMPTZ(i++);
-  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  MeosType spantype = basetype_spantype(basetype);
-  PG_RETURN_TBOX_P(tbox_get_value_time_tile(value, t, vsize, duration, vorigin,
-    torigin, basetype, spantype));
-}
-
 PGDLLEXPORT Datum Tbox_get_value_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_get_value_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a tile in a multidimensional grid for temporal numbers
+ * @brief Return a tile in the value grid of a temporal box
  * @sqlfn getValueTile()
  */
-inline Datum
+Datum
 Tbox_get_value_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_common(fcinfo, true, false);
+  double value = PG_GETARG_FLOAT8(0);
+  double vsize = PG_GETARG_FLOAT8(1);
+  double vorigin = PG_GETARG_FLOAT8(2);
+  PG_RETURN_TBOX_P(tbox_get_value_tile(value, vsize, vorigin));
 }
 
 PGDLLEXPORT Datum Tbox_get_time_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_get_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a tile in a multidimensional grid for temporal numbers
+ * @brief Return a tile in the time grid of a temporal box
  * @sqlfn getTBoxTimeTile()
  */
-inline Datum
+Datum
 Tbox_get_time_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_common(fcinfo, false, true);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  PG_RETURN_TBOX_P(tbox_get_time_tile(t, duration, torigin));
 }
 
 PGDLLEXPORT Datum Tbox_get_value_time_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_get_value_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a tile in a multidimensional grid for temporal numbers
+ * @brief Return a tile in the value and time grid of a temporal box
  * @sqlfn getValueTimeTile()
  */
-inline Datum
+Datum
 Tbox_get_value_time_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_common(fcinfo, true, true);
+  double value = PG_GETARG_FLOAT8(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  double vsize = PG_GETARG_FLOAT8(2);
+  Interval *duration = PG_GETARG_INTERVAL_P(3);
+  double vorigin = PG_GETARG_FLOAT8(4);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
+  PG_RETURN_TBOX_P(tbox_get_value_time_tile(value, t, vsize, duration,
+    vorigin, torigin));
 }
 
 /*****************************************************************************
