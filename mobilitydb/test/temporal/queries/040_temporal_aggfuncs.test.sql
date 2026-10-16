@@ -690,10 +690,10 @@ INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
   tstzspan '[2001-01-01, 2001-01-02]',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
-SELECT temporal_extent_transfn(s, tbool 't@2001-02-01'),
+SELECT extentTransition(s, tbool 't@2001-02-01'),
   span_extent_combinefn(s, tstzspan '[2001-03-01, 2001-03-02]'),
-  tnumber_extent_transfn(b, tfloat '100@2001-02-01'),
-  tbox_extent_transfn(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
+  extentTransition(b, tfloat '100@2001-02-01'),
+  extentTransition(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
   tbox_extent_combinefn(b, tbox 'TBOXFLOAT XT([300, 301],[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
 SELECT s = s0, b = b0 FROM tbl_extent_state;

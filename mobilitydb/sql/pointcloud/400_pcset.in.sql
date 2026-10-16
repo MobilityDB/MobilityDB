@@ -488,11 +488,11 @@ CREATE FUNCTION unnest(pcpointset)
  * pcpointset — Aggregate
  ******************************************************************************/
 
-CREATE FUNCTION set_union_transfn(internal, pcpoint)
+CREATE FUNCTION setUnionTransition(internal, pcpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, pcpointset)
+CREATE FUNCTION setUnionTransition(internal, pcpointset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -502,7 +502,7 @@ CREATE FUNCTION pcpointset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(pcpoint) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
@@ -512,7 +512,7 @@ CREATE AGGREGATE setUnion(pcpoint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpointset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpointset_union_finalfn,
@@ -899,11 +899,11 @@ CREATE FUNCTION unnest(pcpatchset)
  * pcpatchset — Aggregate
  ******************************************************************************/
 
-CREATE FUNCTION set_union_transfn(internal, pcpatch)
+CREATE FUNCTION setUnionTransition(internal, pcpatch)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, pcpatchset)
+CREATE FUNCTION setUnionTransition(internal, pcpatchset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -913,7 +913,7 @@ CREATE FUNCTION pcpatchset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(pcpatch) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,
@@ -923,7 +923,7 @@ CREATE AGGREGATE setUnion(pcpatch) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(pcpatchset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = pcpatchset_union_finalfn,

@@ -231,11 +231,11 @@ CREATE FUNCTION unnest(cbufferset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, cbuffer)
+CREATE FUNCTION setUnionTransition(internal, cbuffer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, cbufferset)
+CREATE FUNCTION setUnionTransition(internal, cbufferset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -245,7 +245,7 @@ CREATE FUNCTION cbufferset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(cbuffer) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = cbufferset_union_finalfn,
@@ -255,7 +255,7 @@ CREATE AGGREGATE setUnion(cbuffer) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(cbufferset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = cbufferset_union_finalfn,

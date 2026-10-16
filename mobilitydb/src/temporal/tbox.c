@@ -1074,7 +1074,7 @@ PG_FUNCTION_INFO_V1(Tbox_extent_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for extent aggregation of temporal boxes
- * @sqlfn tbox_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum

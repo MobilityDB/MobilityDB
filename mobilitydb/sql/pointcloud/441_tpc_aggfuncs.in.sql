@@ -32,7 +32,7 @@
  * @brief Aggregate functions for the pgPointCloud temporal types
  */
 
-CREATE FUNCTION tpcbox_extent_transfn(tpcbox, tpcbox)
+CREATE FUNCTION extentTransition(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -41,32 +41,32 @@ CREATE FUNCTION tpcbox_extent_combinefn(tpcbox, tpcbox)
   AS 'MODULE_PATHNAME', 'Tpcbox_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tpc_extent_transfn(tpcbox, tpcpoint)
+CREATE FUNCTION extentTransition(tpcbox, tpcpoint)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpc_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tpc_extent_transfn(tpcbox, tpcpatch)
+CREATE FUNCTION extentTransition(tpcbox, tpcpatch)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpc_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tpcbox) (
-  SFUNC = tpcbox_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = tpcbox,
   COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpoint) (
-  SFUNC = tpc_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = tpcbox,
   COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpatch) (
-  SFUNC = tpc_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = tpcbox,
   COMBINEFUNC = tpcbox_extent_combinefn,
   PARALLEL = safe
@@ -109,13 +109,13 @@ CREATE AGGREGATE tCount(tpcpatch) (
 -- npoints. Distinct from tcount(tpcpatch), which counts the number
 -- of patches (always 1 per instant). For drone LiDAR this is "how
 -- many points were in the cloud at time t".
-CREATE FUNCTION tnpoints_transfn(internal, tpcpatch)
+CREATE FUNCTION tnpointsTransition(internal, tpcpatch)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpcpatch_tnpoints_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tnpoints(tpcpatch) (
-  SFUNC = tnpoints_transfn,
+  SFUNC = tnpointsTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -127,13 +127,13 @@ CREATE AGGREGATE tnpoints(tpcpatch) (
 -- tdensity(tpcpatch) — running temporal sum of per-instant density
 -- (npoints / xy-bbox-area). 1-point or co-linear patches yield
 -- +Infinity for that instant; filter with isfinite() if needed.
-CREATE FUNCTION tdensity_transfn(internal, tpcpatch)
+CREATE FUNCTION tdensityTransition(internal, tpcpatch)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpcpatch_tdensity_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tdensity(tpcpatch) (
-  SFUNC = tdensity_transfn,
+  SFUNC = tdensityTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -175,11 +175,11 @@ CREATE AGGREGATE wCount(tpcpatch, interval) (
  * Merge — combine multiple temporal values into one
  *****************************************************************************/
 
-CREATE FUNCTION mergeTransition(internal, tpcpoint)
+CREATE FUNCTION mergeAggTransition(internal, tpcpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeTransition(internal, tpcpatch)
+CREATE FUNCTION mergeAggTransition(internal, tpcpatch)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -196,7 +196,7 @@ CREATE FUNCTION tpcpatch_tagg_finalfn(internal)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tpcpoint) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpoint_tagg_finalfn,
@@ -206,7 +206,7 @@ CREATE AGGREGATE merge(tpcpoint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tpcpoint) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpoint_tagg_finalfn,
@@ -219,7 +219,7 @@ CREATE AGGREGATE mergeAgg(tpcpoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tpcpatch) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpatch_tagg_finalfn,
@@ -229,7 +229,7 @@ CREATE AGGREGATE merge(tpcpatch) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tpcpatch) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpatch_tagg_finalfn,
@@ -244,12 +244,12 @@ CREATE AGGREGATE mergeAgg(tpcpatch) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint)
+CREATE FUNCTION appendInstantAggTransition(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint,
+CREATE FUNCTION appendInstantAggTransition(tpcpoint, tpcpoint,
     interp text DEFAULT NULL, maxt interval DEFAULT NULL)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -263,13 +263,13 @@ CREATE FUNCTION temporal_append_finalfn(tpcpoint)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpoint) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tpcpoint) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -278,13 +278,13 @@ CREATE AGGREGATE appendInstantAgg(tpcpoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tpcpoint, text, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -292,7 +292,7 @@ CREATE AGGREGATE appendInstantAgg(tpcpoint, text, interval) (
 
 -- tpcpatch
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch)
+CREATE FUNCTION appendInstantAggTransition(tpcpatch, tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -305,13 +305,13 @@ CREATE FUNCTION temporal_append_finalfn(tpcpatch)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpatch) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tpcpatch) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -322,11 +322,11 @@ CREATE AGGREGATE appendInstantAgg(tpcpatch) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceTransition(tpcpoint, tpcpoint)
+CREATE FUNCTION appendSequenceAggTransition(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceTransition(tpcpatch, tpcpatch)
+CREATE FUNCTION appendSequenceAggTransition(tpcpatch, tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -334,13 +334,13 @@ CREATE FUNCTION appendSequenceTransition(tpcpatch, tpcpatch)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tpcpoint) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tpcpoint) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -349,13 +349,13 @@ CREATE AGGREGATE appendSequenceAgg(tpcpoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tpcpatch) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tpcpatch) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

@@ -33,15 +33,15 @@
  */
 
 -- The functions are not strict
-CREATE FUNCTION tint_wmin_transfn(internal, tint, interval)
+CREATE FUNCTION wMinTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_wmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_wmax_transfn(internal, tint, interval)
+CREATE FUNCTION wMaxTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_wmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_wsum_transfn(internal, tint, interval)
+CREATE FUNCTION wSumTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -49,13 +49,13 @@ CREATE FUNCTION wCountTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wavg_transfn(internal, tint, interval)
+CREATE FUNCTION wAvgTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wMin(tint, interval) (
-  SFUNC = tint_wmin_transfn,
+  SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -64,7 +64,7 @@ CREATE AGGREGATE wMin(tint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wMax(tint, interval) (
-  SFUNC = tint_wmax_transfn,
+  SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -73,7 +73,7 @@ CREATE AGGREGATE wMax(tint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wSum(tint, interval) (
-  SFUNC = tint_wsum_transfn,
+  SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -91,7 +91,7 @@ CREATE AGGREGATE wCount(tint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wAvg(tint, interval) (
-  SFUNC = wavg_transfn,
+  SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
   FINALFUNC = tavg_finalfn,
@@ -103,15 +103,15 @@ CREATE AGGREGATE wAvg(tint, interval) (
 /*****************************************************************************/
 
 -- The functions are not strict
-CREATE FUNCTION tbigint_wmin_transfn(internal, tbigint, interval)
+CREATE FUNCTION wMinTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_wmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbigint_wmax_transfn(internal, tbigint, interval)
+CREATE FUNCTION wMaxTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_wmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbigint_wsum_transfn(internal, tbigint, interval)
+CREATE FUNCTION wSumTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -119,13 +119,13 @@ CREATE FUNCTION wCountTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wavg_transfn(internal, tbigint, interval)
+CREATE FUNCTION wAvgTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wMin(tbigint, interval) (
-  SFUNC = tbigint_wmin_transfn,
+  SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -134,7 +134,7 @@ CREATE AGGREGATE wMin(tbigint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wMax(tbigint, interval) (
-  SFUNC = tbigint_wmax_transfn,
+  SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -143,7 +143,7 @@ CREATE AGGREGATE wMax(tbigint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wSum(tbigint, interval) (
-  SFUNC = tbigint_wsum_transfn,
+  SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -161,7 +161,7 @@ CREATE AGGREGATE wCount(tbigint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wAvg(tbigint, interval) (
-  SFUNC = wavg_transfn,
+  SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
   FINALFUNC = tavg_finalfn,
@@ -173,15 +173,15 @@ CREATE AGGREGATE wAvg(tbigint, interval) (
 /*****************************************************************************/
 
 -- The functions are not strict
-CREATE FUNCTION tfloat_wmin_transfn(internal, tfloat, interval)
+CREATE FUNCTION wMinTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_wmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_wmax_transfn(internal, tfloat, interval)
+CREATE FUNCTION wMaxTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_wmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_wsum_transfn(internal, tfloat, interval)
+CREATE FUNCTION wSumTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -189,13 +189,13 @@ CREATE FUNCTION wCountTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wavg_transfn(internal, tfloat, interval)
+CREATE FUNCTION wAvgTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wMin(tfloat, interval) (
-  SFUNC = tfloat_wmin_transfn,
+  SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -204,7 +204,7 @@ CREATE AGGREGATE wMin(tfloat, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wMax(tfloat, interval) (
-  SFUNC = tfloat_wmax_transfn,
+  SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -213,7 +213,7 @@ CREATE AGGREGATE wMax(tfloat, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wSum(tfloat, interval) (
-  SFUNC = tfloat_wsum_transfn,
+  SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tsum_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -231,7 +231,7 @@ CREATE AGGREGATE wCount(tfloat, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wAvg(tfloat, interval) (
-  SFUNC = wavg_transfn,
+  SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
   FINALFUNC = tavg_finalfn,

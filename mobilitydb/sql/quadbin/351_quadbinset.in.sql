@@ -278,12 +278,12 @@ CREATE FUNCTION unnest(quadbinset)
  ******************************************************************************/
 
 -- The transition function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, quadbin)
+CREATE FUNCTION setUnionTransition(internal, quadbin)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_transfn(internal, quadbinset)
+CREATE FUNCTION setUnionTransition(internal, quadbinset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -294,7 +294,7 @@ CREATE FUNCTION quadbinset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(quadbin) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = quadbinset_union_finalfn,
@@ -305,7 +305,7 @@ CREATE AGGREGATE setUnion(quadbin) (
 );
 
 CREATE AGGREGATE setUnion(quadbinset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = quadbinset_union_finalfn,

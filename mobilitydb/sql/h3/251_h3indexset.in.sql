@@ -279,12 +279,12 @@ CREATE FUNCTION unnest(h3indexset)
  ******************************************************************************/
 
 -- The transition function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, h3index)
+CREATE FUNCTION setUnionTransition(internal, h3index)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_transfn(internal, h3indexset)
+CREATE FUNCTION setUnionTransition(internal, h3indexset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -295,7 +295,7 @@ CREATE FUNCTION h3indexset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(h3index) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = h3indexset_union_finalfn,
@@ -306,7 +306,7 @@ CREATE AGGREGATE setUnion(h3index) (
 );
 
 CREATE AGGREGATE setUnion(h3indexset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = h3indexset_union_finalfn,
