@@ -175,9 +175,24 @@ SELECT ttext(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT ttext(tjsonb '"{\"a\":\"x\", \"b\":2.5}"@2001-01-01', text 'a');
 SELECT ttext(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT ttext(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
+-- A geo value is read from a string in a text format of its base type, and a
+-- temporal point is interpolated linearly by default
+SELECT asText(tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\", \"b\":2.5}"@2001-01-01', text 'pos'));
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'));
+SELECT asText(valueAtTimestamp(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'), '2001-01-02'));
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos', 'step'));
+SELECT asEWKT(tgeompoint(tjsonb '[{"pos":"SRID=5676;Point(0 0)"}@2001-01-01, {"pos":"SRID=5676;Point(2 2)"}@2001-01-03]', text 'pos'));
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(1 1)"}@2001-01-02, {"speed":3}@2001-01-03, {"pos":"Point(3 3)"}@2001-01-04, {"pos":"Point(4 4)"}@2001-01-05]', text 'pos', 'linear', 'delete_key'));
+SELECT asEWKT(tgeogpoint(tjsonb '[{"pos":"Point(4.35 50.85)"}@2001-01-01, {"pos":"Point(4.40 50.80)"}@2001-01-02]', text 'pos'));
+SELECT asText(tgeometry(tjsonb '[{"area":"Polygon((0 0,1 0,1 1,0 0))"}@2001-01-01, {"area":"Point(2 2)"}@2001-01-02]', text 'area'));
+SELECT asEWKT(tgeography(tjsonb '[{"area":"Polygon((4 50,5 50,5 51,4 50))"}@2001-01-01, {"area":"Point(4.5 50.5)"}@2001-01-02]', text 'area'));
 /* Errors */
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'xxx');
 SELECT tint(tjsonb '"{\"a\":\"xxx\", \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Polygon((0 0,1 0,1 1,0 0))\"}"@2001-01-01', text 'pos');
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');
+SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 
 -------------------------------------------------------------------------------
 

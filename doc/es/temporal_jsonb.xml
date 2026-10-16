@@ -1274,6 +1274,32 @@ SELECT ttext(tjsonb '[{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tjsonb_tgeo">
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeography</varname></primary></indexterm>
+				<para>Extrae un valor geo temporal de un valor JSONB temporal dado por una clave</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tgeompoint(tjsonb,text,interp text='linear',null_handle text='raise_exception') → tgeompoint
+tgeogpoint(tjsonb,text,interp text='linear',null_handle text='raise_exception') → tgeogpoint
+tgeometry(tjsonb,text,null_handle text='raise_exception') → tgeometry
+tgeography(tjsonb,text,null_handle text='raise_exception') → tgeography
+</programlisting>
+				<para>El valor de la clave es una cadena en un formato de texto de una geometría o una geografía, como WKT o EWKT, que es un punto para los puntos temporales. Como para las funciones anteriores, el valor <varname>use_json_null</varname> no puede utilizarse.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tgeompoint(tjsonb '[{"vehicle": "bus", "pos": "Point(0 0)"}@2001-01-01,
+  {"vehicle": "bus", "pos": "Point(2 2)"}@2001-01-03]', 'pos'));
+-- {[POINT(0 0)@2001-01-01, POINT(2 2)@2001-01-03]}
+SELECT asEWKT(tgeogpoint(tjsonb '[{"pos": "Point(4.35 50.85)"}@2001-01-01,
+  {"pos": "Point(4.40 50.80)"}@2001-01-02]', 'pos'));
+-- SRID=4326;{[POINT(4.35 50.85)@2001-01-01, POINT(4.4 50.8)@2001-01-02]}
+SELECT asText(tgeometry(tjsonb '[{"area": "Polygon((0 0,1 0,1 1,0 0))"}@2001-01-01,
+  {"area": "Point(2 2)"}@2001-01-02]', 'area'));
+-- {[POLYGON((0 0,1 0,1 1,0 0))@2001-01-01, POINT(2 2)@2001-01-02]}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tjsonb_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
 				<para>Concatenación JSONB temporal</para>

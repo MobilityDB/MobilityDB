@@ -200,6 +200,30 @@ CREATE FUNCTION ttext(tjsonb, text, null_handle text DEFAULT 'raise_exception')
   AS 'MODULE_PATHNAME', 'Tjsonb_to_ttext_key'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeompoint(tjsonb, text, interp text DEFAULT 'linear',
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tjsonb_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeogpoint(tjsonb, text, interp text DEFAULT 'linear',
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tjsonb_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeometry(tjsonb, text,
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Tjsonb_to_tgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeography(tjsonb, text,
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Tjsonb_to_tgeography'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION tConcat(jsonb, tjsonb)
