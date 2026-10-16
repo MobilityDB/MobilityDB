@@ -2843,6 +2843,28 @@ SELECT ST_DumpValues(tpi(r, interpolate_nodata => true), 1) FROM dem;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_mapAlgebra">
+				<indexterm significance="normal"><primary><varname>mapAlgebra</varname></primary></indexterm>
+				<para>Devuelve una estadística del vecindario de cada píxel de una banda de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mapAlgebra(rast raster,nband integer,stat text,pixeltype text=NULL,
+  extenttype text='FIRST',customextent raster=NULL,distancex integer=0,
+  distancey integer=0) → raster
+</programlisting>
+				<para>Las estadísticas focales de <varname>ST_MapAlgebra</varname> de PostGIS con las funciones de retorno <varname>ST_Min4ma</varname>, <varname>ST_Max4ma</varname>, <varname>ST_Sum4ma</varname>, <varname>ST_Mean4ma</varname>, <varname>ST_Range4ma</varname> y <varname>ST_StdDev4ma</varname>, con sus argumentos y valores por defecto, la función de retorno nombrada por su estadística: <varname>MIN</varname>, <varname>MAX</varname>, <varname>SUM</varname>, <varname>MEAN</varname>, <varname>RANGE</varname> o <varname>STDDEV</varname>, sin distinguir mayúsculas de minúsculas, como <varname>ST_Union</varname> nombra sus operaciones. El vecindario de un píxel se extiende <varname>distancex</varname> píxeles al oeste y al este y <varname>distancey</varname> píxeles al norte y al sur; sus píxeles sin datos, y los que quedan fuera del ráster, se omiten. La suma de ningún píxel es 0, toda otra estadística de ningún píxel es sin datos, y la desviación estándar es la muestral. Como en PostGIS, un vecindario cuya distancia es cero solo a lo largo de un eje es el píxel solo. Un tipo de píxel dejado en NULL es el de la banda, y el resultado conserva el valor sin datos de la banda, o su valor mínimo cuando no indica ninguno. Todo tipo de extensión salvo <varname>CUSTOM</varname> es la extensión del ráster, y <varname>CUSTOM</varname> toma la grilla de <varname>customextent</varname>. Una estadística o un tipo de extensión fuera de estos produce un error, donde PostGIS lee un tipo de extensión desconocido como <varname>INTERSECTION</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+    [25, 35, 45, 55]]::double precision[][]) AS r )
+SELECT ST_DumpValues(mapAlgebra(r, 1, 'MEAN', '64BF', distancex => 1, distancey => 1), 1)
+FROM dem;
+-- {{17.5,20,32,38.333333333333336},{20,23.75,35,41},{25,29.375,40.625,47},
+--  {27.5,32.5,42.5,47.5}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_clip">
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
@@ -2978,6 +3000,45 @@ ORDER BY val;
 -- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_pixelAsPoints">
+				<indexterm significance="normal"><primary><varname>pixelAsPoints</varname></primary></indexterm>
+				<para>Devuelve los píxeles de una banda de ráster como puntos &SRF;
+</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixelAsPoints(rast raster,band integer=1,exclude_nodata_value boolean=true)
+  → setof (geom geometry,val float,x integer,y integer)
+</programlisting>
+				<para>Los puntos de <varname>ST_PixelAsPoints</varname> de PostGIS: para cada píxel, fila por fila, su esquina superior izquierda en el sistema de referencia del ráster, su valor y su columna y su fila, empezando en 1. Los píxeles que la banda declara como nodata quedan fuera salvo que <varname>exclude_nodata_value</varname> sea falso, en cuyo caso conservan el valor que la banda tiene para ellos, y una banda que no declara valor nodata no deja ninguno fuera. Una banda que el ráster no tiene genera un error, donde PostGIS no devuelve ninguna fila.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT ST_AsText(geom), val, x, y FROM rast, pixelAsPoints(r) LIMIT 2;
+-- POINT(10 20) | 1.5 | 1 | 1
+-- POINT(14 20) |   3 | 3 | 1
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_dumpValues">
+				<indexterm significance="normal"><primary><varname>dumpValues</varname></primary></indexterm>
+				<para>Devuelve los valores de las bandas de un ráster como arreglos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dumpValues(rast raster,nband integer[]=NULL,exclude_nodata_value boolean=true)
+  → setof (nband integer,valarray float[])
+dumpValues(rast raster,nband integer,exclude_nodata_value boolean=true) → float[]
+</programlisting>
+				<para>Los valores de <varname>ST_DumpValues</varname> de PostGIS: un arreglo por banda, una fila del arreglo por fila del ráster, en el orden de las bandas dadas en <varname>nband</varname>, todas las bandas cuando es <varname>NULL</varname>; la forma con una banda devuelve solo su arreglo. Un píxel que la banda declara como nodata es <varname>NULL</varname> salvo que <varname>exclude_nodata_value</varname> sea falso, en cuyo caso es el valor que la banda tiene para él. Una banda que el ráster no tiene, o un número de banda <varname>NULL</varname>, genera un error, donde PostGIS no devuelve ninguna fila o lo omite.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT dumpValues(r, 1), dumpValues(r, 1, false) FROM rast;
+-- {{1.5,NULL,3},{4,5,6}} | {{1.5,-9999,3},{4,5,6}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

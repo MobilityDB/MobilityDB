@@ -3458,6 +3458,9 @@
 					<para><link linkend="raster_tpi"><varname>tpi</varname></link>: Return the topographic position index of a raster band, pixel by pixel</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_mapAlgebra"><varname>mapAlgebra</varname></link>: Return a statistic of the neighbourhood of each pixel of a raster band</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Return a raster keeping the pixels of another that a geometry covers</para>
 				</listitem>
 				<listitem>
@@ -3471,6 +3474,12 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_pixelAsPoints"><varname>pixelAsPoints</varname></link>: Return the pixels of a raster band as points &SRF;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_dumpValues"><varname>dumpValues</varname></link>: Return the values of the bands of a raster as arrays</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>

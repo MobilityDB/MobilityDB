@@ -737,6 +737,48 @@ CREATE FUNCTION dumpAsPolygons(rast raster, band integer DEFAULT 1,
   AS 'MODULE_PATHNAME', 'Raster_dump_as_polygons'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixels of a raster band as points, the upper-left corner
+ * of each pixel with its value, its column and its row
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata_value True to leave the pixels the band states as
+ * nodata out
+ */
+CREATE FUNCTION pixelAsPoints(rast raster, band integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true)
+  RETURNS TABLE(geom geometry, val double precision, x integer, y integer)
+  AS 'MODULE_PATHNAME', 'Raster_pixel_as_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of the bands of a raster, one array per band
+ * @param[in] rast Raster
+ * @param[in] nband Numbers of the bands, starting at 1, or NULL for every band
+ * @param[in] exclude_nodata_value True to answer NULL for the pixels the band
+ * states as nodata
+ */
+CREATE FUNCTION dumpValues(rast raster, nband integer[] DEFAULT NULL,
+    exclude_nodata_value boolean DEFAULT true)
+  RETURNS TABLE(nband integer, valarray double precision[])
+  AS 'MODULE_PATHNAME', 'Raster_dump_values'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of a band of a raster as an array
+ * @param[in] rast Raster
+ * @param[in] nband Number of the band, starting at 1
+ * @param[in] exclude_nodata_value True to answer NULL for the pixels the band
+ * states as nodata
+ */
+CREATE FUNCTION dumpValues(rast raster, nband integer,
+    exclude_nodata_value boolean DEFAULT true)
+  RETURNS double precision[]
+  AS 'MODULE_PATHNAME', 'Raster_dump_values_band'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/
@@ -972,6 +1014,29 @@ CREATE FUNCTION tpi(rast raster, nband integer DEFAULT 1,
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_tpi'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Statistics over a neighbourhood
+ *
+ * The focal statistics of PostGIS's ST_MapAlgebra with the callbacks
+ * st_min4ma, st_max4ma, st_sum4ma, st_mean4ma, st_range4ma and st_stddev4ma,
+ * under its name without ST_ and with its arguments and defaults, the
+ * callback named by its statistic, computed by MEOS.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a statistic of the neighbourhood of each pixel of a band
+ * @note Not STRICT: a pixel type and a custom extent left NULL are the pixel
+ * type of the band and no custom extent
+ */
+CREATE FUNCTION mapAlgebra(rast raster, nband integer, stat text,
+    pixeltype text DEFAULT NULL, extenttype text DEFAULT 'FIRST',
+    customextent raster DEFAULT NULL, distancex integer DEFAULT 0,
+    distancey integer DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_map_algebra'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Value count of rasters

@@ -1680,6 +1680,200 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
 }
 
 /**
+ * @brief Read a band of a raster, the raster deserialized in full
+ * @details The band the accessors of this family read: one the raster does
+ * not have is an error, as it is for #raster_dump_as_polygons, rather than
+ * the empty set PostGIS answers
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[out] raster Raster deserialized, which the caller destroys
+ * @return The band
+ * @errval NULL
+ */
+static rt_band
+raster_read_band(const Raster *rast, int band, rt_raster *raster)
+{
+  *raster = rt_raster_deserialize((void *) rast, 0);
+  if (! *raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(*raster);
+  rt_band result = (band >= 1 && band <= numbands) ?
+    rt_raster_get_band(*raster, (uint32_t) (band - 1)) : NULL;
+  if (! result)
+  {
+    raster_destroy(*raster);
+    *raster = NULL;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Free an array of pixels
+ * @param[in] pixarr Array of pixels
+ * @param[in] count Number of elements in the array
+ */
+void
+pixel_arr_free(Pixel *pixarr, int count)
+{
+  if (! pixarr)
+    return;
+  for (int i = 0; i < count; i++)
+    if (pixarr[i].geom)
+      pfree(pixarr[i].geom);
+  pfree(pixarr);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the pixels of a raster band as points
+ * @details The points of PostGIS's `ST_PixelAsPoints`: for each pixel, row by
+ * row, its upper-left corner in the reference system of the raster, its value
+ * and its column and row, starting at 1. With @p exclude_nodata the pixels the
+ * band states as nodata are left out, which a band stating no nodata value
+ * leaves none of; otherwise a nodata pixel keeps the value the band holds
+ * for it
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the nodata pixels out
+ * @param[out] count Number of pixels answered
+ * @return An array the caller releases with #pixel_arr_free(), or NULL where
+ * no pixel is answered, in which case @p count is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_pixel_as_points()
+ */
+Pixel *
+raster_pixel_as_points(const Raster *rast, int band, bool exclude_nodata,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  rt_raster raster;
+  rt_band rtband = raster_read_band(rast, band, &raster);
+  if (! rtband)
+    return NULL;
+  int width = (int) rt_raster_get_width(raster);
+  int height = (int) rt_raster_get_height(raster);
+  int32_t srid = (int32_t) rt_raster_get_srid(raster);
+  if (width < 1 || height < 1)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  Pixel *result = palloc0(sizeof(Pixel) * (size_t) width * (size_t) height);
+  int n = 0;
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < width; x++)
+    {
+      double value, xw, yw;
+      int isnodata = 0;
+      if (rt_band_get_pixel(rtband, x, y, &value, &isnodata) != ES_NONE ||
+          rt_raster_cell_to_geopoint(raster, x, y, &xw, &yw, NULL) != ES_NONE)
+      {
+        pixel_arr_free(result, n);
+        raster_destroy(raster);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not read the pixel (%d, %d) of band %d", x + 1, y + 1, band);
+        return NULL;
+      }
+      if (isnodata && exclude_nodata)
+        continue;
+      LWGEOM *point = lwpoint_as_lwgeom(lwpoint_make2d(srid, xw, yw));
+      result[n].x = x + 1;
+      result[n].y = y + 1;
+      result[n].nodata = (isnodata != 0);
+      result[n].value = value;
+      result[n].geom = geo_serialize(point);
+      lwgeom_free(point);
+      n++;
+    }
+  }
+  raster_destroy(raster);
+  if (! n)
+  {
+    pfree(result);
+    return NULL;
+  }
+  *count = n;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the values of a raster band
+ * @details The values of PostGIS's `ST_DumpValues`, row by row, the
+ * @p count of them the width times the height of the raster. With
+ * @p exclude_nodata, @p nodata states the pixels the band states as nodata,
+ * which PostGIS answers as NULL; otherwise every value is the one the band
+ * holds and @p nodata states none
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to state the nodata pixels
+ * @param[out] nodata Array of the same length, true for a nodata pixel
+ * stated, which the caller frees
+ * @param[out] count Number of values answered
+ * @return An array of values the caller frees, or NULL where the raster has
+ * no pixel, in which case @p count is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_dump_values()
+ */
+double *
+raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
+  bool **nodata, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(nodata, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  *nodata = NULL;
+  *count = 0;
+  rt_raster raster;
+  rt_band rtband = raster_read_band(rast, band, &raster);
+  if (! rtband)
+    return NULL;
+  int width = (int) rt_raster_get_width(raster);
+  int height = (int) rt_raster_get_height(raster);
+  if (width < 1 || height < 1)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  size_t n = (size_t) width * (size_t) height;
+  double *result = palloc(sizeof(double) * n);
+  bool *isnull = palloc(sizeof(bool) * n);
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < width; x++)
+    {
+      size_t i = (size_t) y * (size_t) width + (size_t) x;
+      int isnodata = 0;
+      if (rt_band_get_pixel(rtband, x, y, &result[i], &isnodata) != ES_NONE)
+      {
+        pfree(result); pfree(isnull);
+        raster_destroy(raster);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not read the pixel (%d, %d) of band %d", x + 1, y + 1, band);
+        return NULL;
+      }
+      isnull[i] = exclude_nodata && isnodata;
+    }
+  }
+  raster_destroy(raster);
+  *nodata = isnull;
+  *count = (int) n;
+  return result;
+}
+
+/**
  * @ingroup meos_raster_base_accessor
  * @brief Return what the pixels of a raster band amount to
  * @details The band is read ONCE and answers one value carrying every
@@ -3502,6 +3696,293 @@ raster_tpi(const Raster *rast, int band, const Raster *customextent,
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
   return raster_terrain(rast, band, customextent, pixeltype,
     interpolate_nodata, raster_tpi_callback, NULL);
+}
+
+/*****************************************************************************
+ * Statistics over a neighbourhood
+ *****************************************************************************/
+
+/**
+ * @brief Statistic of the pixels of a neighbourhood
+ */
+typedef enum
+{
+  MAPALG_MIN,
+  MAPALG_MAX,
+  MAPALG_SUM,
+  MAPALG_MEAN,
+  MAPALG_RANGE,
+  MAPALG_STDDEV,
+} RasterMapAlgStat;
+
+/**
+ * @brief Compute a statistic of the neighbourhood of a pixel
+ * @details A callback of `rt_raster_iterator` as #raster_tpi_callback is, over
+ * a neighbourhood of any size. The statistics of PostGIS's `st_min4ma`,
+ * `st_max4ma`, `st_sum4ma`, `st_mean4ma`, `st_range4ma` and `st_stddev4ma`
+ * without user arguments: the nodata pixels of the neighbourhood, and those
+ * outside the raster, are skipped; the sum of no pixel is 0, every other
+ * statistic of no pixel is nodata, and the standard deviation is the sample
+ * one of the SQL aggregate `stddev`, nodata for fewer than two pixels
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+raster_map_algebra_callback(rt_iterator_arg arg, void *userarg, double *value,
+  int *nodata)
+{
+  RasterMapAlgStat stat = *(const RasterMapAlgStat *) userarg;
+  /* The squared deviations accumulate as PostgreSQL's float8_accum does, by
+   * the update of Youngs and Cramer, row by row as unnest reads the window */
+  double min = INFINITY, max = -INFINITY, sum = 0.0, sqdev = 0.0;
+  int count = 0;
+  for (uint32_t row = 0; row < arg->rows; row++)
+  {
+    for (uint32_t col = 0; col < arg->columns; col++)
+    {
+      if (arg->nodata[0][row][col])
+        continue;
+      double v = arg->values[0][row][col];
+      if (v < min)
+        min = v;
+      if (v > max)
+        max = v;
+      sum += v;
+      count++;
+      if (count > 1)
+      {
+        double tmp = v * count - sum;
+        sqdev += tmp * tmp / ((double) count * (count - 1));
+      }
+    }
+  }
+
+  *value = 0.0;
+  *nodata = 0;
+  if (stat == MAPALG_SUM)
+  {
+    *value = sum;
+    return 1;
+  }
+  if (count == 0 || (stat == MAPALG_STDDEV && count < 2))
+  {
+    *nodata = 1;
+    return 1;
+  }
+  switch (stat)
+  {
+    case MAPALG_MIN:
+      *value = min;
+      break;
+    case MAPALG_MAX:
+      *value = max;
+      break;
+    case MAPALG_MEAN:
+      *value = sum / count;
+      break;
+    case MAPALG_RANGE:
+      *value = max - min;
+      break;
+    default: /* MAPALG_STDDEV */
+      *value = sqrt(sqdev / (count - 1));
+  }
+  return 1;
+}
+
+/**
+ * @brief Return the position of a name in a list of names, regardless of case
+ * @details The upper case lookup #raster_resample_alg makes of an algorithm,
+ * over any list of names; the family holds no lookup of its own to call
+ * @return The position, or -1 where the list does not hold the name
+ */
+static int
+raster_name_index(const char *name, const char * const *names, int count)
+{
+  size_t len = strlen(name);
+  char *upper = palloc(len + 1);
+  for (size_t i = 0; i < len; i++)
+    upper[i] = (char) toupper((unsigned char) name[i]);
+  upper[len] = '\0';
+  int result = -1;
+  for (int i = 0; i < count; i++)
+  {
+    if (strcmp(upper, names[i]) == 0)
+    {
+      result = i;
+      break;
+    }
+  }
+  pfree(upper);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a statistic of the neighbourhood of each pixel of a band
+ * @details The focal statistics PostGIS computes by `ST_MapAlgebra` with the
+ * callbacks `st_min4ma`, `st_max4ma`, `st_sum4ma`, `st_mean4ma`,
+ * `st_range4ma` and `st_stddev4ma`, each named here by its statistic as
+ * `ST_Union` names its operations, read through `rt_raster_iterator` as
+ * #raster_terrain reads a 3x3 neighbourhood. The neighbourhood of a pixel
+ * extends @p distancex pixels to the west and to the east and @p distancey
+ * pixels to the north and to the south; its nodata pixels, and those outside
+ * the raster, are skipped. The sum of no pixel is 0, every other statistic of
+ * no pixel is nodata, and the standard deviation is the sample one, nodata for
+ * fewer than two pixels. As for PostGIS, which reads the neighbourhood through
+ * the same iterator, a neighbourhood whose distance is zero along one axis
+ * only is the pixel alone. The result states the nodata value of the band, or
+ * its minimum value where it states none, as PostGIS's does.
+ *
+ * Over one raster every extent type but `CUSTOM` is the extent of the raster;
+ * `CUSTOM` takes the extent of @p customextent, which is otherwise not read.
+ * A statistic or an extent type outside those raises an error, where PostGIS
+ * reads an unknown extent type as `INTERSECTION`
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] stat Statistic: `MIN`, `MAX`, `SUM`, `MEAN`, `RANGE` or
+ * `STDDEV`, regardless of case
+ * @param[in] pixeltype Name of the pixel type of the result, or NULL for the
+ * pixel type of the band
+ * @param[in] extenttype Extent of the result: `INTERSECTION`, `UNION`,
+ * `FIRST`, `SECOND`, `LAST` or `CUSTOM`, regardless of case, or NULL for
+ * `FIRST`
+ * @param[in] customextent Raster whose extent the result takes where
+ * @p extenttype is `CUSTOM`
+ * @param[in] distancex Number of pixels of the neighbourhood on each side of
+ * a pixel along X
+ * @param[in] distancey Number of pixels of the neighbourhood on each side of
+ * a pixel along Y
+ * @errval NULL
+ * @csqlfn #Raster_map_algebra()
+ */
+Raster *
+raster_map_algebra(const Raster *rast, int band, const char *stat,
+  const char *pixeltype, const char *extenttype, const Raster *customextent,
+  int32 distancex, int32 distancey)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(stat, NULL);
+  if (distancex < 0 || distancey < 0 || distancex > UINT16_MAX ||
+      distancey > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The distances of a neighbourhood must be between 0 and %d",
+      UINT16_MAX);
+    return NULL;
+  }
+  static const char * const statnames[] = {"MIN", "MAX", "SUM", "MEAN",
+    "RANGE", "STDDEV"};
+  int statnum = raster_name_index(stat, statnames,
+    (int) (sizeof(statnames) / sizeof(statnames[0])));
+  if (statnum < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown statistic of a neighbourhood: %s", stat);
+    return NULL;
+  }
+  RasterMapAlgStat statarg = (RasterMapAlgStat) statnum;
+  bool custom = false;
+  if (extenttype)
+  {
+    static const char * const extentnames[] = {"INTERSECTION", "UNION",
+      "FIRST", "SECOND", "LAST", "CUSTOM"};
+    int extentnum = raster_name_index(extenttype, extentnames,
+      (int) (sizeof(extentnames) / sizeof(extentnames[0])));
+    if (extentnum < 0)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unknown extent type: %s", extenttype);
+      return NULL;
+    }
+    custom = (extentnum == 5);
+  }
+  if (custom && ! customextent)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The extent type CUSTOM needs a custom extent");
+    return NULL;
+  }
+  rt_pixtype pixtype = PT_END;
+  if (pixeltype)
+  {
+    pixtype = rt_pixtype_index_from_name(pixeltype);
+    if (pixtype == PT_END)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unknown pixel type: %s", pixeltype);
+      return NULL;
+    }
+  }
+
+  /* The bands are read, so the raster is deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+  int32_t srid = (int32_t) rt_raster_get_srid(raster);
+
+  rt_raster extent = NULL;
+  if (custom)
+  {
+    /* Only the extent is read, so the header suffices */
+    extent = raster_header(customextent);
+    const char *reason = NULL;
+    if (! extent)
+    {
+      raster_destroy(raster);
+      return NULL;
+    }
+    if (! ensure_same_srid(srid, (int32_t) rt_raster_get_srid(extent)) ||
+        ! raster_grids_aligned(raster, extent, &reason))
+    {
+      rt_raster_destroy(extent); raster_destroy(raster);
+      if (reason)
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", reason);
+      return NULL;
+    }
+  }
+
+  /* The result states the nodata value of the band, or its minimum value */
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  if (pixtype == PT_END)
+    pixtype = rt_band_get_pixtype(rtband);
+  double nodataval;
+  if (rt_band_get_hasnodata_flag(rtband))
+    rt_band_get_nodata(rtband, &nodataval);
+  else
+    nodataval = rt_band_get_min_value(rtband);
+
+  struct rt_iterator_t itrset[1];
+  itrset[0].raster = raster;
+  itrset[0].nband = (uint16_t) (band - 1);
+  itrset[0].nbnodata = 1;
+
+  rt_raster result = NULL;
+  rt_errorstate status = rt_raster_iterator(itrset, 1,
+    extent ? ET_CUSTOM : ET_FIRST, extent, pixtype, 1, nodataval,
+    (uint16_t) distancex, (uint16_t) distancey, NULL, &statarg,
+    raster_map_algebra_callback, &result);
+  if (extent) rt_raster_destroy(extent);
+  raster_destroy(raster);
+  if (status != ES_NONE || ! result)
+  {
+    if (result) raster_destroy(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute band %d of the result", band);
+    return NULL;
+  }
+  rt_raster_set_srid(result, srid);
+  return raster_serialize_destroy(result);
 }
 
 /*****************************************************************************

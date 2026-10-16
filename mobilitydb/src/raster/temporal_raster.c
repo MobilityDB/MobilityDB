@@ -1138,6 +1138,195 @@ Raster_dump_as_polygons(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
 }
 
+PGDLLEXPORT Datum Raster_pixel_as_points(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_pixel_as_points);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixels of a raster band as points
+ * @details Set-returning function emitting one record per pixel, as
+ * ST_PixelAsPoints emits them
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out
+ * @sqlfn pixelAsPoints()
+ */
+Datum
+Raster_pixel_as_points(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* The pixels are kept across the calls, so they are computed in the
+     * context that outlives them */
+    MemoryContext oldctx = MemoryContextSwitchTo(
+      funcctx->multi_call_memory_ctx);
+    Datum rast_datum = PG_GETARG_DATUM(0);
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+    int band = PG_GETARG_INT32(1);
+    bool exclude_nodata = PG_GETARG_BOOL(2);
+    int count = 0;
+    funcctx->user_fctx = (void *) raster_pixel_as_points(rast, band,
+      exclude_nodata, &count);
+    funcctx->max_calls = count;
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldctx);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+  Pixel *pixarr = (Pixel *) funcctx->user_fctx;
+  if (funcctx->call_cntr >= funcctx->max_calls)
+  {
+    pixel_arr_free(pixarr, funcctx->max_calls);
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  const Pixel *pix = &pixarr[funcctx->call_cntr];
+  Datum values[4];
+  bool isnull[4] = {false, false, false, false};
+  values[0] = PointerGetDatum(pix->geom);
+  values[1] = Float8GetDatum(pix->value);
+  values[2] = Int32GetDatum(pix->x);
+  values[3] = Int32GetDatum(pix->y);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+/**
+ * @brief Return the values of a band of a raster as a two-dimensional array,
+ * a row per row of the raster, NULL where the raster has no pixel
+ */
+static ArrayType *
+raster_values_array(const Raster *rast, int band, bool exclude_nodata)
+{
+  bool *nodata = NULL;
+  int count = 0;
+  double *values = raster_dump_values(rast, band, exclude_nodata, &nodata,
+    &count);
+  if (! values)
+    return NULL;
+  Datum *elems = palloc(sizeof(Datum) * (size_t) count);
+  for (int i = 0; i < count; i++)
+    elems[i] = Float8GetDatum(values[i]);
+  int dims[2] = {raster_height(rast), raster_width(rast)};
+  int lbs[2] = {1, 1};
+  ArrayType *result = construct_md_array(elems, nodata, 2, dims, lbs,
+    FLOAT8OID, sizeof(float8), FLOAT8PASSBYVAL, TYPALIGN_DOUBLE);
+  pfree(elems); pfree(values); pfree(nodata);
+  return result;
+}
+
+/**
+ * @brief State of the set-returning function answering the values of the
+ * bands of a raster
+ */
+typedef struct
+{
+  Raster *rast;         /**< Raster read */
+  int *bands;           /**< Numbers of the bands, starting at 1 */
+  bool exclude_nodata;  /**< True to answer NULL for the nodata pixels */
+} RasterValuesState;
+
+PGDLLEXPORT Datum Raster_dump_values(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_dump_values);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of the bands of a raster, one array per band
+ * @details Set-returning function emitting one record per band, in the order
+ * the bands are given, as ST_DumpValues emits them; a NULL array of bands
+ * reads every band
+ * @param[in] rast Raster
+ * @param[in] nband Numbers of the bands, starting at 1
+ * @param[in] exclude_nodata True to answer NULL for the pixels the band states
+ * as nodata
+ * @note Not STRICT: a NULL array of bands reads every band, and a NULL
+ * exclusion takes its default
+ * @sqlfn dumpValues()
+ */
+Datum
+Raster_dump_values(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* The raster and its bands are kept across the calls, so they are read
+     * in the context that outlives them */
+    MemoryContext oldctx = MemoryContextSwitchTo(
+      funcctx->multi_call_memory_ctx);
+    RasterValuesState *state = palloc0(sizeof(RasterValuesState));
+    int count = 0;
+    if (! PG_ARGISNULL(0))
+    {
+      state->rast = (Raster *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(0));
+      state->exclude_nodata = PG_ARGISNULL(2) ? true : PG_GETARG_BOOL(2);
+      if (PG_ARGISNULL(1))
+      {
+        count = raster_num_bands(state->rast);
+        state->bands = palloc(sizeof(int) * (size_t) (count > 0 ? count : 1));
+        for (int i = 0; i < count; i++)
+          state->bands[i] = i + 1;
+      }
+      else
+      {
+        Datum *elems = datumarr_extract(PG_GETARG_ARRAYTYPE_P(1), &count);
+        state->bands = palloc(sizeof(int) * (size_t) (count > 0 ? count : 1));
+        for (int i = 0; i < count; i++)
+          state->bands[i] = DatumGetInt32(elems[i]);
+        pfree(elems);
+      }
+    }
+    funcctx->user_fctx = (void *) state;
+    funcctx->max_calls = count;
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldctx);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+  RasterValuesState *state = (RasterValuesState *) funcctx->user_fctx;
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+
+  int band = state->bands[funcctx->call_cntr];
+  ArrayType *valarray = raster_values_array(state->rast, band,
+    state->exclude_nodata);
+  Datum values[2];
+  bool isnull[2] = {false, valarray == NULL};
+  values[0] = Int32GetDatum(band);
+  values[1] = PointerGetDatum(valarray);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+PGDLLEXPORT Datum Raster_dump_values_band(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_dump_values_band);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of a band of a raster as an array
+ * @param[in] rast Raster
+ * @param[in] nband Number of the band, starting at 1
+ * @param[in] exclude_nodata True to answer NULL for the pixels the band states
+ * as nodata
+ * @sqlfn dumpValues()
+ */
+Datum
+Raster_dump_values_band(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  bool exclude_nodata = PG_GETARG_BOOL(2);
+  ArrayType *result = raster_values_array(rast, band, exclude_nodata);
+  PG_FREE_IF_COPY(rast, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 /*****************************************************************************
  * raster_tile_value_quadbin
  *****************************************************************************/
@@ -2190,6 +2379,52 @@ Datum
 Raster_tpi_extent(PG_FUNCTION_ARGS)
 {
   return Raster_terrain_index(fcinfo, true, &raster_tpi);
+}
+
+/*****************************************************************************
+ * Raster type: statistics over a neighbourhood
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_map_algebra(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_map_algebra);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a statistic of the neighbourhood of each pixel of a band
+ * @sqlfn mapAlgebra()
+ */
+Datum
+Raster_map_algebra(PG_FUNCTION_ARGS)
+{
+  /* The function is not STRICT, so that a pixel type and a custom extent
+   * left NULL reach MEOS, as for PostGIS, as #Raster_slope_extent lets a
+   * custom extent through; every other argument is tested */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2) ||
+      PG_ARGISNULL(6) || PG_ARGISNULL(7))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  char *stat = text_to_cstring(PG_GETARG_TEXT_P(2));
+  char *pixeltype = PG_ARGISNULL(3) ? NULL :
+    text_to_cstring(PG_GETARG_TEXT_P(3));
+  char *extenttype = PG_ARGISNULL(4) ? NULL :
+    text_to_cstring(PG_GETARG_TEXT_P(4));
+  Raster *extent = PG_ARGISNULL(5) ? NULL :
+    (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(5));
+  int32 distancex = PG_GETARG_INT32(6);
+  int32 distancey = PG_GETARG_INT32(7);
+  Raster *result = raster_map_algebra(rast, band, stat, pixeltype, extenttype,
+    extent, distancex, distancey);
+  pfree(stat);
+  if (pixeltype)
+    pfree(pixeltype);
+  if (extenttype)
+    pfree(extenttype);
+  PG_FREE_IF_COPY(rast, 0);
+  if (extent)
+    PG_FREE_IF_COPY(extent, 5);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

@@ -133,6 +133,21 @@ typedef struct
 } GeomVal;
 
 /**
+ * @brief A pixel of a raster band
+ * @details The shape of PostGIS's @p rt_pixel and of the rows of its
+ * @p ST_PixelAsPoints: the column and the row of the pixel, whether it is
+ * nodata, its value and its upper-left corner
+ */
+typedef struct
+{
+  int x;              /**< Column of the pixel, starting at 1 */
+  int y;              /**< Row of the pixel, starting at 1 */
+  bool nodata;        /**< True when the pixel is nodata */
+  double value;       /**< Value of the pixel */
+  GSERIALIZED *geom;  /**< Upper-left corner of the pixel */
+} Pixel;
+
+/**
  * @brief What a raster band's pixels amount to, taken in one pass
  * @details The shape PostGIS states as the record of its @p ST_SummaryStats:
  * how many pixels the band states a value for, and what those values sum to,
@@ -217,6 +232,10 @@ extern Raster *raster_rescale(const Raster *rast, double scale_x,
   double scale_y, const char *algorithm, double max_err);
 extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,
   bool exclude_nodata, int *count);
+extern double *raster_dump_values(const Raster *rast, int band,
+  bool exclude_nodata, bool **nodata, int *count);
+extern Pixel *raster_pixel_as_points(const Raster *rast, int band,
+  bool exclude_nodata, int *count);
 extern BandStats *raster_summary_stats(const Raster *rast, int band,
   bool exclude_nodata);
 extern ValueCount *raster_value_count(const Raster *rast, int band,
@@ -231,7 +250,11 @@ extern Raster *raster_tpi(const Raster *rast, int band,
   const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
 extern Raster *raster_tri(const Raster *rast, int band,
   const Raster *customextent, const char *pixeltype, bool interpolate_nodata);
+extern Raster *raster_map_algebra(const Raster *rast, int band,
+  const char *stat, const char *pixeltype, const char *extenttype,
+  const Raster *customextent, int32 distancex, int32 distancey);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
+extern void pixel_arr_free(Pixel *pixarr, int count);
 
 /* Mathematical functions for PostGIS rasters */
 

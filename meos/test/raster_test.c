@@ -157,6 +157,14 @@ static const char *raster_all_nodata =
   "004000000000000000000000000000000000e6100000020002006a003c1cc6003c1cc6"
   "003c1cc6003c1cc6003c1cc6";
 
+/* A 3x2 raster over 2x1 unit pixels from (10, 20) in SRID 3857, a 32BF band
+ * holding 1.5, nodata, 3 / 4, 5, 6 with -9999 as its nodata value and an 8BUI
+ * band holding 7 without one, written by PostGIS */
+static const char *raster_pixels =
+  "01000002000000000000000040000000000000f0bf00000000000024400000000000"
+  "00344000000000000000000000000000000000110f0000030002004a003c1cc60000"
+  "c03f003c1cc600004040000080400000a0400000c0400400070707070707";
+
 /* Main program */
 int main(void)
 {
@@ -1553,6 +1561,119 @@ int main(void)
   assert(raster_tpi(NULL, 1, NULL, "64BF", false) == NULL);
   assert(raster_slope(plane, 1, NULL, NULL, "DEGREES", 1.0, false) == NULL);
   assert(meos_errno() != 0);
+
+  /* The statistics of the 3x3 neighbourhood of each pixel, whose nodata
+   * pixels and those outside the raster are skipped: every row below is the
+   * one PostGIS 3.6.4 answers for ST_MapAlgebra with st_min4ma, st_max4ma,
+   * st_sum4ma, st_mean4ma, st_range4ma and st_stddev4ma over the same
+   * raster, a value for each of the 16 pixels */
+  static const struct
+  {
+    const char *stat;
+    double sum, min, max;
+  } focal[] = {
+    {"MIN", 345.0, 10.0, 40.0},
+    {"max", 695.0, 25.0, 55.0},
+    {"Sum", 2935.0, 70.0, 325.0},
+    {"MEAN", 519.5833333333333, 17.5, 47.5},
+    {"RANGE", 350.0, 15.0, 30.0},
+    {"STDDEV", 131.44817044250414, 5.70087712549569, 10.36822067666386},
+  };
+  for (size_t i = 0; i < sizeof(focal) / sizeof(focal[0]); i++)
+  {
+    meos_errno_reset();
+    Raster *ma = raster_map_algebra(dem, 1, focal[i].stat, "64BF", "FIRST",
+      NULL, 1, 1);
+    assert(ma != NULL);
+    assert(meos_errno() == 0);
+    BandStats *mast = raster_summary_stats(ma, 1, true);
+    printf("raster_map_algebra(dem, %s, 1, 1): count %u, sum %.6f, min %g, "
+      "max %g\n", focal[i].stat, mast->count, mast->sum, mast->min,
+      mast->max);
+    assert(mast->count == 16);
+    assert(fabs(mast->sum - focal[i].sum) < 1e-9);
+    assert(fabs(mast->min - focal[i].min) < 1e-12);
+    assert(fabs(mast->max - focal[i].max) < 1e-12);
+    free(mast); free(ma);
+  }
+
+  /* A neighbourhood whose distance is zero along one axis only is the pixel
+   * alone, as for PostGIS, which reads it through the same iterator: the sum
+   * of the nodata pixel is 0 */
+  Raster *ma_line = raster_map_algebra(dem, 1, "SUM", "64BF", NULL, NULL, 0,
+    2);
+  assert(ma_line != NULL);
+  BandStats *malst = raster_summary_stats(ma_line, 1, true);
+  printf("raster_map_algebra(dem, SUM, 0, 2): count %u, sum %g, min %g\n",
+    malst->count, malst->sum, malst->min);
+  assert(malst->count == 16 && malst->sum == 485.0 && malst->min == 0.0);
+  free(malst); free(ma_line);
+
+  /* Over one raster every extent type but CUSTOM is the extent of the
+   * raster, and a pixel type left NULL is the one of the band, whose nodata
+   * value the result keeps */
+  Raster *ma_union = raster_map_algebra(dem, 1, "MEAN", NULL, "union", NULL,
+    1, 1);
+  assert(ma_union != NULL);
+  assert(raster_width(ma_union) == 4 && raster_height(ma_union) == 4);
+  char *mapixtype = raster_band_pixel_type(ma_union, 1);
+  double manodata;
+  assert(raster_band_nodata_value(ma_union, 1, &manodata));
+  printf("raster_map_algebra(dem, MEAN, NULL, union): %s, nodata %g\n",
+    mapixtype, manodata);
+  assert(strcmp(mapixtype, "float32") == 0 && manodata == -9999.0);
+  free(mapixtype); free(ma_union);
+
+  /* A band stating no nodata value lends its minimum value to the result,
+   * the least 32BF number, as for PostGIS */
+  Raster *ma_plane = raster_map_algebra(plane, 1, "MAX", "64BF", "FIRST",
+    NULL, 1, 1);
+  assert(ma_plane != NULL);
+  assert(raster_band_nodata_value(ma_plane, 1, &manodata));
+  BandStats *mapst = raster_summary_stats(ma_plane, 1, true);
+  printf("raster_map_algebra(plane, MAX): count %u, sum %g, nodata %g\n",
+    mapst->count, mapst->sum, manodata);
+  assert(mapst->count == 9 && mapst->sum == 15.0);
+  assert(manodata == -3.4028234663852886e+38);
+  free(mapst); free(ma_plane);
+
+  /* A custom extent decides the grid of the result */
+  Raster *ma_square = raster_from_hexwkb(raster_dem_square);
+  Raster *ma_custom = raster_map_algebra(dem, 1, "SUM", "64BF", "CUSTOM",
+    ma_square, 1, 1);
+  assert(ma_custom != NULL);
+  BandStats *macst = raster_summary_stats(ma_custom, 1, true);
+  printf("raster_map_algebra(dem, SUM, CUSTOM 2x2): %dx%d from (%g, %g), "
+    "count %u, sum %g\n", raster_width(ma_custom), raster_height(ma_custom),
+    raster_upper_left_x(ma_custom), raster_upper_left_y(ma_custom),
+    macst->count, macst->sum);
+  assert(raster_width(ma_custom) == 2 && raster_height(ma_custom) == 2);
+  assert(raster_upper_left_x(ma_custom) == 1.0);
+  assert(raster_upper_left_y(ma_custom) == 3.0);
+  assert(macst->count == 4 && macst->sum == 1030.0);
+  free(macst); free(ma_custom);
+
+  /* A statistic, an extent type, a pixel type or a band the raster does not
+   * have, a negative distance, CUSTOM without an extent, a custom extent on
+   * another grid and a null argument are refused */
+  meos_errno_reset();
+  assert(raster_map_algebra(dem, 1, "DISTINCT", "64BF", NULL, NULL, 1, 1) ==
+    NULL);
+  assert(raster_map_algebra(dem, 1, "MEAN", "64BF", "BOGUS", NULL, 1, 1) ==
+    NULL);
+  assert(raster_map_algebra(dem, 1, "MEAN", "99XX", NULL, NULL, 1, 1) == NULL);
+  assert(raster_map_algebra(dem, 2, "MEAN", "64BF", NULL, NULL, 1, 1) == NULL);
+  assert(raster_map_algebra(dem, 1, "MEAN", "64BF", NULL, NULL, -1, 1) ==
+    NULL);
+  assert(raster_map_algebra(dem, 1, "MEAN", "64BF", "CUSTOM", NULL, 1, 1) ==
+    NULL);
+  assert(raster_map_algebra(plane, 1, "MEAN", "64BF", "CUSTOM", ma_square, 1,
+    1) == NULL);
+  assert(raster_map_algebra(NULL, 1, "MEAN", "64BF", NULL, NULL, 1, 1) ==
+    NULL);
+  assert(raster_map_algebra(dem, 1, NULL, "64BF", NULL, NULL, 1, 1) == NULL);
+  assert(meos_errno() != 0);
+  free(ma_square);
   free(plane); free(dem);
 
   /* The histogram of a band: raster_counts holds 1.24, 1.26, nodata / 2, 2,
@@ -1724,6 +1845,65 @@ int main(void)
   assert(rasteralignstate_deserialize(NULL, 4) == NULL);
   assert(meos_errno() != 0);
   free(al_base); free(al_east1); free(al_easthalf); free(al_3857);
+
+  /* The pixels of a band as points and its values: every row below is the
+   * one PostGIS 3.6.4 answers for ST_PixelAsPoints and ST_DumpValues over the
+   * same raster */
+  Raster *px = raster_from_hexwkb(raster_pixels);
+  assert(px != NULL);
+  int npx = 0;
+  meos_errno_reset();
+  Pixel *pxarr = raster_pixel_as_points(px, 1, true, &npx);
+  assert(pxarr != NULL && meos_errno() == 0);
+  printf("raster_pixel_as_points(pixels):");
+  for (int i = 0; i < npx; i++)
+  {
+    char *pxwkt = geo_as_text(pxarr[i].geom, 0);
+    printf(" (%s, %g, %d, %d)", pxwkt, pxarr[i].value, pxarr[i].x,
+      pxarr[i].y);
+    free(pxwkt);
+  }
+  printf("\n");
+  assert(npx == 5);
+  assert(pxarr[1].x == 3 && pxarr[1].y == 1 && pxarr[1].value == 3.0);
+  assert(pxarr[4].x == 3 && pxarr[4].y == 2 && pxarr[4].value == 6.0);
+  pixel_arr_free(pxarr, npx);
+  /* Kept, a nodata pixel holds the value the band holds for it */
+  pxarr = raster_pixel_as_points(px, 1, false, &npx);
+  assert(npx == 6 && pxarr[1].nodata && pxarr[1].value == -9999.0);
+  pixel_arr_free(pxarr, npx);
+  /* A band stating no nodata value leaves no pixel out */
+  pxarr = raster_pixel_as_points(px, 2, true, &npx);
+  assert(npx == 6 && pxarr[5].value == 7.0 && ! pxarr[5].nodata);
+  pixel_arr_free(pxarr, npx);
+
+  bool *pxnodata = NULL;
+  double *pxvals = raster_dump_values(px, 1, true, &pxnodata, &npx);
+  assert(pxvals != NULL && npx == 6);
+  printf("raster_dump_values(pixels):");
+  for (int i = 0; i < npx; i++)
+  {
+    if (pxnodata[i])
+      printf(" NULL");
+    else
+      printf(" %g", pxvals[i]);
+  }
+  printf("\n");
+  assert(pxnodata[1] && ! pxnodata[0] && pxvals[0] == 1.5 &&
+    pxvals[5] == 6.0);
+  free(pxvals); free(pxnodata);
+  pxvals = raster_dump_values(px, 1, false, &pxnodata, &npx);
+  assert(npx == 6 && ! pxnodata[1] && pxvals[1] == -9999.0);
+  free(pxvals); free(pxnodata);
+
+  /* A band the raster does not have and a null argument are refused */
+  meos_errno_reset();
+  assert(raster_pixel_as_points(px, 3, true, &npx) == NULL && npx == 0);
+  assert(raster_dump_values(px, 0, true, &pxnodata, &npx) == NULL);
+  assert(raster_pixel_as_points(NULL, 1, true, &npx) == NULL);
+  assert(raster_dump_values(px, 1, true, NULL, &npx) == NULL);
+  assert(meos_errno() != 0);
+  free(px);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

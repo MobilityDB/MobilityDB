@@ -86,6 +86,14 @@ CREATE FUNCTION tDisjoint(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(geography, tgeography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeography, geography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(tgeography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
@@ -107,6 +115,14 @@ CREATE FUNCTION tIntersects(tgeometry, geometry)
 CREATE FUNCTION tIntersects(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(geography, tgeography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeography, geography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tintersects_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tIntersects(tgeography, tgeography)
   RETURNS tbool
@@ -144,6 +160,21 @@ CREATE FUNCTION tDwithin(tgeometry, geometry, dist float)
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
   LANGUAGE C IMMUTABLE  PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tgeometry, tgeometry, dist float)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(geography, tgeography, dist float,
+    spheroid boolean DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeography, geography, dist float,
+    spheroid boolean DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeography, tgeography, dist float,
+    spheroid boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
