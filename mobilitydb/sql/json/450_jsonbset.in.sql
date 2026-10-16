@@ -191,7 +191,11 @@ CREATE FUNCTION setUnionTransition(internal, jsonbset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION jsonbset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, jsonb)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, jsonbset)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -200,7 +204,8 @@ CREATE AGGREGATE setUnion(jsonb) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = jsonbset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -210,7 +215,8 @@ CREATE AGGREGATE setUnion(jsonbset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = jsonbset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,

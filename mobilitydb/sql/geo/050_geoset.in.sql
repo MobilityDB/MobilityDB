@@ -396,11 +396,19 @@ CREATE FUNCTION setUnionTransition(internal, geogset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION geomset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, geometry)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION geogset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, geography)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, geomset)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, geogset)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -409,7 +417,8 @@ CREATE AGGREGATE setUnion(geometry) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = geomset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -419,7 +428,8 @@ CREATE AGGREGATE setUnion(geography) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = geogset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -430,7 +440,8 @@ CREATE AGGREGATE setUnion(geomset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = geomset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -440,7 +451,8 @@ CREATE AGGREGATE setUnion(geogset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = geogset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,

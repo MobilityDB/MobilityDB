@@ -124,50 +124,62 @@ CREATE FUNCTION tcount_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_tagg_finalfn(internal)
+
+CREATE FUNCTION tCountFinal(internal, timestamptz)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbigint_tagg_finalfn(internal)
-  RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(timestamptz) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tCountFinal(internal, tstzset)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tstzset) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tCountFinal(internal, tstzspan)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tstzspan) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tCountFinal(internal, tstzspanset)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tstzspanset) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -197,35 +209,46 @@ CREATE FUNCTION tbool_tor_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tor_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbool_tagg_finalfn(internal)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tCountFinal(internal, tbool)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tbool) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tAndFinal(internal, tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tAnd(tbool) (
   SFUNC = tAndTransition,
   STYPE = internal,
   COMBINEFUNC = tbool_tand_combinefn,
-  FINALFUNC = tbool_tagg_finalfn,
+  FINALFUNC = tAndFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tOrFinal(internal, tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tOr(tbool) (
   SFUNC = tOrTransition,
   STYPE = internal,
   COMBINEFUNC = tbool_tor_combinefn,
-  FINALFUNC = tbool_tagg_finalfn,
+  FINALFUNC = tOrFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -305,104 +328,150 @@ CREATE FUNCTION tavg_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tavg_finalfn(internal)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tCountFinal(internal, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tint) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tCountFinal(internal, tbigint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tbigint) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tMinFinal(internal, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMin(tint) (
   SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tMinFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tMaxFinal(internal, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMax(tint) (
   SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tMaxFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tSumFinal(internal, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tSum(tint) (
   SFUNC = tSumTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tAvgFinal(internal, tint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tAvg(tint) (
   SFUNC = tAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = tAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tMinFinal(internal, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMin(tbigint) (
   SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = tMinFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tMaxFinal(internal, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMax(tbigint) (
   SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = tMaxFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tSumFinal(internal, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tSum(tbigint) (
   SFUNC = tSumTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = tSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tAvgFinal(internal, tbigint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tAvg(tbigint) (
   SFUNC = tAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = tAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -438,60 +507,81 @@ CREATE FUNCTION tfloat_tsum_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_tagg_finalfn(internal)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tAvgTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION tCountFinal(internal, tfloat)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(tfloat) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tMinFinal(internal, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMin(tfloat) (
   SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = tMinFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tMaxFinal(internal, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMax(tfloat) (
   SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = tMaxFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tSumFinal(internal, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tSum(tfloat) (
   SFUNC = tSumTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tsum_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = tSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tAvgFinal(internal, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tAvg(tfloat) (
   SFUNC = tAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = tAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -521,36 +611,47 @@ CREATE FUNCTION ttext_tmax_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION ttext_tagg_finalfn(internal)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tCountFinal(internal, ttext)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(ttext) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tMinFinal(internal, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMin(ttext) (
   SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = ttext_tmin_combinefn,
-  FINALFUNC = ttext_tagg_finalfn,
+  FINALFUNC = tMinFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION tMaxFinal(internal, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tMax(ttext) (
   SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = ttext_tmax_combinefn,
-  FINALFUNC = ttext_tagg_finalfn,
+  FINALFUNC = tMaxFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -586,51 +687,76 @@ CREATE FUNCTION mergeCombine(internal, internal)
   AS 'MODULE_PATHNAME', 'Temporal_merge_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION mergeFinal(internal, tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(tbool) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = tbool_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION mergeFinal(internal, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(tint) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION mergeFinal(internal, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(tbigint) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION mergeFinal(internal, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(tfloat) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION mergeFinal(internal, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(ttext) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = ttext_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -712,122 +838,180 @@ CREATE FUNCTION appendInstantTransition(ttext, ttext, interp text,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_append_finalfn(tbool)
+
+CREATE FUNCTION appendInstantFinal(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_append_finalfn(tint)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_append_finalfn(tbigint)
-  RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_append_finalfn(tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_append_finalfn(ttext)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool) (
   SFUNC = appendInstantTransition(tbool, tbool),
   STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tbool, tbool, interp text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool, interp text) (
   SFUNC = appendInstantTransition(tbool, tbool, text),
   STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tbool, tbool, interp text, maxt interval)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (
   SFUNC = appendInstantTransition(tbool, tbool, text, maxt),
   STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
+CREATE FUNCTION appendInstantFinal(tint, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tint) (
   SFUNC = appendInstantTransition(tint, tint),
   STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tint, tint, interp text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tint, interp text) (
   SFUNC = appendInstantTransition(tint, tint, text),
   STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tint, tint, interp text, maxdist float, 
+    maxt interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, 
     maxt interval) (
   SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),
   STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
+CREATE FUNCTION appendInstantFinal(tbigint, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbigint) (
   SFUNC = appendInstantTransition(tbigint, tbigint),
   STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tbigint, tbigint, interp text)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbigint, interp text) (
   SFUNC = appendInstantTransition(tbigint, tbigint, text),
   STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tbigint, tbigint, interp text, maxdist float, 
+    maxt interval)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, 
     maxt interval) (
   SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),
   STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
+CREATE FUNCTION appendInstantFinal(tfloat, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tfloat) (
   SFUNC = appendInstantTransition(tfloat, tfloat),
   STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tfloat, tfloat, interp text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tfloat, interp text) (
   SFUNC = appendInstantTransition(tfloat, tfloat, text),
   STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tfloat, tfloat, interp text, maxdist float, 
+    maxt interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, 
     maxt interval) (
   SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),
   STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
+CREATE FUNCTION appendInstantFinal(ttext, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext) (
   SFUNC = appendInstantTransition(ttext, ttext),
   STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(ttext, ttext, interp text)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext, interp text) (
   SFUNC = appendInstantTransition(ttext, ttext, text),
   STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(ttext, ttext, interp text, maxt interval)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (
   SFUNC = appendInstantTransition(ttext, ttext, text, maxt),
   STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
@@ -855,34 +1039,59 @@ CREATE FUNCTION appendSequenceTransition(ttext, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION appendSequenceFinal(tbool, tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(tbool) (
   SFUNC = appendSequenceTransition,
   STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendSequenceFinal(tint, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(tint) (
   SFUNC = appendSequenceTransition,
   STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendSequenceFinal(tbigint, tbigint)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(tbigint) (
   SFUNC = appendSequenceTransition,
   STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendSequenceFinal(tfloat, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(tfloat) (
   SFUNC = appendSequenceTransition,
   STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendSequenceFinal(ttext, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(ttext) (
   SFUNC = appendSequenceTransition,
   STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 

@@ -51,16 +51,17 @@ CREATE FUNCTION tCountTransition(internal, th3index)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION th3index_tagg_finalfn(internal)
-  RETURNS th3index
-  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tCountFinal(internal, th3index)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE tCount(th3index) (
   SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = tCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -72,11 +73,16 @@ CREATE FUNCTION wCountTransition(internal, th3index, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION wCountFinal(internal, th3index, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wCount(th3index, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -88,11 +94,16 @@ CREATE FUNCTION mergeTransition(internal, th3index)
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION mergeFinal(internal, th3index)
+  RETURNS th3index
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE merge(th3index) (
   SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
-  FINALFUNC = th3index_tagg_finalfn,
+  FINALFUNC = mergeFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -116,27 +127,38 @@ CREATE FUNCTION appendInstantTransition(th3index, th3index, interp text,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_append_finalfn(th3index)
+
+CREATE FUNCTION appendInstantFinal(th3index, th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index) (
   SFUNC = appendInstantTransition(th3index, th3index),
   STYPE = th3index,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(th3index, th3index, interp text)
+  RETURNS th3index
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index, interp text) (
   SFUNC = appendInstantTransition(th3index, th3index, text),
   STYPE = th3index,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(th3index, th3index, interp text, maxt interval)
+  RETURNS th3index
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (
   SFUNC = appendInstantTransition(th3index, th3index, text, maxt),
   STYPE = th3index,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 
@@ -148,10 +170,15 @@ CREATE FUNCTION appendSequenceTransition(th3index, th3index)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION appendSequenceFinal(th3index, th3index)
+  RETURNS th3index
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendSequence(th3index) (
   SFUNC = appendSequenceTransition,
   STYPE = th3index,
-  FINALFUNC = temporal_append_finalfn,
+  FINALFUNC = appendSequenceFinal,
+  FINALFUNC_EXTRA,
   PARALLEL = safe
 );
 

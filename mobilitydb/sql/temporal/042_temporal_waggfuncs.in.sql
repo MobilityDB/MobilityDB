@@ -54,47 +54,72 @@ CREATE FUNCTION wAvgTransition(internal, tint, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION wMinFinal(internal, tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMin(tint, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wMinFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wMaxFinal(internal, tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMax(tint, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wMaxFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wSumFinal(internal, tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wSum(tint, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wCountFinal(internal, tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wCount(tint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wAvgFinal(internal, tint, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wAvg(tint, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = wAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -124,47 +149,72 @@ CREATE FUNCTION wAvgTransition(internal, tbigint, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION wMinFinal(internal, tbigint, interval)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMin(tbigint, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = wMinFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wMaxFinal(internal, tbigint, interval)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMax(tbigint, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = wMaxFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wSumFinal(internal, tbigint, interval)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wSum(tbigint, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = wSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wCountFinal(internal, tbigint, interval)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wCount(tbigint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
+  FINALFUNC = wCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wAvgFinal(internal, tbigint, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wAvg(tbigint, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = wAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
@@ -194,47 +244,72 @@ CREATE FUNCTION wAvgTransition(internal, tfloat, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION wMinFinal(internal, tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMin(tfloat, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = wMinFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wMaxFinal(internal, tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wMax(tfloat, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = wMaxFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wSumFinal(internal, tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wSum(tfloat, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tsum_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
+  FINALFUNC = wSumFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wCountFinal(internal, tfloat, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wCount(tfloat, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
+  FINALFUNC = wCountFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
+CREATE FUNCTION wAvgFinal(internal, tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wAvg(tfloat, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
-  FINALFUNC = tavg_finalfn,
+  FINALFUNC = wAvgFinal,
+  FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE

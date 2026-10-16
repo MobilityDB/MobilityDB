@@ -237,7 +237,11 @@ CREATE FUNCTION setUnionTransition(internal, posechainset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION posechainset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, posechain)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, posechainset)
   RETURNS posechainset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -246,7 +250,8 @@ CREATE AGGREGATE setUnion(posechain) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = posechainset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -256,7 +261,8 @@ CREATE AGGREGATE setUnion(posechainset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = posechainset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,

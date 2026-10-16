@@ -315,23 +315,43 @@ CREATE FUNCTION spansetstate_deserialize(bytea, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The functions are not strict
-CREATE FUNCTION intspan_union_finalfn(internal)
+CREATE FUNCTION spanUnionFinal(internal, intspan)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION bigintspan_union_finalfn(internal)
+CREATE FUNCTION spansetUnionFinal(internal, intspanset)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanUnionFinal(internal, bigintspan)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION floatspan_union_finalfn(internal)
+CREATE FUNCTION spansetUnionFinal(internal, bigintspanset)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanUnionFinal(internal, floatspan)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION datespan_union_finalfn(internal)
+CREATE FUNCTION spansetUnionFinal(internal, floatspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanUnionFinal(internal, datespan)
   RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzspan_union_finalfn(internal)
+CREATE FUNCTION spansetUnionFinal(internal, datespanset)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanUnionFinal(internal, tstzspan)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spansetUnionFinal(internal, tstzspanset)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -340,7 +360,8 @@ CREATE AGGREGATE spanUnion(intspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = intspan_union_finalfn,
+  FINALFUNC = spanUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -350,7 +371,8 @@ CREATE AGGREGATE spanUnion(bigintspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = bigintspan_union_finalfn,
+  FINALFUNC = spanUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -360,7 +382,8 @@ CREATE AGGREGATE spanUnion(floatspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = floatspan_union_finalfn,
+  FINALFUNC = spanUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -370,7 +393,8 @@ CREATE AGGREGATE spanUnion(datespan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = datespan_union_finalfn,
+  FINALFUNC = spanUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -380,7 +404,8 @@ CREATE AGGREGATE spanUnion(tstzspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = tstzspan_union_finalfn,
+  FINALFUNC = spanUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -415,7 +440,8 @@ CREATE AGGREGATE spansetUnion(intspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = intspan_union_finalfn,
+  FINALFUNC = spansetUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -425,7 +451,8 @@ CREATE AGGREGATE spansetUnion(bigintspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = bigintspan_union_finalfn,
+  FINALFUNC = spansetUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -435,7 +462,8 @@ CREATE AGGREGATE spansetUnion(floatspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = floatspan_union_finalfn,
+  FINALFUNC = spansetUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -445,7 +473,8 @@ CREATE AGGREGATE spansetUnion(datespanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = datespan_union_finalfn,
+  FINALFUNC = spansetUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,
@@ -455,7 +484,8 @@ CREATE AGGREGATE spansetUnion(tstzspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
   COMBINEFUNC = spanset_union_combinefn,
-  FINALFUNC = tstzspan_union_finalfn,
+  FINALFUNC = spansetUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = spansetstate_serialize,
   DESERIALFUNC = spansetstate_deserialize,

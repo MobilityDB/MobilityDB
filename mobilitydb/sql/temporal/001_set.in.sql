@@ -835,27 +835,51 @@ CREATE FUNCTION setstate_deserialize(bytea, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The functions are not STRICT
-CREATE FUNCTION intset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, integer)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION bigintset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, bigint)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION floatset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION dateset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, date)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, timestamptz)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION textset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, intset)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, bigintset)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, floatset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, dateset)
+  RETURNS dateset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, tstzset)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, textset)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -864,7 +888,8 @@ CREATE AGGREGATE setUnion(integer) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = intset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -874,7 +899,8 @@ CREATE AGGREGATE setUnion(bigint) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = bigintset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -884,7 +910,8 @@ CREATE AGGREGATE setUnion(float) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = floatset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -894,7 +921,8 @@ CREATE AGGREGATE setUnion(text) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = textset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -904,7 +932,8 @@ CREATE AGGREGATE setUnion(date) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = dateset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -914,7 +943,8 @@ CREATE AGGREGATE setUnion(timestamptz) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -925,7 +955,8 @@ CREATE AGGREGATE setUnion(intset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = intset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -935,7 +966,8 @@ CREATE AGGREGATE setUnion(bigintset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = bigintset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -945,7 +977,8 @@ CREATE AGGREGATE setUnion(floatset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = floatset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -955,7 +988,8 @@ CREATE AGGREGATE setUnion(textset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = textset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -965,7 +999,8 @@ CREATE AGGREGATE setUnion(dateset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = dateset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -975,7 +1010,8 @@ CREATE AGGREGATE setUnion(tstzset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
