@@ -2704,6 +2704,28 @@ FROM r;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterUnion">
+				<indexterm significance="normal"><primary><varname>rasterUnion</varname></primary></indexterm>
+				<para>Return the union of the rasters of a column</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterUnion(raster) → raster
+rasterUnion(raster,nband integer) → raster
+rasterUnion(raster,uniontype text) → raster
+rasterUnion(raster,nband integer,uniontype text) → raster
+</programlisting>
+				<para>The aggregate of PostGIS's <varname>ST_Union</varname> over rasters, named as <varname>geoUnion</varname> names the union of geometries, since <varname>union</varname> is a keyword of SQL. The result covers the union of the extents of the rasters, each pixel the pixel operation of the pixels holding a value there: <varname>LAST</varname>, the default, <varname>FIRST</varname>, <varname>MIN</varname>, <varname>MAX</varname>, <varname>COUNT</varname>, <varname>SUM</varname>, <varname>MEAN</varname> or <varname>RANGE</varname>, regardless of case. Without <varname>nband</varname> every band is united, a band a raster lacks read as nodata; with <varname>nband</varname> only that band, which every raster must hold. The pixel type and the nodata value are those of the band read first, and a count is an unsigned 32-bit band without a nodata value. A <varname>NULL</varname> raster is skipped, and over no raster the aggregate answers <varname>NULL</varname>. The aggregate runs in parallel, the unions of the workers combined, where PostGIS's has no combine function; <varname>LAST</varname> and <varname>FIRST</varname> depend on the order of the rasters, which an <varname>ORDER BY</varname> in the aggregate fixes. Rasters of different SRIDs or on different grids raise an error, and so does a pixel operation outside these, which PostGIS reads as <varname>LAST</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH tiles AS (
+  SELECT 1 AS id, ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT 2, ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) FROM tiles;
+-- {{1,1,NULL},{1,2,3},{NULL,3,3}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_reclass">
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Return a raster whose band holds the classes an expression maps its values to</para>

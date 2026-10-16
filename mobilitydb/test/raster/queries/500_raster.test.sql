@@ -2497,4 +2497,128 @@ SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[1, NULL]);
 
 DROP TABLE tbl_pixels;
 
+-------------------------------------------------------------------------------
+-- Union of rasters
+-------------------------------------------------------------------------------
+
+-- Three tiles: the second overlaps the first one pixel east and one south,
+-- the third holds one band and touches the second at one pixel.
+CREATE TEMP TABLE tbl_union_tiles AS
+SELECT 1 AS id, ST_SetValues(ST_SetValues(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8),
+    '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -9999, 6], [7, 8, 9]]::double precision[][]),
+    2, 1, 1, ARRAY[[10, 20, 30], [40, 50, 60], [70, 80, 90]]
+    ::double precision[][]) AS r
+UNION ALL
+SELECT 2, ST_SetValues(ST_SetValues(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 1.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8),
+    '16BUI'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[5, 5, 5], [5, 5, -9999], [5, 5, 5]]::double precision[][]),
+    2, 1, 1, ARRAY[[1, 1, 1], [1, 1, 1], [1, 1, 1]]::double precision[][])
+UNION ALL
+SELECT 3, ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(2, 2, 3.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[2, 4], [6, 8]]::double precision[][]);
+
+SELECT ST_DumpValues(rasterUnion(r, 'MAX' ORDER BY id), 1) AS max,
+  ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) AS mean
+FROM tbl_union_tiles;
+
+-- The example of the manual: the mean of two overlapping tiles.
+WITH tiles AS (
+  SELECT 1 AS id, ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+    0.0, 0.0, 3857), '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT 2, ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0,
+    0.0, 3857), '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) FROM tiles;
+
+-- Every pixel operation, over every band or over the first one, is the
+-- raster PostGIS's ST_Union answers, byte for byte, regardless of case.
+SELECT t,
+  ST_AsHexWKB(rasterUnion(r, t ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r, t ORDER BY id)) AS every_band,
+  ST_AsHexWKB(rasterUnion(r, 1, t ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r, 1, t ORDER BY id)) AS band1,
+  ST_AsHexWKB(rasterUnion(r, lower(t) ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r, t ORDER BY id)) AS lower_case
+FROM tbl_union_tiles,
+  unnest(ARRAY['LAST', 'FIRST', 'MIN', 'MAX', 'COUNT', 'SUM', 'MEAN',
+    'RANGE']) t
+GROUP BY t ORDER BY t;
+
+-- Without a pixel operation, LAST; without a band, every band.
+SELECT ST_AsHexWKB(rasterUnion(r ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r ORDER BY id)) AS every_band,
+  ST_AsHexWKB(rasterUnion(r, 1 ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r, 1 ORDER BY id)) AS band1,
+  ST_AsHexWKB(rasterUnion(r, 2, 'SUM' ORDER BY id)
+    FILTER (WHERE id < 3)) =
+    ST_AsHexWKB(ST_Union(r, 2, 'SUM' ORDER BY id) FILTER (WHERE id < 3))
+    AS band2
+FROM tbl_union_tiles;
+
+-- A NULL raster is skipped, and a group of no raster answers NULL.
+SELECT ST_AsHexWKB(rasterUnion(r, 'SUM' ORDER BY id)) =
+    ST_AsHexWKB(ST_Union(r, 'SUM' ORDER BY id) FILTER (WHERE r IS NOT NULL))
+    AS null_skipped,
+  rasterUnion(r, 'SUM') FILTER (WHERE r IS NULL) IS NULL AS all_null,
+  rasterUnion(r) FILTER (WHERE false) IS NULL AS none
+FROM (SELECT id, r FROM tbl_union_tiles UNION ALL SELECT 4, NULL) t;
+
+-- The states of parallel workers are combined into the union of every
+-- raster, which an operation independent of the order of the rasters answers
+-- whatever the plan.
+SET parallel_setup_cost = 0;
+SET parallel_tuple_cost = 0;
+SET min_parallel_table_scan_size = 0;
+SET max_parallel_workers_per_gather = 2;
+CREATE TABLE tbl_union_many AS
+SELECT i, ST_AddBand(ST_MakeEmptyRaster(2, 2, (i % 10)::float8,
+    (i / 10)::float8, 1.0, -1.0, 0.0, 0.0, 3857), '32BF'::text,
+    (i % 7)::float8, -9999.0::float8) AS r
+FROM generate_series(1, 200) i;
+EXPLAIN (COSTS OFF) SELECT rasterUnion(r, 'SUM') FROM tbl_union_many;
+SELECT
+  ST_AsHexWKB(rasterUnion(r, 'MIN')) = (SELECT ST_AsHexWKB(ST_Union(r, 'MIN'
+    ORDER BY i)) FROM tbl_union_many) AS min,
+  ST_AsHexWKB(rasterUnion(r, 'MAX')) = (SELECT ST_AsHexWKB(ST_Union(r, 'MAX'
+    ORDER BY i)) FROM tbl_union_many) AS max,
+  ST_AsHexWKB(rasterUnion(r, 'COUNT')) = (SELECT ST_AsHexWKB(ST_Union(r,
+    'COUNT' ORDER BY i)) FROM tbl_union_many) AS count,
+  ST_AsHexWKB(rasterUnion(r, 'SUM')) = (SELECT ST_AsHexWKB(ST_Union(r, 'SUM'
+    ORDER BY i)) FROM tbl_union_many) AS sum,
+  ST_AsHexWKB(rasterUnion(r, 'MEAN')) = (SELECT ST_AsHexWKB(ST_Union(r,
+    'MEAN' ORDER BY i)) FROM tbl_union_many) AS mean,
+  ST_AsHexWKB(rasterUnion(r, 'RANGE')) = (SELECT ST_AsHexWKB(ST_Union(r,
+    'RANGE' ORDER BY i)) FROM tbl_union_many) AS range
+FROM tbl_union_many;
+RESET parallel_setup_cost;
+RESET parallel_tuple_cost;
+RESET min_parallel_table_scan_size;
+RESET max_parallel_workers_per_gather;
+DROP TABLE tbl_union_many;
+
+-- A pixel operation outside those named, a band a raster lacks, a negative
+-- band, two reference systems and two grids are refused.
+SELECT rasterUnion(r, 'BOGUS') FROM tbl_union_tiles;
+SELECT rasterUnion(r, 2) FROM tbl_union_tiles;
+SELECT rasterUnion(r, -1) FROM tbl_union_tiles;
+SELECT rasterUnion(r) FROM (VALUES
+  (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 1.0::float8, NULL::float8)),
+  (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, NULL::float8))) t(r);
+SELECT rasterUnion(r) FROM (VALUES
+  (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, NULL::float8)),
+  (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.5, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, NULL::float8))) t(r);
+
+DROP TABLE tbl_union_tiles;
+
 /*****************************************************************************/

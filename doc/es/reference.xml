@@ -3434,6 +3434,9 @@
 					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Devuelve por qué dos rásteres no están sobre la misma rejilla</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterUnion"><varname>rasterUnion</varname></link>: Devuelve la unión de los rásteres de una columna</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				</listitem>
 				<listitem>

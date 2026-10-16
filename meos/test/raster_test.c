@@ -165,6 +165,30 @@ static const char *raster_pixels =
   "00344000000000000000000000000000000000110f0000030002004a003c1cc60000"
   "c03f003c1cc600004040000080400000a0400000c0400400070707070707";
 
+/* The tiles of the union cases, written by PostGIS, in SRID 3857 over 1 unit
+ * pixels. The first one is 3x3 from (0, 3), a 32BF band holding 1, 2, 3 /
+ * 4, nodata, 6 / 7, 8, 9 with -9999 as its nodata value and a 16BUI band
+ * holding 10 to 90 by 10 without one */
+static const char *raster_union1 =
+  "0100000200000000000000f03f000000000000f0bf00000000000000000000000000"
+  "00084000000000000000000000000000000000110f0000030003004a003c1cc60000"
+  "803f000000400000404000008040003c1cc60000c0400000e0400000004100001041"
+  "0600000a0014001e00280032003c00460050005a00";
+
+/* The second tile, 3x3 from (1, 2), holding 5 but for a nodata pixel in its
+ * 32BF band and 1 in its 16BUI band */
+static const char *raster_union2 =
+  "0100000200000000000000f03f000000000000f0bf000000000000f03f0000000000"
+  "00004000000000000000000000000000000000110f0000030003004a003c1cc60000"
+  "a0400000a0400000a0400000a0400000a040003c1cc60000a0400000a0400000a040"
+  "060000010001000100010001000100010001000100";
+
+/* The third tile, 2x2 from (3, 3), a 32BF band holding 2, 4 / 6, 8 */
+static const char *raster_union3 =
+  "0100000100000000000000f03f000000000000f0bf00000000000008400000000000"
+  "00084000000000000000000000000000000000110f0000020002004a003c1cc60000"
+  "0040000080400000c04000000041";
+
 /* Main program */
 int main(void)
 {
@@ -1904,6 +1928,109 @@ int main(void)
   assert(raster_dump_values(px, 1, true, NULL, &npx) == NULL);
   assert(meos_errno() != 0);
   free(px);
+
+  /* The union of three tiles by each pixel operation: every row below is
+   * the one PostGIS 3.6.4 answers for ST_Union over the same tiles, its
+   * width and height, the count, sum, minimum and maximum of its first band
+   * and the count and sum of its second one. The union of the first tile
+   * combined with the union of the two others, whose state goes through its
+   * bytes, is the union of the three */
+  static const struct
+  {
+    const char *uniontype;
+    uint32_t count1;
+    double sum1, min1, max1;
+    uint32_t count2;
+    double sum2;
+  } unions[] = {
+    {"LAST", 16, 72.0, 1.0, 8.0, 14, 179.0},
+    {"FIRST", 16, 79.0, 1.0, 9.0, 14, 455.0},
+    {"MIN", 16, 71.0, 1.0, 8.0, 14, 179.0},
+    {"MAX", 16, 80.0, 1.0, 9.0, 14, 455.0},
+    {"COUNT", 20, 20.0, 0.0, 2.0, 20, 18.0},
+    {"SUM", 16, 100.0, 1.0, 14.0, 14, 459.0},
+    {"mean", 16, 75.5, 1.0, 8.0, 14, 315.0},
+    {"Range", 16, 9.0, 0.0, 4.0, 4, 276.0},
+  };
+  Raster *un_tiles[3] = {raster_from_hexwkb(raster_union1),
+    raster_from_hexwkb(raster_union2), raster_from_hexwkb(raster_union3)};
+  assert(un_tiles[0] && un_tiles[1] && un_tiles[2]);
+  for (size_t i = 0; i < sizeof(unions) / sizeof(unions[0]); i++)
+  {
+    meos_errno_reset();
+    RasterUnionState *un_state = NULL;
+    for (int j = 0; j < 3; j++)
+      un_state = raster_union_transfn(un_state, un_tiles[j], 0,
+        unions[i].uniontype);
+    Raster *un = raster_union_finalfn(un_state);
+    RasterUnionState *un_first = raster_union_transfn(NULL, un_tiles[0], 0,
+      unions[i].uniontype);
+    RasterUnionState *un_rest = raster_union_transfn(NULL, un_tiles[1], 0,
+      unions[i].uniontype);
+    un_rest = raster_union_transfn(un_rest, NULL, 0, unions[i].uniontype);
+    un_rest = raster_union_transfn(un_rest, un_tiles[2], 0,
+      unions[i].uniontype);
+    size_t un_size;
+    uint8_t *un_bytes = rasterunionstate_serialize(un_rest, &un_size);
+    RasterUnionState *un_copy = rasterunionstate_deserialize(un_bytes,
+      un_size);
+    Raster *un_combined = raster_union_finalfn(
+      raster_union_combinefn(un_first, un_copy));
+    assert(un != NULL && un_combined != NULL);
+    assert(meos_errno() == 0);
+    size_t un_hexsize, un_hexsize2;
+    char *un_hex = raster_as_hexwkb(un, 0, &un_hexsize);
+    char *un_hex2 = raster_as_hexwkb(un_combined, 0, &un_hexsize2);
+    assert(strcmp(un_hex, un_hex2) == 0);
+    BandStats *un_st1 = raster_summary_stats(un, 1, true);
+    BandStats *un_st2 = raster_summary_stats(un, 2, true);
+    printf("raster_union_finalfn(%s): %dx%d, band 1 (%u, %g, %g, %g), "
+      "band 2 (%u, %g)\n", unions[i].uniontype, raster_width(un),
+      raster_height(un), un_st1->count, un_st1->sum, un_st1->min,
+      un_st1->max, un_st2->count, un_st2->sum);
+    assert(raster_width(un) == 5 && raster_height(un) == 4);
+    assert(un_st1->count == unions[i].count1 &&
+      un_st1->sum == unions[i].sum1 && un_st1->min == unions[i].min1 &&
+      un_st1->max == unions[i].max1);
+    assert(un_st2->count == unions[i].count2 &&
+      un_st2->sum == unions[i].sum2);
+    free(un_st1); free(un_st2); free(un_hex); free(un_hex2);
+    free(un_bytes); free(raster_union_finalfn(un_rest));
+    free(raster_union_finalfn(un_copy)); free(un);
+    free(un_combined);
+  }
+
+  /* A NULL raster leaves the state as it is, and no raster unites into
+   * NULL */
+  meos_errno_reset();
+  assert(raster_union_transfn(NULL, NULL, 0, "MAX") == NULL);
+  assert(raster_union_finalfn(NULL) == NULL);
+  assert(meos_errno() == 0);
+
+  /* A pixel operation outside those named, a band a raster lacks, a
+   * negative band, another reference system and the states of two
+   * different unions are refused */
+  meos_errno_reset();
+  assert(raster_union_transfn(NULL, un_tiles[0], 0, "DISTINCT") == NULL);
+  assert(raster_union_transfn(NULL, un_tiles[2], 2, NULL) == NULL);
+  assert(raster_union_transfn(NULL, un_tiles[0], -1, NULL) == NULL);
+  assert(meos_errno() != 0);
+  Raster *un_other = raster_from_hexwkb(raster_one_band);
+  meos_errno_reset();
+  RasterUnionState *un_bad = raster_union_transfn(NULL, un_tiles[0], 0, NULL);
+  assert(raster_union_transfn(un_bad, un_other, 0, NULL) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  RasterUnionState *un_a = raster_union_transfn(NULL, un_tiles[0], 0, "MAX");
+  RasterUnionState *un_b = raster_union_transfn(NULL, un_tiles[1], 0, "MIN");
+  assert(raster_union_combinefn(un_a, un_b) == NULL);
+  assert(rasterunionstate_serialize(NULL, &al_size) == NULL);
+  assert(rasterunionstate_deserialize(NULL, 4) == NULL);
+  assert(meos_errno() != 0);
+  free(raster_union_finalfn(un_bad)); free(raster_union_finalfn(un_a));
+  free(raster_union_finalfn(un_b));
+  free(un_other);
+  free(un_tiles[0]); free(un_tiles[1]); free(un_tiles[2]);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

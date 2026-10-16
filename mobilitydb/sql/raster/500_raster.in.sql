@@ -1205,6 +1205,89 @@ CREATE AGGREGATE sameAlignment(raster) (
 );
 
 /******************************************************************************
+ * Union of rasters
+ *
+ * The union of the rasters of a group, the aggregate of PostGIS's ST_Union
+ * over a raster, its band and its pixel operation, named as geoUnion names
+ * the union of geometries, since union is a keyword of SQL.
+ *****************************************************************************/
+
+-- The functions are not STRICT
+CREATE FUNCTION raster_union_transfn(internal, raster)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION raster_union_transfn(internal, raster, integer)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION raster_union_transfn(internal, raster, text)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION raster_union_transfn(internal, raster, integer, text)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION raster_union_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_union_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION rasterunionstate_serialize(internal)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Rasterunionstate_serialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION rasterunionstate_deserialize(bytea, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Rasterunionstate_deserialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION raster_union_finalfn(internal)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE rasterUnion(raster) (
+  SFUNC = raster_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_union_combinefn,
+  FINALFUNC = raster_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasterunionstate_serialize,
+  DESERIALFUNC = rasterunionstate_deserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE rasterUnion(raster, integer) (
+  SFUNC = raster_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_union_combinefn,
+  FINALFUNC = raster_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasterunionstate_serialize,
+  DESERIALFUNC = rasterunionstate_deserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE rasterUnion(raster, text) (
+  SFUNC = raster_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_union_combinefn,
+  FINALFUNC = raster_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasterunionstate_serialize,
+  DESERIALFUNC = rasterunionstate_deserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE rasterUnion(raster, integer, text) (
+  SFUNC = raster_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = raster_union_combinefn,
+  FINALFUNC = raster_union_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = rasterunionstate_serialize,
+  DESERIALFUNC = rasterunionstate_deserialize,
+  PARALLEL = safe
+);
+
+/******************************************************************************
  * Arithmetic of rasters
  *
  * A raster takes the arithmetic operators of a temporal number, computed
