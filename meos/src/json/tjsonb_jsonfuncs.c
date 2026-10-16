@@ -989,12 +989,47 @@ tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
 /*****************************************************************************/
 
 /**
+ * @brief Return the value that stands for a missing or invalid value of a
+ * key extracted from a JSONB value into a base alphanumeric type
+ * @details The lifting functions recognize this value as a missing result, as
+ * #tfunc_tinstant and #lfunc_set do with the error value of a lift. For a
+ * boolean it is a word that is neither false nor true, so that a false value
+ * is not taken for a missing one; for an integer or a float it is the maximum
+ * of the type; for a text it is the NULL pointer.
+ * @param[in] basetype Base type
+ */
+Datum
+jsonb_to_alphanum_error(MeosType basetype)
+{
+  assert(alphanum_basetype(basetype));
+  switch (basetype)
+  {
+    case T_BOOL:
+      return Int32GetDatum(2);
+    case T_INT4:
+      return Int32GetDatum(INT_MAX);
+    case T_INT8:
+      return Int64GetDatum(INT64_MAX);
+    case T_FLOAT8:
+      return Float8GetDatum(DBL_MAX);
+    case T_TEXT:
+      return PointerGetDatum(NULL);
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown alphanumeric base type: %s", meostype_name(basetype));
+      return PointerGetDatum(NULL);
+  }
+}
+
+/**
  * @brief Convert a JSONB value into a base alphanumeric value
  * @param[in] jb JSONB value
  * @param[in] key Key to extract from the JSONB object
  * @param[in] resbasetype Resulting base type
  * @param[in] null_handle States the null value treatment
- * @note Supported JSONB types: boolean, numeric, string
+ * @note Supported JSONB types: boolean, numeric, string. A boolean read from
+ * a number is true when the number is not zero, as a number read from a
+ * boolean is 1 when the boolean is true.
  */
 static Datum
 jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
@@ -1026,16 +1061,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
         "The lifted operation returned NULL");
     if (null_handle == NULL_ERROR || null_handle == NULL_RETURN ||
         null_handle == NULL_DELETE)
-    {
-      if (resbasetype == T_INT4)
-        return Int32GetDatum(INT_MAX);
-      else if (resbasetype == T_INT8)
-        return Int64GetDatum(INT64_MAX);
-      else if (resbasetype == T_FLOAT8)
-        return Float8GetDatum(DBL_MAX);
-      else /* resbasetype = T_TEXT */
-        return (Datum) 0;
-    }
+      return jsonb_to_alphanum_error(resbasetype);
     if (null_handle == NULL_JSON_NULL)
       return PointerGetDatum(pg_jsonb_in("null"));
     /* NULL_INVALID or any other unhandled case */
@@ -1050,7 +1076,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
     case jbvBool:
     {
       if (resbasetype == T_BOOL)
-        return v->val.boolean ? true : false;
+        return BoolGetDatum(v->val.boolean);
       else if (resbasetype == T_INT4)
         return v->val.boolean ? Int32GetDatum(1) : Int32GetDatum(0);
       else if (resbasetype == T_INT8)
@@ -1058,31 +1084,29 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
       else if (resbasetype == T_FLOAT8)
         return v->val.boolean ? Float8GetDatum(1.0) : Float8GetDatum(0.0);
       else /* resbasetype == T_TEXT */
-        return v->val.boolean ?
-          PointerGetDatum(strdup("true")) : PointerGetDatum(strdup("false"));
+        return PointerGetDatum(pg_cstring_to_text(v->val.boolean ?
+          "true" : "false"));
     }
 
     case jbvNumeric:
     {
       /* Convert Numeric to C string to double */
       char *cstr = pg_numeric_out(v->val.numeric);
-      if (tnumber_basetype(resbasetype))
+      if (resbasetype != T_TEXT)
       {
         char *endptr;
         double dval = strtod(cstr, &endptr);
+        bool invalid = (endptr == cstr);
         pfree(cstr);
-        if (endptr == cstr)
+        if (invalid)
         {
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "Invalid numeric value for key \"%s\"", key);
-          if (resbasetype == T_INT4)
-            return Int32GetDatum(INT_MAX);
-          else if (resbasetype == T_INT8)
-            return Int64GetDatum(INT64_MAX);
-          else /* resbasetype == T_FLOAT8 */
-            return Float8GetDatum(DBL_MAX);
+          return jsonb_to_alphanum_error(resbasetype);
         }
-        if (resbasetype == T_INT4)
+        if (resbasetype == T_BOOL)
+          return BoolGetDatum(dval != 0.0);
+        else if (resbasetype == T_INT4)
           return Int32GetDatum((int) dval);
         else if (resbasetype == T_INT8)
           return Int64GetDatum((int64) dval);
@@ -1115,14 +1139,8 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
         {
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "Invalid numeric string for key \"%s\": %s", key, buf);
-          if (resbasetype == T_INT4)
-            return Int32GetDatum(INT_MAX);
-          else if (resbasetype == T_INT8)
-            return Int64GetDatum(INT64_MAX);
-          else if (resbasetype == T_FLOAT8)
-            return Float8GetDatum(DBL_MAX);
-          else /* resbasetype == T_TEXT */
-            return (Datum) 0;
+          pfree(buf);
+          return jsonb_to_alphanum_error(resbasetype);
         }
         if (resbasetype == T_INT4)
           return Int32GetDatum((int) dval);
@@ -1144,14 +1162,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported JSONB value type for key \"%s\"", key);
-      if (resbasetype == T_INT4)
-        return Int32GetDatum(INT_MAX);
-      else if (resbasetype == T_INT8)
-        return Int64GetDatum(INT64_MAX);
-      else if (resbasetype == T_FLOAT8)
-        return Float8GetDatum(DBL_MAX);
-      else /* resbasetype == T_TEXT */
-        return (Datum) 0;
+      return jsonb_to_alphanum_error(resbasetype);
     }
   }
 }
@@ -1203,12 +1214,7 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
   lfinfo.restype = restype;
   lfinfo.reslinear = (interp == LINEAR);
   /* Set the error value to test */
-  if (resbasetype == T_INT4)
-    lfinfo.reserror = Int32GetDatum(INT_MAX);
-  else if (resbasetype == T_INT8)
-    lfinfo.reserror = Int64GetDatum(INT64_MAX);
-  else if (resbasetype == T_FLOAT8)
-    lfinfo.reserror = Float8GetDatum(DBL_MAX);
+  lfinfo.reserror = jsonb_to_alphanum_error(resbasetype);
   lfinfo.resnull = null_handle; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }

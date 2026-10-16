@@ -373,6 +373,8 @@ jsonbset_to_alphanumset(const Set *set, const char *key, MeosType resbasetype,
   lfinfo.param[1] = resbasetype;
   lfinfo.param[2] = null_handle;
   lfinfo.restype = restype;
+  /* Set the error value to test */
+  lfinfo.reserror = jsonb_to_alphanum_error(resbasetype);
   lfinfo.resnull = null_handle; /* Handle NULL result */
   return lfunc_set(set, &lfinfo);
 }
