@@ -65,7 +65,7 @@ PG_FUNCTION_INFO_V1(Value_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of values
- * @sqlfn set_union_transfn()
+ * @sqlfn setUnionTransition()
  * @sqlaggfn setUnion()
  */
 Datum
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Set_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of sets
- * @sqlfn set_union_transfn()
+ * @sqlfn setUnionTransition()
  * @sqlaggfn setUnion()
  */
 Datum

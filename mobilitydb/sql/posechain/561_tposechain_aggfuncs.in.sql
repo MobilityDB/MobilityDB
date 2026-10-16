@@ -48,12 +48,12 @@ CREATE AGGREGATE tCount(tposechain) (
   PARALLEL = SAFE
 );
 
-CREATE FUNCTION tspatial_extent_transfn(stbox, tposechain)
+CREATE FUNCTION extentTransition(stbox, tposechain)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE extent(tposechain) (
-  SFUNC = tspatial_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = stbox,
   COMBINEFUNC = stbox_extent_combinefn,
   PARALLEL = safe
@@ -78,7 +78,7 @@ CREATE AGGREGATE wCount(tposechain, interval) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION mergeTransition(internal, tposechain)
+CREATE FUNCTION mergeAggTransition(internal, tposechain)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -90,7 +90,7 @@ CREATE FUNCTION tposechain_tagg_finalfn(internal)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tposechain) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tposechain_tagg_finalfn,
@@ -100,7 +100,7 @@ CREATE AGGREGATE merge(tposechain) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tposechain) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tposechain_tagg_finalfn,
@@ -115,20 +115,20 @@ CREATE AGGREGATE mergeAgg(tposechain) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tposechain, tposechain)
+CREATE FUNCTION appendInstantAggTransition(tposechain, tposechain)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tposechain, tposechain,
+CREATE FUNCTION appendInstantAggTransition(tposechain, tposechain,
     interp text DEFAULT NULL)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tposechain, tposechain,
+CREATE FUNCTION appendInstantAggTransition(tposechain, tposechain,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS tposechain
@@ -143,13 +143,13 @@ CREATE FUNCTION temporal_append_finalfn(tposechain)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tposechain) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tposechain) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -158,13 +158,13 @@ CREATE AGGREGATE appendInstantAgg(tposechain) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tposechain, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tposechain, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -173,13 +173,13 @@ CREATE AGGREGATE appendInstantAgg(tposechain, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tposechain, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tposechain, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -188,7 +188,7 @@ CREATE AGGREGATE appendInstantAgg(tposechain, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceTransition(tposechain, tposechain)
+CREATE FUNCTION appendSequenceAggTransition(tposechain, tposechain)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -196,13 +196,13 @@ CREATE FUNCTION appendSequenceTransition(tposechain, tposechain)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tposechain) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tposechain) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tposechain,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

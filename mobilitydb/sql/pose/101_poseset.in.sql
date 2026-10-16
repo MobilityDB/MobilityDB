@@ -229,11 +229,11 @@ CREATE FUNCTION unnest(poseset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, pose)
+CREATE FUNCTION setUnionTransition(internal, pose)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, poseset)
+CREATE FUNCTION setUnionTransition(internal, poseset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -243,7 +243,7 @@ CREATE FUNCTION poseset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(pose) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = poseset_union_finalfn,
@@ -253,7 +253,7 @@ CREATE AGGREGATE setUnion(pose) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(poseset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = poseset_union_finalfn,

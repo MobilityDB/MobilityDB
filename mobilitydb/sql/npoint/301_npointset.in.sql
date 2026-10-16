@@ -207,11 +207,11 @@ CREATE FUNCTION unnest(npointset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, npoint)
+CREATE FUNCTION setUnionTransition(internal, npoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, npointset)
+CREATE FUNCTION setUnionTransition(internal, npointset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -221,7 +221,7 @@ CREATE FUNCTION npointset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(npoint) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = npointset_union_finalfn,
@@ -231,7 +231,7 @@ CREATE AGGREGATE setUnion(npoint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(npointset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = npointset_union_finalfn,

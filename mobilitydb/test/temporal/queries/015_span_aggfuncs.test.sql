@@ -195,9 +195,9 @@ SELECT span_extent_combinefn(NULL::intspan, NULL::intspan);
 DROP TABLE IF EXISTS tbl_extent_state;
 CREATE TABLE tbl_extent_state(s intspan, s0 intspan);
 INSERT INTO tbl_extent_state VALUES (intspan '[1, 3]', intspan '[1, 3]');
-SELECT span_extent_transfn(s, intspan '[10, 20]'), span_extent_transfn(s, 30),
-  set_extent_transfn(s, intset '{40}'),
-  spanset_extent_transfn(s, intspanset '{[50, 60]}'),
+SELECT extentTransition(s, intspan '[10, 20]'), extentTransition(s, 30),
+  extentTransition(s, intset '{40}'),
+  extentTransition(s, intspanset '{[50, 60]}'),
   span_extent_combinefn(s, intspan '[70, 80]')
 FROM tbl_extent_state;
 SELECT s = s0 FROM tbl_extent_state;

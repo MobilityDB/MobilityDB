@@ -1629,7 +1629,7 @@ PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
 /**
  * @ingroup mobilitydb_geo_agg
  * @brief Transition function for extent aggregation of spatiotemporal boxes
- * @sqlfn stbox_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum

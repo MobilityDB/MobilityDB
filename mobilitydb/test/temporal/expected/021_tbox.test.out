@@ -1364,12 +1364,12 @@ WITH test(box) AS (
   SELECT tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])' )
 SELECT extent(box) FROM test;
 ERROR:  Operation on mixed span types: intspan and floatspan
-SELECT tbox_extent_transfn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT extentTransition(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
 ERROR:  Operation on mixed span types: intspan and floatspan
 SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
 ERROR:  Operation on mixed span types: intspan and floatspan
-SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
- tbox_extent_transfn 
+SELECT extentTransition(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+  extenttransition   
 ---------------------
  TBOXFLOAT X([1, 4])
 (1 row)
@@ -1392,7 +1392,7 @@ SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', NULL);
  TBOXFLOAT X([1, 2])
 (1 row)
 
-SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])',
+SELECT extentTransition(tbox 'TBOXFLOAT X([1,2])',
   tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
 ERROR:  The boxes must be of the same dimensionality
 SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])',

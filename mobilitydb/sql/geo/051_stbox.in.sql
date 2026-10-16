@@ -679,7 +679,7 @@ CREATE FUNCTION quadSplit(stbox)
  *****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION stbox_extent_transfn(stbox, stbox)
+CREATE FUNCTION extentTransition(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -689,7 +689,7 @@ CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(stbox) (
-  SFUNC = stbox_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = stbox,
   COMBINEFUNC = stbox_extent_combinefn,
   PARALLEL = safe

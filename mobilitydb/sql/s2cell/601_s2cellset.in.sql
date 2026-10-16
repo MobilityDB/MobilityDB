@@ -279,12 +279,12 @@ CREATE FUNCTION unnest(s2cellset)
  ******************************************************************************/
 
 -- The transition function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, s2cell)
+CREATE FUNCTION setUnionTransition(internal, s2cell)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_transfn(internal, s2cellset)
+CREATE FUNCTION setUnionTransition(internal, s2cellset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -295,7 +295,7 @@ CREATE FUNCTION s2cellset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(s2cell) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = s2cellset_union_finalfn,
@@ -306,7 +306,7 @@ CREATE AGGREGATE setUnion(s2cell) (
 );
 
 CREATE AGGREGATE setUnion(s2cellset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = s2cellset_union_finalfn,

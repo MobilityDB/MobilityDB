@@ -105,13 +105,13 @@ SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq;
 
 -- extent(tpcbox) names its transition function as its own combine, so the one
 -- function answers in both roles
-SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+SELECT extentTransition(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
 -- The schema states what a coordinate means, so two of them are a refusal
-SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
+SELECT extentTransition(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
 -- A null state on either side leaves the other untouched
-SELECT tpcbox_extent_transfn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
-SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
-SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
+SELECT extentTransition(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
+SELECT extentTransition(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
+SELECT extentTransition(NULL::tpcbox, NULL::tpcbox);
 
 -- The combine function of the three extent aggregates
 SELECT tpcbox_extent_combinefn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
@@ -126,10 +126,10 @@ DROP TABLE IF EXISTS tbl_extent_state;
 CREATE TABLE tbl_extent_state AS
 SELECT extent(temp) AS b, extent(temp) AS b0
 FROM (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1) t;
-SELECT tpc_extent_transfn(b, (SELECT temp FROM tbl_tpcpoint
+SELECT extentTransition(b, (SELECT temp FROM tbl_tpcpoint
   WHERE temp IS NOT NULL ORDER BY k DESC LIMIT 1)) ~= b0
 FROM tbl_extent_state;
-SELECT tpcbox_extent_transfn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0,
+SELECT extentTransition(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0,
   tpcbox_extent_combinefn(b, (SELECT extent(temp) FROM tbl_tpcpoint)) ~= b0
 FROM tbl_extent_state;
 SELECT b ~= b0 FROM tbl_extent_state;
