@@ -287,6 +287,11 @@ SELECT tDwithin(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point(1 1)', 2);
 SELECT tDwithin(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point(1 1)', 2);
 SELECT tDwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point(1 1)', 2);
 SELECT tDwithin(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point(1 1)', 2);
+-- A point at rest whose distance to another exceeds the bound by less than half
+-- a unit in the last place of the bound, then moving away: never within, and
+-- within at the next double from the crossing before it comes to rest
+SELECT tDwithin(tgeompoint '[Point(527907.3359142023 6071953.819442066)@2025-01-01 15:55:40+01, Point(527907.3359142023 6071953.819442066)@2025-01-01 15:58:26+01, Point(527906.0947782807 6071946.578663754)@2025-01-01 15:58:39+01]', geometry 'Point(669943.2096938204 6231564.277304351)', 213657.8753506359);
+SELECT tDwithin(tgeompoint '[Point(527907.3359142023 6071953.819442066)@2025-01-01 15:55:40+01, Point(527907.3359142023 6071953.819442066)@2025-01-01 15:58:26+01, Point(527906.0947782807 6071946.578663754)@2025-01-01 15:58:39+01]', geometry 'Point(669943.2096938204 6231564.277304351)', 213657.87535063594);
 
 SELECT tDwithin(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point empty', 2);
 SELECT tDwithin(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty', 2);

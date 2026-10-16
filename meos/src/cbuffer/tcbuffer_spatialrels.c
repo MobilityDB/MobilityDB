@@ -2083,6 +2083,22 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* A point is the circular buffer of radius 0 at it, the same set, so the
+   * point made constant over the time frame of the value turns the pair into
+   * two temporal circular buffers, which #ea_dwithin_tcbuffer_tcbuffer
+   * answers exactly over continuous time, as #ea_dwithin_tgeo_geo carries a
+   * point to the exact pair of temporal points. The nearest approach distance
+   * of the reduction below is the double nearest the exact one, which decides
+   * every distance but itself */
+  if (gserialized_get_type(gs) == POINTTYPE && ! gserialized_is_empty(gs))
+  {
+    Cbuffer *cb = cbuffer_make(gs, 0.0);
+    Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+    int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, ever);
+    pfree(ctemp); pfree(cb);
+    return result;
+  }
+
   /* Bounding box test: if the moving disk's radius-aware bounding box does not
    * overlap the geometry's box expanded by the distance, every instant is
    * farther than the distance, so the buffer is neither ever nor always within
@@ -2283,6 +2299,163 @@ adwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
 /*****************************************************************************/
 
 /**
+ * @brief Set the centre and the radius of the circular buffer of an instant
+ */
+static void
+tcbufferinst_disc(const TInstant *inst, double *c, double *r)
+{
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  const POINT2D *pt = cbuffer_point2d_p(cb);
+  c[0] = pt->x;
+  c[1] = pt->y;
+  *r = cb->radius;
+  return;
+}
+
+/**
+ * @brief Return 2, 1 or 0 as #point_motion_dwithin_period_exact does for the
+ * discs of two synchronized circular buffer sequences from their instants
+ * @p i to @p i + 1, a step value keeping the disc of instant @p i, writing in
+ * @p whole whether they are within over the whole segment and in @p seg and
+ * @p rad the discs it reads
+ */
+static int
+tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
+  double dist, bool *whole, double seg[4][2], double rad[4])
+{
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+  const TInstant *s1 = TSEQUENCE_INST_N(seq1, i);
+  const TInstant *s2 = TSEQUENCE_INST_N(seq2, i);
+  tcbufferinst_disc(s1, seg[0], &rad[0]);
+  tcbufferinst_disc(linear1 ? TSEQUENCE_INST_N(seq1, i + 1) : s1, seg[1],
+    &rad[1]);
+  tcbufferinst_disc(s2, seg[2], &rad[2]);
+  tcbufferinst_disc(linear2 ? TSEQUENCE_INST_N(seq2, i + 1) : s2, seg[3],
+    &rad[3]);
+  int64 n1, n2, D = TSEQUENCE_INST_N(seq1, i + 1)->t - s1->t;
+  int result = point_motion_dwithin_period_exact(seg[0], seg[1], seg[2],
+    seg[3], 2, rad[0], rad[1], rad[2], rad[3], dist, D, &n1, &n2);
+  /* A period from the start to the end of the segment is the whole one: a
+   * bound of the period inside the last microsecond is dated before the end */
+  *whole = result == 2 && n1 == 0 && n2 == D;
+  return result;
+}
+
+/**
+ * @brief Return true if the discs of two circular buffer instants are within
+ * a distance, decided exactly as a segment at rest
+ * (#point_motion_dwithin_period_exact)
+ */
+static bool
+tcbufferinst_dwithin_exact(const TInstant *inst1, const TInstant *inst2,
+  double dist)
+{
+  double c1[2], c2[2], r1, r2;
+  tcbufferinst_disc(inst1, c1, &r1);
+  tcbufferinst_disc(inst2, c2, &r2);
+  int64 n1, n2;
+  return point_motion_dwithin_period_exact(c1, c1, c2, c2, 2, r1, r1, r2, r2,
+    dist, 1, &n1, &n2) > 0;
+}
+
+/**
+ * @brief Return 1 if two synchronized circular buffer sequences are ever
+ * (always) within a distance, 0 if not, decided exactly over continuous time
+ * @details A running reduction with early exit, which builds no temporal
+ * value. Over a segment the gap between the discs is convex
+ * (#point_motion_dwithin_period_exact), so they are within at every instant
+ * of it exactly where they are at both its ends, and always within holds
+ * where every segment is within as a whole, an excluded end of the sequence
+ * and the end of a step segment being read as the limit they are the closure
+ * of. Ever within holds where a segment is within at some fraction, unless
+ * that fraction is only an end the sequence excludes, or the end of a step
+ * segment, at which the step value no longer holds
+ * (#point_motion_dwithin_only_at_end), or at the last instant of a step
+ * sequence that includes it. A discrete sequence reads its instants.
+ */
+static int
+ea_dwithin_tcbufferseq_tcbufferseq(const TSequence *seq1,
+  const TSequence *seq2, double dist, bool ever)
+{
+  if (seq1->count == 1 || MEOS_FLAGS_DISCRETE_INTERP(seq1->flags))
+  {
+    for (int i = 0; i < seq1->count; i++)
+    {
+      bool within = tcbufferinst_dwithin_exact(TSEQUENCE_INST_N(seq1, i),
+        TSEQUENCE_INST_N(seq2, i), dist);
+      if (ever && within)
+        return 1;
+      if (! ever && ! within)
+        return 0;
+    }
+    return ever ? 0 : 1;
+  }
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq1->flags) &&
+    MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+  double seg[4][2], rad[4];
+  for (int i = 0; i < seq1->count - 1; i++)
+  {
+    bool whole;
+    int result = tcbufferseq_segm_dwithin(seq1, seq2, i, dist, &whole, seg,
+      rad);
+    if (! ever)
+    {
+      if (! whole)
+        return 0;
+      continue;
+    }
+    if (result == 0)
+      continue;
+    /* A segment within at an end alone that no instant of the value reaches */
+    bool start_out = i == 0 && ! seq1->period.lower_inc;
+    bool end_out = ! linear ||
+      (i == seq1->count - 2 && ! seq1->period.upper_inc);
+    if ((start_out && point_motion_dwithin_only_at_end(seg[0], seg[1],
+          seg[2], seg[3], 2, rad[0], rad[1], rad[2], rad[3], dist, true)) ||
+        (end_out && point_motion_dwithin_only_at_end(seg[0], seg[1], seg[2],
+          seg[3], 2, rad[0], rad[1], rad[2], rad[3], dist, false)))
+      continue;
+    return 1;
+  }
+  /* The last instant of a step value carries a disc of its own */
+  if (! linear && seq1->period.upper_inc)
+    return tcbufferinst_dwithin_exact(TSEQUENCE_INST_N(seq1, seq1->count - 1),
+      TSEQUENCE_INST_N(seq2, seq2->count - 1), dist) ? 1 : 0;
+  return ever ? 0 : 1;
+}
+
+/**
+ * @brief Return 1 if two synchronized temporal circular buffers are ever
+ * (always) within a distance, 0 if not, decided exactly over continuous time
+ * (#ea_dwithin_tcbufferseq_tcbufferseq)
+ */
+static int
+ea_dwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
+  const Temporal *sync2, double dist, bool ever)
+{
+  assert(sync1->subtype == sync2->subtype);
+  if (sync1->subtype == TINSTANT)
+    return tcbufferinst_dwithin_exact((const TInstant *) sync1,
+      (const TInstant *) sync2, dist) ? 1 : 0;
+  if (sync1->subtype == TSEQUENCE)
+    return ea_dwithin_tcbufferseq_tcbufferseq((const TSequence *) sync1,
+      (const TSequence *) sync2, dist, ever);
+  const TSequenceSet *ss1 = (const TSequenceSet *) sync1;
+  const TSequenceSet *ss2 = (const TSequenceSet *) sync2;
+  for (int i = 0; i < ss1->count; i++)
+  {
+    int result = ea_dwithin_tcbufferseq_tcbufferseq(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i), dist, ever);
+    if (ever && result == 1)
+      return 1;
+    if (! ever && result == 0)
+      return 0;
+  }
+  return ever ? 0 : 1;
+}
+
+/**
  * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return whether two temporal circular buffers are ever/always within
  * a distance
@@ -2337,20 +2510,15 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! pass)
     return 0;
 
-  /* Fill the lifted structure */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) datum_cbuffer_dwithin;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Float8GetDatum(dist);
-  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
-    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
-  lfinfo.ever = ever;
-  lfinfo.tpfn_temp = &tcbuffersegm_dwithin_turnpt;
-  return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
+  /* The two values synchronized without crossings, every segment of which
+   * the exact walk reads over continuous time */
+  Temporal *sync1, *sync2;
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+      &sync1, &sync2))
+    return -1;
+  int result = ea_dwithin_tcbuffer_tcbuffer_sync(sync1, sync2, dist, ever);
+  pfree(sync1); pfree(sync2);
+  return result;
 }
 
 /**

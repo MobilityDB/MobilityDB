@@ -2790,6 +2790,18 @@ tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* A point is the circular buffer of radius 0 at it, the same set, against
+   * which the period within the distance is decided exactly over continuous
+   * time (#tcbuffersegm_tdwithin_turnpt), as #ea_dwithin_tgeo_geo carries a
+   * point to the exact pair of temporal points. No other geometry is a
+   * circular buffer, and each keeps the native path below */
+  if (gserialized_get_type(gs) == POINTTYPE)
+  {
+    Cbuffer *cb = cbuffer_make(gs, 0.0);
+    Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist);
+    pfree(cb);
+    return result;
+  }
   return tinterrel_tcbuffer_geo_dist(temp, gs, TINTERSECTS, dist);
 }
 
