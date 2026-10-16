@@ -142,6 +142,8 @@ The rules the gist applied and where this brainstorm departs from them:
 
 The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the function a query calls in their place in every engine, type by type: [I/O plan](IO-PLAN.md).
 
+The aggregates in every engine, their names, the functions of their roles and the pull requests that finish them: [aggregates plan](AGGREGATES-PLAN.md).
+
 What the generated Flink and Spark surfaces carry of the 168 set-returning functions, and the gaps
 behind it by repository: [Set-returning functions](10-SET-RETURNING.md).
 

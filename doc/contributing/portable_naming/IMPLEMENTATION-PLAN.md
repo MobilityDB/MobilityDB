@@ -8,7 +8,7 @@
 
 # Implementation plan — class-prefixed names, input and output, and the portable chapter
 
-[Back to the index](00-INDEX.md) · [Set-returning functions](10-SET-RETURNING.md) · [I/O plan](IO-PLAN.md)
+[Back to the index](00-INDEX.md) · [Set-returning functions](10-SET-RETURNING.md) · [I/O plan](IO-PLAN.md) · [Aggregates plan](AGGREGATES-PLAN.md)
 
 This plan turns families 1–9, the set-returning analysis (10), the I/O plan, rules 8–9 and the
 manual draft into pull requests, MobilityDB first. Measured at MobilityDB master `3e507c9695`,
