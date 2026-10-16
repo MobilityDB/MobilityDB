@@ -769,11 +769,11 @@ struct SkipList
  * Temporal* values and merging routes through tsequence_tagg.
  *
  * SKIPLIST_KEYVALUE is the (key, value)-pair mode used by MEOS-direct
- * streaming consumers (see meos/examples/ais_expand_skiplist.c). The
- * supported pattern is search-then-splice-on-miss with caller-managed
- * in-place mutation via the user-supplied merge_fn. The batch-merge code
- * path inside keyval_skiplist_merge is unvalidated and contains known
- * correctness bugs.
+ * streaming consumers (see meos/examples/ais_expand_skiplist.c). A value is
+ * inserted either alone after a search for its key misses, or in a sorted
+ * batch, whose values with a key already in the list are combined with the
+ * stored ones by the merge_fn of the list, which updates the stored value in
+ * place and returns it or returns a value it builds.
  */
 typedef enum
 {

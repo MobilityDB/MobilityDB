@@ -476,8 +476,9 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
   elem = &list->elems[cur];
 
   int result = 0;
-  /* Count the number of elements that will be merged with the new values */
-  while (skiplist_elempos(list, max_key, max_value, cur) == 0)
+  /* Count the elements up to the maximum of the inserted values included,
+   * which are merged with them */
+  while (skiplist_elempos(list, max_key, max_value, cur) >= 0)
   {
     cur = elem->next[0];
     elem = &list->elems[cur];
@@ -491,69 +492,74 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
 }
 
 /**
- * @brief Generic aggregate function for temporal values
+ * @brief Merge the elements spliced out of a key-value skiplist with the
+ * elements inserted into it
+ * @details Both arrays are sorted. A key present in both arrays yields one
+ * element whose value is the one the merge function of the list returns for
+ * the two values, any other key yields its own element. This is the
+ * key-value counterpart of #tinstant_tagg, which merges the instants of a
+ * temporal skiplist.
  * @param[in] list Skiplist
- * @param[in] keys1,keys2 Arrays of keys and values
+ * @param[in] keys1,keys2 Arrays of keys, `keys2` is `NULL` when the
+ * comparison is done with the values
  * @param[in] values1,values2 Arrays of values
  * @param[in] count1,count2 Number of values in the input arrays
  * @param[out] newcount Number of values in the output array
- * @param[out] newkeys Array of new keys
+ * @param[out] newkeys Array of keys of the output values, `NULL` when the
+ * comparison is done with the values
  * @param[out] tofree Array of values that must be freed
  * @param[out] nfree Number of values that must be freed
+ * @note The output arrays point to the keys and values of the input arrays,
+ * which must therefore be freed only after the output values are copied.
+ * As in #tinstant_tagg, a value the merge builds is reported in `tofree`,
+ * while a value the merge function returns among its arguments is freed with
+ * that argument.
  */
 void **
 keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
   int count1, void **keys2, void **values2, int count2, int *newcount,
   void ***newkeys, void ***tofree, int *nfree)
 {
+  /* The keys are compared when the inserted values come with keys, the values
+   * are compared otherwise */
+  bool haskeys = (keys2 != NULL);
   void **result = palloc(sizeof(void *) * (count1 + count2));
-  void **newkeys1 = palloc(sizeof(void *) * (count1 + count2));
+  void **newkeys1 = haskeys ?
+    palloc(sizeof(void *) * (count1 + count2)) : NULL;
   void **tofree1 = palloc(sizeof(void *) * Max(count1, count2));
   int i = 0, j = 0, count = 0, nfree1 = 0;
-  while (i < count1 && j < count2)
+  while (i < count1 || j < count2)
   {
-    void *key1, *key2, *val1, *val2;
-    if (keys1)
-    {
-      key1 = keys1[i];
-      key2 = keys2[j];
-      val1 = values1[i];
-      val2 = values2[j];
-    }
+    int cmp;
+    if (i == count1)
+      cmp = 1;
+    else if (j == count2)
+      cmp = -1;
     else
-    {
-      key1 = val1 = values1[i];
-      key2 = val2 = values2[j];
-    }
-    int cmp = list->comp_fn(key1, key1);
+      cmp = haskeys ? list->comp_fn(keys1[i], keys2[j]) :
+        list->comp_fn(values1[i], values2[j]);
     if (cmp == 0)
     {
-      newkeys1[count] = key1;
-      result[count++] = list->merge_fn(val1, val2);
-      if (tofree)
-        tofree1[nfree1++] = result[count - 1];
+      void *merged = list->merge_fn(values1[i], values2[j]);
+      if (merged != values1[i] && merged != values2[j])
+        tofree1[nfree1++] = merged;
+      if (haskeys)
+        newkeys1[count] = keys1[i];
+      result[count++] = merged;
       i++; j++;
     }
     else if (cmp < 0)
     {
-      newkeys1[count] = key1;
-      result[count++] = val1;
-      i++;
+      if (haskeys)
+        newkeys1[count] = keys1[i];
+      result[count++] = values1[i++];
     }
     else
     {
-      newkeys1[count] = key2;
-      result[count++] = val2;
-      j++;
+      if (haskeys)
+        newkeys1[count] = keys2[j];
+      result[count++] = values2[j++];
     }
-  }
-  /* We finished to aggregate state1 */
-  assert (i == count1);
-  /* Copy the values from state2 that are after the end of state1 */
-  while (j < count2)
-  {
-    result[count] = keys2[j];
-    result[count++] = values2[j++];
   }
   /* Set output parameters and return */
   *newcount = count;
@@ -605,6 +611,12 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Array keeping the new aggregated values that must be freed */
   void **tofree = NULL;
   int nfree = 0;
+  /* Keys and values of the spliced-out elements, which the merged values may
+   * point to and which are therefore freed after the insertion */
+  void **spliced_keys = NULL;
+  void **spliced_vals = NULL;
+  /* Array of keys of the merged values of a key-value skiplist */
+  void **newkeys = NULL;
 
   /* Remove from the list the elements that overlap with the new elements
    * (if any) and compute their aggregation */
@@ -621,8 +633,6 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       &upper, update);
 #endif /* MEOS */
     /* Delete spliced-out elements (if any) but save their keys and values for later */
-    void **spliced_keys = NULL;
-    void **spliced_vals = NULL;
     if (spliced_count != 0)
     {
       int cur = lower;
@@ -659,7 +669,6 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
     if (spliced_count != 0)
     {
       int newcount = 0;
-      void **newkeys = NULL;
 #if MEOS
       void **newvalues = (sktype == SKIPLIST_TEMPORAL) ?
         temporal_skiplist_merge(spliced_vals, spliced_count, values, count,
@@ -670,20 +679,6 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       void **newvalues = temporal_skiplist_merge(spliced_vals, spliced_count,
         values, count, func, crossings, &newcount, &tofree, &nfree);
 #endif /* MEOS */
-
-      /* Delete the spliced-out values */
-      for (int i = 0; i < spliced_count; i++)
-      {
-#if MEOS
-        if (spliced_keys[i])
-          pfree(spliced_keys[i]);
-#endif /* MEOS */
-        pfree(spliced_vals[i]);
-      }
-      if (spliced_keys)
-        pfree(spliced_keys);
-      pfree(spliced_vals);
-
       keys = newkeys;
       values = newvalues;
       count = newcount;
@@ -745,6 +740,23 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   }
 
   /* Free memory */
+  if (spliced_count != 0)
+  {
+    /* Delete the spliced-out keys and values */
+    for (int i = 0; i < spliced_count; i++)
+    {
+#if MEOS
+      if (spliced_keys[i])
+        pfree(spliced_keys[i]);
+#endif /* MEOS */
+      pfree(spliced_vals[i]);
+    }
+    if (spliced_keys)
+      pfree(spliced_keys);
+    pfree(spliced_vals);
+    if (newkeys)
+      pfree(newkeys);
+  }
   if (spliced_count != 0 && tofree)
   {
     pfree_array((void **) tofree, nfree);
