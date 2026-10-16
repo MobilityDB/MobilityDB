@@ -2492,7 +2492,7 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_transfn);
  * the same grid
  * @details The state lives in the aggregate context, as #Set_union_transfn
  * keeps its own
- * @sqlfn raster_same_alignment_transfn()
+ * @sqlfn sameAlignmentAggTransition()
  * @sqlaggfn sameAlignmentAgg()
  */
 Datum
@@ -2523,7 +2523,7 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_combinefn);
  * @brief Combine function of the aggregate testing whether rasters lie on the
  * same grid
  * @details The states are combined as #Set_union_combinefn combines its own
- * @sqlfn raster_same_alignment_combinefn()
+ * @sqlfn sameAlignmentAggCombine()
  * @sqlaggfn sameAlignmentAgg()
  */
 Datum
@@ -2552,7 +2552,7 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_finalfn);
  * @brief Final function of the aggregate testing whether rasters lie on the
  * same grid
  * @details An aggregate over no raster answers NULL, as for PostGIS
- * @sqlfn raster_same_alignment_finalfn()
+ * @sqlfn sameAlignmentAggFinal()
  * @sqlaggfn sameAlignmentAgg()
  */
 Datum
@@ -2571,7 +2571,7 @@ PG_FUNCTION_INFO_V1(Rasteralignstate_serialize);
  * @brief Serialize the state of the aggregate testing whether rasters lie on
  * the same grid
  * @details The bytes are wrapped as #Setstate_serialize wraps its own
- * @sqlfn rasteralignstate_serialize()
+ * @sqlfn sameAlignmentAggSerialize()
  * @sqlaggfn sameAlignmentAgg()
  */
 Datum
@@ -2595,7 +2595,7 @@ PG_FUNCTION_INFO_V1(Rasteralignstate_deserialize);
  * on the same grid
  * @details The state is built in the aggregate context, as
  * #Setstate_deserialize builds its own
- * @sqlfn rasteralignstate_deserialize()
+ * @sqlfn sameAlignmentAggDeserialize()
  * @sqlaggfn sameAlignmentAgg()
  */
 Datum
@@ -2626,7 +2626,7 @@ PG_FUNCTION_INFO_V1(Raster_union_transfn);
  * PostGIS's `RASTER_union_transfn` reads it; a NULL band unites every band
  * and a NULL pixel operation is `LAST`. The state lives in the aggregate
  * context, as #Raster_same_alignment_transfn keeps its own
- * @sqlfn raster_union_transfn()
+ * @sqlfn rasterUnionTransition()
  * @sqlaggfn rasterUnion()
  */
 Datum
@@ -2671,7 +2671,7 @@ PG_FUNCTION_INFO_V1(Raster_union_combinefn);
  * @brief Combine function of the aggregate uniting rasters
  * @details The states are combined as #Raster_same_alignment_combinefn
  * combines its own
- * @sqlfn raster_union_combinefn()
+ * @sqlfn rasterUnionCombine()
  * @sqlaggfn rasterUnion()
  */
 Datum
@@ -2698,7 +2698,7 @@ PG_FUNCTION_INFO_V1(Raster_union_finalfn);
  * @ingroup mobilitydb_raster
  * @brief Final function of the aggregate uniting rasters
  * @details An aggregate over no raster answers NULL, as for PostGIS
- * @sqlfn raster_union_finalfn()
+ * @sqlfn rasterUnionFinal()
  * @sqlaggfn rasterUnion()
  */
 Datum
@@ -2719,7 +2719,7 @@ PG_FUNCTION_INFO_V1(Rasterunionstate_serialize);
  * @ingroup mobilitydb_raster
  * @brief Serialize the state of the aggregate uniting rasters
  * @details The bytes are wrapped as #Rasteralignstate_serialize wraps its own
- * @sqlfn rasterunionstate_serialize()
+ * @sqlfn rasterUnionSerialize()
  * @sqlaggfn rasterUnion()
  */
 Datum
@@ -2742,7 +2742,7 @@ PG_FUNCTION_INFO_V1(Rasterunionstate_deserialize);
  * @brief Deserialize the state of the aggregate uniting rasters
  * @details The state is built in the aggregate context, as
  * #Rasteralignstate_deserialize builds its own
- * @sqlfn rasterunionstate_deserialize()
+ * @sqlfn rasterUnionDeserialize()
  * @sqlaggfn rasterUnion()
  */
 Datum
