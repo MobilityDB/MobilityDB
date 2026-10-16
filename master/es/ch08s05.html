@@ -1,84 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones siempre y alguna vez</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s04.html" title="Operaciones de distancia"><link rel="next" href="ch08s06.html" title="Relaciones espaciotemporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones siempre y alguna vez</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Relaciones siempre y alguna vez</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id6543"></a><a class="indexterm" name="id6546"></a><p>Contiene alguna vez o siempre</p><pre class="programlisting">
-eContains({geometry,tgeom},{geometry,tgeom}) → boolean
-aContains({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
-SELECT eContains(geometry 'Linestring(1 1,3 3)',
-  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
--- false
-SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)',
-  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
--- true
-SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
--- false
-SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
--- true
-</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id6555"></a><a class="indexterm" name="id6558"></a><p>Cubre alguna vez o siempre</p><pre class="programlisting">
-eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
-aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
-SELECT eCovers(geometry 'Linestring(1 1,3 3)',
-  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
--- false
-SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)',
-  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
--- true
-SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
--- false
-SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
--- true
-</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id6568"></a><a class="indexterm" name="id6571"></a><p>Está disjunto alguna vez o siempre <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><pre class="programlisting">
-eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
-aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
-</pre><pre class="programlisting">
-SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
--- false
-SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
--- true
-</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id6592"></a><a class="indexterm" name="id6595"></a><p>Está alguna vez o siempre a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><pre class="programlisting">
-eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
-aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
-eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
-aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
-</pre><p>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</p><pre class="programlisting">
-SELECT eDwithin(geometry 'Point(1 1 1)',
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
--- true
-SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
--- false
-SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
-  geography 'Point(0 0)', 110800);
--- true
-SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
-  geography 'Point(0 0)', 110800, false);
--- false
-</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id6617"></a><a class="indexterm" name="id6620"></a><p>Intersecta alguna vez o siempre <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><pre class="programlisting">
-eIntersects({geo,tgeo},{geo,tgeo}) → boolean
-aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><pre class="programlisting">
-SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
--- false
-SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
--- true
-</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id6641"></a><a class="indexterm" name="id6644"></a><p>Toca alguna vez o siempre</p><pre class="programlisting">
-eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
-aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
-</pre><pre class="programlisting">
-SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
--- true
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones espaciotemporales</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Cálculos planos y geodésicos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s04.html" title="Operaciones de distancia"><link rel="next" href="ch08s06.html" title="Relaciones siempre y alguna vez"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Cálculos planos y geodésicos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_geodetic"></a>Cálculos planos y geodésicos</h2></div></div></div><p>Las coordenadas de una geometría temporal (<code class="varname">tgeometry</code> o <code class="varname">tgeompoint</code>) se interpretan en el plano de su sistema de referencia espacial, y las de una geografía temporal (<code class="varname">tgeography</code> o <code class="varname">tgeogpoint</code>) como longitudes y latitudes sobre el elipsoide WGS 84. Qué operaciones admite una geografía temporal, y con qué exactitud, se deduce de tres reglas.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Una operación está disponible para las geografías cuando está definida sobre el elipsoide. Es el caso de las operaciones métricas, como la distancia, la distancia dentro de un umbral, la longitud, el área, el acimut o el centroide, que se calculan sobre el esferoide WGS 84, o sobre la esfera, más rápido, cuando su argumento <code class="varname">spheroid</code> es falso. Es también el caso de la intersección y de la disyunción, ya que dos geografías se intersecan cuando su distancia es cero. No es el caso de <code class="varname">contains</code>, <code class="varname">covers</code> y <code class="varname">touches</code>, que se definen mediante el modelo de nueve intersecciones extendido dimensionalmente de la topología plana, ni de las construcciones planas, como la unión o la intersección de dos geometrías, que PostGIS tampoco define para las geografías. Estas funciones producen un error para las geografías.</p></li><li class="listitem"><p>Las versiones alguna vez, siempre y temporal de una operación disponible para las geografías se calculan de forma exacta. El valor de una geografía temporal, y el de un punto geográfico temporal con interpolación discreta o escalonada, es constante entre dos instantes, por lo que la operación se evalúa en cada instante. Un punto geográfico temporal con interpolación lineal se desplaza a lo largo de un círculo máximo entre dos instantes, y el resultado de una relación temporal cambia en los instantes en que su distancia geodésica al otro argumento cruza la distancia dada. Estos instantes se calculan cuando el otro argumento es un punto geográfico o un punto geográfico temporal. Para otras geografías, como líneas y polígonos, las relaciones temporales <code class="varname">tIntersects</code>, <code class="varname">tDisjoint</code> y <code class="varname">tDwithin</code> de un punto geográfico temporal con interpolación lineal producen un error.</p></li><li class="listitem"><p>Una relación temporal disponible para las geografías acepta una geografía o una geografía temporal en cualquiera de sus argumentos, como su versión plana acepta una geometría o una geometría temporal.</p></li></ol></div><p>Una geometría temporal en el SRID 4326 se convierte en una geografía temporal con los mismos valores mediante la conversión <code class="varname">::tgeography</code>, y a la inversa mediante la conversión <code class="varname">::tgeometry</code>. La función <code class="varname">transform</code> la reproyecta en cambio a un sistema de referencia espacial plano cuya unidad es el metro, en el que las distancias y las áreas son planas.</p><pre class="programlisting">
+SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
+  4.40 50.84,4.40 50.88,4.35 50.84))@2001-01-01, Point(4.37 50.85)@2001-01-02]',
+  geometry 'SRID=4326;Point(4.45 50.84)')::numeric, 4);
+-- 0.0500
+SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
+  4.40 50.84,4.40 50.88,4.35 50.84))@2001-01-01, Point(4.37 50.85)@2001-01-02]'
+  ::tgeography, geography 'Point(4.45 50.84)')::numeric, 1);
+-- 3521.9
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones siempre y alguna vez</td></tr></table></div></body></html>

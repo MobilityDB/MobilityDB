@@ -1,65 +1,84 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones espaciotemporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s05.html" title="Relaciones siempre y alguna vez"><link rel="next" href="ch09.html" title="Capítulo 9. Tipos temporales: Operaciones de análisis"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciotemporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatiotemp_rel"></a>Relaciones espaciotemporales</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id6654"></a><p>Contiene temporal</p><pre class="programlisting">
-tContains(geometry,tgeom) → tbool
-</pre><pre class="programlisting">
-SELECT tContains(geometry 'Linestring(1 1,3 3)',
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones siempre y alguna vez</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"><link rel="prev" href="ch08s05.html" title="Cálculos planos y geodésicos"><link rel="next" href="ch08s07.html" title="Relaciones espaciotemporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones siempre y alguna vez</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales geométricos (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Relaciones siempre y alguna vez</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id6569"></a><a class="indexterm" name="id6572"></a><p>Contiene alguna vez o siempre</p><pre class="programlisting">
+eContains({geometry,tgeom},{geometry,tgeom}) → boolean
+aContains({geometry,tgeom},{geometry,tgeom}) → boolean
+</pre><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
+SELECT eContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
--- {[f@2001-01-01, f@2001-01-02]}
-SELECT tContains(geometry 'Linestring(1 1,3 3,1 1)',
+-- false
+SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
-SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+-- true
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
--- {[f@2001-01-01, f@2001-01-02]}
-SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
--- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
-</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id6661"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+-- false
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
+-- true
+</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id6581"></a><a class="indexterm" name="id6584"></a><p>Cubre alguna vez o siempre</p><pre class="programlisting">
+eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
+aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
+</pre><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
+SELECT eCovers(geometry 'Linestring(1 1,3 3)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+-- false
+SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
+-- true
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+-- false
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
+-- true
+</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id6594"></a><a class="indexterm" name="id6597"></a><p>Está disjunto alguna vez o siempre <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
-tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
-</pre><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
-SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
--- {[t@2001-01-01, f@2001-01-02, f@2001-01-03], (t@2001-01-03, t@2001-01-04]}
-SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
--- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
-</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id6683"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><pre class="programlisting">
-tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
-tDwithin({geography,tgeogpoint},{geography,tgeogpoint},float,spheroid boolean=true) → tbool
-</pre><p>Para puntos geográficos temporales, el otro argumento es un punto geográfico o un punto geográfico temporal. La distancia se mide en el esferoide WGS 84 por defecto. Si el último argumento es falso, se mide en la esfera. Un segmento de un punto geográfico temporal se desplaza a lo largo de un círculo máximo, y el resultado cambia de valor en cada instante en que la distancia geodésica cruza la distancia dada, que un segmento puede cruzar varias veces.</p><pre class="programlisting">
-SELECT tDwithin(geometry 'Point(1 1)',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
---  {[t@2001-01-01, t@2001-01-03)}
-SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
-  tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(1 3)@2001-01-05]', 1);
--- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
-SELECT tDwithin(geography 'Point(1 0.1)',
-  tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 15000);
-/* {[f@2001-01-01, t@2001-01-01 21:48:53.195554, t@2001-01-02 02:11:06.804445],
-   (f@2001-01-02 02:11:06.804445, f@2001-01-03]} */
-SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
-  tgeogpoint '[Point(1 1)@2001-01-01, Point(1 -1)@2001-01-03]', 20000, false);
-/* {[f@2001-01-01, t@2001-01-01 20:56:51.37512, t@2001-01-02 03:03:08.624879],
-   (f@2001-01-02 03:03:08.624879, f@2001-01-03]} */
-</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id6705"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><pre class="programlisting">
-tIntersects({geo,tgeo},{geo,tgeo}) → tbool
-</pre><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
-SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
-/* {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, t@2001-01-03],
-   (f@2001-01-03, f@2001-01-04]} */
-SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
--- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
-</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id6727"></a><p>Toca temporal</p><pre class="programlisting">
-tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
+eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
+aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 </pre><pre class="programlisting">
-SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
--- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s05.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Relaciones siempre y alguna vez </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Capítulo 9. Tipos temporales: Operaciones de análisis</td></tr></table></div></body></html>
+SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
+-- false
+SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
+-- true
+</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id6618"></a><a class="indexterm" name="id6621"></a><p>Está alguna vez o siempre a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><pre class="programlisting">
+eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
+aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
+eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
+aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
+</pre><p>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</p><pre class="programlisting">
+SELECT eDwithin(geometry 'Point(1 1 1)',
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
+-- true
+SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
+-- false
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', 110800);
+-- true
+SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
+  geography 'Point(0 0)', 110800, false);
+-- false
+</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id6643"></a><a class="indexterm" name="id6646"></a><p>Intersecta alguna vez o siempre <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><pre class="programlisting">
+eIntersects({geo,tgeo},{geo,tgeo}) → boolean
+aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
+</pre><pre class="programlisting">
+SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
+-- false
+SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
+-- true
+</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id6667"></a><a class="indexterm" name="id6670"></a><p>Toca alguna vez o siempre</p><pre class="programlisting">
+eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
+aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
+</pre><pre class="programlisting">
+SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
+-- true
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s05.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s07.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Cálculos planos y geodésicos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones espaciotemporales</td></tr></table></div></body></html>

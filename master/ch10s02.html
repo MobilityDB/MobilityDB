@@ -32,7 +32,7 @@ SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
 -- Bounding box index filtering
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </pre><p>
-		</p><p>In the case of temporal points, all spatial relationships with the ever and always semantics (see <a class="xref" href="ch08s06.html" title="Spatiotemporal Relationships">the section called “Spatiotemporal Relationships”</a>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		</p><p>In the case of temporal points, all spatial relationships with the ever and always semantics (see <a class="xref" href="ch08s07.html" title="Spatiotemporal Relationships">the section called “Spatiotemporal Relationships”</a>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			</p><pre class="programlisting">
 SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
 -- Bounding box index filtering
