@@ -7,7 +7,6 @@
 meos/src/geo/postgis_funcs.c	geo_geo_n	n -= 1;
 meos/src/geo/tpoint_datagen.c	create_trip	noInstants += (int) ceil(segLength / P_EVENT_LENGTH) * 2;
 meos/src/json/tjsonb_jsonfuncs.c	jsonb_to_alphanum	if (null_handle == NULL_ERROR || null_handle == NULL_RETURN ||
-meos/src/json/tjsonb_jsonfuncs.c	jsonb_to_alphanum	if (resbasetype == T_INT4)
 meos/src/rgeo/trgeo_utils.c	ensure_same_geoms_lwpsurface	for (int i = 0; i < (int) psurface1->ngeoms; ++i)
 meos/src/rgeo/trgeo_utils.c	ensure_same_rings_lwpoly	for (int i = 0; i < (int) poly1->nrings; ++i)
 meos/src/temporal/temporal_aggfuncs.c	tsequence_tagg_iter	for (int j = 0; j < i; j++)

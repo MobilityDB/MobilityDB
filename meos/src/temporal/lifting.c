@@ -3415,7 +3415,10 @@ tfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0, nseqs = 0;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* The interpolation of the result is the one the lifted function declares,
+   * as in #tfunc_tcontseq_tcontseq_discfn, so that a value extracted from a
+   * temporal type with step interpolation may be interpolated linearly */
+  interpType interp = lfinfo->reslinear ? LINEAR : STEP;
   bool lower_inc = seq->period.lower_inc, upper_inc = seq->period.upper_inc;
   for (int i = 0; i < seq->count; i++)
   {
@@ -3430,13 +3433,24 @@ tfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
       {
         /* This option is ONLY allowed for STEP interpolation */
         assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
-        /* Close the current sequence and start a new one */
+        /* Close the current sequence and start a new one. With step
+         * interpolation the last value holds until the missing one, with
+         * linear interpolation the sequence ends at the last value */
         if (ninsts > 0)
         {
-          inst1 = instants[ninsts - 1];
-          instants[ninsts++] = tinstant_make(tinstant_value_p(inst1),
-            lfinfo->restype, inst->t);
-          upper_inc = false;
+          if (interp == STEP)
+          {
+            inst1 = instants[ninsts - 1];
+            instants[ninsts++] = tinstant_make(tinstant_value_p(inst1),
+              lfinfo->restype, inst->t);
+            upper_inc = false;
+          }
+          else
+          {
+            upper_inc = true;
+            if (ninsts == 1)
+              lower_inc = true;
+          }
           result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
             upper_inc, interp, NORMALIZE);
           ninsts = 0;
