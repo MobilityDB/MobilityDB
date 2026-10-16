@@ -185,6 +185,56 @@ h3indexset_values(const Set *s, int *count)
   return result;
 }
 
+/**
+ * @ingroup meos_h3_set_accessor
+ * @brief Return the start value of an H3 cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_start_value()
+ */
+H3Index
+h3indexset_start_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, 0);
+  return DatumGetH3Index(SET_VAL_N(s, 0));
+}
+
+/**
+ * @ingroup meos_h3_set_accessor
+ * @brief Return the end value of an H3 cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_end_value()
+ */
+H3Index
+h3indexset_end_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, 0);
+  return DatumGetH3Index(SET_VAL_N(s, s->count - 1));
+}
+
+/**
+ * @ingroup meos_h3_set_accessor
+ * @brief Return in the last argument the n-th value of an H3 cell set
+ * @param[in] s Set
+ * @param[in] n Number (1-based)
+ * @param[out] result Value
+ * @return Return true if the value is found
+ * @csqlfn #Set_value_n()
+ */
+bool
+h3indexset_value_n(const Set *s, int n, H3Index *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, false); VALIDATE_NOT_NULL(result, false);
+  if (n < 1 || n > s->count)
+    return false;
+  *result = DatumGetH3Index(SET_VAL_N(s, n - 1));
+  return true;
+}
+
 /*****************************************************************************
  * Grid traversal
  *****************************************************************************/
