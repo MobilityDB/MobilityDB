@@ -2619,6 +2619,90 @@ SELECT rasterUnion(r) FROM (VALUES
   (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.5, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 1.0::float8, NULL::float8))) t(r);
 
+-------------------------------------------------------------------------------
+-- Summary statistics of many rasters
+-------------------------------------------------------------------------------
+
+-- What the pixels of a band amount to over the tiles of the union.
+SELECT (s).count, (s).sum, round((s).mean::numeric, 6) AS mean,
+  round((s).stddev::numeric, 6) AS stddev, (s).min, (s).max
+FROM (SELECT summaryStatsAgg(r, 1, true ORDER BY id) AS s
+  FROM tbl_union_tiles) t;
+SELECT (s).count, (s).sum, round((s).mean::numeric, 6) AS mean,
+  round((s).stddev::numeric, 6) AS stddev, (s).min, (s).max
+FROM (SELECT summaryStatsAgg(r, 2, false ORDER BY id) AS s
+  FROM tbl_union_tiles WHERE id < 3) t;
+
+-- The example of the manual: the statistics of two overlapping tiles.
+WITH tiles AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
+
+-- Every band, leaving nodata out or counting it, is the record PostGIS's
+-- ST_SummaryStatsAgg answers reading every pixel, and so is the form without
+-- a band.
+SELECT b, e, summaryStatsAgg(r, b, e ORDER BY id) =
+    ST_SummaryStatsAgg(r, b, e, 1.0 ORDER BY id) AS postgis
+FROM tbl_union_tiles,
+  (VALUES (1, true), (1, false), (2, true), (2, false)) v(b, e)
+WHERE b = 1 OR id < 3
+GROUP BY b, e ORDER BY b, e;
+SELECT summaryStatsAgg(r, false ORDER BY id) =
+    ST_SummaryStatsAgg(r, false, 1.0 ORDER BY id) AS without_band
+FROM tbl_union_tiles;
+
+-- Over one raster, the statistics of summaryStats.
+SELECT t.id, summaryStatsAgg(t.r, 1, true) = (SELECT summaryStats(u.r, 1,
+    true) FROM tbl_union_tiles u WHERE u.id = t.id) AS one
+FROM tbl_union_tiles t GROUP BY t.id ORDER BY t.id;
+
+-- A NULL raster is skipped, a group of no raster answers NULL, and a band
+-- whose every pixel is nodata counts none, as for PostGIS.
+SELECT summaryStatsAgg(r, 1, true ORDER BY id) =
+    ST_SummaryStatsAgg(r, 1, true, 1.0 ORDER BY id) AS null_skipped
+FROM (SELECT id, r FROM tbl_union_tiles UNION ALL SELECT 4, NULL) t;
+SELECT summaryStatsAgg(r, 1, true) IS NULL AS none
+FROM tbl_union_tiles WHERE false;
+SELECT (summaryStatsAgg(r, 1, true)).*
+FROM (VALUES (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0,
+  0.0, 3857), '32BF'::text, -9999.0::float8, -9999.0::float8))) t(r);
+
+-- The states of parallel workers are combined into the statistics of every
+-- pixel: the count, sum, smallest and largest value are those of PostGIS,
+-- and the mean and the standard deviation agree to ten decimals.
+SET parallel_setup_cost = 0;
+SET parallel_tuple_cost = 0;
+SET min_parallel_table_scan_size = 0;
+SET max_parallel_workers_per_gather = 2;
+CREATE TABLE tbl_stats_many AS
+SELECT i, ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
+    -1.0, 0.0, 0.0, 3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1,
+    1, ARRAY[[i % 7, i % 5], [i % 3, -9999]]::double precision[][]) AS r
+FROM generate_series(1, 200) i;
+EXPLAIN (COSTS OFF) SELECT summaryStatsAgg(r, 1, true) FROM tbl_stats_many;
+WITH s AS (SELECT summaryStatsAgg(r, 1, true) AS a FROM tbl_stats_many),
+  p AS (SELECT ST_SummaryStatsAgg(r, 1, true, 1.0 ORDER BY i) AS b
+    FROM tbl_stats_many)
+SELECT (a).count = (b).count AS count, (a).sum = (b).sum AS sum,
+  (a).min = (b).min AS min, (a).max = (b).max AS max,
+  round((a).mean::numeric, 10) = round((b).mean::numeric, 10) AS mean,
+  round((a).stddev::numeric, 10) = round((b).stddev::numeric, 10) AS stddev
+FROM s, p;
+RESET parallel_setup_cost;
+RESET parallel_tuple_cost;
+RESET min_parallel_table_scan_size;
+RESET max_parallel_workers_per_gather;
+DROP TABLE tbl_stats_many;
+
+-- A band a raster lacks is refused, where PostGIS skips the raster, and so
+-- is a band below 1.
+SELECT summaryStatsAgg(r, 2, true) FROM tbl_union_tiles;
+SELECT summaryStatsAgg(r, 0, true) FROM tbl_union_tiles;
+
 DROP TABLE tbl_union_tiles;
 
 /*****************************************************************************/

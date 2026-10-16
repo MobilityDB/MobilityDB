@@ -3000,6 +3000,26 @@ SELECT (summaryStats(r)).* FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_summaryStatsAgg">
+				<indexterm significance="normal"><primary><varname>summaryStatsAgg</varname></primary></indexterm>
+				<para>Return the statistics of the pixels of a band over the rasters of a column</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+summaryStatsAgg(raster,nband integer,exclude_nodata_value boolean) → summarystats
+summaryStatsAgg(raster,exclude_nodata_value boolean) → summarystats
+</programlisting>
+				<para>The aggregate of PostGIS's <varname>ST_SummaryStatsAgg</varname>, answering the <varname>summarystats</varname> record that <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> answers for one raster over every pixel of the band of the rasters, the band 1 where <varname>nband</varname> is left out. Every pixel is read, as for <varname>summaryStats</varname>, so the forms take no sample percentage and the standard deviation is the one of every pixel rather than of a sample. A <varname>NULL</varname> raster is skipped, over no raster the aggregate answers <varname>NULL</varname>, and rasters with no pixel to count answer a count of zero and no statistic. The aggregate runs in parallel, the statistics of the workers combined, where PostGIS's has no combine function. A band a raster does not have raises an error, where PostGIS skips the raster.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH tiles AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
+-- 8 | 16 | 2 | 1 | 1 | 3
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_dumpAsPolygons">
 				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
 				<para>Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;

@@ -4809,6 +4809,290 @@ rasterunionstate_deserialize(const uint8_t *bytes, size_t size)
   return result;
 }
 
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Transition function of the aggregate summarizing the pixels of
+ * rasters
+ * @details The aggregate of PostGIS's `ST_SummaryStatsAgg`, keeping what
+ * PostGIS's `RASTER_summaryStats_transfn` keeps: the count, the sum, the
+ * smallest and the largest value of the pixels read, and the running mean and
+ * sum of squared deviations from it that @p rt_band_get_summary_stats updates
+ * pixel by pixel across rasters, from which the final function takes the
+ * standard deviation in one pass. Every pixel is read, as
+ * #raster_summary_stats reads them, so the statistics are exact rather than
+ * estimated from a sample.
+ *
+ * The band and whether nodata is left out are those of the first raster read.
+ * A NULL raster leaves the state as it is, and a band the raster lacks raises
+ * an error, as it does for #raster_summary_stats, where PostGIS skips the
+ * raster
+ * @param[in,out] state Current aggregate state, NULL before the first raster
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out of the statistics, false to count them as the values they hold
+ * @errval NULL
+ * @csqlfn #Raster_summary_stats_transfn()
+ * @csqlaggfn #summaryStatsAggTransition()
+ */
+RasterStatsState *
+raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
+  int band, bool exclude_nodata)
+{
+  if (band < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The band of the statistics starts at 1");
+    return NULL;
+  }
+  /* Null raster: return state */
+  if (! rast)
+    return state;
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  /* A state created here is freed on error, a state of the caller is left
+   * to it */
+  RasterStatsState *created = NULL;
+  if (! state)
+  {
+    state = created = palloc0(sizeof(RasterStatsState));
+    state->band = band;
+    state->exclude_nodata = exclude_nodata;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  rt_band rtband = (state->band <= numbands) ?
+    rt_raster_get_band(raster, (uint32_t) (state->band - 1)) : NULL;
+  if (! rtband)
+  {
+    int nband = state->band;
+    raster_destroy(raster);
+    if (created)
+      pfree(created);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", nband, numbands);
+    return NULL;
+  }
+
+  /* A sample of one is every pixel, and the running mean and sum of squared
+   * deviations continue from those of the rasters read before */
+  uint64_t count = state->count;
+  rt_bandstats stats = rt_band_get_summary_stats(rtband,
+    state->exclude_nodata ? 1 : 0, 1.0, 0, &count, &state->mean, &state->q);
+  raster_destroy(raster);
+  if (! stats)
+  {
+    int nband = state->band;
+    if (created)
+      pfree(created);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not summarize band %d of the raster", nband);
+    return NULL;
+  }
+  /* The values of a band with no pixel to count leave the state as it is */
+  if (stats->count > 0)
+  {
+    if (state->count < 1)
+    {
+      state->min = stats->min;
+      state->max = stats->max;
+    }
+    else
+    {
+      if (stats->min < state->min)
+        state->min = stats->min;
+      if (stats->max > state->max)
+        state->max = stats->max;
+    }
+    state->sum += stats->sum;
+    state->count = (uint64) count;
+  }
+  /* The statistics are allocated by the raster core, so its own deallocator
+   * releases them */
+  rtdealloc(stats);
+  return state;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Combine function of the aggregate summarizing the pixels of rasters
+ * @details The counts, sums, smallest and largest values are combined as
+ * they are, and the running means and sums of squared deviations of the two
+ * states by the pairwise formula of Chan, Golub and LeVeque, so the standard
+ * deviation of the combined state is that of every pixel the two have read.
+ * PostGIS's `ST_SummaryStatsAgg` has no combine function. Two states of
+ * different bands, or one leaving nodata out and one counting it, raise an
+ * error
+ * @param[in,out] state1 Current aggregate state
+ * @param[in] state2 Aggregate state to combine with the first one
+ * @return The first state, or a copy of the second where the first is NULL;
+ * the second state is left to the caller
+ * @errval NULL
+ * @csqlfn #Raster_summary_stats_combinefn()
+ */
+RasterStatsState *
+raster_summary_stats_combinefn(RasterStatsState *state1,
+  const RasterStatsState *state2)
+{
+  if (! state2)
+    return state1;
+  if (! state1)
+  {
+    RasterStatsState *result = palloc(sizeof(RasterStatsState));
+    memcpy(result, state2, sizeof(RasterStatsState));
+    return result;
+  }
+  if (state1->band != state2->band ||
+      state1->exclude_nodata != state2->exclude_nodata)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The statistics of two states of different bands or of a different "
+      "handling of nodata cannot be combined");
+    return NULL;
+  }
+  if (state2->count < 1)
+    return state1;
+  if (state1->count < 1)
+  {
+    memcpy(state1, state2, sizeof(RasterStatsState));
+    return state1;
+  }
+  double n1 = (double) state1->count, n2 = (double) state2->count;
+  double n = n1 + n2;
+  double delta = state2->mean - state1->mean;
+  state1->mean += delta * n2 / n;
+  state1->q += state2->q + delta * delta * n1 * n2 / n;
+  state1->sum += state2->sum;
+  if (state2->min < state1->min)
+    state1->min = state2->min;
+  if (state2->max > state1->max)
+    state1->max = state2->max;
+  state1->count += state2->count;
+  return state1;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Final function of the aggregate summarizing the pixels of rasters
+ * @details The mean is the sum over the count and the standard deviation the
+ * square root of the sum of squared deviations over the count, as PostGIS's
+ * `RASTER_summaryStats_finalfn` takes them when every pixel is read. The
+ * state is freed, as #raster_same_alignment_finalfn frees its own
+ * @param[in] state Aggregate state
+ * @return The statistics, or NULL where the state is NULL, an aggregate over
+ * no raster, or counts no pixel, in which case no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_summary_stats_finalfn()
+ */
+BandStats *
+raster_summary_stats_finalfn(RasterStatsState *state)
+{
+  if (! state)
+    return NULL;
+  if (state->count > UINT32_MAX)
+  {
+    pfree(state);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The statistics count more pixels than their count can state");
+    return NULL;
+  }
+  BandStats *result = NULL;
+  if (state->count > 0)
+  {
+    result = palloc0(sizeof(BandStats));
+    result->count = (uint32_t) state->count;
+    result->sum = state->sum;
+    result->mean = state->sum / (double) state->count;
+    result->stddev = sqrt(state->q / (double) state->count);
+    result->min = state->min;
+    result->max = state->max;
+  }
+  pfree(state);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the bytes of the state of the aggregate summarizing the pixels
+ * of rasters, read back by #rasterstatsstate_deserialize
+ * @details The bytes are the band and whether nodata is left out, followed by
+ * the count, the sum, the smallest and largest value, the running mean and
+ * the sum of squared deviations, each in the byte order of the machine, as
+ * the state crosses only between workers of one server
+ * @param[in] state State
+ * @param[out] size_out Size of the result in bytes
+ * @errval NULL
+ * @csqlfn #Rasterstatsstate_serialize()
+ */
+uint8_t *
+rasterstatsstate_serialize(const RasterStatsState *state, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  int32 band = state->band;
+  double values[5] = {state->sum, state->min, state->max, state->mean,
+    state->q};
+  size_t size = sizeof(int32) + 1 + sizeof(uint64) + sizeof(values);
+  uint8_t *result = palloc(size);
+  uint8_t *ptr = result;
+  memcpy(ptr, &band, sizeof(int32));
+  ptr += sizeof(int32);
+  *ptr++ = state->exclude_nodata ? 1 : 0;
+  memcpy(ptr, &state->count, sizeof(uint64));
+  ptr += sizeof(uint64);
+  memcpy(ptr, values, sizeof(values));
+  *size_out = size;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the state of the aggregate summarizing the pixels of rasters,
+ * written by #rasterstatsstate_serialize
+ * @param[in] bytes Bytes
+ * @param[in] size Size of the bytes
+ * @errval NULL
+ * @csqlfn #Rasterstatsstate_deserialize()
+ */
+RasterStatsState *
+rasterstatsstate_deserialize(const uint8_t *bytes, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(bytes, NULL);
+  int32 band;
+  double values[5];
+  if (size != sizeof(int32) + 1 + sizeof(uint64) + sizeof(values))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a statistics state are not of its size");
+    return NULL;
+  }
+  memcpy(&band, bytes, sizeof(int32));
+  if (band < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a statistics state are invalid");
+    return NULL;
+  }
+  const uint8_t *ptr = bytes + sizeof(int32);
+  RasterStatsState *result = palloc(sizeof(RasterStatsState));
+  result->band = band;
+  result->exclude_nodata = (*ptr++ != 0);
+  memcpy(&result->count, ptr, sizeof(uint64));
+  ptr += sizeof(uint64);
+  memcpy(values, ptr, sizeof(values));
+  result->sum = values[0];
+  result->min = values[1];
+  result->max = values[2];
+  result->mean = values[3];
+  result->q = values[4];
+  return result;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

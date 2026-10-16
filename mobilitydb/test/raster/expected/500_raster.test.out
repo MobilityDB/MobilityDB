@@ -2753,6 +2753,142 @@ SELECT rasterUnion(r) FROM (VALUES
   (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.5, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
     '32BF'::text, 1.0::float8, NULL::float8))) t(r);
 ERROR:  The rasters (pixel corner coordinates) are not aligned
+SELECT (s).count, (s).sum, round((s).mean::numeric, 6) AS mean,
+  round((s).stddev::numeric, 6) AS stddev, (s).min, (s).max
+FROM (SELECT summaryStatsAgg(r, 1, true ORDER BY id) AS s
+  FROM tbl_union_tiles) t;
+ count | sum |   mean   |  stddev  | min | max 
+-------+-----+----------+----------+-----+-----
+    20 | 100 | 5.000000 | 2.000000 |   1 |   9
+(1 row)
+
+SELECT (s).count, (s).sum, round((s).mean::numeric, 6) AS mean,
+  round((s).stddev::numeric, 6) AS stddev, (s).min, (s).max
+FROM (SELECT summaryStatsAgg(r, 2, false ORDER BY id) AS s
+  FROM tbl_union_tiles WHERE id < 3) t;
+ count | sum |   mean    |  stddev   | min | max 
+-------+-----+-----------+-----------+-----+-----
+    18 | 459 | 25.500000 | 30.554596 |   1 |  90
+(1 row)
+
+WITH tiles AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
+ count | sum | mean | stddev | min | max 
+-------+-----+------+--------+-----+-----
+     8 |  16 |    2 |      1 |   1 |   3
+(1 row)
+
+SELECT b, e, summaryStatsAgg(r, b, e ORDER BY id) =
+    ST_SummaryStatsAgg(r, b, e, 1.0 ORDER BY id) AS postgis
+FROM tbl_union_tiles,
+  (VALUES (1, true), (1, false), (2, true), (2, false)) v(b, e)
+WHERE b = 1 OR id < 3
+GROUP BY b, e ORDER BY b, e;
+ b | e | postgis 
+---+---+---------
+ 1 | f | t
+ 1 | t | t
+ 2 | f | t
+ 2 | t | t
+(4 rows)
+
+SELECT summaryStatsAgg(r, false ORDER BY id) =
+    ST_SummaryStatsAgg(r, false, 1.0 ORDER BY id) AS without_band
+FROM tbl_union_tiles;
+ without_band 
+--------------
+ t
+(1 row)
+
+SELECT t.id, summaryStatsAgg(t.r, 1, true) = (SELECT summaryStats(u.r, 1,
+    true) FROM tbl_union_tiles u WHERE u.id = t.id) AS one
+FROM tbl_union_tiles t GROUP BY t.id ORDER BY t.id;
+ id | one 
+----+-----
+  1 | t
+  2 | t
+  3 | t
+(3 rows)
+
+SELECT summaryStatsAgg(r, 1, true ORDER BY id) =
+    ST_SummaryStatsAgg(r, 1, true, 1.0 ORDER BY id) AS null_skipped
+FROM (SELECT id, r FROM tbl_union_tiles UNION ALL SELECT 4, NULL) t;
+ null_skipped 
+--------------
+ t
+(1 row)
+
+SELECT summaryStatsAgg(r, 1, true) IS NULL AS none
+FROM tbl_union_tiles WHERE false;
+ none 
+------
+ t
+(1 row)
+
+SELECT (summaryStatsAgg(r, 1, true)).*
+FROM (VALUES (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0,
+  0.0, 3857), '32BF'::text, -9999.0::float8, -9999.0::float8))) t(r);
+ count | sum | mean | stddev | min | max 
+-------+-----+------+--------+-----+-----
+     0 |     |      |        |     |    
+(1 row)
+
+SET parallel_setup_cost = 0;
+SET
+SET parallel_tuple_cost = 0;
+SET
+SET min_parallel_table_scan_size = 0;
+SET
+SET max_parallel_workers_per_gather = 2;
+SET
+CREATE TABLE tbl_stats_many AS
+SELECT i, ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0,
+    -1.0, 0.0, 0.0, 3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1,
+    1, ARRAY[[i % 7, i % 5], [i % 3, -9999]]::double precision[][]) AS r
+FROM generate_series(1, 200) i;
+SELECT 200
+EXPLAIN (COSTS OFF) SELECT summaryStatsAgg(r, 1, true) FROM tbl_stats_many;
+                      QUERY PLAN                       
+-------------------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 2
+         ->  Partial Aggregate
+               ->  Parallel Seq Scan on tbl_stats_many
+(5 rows)
+
+WITH s AS (SELECT summaryStatsAgg(r, 1, true) AS a FROM tbl_stats_many),
+  p AS (SELECT ST_SummaryStatsAgg(r, 1, true, 1.0 ORDER BY i) AS b
+    FROM tbl_stats_many)
+SELECT (a).count = (b).count AS count, (a).sum = (b).sum AS sum,
+  (a).min = (b).min AS min, (a).max = (b).max AS max,
+  round((a).mean::numeric, 10) = round((b).mean::numeric, 10) AS mean,
+  round((a).stddev::numeric, 10) = round((b).stddev::numeric, 10) AS stddev
+FROM s, p;
+ count | sum | min | max | mean | stddev 
+-------+-----+-----+-----+------+--------
+ t     | t   | t   | t   | t    | t
+(1 row)
+
+RESET parallel_setup_cost;
+RESET
+RESET parallel_tuple_cost;
+RESET
+RESET min_parallel_table_scan_size;
+RESET
+RESET max_parallel_workers_per_gather;
+RESET
+DROP TABLE tbl_stats_many;
+DROP TABLE
+SELECT summaryStatsAgg(r, 2, true) FROM tbl_union_tiles;
+ERROR:  The raster has no band 2, it has 1
+SELECT summaryStatsAgg(r, 0, true) FROM tbl_union_tiles;
+ERROR:  The band of the statistics starts at 1
 DROP TABLE tbl_union_tiles;
 DROP TABLE
 /*****************************************************************************/

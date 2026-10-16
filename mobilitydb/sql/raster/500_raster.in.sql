@@ -1288,6 +1288,63 @@ CREATE AGGREGATE rasterUnion(raster, integer, text) (
 );
 
 /******************************************************************************
+ * Summary statistics of many rasters
+ *
+ * What the pixels of a band amount to over the rasters of a group, the
+ * aggregate of PostGIS's ST_SummaryStatsAgg over a raster, its band and
+ * whether nodata is excluded, under its name without ST_. Every pixel is
+ * read, as for summaryStats, so the forms take no sample percentage.
+ *****************************************************************************/
+
+-- The functions are not STRICT
+CREATE FUNCTION summaryStatsAggTransition(internal, raster, integer,
+    boolean)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION summaryStatsAggTransition(internal, raster, boolean)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION summaryStatsAggCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION summaryStatsAggSerialize(internal)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Rasterstatsstate_serialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION summaryStatsAggDeserialize(bytea, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Rasterstatsstate_deserialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION summaryStatsAggFinal(internal)
+  RETURNS summarystats
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE summaryStatsAgg(raster, integer, boolean) (
+  SFUNC = summaryStatsAggTransition,
+  STYPE = internal,
+  COMBINEFUNC = summaryStatsAggCombine,
+  FINALFUNC = summaryStatsAggFinal,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = summaryStatsAggSerialize,
+  DESERIALFUNC = summaryStatsAggDeserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE summaryStatsAgg(raster, boolean) (
+  SFUNC = summaryStatsAggTransition,
+  STYPE = internal,
+  COMBINEFUNC = summaryStatsAggCombine,
+  FINALFUNC = summaryStatsAggFinal,
+  FINALFUNC_MODIFY = READ_WRITE,
+  SERIALFUNC = summaryStatsAggSerialize,
+  DESERIALFUNC = summaryStatsAggDeserialize,
+  PARALLEL = safe
+);
+
+/******************************************************************************
  * Arithmetic of rasters
  *
  * A raster takes the arithmetic operators of a temporal number, computed
