@@ -150,8 +150,7 @@ extern bool quadbin_is_valid_cell(Quadbin cell);
 /* Tile (z/x/y quadkey) conversion — NO H3 analogue (quadbin-specific) */
 
 extern Quadbin quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z);
-extern bool quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y,
-  uint32_t *z);
+extern int *quadbin_cell_to_tile(Quadbin cell, int *count);
 
 /* Inspection */
 

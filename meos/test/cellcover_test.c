@@ -333,15 +333,17 @@ tquadbin_check(double lon0, double lat0, double lon1, double lat1,
   {
     if (holds(truth, ntruth, cells[i]))
       continue;
-    uint32_t x, y, z;
-    quadbin_cell_to_tile(cells[i], &x, &y, &z);
+    int n;
+    int *t = quadbin_cell_to_tile(cells[i], &n);
     bool near = false;
     for (int j = 0; j < ntruth && ! near; j++)
     {
-      uint32_t tx, ty, tz;
-      quadbin_cell_to_tile(truth[j], &tx, &ty, &tz);
-      near = (x + 1 >= tx && tx + 1 >= x && y + 1 >= ty && ty + 1 >= y);
+      int *tt = quadbin_cell_to_tile(truth[j], &n);
+      near = (t[0] + 1 >= tt[0] && tt[0] + 1 >= t[0] &&
+        t[1] + 1 >= tt[1] && tt[1] + 1 >= t[1]);
+      free(tt);
     }
+    free(t);
     if (! near)
       (*offpath)++;
   }
