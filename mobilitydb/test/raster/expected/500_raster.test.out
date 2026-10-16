@@ -2523,4 +2523,74 @@ SELECT sameAlignmentAgg(x) FROM (VALUES
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)),
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857))) t(x);
 ERROR:  Operation on mixed SRID
+CREATE TEMP TABLE tbl_pixels AS
+SELECT ST_SetValues(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8),
+    '8BUI'::text, 7.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r;
+SELECT 1
+SELECT ST_AsText(geom), val, x, y FROM tbl_pixels, pixelAsPoints(r);
+  st_astext   | val | x | y 
+--------------+-----+---+---
+ POINT(10 20) | 1.5 | 1 | 1
+ POINT(14 20) |   3 | 3 | 1
+ POINT(10 19) |   4 | 1 | 2
+ POINT(12 19) |   5 | 2 | 2
+ POINT(14 19) |   6 | 3 | 2
+(5 rows)
+
+SELECT dumpValues(r, 1) AS band1, dumpValues(r, 1, false) AS band1_nodata
+FROM tbl_pixels;
+         band1          |      band1_nodata       
+------------------------+-------------------------
+ {{1.5,NULL,3},{4,5,6}} | {{1.5,-9999,3},{4,5,6}}
+(1 row)
+
+SELECT d.* FROM tbl_pixels, dumpValues(r) d;
+ nband |        valarray        
+-------+------------------------
+     1 | {{1.5,NULL,3},{4,5,6}}
+     2 | {{7,7,7},{7,7,7}}
+(2 rows)
+
+SELECT b, e,
+  (SELECT array_agg(ROW(ST_AsHEXEWKB(geom), val, x, y)::text ORDER BY y, x)
+    FROM pixelAsPoints(r, b, e)) =
+  (SELECT array_agg(ROW(ST_AsHEXEWKB(geom), val, x, y)::text ORDER BY y, x)
+    FROM ST_PixelAsPoints(r, b, e)) AS points,
+  dumpValues(r, b, e) IS NOT DISTINCT FROM ST_DumpValues(r, b, e) AS band,
+  (SELECT array_agg(ROW(nband, valarray)::text) FROM dumpValues(r,
+    ARRAY[b, 3 - b], e)) =
+  (SELECT array_agg(ROW(nband, valarray)::text) FROM ST_DumpValues(r,
+    ARRAY[b, 3 - b], e)) AS bands
+FROM tbl_pixels, generate_series(1, 2) b, unnest(ARRAY[true, false]) e
+ORDER BY b, e;
+ b | e | points | band | bands 
+---+---+--------+------+-------
+ 1 | f | t      | t    | t
+ 1 | t | t      | t    | t
+ 2 | f | t      | t    | t
+ 2 | t | t      | t    | t
+(4 rows)
+
+SELECT ST_AsText(geom), val, x, y FROM pixelAsPoints(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 0.0, 1.0, -1.0, 0.5, 0.0, 3857), '8BUI'::text,
+  1.0::float8, NULL::float8));
+ st_astext  | val | x | y 
+------------+-----+---+---
+ POINT(0 0) |   1 | 1 | 1
+ POINT(1 0) |   1 | 2 | 1
+(2 rows)
+
+SELECT count(*) FROM tbl_pixels, pixelAsPoints(r, 3);
+ERROR:  The raster has no band 3, it has 2
+SELECT dumpValues(r, 3) FROM tbl_pixels;
+ERROR:  The raster has no band 3, it has 2
+SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[3]);
+ERROR:  The raster has no band 3, it has 2
+SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[1, NULL]);
+ERROR:  null array element not allowed in this context
+DROP TABLE tbl_pixels;
+DROP TABLE
 /*****************************************************************************/
