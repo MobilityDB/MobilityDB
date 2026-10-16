@@ -47,9 +47,23 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tcount_combinefn(internal, internal)", ret: "internal", sym: "Temporal_tcount_combinefn", strict: false}
-    - {sig: "tint_tagg_finalfn(internal)", ret: "tint", sym: "Temporal_tagg_finalfn"}
-    - {sig: "tbigint_tagg_finalfn(internal)", ret: "tbigint", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(timestamptz) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tstzset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tstzspan) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tstzspanset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, timestamptz)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(timestamptz) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tstzset)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tstzset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tstzspan)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tstzspan) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tstzspanset)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tstzspanset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tbool)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
@@ -58,8 +72,19 @@ aggregate_families:
     - {sig: "tbool_tand_combinefn(internal, internal)", ret: "internal", sym: "Tbool_tand_combinefn", strict: false}
     - {sig: "tOrTransition(internal, tbool)", ret: "internal", sym: "Tbool_tor_transfn", strict: false}
     - {sig: "tbool_tor_combinefn(internal, internal)", ret: "internal", sym: "Tbool_tor_combinefn", strict: false}
-    - {sig: "tbool_tagg_finalfn(internal)", ret: "tbool", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(tbool) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tAnd(tbool) (\n  SFUNC = tAndTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tand_combinefn,\n  FINALFUNC = tbool_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tOr(tbool) (\n  SFUNC = tOrTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tor_combinefn,\n  FINALFUNC = tbool_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tbool)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tbool) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tAndFinal(internal, tbool)", ret: "tbool", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tAnd(tbool) (\n  SFUNC = tAndTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tand_combinefn,\n  FINALFUNC = tAndFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tOrFinal(internal, tbool)", ret: "tbool", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tOr(tbool) (\n  SFUNC = tOrTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tor_combinefn,\n  FINALFUNC = tOrFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "tCountTransition(internal, tbigint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
@@ -84,8 +109,47 @@ aggregate_families:
     - {sig: "tAvgTransition(internal, tint)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false}
     - {sig: "tAvgTransition(internal, tbigint)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false}
     - {sig: "tavg_combinefn(internal, internal)", ret: "internal", sym: "Tnumber_tavg_combinefn", strict: false}
-    - {sig: "tavg_finalfn(internal)", ret: "tfloat", sym: "Tnumber_tavg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(tint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tbigint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tMin(tint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmin_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tMax(tint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmax_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tSum(tint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tAvg(tint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tavg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tMin(tbigint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmin_combinefn,\n  FINALFUNC = tbigint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tMax(tbigint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmax_combinefn,\n  FINALFUNC = tbigint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tSum(tbigint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tsum_combinefn,\n  FINALFUNC = tbigint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tAvg(tbigint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tavg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tbigint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tbigint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tMinFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMin(tint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tMaxFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMax(tint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tSumFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tSum(tint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tAvgFinal(internal, tint)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tAvg(tint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tMinFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMin(tbigint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tMaxFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMax(tbigint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tSumFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tSum(tbigint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tAvgFinal(internal, tbigint)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tAvg(tbigint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tfloat)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
@@ -96,10 +160,29 @@ aggregate_families:
     - {sig: "tfloat_tmax_combinefn(internal, internal)", ret: "internal", sym: "Tfloat_tmax_combinefn", strict: false}
     - {sig: "tSumTransition(internal, tfloat)", ret: "internal", sym: "Tfloat_tsum_transfn", strict: false}
     - {sig: "tfloat_tsum_combinefn(internal, internal)", ret: "internal", sym: "Tfloat_tsum_combinefn", strict: false}
-    - {sig: "tfloat_tagg_finalfn(internal)", ret: "tfloat", sym: "Temporal_tagg_finalfn"}
   - fns:
     - {sig: "tAvgTransition(internal, tfloat)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(tfloat) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tMin(tfloat) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmin_combinefn,\n  FINALFUNC = tfloat_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tMax(tfloat) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmax_combinefn,\n  FINALFUNC = tfloat_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tSum(tfloat) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tsum_combinefn,\n  FINALFUNC = tfloat_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tAvg(tfloat) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tavg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tfloat)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tfloat) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tMinFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMin(tfloat) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tMaxFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMax(tfloat) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tSumFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tSum(tfloat) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tAvgFinal(internal, tfloat)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tAvg(tfloat) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, ttext)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
@@ -108,8 +191,19 @@ aggregate_families:
     - {sig: "ttext_tmin_combinefn(internal, internal)", ret: "internal", sym: "Ttext_tmin_combinefn", strict: false}
     - {sig: "tMaxTransition(internal, ttext)", ret: "internal", sym: "Ttext_tmax_transfn", strict: false}
     - {sig: "ttext_tmax_combinefn(internal, internal)", ret: "internal", sym: "Ttext_tmax_combinefn", strict: false}
-    - {sig: "ttext_tagg_finalfn(internal)", ret: "ttext", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(ttext) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tMin(ttext) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmin_combinefn,\n  FINALFUNC = ttext_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE tMax(ttext) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmax_combinefn,\n  FINALFUNC = ttext_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, ttext)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(ttext) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tMinFinal(internal, ttext)", ret: "ttext", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMin(ttext) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "tMaxFinal(internal, ttext)", ret: "ttext", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tMax(ttext) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tbool)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "mergeTransition(internal, tint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
@@ -119,7 +213,27 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "mergeCombine(internal, internal)", ret: "internal", sym: "Temporal_merge_combinefn", strict: false}
-  - lit: "\nCREATE AGGREGATE merge(tbool) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tbool_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(tint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(tbigint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tbigint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(tfloat) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tfloat_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(ttext) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = ttext_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tbool)", ret: "tbool", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tbool) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tbigint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tfloat) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, ttext)", ret: "ttext", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(ttext) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tbool, tbool)", ret: "tbool", sym: "Temporal_app_tinst_transfn", pre: "-- Default interpolation based on the base type\n"}
     - {sig: "appendInstantTransition(tint, tint)", ret: "tint", sym: "Temporal_app_tinst_transfn"}
@@ -141,20 +255,94 @@ aggregate_families:
     - {sig: "appendInstantTransition(tfloat, tfloat, interp text,\n    maxdist float, maxt interval)", ret: "tfloat", sym: "Temporal_app_tinst_transfn", strict: false}
     - {sig: "appendInstantTransition(ttext, ttext, interp text,\n    maxt interval)", ret: "ttext", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tbool)", ret: "tbool", sym: "Temporal_append_finalfn"}
-    - {sig: "temporal_append_finalfn(tint)", ret: "tint", sym: "Temporal_append_finalfn"}
-    - {sig: "temporal_append_finalfn(tbigint)", ret: "tbigint", sym: "Temporal_append_finalfn"}
-    - {sig: "temporal_append_finalfn(tfloat)", ret: "tfloat", sym: "Temporal_append_finalfn"}
-    - {sig: "temporal_append_finalfn(ttext)", ret: "ttext", sym: "Temporal_append_finalfn"}
-  - lit: "\nCREATE AGGREGATE appendInstant(tbool) (\n  SFUNC = appendInstantTransition(tbool, tbool),\n  STYPE = tbool,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tbool, interp text) (\n  SFUNC = appendInstantTransition(tbool, tbool, text),\n  STYPE = tbool,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tbool, tbool, text, maxt),\n  STYPE = tbool,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tint) (\n  SFUNC = appendInstantTransition(tint, tint),\n  STYPE = tint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tint, interp text) (\n  SFUNC = appendInstantTransition(tint, tint, text),\n  STYPE = tint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),\n  STYPE = tint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tbigint) (\n  SFUNC = appendInstantTransition(tbigint, tbigint),\n  STYPE = tbigint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tbigint, interp text) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text),\n  STYPE = tbigint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),\n  STYPE = tbigint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tfloat) (\n  SFUNC = appendInstantTransition(tfloat, tfloat),\n  STYPE = tfloat,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tfloat, interp text) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text),\n  STYPE = tfloat,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),\n  STYPE = tfloat,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(ttext) (\n  SFUNC = appendInstantTransition(ttext, ttext),\n  STYPE = ttext,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(ttext, interp text) (\n  SFUNC = appendInstantTransition(ttext, ttext, text),\n  STYPE = ttext,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ttext, ttext, text, maxt),\n  STYPE = ttext,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tbool, tbool)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbool) (\n  SFUNC = appendInstantTransition(tbool, tbool),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tbool, tbool, interp text)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text) (\n  SFUNC = appendInstantTransition(tbool, tbool, text),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tbool, tbool, interp text, maxt interval)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tbool, tbool, text, maxt),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tint, tint)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tint) (\n  SFUNC = appendInstantTransition(tint, tint),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tint, tint, interp text)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tint, interp text) (\n  SFUNC = appendInstantTransition(tint, tint, text),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tint, tint, interp text, maxdist float, \n    maxt interval)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbigint) (\n  SFUNC = appendInstantTransition(tbigint, tbigint),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tbigint, tbigint, interp text)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tbigint, tbigint, interp text, maxdist float, \n    maxt interval)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tfloat) (\n  SFUNC = appendInstantTransition(tfloat, tfloat),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tfloat, tfloat, interp text)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tfloat, tfloat, interp text, maxdist float, \n    maxt interval)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(ttext, ttext)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ttext) (\n  SFUNC = appendInstantTransition(ttext, ttext),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(ttext, ttext, interp text)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text) (\n  SFUNC = appendInstantTransition(ttext, ttext, text),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(ttext, ttext, interp text, maxt interval)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ttext, ttext, text, maxt),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tbool, tbool)", ret: "tbool", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendSequenceTransition(tint, tint)", ret: "tint", sym: "Temporal_app_tseq_transfn", strict: false}
     - {sig: "appendSequenceTransition(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_app_tseq_transfn", strict: false}
     - {sig: "appendSequenceTransition(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_app_tseq_transfn", strict: false}
     - {sig: "appendSequenceTransition(ttext, ttext)", ret: "ttext", sym: "Temporal_app_tseq_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendSequence(tbool) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tbool,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(tint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(tbigint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tbigint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(tfloat) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tfloat,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(ttext) (\n  SFUNC = appendSequenceTransition,\n  STYPE = ttext,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tbool, tbool)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tbool) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tbool,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tint, tint)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tbigint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tbigint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tfloat) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tfloat,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(ttext, ttext)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(ttext) (\n  SFUNC = appendSequenceTransition,\n  STYPE = ttext,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: geo
   file: mobilitydb/sql/geo/068_tgeo_aggfuncs.in.sql
   reference: true
@@ -171,19 +359,40 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountTransition(internal, tgeography)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE tCount(tgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tgeography) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tgeometry)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tgeography)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tgeography) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tgeometry, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "wCountTransition(internal, tgeography, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE wCount(tgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE wCount(tgeography, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tgeometry, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tgeography, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tgeography, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tgeometry)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "mergeTransition(internal, tgeography)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "tgeometry_tagg_finalfn(internal)", ret: "tgeometry", sym: "Temporal_tagg_finalfn"}
-    - {sig: "tgeography_tagg_finalfn(internal)", ret: "tgeography", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tgeometry) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tgeometry_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(tgeography) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tgeography_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+    - {sig: "mergeFinal(internal, tgeometry)", ret: "tgeometry", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tgeometry) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tgeography)", ret: "tgeography", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tgeography) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendInstantTransition(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
@@ -196,14 +405,43 @@ aggregate_families:
     - {sig: "appendInstantTransition(tgeometry, tgeometry,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL,\n    maxt interval DEFAULT NULL)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendInstantTransition(tgeography, tgeography,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tgeometry)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
-    - {sig: "temporal_append_finalfn(tgeography)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeography) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeography, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeography, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeography) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeometry, tgeometry, text)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeography, tgeography, text)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeography, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeometry, tgeometry, text, float, interval)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeography, tgeography, text, float, interval)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeography, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendSequenceTransition(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_app_tseq_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendSequence(tgeometry) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(tgeography) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeography,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tgeometry) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tgeography) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: tpoint
   file: mobilitydb/sql/geo/068_tpoint_aggfuncs.in.sql
   reference: true
@@ -220,24 +458,48 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountTransition(internal, tgeogpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE tCount(tgeompoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tgeogpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tgeompoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tgeompoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tgeogpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tgeogpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tgeompoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "wCountTransition(internal, tgeogpoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE wCount(tgeompoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\nCREATE AGGREGATE wCount(tgeogpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tgeompoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tgeompoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tgeogpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tgeogpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "tCentroidTransition(internal, tgeompoint)", ret: "internal", sym: "Tpoint_tcentroid_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "tcentroid_combinefn(internal, internal)", ret: "internal", sym: "Tpoint_tcentroid_combinefn", strict: false}
-    - {sig: "tcentroid_finalfn(internal)", ret: "tgeompoint", sym: "Tpoint_tcentroid_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCentroid(tgeompoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tcentroid_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCentroidFinal(internal, tgeompoint)", ret: "tgeompoint", sym: "Tpoint_tcentroid_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCentroid(tgeompoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tgeompoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "mergeTransition(internal, tgeogpoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "tgeompoint_tagg_finalfn(internal)", ret: "tgeompoint", sym: "Temporal_tagg_finalfn"}
-    - {sig: "tgeogpoint_tagg_finalfn(internal)", ret: "tgeogpoint", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tgeompoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tgeompoint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE merge(tgeogpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tgeogpoint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+    - {sig: "mergeFinal(internal, tgeompoint)", ret: "tgeompoint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tgeompoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tgeogpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
@@ -250,14 +512,43 @@ aggregate_families:
     - {sig: "appendInstantTransition(tgeompoint, tgeompoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL,\n    maxt interval DEFAULT NULL)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tgeompoint)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
-    - {sig: "temporal_append_finalfn(tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tgeompoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeogpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tgeompoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeogpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeompoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, text)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, text)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, text, float, interval)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, text, float, interval)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendSequenceTransition(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_app_tseq_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendSequence(tgeompoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequence(tgeogpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tgeompoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tgeogpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: cbuffer
   file: mobilitydb/sql/cbuffer/211_tcbuffer_aggfuncs.in.sql
   reference: true
@@ -270,29 +561,51 @@ aggregate_families:
   - lit: "\nCREATE AGGREGATE extent(tcbuffer) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tcbuffer)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(tcbuffer) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tcbuffer)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tcbuffer) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tcbuffer, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tcbuffer, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tcbuffer, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tcbuffer, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tcbuffer)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The functions are not strict\n"}
-    - {sig: "tcbuffer_tagg_finalfn(internal)", ret: "tcbuffer", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tcbuffer) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tcbuffer_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tcbuffer)", ret: "tcbuffer", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tcbuffer) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not strict\n"}
-  - lit: ""
   - fns:
     - {sig: "appendInstantTransition(tcbuffer, tcbuffer,\n    interp text DEFAULT NULL)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
-  - lit: ""
   - fns:
     - {sig: "appendInstantTransition(tcbuffer, tcbuffer,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
-  - lit: ""
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tcbuffer) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tcbuffer, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tcbuffer) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, text)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, text, float, interval)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tcbuffer) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tcbuffer) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: npoint
   file: mobilitydb/sql/npoint/314_tnpoint_aggfuncs.in.sql
   reference: true
@@ -305,17 +618,32 @@ aggregate_families:
   - lit: "\nCREATE AGGREGATE extent(tnpoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tnpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(tnpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tnpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tnpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tnpoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tnpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tnpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tnpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "tCentroidTransition(internal, tnpoint)", ret: "internal", sym: "Tnpoint_tcentroid_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCentroid(tnpoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tcentroid_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCentroidFinal(internal, tnpoint)", ret: "tgeompoint", sym: "Tpoint_tcentroid_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCentroid(tnpoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tnpoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
-    - {sig: "tnpoint_tagg_finalfn(internal)", ret: "tnpoint", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tnpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tnpoint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tnpoint)", ret: "tnpoint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tnpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
@@ -325,12 +653,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(tnpoint, tnpoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tnpoint)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tnpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tnpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tnpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tnpoint, tnpoint, text)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tnpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tnpoint, tnpoint, text, float, interval)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tnpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tnpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tnpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: pose
   file: mobilitydb/sql/pose/111_tpose_aggfuncs.in.sql
   reference: true
@@ -340,17 +682,28 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal poses\n */\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tpose)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(tpose) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tpose)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tpose) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tpose)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
   - lit: "CREATE AGGREGATE extent(tpose) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tpose, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tpose, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tpose, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tpose, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tpose)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
-    - {sig: "tpose_tagg_finalfn(internal)", ret: "tpose", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tpose) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tpose_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tpose)", ret: "tpose", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tpose) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tpose, tpose)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
@@ -360,12 +713,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(tpose, tpose,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tpose)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tpose) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tpose, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tpose, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tpose, tpose)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpose) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpose, tpose, text)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpose, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpose, tpose, text, float, interval)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpose, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tpose, tpose)", ret: "tpose", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tpose) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpose,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tpose, tpose)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tpose) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpose,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 
 - family: posechain
   file: mobilitydb/sql/posechain/561_tposechain_aggfuncs.in.sql
@@ -376,17 +743,28 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal pose chains\n */\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tposechain)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(tposechain) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tposechain)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tposechain) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tposechain)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
   - lit: "CREATE AGGREGATE extent(tposechain) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tposechain, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tposechain, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tposechain, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tposechain, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tposechain)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
-    - {sig: "tposechain_tagg_finalfn(internal)", ret: "tposechain", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tposechain) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tposechain_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tposechain)", ret: "tposechain", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tposechain) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
@@ -396,12 +774,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tposechain)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tposechain) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tposechain, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tposechain, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tposechain, tposechain, text)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tposechain, tposechain, text, float, interval)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tposechain) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tposechain,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tposechain) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 
 - family: rgeo
   file: mobilitydb/sql/rgeo/168_trgeo_aggfuncs.in.sql
@@ -412,14 +804,25 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal rigid geometries\n */\n\n"
   - fns:
     - {sig: "tCountTransition(internal, trgeometry)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE tCount(trgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, trgeometry)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(trgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, trgeometry, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE wCount(trgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, trgeometry, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(trgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, trgeometry)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
-    - {sig: "trgeometry_tagg_finalfn(internal)", ret: "trgeometry", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(trgeometry) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = trgeometry_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, trgeometry)", ret: "trgeometry", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(trgeometry) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
@@ -429,12 +832,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(trgeometry, trgeometry,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(trgeometry)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(trgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(trgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(trgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(trgeometry, trgeometry, text)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(trgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(trgeometry, trgeometry, text, float, interval)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(trgeometry) (\n  SFUNC = appendSequenceTransition,\n  STYPE = trgeometry,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(trgeometry) (\n  SFUNC = appendSequenceTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "extentTransition(stbox, trgeometry)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
   - lit: "\nCREATE AGGREGATE extent(trgeometry) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n"
@@ -451,15 +868,25 @@ aggregate_families:
   - fns:
     - {sig: "tCountTransition(internal, tjsonb)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "tjsonb_tagg_finalfn(internal)", ret: "tjsonb", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(tjsonb) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+    - {sig: "tCountFinal(internal, tjsonb)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tjsonb) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tjsonb, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tjsonb, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tjsonb, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tjsonb, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tjsonb)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE merge(tjsonb) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tjsonb_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tjsonb)", ret: "tjsonb", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tjsonb) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantTransition(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn"}
   - lit: " \n"
@@ -469,12 +896,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(tjsonb, tjsonb, interp text,\n    maxt interval)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tjsonb)", ret: "tjsonb", sym: "Temporal_append_finalfn"}
-  - lit: "\nCREATE AGGREGATE appendInstant(tjsonb) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb),\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tjsonb, interp text) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tjsonb, tjsonb, interp text)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tjsonb, tjsonb, interp text, maxt interval)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tjsonb) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tjsonb) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tjsonb,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: pointcloud
   file: mobilitydb/sql/pointcloud/441_tpc_aggfuncs.in.sql
   reference: true
@@ -495,43 +936,88 @@ aggregate_families:
   - fns:
     - {sig: "tCountTransition(internal, tpcpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
     - {sig: "tCountTransition(internal, tpcpatch)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE tCount(tpcpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE tCount(tpcpatch) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tpcpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tpcpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "tCountFinal(internal, tpcpatch)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tpcpatch) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "tnpointsTransition(internal, tpcpatch)", ret: "internal", sym: "Tpcpatch_tnpoints_transfn", strict: false, pre: "-- tnpoints(tpcpatch) — running temporal sum of per-instant pcpatch\n-- npoints. Distinct from tcount(tpcpatch), which counts the number\n-- of patches (always 1 per instant). For drone LiDAR this is \"how\n-- many points were in the cloud at time t\".\n"}
-  - lit: "\nCREATE AGGREGATE tnpoints(tpcpatch) (\n  SFUNC = tnpointsTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tnpointsFinal(internal, tpcpatch)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tnpoints(tpcpatch) (\n  SFUNC = tnpointsTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tnpointsFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "tdensityTransition(internal, tpcpatch)", ret: "internal", sym: "Tpcpatch_tdensity_transfn", strict: false, pre: "-- tdensity(tpcpatch) — running temporal sum of per-instant density\n-- (npoints / xy-bbox-area). 1-point or co-linear patches yield\n-- +Infinity for that instant; filter with isfinite() if needed.\n"}
-  - lit: "\nCREATE AGGREGATE tdensity(tpcpatch) (\n  SFUNC = tdensityTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tfloat_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "tdensityFinal(internal, tpcpatch)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tdensity(tpcpatch) (\n  SFUNC = tdensityTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tdensityFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tpcpoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false}
     - {sig: "wCountTransition(internal, tpcpatch, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE wCount(tpcpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\nCREATE AGGREGATE wCount(tpcpatch, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************\n * Merge — combine multiple temporal values into one\n *****************************************************************************/\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tpcpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tpcpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tpcpatch, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tpcpatch, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n/*****************************************************************************\n * Merge — combine multiple temporal values into one\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tpcpoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
     - {sig: "mergeTransition(internal, tpcpatch)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "tpcpoint_tagg_finalfn(internal)", ret: "tpcpoint", sym: "Temporal_tagg_finalfn"}
-    - {sig: "tpcpatch_tagg_finalfn(internal)", ret: "tpcpatch", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE merge(tpcpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tpcpoint_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE merge(tpcpatch) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tpcpatch_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append-instant aggregate (streaming trajectory construction)\n *****************************************************************************/\n\n"
+    - {sig: "mergeFinal(internal, tpcpoint)", ret: "tpcpoint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tpcpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tpcpatch)", ret: "tpcpatch", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tpcpatch) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append-instant aggregate (streaming trajectory construction)\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendInstantTransition(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - fns:
     - {sig: "appendInstantTransition(tpcpoint, tpcpoint,\n    interp text DEFAULT NULL, maxt interval DEFAULT NULL)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tpcpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendInstant(tpcpoint, text, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n"
+    - {sig: "appendInstantFinal(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpcpoint, tpcpoint, text, interval)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantTransition(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- tpcpatch\n-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendInstant(tpcpatch) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Append-sequence aggregate\n *****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpatch) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************\n * Append-sequence aggregate\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "appendSequenceTransition(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_app_tseq_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE appendSequence(tpcpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendSequence(tpcpatch) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tpcpoint) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tpcpatch) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 
 - family: th3index
   file: mobilitydb/sql/h3/261_th3index_aggfuncs.in.sql
@@ -546,15 +1032,25 @@ aggregate_families:
   - fns:
     - {sig: "tCountTransition(internal, th3index)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "th3index_tagg_finalfn(internal)", ret: "th3index", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(th3index) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+    - {sig: "tCountFinal(internal, th3index)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(th3index) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, th3index, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE wCount(th3index, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, th3index, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(th3index, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, th3index)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE merge(th3index) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = th3index_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, th3index)", ret: "th3index", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(th3index) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantTransition(th3index, th3index)", ret: "th3index", sym: "Temporal_app_tinst_transfn"}
   - lit: "\n"
@@ -564,12 +1060,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(th3index, th3index, interp text,\n    maxt interval)", ret: "th3index", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(th3index)", ret: "th3index", sym: "Temporal_append_finalfn"}
-  - lit: "\nCREATE AGGREGATE appendInstant(th3index) (\n  SFUNC = appendInstantTransition(th3index, th3index),\n  STYPE = th3index,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(th3index, interp text) (\n  SFUNC = appendInstantTransition(th3index, th3index, text),\n  STYPE = th3index,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(th3index, th3index, text, maxt),\n  STYPE = th3index,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(th3index, th3index)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(th3index) (\n  SFUNC = appendInstantTransition(th3index, th3index),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(th3index, th3index, interp text)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text) (\n  SFUNC = appendInstantTransition(th3index, th3index, text),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(th3index, th3index, interp text, maxt interval)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(th3index, th3index, text, maxt),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(th3index, th3index)", ret: "th3index", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(th3index) (\n  SFUNC = appendSequenceTransition,\n  STYPE = th3index,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(th3index, th3index)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(th3index) (\n  SFUNC = appendSequenceTransition,\n  STYPE = th3index,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 
 - family: quadbin
   file: mobilitydb/sql/quadbin/361_tquadbin_aggfuncs.in.sql
@@ -584,15 +1094,25 @@ aggregate_families:
   - fns:
     - {sig: "tCountTransition(internal, tquadbin)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "tquadbin_tagg_finalfn(internal)", ret: "tquadbin", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(tquadbin) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+    - {sig: "tCountFinal(internal, tquadbin)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(tquadbin) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tquadbin, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE wCount(tquadbin, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, tquadbin, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(tquadbin, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tquadbin)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE merge(tquadbin) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = tquadbin_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, tquadbin)", ret: "tquadbin", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(tquadbin) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantTransition(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn"}
   - lit: "\n"
@@ -602,12 +1122,26 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(tquadbin, tquadbin, interp text,\n    maxt interval)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(tquadbin)", ret: "tquadbin", sym: "Temporal_append_finalfn"}
-  - lit: "\nCREATE AGGREGATE appendInstant(tquadbin) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin),\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tquadbin, interp text) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text),\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text, maxt),\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tquadbin, tquadbin, interp text)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tquadbin, tquadbin, interp text, maxt interval)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text, maxt),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(tquadbin) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(tquadbin) (\n  SFUNC = appendSequenceTransition,\n  STYPE = tquadbin,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"
 - family: ts2cell
   file: mobilitydb/sql/s2cell/611_ts2cell_aggfuncs.in.sql
   reference: true
@@ -621,15 +1155,25 @@ aggregate_families:
   - fns:
     - {sig: "tCountTransition(internal, ts2cell)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "ts2cell_tagg_finalfn(internal)", ret: "ts2cell", sym: "Temporal_tagg_finalfn"}
-  - lit: "\nCREATE AGGREGATE tCount(ts2cell) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+    - {sig: "tCountFinal(internal, ts2cell)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE tCount(ts2cell) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, ts2cell, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE wCount(ts2cell, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "wCountFinal(internal, ts2cell, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE wCount(ts2cell, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, ts2cell)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE merge(ts2cell) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = ts2cell_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "mergeFinal(internal, ts2cell)", ret: "ts2cell", sym: "Temporal_tagg_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE merge(ts2cell) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantTransition(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn"}
   - lit: "\n"
@@ -639,9 +1183,23 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantTransition(ts2cell, ts2cell, interp text,\n    maxt interval)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
+  - lit: "\n"
   - fns:
-    - {sig: "temporal_append_finalfn(ts2cell)", ret: "ts2cell", sym: "Temporal_append_finalfn"}
-  - lit: "\nCREATE AGGREGATE appendInstant(ts2cell) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(ts2cell, interp text) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+    - {sig: "appendInstantFinal(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(ts2cell, ts2cell, interp text)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(ts2cell, ts2cell, interp text, maxt interval)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE appendSequence(ts2cell) (\n  SFUNC = appendSequenceTransition,\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequenceFinal(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendSequence(ts2cell) (\n  SFUNC = appendSequenceTransition,\n  STYPE = ts2cell,\n  FINALFUNC = appendSequenceFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n/*****************************************************************************/\n"

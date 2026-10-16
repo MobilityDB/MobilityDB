@@ -101,7 +101,7 @@ PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Generic final function for temporal aggregation
- * @sqlfn tCount(), merge(), ...
+ * @sqlfn mergeFinal(), tAndFinal(), tCountFinal(), tdensityFinal(), tMaxFinal(), tMinFinal(), tnpointsFinal(), tOrFinal(), tSumFinal(), wCountFinal(), wMaxFinal(), wMinFinal(), wSumFinal()
  * @sqlaggfn merge(), tAnd(), tCount(), tMax(), tMin(), tOr(), tSum(), tdensity(), tnpoints(), wCount(), wMax(), wMin(), wSum()
  */
 Datum
@@ -772,7 +772,7 @@ PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Final function for temporal average aggregation of temporal
  * numbers
- * @sqlfn tavg_finalfn()
+ * @sqlfn tAvgFinal(), wAvgFinal()
  * @sqlaggfn tAvg(), wAvg()
  */
 Datum
@@ -930,7 +930,7 @@ PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Final function for append temporal instant/sequence aggregate
- * @sqlfn temporal_append_finalfn()
+ * @sqlfn appendInstantFinal(), appendSequenceFinal()
  * @sqlaggfn appendInstant(), appendSequence()
  */
 Datum

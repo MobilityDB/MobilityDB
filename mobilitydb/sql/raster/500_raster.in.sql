@@ -1178,16 +1178,16 @@ CREATE FUNCTION sameAlignmentDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasteralignstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sameAlignmentFinal(internal)
+CREATE FUNCTION sameAlignmentFinal(internal, raster)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE sameAlignment(raster) (
   SFUNC = sameAlignmentTransition,
   STYPE = internal,
   COMBINEFUNC = sameAlignmentCombine,
   FINALFUNC = sameAlignmentFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = sameAlignmentSerialize,
   DESERIALFUNC = sameAlignmentDeserialize,
@@ -1231,46 +1231,61 @@ CREATE FUNCTION rasterUnionDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasterunionstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION rasterUnionFinal(internal)
+CREATE FUNCTION rasterUnionFinal(internal, raster)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE rasterUnion(raster) (
   SFUNC = rasterUnionTransition,
   STYPE = internal,
   COMBINEFUNC = rasterUnionCombine,
   FINALFUNC = rasterUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = rasterUnionSerialize,
   DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION rasterUnionFinal(internal, raster, integer)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE rasterUnion(raster, integer) (
   SFUNC = rasterUnionTransition,
   STYPE = internal,
   COMBINEFUNC = rasterUnionCombine,
   FINALFUNC = rasterUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = rasterUnionSerialize,
   DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION rasterUnionFinal(internal, raster, text)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE rasterUnion(raster, text) (
   SFUNC = rasterUnionTransition,
   STYPE = internal,
   COMBINEFUNC = rasterUnionCombine,
   FINALFUNC = rasterUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = rasterUnionSerialize,
   DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION rasterUnionFinal(internal, raster, integer, text)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE rasterUnion(raster, integer, text) (
   SFUNC = rasterUnionTransition,
   STYPE = internal,
   COMBINEFUNC = rasterUnionCombine,
   FINALFUNC = rasterUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = rasterUnionSerialize,
   DESERIALFUNC = rasterUnionDeserialize,
@@ -1308,26 +1323,31 @@ CREATE FUNCTION summaryStatsAggDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasterstatsstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION summaryStatsAggFinal(internal)
+CREATE FUNCTION summaryStatsAggFinal(internal, raster, integer, boolean)
   RETURNS summarystats
   AS 'MODULE_PATHNAME', 'Raster_summary_stats_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE summaryStatsAgg(raster, integer, boolean) (
   SFUNC = summaryStatsAggTransition,
   STYPE = internal,
   COMBINEFUNC = summaryStatsAggCombine,
   FINALFUNC = summaryStatsAggFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = summaryStatsAggSerialize,
   DESERIALFUNC = summaryStatsAggDeserialize,
   PARALLEL = safe
 );
+CREATE FUNCTION summaryStatsAggFinal(internal, raster, boolean)
+  RETURNS summarystats
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE summaryStatsAgg(raster, boolean) (
   SFUNC = summaryStatsAggTransition,
   STYPE = internal,
   COMBINEFUNC = summaryStatsAggCombine,
   FINALFUNC = summaryStatsAggFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = summaryStatsAggSerialize,
   DESERIALFUNC = summaryStatsAggDeserialize,
