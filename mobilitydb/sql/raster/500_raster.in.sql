@@ -1162,45 +1162,45 @@ CREATE FUNCTION notSameAlignmentReason(rast1 raster, rast2 raster)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The functions are not STRICT
-CREATE FUNCTION raster_same_alignment_transfn(internal, raster)
+CREATE FUNCTION sameAlignmentAggTransition(internal, raster)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION raster_same_alignment_combinefn(internal, internal)
+CREATE FUNCTION sameAlignmentAggCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION rasteralignstate_serialize(internal)
+CREATE FUNCTION sameAlignmentAggSerialize(internal)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Rasteralignstate_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION rasteralignstate_deserialize(bytea, internal)
+CREATE FUNCTION sameAlignmentAggDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasteralignstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION raster_same_alignment_finalfn(internal)
+CREATE FUNCTION sameAlignmentAggFinal(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE sameAlignmentAgg(raster) (
-  SFUNC = raster_same_alignment_transfn,
+  SFUNC = sameAlignmentAggTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_same_alignment_combinefn,
-  FINALFUNC = raster_same_alignment_finalfn,
+  COMBINEFUNC = sameAlignmentAggCombine,
+  FINALFUNC = sameAlignmentAggFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasteralignstate_serialize,
-  DESERIALFUNC = rasteralignstate_deserialize,
+  SERIALFUNC = sameAlignmentAggSerialize,
+  DESERIALFUNC = sameAlignmentAggDeserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE sameAlignment(raster) (
-  SFUNC = raster_same_alignment_transfn,
+  SFUNC = sameAlignmentAggTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_same_alignment_combinefn,
-  FINALFUNC = raster_same_alignment_finalfn,
+  COMBINEFUNC = sameAlignmentAggCombine,
+  FINALFUNC = sameAlignmentAggFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasteralignstate_serialize,
-  DESERIALFUNC = rasteralignstate_deserialize,
+  SERIALFUNC = sameAlignmentAggSerialize,
+  DESERIALFUNC = sameAlignmentAggDeserialize,
   PARALLEL = safe
 );
 
@@ -1213,77 +1213,77 @@ CREATE AGGREGATE sameAlignment(raster) (
  *****************************************************************************/
 
 -- The functions are not STRICT
-CREATE FUNCTION raster_union_transfn(internal, raster)
+CREATE FUNCTION rasterUnionTransition(internal, raster)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION raster_union_transfn(internal, raster, integer)
+CREATE FUNCTION rasterUnionTransition(internal, raster, integer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION raster_union_transfn(internal, raster, text)
+CREATE FUNCTION rasterUnionTransition(internal, raster, text)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION raster_union_transfn(internal, raster, integer, text)
+CREATE FUNCTION rasterUnionTransition(internal, raster, integer, text)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION raster_union_combinefn(internal, internal)
+CREATE FUNCTION rasterUnionCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_union_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION rasterunionstate_serialize(internal)
+CREATE FUNCTION rasterUnionSerialize(internal)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Rasterunionstate_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION rasterunionstate_deserialize(bytea, internal)
+CREATE FUNCTION rasterUnionDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasterunionstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION raster_union_finalfn(internal)
+CREATE FUNCTION rasterUnionFinal(internal)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE rasterUnion(raster) (
-  SFUNC = raster_union_transfn,
+  SFUNC = rasterUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_union_combinefn,
-  FINALFUNC = raster_union_finalfn,
+  COMBINEFUNC = rasterUnionCombine,
+  FINALFUNC = rasterUnionFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasterunionstate_serialize,
-  DESERIALFUNC = rasterunionstate_deserialize,
+  SERIALFUNC = rasterUnionSerialize,
+  DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE rasterUnion(raster, integer) (
-  SFUNC = raster_union_transfn,
+  SFUNC = rasterUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_union_combinefn,
-  FINALFUNC = raster_union_finalfn,
+  COMBINEFUNC = rasterUnionCombine,
+  FINALFUNC = rasterUnionFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasterunionstate_serialize,
-  DESERIALFUNC = rasterunionstate_deserialize,
+  SERIALFUNC = rasterUnionSerialize,
+  DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE rasterUnion(raster, text) (
-  SFUNC = raster_union_transfn,
+  SFUNC = rasterUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_union_combinefn,
-  FINALFUNC = raster_union_finalfn,
+  COMBINEFUNC = rasterUnionCombine,
+  FINALFUNC = rasterUnionFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasterunionstate_serialize,
-  DESERIALFUNC = rasterunionstate_deserialize,
+  SERIALFUNC = rasterUnionSerialize,
+  DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE rasterUnion(raster, integer, text) (
-  SFUNC = raster_union_transfn,
+  SFUNC = rasterUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = raster_union_combinefn,
-  FINALFUNC = raster_union_finalfn,
+  COMBINEFUNC = rasterUnionCombine,
+  FINALFUNC = rasterUnionFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = rasterunionstate_serialize,
-  DESERIALFUNC = rasterunionstate_deserialize,
+  SERIALFUNC = rasterUnionSerialize,
+  DESERIALFUNC = rasterUnionDeserialize,
   PARALLEL = safe
 );
 

@@ -318,7 +318,6 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
  * @brief Final function for span and span set union aggregate
  * @param[in] state Current aggregate state, may be `NULL`
  * @csqlfn #Span_union_finalfn()
- * @csqlaggfn #spanUnionFinal(), #spansetUnionFinal()
  */
 SpanSet *
 spanset_union_finalfn(SpanSet *state)

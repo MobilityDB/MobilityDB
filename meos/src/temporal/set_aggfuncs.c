@@ -294,7 +294,6 @@ set_union_transfn(Set *state, Set *s)
  * @param[in,out] state Current aggregate state
  * @note The input state must be free by the calling function
  * @csqlfn #Set_union_finalfn()
- * @csqlaggfn #setUnionFinal()
  */
 Set *
 set_union_finalfn(Set *state)
