@@ -112,7 +112,7 @@ declares. The functions a `CREATE AGGREGATE` names are not user SQL: they take t
 |---|---|---|---|
 | AG1 | MobilityDB, MEOS-API | MobilityDB: the 106 twin `CREATE AGGREGATE` of the six leave; the transition wrappers of the eleven carry `@altsqlfn <name>Agg()` beside `@sqlaggfn` (`Tbool_tand_transfn`: `@sqlfn tAndTransition()`, `@sqlaggfn tAnd()`, `@altsqlfn tAndAgg()`); the twins' support functions take the name of the MobilityDB aggregate (`tMinAggTransition` -> `tMinTransition`, `mergeAggTransition` -> `mergeTransition`), their `@csqlaggfn` tags with them; the tests calling a twin call the MobilityDB name; the manual states the MobilityDB name and the engines' one (`doc/temporal_types_aggregation.xml` and the chapters listing a twin), EN and ES. MEOS-API: `attach_alt_sql_names` reads the `@altsqlfn` of a wrapper carrying `@sqlaggfn` as the aggregate's, into `altSqlName` on every entry of the `aggregates` section whose transition is that wrapper | — |
 | AG2 | MobilityDB | the finals: each aggregate declares `<agg>Final` once per type of value with `FINALFUNC_EXTRA`, over the C function the final calls today; the 46 underscored finals go | — |
-| AG3 | MobilityDB | the combines: one public MEOS combine per aggregate for the seven whose per-type combines collide (`tMinAgg`, `tMaxAgg`, `tSum`, `wMin`, `wMax`, `wSum`, `wCount`), choosing its comparison from the base type of the state and validating its states at entry, its PostgreSQL wrapper `<agg>Combine`; the other combines renamed to `<agg>Combine`, a forwarder per aggregate where one serves several | ruling R2 |
+| AG3 | MEOS, MobilityDB | the combines: three public MEOS functions, `temporal_tmin_combinefn` (`tMin`, `wMin`), `temporal_tmax_combinefn` (`tMax`, `wMax`) and `tnumber_tsum_combinefn` (`tSum`, `wSum`, `wCount`), each reading the `temptype` of the state's first value to choose the comparison (`datum_min_int32`, `_int64`, `_float8`, `_text`) and the crossings (`CROSSINGS` for floats alone) it hands `temporal_tagg_combinefn`, and testing at entry that both states hold one type the aggregate takes, replace the twelve per-type public combines (`tint_`, `tbigint_`, `tfloat_`, `ttext_` `tmin`/`tmax`, `tint_`, `tbigint_`, `tfloat_` `tsum`), which release `v1.3.1` does not declare (its `meos.h` declares no combine function); a PostgreSQL wrapper each, and each aggregate's own SQL `<aggregate>Combine(internal, internal)` over it (`tMinCombine` and `wMinCombine` over `Temporal_tmin_combinefn`); the other combines renamed to `<aggregate>Combine` | — |
 | AG4 | MEOS-API | the catalog states AG2's finals and AG3's combines: one public MEOS function per combine and final role of an aggregate, `FINALFUNC_EXTRA` read into the final's signature (`attach_aggregates` reads it) | AG2, AG3 |
 | AG5 | JMEOS | both typed surfaces and the Spark UDF surface register every aggregate under its `altSqlName` where it has one, else its name, the `Agg` rule and the twin preference of `_catalog_aggregates` going, carry the one combine and final of an aggregate in place of their per-type arrays, and the three raster aggregates; the UDF surface scope per ruling R3 | AG1, AG4, R3 |
 | AG6 | MobilityDuck | the aggregates generated from the catalog's `aggregates` section, as JMEOS's are, one registration per entry with its own `args`, `ret` and name, its `altSqlName` where it has one, the form every catalog-generated Duck function takes; the hand files retired; the six missing aggregates arrive with them | AG1, AG4 |
@@ -124,13 +124,11 @@ names the catalog states, and answers as MobilityDB does.
 
 ## Rulings owed
 
-The names of the aggregates follow from the rule above, settled on 1.4 being unreleased. Two
-questions remain, each about a surface:
+The names of the aggregates follow from the rule above. The combines follow from the model of the
+fifteen aggregates holding one combine for every type of value (`set_union_combinefn` for the 36
+overloads of `setUnion`): one MEOS combine per operation, which reads the type from the state,
+three functions in place of twelve that no release declares. One question remains:
 
-- **R2 — seven public MEOS combines.** `temporal_tmin_combinefn` and its six siblings are added to
-  the public MEOS C API, MobilityDB's SQL unchanged; the catalog refuses an aggregate whose combine role two public MEOS
-  functions carry under one SQL signature, so four per-type combines cannot stand behind one
-  `tMinAggCombine(internal, internal)`.
 - **R3 — the scope of the Spark UDF surface.** It carries the aggregates over one temporal value
   returning one; the typed surface carries all of them. Either the UDF surface stays that subset,
   stated as such, or it carries every aggregate.
