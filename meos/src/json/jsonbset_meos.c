@@ -50,6 +50,7 @@
  * @param[in,out] state Current aggregate state
  * @param[in] jb Value
  * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
  */
 Set *
 jsonb_union_transfn(Set *state, const Jsonb *jb)

@@ -338,6 +338,7 @@ minus_set_cbuffer(const Set *s, const Cbuffer *cb)
  * @param[in,out] state Current aggregate state
  * @param[in] cb Value
  * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
  */
 Set *
 cbuffer_union_transfn(Set *state, const Cbuffer *cb)

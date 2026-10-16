@@ -208,6 +208,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * @param[in] state Current aggregate value, may be `NULL`
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_tcentroid_transfn()
+ * @csqlaggfn #tCentroidTransition()
  */
 SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
@@ -279,6 +280,7 @@ tpoint_tcentroid_combinefn(SkipList *state1, SkipList *state2)
  * @param[in] state Current aggregate value, may be `NULL`
  * @param[in] temp Spatiotemporal value, may be `NULL`
  * @csqlfn #Tspatial_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 STBox *
 tspatial_extent_transfn(STBox *state, const Temporal *temp)
@@ -321,6 +323,7 @@ tspatial_extent_transfn(STBox *state, const Temporal *temp)
  * of spatiotemporal boxes and spatiotemporal values, the box to aggregate
  * being the state of another partial aggregation
  * @csqlfn #Stbox_extent_transfn(), #Stbox_extent_combinefn()
+ * @csqlaggfn #extentTransition()
  */
 STBox *
 stbox_extent_transfn(STBox *state, const STBox *box)

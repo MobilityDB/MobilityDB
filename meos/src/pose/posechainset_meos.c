@@ -337,6 +337,7 @@ minus_set_posechain(const Set *s, const PoseChain *pc)
  * @param[in,out] state Current aggregate state
  * @param[in] pc Value
  * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
  */
 Set *
 posechain_union_transfn(Set *state, const PoseChain *pc)

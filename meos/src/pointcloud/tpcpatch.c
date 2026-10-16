@@ -433,6 +433,7 @@ tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
  * @csqlfn #Tpcpatch_tnpoints_transfn()
+ * @csqlaggfn #tnpointsTransition()
  */
 SkipList *
 tpcpatch_tnpoints_transfn(SkipList *state, const Temporal *temp)
@@ -462,6 +463,7 @@ tpcpatch_tnpoints_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
  * @csqlfn #Tpcpatch_tdensity_transfn()
+ * @csqlaggfn #tdensityTransition()
  */
 SkipList *
 tpcpatch_tdensity_transfn(SkipList *state, const Temporal *temp)

@@ -54,6 +54,7 @@
  * @param[in] state Current aggregate value, may be `NULL`
  * @param[in] temp Temporal network point
  * @csqlfn #Tnpoint_tcentroid_transfn()
+ * @csqlaggfn #tCentroidTransition()
  */
 SkipList *
 tnpoint_tcentroid_transfn(SkipList *state, const Temporal *temp)
