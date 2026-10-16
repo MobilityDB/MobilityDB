@@ -2999,6 +2999,26 @@ SELECT (summaryStats(r)).* FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_summaryStatsAgg">
+				<indexterm significance="normal"><primary><varname>summaryStatsAgg</varname></primary></indexterm>
+				<para>Devuelve las estadísticas de los píxeles de una banda sobre los rásteres de una columna</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+summaryStatsAgg(raster,nband integer,exclude_nodata_value boolean) → summarystats
+summaryStatsAgg(raster,exclude_nodata_value boolean) → summarystats
+</programlisting>
+				<para>El agregado <varname>ST_SummaryStatsAgg</varname> de PostGIS, que devuelve el registro <varname>summarystats</varname> que <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> devuelve para un ráster sobre todos los píxeles de la banda de los rásteres, la banda 1 cuando se omite <varname>nband</varname>. Se leen todos los píxeles, como en <varname>summaryStats</varname>, por lo que las formas no toman ningún porcentaje de muestreo y la desviación estándar es la de todos los píxeles y no la de una muestra. Un ráster <varname>NULL</varname> se omite, sobre ningún ráster el agregado devuelve <varname>NULL</varname>, y unos rásteres sin ningún píxel que contar devuelven un recuento de cero y ninguna estadística. El agregado se ejecuta en paralelo, combinando las estadísticas de los procesos, mientras que el de PostGIS no tiene función de combinación. Una banda que un ráster no tiene genera un error, mientras que PostGIS omite el ráster.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH tiles AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
+-- 8 | 16 | 2 | 1 | 1 | 3
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_dumpAsPolygons">
 				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
 				<para>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;

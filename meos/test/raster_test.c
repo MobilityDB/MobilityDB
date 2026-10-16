@@ -2030,6 +2030,93 @@ int main(void)
   free(raster_union_finalfn(un_bad)); free(raster_union_finalfn(un_a));
   free(raster_union_finalfn(un_b));
   free(un_other);
+
+  /* The statistics of the tiles of the union, by band and with nodata left
+   * out or counted: every row below is the one PostGIS 3.6.4 answers for
+   * ST_SummaryStatsAgg over the same tiles reading every pixel, the second
+   * band over the two tiles holding it. The statistics of the first tile
+   * combined with those of the two others, whose state goes through its
+   * bytes, are those of the three */
+  static const struct
+  {
+    int band;
+    bool exclude;
+    int ntiles;
+    uint32_t count;
+    double sum, mean, stddev, min, max;
+  } aggstats[] = {
+    {1, true, 3, 20, 100.0, 5.0, 1.9999999999999998, 1.0, 9.0},
+    {1, false, 3, 22, -19898.0, -904.4545454545455, 2875.9484242320787,
+      -9999.0, 9.0},
+    {2, true, 2, 18, 459.0, 25.5, 30.554595944527453, 1.0, 90.0},
+  };
+  for (size_t i = 0; i < sizeof(aggstats) / sizeof(aggstats[0]); i++)
+  {
+    meos_errno_reset();
+    RasterStatsState *st_state = NULL;
+    for (int j = 0; j < aggstats[i].ntiles; j++)
+      st_state = raster_summary_stats_transfn(st_state, un_tiles[j],
+        aggstats[i].band, aggstats[i].exclude);
+    BandStats *st = raster_summary_stats_finalfn(st_state);
+    RasterStatsState *st_first = raster_summary_stats_transfn(NULL,
+      un_tiles[0], aggstats[i].band, aggstats[i].exclude);
+    RasterStatsState *st_rest = raster_summary_stats_transfn(NULL,
+      un_tiles[1], aggstats[i].band, aggstats[i].exclude);
+    st_rest = raster_summary_stats_transfn(st_rest, NULL, aggstats[i].band,
+      aggstats[i].exclude);
+    if (aggstats[i].ntiles == 3)
+      st_rest = raster_summary_stats_transfn(st_rest, un_tiles[2],
+        aggstats[i].band, aggstats[i].exclude);
+    size_t st_size;
+    uint8_t *st_bytes = rasterstatsstate_serialize(st_rest, &st_size);
+    RasterStatsState *st_copy = rasterstatsstate_deserialize(st_bytes,
+      st_size);
+    BandStats *st_combined = raster_summary_stats_finalfn(
+      raster_summary_stats_combinefn(st_first, st_copy));
+    assert(st != NULL && st_combined != NULL);
+    assert(meos_errno() == 0);
+    printf("raster_summary_stats_finalfn(band %d, %s): %u, %g, %g, %.17g, "
+      "%g, %g\n", aggstats[i].band, aggstats[i].exclude ? "true" : "false",
+      st->count, st->sum, st->mean, st->stddev, st->min, st->max);
+    assert(st->count == aggstats[i].count && st->sum == aggstats[i].sum &&
+      st->mean == aggstats[i].mean && st->stddev == aggstats[i].stddev &&
+      st->min == aggstats[i].min && st->max == aggstats[i].max);
+    assert(st_combined->count == st->count && st_combined->sum == st->sum &&
+      st_combined->mean == st->mean && st_combined->min == st->min &&
+      st_combined->max == st->max &&
+      fabs(st_combined->stddev - st->stddev) < 1e-12);
+    free(st); free(st_combined); free(st_bytes); free(st_rest);
+    free(st_copy);
+  }
+
+  /* A NULL raster leaves the state as it is, no raster summarizes into NULL,
+   * and neither does a band whose every pixel is nodata */
+  meos_errno_reset();
+  assert(raster_summary_stats_transfn(NULL, NULL, 1, true) == NULL);
+  assert(raster_summary_stats_finalfn(NULL) == NULL);
+  Raster *st_nodata = raster_from_hexwkb(raster_all_nodata);
+  assert(raster_summary_stats_finalfn(
+    raster_summary_stats_transfn(NULL, st_nodata, 1, true)) == NULL);
+  assert(meos_errno() == 0);
+
+  /* A band below 1, a band a raster lacks, the states of two different
+   * statistics and bytes of another size are refused */
+  meos_errno_reset();
+  assert(raster_summary_stats_transfn(NULL, un_tiles[0], 0, true) == NULL);
+  assert(raster_summary_stats_transfn(NULL, un_tiles[2], 2, true) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  RasterStatsState *st_a = raster_summary_stats_transfn(NULL, un_tiles[0], 1,
+    true);
+  RasterStatsState *st_b = raster_summary_stats_transfn(NULL, un_tiles[0], 1,
+    false);
+  assert(raster_summary_stats_combinefn(st_a, st_b) == NULL);
+  assert(rasterstatsstate_serialize(NULL, &al_size) == NULL);
+  assert(rasterstatsstate_deserialize(NULL, 4) == NULL);
+  uint8_t st_short[4] = {1, 0, 0, 0};
+  assert(rasterstatsstate_deserialize(st_short, 4) == NULL);
+  assert(meos_errno() != 0);
+  free(st_a); free(st_b); free(st_nodata);
   free(un_tiles[0]); free(un_tiles[1]); free(un_tiles[2]);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);

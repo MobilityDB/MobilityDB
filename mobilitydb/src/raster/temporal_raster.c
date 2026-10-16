@@ -1025,6 +1025,45 @@ Raster_rescale(PG_FUNCTION_ARGS)
  * raster_summary_stats
  *****************************************************************************/
 
+/**
+ * @brief Return the summarystats record of the statistics of a band
+ * @details The record #Raster_summary_stats answers, built as the PostGIS
+ * RASTER_summaryStats builds it, and the one the aggregate answers. An error
+ * in MEOS never returns here, so missing statistics are a band with no pixel
+ * to count: the record PostGIS answers for it counts none and states no
+ * statistic, rather than being no record at all. The statistics are freed
+ */
+static Datum
+bandstats_record(FunctionCallInfo fcinfo, BandStats *stats)
+{
+  TupleDesc tupdesc;
+  if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("function returning record called in context "
+             "that cannot accept type record")));
+  tupdesc = BlessTupleDesc(tupdesc);
+  Datum values[6];
+  bool isnull[6] = {false, false, false, false, false, false};
+  if (! stats)
+  {
+    values[0] = Int64GetDatum(0);
+    for (int i = 1; i < 6; i++)
+      isnull[i] = true;
+  }
+  else
+  {
+    values[0] = Int64GetDatum(stats->count);
+    values[1] = Float8GetDatum(stats->sum);
+    values[2] = Float8GetDatum(stats->mean);
+    values[3] = Float8GetDatum(stats->stddev);
+    values[4] = Float8GetDatum(stats->min);
+    values[5] = Float8GetDatum(stats->max);
+    pfree(stats);
+  }
+  HeapTuple tuple = heap_form_tuple(tupdesc, values, isnull);
+  return HeapTupleGetDatum(tuple);
+}
+
 PGDLLEXPORT Datum Raster_summary_stats(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_summary_stats);
 /**
@@ -1045,37 +1084,8 @@ Raster_summary_stats(PG_FUNCTION_ARGS)
   Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
   int band = PG_GETARG_INT32(1);
   bool exclude_nodata = PG_GETARG_BOOL(2);
-  TupleDesc tupdesc;
-  if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("function returning record called in context "
-             "that cannot accept type record")));
-  tupdesc = BlessTupleDesc(tupdesc);
-
   BandStats *stats = raster_summary_stats(rast, band, exclude_nodata);
-  Datum values[6];
-  bool isnull[6] = {false, false, false, false, false, false};
-  /* An error in MEOS never returns here, so a missing result is a band with no
-   * pixel to count: the record PostGIS answers for it counts none and states
-   * no statistic, rather than being no record at all */
-  if (! stats)
-  {
-    values[0] = Int64GetDatum(0);
-    for (int i = 1; i < 6; i++)
-      isnull[i] = true;
-  }
-  else
-  {
-    values[0] = Int64GetDatum(stats->count);
-    values[1] = Float8GetDatum(stats->sum);
-    values[2] = Float8GetDatum(stats->mean);
-    values[3] = Float8GetDatum(stats->stddev);
-    values[4] = Float8GetDatum(stats->min);
-    values[5] = Float8GetDatum(stats->max);
-    pfree(stats);
-  }
-  HeapTuple tuple = heap_form_tuple(tupdesc, values, isnull);
-  PG_RETURN_DATUM(HeapTupleGetDatum(tuple));
+  PG_RETURN_DATUM(bandstats_record(fcinfo, stats));
 }
 
 /*****************************************************************************
@@ -2745,6 +2755,150 @@ Rasterunionstate_deserialize(PG_FUNCTION_ARGS)
   bytea *data = PG_GETARG_BYTEA_P(0);
   MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
   RasterUnionState *result = rasterunionstate_deserialize(
+    (uint8_t *) VARDATA(data), VARSIZE(data) - VARHDRSZ);
+  MemoryContextSwitchTo(oldctx);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Raster type: summary statistics of many rasters
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_summary_stats_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_summary_stats_transfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Transition function of the aggregate summarizing the pixels of
+ * rasters
+ * @details The forms take the band and whether nodata is excluded, or the
+ * exclusion alone, and are told apart by their number of arguments, 4 or 3. A
+ * band left out is 1, and a NULL argument keeps its default, as PostGIS's
+ * `RASTER_summaryStats_transfn` reads them. The state lives in the aggregate
+ * context, as #Raster_same_alignment_transfn keeps its own
+ * @sqlfn summaryStatsAggTransition()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Raster_summary_stats_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_summary_stats_transfn called in non-aggregate context");
+  RasterStatsState *state = PG_ARGISNULL(0) ? NULL :
+    (RasterStatsState *) PG_GETARG_POINTER(0);
+  int band = 1;
+  bool exclude_nodata = true;
+  int excl = PG_NARGS() - 1;
+  if (excl == 3 && ! PG_ARGISNULL(2))
+    band = PG_GETARG_INT32(2);
+  if (! PG_ARGISNULL(excl))
+    exclude_nodata = PG_GETARG_BOOL(excl);
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = raster_summary_stats_transfn(state, rast, band, exclude_nodata);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Raster_summary_stats_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_summary_stats_combinefn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Combine function of the aggregate summarizing the pixels of rasters
+ * @details The states are combined as #Raster_same_alignment_combinefn
+ * combines its own
+ * @sqlfn summaryStatsAggCombine()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Raster_summary_stats_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR,
+      "Raster_summary_stats_combinefn called in non-aggregate context");
+  RasterStatsState *state1 = PG_ARGISNULL(0) ? NULL :
+    (RasterStatsState *) PG_GETARG_POINTER(0);
+  RasterStatsState *state2 = PG_ARGISNULL(1) ? NULL :
+    (RasterStatsState *) PG_GETARG_POINTER(1);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterStatsState *result = raster_summary_stats_combinefn(state1, state2);
+  MemoryContextSwitchTo(oldctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_summary_stats_finalfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_summary_stats_finalfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Final function of the aggregate summarizing the pixels of rasters
+ * @details An aggregate over no raster answers NULL, and one whose rasters
+ * count no pixel the record counting none, as for PostGIS
+ * @sqlfn summaryStatsAggFinal()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Raster_summary_stats_finalfn(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  RasterStatsState *state = (RasterStatsState *) PG_GETARG_POINTER(0);
+  BandStats *stats = raster_summary_stats_finalfn(state);
+  PG_RETURN_DATUM(bandstats_record(fcinfo, stats));
+}
+
+PGDLLEXPORT Datum Rasterstatsstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasterstatsstate_serialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Serialize the state of the aggregate summarizing the pixels of
+ * rasters
+ * @details The bytes are wrapped as #Rasteralignstate_serialize wraps its own
+ * @sqlfn summaryStatsAggSerialize()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Rasterstatsstate_serialize(PG_FUNCTION_ARGS)
+{
+  RasterStatsState *state = (RasterStatsState *) PG_GETARG_POINTER(0);
+  size_t size;
+  uint8_t *bytes = rasterstatsstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Rasterstatsstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasterstatsstate_deserialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Deserialize the state of the aggregate summarizing the pixels of
+ * rasters
+ * @details The state is built in the aggregate context, as
+ * #Rasteralignstate_deserialize builds its own
+ * @sqlfn summaryStatsAggDeserialize()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Rasterstatsstate_deserialize(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR,
+      "Rasterstatsstate_deserialize called in non-aggregate context");
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterStatsState *result = rasterstatsstate_deserialize(
     (uint8_t *) VARDATA(data), VARSIZE(data) - VARHDRSZ);
   MemoryContextSwitchTo(oldctx);
   PG_RETURN_POINTER(result);
