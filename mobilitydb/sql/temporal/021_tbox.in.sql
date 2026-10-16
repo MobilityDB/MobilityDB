@@ -585,7 +585,7 @@ CREATE OPERATOR * (
  *****************************************************************************/
 
 -- The functions are not strict
-CREATE FUNCTION tbox_extent_transfn(tbox, tbox)
+CREATE FUNCTION extentTransition(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -595,7 +595,7 @@ CREATE FUNCTION tbox_extent_combinefn(tbox, tbox)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbox) (
-  SFUNC = tbox_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = tbox,
   COMBINEFUNC = tbox_extent_combinefn,
   PARALLEL = safe

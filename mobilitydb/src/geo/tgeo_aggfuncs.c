@@ -56,7 +56,7 @@ PG_FUNCTION_INFO_V1(Tspatial_extent_transfn);
  * @ingroup mobilitydb_geo_agg
  * @brief Transition function for temporal extent aggregation of temporal 
  * spatial values
- * @sqlfn tspatial_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum
@@ -84,7 +84,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
  * @ingroup mobilitydb_geo_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
- * @sqlfn tcentroid_transfn()
+ * @sqlfn tCentroidTransition()
  * @sqlaggfn tCentroid()
  */
 Datum

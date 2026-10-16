@@ -33,23 +33,23 @@
  */
 
 -- The function is not strict
-CREATE FUNCTION tspatial_extent_transfn(stbox, tgeometry)
+CREATE FUNCTION extentTransition(stbox, tgeometry)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tspatial_extent_transfn(stbox, tgeography)
+CREATE FUNCTION extentTransition(stbox, tgeography)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tgeometry) (
-  SFUNC = tspatial_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = stbox,
   COMBINEFUNC = stbox_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeography) (
-  SFUNC = tspatial_extent_transfn,
+  SFUNC = extentTransition,
   STYPE = stbox,
   COMBINEFUNC = stbox_extent_combinefn,
   PARALLEL = safe
@@ -120,11 +120,11 @@ CREATE AGGREGATE wCount(tgeography, interval) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION mergeTransition(internal, tgeometry)
+CREATE FUNCTION mergeAggTransition(internal, tgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeTransition(internal, tgeography)
+CREATE FUNCTION mergeAggTransition(internal, tgeography)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -141,7 +141,7 @@ CREATE FUNCTION tgeography_tagg_finalfn(internal)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tgeometry) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeometry_tagg_finalfn,
@@ -151,7 +151,7 @@ CREATE AGGREGATE merge(tgeometry) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tgeometry) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeometry_tagg_finalfn,
@@ -163,7 +163,7 @@ CREATE AGGREGATE mergeAgg(tgeometry) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tgeography) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeography_tagg_finalfn,
@@ -173,7 +173,7 @@ CREATE AGGREGATE merge(tgeography) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tgeography) (
-  SFUNC = mergeTransition,
+  SFUNC = mergeAggTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeography_tagg_finalfn,
@@ -188,35 +188,35 @@ CREATE AGGREGATE mergeAgg(tgeography) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry)
+CREATE FUNCTION appendInstantAggTransition(tgeometry, tgeometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tgeography, tgeography)
+CREATE FUNCTION appendInstantAggTransition(tgeography, tgeography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry,
+CREATE FUNCTION appendInstantAggTransition(tgeometry, tgeometry,
     interp text DEFAULT NULL)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tgeography, tgeography,
+CREATE FUNCTION appendInstantAggTransition(tgeography, tgeography,
     interp text DEFAULT NULL)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry,
+CREATE FUNCTION appendInstantAggTransition(tgeometry, tgeometry,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL,
     maxt interval DEFAULT NULL)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tgeography, tgeography,
+CREATE FUNCTION appendInstantAggTransition(tgeography, tgeography,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS tgeography
@@ -235,13 +235,13 @@ CREATE FUNCTION temporal_append_finalfn(tgeography)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeometry) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeometry) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -249,13 +249,13 @@ CREATE AGGREGATE appendInstantAgg(tgeometry) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeography) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeography) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -264,13 +264,13 @@ CREATE AGGREGATE appendInstantAgg(tgeography) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeometry, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeometry, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -278,13 +278,13 @@ CREATE AGGREGATE appendInstantAgg(tgeometry, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeography, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeography, text) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -293,13 +293,13 @@ CREATE AGGREGATE appendInstantAgg(tgeography, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeometry, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -307,13 +307,13 @@ CREATE AGGREGATE appendInstantAgg(tgeometry, text, float, interval) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeography, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeography, text, float, interval) (
-  SFUNC = appendInstantTransition,
+  SFUNC = appendInstantAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -322,11 +322,11 @@ CREATE AGGREGATE appendInstantAgg(tgeography, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceTransition(tgeometry, tgeometry)
+CREATE FUNCTION appendSequenceAggTransition(tgeometry, tgeometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceTransition(tgeography, tgeography)
+CREATE FUNCTION appendSequenceAggTransition(tgeography, tgeography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -334,13 +334,13 @@ CREATE FUNCTION appendSequenceTransition(tgeography, tgeography)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tgeometry) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tgeometry) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -348,13 +348,13 @@ CREATE AGGREGATE appendSequenceAgg(tgeometry) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tgeography) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tgeography) (
-  SFUNC = appendSequenceTransition,
+  SFUNC = appendSequenceAggTransition,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

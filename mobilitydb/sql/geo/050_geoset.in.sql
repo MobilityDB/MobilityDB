@@ -378,20 +378,20 @@ CREATE FUNCTION unnest(geogset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, geometry)
+CREATE FUNCTION setUnionTransition(internal, geometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, geography)
+CREATE FUNCTION setUnionTransition(internal, geography)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_transfn(internal, geomset)
+CREATE FUNCTION setUnionTransition(internal, geomset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, geogset)
+CREATE FUNCTION setUnionTransition(internal, geogset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -406,7 +406,7 @@ CREATE FUNCTION geogset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(geometry) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geomset_union_finalfn,
@@ -416,7 +416,7 @@ CREATE AGGREGATE setUnion(geometry) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geography) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geogset_union_finalfn,
@@ -427,7 +427,7 @@ CREATE AGGREGATE setUnion(geography) (
 );
 
 CREATE AGGREGATE setUnion(geomset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geomset_union_finalfn,
@@ -437,7 +437,7 @@ CREATE AGGREGATE setUnion(geomset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geogset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = geogset_union_finalfn,

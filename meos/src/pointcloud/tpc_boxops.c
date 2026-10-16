@@ -277,6 +277,7 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal point cloud to aggregate, may be `NULL`
  * @csqlfn #Tpc_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 TPCBox *
 tpc_extent_transfn(TPCBox *state, const Temporal *temp)
@@ -311,6 +312,7 @@ tpc_extent_transfn(TPCBox *state, const Temporal *temp)
  * of temporal point cloud boxes and temporal point clouds, the box to
  * aggregate being the state of another partial aggregation
  * @csqlfn #Tpcbox_extent_transfn(), #Tpcbox_extent_combinefn()
+ * @csqlaggfn #extentTransition()
  */
 TPCBox *
 tpcbox_extent_transfn(TPCBox *state, const TPCBox *box)

@@ -73,6 +73,7 @@ spanbase_extent_transfn(Span *state, Datum value, MeosType basetype)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Set to aggregate, may be `NULL`
  * @csqlfn #Set_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 Span *
 set_extent_transfn(Span *state, const Set *s)
@@ -106,6 +107,7 @@ set_extent_transfn(Span *state, const Set *s)
  * @note The function is also the combine function of the aggregate, the
  * span to aggregate being the state of another partial aggregation
  * @csqlfn #Span_extent_transfn(), #Span_extent_combinefn()
+ * @csqlaggfn #extentTransition()
  */
 Span *
 span_extent_transfn(Span *state, const Span *s)
@@ -134,6 +136,7 @@ span_extent_transfn(Span *state, const Span *s)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] ss Span set to aggregate, may be `NULL`
  * @csqlfn #Spanset_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 Span *
 spanset_extent_transfn(Span *state, const SpanSet *ss)

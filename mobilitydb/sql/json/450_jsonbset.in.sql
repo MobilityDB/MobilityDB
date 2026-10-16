@@ -183,11 +183,11 @@ CREATE FUNCTION unnest(jsonbset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, jsonb)
+CREATE FUNCTION setUnionTransition(internal, jsonb)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, jsonbset)
+CREATE FUNCTION setUnionTransition(internal, jsonbset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -197,7 +197,7 @@ CREATE FUNCTION jsonbset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(jsonb) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = jsonbset_union_finalfn,
@@ -207,7 +207,7 @@ CREATE AGGREGATE setUnion(jsonb) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(jsonbset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = jsonbset_union_finalfn,

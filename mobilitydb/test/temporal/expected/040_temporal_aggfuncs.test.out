@@ -1150,13 +1150,13 @@ INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
 INSERT 0 1
-SELECT temporal_extent_transfn(s, tbool 't@2001-02-01'),
+SELECT extentTransition(s, tbool 't@2001-02-01'),
   span_extent_combinefn(s, tstzspan '[2001-03-01, 2001-03-02]'),
-  tnumber_extent_transfn(b, tfloat '100@2001-02-01'),
-  tbox_extent_transfn(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
+  extentTransition(b, tfloat '100@2001-02-01'),
+  extentTransition(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
   tbox_extent_combinefn(b, tbox 'TBOXFLOAT XT([300, 301],[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
-                   temporal_extent_transfn                    |                    span_extent_combinefn                     |                               tnumber_extent_transfn                                |                                 tbox_extent_transfn                                 |                                tbox_extent_combinefn                                
+                       extenttransition                       |                    span_extent_combinefn                     |                                  extenttransition                                   |                                  extenttransition                                   |                                tbox_extent_combinefn                                
 --------------------------------------------------------------+--------------------------------------------------------------+-------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------
  [Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST] | [Mon Jan 01 00:00:00 2001 PST, Fri Mar 02 00:00:00 2001 PST] | TBOXFLOAT XT([1, 100],[Mon Jan 01 00:00:00 2001 PST, Thu Feb 01 00:00:00 2001 PST]) | TBOXFLOAT XT([1, 201],[Mon Jan 01 00:00:00 2001 PST, Fri Mar 02 00:00:00 2001 PST]) | TBOXFLOAT XT([1, 301],[Mon Jan 01 00:00:00 2001 PST, Mon Apr 02 00:00:00 2001 PDT])
 (1 row)

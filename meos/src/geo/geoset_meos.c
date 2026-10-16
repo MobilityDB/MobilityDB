@@ -367,6 +367,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
  * @param[in,out] state Current aggregate state
  * @param[in] gs Value
  * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
  */
 Set *
 geo_union_transfn(Set *state, const GSERIALIZED *gs)

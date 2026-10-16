@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of spans
- * @sqlfn span_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum
@@ -102,7 +102,7 @@ PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of span base values
- * @sqlfn span_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum
@@ -127,7 +127,7 @@ PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of sets
- * @sqlfn set_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum
@@ -151,7 +151,7 @@ PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of span sets
- * @sqlfn spanset_extent_transfn()
+ * @sqlfn extentTransition()
  * @sqlaggfn extent()
  */
 Datum
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Span_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of spans
- * @sqlfn span_union_transfn()
+ * @sqlfn spanUnionTransition()
  * @sqlaggfn spanUnion()
  */
 Datum
@@ -205,7 +205,7 @@ PG_FUNCTION_INFO_V1(Spanset_union_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for union aggregation of span sets
- * @sqlfn spanset_union_transfn()
+ * @sqlfn spansetUnionTransition()
  * @sqlaggfn spansetUnion()
  */
 Datum

@@ -120,7 +120,7 @@ PG_FUNCTION_INFO_V1(Tint_wmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window minimun aggregation for
  * temporal integers
- * @sqlfn tint_wmin_transfn()
+ * @sqlfn wMinTransition()
  * @sqlaggfn wMin()
  */
 inline Datum
@@ -135,7 +135,7 @@ PG_FUNCTION_INFO_V1(Tbigint_wmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window minimun aggregation for
  * temporal integers
- * @sqlfn tbigint_wmin_transfn()
+ * @sqlfn wMinTransition()
  * @sqlaggfn wMin()
  */
 inline Datum
@@ -150,7 +150,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window minimun aggregation for
  * temporal floats
- * @sqlfn tfloat_wmin_transfn()
+ * @sqlfn wMinTransition()
  * @sqlaggfn wMin()
  */
 inline Datum
@@ -165,7 +165,7 @@ PG_FUNCTION_INFO_V1(Tint_wmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window maximun aggregation for
  * temporal integers
- * @sqlfn tint_wmax_transfn()
+ * @sqlfn wMaxTransition()
  * @sqlaggfn wMax()
  */
 inline Datum
@@ -180,7 +180,7 @@ PG_FUNCTION_INFO_V1(Tbigint_wmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window maximun aggregation for
  * temporal integers
- * @sqlfn tbigint_wmax_transfn()
+ * @sqlfn wMaxTransition()
  * @sqlaggfn wMax()
  */
 inline Datum
@@ -195,7 +195,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window maximun aggregation for
  * temporal floats
- * @sqlfn tfloat_wmax_transfn()
+ * @sqlfn wMaxTransition()
  * @sqlaggfn wMax()
  */
 inline Datum
@@ -210,7 +210,7 @@ PG_FUNCTION_INFO_V1(Tint_wsum_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window sum aggregation for temporal
  * integers
- * @sqlfn tint_wsum_transfn()
+ * @sqlfn wSumTransition()
  * @sqlaggfn wSum()
  */
 inline Datum
@@ -225,7 +225,7 @@ PG_FUNCTION_INFO_V1(Tbigint_wsum_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window sum aggregation for temporal
  * integers
- * @sqlfn tbigint_wsum_transfn()
+ * @sqlfn wSumTransition()
  * @sqlaggfn wSum()
  */
 inline Datum
@@ -240,7 +240,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window sum aggregation for temporal
  * floats
- * @sqlfn tfloat_wsum_transfn()
+ * @sqlfn wSumTransition()
  * @sqlaggfn wSum()
  */
 inline Datum
@@ -271,7 +271,7 @@ PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window average aggregation for
  * temporal numbers
- * @sqlfn wavg_transfn()
+ * @sqlfn wAvgTransition()
  * @sqlaggfn wAvg()
  */
 inline Datum

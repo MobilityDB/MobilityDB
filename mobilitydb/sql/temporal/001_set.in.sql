@@ -770,53 +770,53 @@ CREATE OPERATOR || (
  ******************************************************************************/
 
 -- The functions are not STRICT
-CREATE FUNCTION set_union_transfn(internal, integer)
+CREATE FUNCTION setUnionTransition(internal, integer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, bigint)
+CREATE FUNCTION setUnionTransition(internal, bigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, float)
+CREATE FUNCTION setUnionTransition(internal, float)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, text)
+CREATE FUNCTION setUnionTransition(internal, text)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, date)
+CREATE FUNCTION setUnionTransition(internal, date)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, timestamptz)
+CREATE FUNCTION setUnionTransition(internal, timestamptz)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The functions are not STRICT
-CREATE FUNCTION set_union_transfn(internal, intset)
+CREATE FUNCTION setUnionTransition(internal, intset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, bigintset)
+CREATE FUNCTION setUnionTransition(internal, bigintset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, floatset)
+CREATE FUNCTION setUnionTransition(internal, floatset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, textset)
+CREATE FUNCTION setUnionTransition(internal, textset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, dateset)
+CREATE FUNCTION setUnionTransition(internal, dateset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(internal, tstzset)
+CREATE FUNCTION setUnionTransition(internal, tstzset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -861,7 +861,7 @@ CREATE FUNCTION textset_union_finalfn(internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE setUnion(integer) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = intset_union_finalfn,
@@ -871,7 +871,7 @@ CREATE AGGREGATE setUnion(integer) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigint) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = bigintset_union_finalfn,
@@ -881,7 +881,7 @@ CREATE AGGREGATE setUnion(bigint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(float) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = floatset_union_finalfn,
@@ -891,7 +891,7 @@ CREATE AGGREGATE setUnion(float) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(text) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = textset_union_finalfn,
@@ -901,7 +901,7 @@ CREATE AGGREGATE setUnion(text) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(date) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = dateset_union_finalfn,
@@ -911,7 +911,7 @@ CREATE AGGREGATE setUnion(date) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(timestamptz) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = tstzset_union_finalfn,
@@ -922,7 +922,7 @@ CREATE AGGREGATE setUnion(timestamptz) (
 );
 
 CREATE AGGREGATE setUnion(intset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = intset_union_finalfn,
@@ -932,7 +932,7 @@ CREATE AGGREGATE setUnion(intset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigintset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = bigintset_union_finalfn,
@@ -942,7 +942,7 @@ CREATE AGGREGATE setUnion(bigintset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(floatset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = floatset_union_finalfn,
@@ -952,7 +952,7 @@ CREATE AGGREGATE setUnion(floatset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(textset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = textset_union_finalfn,
@@ -962,7 +962,7 @@ CREATE AGGREGATE setUnion(textset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(dateset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = dateset_union_finalfn,
@@ -972,7 +972,7 @@ CREATE AGGREGATE setUnion(dateset) (
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(tstzset) (
-  SFUNC = set_union_transfn,
+  SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
   FINALFUNC = tstzset_union_finalfn,
