@@ -1482,6 +1482,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] t Timestamp to aggregate
  * @csqlfn #Timestamptz_tcount_transfn()
+ * @csqlaggfn #tCountTransition()
  */
 SkipList *
 timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
@@ -1506,6 +1507,7 @@ timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Timestamp set to aggregate
  * @csqlfn #Tstzset_tcount_transfn()
+ * @csqlaggfn #tCountTransition()
  */
 SkipList *
 tstzset_tcount_transfn(SkipList *state, const Set *s)
@@ -1537,6 +1539,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Timestamp span to aggregate
  * @csqlfn #Tstzspan_tcount_transfn()
+ * @csqlaggfn #tCountTransition()
  */
 SkipList *
 tstzspan_tcount_transfn(SkipList *state, const Span *s)
@@ -1569,6 +1572,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] ss Timestamp span set to aggregate
  * @csqlfn #Tstzspanset_tcount_transfn()
+ * @csqlaggfn #tCountTransition()
  */
 SkipList *
 tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
@@ -1605,6 +1609,7 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Temporal_tcount_transfn()
+ * @csqlaggfn #tCountTransition()
  */
 SkipList *
 temporal_tcount_transfn(SkipList *state, const Temporal *temp)
@@ -1719,6 +1724,7 @@ tnumber_tavg_finalfn(SkipList *state)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal value to aggregate, may be `NULL`
  * @csqlfn #Temporal_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 Span *
 temporal_extent_transfn(Span *state, const Temporal *temp)
@@ -1749,6 +1755,7 @@ temporal_extent_transfn(Span *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] temp Temporal value to aggregate, may be `NULL`
  * @csqlfn #Tnumber_extent_transfn()
+ * @csqlaggfn #extentTransition()
  */
 TBox *
 tnumber_extent_transfn(TBox *state, const Temporal *temp)
@@ -1787,6 +1794,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  * of temporal boxes and temporal numbers, the box to aggregate being the
  * state of another partial aggregation
  * @csqlfn #Tbox_extent_transfn(), #Tbox_extent_combinefn()
+ * @csqlaggfn #extentTransition()
  */
 TBox *
 tbox_extent_transfn(TBox *state, const TBox *box)
@@ -1824,6 +1832,7 @@ tbox_extent_transfn(TBox *state, const TBox *box)
  * @param[in] maxdist Maximum distance
  * @param[in] maxt Maximum duration, may be `NULL`
  * @csqlfn #Temporal_app_tinst_transfn()
+ * @csqlaggfn #appendInstantAggTransition()
  */
 Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
@@ -1858,6 +1867,7 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] seq Temporal sequence to aggregate
  * @csqlfn #Temporal_app_tseq_transfn()
+ * @csqlaggfn #appendSequenceAggTransition()
  */
 Temporal *
 temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)

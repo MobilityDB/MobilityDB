@@ -65,6 +65,7 @@
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tbool_tand_transfn()
+ * @csqlaggfn #tAndTransition()
  */
 SkipList *
 tbool_tand_transfn(SkipList *state, const Temporal *temp)
@@ -84,6 +85,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tbool_tor_transfn()
+ * @csqlaggfn #tOrTransition()
  */
 SkipList *
 tbool_tor_transfn(SkipList *state, const Temporal *temp)
@@ -103,6 +105,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tint_tmin_transfn()
+ * @csqlaggfn #tMinAggTransition()
  */
 SkipList *
 tint_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -122,6 +125,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tbigint_tmin_transfn()
+ * @csqlaggfn #tMinAggTransition()
  */
 SkipList *
 tbigint_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -141,6 +145,7 @@ tbigint_tmin_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tfloat_tmin_transfn()
+ * @csqlaggfn #tMinAggTransition()
  */
 SkipList *
 tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -160,6 +165,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tint_tmax_transfn()
+ * @csqlaggfn #tMaxAggTransition()
  */
 SkipList *
 tint_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -179,6 +185,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tbigint_tmax_transfn()
+ * @csqlaggfn #tMaxAggTransition()
  */
 SkipList *
 tbigint_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -198,6 +205,7 @@ tbigint_tmax_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tfloat_tmax_transfn()
+ * @csqlaggfn #tMaxAggTransition()
  */
 SkipList *
 tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -217,6 +225,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tint_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
  */
 SkipList *
 tint_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -236,6 +245,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tbigint_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
  */
 SkipList *
 tbigint_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -255,6 +265,7 @@ tbigint_tsum_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tfloat_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
  */
 SkipList *
 tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -274,6 +285,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tnumber_tavg_transfn()
+ * @csqlaggfn #tAvgTransition()
  */
 SkipList *
 tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
@@ -294,6 +306,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Ttext_tmin_transfn()
+ * @csqlaggfn #tMinAggTransition()
  */
 SkipList *
 ttext_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -313,6 +326,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Ttext_tmax_transfn()
+ * @csqlaggfn #tMaxAggTransition()
  */
 SkipList *
 ttext_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -332,6 +346,7 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Temporal_merge_transfn()
+ * @csqlaggfn #mergeAggTransition()
  */
 SkipList *
 temporal_merge_transfn(SkipList *state, const Temporal *temp)
@@ -551,6 +566,7 @@ tnumber_tavg_combinefn(SkipList *state1, SkipList *state2)
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tint_wmin_transfn()
+ * @csqlaggfn #wMinTransition()
  */
 SkipList *
 tint_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -573,6 +589,7 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmin_transfn()
+ * @csqlaggfn #wMinTransition()
  */
 SkipList *
 tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -595,6 +612,7 @@ tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmin_transfn()
+ * @csqlaggfn #wMinTransition()
  */
 SkipList *
 tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
@@ -617,6 +635,7 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tint_wmax_transfn()
+ * @csqlaggfn #wMaxTransition()
  */
 SkipList *
 tint_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -639,6 +658,7 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmax_transfn()
+ * @csqlaggfn #wMaxTransition()
  */
 SkipList *
 tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -661,6 +681,7 @@ tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmax_transfn()
+ * @csqlaggfn #wMaxTransition()
  */
 SkipList *
 tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
@@ -683,6 +704,7 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tint_wsum_transfn()
+ * @csqlaggfn #wSumTransition()
  */
 SkipList *
 tint_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -705,6 +727,7 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wsum_transfn()
+ * @csqlaggfn #wSumTransition()
  */
 SkipList *
 tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -727,6 +750,7 @@ tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wsum_transfn()
+ * @csqlaggfn #wSumTransition()
  */
 SkipList *
 tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
@@ -749,6 +773,7 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Tnumber_wavg_transfn()
+ * @csqlaggfn #wAvgTransition()
  */
 SkipList *
 tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
@@ -773,6 +798,7 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @csqlfn #Temporal_wcount_transfn()
+ * @csqlaggfn #wCountTransition()
  */
 SkipList *
 temporal_wcount_transfn(SkipList *state, const Temporal *temp,
