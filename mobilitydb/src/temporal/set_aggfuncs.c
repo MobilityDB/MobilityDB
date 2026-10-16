@@ -67,6 +67,7 @@ PG_FUNCTION_INFO_V1(Value_union_transfn);
  * @brief Transition function for union aggregation of values
  * @sqlfn setUnionTransition()
  * @sqlaggfn setUnion()
+ * @altsqlfn setUnionAgg()
  */
 Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
@@ -110,6 +111,7 @@ PG_FUNCTION_INFO_V1(Set_union_transfn);
  * @brief Transition function for union aggregation of sets
  * @sqlfn setUnionTransition()
  * @sqlaggfn setUnion()
+ * @altsqlfn setUnionAgg()
  */
 Datum
 Set_union_transfn(PG_FUNCTION_ARGS)

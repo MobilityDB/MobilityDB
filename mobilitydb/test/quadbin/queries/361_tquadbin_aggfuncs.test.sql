@@ -61,10 +61,10 @@ SELECT wCount(Temp, interval '2 days') FROM Temp;
 
 -------------------------------------------------------------------------------
 
-SELECT mergeAgg(temp) FROM (VALUES
+SELECT merge(temp) FROM (VALUES
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '48427fffffffffff@2001-01-02')) t(temp);
-SELECT mergeAgg(temp) FROM (VALUES
+SELECT merge(temp) FROM (VALUES
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '48427fffffffffff@2001-01-02')) t(temp);
 
@@ -74,39 +74,39 @@ WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
   SELECT tquadbin '48a6227affffffff@2001-01-03' )
-SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
   SELECT tquadbin '48a6227affffffff@2001-01-03' )
-SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
   SELECT tquadbin '48a6227affffffff@2001-01-03' )
-SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
   SELECT tquadbin '48a6227affffffff@2001-01-03' )
-SELECT asText(appendInstantAgg(inst ORDER BY inst, 'step')) FROM temp;
+SELECT asText(appendInstant(inst ORDER BY inst, 'step')) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
   SELECT tquadbin '48a6227affffffff@2001-01-04' UNION
   SELECT tquadbin '480fffffffffffff@2001-01-08' )
-SELECT asText(appendInstantAgg(inst, 'step', interval '1 day' ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst, 'step', interval '1 day' ORDER BY inst)) FROM temp;
 
 /* Errors */
 WITH temp(inst) AS (
   SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
   SELECT tquadbin '48427fffffffffff@2001-01-01' )
-SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 
 -------------------------------------------------------------------------------
 
@@ -118,10 +118,10 @@ WITH temp1(k, inst) AS (
   SELECT 5, tquadbin '48427fffffffffff@2001-01-05' UNION
   SELECT 6, tquadbin '48a6227affffffff@2001-01-06' ),
 temp2(k, seq) AS (
-  SELECT (k - 1) / 2, appendInstantAgg(inst ORDER BY inst)
+  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
   FROM temp1
   GROUP BY (k - 1) / 2)
-SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
+SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
 
 WITH temp1(k, inst) AS (
   SELECT 1, tquadbin '480fffffffffffff@2001-01-01' UNION
@@ -131,10 +131,10 @@ WITH temp1(k, inst) AS (
   SELECT 5, tquadbin '48427fffffffffff@2001-01-05' UNION
   SELECT 6, tquadbin '48a6227affffffff@2001-01-06' ),
 temp2(k, seq) AS (
-  SELECT (k - 1) / 2, appendInstantAgg(inst ORDER BY inst)
+  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
   FROM temp1
   GROUP BY (k - 1) / 2)
-SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
+SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
 
 -------------------------------------------------------------------------------
 

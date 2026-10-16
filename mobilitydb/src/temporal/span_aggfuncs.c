@@ -179,6 +179,7 @@ PG_FUNCTION_INFO_V1(Span_union_transfn);
  * @brief Transition function for union aggregation of spans
  * @sqlfn spanUnionTransition()
  * @sqlaggfn spanUnion()
+ * @altsqlfn spanUnionAgg()
  */
 Datum
 Span_union_transfn(PG_FUNCTION_ARGS)
@@ -207,6 +208,7 @@ PG_FUNCTION_INFO_V1(Spanset_union_transfn);
  * @brief Transition function for union aggregation of span sets
  * @sqlfn spansetUnionTransition()
  * @sqlaggfn spansetUnion()
+ * @altsqlfn spansetUnionAgg()
  */
 Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)

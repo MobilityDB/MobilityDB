@@ -337,7 +337,7 @@ WITH r AS (
   (8, tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(2 2.5)@2001-01-02)'),
   (9, tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(2 2.5)@2001-01-02]')
 ), merged AS (
-  SELECT id, s, mergeAgg(rasterValue(trip, tile)) AS m
+  SELECT id, s, merge(rasterValue(trip, tile)) AS m
   FROM trips, r, (VALUES (1), (2)) AS v(s), ST_Tile(rast, s, s) AS tile
   GROUP BY id, s
 ), whole AS (
@@ -2482,15 +2482,15 @@ WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
   ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf)
 SELECT
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1)) t(x))
+  (SELECT sameAlignment(x) FROM (VALUES (base), (east1)) t(x))
     AS aligned,
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+  (SELECT sameAlignment(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
     AS misaligned,
   (SELECT sameAlignment(x) FROM (VALUES (base), (east1)) t(x)) AS bare_name,
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+  (SELECT sameAlignment(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
     = (SELECT ST_SameAlignment(x) FROM (VALUES (base), (east1), (easthalf))
     t(x)) AS as_postgis,
-  (SELECT sameAlignmentAgg(x) FROM (SELECT base WHERE false) t(x)) IS NULL
+  (SELECT sameAlignment(x) FROM (SELECT base WHERE false) t(x)) IS NULL
     AS empty_is_null
 FROM r;
 NOTICE:  The rasters (pixel corner coordinates) are not aligned
@@ -2503,11 +2503,11 @@ WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS base,
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1)
 SELECT
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (NULL::raster), (east1))
+  (SELECT sameAlignment(x) FROM (VALUES (base), (NULL::raster), (east1))
     t(x)) AS null_skipped,
   (SELECT ST_SameAlignment(x) FROM (VALUES (base), (NULL::raster), (east1))
     t(x)) IS NULL AS postgis_null,
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (NULL::raster), (NULL::raster))
+  (SELECT sameAlignment(x) FROM (VALUES (NULL::raster), (NULL::raster))
     t(x)) IS NULL AS all_null_is_null
 FROM r;
  null_skipped | postgis_null | all_null_is_null 
@@ -2519,7 +2519,7 @@ SELECT sameAlignment(
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
   ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857));
 ERROR:  Operation on mixed SRID
-SELECT sameAlignmentAgg(x) FROM (VALUES
+SELECT sameAlignment(x) FROM (VALUES
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)),
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857))) t(x);
 ERROR:  Operation on mixed SRID

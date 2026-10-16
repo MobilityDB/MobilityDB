@@ -62,7 +62,7 @@ SELECT wCount(Temp, interval '2 days') FROM Temp;
 SELECT asText(merge(temp)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
-SELECT asText(mergeAgg(temp)) FROM (VALUES
+SELECT asText(merge(temp)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
 
@@ -71,30 +71,17 @@ SELECT asText(mergeAgg(temp)) FROM (VALUES
 SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(inst);
-SELECT asText(appendInstantAgg(inst)) FROM (VALUES
+SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(inst);
 
 SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);
-SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
+SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);
 
 -------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
--- The bare aggregate and its Agg twin in ONE query
---
--- The two carry identical transition machinery, so PostgreSQL shares one
--- transition state between them unless each declares FINALFUNC_MODIFY. Their
--- finalfn frees the state, so a shared one is finalized twice. Asking for both
--- at once is what exercises that, and the two must agree.
--------------------------------------------------------------------------------
-
-SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
-  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
-  (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
 
 -------------------------------------------------------------------------------
