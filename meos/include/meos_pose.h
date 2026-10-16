@@ -561,8 +561,11 @@ extern Temporal *tposechain_to_tpose(const Temporal *temp);
 
 /* Accessor functions */
 
+extern PoseChain *tposechain_end_value(const Temporal *temp);
 extern int tposechain_num_poses(const Temporal *temp);
+extern PoseChain *tposechain_start_value(const Temporal *temp);
 extern PoseChain *tposechain_value(const Temporal *temp);
+extern bool tposechain_value_n(const Temporal *temp, int n, PoseChain **result);
 extern PoseChain **tposechain_values(const Temporal *temp, int *count);
 extern SpanSet **tposechain_unnest(const Temporal *temp, PoseChain ***values, int *count);
 
