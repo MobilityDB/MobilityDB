@@ -586,8 +586,71 @@ SELECT ttext(tjsonb '"{\"a\":false, \"b\":2.5}"@2001-01-01', text 'a');
  "false"@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\", \"b\":2.5}"@2001-01-01', text 'pos'));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ {[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(valueAtTimestamp(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos'), '2001-01-02'));
+   astext   
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(2 2)"}@2001-01-03]', text 'pos', 'step'));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompoint(tjsonb '[{"pos":"SRID=5676;Point(0 0)"}@2001-01-01, {"pos":"SRID=5676;Point(2 2)"}@2001-01-03]', text 'pos'));
+                                             asewkt                                             
+------------------------------------------------------------------------------------------------
+ SRID=5676;{[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tgeompoint(tjsonb '[{"pos":"Point(0 0)"}@2001-01-01, {"pos":"Point(1 1)"}@2001-01-02, {"speed":3}@2001-01-03, {"pos":"Point(3 3)"}@2001-01-04, {"pos":"Point(4 4)"}@2001-01-05]', text 'pos', 'linear', 'delete_key'));
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST], [POINT(3 3)@Thu Jan 04 00:00:00 2001 PST, POINT(4 4)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpoint(tjsonb '[{"pos":"Point(4.35 50.85)"}@2001-01-01, {"pos":"Point(4.40 50.80)"}@2001-01-02]', text 'pos'));
+                                                   asewkt                                                   
+------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(4.35 50.85)@Mon Jan 01 00:00:00 2001 PST, POINT(4.4 50.8)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tgeometry(tjsonb '[{"area":"Polygon((0 0,1 0,1 1,0 0))"}@2001-01-01, {"area":"Point(2 2)"}@2001-01-02]', text 'area'));
+                                                astext                                                
+------------------------------------------------------------------------------------------------------
+ {[POLYGON((0 0,1 0,1 1,0 0))@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(tgeography(tjsonb '[{"area":"Polygon((4 50,5 50,5 51,4 50))"}@2001-01-01, {"area":"Point(4.5 50.5)"}@2001-01-02]', text 'area'));
+                                                         asewkt                                                          
+-------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POLYGON((4 50,5 50,5 51,4 50))@Mon Jan 01 00:00:00 2001 PST, POINT(4.5 50.5)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
 /* Errors */
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'xxx');
 ERROR:  The lifted operation returned NULL
 SELECT tint(tjsonb '"{\"a\":\"xxx\", \"b\":2.5}"@2001-01-01', text 'a');
 ERROR:  Invalid numeric string for key "a": xxx
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Polygon((0 0,1 0,1 1,0 0))\"}"@2001-01-01', text 'pos');
+ERROR:  Only point geometries accepted
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');
+ERROR:  parse error - invalid geometry
+HINT:  "Point(1 xxx" <-- parse error at position 11 within geometry
+SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
+ERROR:  The value of key "pos" is not a string
+SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
+ERROR:  The lifted operation returned NULL

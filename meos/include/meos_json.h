@@ -367,6 +367,10 @@ extern Temporal *tjsonb_strip_nulls(const Temporal *temp, bool strip_in_arrays);
 extern Temporal *tjsonb_to_tbigint(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tbool(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tfloat(const Temporal *temp, const char *key, interpType interp, nullHandleType null_handle);
+extern Temporal *tjsonb_to_tgeogpoint(const Temporal *temp, const char *key, interpType interp, nullHandleType null_handle);
+extern Temporal *tjsonb_to_tgeography(const Temporal *temp, const char *key, nullHandleType null_handle);
+extern Temporal *tjsonb_to_tgeometry(const Temporal *temp, const char *key, nullHandleType null_handle);
+extern Temporal *tjsonb_to_tgeompoint(const Temporal *temp, const char *key, interpType interp, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tint(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_ttext_key(const Temporal *temp, const char *key, nullHandleType null_handle);
 

@@ -982,10 +982,13 @@ Tjsonb_insert(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Convert a temporal JSONB value into a temporal alphanumeric type
+ * @brief Convert a temporal JSONB value into a temporal alphanumeric or geo
+ * type by extracting one key, through #tjsonb_to_talphanum or
+ * #tjsonb_to_tspatial
  */
 static Datum
-Tjsonb_to_talphanum(FunctionCallInfo fcinfo, MeosType restype, bool hasinterp)
+Tjsonb_key_to_temporal(FunctionCallInfo fcinfo, MeosType restype,
+  bool hasinterp)
 {
   /* Input arguments */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -999,7 +1002,7 @@ Tjsonb_to_talphanum(FunctionCallInfo fcinfo, MeosType restype, bool hasinterp)
       interp = input_interp_string(fcinfo, 2);
     argno++;
   }
-  /* NULL_JSON_NULL cannot be used for obtaining temporal alphanumeric values */
+  /* NULL_JSON_NULL cannot be used for obtaining a value other than a JSONB */
   nullHandleType null_handle = NULL_RETURN; 
   if (PG_NARGS() > argno && ! PG_ARGISNULL(argno))
   {
@@ -1011,8 +1014,9 @@ Tjsonb_to_talphanum(FunctionCallInfo fcinfo, MeosType restype, bool hasinterp)
          errmsg("'use_json_null' is not supported for this function")));
   }
   /* Compute the result */
-  Temporal *result = tjsonb_to_talphanum(temp, key, restype, interp,
-    null_handle);
+  Temporal *result = tgeo_type_all(restype) ?
+    tjsonb_to_tspatial(temp, key, restype, interp, null_handle) :
+    tjsonb_to_talphanum(temp, key, restype, interp, null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(key_text, 1);
@@ -1031,7 +1035,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tbool);
 Datum
 Tjsonb_to_tbool(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TBOOL, false);
+  return Tjsonb_key_to_temporal(fcinfo, T_TBOOL, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_tint(PG_FUNCTION_ARGS);
@@ -1044,7 +1048,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tint);
 Datum
 Tjsonb_to_tint(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TINT, false);
+  return Tjsonb_key_to_temporal(fcinfo, T_TINT, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_tbigint(PG_FUNCTION_ARGS);
@@ -1057,7 +1061,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tbigint);
 Datum
 Tjsonb_to_tbigint(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TBIGINT, false);
+  return Tjsonb_key_to_temporal(fcinfo, T_TBIGINT, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_tfloat(PG_FUNCTION_ARGS);
@@ -1070,7 +1074,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tfloat);
 Datum
 Tjsonb_to_tfloat(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TFLOAT, true);
+  return Tjsonb_key_to_temporal(fcinfo, T_TFLOAT, true);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_ttext_key(PG_FUNCTION_ARGS);
@@ -1083,7 +1087,62 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_ttext_key);
 Datum
 Tjsonb_to_ttext_key(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TTEXT, false);
+  return Tjsonb_key_to_temporal(fcinfo, T_TTEXT, false);
+}
+
+/* The functions below are the geo counterparts of #Tjsonb_to_tfloat, whose
+ * interpolation the temporal points take, and of #Tjsonb_to_ttext_key */
+
+PGDLLEXPORT Datum Tjsonb_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_to_tgeompoint);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Convert a temporal JSONB value into a temporal geometry point
+ * @sqlfn tgeompoint()
+ */
+Datum
+Tjsonb_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  return Tjsonb_key_to_temporal(fcinfo, T_TGEOMPOINT, true);
+}
+
+PGDLLEXPORT Datum Tjsonb_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Convert a temporal JSONB value into a temporal geography point
+ * @sqlfn tgeogpoint()
+ */
+Datum
+Tjsonb_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  return Tjsonb_key_to_temporal(fcinfo, T_TGEOGPOINT, true);
+}
+
+PGDLLEXPORT Datum Tjsonb_to_tgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_to_tgeometry);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Convert a temporal JSONB value into a temporal geometry
+ * @sqlfn tgeometry()
+ */
+Datum
+Tjsonb_to_tgeometry(PG_FUNCTION_ARGS)
+{
+  return Tjsonb_key_to_temporal(fcinfo, T_TGEOMETRY, false);
+}
+
+PGDLLEXPORT Datum Tjsonb_to_tgeography(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_to_tgeography);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Convert a temporal JSONB value into a temporal geography
+ * @sqlfn tgeography()
+ */
+Datum
+Tjsonb_to_tgeography(PG_FUNCTION_ARGS)
+{
+  return Tjsonb_key_to_temporal(fcinfo, T_TGEOGRAPHY, false);
 }
 
 /*****************************************************************************/
